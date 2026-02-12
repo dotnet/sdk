@@ -105,7 +105,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
             var parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
             var toolInstallCommand = new ToolInstallLocalCommand(parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -137,7 +136,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -157,7 +155,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -185,7 +182,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -205,7 +201,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -226,7 +221,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -274,7 +268,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
-                new PackageId("non-exist"),
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -315,11 +308,39 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                                "But restore do not need to 'revert' since it just set in nuget global directory");
         }
 
+        [Fact]
+        public void WhenRunWithExistingManifestInConfigDirectoryItShouldAddToExistingManifest()
+        {
+            // Test backward compatibility: ensure tools can be added to existing manifests in .config directories
+            _fileSystem.File.Delete(_manifestFilePath);
+            var configDirectory = Path.Combine(_temporaryDirectory, ".config");
+            _fileSystem.Directory.CreateDirectory(configDirectory);
+            var configManifestPath = Path.Combine(configDirectory, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(configManifestPath, _jsonContent);
+
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+
+            // Verify the tool was added to the existing .config manifest
+            var manifestPackages = _toolManifestFinder.Find();
+            manifestPackages.Should().HaveCount(1);
+            manifestPackages.First().PackageId.Should().Be(_packageIdA);
+
+            // Verify that the manifest under the .config folder has been updated
+            _fileSystem.File.Exists(configManifestPath).Should().BeTrue("The .config manifest file should exist");
+            var configManifestContent = _fileSystem.File.ReadAllText(configManifestPath);
+            configManifestContent.Should().Contain(_packageIdA.ToString(), "The .config manifest should contain the installed tool");
+            configManifestContent.Should().NotBe(_jsonContent, "The .config manifest should have been updated with the new tool");
+
+            // Verify that no manifest exists in the root folder after the install command is run
+            _fileSystem.File.Exists(_manifestFilePath).Should().BeFalse("No manifest should exist in the root folder");
+        }
+
         private ToolInstallLocalCommand GetDefaultTestToolInstallLocalCommand()
         {
             return new ToolInstallLocalCommand(
                 _parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -335,7 +356,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -354,7 +374,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -373,7 +392,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
-                _packageIdA,
                 GetToolToolPackageInstallerWithPreviewInFeed(),
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -410,7 +428,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -418,7 +435,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -432,7 +449,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -440,7 +456,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -457,7 +473,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -465,7 +480,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -479,7 +494,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -487,7 +501,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         private IToolPackageDownloader GetToolToolPackageInstallerWithPreviewInFeed()

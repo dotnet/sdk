@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
@@ -19,14 +20,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Versioning" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
-    <PackageReference Include="System.Resources.Extensions" VersionOverride="$(SystemResourcesExtensionsToolsetPackageVersion)" />
-    <Reference Include="System.Net.Http" />
+    <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
   <!-- Global usings -->
@@ -36,11 +30,5 @@
      <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
-
-  <!--
-    Encountered an error about this target being missing when rebuilding within VS.
-    See: https://github.com/dotnet/msbuild/issues/4303#issuecomment-482345617
-  -->
-  <Target Name="GetTargetPath" />
 
 </Project>

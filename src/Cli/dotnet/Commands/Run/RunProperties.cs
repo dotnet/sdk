@@ -1,24 +1,61 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
+internal sealed record RunProperties(
+    string Command,
+    string? Arguments,
+    string? WorkingDirectory,
+    string RuntimeIdentifier,
+    string DefaultAppHostRuntimeIdentifier,
+    string TargetFrameworkVersion)
 {
-    internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs)
+    internal RunProperties(string command, string? arguments, string? workingDirectory)
+        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
     {
-        string runProgram = project.GetPropertyValue("RunCommand");
-        string runArguments = project.GetPropertyValue("RunArguments");
-        string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
+    }
 
-        if (applicationArgs.Length != 0)
+    internal static bool TryFromProject(ProjectInstance project, [NotNullWhen(returnValue: true)] out RunProperties? result)
+    {
+        result = new RunProperties(
+            Command: project.GetPropertyValue("RunCommand"),
+            Arguments: project.GetPropertyValue("RunArguments"),
+            WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
+            RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
+            DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
+            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
+
+        if (string.IsNullOrEmpty(result.Command))
         {
-            runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
+            result = null;
+            return false;
         }
 
-        return new(runProgram, runArguments, runWorkingDirectory);
+        return true;
+    }
+
+    internal static RunProperties FromProject(ProjectInstance project)
+    {
+        if (!TryFromProject(project, out var result))
+        {
+            RunCommand.ThrowUnableToRunError(project);
+        }
+
+        return result;
+    }
+
+    internal RunProperties WithApplicationArguments(string[] applicationArgs)
+    {
+        if (applicationArgs.Length != 0)
+        {
+            return this with { Arguments = Arguments + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs) };
+        }
+
+        return this;
     }
 }

@@ -11,7 +11,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
-internal class ToolListLocalCommand : CommandBase
+internal sealed class ToolListLocalCommand : CommandBase<ToolListCommandDefinition>
 {
     private readonly IToolManifestInspector _toolManifestInspector;
     private readonly IReporter _reporter;
@@ -31,42 +31,32 @@ internal class ToolListLocalCommand : CommandBase
 
     public override int Execute()
     {
-        var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
-        PackageId? packageId = null;
-        if (!string.IsNullOrWhiteSpace(packageIdArgument))
-        {
-            packageId = new PackageId(packageIdArgument);
-        }
-        var packageEnumerable = GetPackages(packageId);
+        var packageIdArgument = _parseResult.GetValue(Definition.PackageIdArgument);
+        PackageId? packageId = string.IsNullOrWhiteSpace(packageIdArgument) ? null : new(packageIdArgument);
 
-        var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
+        IEnumerable<(ToolManifestPackage package, FilePath path)> packages = _toolManifestInspector.Inspect();
+        if (packageId != null)
+        {
+            packages = packages.Where(t => t.package.PackageId.Equals(packageId));
+        }
+
+        var formatValue = _parseResult.GetValue(Definition.ToolListFormatOption);
         if (formatValue is ToolListOutputFormat.json)
         {
-            PrintJson(packageEnumerable);
+            PrintJson(packages);
         }
         else
         {
-            PrintTable(packageEnumerable);
+            PrintTable(packages);
         }
 
-        if (packageId.HasValue && !packageEnumerable.Any())
+        if (packageId.HasValue && !packages.Any())
         {
             // return 1 if target package was not found
             return 1;
         }
+
         return 0;
-    }
-
-    public IEnumerable<(ToolManifestPackage, FilePath)> GetPackages(PackageId? packageId)
-    {
-        return _toolManifestInspector.Inspect().Where(
-             (t) => PackageIdMatches(t.toolManifestPackage, packageId)
-             );
-    }
-
-    private static bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
-    {
-        return !packageId.HasValue || package.PackageId.Equals(packageId);
     }
 
     private void PrintTable(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
@@ -99,7 +89,7 @@ internal class ToolListLocalCommand : CommandBase
                 Manifest = p.SourceManifest.Value
             })]
         };
-        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.JsonContext.VersionedDataContractLocalToolListJsonContractArray);
         _reporter.WriteLine(jsonText);
     }
 }

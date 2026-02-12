@@ -33,7 +33,7 @@ internal partial class NetSdkMsiInstallerClient
                 {
                     using RegistryKey workloadSetPackageVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetPackageVersion);
 
-                    string workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(new SdkFeatureBand(workloadSetFeatureBand), workloadSetPackageVersion);
+                    string workloadSetVersion = new SdkFeatureBand(workloadSetFeatureBand).GetWorkloadSetPackageVersion(workloadSetPackageVersion);
 
                     WorkloadSetRecord record = new WorkloadSetRecord()
                     {
@@ -70,11 +70,13 @@ internal partial class NetSdkMsiInstallerClient
             "Microsoft.NET.Workload.Emscripten.net7",
             "Microsoft.NET.Workload.Emscripten.net8",
             "Microsoft.NET.Workload.Emscripten.net9",
+            "Microsoft.NET.Workload.Emscripten.net10",
             "Microsoft.NET.Workload.Mono.ToolChain.Current",
             "Microsoft.NET.Workload.Mono.ToolChain.net6",
             "Microsoft.NET.Workload.Mono.ToolChain.net7",
             "Microsoft.NET.Workload.Mono.ToolChain.net8",
             "Microsoft.NET.Workload.Mono.ToolChain.net9",
+            "Microsoft.NET.Workload.Mono.ToolChain.net10"
         ];
 
     private static readonly IReadOnlyDictionary<string, string> ManifestIdCasing = CasedManifestIds.ToDictionary(id => id.ToLowerInvariant()).AsReadOnly();
@@ -241,7 +243,7 @@ internal partial class NetSdkMsiInstallerClient
     /// <returns>A UUID generated using the given namespace UUID and name.</returns>
     public static Guid CreateUuid(Guid namespaceUuid, string name)
     {
-        // 1. Convert the name to a canonical sequence of octets (as defined by the standards or conventions of its name space); put the name space ID in network byte order. 
+        // 1. Convert the name to a canonical sequence of octets (as defined by the standards or conventions of its name space); put the name space ID in network byte order.
         byte[] namespaceBytes = namespaceUuid.ToByteArray();
         // Octet 0-3
         int timeLow = IPAddress.HostToNetworkOrder(BitConverter.ToInt32(namespaceBytes, 0));
@@ -268,29 +270,29 @@ internal partial class NetSdkMsiInstallerClient
 
         Array.Resize(ref hash, 16);
 
-        // 3. Set octets zero through 3 of the time_low field to octets zero through 3 of the hash. 
+        // 3. Set octets zero through 3 of the time_low field to octets zero through 3 of the hash.
         timeLow = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(hash, 0));
         Buffer.BlockCopy(BitConverter.GetBytes(timeLow), 0, hash, 0, 4);
 
-        // 4. Set octets zero and one of the time_mid field to octets 4 and 5 of the hash. 
+        // 4. Set octets zero and one of the time_mid field to octets 4 and 5 of the hash.
         timeMid = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(hash, 4));
         Buffer.BlockCopy(BitConverter.GetBytes(timeMid), 0, hash, 4, 2);
 
-        // 5. Set octets zero and one of the time_hi_and_version field to octets 6 and 7 of the hash. 
+        // 5. Set octets zero and one of the time_hi_and_version field to octets 6 and 7 of the hash.
         timeHiVersion = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(hash, 6));
 
-        // 6. Set the four most significant bits (bits 12 through 15) of the time_hi_and_version field to the appropriate 4-bit version number from Section 4.1.3. 
+        // 6. Set the four most significant bits (bits 12 through 15) of the time_hi_and_version field to the appropriate 4-bit version number from Section 4.1.3.
         timeHiVersion = (short)((timeHiVersion & 0x0fff) | 0x3000);
         Buffer.BlockCopy(BitConverter.GetBytes(timeHiVersion), 0, hash, 6, 2);
 
-        // 7. Set the clock_seq_hi_and_reserved field to octet 8 of the hash. 
+        // 7. Set the clock_seq_hi_and_reserved field to octet 8 of the hash.
         // 8. Set the two most significant bits (bits 6 and 7) of the clock_seq_hi_and_reserved to zero and one, respectively.
         hash[8] = (byte)((hash[8] & 0x3f) | 0x80);
 
         // Steps 9-11 are essentially no-ops, but provided for completion sake
         // 9. Set the clock_seq_low field to octet 9 of the hash.
         // 10. Set octets zero through five of the node field to octets 10 through 15 of the hash.
-        // 11. Convert the resulting UUID to local byte order. 
+        // 11. Convert the resulting UUID to local byte order.
 
         return new Guid(hash);
     }

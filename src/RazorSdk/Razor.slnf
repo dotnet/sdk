@@ -16,6 +16,7 @@
       "test\\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj",
       "test\\Microsoft.NET.Sdk.Razor.Tests\\Microsoft.NET.Sdk.Razor.Tests.csproj",
       "test\\Microsoft.NET.Sdk.Razor.Tool.Tests\\Microsoft.NET.Sdk.Razor.Tool.Tests.csproj",
+      "test\\Microsoft.NET.Sdk.StaticWebAssets.Tests\\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"
     ]
   }

@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,6 +13,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.HostModel.AppHost;
 using NuGet.Configuration;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -20,6 +22,9 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed partial class CSharpCompilerCommand
 {
+    [JsonSerializable(typeof(string))]
+    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext;
+
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 
     /// <summary>
@@ -43,12 +48,27 @@ internal sealed partial class CSharpCompilerCommand
     private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
-    internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
-    private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
+    internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
+    private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
+    internal static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
     public required string ArtifactsPath { get; init; }
     public required bool CanReuseAuxiliaryFiles { get; init; }
+
+    public string BaseDirectory => field ??= Path.GetDirectoryName(EntryPointFileFullPath)!;
+
+    /// <summary>
+    /// Compiler command line arguments to use. If empty, default arguments are used.
+    /// These should be already properly escaped.
+    /// </summary>
+    public required ImmutableArray<string> CscArguments { get; init; }
+
+    /// <summary>
+    /// Path to the <c>bin/Program.dll</c> file. If specified,
+    /// the compiled output (<c>obj/Program.dll</c>) will be copied to this location.
+    /// </summary>
+    public required string? BuildResultFile { get; init; }
 
     /// <param name="fallbackToNormalBuild">
     /// Whether the returned error code should not cause the build to fail but instead fallback to full MSBuild.
@@ -58,13 +78,16 @@ internal sealed partial class CSharpCompilerCommand
         // Write .rsp file and other intermediate build outputs.
         PrepareAuxiliaryFiles(out string rspPath);
 
+        // Ensure the compiler is launched with the correct dotnet.
+        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).
         var buildRequest = BuildServerConnection.CreateBuildRequest(
             requestId: EntryPointFileFullPath,
             language: RequestLanguage.CSharpCompile,
             arguments: ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"],
-            workingDirectory: Environment.CurrentDirectory,
+            workingDirectory: BaseDirectory,
             tempDirectory: Path.GetTempPath(),
             keepAlive: null,
             libDirectory: null,
@@ -87,7 +110,28 @@ internal sealed partial class CSharpCompilerCommand
             cancellationToken: default);
 
         // Process the response.
-        return ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+        var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+
+        // Copy from obj to bin only if the build succeeded.
+        if (exitCode == 0 &&
+            BuildResultFile != null &&
+            CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
+        {
+            var objFile = new FileInfo(parsedArgs.GetOutputFilePath(outputFileName));
+            var binFile = new FileInfo(BuildResultFile);
+
+            if (HaveMatchingSizeAndTimeStamp(objFile, binFile))
+            {
+                Reporter.Verbose.WriteLine($"Skipping copy of '{objFile}' to '{BuildResultFile}' because the files have matching size and timestamp.");
+            }
+            else
+            {
+                Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
+                File.Copy(objFile.FullName, binFile.FullName, overwrite: true);
+            }
+        }
+
+        return exitCode;
 
         static string GetCompilerCommitHash()
         {
@@ -105,6 +149,17 @@ internal sealed partial class CSharpCompilerCommand
             {
                 case CompletedBuildResponse completed:
                     Reporter.Verbose.WriteLine("Compiler server processed compilation.");
+
+                    // Check if the compilation failed with CS0006 error (metadata file not found).
+                    // This can happen when NuGet cache is cleared and referenced DLLs (e.g., analyzers or libraries) are missing.
+                    if (completed.ReturnCode != 0 && completed.Output.Contains("error CS0006:", StringComparison.Ordinal))
+                    {
+                        Reporter.Verbose.WriteLine("CS0006 error detected in fast compilation path, falling back to full MSBuild.");
+                        Reporter.Verbose.Write(completed.Output);
+                        fallbackToNormalBuild = true;
+                        return completed.ReturnCode;
+                    }
+
                     Reporter.Output.Write(completed.Output);
                     fallbackToNormalBuild = false;
                     return completed.ReturnCode;
@@ -125,13 +180,38 @@ internal sealed partial class CSharpCompilerCommand
                     return 1;
             }
         }
+
+        // Inspired by MSBuild: https://github.com/dotnet/msbuild/blob/a7a4d5af02be5aa6dc93a492d6d03056dc811388/src/Tasks/Copy.cs#L208
+        static bool HaveMatchingSizeAndTimeStamp(FileInfo sourceFile, FileInfo destinationFile)
+        {
+            if (!destinationFile.Exists)
+            {
+                return false;
+            }
+
+            if (sourceFile.LastWriteTimeUtc != destinationFile.LastWriteTimeUtc)
+            {
+                return false;
+            }
+
+            if (sourceFile.Length != destinationFile.Length)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        Reporter.Verbose.WriteLine(CanReuseAuxiliaryFiles
-            ? "CSC auxiliary files can be reused."
-            : "CSC auxiliary files can NOT be reused.");
+        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
+
+        if (!CscArguments.IsDefaultOrEmpty)
+        {
+            File.WriteAllLines(rspPath, CscArguments);
+            return;
+        }
 
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
@@ -201,6 +281,8 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
+        // NOTE: MSBuild writes empty values as "property = " (with a trailing space).
+        // Use an interpolation expression to preserve the trailing space from editor trimming.
         string editorconfig = Path.Join(objDir, $"{fileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig");
         if (ShouldEmit(editorconfig))
         {
@@ -209,23 +291,25 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableAotAnalyzer = true
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
-                build_property.IncludeAllContentForSelfExtract = 
+                build_property.IncludeAllContentForSelfExtract ={" "}
+                build_property.VerifyReferenceTrimCompatibility ={" "}
+                build_property.VerifyReferenceAotCompatibility ={" "}
                 build_property.TargetFramework = net{TargetFrameworkVersion}
                 build_property.TargetFrameworkIdentifier = .NETCoreApp
                 build_property.TargetFrameworkVersion = v{TargetFrameworkVersion}
-                build_property.TargetPlatformMinVersion = 
-                build_property.UsingMicrosoftNETSdkWeb = 
-                build_property.ProjectTypeGuids = 
-                build_property.InvariantGlobalization = 
-                build_property.PlatformNeutralAssembly = 
-                build_property.EnforceExtendedAnalyzerRules = 
+                build_property.TargetPlatformMinVersion ={" "}
+                build_property.UsingMicrosoftNETSdkWeb ={" "}
+                build_property.ProjectTypeGuids ={" "}
+                build_property.InvariantGlobalization ={" "}
+                build_property.PlatformNeutralAssembly ={" "}
+                build_property.EnforceExtendedAnalyzerRules ={" "}
                 build_property._SupportedPlatformList = Linux,macOS,Windows
                 build_property.RootNamespace = {fileNameWithoutExtension}
                 build_property.ProjectDir = {fileDirectory}{Path.DirectorySeparatorChar}
-                build_property.EnableComHosting = 
+                build_property.EnableComHosting ={" "}
                 build_property.EnableGeneratedComInterfaceComImportInterop = false
                 build_property.EffectiveAnalysisLevelStyle = {TargetFrameworkVersion}
-                build_property.EnableCodeStyleSeverity = 
+                build_property.EnableCodeStyleSeverity ={" "}
 
                 """);
         }
@@ -251,11 +335,11 @@ internal sealed partial class CSharpCompilerCommand
                     "tfm": "net{{TargetFrameworkVersion}}",
                     "framework": {
                       "name": "Microsoft.NETCore.App",
-                      "version": {{JsonSerializer.Serialize(RuntimeVersion)}}
+                      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion, CSharpCompilerCommandJsonSerializerContext.Default.String)}}
                     },
                     "configProperties": {
-                      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
-                      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(fileDirectory)}},
+                      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
+                      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(fileDirectory, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
                       "Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability": true,
                       "System.ComponentModel.DefaultValueAttribute.IsSupported": false,
                       "System.ComponentModel.Design.IDesignerHost.IsSupported": false,
@@ -285,7 +369,6 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
-        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
         if (ShouldEmit(rspPath))
         {
             IEnumerable<string> args = GetCscArguments(
@@ -317,18 +400,18 @@ internal sealed partial class CSharpCompilerCommand
     {
         if (IsPathOption(arg, out var colonIndex))
         {
-            return arg[..(colonIndex + 1)] + EscapeCore(arg[(colonIndex + 1)..]);
+            return arg[..(colonIndex + 1)] + EscapePathArgument(arg[(colonIndex + 1)..]);
         }
 
-        return EscapeCore(arg);
+        return EscapePathArgument(arg);
+    }
 
-        static string EscapeCore(string arg)
+    internal static string EscapePathArgument(string arg)
+    {
+        return ArgumentEscaper.EscapeSingleArg(arg, additionalShouldSurroundWithQuotes: static (string arg) =>
         {
-            return ArgumentEscaper.EscapeSingleArg(arg, additionalShouldSurroundWithQuotes: static (string arg) =>
-            {
-                return arg.ContainsAny(s_additionalShouldSurroundWithQuotes);
-            });
-        }
+            return arg.ContainsAny(s_additionalShouldSurroundWithQuotes);
+        });
     }
 
     public static bool IsPathOption(string arg, out int colonIndex)
@@ -353,5 +436,36 @@ internal sealed partial class CSharpCompilerCommand
 
         colonIndex = -1;
         return false;
+    }
+
+    private static string ComputeRuntimeVersion()
+    {
+        var executingRuntimeVersion = RuntimeInformation.FrameworkDescription.Split(' ').Last();
+        var executingRuntimeMajorVersion = executingRuntimeVersion.Split('.').First();
+        var tfmMajorVersion = TargetFrameworkVersion.Split('.').First();
+
+        // If the target framework is still net10.0 while the runtime is already 11.0.x, we need to force-use 10.0.x runtime.
+        if (tfmMajorVersion != executingRuntimeMajorVersion)
+        {
+            return tfmMajorVersion + ".0.0";
+        }
+
+        // Otherwise, we can use the current runtime.
+        return executingRuntimeVersion;
+    }
+
+    /// <summary>
+    /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
+    /// </summary>
+    private static string ComputeDefaultRuntimeVersion()
+    {
+        if (NuGetVersion.TryParse(RuntimeVersion, out var version))
+        {
+            return version.IsPrerelease && version.Patch == 0 ?
+                RuntimeVersion :
+                new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
+        }
+
+        return RuntimeVersion;
     }
 }

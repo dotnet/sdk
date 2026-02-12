@@ -44,7 +44,10 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
     {
         var templateFoldersToInstall = new List<string>();
 
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
         var sdkDirectory = Path.GetDirectoryName(typeof(Utils.DotnetFiles).Assembly.Location);
+#pragma warning restore IL3000
+
         var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
 
         // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
@@ -85,7 +88,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         return versionFileInfo;
     }
 
-    private static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
+    internal static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
@@ -105,6 +108,6 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
             }
         }
 
-        return [.. bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path)];
+        return [.. bestVersionsByBucket.OrderBy(x => x.Value.version).Select(x => x.Value.path)];
     }
 }

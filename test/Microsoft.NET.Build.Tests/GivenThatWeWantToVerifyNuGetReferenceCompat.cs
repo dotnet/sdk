@@ -41,16 +41,16 @@ namespace Microsoft.NET.Build.Tests
 
             // Process all dependencies in parallel
             Parallel.ForEach(
-                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)), 
+                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)),
                 new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-                dependencyTarget => 
+                dependencyTarget =>
                 {
                     // Create the dependency project and package
                     TestProject dependencyProject = GetTestProject(
-                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'), 
-                        dependencyTarget, 
+                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'),
+                        dependencyTarget,
                         true);
-                        
+
                     TestPackageReference dependencyPackageReference = new(
                         dependencyProject.Name,
                         "1.0.0",
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
                     {
                         if (!dependencyPackageReference.NuGetPackageExists())
                         {
-                            var dependencyTestAsset = _testAssetsManager.CreateTestProject(
+                            var dependencyTestAsset = TestAssetsManager.CreateTestProject(
                                 dependencyProject,
                                 identifier: referencerTarget + testDescription + rawDependencyTargets);
 
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             //  Create the referencing app and run the compat test
-            var referencerTestAsset = _testAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
+            var referencerTestAsset = TestAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
             var referencerRestoreCommand = referencerTestAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
 
             List<string> referencerRestoreSources = new();
@@ -208,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var referencedDll = buildCommand.GetOutputDirectory().File("net462_net472_pkg.dll").FullName;
-            var referencedTargetFramework = AssemblyInfo.Get(referencedDll)["TargetFrameworkAttribute"];
+            var referencedTargetFramework = AssemblyInfo.Get(referencedDll).Where(i => i.Key == "TargetFrameworkAttribute").Single().Value;
             referencedTargetFramework.Should().Be(".NETFramework,Version=v4.6.2");
         }
 
@@ -239,7 +239,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(testPackageReference);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 $"{testProjectName}_{calleeTargetFrameworks}");
@@ -265,7 +265,7 @@ namespace Microsoft.NET.Build.Tests
             if (!packageReference.NuGetPackageExists())
             {
                 var testAsset =
-                    _testAssetsManager.CreateTestProject(
+                    TestAssetsManager.CreateTestProject(
                         project,
                         callingMethod,
                         identifier);

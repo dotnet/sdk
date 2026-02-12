@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -12,7 +13,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class LocalToolsResolverCache : ILocalToolsResolverCache
+internal partial class LocalToolsResolverCache : ILocalToolsResolverCache
 {
     private readonly DirectoryPath _cacheVersionedDirectory;
     private readonly IFileSystem _fileSystem;
@@ -49,7 +50,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    JsonSerializer.Serialize(existingCacheTable.Concat(diffedRow)));
+                    JsonSerializer.Serialize(existingCacheTable.Concat(diffedRow), LocalToolsCacheJsonSerializerContext.Default.IEnumerableCacheRow));
             }
             else
             {
@@ -62,7 +63,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    JsonSerializer.Serialize(rowsToAdd));
+                    JsonSerializer.Serialize(rowsToAdd, LocalToolsCacheJsonSerializerContext.Default.IEnumerableCacheRow));
             }
         }
     }
@@ -94,7 +95,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         try
         {
             cacheTable =
-                JsonSerializer.Deserialize<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
+                JsonSerializer.Deserialize(_fileSystem.File.ReadAllText(packageCacheFile), LocalToolsCacheJsonSerializerContext.Default.CacheRowArray);
         }
         catch (JsonException)
         {
@@ -188,4 +189,8 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         public string Runner { get; set; }
         public string PathToExecutable { get; set; }
     }
+
+    [JsonSerializable(typeof(CacheRow[]))]
+    [JsonSerializable(typeof(IEnumerable<CacheRow>))]
+    private partial class LocalToolsCacheJsonSerializerContext : JsonSerializerContext;
 }

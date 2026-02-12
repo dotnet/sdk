@@ -1,0 +1,67 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Clear out 'RootNamespace' for VB projects. Otherwise, it prepends the RootNamespace to declared namespace for the types in the project. -->
+    <RootNamespace Condition="'$(Language)' == 'VB'" />
+  </PropertyGroup>
+
+  <!-- Add analyzer release tracking additional files -->
+  <!-- Unshipped release -->
+  <ItemGroup Condition="'$(ReleaseTrackingOptOut)' != 'true' and Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')">
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md" />
+    <!-- Copy the unshipped releases file to output directory so it can be used in 'GenerateGlobalAnalyzerConfigs' post-build target -->
+    <!-- Include unshipped file also as 'None' - Workaround for 'CopyToOutputDirectory' not being respected for additional files -->
+    <None Update="AnalyzerReleases.Unshipped.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>AnalyzerReleases\$(AssemblyName)\AnalyzerReleases.Unshipped.md</Link>
+    </None>
+  </ItemGroup>
+  <!-- Shipped releases -->
+  <ItemGroup  Condition="'$(ReleaseTrackingOptOut)' != 'true' and Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')">
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md" />
+    <!-- Copy the shipped releases file to output directory so it can be used in 'GenerateGlobalAnalyzerConfigs' post-build target -->
+    <!-- Include shipped file also as 'None' - Workaround for 'CopyToOutputDirectory' not being respected for additional files -->
+    <None Update="AnalyzerReleases.Shipped.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>AnalyzerReleases\$(AssemblyName)\AnalyzerReleases.Shipped.md</Link>
+    </None>
+  </ItemGroup>
+
+  <Target Name="CheckReleaseTrackingFiles" AfterTargets="BeforeBuild" Condition="'$(ReleaseTrackingOptOut)' != 'true' and '$(UsingMicrosoftNoTargetsSdk)' != 'true'">
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')" Text="Create a new empty file named 'AnalyzerReleases.Shipped.md' in the project directory" />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')" Text="Create a new empty file named 'AnalyzerReleases.Unshipped.md' in the project directory" />
+  </Target>
+
+  <Target Name="IncludePackAsAnalyzerProjectReferences"
+          Condition="'@(ProjectReference)' != '' and @(ProjectReference->AnyHaveMetadataValue('PackAsAnalyzer', 'true'))">
+    <MSBuild Projects="@(ProjectReference->WithMetadataValue('PackAsAnalyzer', 'true'))"
+             Targets="GetPackAsAnalyzerFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="PackAsAnalyzerFile" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Content Include="@(PackAsAnalyzerFile->WithMetadataValue('IsSymbol', ''))" Pack="True" />
+      <_TargetPathsToSymbols Include="@(PackAsAnalyzerFile->WithMetadataValue('IsSymbol', 'true'))"
+                             TargetPath="/%(PackAsAnalyzerFile.PackagePath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetPackAsAnalyzerFiles"
+          DependsOnTargets="$(GenerateNuspecDependsOn)"
+          Returns="@(PackAsAnalyzerFile)">
+    <PropertyGroup>
+      <PackAsAnalyzerPath>analyzers/dotnet</PackAsAnalyzerPath>
+      <PackAsAnalyzerPath Condition="'$(AnalyzerRoslynVersion)' != ''">$(PackAsAnalyzerPath)/roslyn$(AnalyzerRoslynVersion)</PackAsAnalyzerPath>
+      <PackAsAnalyzerPath Condition="'$(AnalyzerLanguage)' != ''">$(PackAsAnalyzerPath)/$(AnalyzerLanguage)</PackAsAnalyzerPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackAsAnalyzerFile Include="@(_BuildOutputInPackage)" />
+      <PackAsAnalyzerFile Include="@(_TargetPathsToSymbols)" IsSymbol="true" />
+      <PackAsAnalyzerFile PackagePath="$(PackAsAnalyzerPath)/%(TargetPath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.1.0.60101")]
         public void It_builds_solution_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("x64SolutionBuild")
                 .WithSource();
 

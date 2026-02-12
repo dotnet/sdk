@@ -1,5 +1,5 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
@@ -14,4 +14,5 @@
     <!-- Turn off ICE validation. CodeIntegrity and AppLocker block ICE checks that require elevation, even when running as administator. -->
     <SuppressValidation>true</SuppressValidation>
   </PropertyGroup>
+
 </Project>

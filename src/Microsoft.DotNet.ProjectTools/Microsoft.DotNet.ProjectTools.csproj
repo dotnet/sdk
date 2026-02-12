@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.ProjectTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet.Tests" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.HotReload.Watch" />
+  </ItemGroup>
+
+  <Import Project="..\Cli\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+</Project>

@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public string Target { get; }
 
         private readonly string _projectRootPath;
+        private readonly string[] _requiredArgs;
 
         public string ProjectRootPath => _projectRootPath;
 
@@ -19,18 +20,19 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string FullPathProjectFile => Path.Combine(ProjectRootPath, ProjectFile);
 
-        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string? relativePathToProject = null)
+        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string? relativePathToProject = null, params ReadOnlySpan<string> requiredArgs)
             : base(log)
         {
             Target = target;
 
             _projectRootPath = projectRootPath;
+            _requiredArgs = requiredArgs.ToArray();
 
             ProjectFile = FindProjectFile(ref _projectRootPath, relativePathToProject);
         }
 
-        public MSBuildCommand(TestAsset testAsset, string target, string? relativePathToProject = null)
-            : this(testAsset.Log, target, testAsset.TestRoot, relativePathToProject ?? testAsset.TestProject?.Name)
+        public MSBuildCommand(TestAsset testAsset, string target, string? relativePathToProject = null, params ReadOnlySpan<string> requiredArgs)
+            : this(testAsset.Log, target, testAsset.TestRoot, relativePathToProject ?? testAsset.TestProject?.Name, requiredArgs)
         {
             TestAsset = testAsset;
         }
@@ -124,14 +126,15 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        protected virtual bool ExecuteWithRestoreByDefault => true;
+        public bool ShouldRestore { get; set; } = true;
 
         public override CommandResult Execute(IEnumerable<string> args)
         {
-            if (ExecuteWithRestoreByDefault)
+            if (ShouldRestore)
             {
                 args = new[] { "/restore" }.Concat(args);
             }
+            args = [.. _requiredArgs, .. args];
 
             var command = base.Execute(args);
 
@@ -162,7 +165,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
         }
     }
 }

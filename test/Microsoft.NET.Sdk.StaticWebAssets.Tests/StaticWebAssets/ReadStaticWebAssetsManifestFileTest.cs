@@ -14,8 +14,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     {
         public ReadStaticWebAssetsManifestFileTest()
         {
-            Directory.CreateDirectory(Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest)));
-            TempFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest), Guid.NewGuid().ToString("N") + ".json");
+            Directory.CreateDirectory(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest)));
+            TempFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest), Guid.NewGuid().ToString("N") + ".json");
         }
 
         public string TempFilePath { get; }
@@ -140,10 +140,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
       ],
       ""ResponseHeaders"": [
         {{
-          ""Name"": ""Accept-Ranges"",
-          ""Value"": ""bytes""
-        }},
-        {{
           ""Name"": ""Content-Length"",
           ""Value"": ""__content-length__""
         }},
@@ -203,7 +199,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             endpoint.GetMetadata(nameof(StaticWebAssetEndpoint.Selectors)).Should().BeEquivalentTo("""[{"Name":"Content-Encoding","Value":"gzip","Quality":"0.9"}]""");
             endpoint.GetMetadata(nameof(StaticWebAssetEndpoint.ResponseHeaders))
                             .Should()
-                            .BeEquivalentTo("""[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"__content-length__"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"__etag__"},{"Name":"Last-Modified","Value":"__last-modified__"}]""");
+                            .BeEquivalentTo("""[{"Name":"Content-Length","Value":"__content-length__"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"__etag__"},{"Name":"Last-Modified","Value":"__last-modified__"}]""");
         }
 
         [Fact]

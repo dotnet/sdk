@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "ExecutableProfile": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "--version",
+      "workingDirectory": ".",
+      "environmentVariables": {
+        "TEST_VAR": "ExecutableValue"
+      }
+    },
+    "ProjectProfile": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Message": "ProjectValue"
+      }
+    }
+  }
+}

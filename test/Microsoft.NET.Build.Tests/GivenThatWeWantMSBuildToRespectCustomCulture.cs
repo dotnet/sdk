@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void SupportRespectAlreadyAssignedItemCulture_ByDefault_ForDotnet9(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net6.0")]
         public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);

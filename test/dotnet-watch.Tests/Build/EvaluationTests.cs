@@ -7,11 +7,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class EvaluationTests(ITestOutputHelper output)
     {
-        private readonly TestReporter _reporter = new(output);
+        private readonly TestLogger _logger = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
         private static string MuxerPath
-            => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
+            => SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
         private static string InspectPath(string path, string rootDir)
             => path.Substring(rootDir.Length + 1).Replace("\\", "/");
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableContentFiles)
+        public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
         {
             var project = new TestProject("Project1")
             {
@@ -137,20 +137,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 },
                 AdditionalProperties =
                 {
-                    ["DotNetWatchContentFiles"] = enableContentFiles?.ToString() ?? "",
+                    ["DotNetWatchContentFiles"] = enableStaticWebAssets?.ToString() ?? "",
                 },
             };
 
-            var testAsset = _testAssets.CreateTestProject(project, identifier: enableContentFiles.ToString());
+            var testAsset = _testAssets.CreateTestProject(project, identifier: enableStaticWebAssets.ToString());
 
             await VerifyEvaluation(testAsset,
-                isWeb && enableContentFiles != false ?
+                isWeb && enableStaticWebAssets != false ?
                 [
                     new("Project1/Project1.csproj", targetsOnly: true),
                     new("Project1/Program.cs"),
-                    new("Project1/wwwroot/css/app.css", staticAssetUrl: "wwwroot/css/app.css"),
-                    new("Project1/wwwroot/js/site.js", staticAssetUrl: "wwwroot/js/site.js"),
-                    new("Project1/wwwroot/favicon.ico", staticAssetUrl: "wwwroot/favicon.ico"),
+                    new("Project1/wwwroot/css/app.css", staticAssetUrl: "css/app.css"),
+                    new("Project1/wwwroot/js/site.js", staticAssetUrl: "js/site.js"),
+                    new("Project1/wwwroot/favicon.ico", staticAssetUrl: "favicon.ico"),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
                 ] :
@@ -159,7 +159,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     new("Project1/Program.cs"),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
-                ]);
+                ],
+                suppressStaticWebAssets: enableStaticWebAssets == false);
         }
 
         [Fact]
@@ -207,19 +208,22 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
                 new("Project1/Program.cs"),
                 new("Project1/Project1.csproj", targetsOnly: true),
-                new("Project1/wwwroot/css/app.css", "wwwroot/css/app.css"),
-                new("Project1/wwwroot/favicon.ico", "wwwroot/favicon.ico"),
-                new("Project1/wwwroot/js/site.js", "wwwroot/js/site.js"),
+                new("Project1/wwwroot/css/app.css", "css/app.css"),
+                new("Project1/wwwroot/favicon.ico", "favicon.ico"),
+                new("Project1/wwwroot/js/site.js", "js/site.js"),
                 new("RCL/Code.cs"),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/ValidatableTypeAttribute.cs", graphOnly: true),
                 new("RCL/Page1.razor"),
                 new("RCL/Page1.razor.css"),
                 new("RCL/Page2.cshtml"),
                 new("RCL/Page2.cshtml.css"),
                 new("RCL/RCL.csproj", targetsOnly: true),
-                new("RCL/wwwroot/lib.css", "wwwroot/lib.css"),
-                new("RCL/wwwroot/lib.js", "wwwroot/lib.js"),
+                new("RCL/wwwroot/lib.css", "lib.css"),
+                new("RCL/wwwroot/lib.js", "lib.js"),
             ]);
         }
 
@@ -233,8 +237,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -268,8 +277,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -302,8 +316,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1, identifier: specifyTargetFramework.ToString());
@@ -424,8 +443,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
 
@@ -452,17 +471,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
+            var prefix = "[Debug]   Collecting watch items from ";
             AssertEx.SequenceEqual(
                 [
-                    "Collecting watch items from 'A'",
-                    "Collecting watch items from 'B'",
-                    "Collecting watch items from 'C'",
-                    "Collecting watch items from 'D'",
-                    "Collecting watch items from 'E'",
-                    "Collecting watch items from 'F'",
-                    "Collecting watch items from 'G'",
+                    "'A'",
+                    "'B'",
+                    "'C'",
+                    "'D'",
+                    "'E'",
+                    "'F'",
+                    "'G'",
                 ],
-                _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
+                _logger.GetAndClearMessages().Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
         }
 
         [Fact]
@@ -475,25 +495,30 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = "net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Program.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
             var project1Path = GetTestProjectPath(testAsset);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
-            AssertEx.Equal(
-                (MessageSeverity.Error, $"{project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)"),
-                _reporter.Messages.Single(l => l.text.Contains("error NU1201")));
+            Assert.Contains(
+                $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
+                _logger.GetAndClearMessages());
         }
 
         private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)
@@ -504,10 +529,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             public bool GraphOnly { get; } = graphOnly;
         }
 
-        private Task VerifyEvaluation(TestAsset testAsset, ExpectedFile[] expectedFiles)
-            => VerifyEvaluation(testAsset, targetFramework: null, expectedFiles);
+        private Task VerifyEvaluation(TestAsset testAsset, ExpectedFile[] expectedFiles, bool suppressStaticWebAssets = false)
+            => VerifyEvaluation(testAsset, targetFramework: null, expectedFiles, suppressStaticWebAssets);
 
-        private async Task VerifyEvaluation(TestAsset testAsset, string? targetFramework, ExpectedFile[] expectedFiles)
+        private async Task VerifyEvaluation(TestAsset testAsset, string? targetFramework, ExpectedFile[] expectedFiles, bool suppressStaticWebAssets = false)
         {
             var testDir = testAsset.Path;
             var rootProjectPath = GetTestProjectPath(testAsset);
@@ -521,9 +546,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             async Task VerifyTargetsEvaluation()
             {
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
-                var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
+                var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);
@@ -539,8 +564,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
                 using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
+
+                if (suppressStaticWebAssets)
+                {
+                    watchableApp.EnvironmentVariables.Add("DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING", "1");
+                }
+
                 watchableApp.Start(testAsset, arguments, relativeProjectDirectory: testAsset.TestProject!.Name);
-                await watchableApp.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+                await watchableApp.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
                 var normalizedActual = ParseOutput(watchableApp.Process.Output).OrderBy(f => f.relativePath);
                 var normalizedExpected = expectedFiles.Where(f => !f.TargetsOnly).Select(f => (f.Path, f.StaticAssetUrl)).OrderBy(f => f.Path);
@@ -552,7 +583,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 => Path.GetRelativePath(testDir, fullPath).Replace('\\', '/');
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> Inspect(IReadOnlyDictionary<string, FileItem> files)
-                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetPath)).OrderBy(f => f.relativePath);
+                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetRelativeUrl)).OrderBy(f => f.relativePath);
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> ParseOutput(IEnumerable<string> output)
             {

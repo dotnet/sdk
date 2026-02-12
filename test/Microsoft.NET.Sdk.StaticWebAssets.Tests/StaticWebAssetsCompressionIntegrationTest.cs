@@ -68,9 +68,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             gzipEndpoints.Should().HaveCount(2);
             brotliEndpoints.Should().HaveCount(2);
 
-            var expectedWeakEndpointEtag = new EntityTagHeaderValue(
-                EntityTagHeaderValue.Parse(standardEndpoints.First().ResponseHeaders.Single(h => h.Name == "ETag").Value).Tag,
-                isWeak: true);
 
             foreach (var endpoint in gzipEndpoints)
             {
@@ -82,7 +79,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     continue;
                 }
-                etags.Should().Contain(expectedWeakEndpointEtag);
             }
 
             foreach (var endpoint in brotliEndpoints)
@@ -95,7 +91,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     continue;
                 }
-                etags.Should().Contain(expectedWeakEndpointEtag);
             }
         }
 
@@ -185,9 +180,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             gzipEndpoints.Should().HaveCount(2);
             brotliEndpoints.Should().HaveCount(2);
 
-            var expectedWeakEndpointEtag = new EntityTagHeaderValue(
-                EntityTagHeaderValue.Parse(standardEndpoints.First().ResponseHeaders.Single(h => h.Name == "ETag").Value).Tag,
-                isWeak: true);
 
             foreach (var endpoint in gzipEndpoints)
             {
@@ -199,7 +191,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     continue;
                 }
-                etags.Should().Contain(expectedWeakEndpointEtag);
             }
 
             foreach (var endpoint in brotliEndpoints)
@@ -212,7 +203,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     continue;
                 }
-                etags.Should().Contain(expectedWeakEndpointEtag);
             }
         }
     }

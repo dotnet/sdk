@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
             const string RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             const string PlatformTarget = "x86";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -117,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use separate packages download folder for this project so that we can verify whether it had to download runtime packs
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "RuntimePack", GetValuesCommand.ValueType.Item)
             {
@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tests
             //  Download runtime packs into separate folder under test assets
             packageDownloadProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packs";
 
-            var packageDownloadAsset = _testAssetsManager.CreateTestProject(packageDownloadProject);
+            var packageDownloadAsset = TestAssetsManager.CreateTestProject(packageDownloadProject);
 
             new RestoreCommand(packageDownloadAsset)
                 .Execute()
@@ -278,10 +278,10 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             //  Set up test workload manifest that will suply targeting and runtime pack versions
-            string sdkVersionBand = GetVersionBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            string sdkVersionBand = GetVersionBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             string manifestRoot = Path.Combine(testAsset.TestRoot, "manifests");
             string manifestFolder = Path.Combine(manifestRoot, sdkVersionBand, "RuntimePackVersionTestWorkload");
             Directory.CreateDirectory(manifestFolder);
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
         {
 
             // There's a bug when using the 6.0 SDK with 17.4 but we have limited control over the VS version used in helix
-            Version.TryParse(TestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion);
+            Version.TryParse(SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion);
             Version.TryParse("17.4.0", out Version maximumVersion);
             if (msbuildVersion >= maximumVersion)
                 return;
@@ -364,7 +364,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
-            var createdLibProject = _testAssetsManager.CreateTestProject(libProject);
+            var createdLibProject = TestAssetsManager.CreateTestProject(libProject);
             var appProject = new TestProject("RidSelfContainedApp")
             {
                 IsExe = true,
@@ -372,7 +372,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true
             };
             appProject.ReferencedProjects.Add(libProject);
-            var createdAppProject = _testAssetsManager.CreateTestProject(appProject);
+            var createdAppProject = TestAssetsManager.CreateTestProject(appProject);
             var publishCommand = new PublishCommand(createdAppProject);
             publishCommand.Execute(new[] { "-property:SelfContained=true", "-property:_CommandLineDefinedSelfContained=true", $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" }).Should().Pass().And.NotHaveStdOutContaining("warning");
         }
@@ -393,7 +393,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.RecordProperties("SelfContained");
             testProject.AdditionalProperties["RuntimeIdentifier"] = runtimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             new DotnetBuildCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.Path, "MainProject"))
                 .Execute()
@@ -411,7 +411,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_or_doesnt_warn_based_on_SelfContained_and_TargetFramework_breaking_RID_change(string targetFramework, bool defineSelfContained)
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework + defineSelfContained.ToString())
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -454,7 +454,7 @@ namespace Microsoft.NET.Build.Tests
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: "ItDoesNotBuildSCDueToPSC")
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -488,7 +488,7 @@ namespace Microsoft.NET.Build.Tests
                     { "PublishSingleFile", "true"},
                     { "SelfContained", "true" } }
             };
-            var asset = _testAssetsManager.CreateTestProject(project);
+            var asset = TestAssetsManager.CreateTestProject(project);
 
             // Validate apphost is used, not singlefilehost
             var command = new GetValuesCommand(Log,
@@ -539,7 +539,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties[property] = "true";
             testProject.RecordProperties("RuntimeIdentifier");
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: property);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: property);
 
             var buildCommand = new DotnetBuildCommand(testAsset);
             buildCommand
@@ -561,7 +561,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -604,7 +604,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)

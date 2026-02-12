@@ -18,7 +18,7 @@ public class CultureAwareTestProject : SdkTest
     [Theory]
     public void CanRunTestsAgainstProjectInLocale(string locale)
     {
-        var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+        var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

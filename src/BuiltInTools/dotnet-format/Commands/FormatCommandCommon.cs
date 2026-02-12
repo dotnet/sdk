@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnableToLocateMSBuildExitCode = 3;
 
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
-        private static string[] SeverityLevels => new[] { "info", "warn", "error" };
+        private static string[] SeverityLevels => new[] { "info", "warn", "error", "hidden" };
 
         public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectArgumentName)
         {
@@ -290,6 +291,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
+                FixSeverity.Hidden => DiagnosticSeverity.Hidden,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity)),
             };
         }

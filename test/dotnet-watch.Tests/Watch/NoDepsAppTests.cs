@@ -38,7 +38,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // process should exit after run
             await App.AssertExiting();
 
-            await App.AssertWaitingForFileChangeBeforeRestarting();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
             await App.AssertStarted();
@@ -46,6 +47,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var processIdentifier2 = await App.AssertOutputLineStartsWith("Process identifier =");
             Assert.NotEqual(processIdentifier, processIdentifier2);
             await App.AssertExiting(); // process should exit after run
+        }
+
+        [Fact]
+        public async Task CapturesStdOutWithNoHotReload()
+        {
+            var testAsset = TestAssets.CopyTestAsset(AppName)
+                .WithSource();
+
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            // Verify stdout is captured - application prints "Started" and "Process identifier"
+            await App.AssertOutputLineStartsWith("Started");
+            await App.AssertOutputLineStartsWith("Process identifier =");
+            await App.AssertExiting();
         }
     }
 }

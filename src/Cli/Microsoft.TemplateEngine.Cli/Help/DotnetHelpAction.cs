@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.TemplateEngine.Cli.Help;
 
@@ -21,6 +22,9 @@ public sealed class DotnetHelpAction : SynchronousCommandLineAction
         get => _builder ??= new HelpBuilder(Console.IsOutputRedirected ? int.MaxValue : Console.WindowWidth);
         set => _builder = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    /// <inheritdoc />
+    public override bool ClearsParseErrors => true;
 
     /// <inheritdoc />
     public override int Invoke(ParseResult parseResult)

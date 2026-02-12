@@ -1,9 +1,9 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project Sdk="Microsoft.WixToolset.Sdk">
 
   <PropertyGroup>
     <!-- OutputType determines the extension, .msi, .wixlib, .exe, etc. -->
     <OutputType>Bundle</OutputType>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <!-- Globbing will automatically find any .wxl relative to the project file. Since we're simshipping localized content for
          the bundle UI, we either need to exclude the .wxl files or place them in a directory outside of the project. For simshipping
@@ -40,7 +40,7 @@
       <DefineConstants>$(DefineConstants);MinimumVSVersion=$(MinimumVSVersion)</DefineConstants>
 
       <!-- PlatformToken is used to generate a generate a WiX variable name using a preprocessor variable so casing matters. -->
-      <DefineConstants>$(DefineConstants);PlatformToken=$(InstallerPlatform.ToUpper())</DefineConstants>
+      <DefineConstants>$(DefineConstants);PlatformToken=$(TargetArchitecture.ToUpper())</DefineConstants>
 
       <!-- Source paths for packages to chain. -->
       <DefineConstants>$(DefineConstants);FinalizerExeSourceFile=$(FinalizerExeSourceFile)</DefineConstants>

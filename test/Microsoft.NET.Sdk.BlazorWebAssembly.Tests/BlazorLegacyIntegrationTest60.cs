@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         protected override string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(SdkTestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         [CoreMSBuildOnlyFact]
         public void Build60Hosted_Works()
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.13", Reason = "Needs System.Text.Json 8.0.5")] // https://github.com/dotnet/sdk/issues/44886
+        [WindowsOnlyRequiresMSBuildVersionFact("17.13", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886
         [SkipOnPlatform(TestPlatforms.Linux | TestPlatforms.OSX, "https://github.com/dotnet/sdk/issues/42145")]
         public void Publish60Hosted_Works()
         {

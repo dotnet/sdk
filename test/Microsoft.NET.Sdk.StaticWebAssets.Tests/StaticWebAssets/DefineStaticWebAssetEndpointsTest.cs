@@ -60,11 +60,6 @@ public class DefineStaticWebAssetEndpointsTest
             [
                 new StaticWebAssetEndpointResponseHeader
                 {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new StaticWebAssetEndpointResponseHeader
-                {
                     Name = "Cache-Control",
                     Value = "no-cache"
                 },
@@ -150,11 +145,6 @@ public class DefineStaticWebAssetEndpointsTest
             [
                 new StaticWebAssetEndpointResponseHeader
                 {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new StaticWebAssetEndpointResponseHeader
-                {
                     Name = "Content-Length",
                     Value = "10"
                 },
@@ -185,11 +175,6 @@ public class DefineStaticWebAssetEndpointsTest
         otherEndpoint.AssetFile.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
         otherEndpoint.ResponseHeaders.Should().BeEquivalentTo(
                 [
-                new StaticWebAssetEndpointResponseHeader
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "Cache-Control",
@@ -277,11 +262,6 @@ public class DefineStaticWebAssetEndpointsTest
             [
                 new StaticWebAssetEndpointResponseHeader
                 {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new StaticWebAssetEndpointResponseHeader
-                {
                     Name = "Content-Length",
                     Value = "10"
                 },
@@ -312,11 +292,6 @@ public class DefineStaticWebAssetEndpointsTest
         otherEndpoint.AssetFile.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
         otherEndpoint.ResponseHeaders.Should().BeEquivalentTo(
                 [
-                new StaticWebAssetEndpointResponseHeader
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "Cache-Control",
@@ -356,10 +331,6 @@ public class DefineStaticWebAssetEndpointsTest
         var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
         var headers = new StaticWebAssetEndpointResponseHeader[]
         {
-            new() {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
             new() {
                 Name = "Content-Length",
                 Value = "10"
@@ -583,11 +554,6 @@ public class DefineStaticWebAssetEndpointsTest
         ]);
         endpoint.ResponseHeaders.Should().BeEquivalentTo(
             [
-                new StaticWebAssetEndpointResponseHeader
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "Content-Length",

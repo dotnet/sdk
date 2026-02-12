@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tests
 
         public GivenThatTheUserIsRunningDotNetForTheFirstTime(ITestOutputHelper log, DotNetFirstTimeFixture fixture) : base(log)
         {
-            fixture.Init(log, _testAssetsManager);
+            fixture.Init(log, TestAssetsManager);
             _fixture = fixture;
         }
 
@@ -103,12 +103,12 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
             var expectedVersion = GetDotnetVersion();
-            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
@@ -116,6 +116,30 @@ namespace Microsoft.DotNet.Tests
                     expectedVersion))
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation)
                 .And.NotContain("Restore completed in");
+        }
+
+        [WindowsOnlyFact]
+        public void FirstRunExperienceMessagesShouldGoToStdErr()
+        {
+            // This test ensures that first-run experience messages go to stderr, 
+            // not stdout, to avoid interfering with completion commands and other
+            // tools that parse stdout. See: https://github.com/dotnet/sdk/issues/50444
+            var expectedVersion = GetDotnetVersion();
+            
+            // StdErr should contain first-run messages
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
+                .Should()
+                .ContainVisuallySameFragment(string.Format(
+                    Configurer.LocalizableStrings.FirstTimeMessageWelcome,
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
+                    expectedVersion))
+                .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
+                
+            // StdOut should NOT contain first-run messages (they should only be in stderr)
+            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+                .Should()
+                .NotContain("Welcome to .NET")
+                .And.NotContain("Write your first app");
         }
 
         [Fact]
@@ -139,7 +163,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             // Disable telemetry to prevent the creation of the .dotnet folder
             // for machineid and docker cache files
@@ -156,7 +180,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
 
@@ -164,7 +188,7 @@ namespace Microsoft.DotNet.Tests
 
             var expectedVersion = GetDotnetVersion();
 
-            result.StdOut
+            result.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
@@ -178,7 +202,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
@@ -191,7 +215,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             var profiled = Path.Combine(dotnetFirstTime.TestDirectory, "profile.d");
 
@@ -207,7 +231,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             var pathsd = Path.Combine(dotnetFirstTime.TestDirectory, "paths.d");
 
@@ -219,7 +243,7 @@ namespace Microsoft.DotNet.Tests
 
         private string GetDotnetVersion()
         {
-            return TestContext.Current.ToolsetUnderTest.SdkVersion;
+            return SdkTestContext.Current.ToolsetUnderTest.SdkVersion;
         }
     }
 }

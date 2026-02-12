@@ -27,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
             testProject.AdditionalProperties.Add("SatelliteResourceLanguages", "en-US;it;fr");
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: tfm);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: tfm);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             var publishResult = publishCommand.Execute();
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             var publishResult = publishCommand.Execute();

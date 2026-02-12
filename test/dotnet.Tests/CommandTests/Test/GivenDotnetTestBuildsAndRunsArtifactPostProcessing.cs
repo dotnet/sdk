@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_SolutionProjects(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_TestContainers(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_VSTest_TestContainers(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
@@ -89,6 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetVSTestCommand(Log)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
+                                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "1")
                                     .Execute(
                                         Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
                                         Directory.GetFiles(testInstance.Path, "test2.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
@@ -157,7 +158,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private void BuildDataCollector()
             => LazyInitializer.EnsureInitialized(ref s_dataCollectorDll, ref s_dataCollectorInitLock, () =>
                 {
-                    TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestDataCollectorSample").WithSource();
+                    TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestDataCollectorSample").WithSource();
 
                     string testProjectDirectory = testInstance.Path;
 
@@ -172,7 +173,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private void BuildDataCollectorNoMerge()
             => LazyInitializer.EnsureInitialized(ref s_dataCollectorNoMergeDll, ref s_dataCollectorInitLock, () =>
             {
-                TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestDataCollectorSampleNoMerge").WithSource();
+                TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestDataCollectorSampleNoMerge").WithSource();
 
                 string testProjectDirectory = testInstance.Path;
 

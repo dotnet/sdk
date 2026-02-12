@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -9,6 +10,27 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToBuildANetCoreAppAndPassingALogger(ITestOutputHelper log) : base(log)
         {
+        }
+
+        private string CreateTargetFrameworkEvalTelemetryJson(
+            string targetFrameworkVersion,
+            string targetPlatformIdentifier = "null",
+            string runtimeIdentifier = "null",
+            string selfContained = "null",
+            string useApphost = "null",
+            string outputType = "Library",
+            string useArtifactsOutput = "null",
+            string artifactsPathLocationType = "null",
+            string useMonoRuntime = "null",
+            string publishAot = "null",
+            string publishTrimmed = "null",
+            string publishSelfContained = "null",
+            string publishReadyToRun = "null",
+            string publishReadyToRunComposite = "false",
+            string publishProtocol = "null",
+            string configuration = "Debug")
+        {
+            return $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{targetFrameworkVersion}\",\"RuntimeIdentifier\":\"{runtimeIdentifier}\",\"SelfContained\":\"{selfContained}\",\"UseApphost\":\"{useApphost}\",\"OutputType\":\"{outputType}\",\"UseArtifactsOutput\":\"{useArtifactsOutput}\",\"ArtifactsPathLocationType\":\"{artifactsPathLocationType}\",\"TargetPlatformIdentifier\":\"{targetPlatformIdentifier}\",\"UseMonoRuntime\":\"{useMonoRuntime}\",\"PublishAot\":\"{publishAot}\",\"PublishTrimmed\":\"{publishTrimmed}\",\"PublishSelfContained\":\"{publishSelfContained}\",\"PublishReadyToRun\":\"{publishReadyToRun}\",\"PublishReadyToRunComposite\":\"{publishReadyToRunComposite}\",\"PublishProtocol\":\"{publishProtocol}\",\"Configuration\":\"{Sha256Hasher.HashWithNormalizedCasing(configuration)}\"}}";
         }
 
         [CoreMSBuildOnlyFact]
@@ -25,14 +47,15 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
-                .Contain($"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}}");
+                .Contain(CreateTargetFrameworkEvalTelemetryJson(
+                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
         }
 
         [CoreMSBuildOnlyFact]
@@ -50,7 +73,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -59,11 +82,13 @@ namespace Microsoft.NET.Build.Tests
 
             result
                 .StdOut.Should()
-                .Contain(
-                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}")
+                .Contain(CreateTargetFrameworkEvalTelemetryJson(
+                    ".NETFramework,Version=v4.6",
+                    targetPlatformIdentifier: "Windows",
+                    publishReadyToRunComposite: "null"))
                 .And
-                .Contain(
-                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}}");
+                .Contain(CreateTargetFrameworkEvalTelemetryJson(
+                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
         }
     }
 }

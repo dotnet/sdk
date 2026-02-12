@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         {
             _reporter = new BufferedReporter();
             _parseResult = Parser.Parse("dotnet workload repair");
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Theory]
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -88,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"));
+            var packRecordContents = JsonSerializer.Serialize(new WorkloadResolver.PackInfo(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"), PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(extraPackRecordPath, packRecordContents);
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
@@ -110,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);

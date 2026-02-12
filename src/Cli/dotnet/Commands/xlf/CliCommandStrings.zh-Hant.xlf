@@ -92,7 +92,22 @@
         <target state="translated">.NET 產生器</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">不顯示啟始資訊或著作權訊息。</target>
         <note />
@@ -184,11 +199,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">無法同時使用 {0} 與 {1} 選項。移除其中一個選項。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">無法轉換某些指示詞: 第一個錯誤位於 {0}。執行檔案以查看所有編譯錯誤。指定 '--force' 以繼續轉換。</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">在資訊清單中找不到有名稱 '{0}' 命令的工具。</target>
@@ -232,11 +242,6 @@ Paths searched: '{1}', '{2}'.</source>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">.NET 清除命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -406,6 +411,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="translated">要使用的 NuGet 組態檔路徑。需要 '--outdated'、'--deprecated' 或 '--vulnerable' 選項。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="translated">指定 testconfig.json 檔案。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -414,6 +424,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">要使用的 NuGet 組態檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -436,14 +451,16 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="translated">列出已淘汰的套件。無法與 '--vulnerable' 或 '--outdated' 選項一併使用。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的目錄路徑。如果未指定，則預設為目前目錄。</target>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="translated">診斷記錄的輸出目錄。
+若未指定，則會在預設的 'TestResults' 目錄內產生檔案。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -559,6 +576,11 @@ This is equivalent to deleting project.assets.json.</source>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">可平行執行的測試模組數目上限。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="translated">指定預期執行的測試數目下限。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -716,14 +738,19 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">在搜尋較新套件時，建議搜尋具有發行前版本的套件。需要使用 '--outdated' 選項。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的專案檔案路徑 (資料夾名稱或完整路徑)。如果未指定，則預設為目前目錄。</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">定義要執行的專案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">定義要測試的專案或解決方案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -769,8 +796,8 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的解決方案檔案的路徑。如果未指定，則預設為目前目錄。</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">定義要測試的解決方案檔案的路徑。請使用解決方案檔案的路徑，或包含該解決方案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -851,19 +878,18 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config 定義測試執行器為 Microsoft.Testing.Platform。所有專案必須使用該測試執行器。
+        <target state="translated">global.json 定義測試執行器為 Microsoft.Testing.Platform。所有專案必須使用該測試執行器。
 以下測試專案正在使用 VSTest 測試執行器:
 {0}
 
 如需詳細資訊，請參閱 https://aka.ms/dotnet-test/mtp。</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -960,11 +986,6 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">請勿嘗試使用 launchSettings.json 或 [app].run.json 設定該應用程式。</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">要執行之專案檔的路徑 (如果只有一個專案，預設為目前的目錄)。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1045,11 +1066,6 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">日期</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(預設)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">正解除安裝工作負載資訊清單 {0} 版本 {1}...</target>
@@ -1079,11 +1095,6 @@ dotnet.config is a name don't translate.</note>
         <source>Description</source>
         <target state="translated">描述</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">讀取「{0}」時發生錯誤: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1131,9 +1142,39 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">正在以下位置找測試</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">.NET 測試命令</target>
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">.NET 測試命令，適用於 Microsoft.Testing.Platform (透過 'global.json' 檔案選擇加入)。此命令僅支援 Microsoft.Testing.Platform，不支援 VSTest。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">適用於 VSTest 的 .NET 測試命令。若要使用 Microsoft.Testing.Platform，請透過 global.json 選擇加入以 Microsoft.Testing.Platform 為基礎的命令。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="translated">Microsoft.Testing.Platform 所支援的通訊協定版本為 '{0}'。此 SDK 支援 '{1}'，但兩者不相容。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMismatchingExecutionId">
+        <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
+        <target state="translated">收到訊息 '{1}' 的 'ExecutionId' 值為 '{0}'，但交握訊息收到的 'ExecutionId' 為 '{2}'。</target>
+        <note>{Locked="ExecutionId"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="translated">處理與交握對應的 'NamedPipeServer' 時發生錯誤:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="translated">處理 'NamedPipeServer' 時發生錯誤，且找不到交握。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="translated">'dotnet' 從 'dotnet test' 具名管道意外接收到重疊訊息。</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1156,19 +1197,25 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">下載</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">數個啟動設定檔具有區分大小寫的名稱，這並不受允許:
-{0}
-請讓設定檔名稱相異。</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">期間:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">不支援重複的指示詞: {0} 位於 {1}</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">錯誤:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="translated">使用 RunCommand '{0}' 和 RunArguments '{1}' 執行測試模組時，發生以下例外狀況: 
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1208,6 +1255,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">無法更新廣告資訊清單 {0}: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">失敗:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1495,10 +1547,10 @@ Make the profile names distinct.</source>
         <target state="translated">命令用於執行的工作目錄。</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">位於 '{2}' 的指示詞應包含不含特殊字元的名稱，以及 '{1}' 分隔的選用值，例如 '#:{0} Name{1}Value'。</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="translated">方法 '{0}' 未成功結束</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1514,11 +1566,6 @@ Make the profile names distinct.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">當使用「-」從標準輸入讀取檔案時，無法指定選項 '{0}'。</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">位於 '{0}' 的 '#:project' 指示詞無效: {1}</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1539,26 +1586,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">最新版本</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">名稱為 '{0}' 的啟動設定檔不存在。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">不支援啟動設定檔類型 '{0}'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">具有指定名稱的設定檔不是有效的 JSON 物件。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">啟動設定文件的 'profiles' 屬性並非 JSON 物件。</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1652,10 +1679,15 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">預期測試原則違反的最小值，{0} 個執行的測試，預期的最小值為 {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">缺少位於 {1} 的 '{0}' 名稱。</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="translated">測試應用程式收到新的交握 '{0}'，與先前的交握 '{1}' 不相符。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="translated">收到測試工作階段開始事件，但沒有對應的測試工作階段結束。</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -1823,8 +1855,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">未安裝任何工作負載，沒有要修復的項目。請執行 `dotnet workload search` 以尋找要安裝的工作負載。</target>
-        <note />
+        <target state="needs-review-translation">未安裝任何工作負載，沒有要修復的項目。請執行 `dotnet workload search` 以尋找要安裝的工作負載。</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1871,11 +1903,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet 套件封裝器</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1884,6 +1911,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">放置組建套件所在的輸出目錄。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">要建立的套件版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2350,8 +2387,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">指定輸出目錄 ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="translated">請指定輸出目錄 (按 Enter 鍵以使用預設值: '{0}'，目錄必須不存在):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2404,24 +2441,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">專案</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">位於 {0} 的屬性名稱無效。{1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">屬性指示詞必須有兩個部分，其以 '=' 分隔，例如 '#:property PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number.</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 平台的發行者</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2566,6 +2588,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">還原失敗。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">還原部分失敗。</target>
@@ -2574,6 +2601,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">已還原工具 '{0}' (版本 '{1}')。可用的命令: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">已重試</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2606,15 +2638,35 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET 執行命令</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="translated">可用的目標架構:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">正在建置...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">執行 {0} 目標以探索對此專案的執行命令失敗。修正錯誤和警告，然後重新執行。</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="translated">範例</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2646,14 +2698,19 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">無法執行您的專案。
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">無法執行您的專案。
 請確定您有可執行的專案類型，並確定 '{0}' 支援此專案。
 可執行的專案應以可執行的 TFM (例如 net5.0) 為目標，且 OutputType 應為 'Exe'。
 目前的 {1} 為 '{2}'。</target>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2663,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 您的專案以多重架構為目標。請使用 '{0}' 指定要執行的架構。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">上下移動以顯示更多的架構</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">要搜尋的類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">選取要執行的目標架構:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2796,8 +2883,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">工作負載已設定為使用工作負載版本來安裝和更新，但找不到任何工作負載版本。執行 "dotnet workload restore" 以安裝工作負載版本。</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="translated">未安裝任何工作負載集合。執行 "dotnet workload restore" 以安裝工作負載集合。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2853,6 +2940,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="SkipSymbolsOptionDescription">
         <source>Skip creating symbol files which can be used for profiling the optimized assemblies.</source>
         <target state="translated">跳過建立符號檔，該檔案可用於分析最佳化組件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">已略過:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -2985,6 +3077,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">要對其儲存套件的目標執行階段。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">已成功:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">摘要</target>
@@ -3000,11 +3097,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">指定此命令的暫存目錄，以下載並解壓縮 NuGet 套件 (必須為安全)。</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET 測試驅動程式</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">執行測試，但不顯示 Microsoft Testplatform 橫幅</target>
@@ -3013,6 +3105,26 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="translated">指定 'dotnet test' 的目錄應透過 '--project' 或 '--solution'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="translated">指定 'dotnet test' 的專案應透過 '--project'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="translated">指定 'dotnet test' 的解決方案應透過 '--solution'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="translated">指定 'dotnet test' 的 DLL 或可執行檔應透過 '--test-modules'。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3182,6 +3294,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3431,10 +3548,35 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">已成功將工具 '{0}' 從 '{1}' 版更新為 '{2}' 版。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">總計:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">嘗試 {0}</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="translated">未使用 `--help` 時，收到未預期的說明相關訊息。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="translated">在說明模式中收到類型為 '{0}' 的訊息，這是不預期的。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="translated">在收到任何交握之前，我們就接收到類型為 '{0}' 的訊息，這是不預期的情況。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="translated">收到測試工作階段結束事件，但沒有對應的測試工作階段開始。</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
@@ -3450,11 +3592,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">具有未記錄變更的列代表變更來自 .NET CLI 工作負載命令以外的動作。這通常代表對 .NET SDK 或 Visual Studio 的更新。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">在 {1} 的無法辨識的指示詞 '{0}'。</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3531,11 +3668,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">已成功更新工作負載安裝模式以使用 {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">找不到可用的啟動設定檔。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">使用方式</target>
@@ -3579,6 +3711,16 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">如果屬性 '{0}' 受到指定，則其必須為物件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
@@ -3823,10 +3965,15 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">工作負載資訊清單識別碼</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">設為在安裝新資訊清單時使用 {0}。</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="translated">設為在安裝新資訊清單時使用鬆散的資訊清單。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="translated">設為在安裝新資訊清單時使用 workload sets。</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>
@@ -3874,8 +4021,8 @@ To display a value, specify the corresponding command-line option without provid
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">搜尋可用的工作負載。</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">搜尋可用的工作負載。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

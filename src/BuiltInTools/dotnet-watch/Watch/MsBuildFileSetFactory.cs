@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -27,7 +29,10 @@ namespace Microsoft.DotNet.Watch
 
         public string RootProjectFile => rootProjectFile;
         private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
-        private IReporter Reporter => buildReporter.Reporter;
+        private ILogger Logger => buildReporter.Logger;
+
+        private readonly ProjectGraphFactory _buildGraphFactory = new(
+            globalOptions: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
 
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
@@ -60,19 +65,19 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                Reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
+                Logger.LogDebug("Running MSBuild target '{TargetName}' on '{Path}'", TargetName, rootProjectFile);
 
-                var exitCode = await processRunner.RunAsync(processSpec, Reporter, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, Logger, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 
                 if (!success)
                 {
-                    Reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
-                    Reporter.Output($"MSBuild output from target '{TargetName}':");
+                    Logger.LogError("Error(s) finding watch items project file '{FileName}'.", Path.GetFileName(rootProjectFile));
+                    Logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
                 }
 
-                BuildOutput.ReportBuildOutput(Reporter, capturedOutput, success, projectDisplay: null);
+                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success);
                 if (!success)
                 {
                     return null;
@@ -92,7 +97,8 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var staticFile in projectItems.StaticFiles)
                     {
-                        AddFile(staticFile.FilePath, staticFile.StaticWebAssetPath);
+                        // that target adds items with "wwwroot/" prefix:
+                        AddFile(staticFile.FilePath, staticFile.StaticWebAssetPath?["wwwroot/".Length..]);
                     }
 
                     void AddFile(string filePath, string? staticWebAssetPath)
@@ -103,7 +109,7 @@ namespace Microsoft.DotNet.Watch
                             {
                                 FilePath = filePath,
                                 ContainingProjectPaths = [projectPath],
-                                StaticWebAssetPath = staticWebAssetPath,
+                                StaticWebAssetRelativeUrl = staticWebAssetPath,
                             });
                         }
                         else if (!existingFile.ContainingProjectPaths.Contains(projectPath))
@@ -123,10 +129,7 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
-                        .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
-
-                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Reporter, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = _buildGraphFactory.TryLoadProjectGraph(rootProjectFile, Logger, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -160,7 +163,7 @@ namespace Microsoft.DotNet.Watch
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
 
-            if (EnvironmentOptions.SuppressHandlingStaticContentFiles)
+            if (EnvironmentOptions.SuppressHandlingStaticWebAssets)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
             }

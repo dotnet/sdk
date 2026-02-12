@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.DotNet.Watch.Aspire.UnitTests</RootNamespace>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" />
+    <ProjectReference Include="..\..\src\BuiltInTools\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\BuiltInTools\Watch\RuntimeDependencies.props" />
+</Project>

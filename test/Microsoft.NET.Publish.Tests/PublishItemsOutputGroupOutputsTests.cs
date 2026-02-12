@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(true, false)]
-        [InlineData(true, true)]
+        [InlineData(true, true, Skip = "https://github.com/dotnet/sdk/issues/49926")]
         [InlineData(false, false)]
         public void RunPublishItemsOutputGroupOutputsTest(bool specifyRid, bool singleFile)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishSingleFile"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand

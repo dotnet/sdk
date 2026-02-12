@@ -3,6 +3,7 @@
     <File Path="eng/dogfood.cmd" />
     <File Path="eng/dogfood.sh" />
     <File Path="eng/Versions.props" />
+    <File Path="eng/Version.Details.props" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -22,8 +23,8 @@
     <File Path="test.sh" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Microsoft.DotNet.ProjectTools/Microsoft.DotNet.ProjectTools.csproj" />
     <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
-    <Project Path="src/Microsoft.Net.Sdk.AnalyzerRedirecting/Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
     <Project Path="src/Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" />
     <Project Path="src/System.CommandLine.StaticCompletions/System.CommandLine.StaticCompletions.csproj" />
@@ -48,16 +49,28 @@
     <Project Path="src/BuiltInTools/DotNetWatchTasks/DotNetWatchTasks.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.shproj" />
+    <Project Path="src/BuiltInTools/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.Package.csproj" />
+    <Project Path="src/BuiltInTools/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.shproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
+    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.Package.csproj" />
+    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" />
+    <Project Path="src/BuiltInTools/Watch.Aspire/Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
+    <Project Path="src/BuiltInTools/Watch/Microsoft.DotNet.HotReload.Watch.csproj" />
+    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
+    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.CoreUtils/Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.Definitions/Microsoft.DotNet.Cli.Definitions.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.Package.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.InternalAbstractions/Microsoft.DotNet.InternalAbstractions.csproj" />
     <Project Path="src/Cli/Microsoft.TemplateEngine.Cli/Microsoft.TemplateEngine.Cli.csproj" />
   </Folder>
@@ -98,6 +111,26 @@
     <Project Path="src/Layout/VS.Redist.Common.NetCore.SdkPlaceholder/VS.Redist.Common.NetCore.SdkPlaceholder.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Toolset/VS.Redist.Common.NetCore.Toolset.proj" Type="C#" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/" />
+  <Folder Name="/src/NetAnalyzers/src/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.CSharp.NetAnalyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.Setup/Microsoft.CodeAnalysis.NetAnalyzers.Setup.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Compiler.CSharp/Analyzer.CSharp.Utilities.shproj" Id="be5fe32c-da73-4ec5-809e-e11b05aca398" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Compiler/Analyzer.Utilities.shproj" Id="ec946164-1e17-410b-b7d9-7de7e6268d63" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/FlowAnalysis/FlowAnalysis.Utilities.shproj" Id="fcb56cba-fa35-46a8-86b7-bae5433197d9" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Workspaces/Workspaces.Utilities.shproj" Id="99f594b1-3916-471d-a761-a6731fc50e9a" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/tests/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Test.Utilities/Test.Utilities.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/TestReferenceAssembly/TestReferenceAssembly.csproj" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/tools/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj" />
   </Folder>
   <Folder Name="/src/RazorSdk/" />
   <Folder Name="/src/RazorSdk/Sdk/">
@@ -279,7 +312,10 @@
   </Folder>
   <Folder Name="/template_feed/">
     <Project Path="template_feed/Microsoft.DotNet.Common.ItemTemplates/Microsoft.DotNet.Common.ItemTemplates.csproj" />
-    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.10.0/Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj" />
+    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.11.0/Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/MicroBenchmark/MicroBenchmark.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />
@@ -289,12 +325,16 @@
     <Project Path="test/dotnet-format.UnitTests/dotnet-format.UnitTests.csproj" />
     <Project Path="test/dotnet-MsiInstallation.Tests/dotnet-MsiInstallation.Tests.csproj" />
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
+    <Project Path="test/dotnet-watch-test-browser/dotnet-watch-test-browser.csproj" />
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
     <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.HotReload.Client.Tests/Microsoft.DotNet.HotReload.Client.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.HotReload.Test.Utilities/Microsoft.DotNet.HotReload.Test.Utilities.csproj" />
+    <Project Path="test/Microsoft.DotNet.HotReload.Watch.Aspire.Tests/Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.PackageInstall.Tests/Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.TemplateLocator.Tests/Microsoft.DotNet.TemplateLocator.Tests.csproj" />
@@ -308,7 +348,6 @@
     <Project Path="test/Microsoft.NET.Publish.Tests/Microsoft.NET.Publish.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Rebuild.Tests/Microsoft.NET.Rebuild.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Restore.Tests/Microsoft.NET.Restore.Tests.csproj" />
-    <Project Path="test/Microsoft.Net.Sdk.AnalyzerRedirecting.Tests/Microsoft.Net.Sdk.AnalyzerRedirecting.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj" />

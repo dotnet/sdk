@@ -13,8 +13,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     {
         public GenerateStaticWebAssetsManifestTest()
         {
-            Directory.CreateDirectory(Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest)));
-            TempFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest), Guid.NewGuid().ToString("N") + ".json");
+            Directory.CreateDirectory(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest)));
+            TempFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest), Guid.NewGuid().ToString("N") + ".json");
         }
 
         public string TempFilePath { get; }
@@ -136,11 +136,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     {
                         Name = "Last-Modified",
                         Value = "__last-modified__"
-                    },
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
                     }
                 ]
             };

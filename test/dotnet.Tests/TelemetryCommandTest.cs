@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -356,6 +357,20 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["framework"] == Sha256Hasher.Hash(ToolsetInfo.CurrentTargetFramework.ToUpper()) &&
                               e.Properties.ContainsKey("verb") &&
                               e.Properties["verb"] == Sha256Hasher.Hash("CLEAN"));
+        }
+
+        [Fact]
+        public void DotnetUpdatePackageVulnerableOptionShouldBeSentToTelemetry()
+        {
+            const string optionKey = "vulnerable";
+            string[] args = { "package", "update", "--vulnerable" };
+            Cli.Program.ProcessArgs(args);
+            _fakeTelemetry
+                .LogEntries.Should()
+                .Contain(e => e.EventName == "sublevelparser/command" &&
+                              e.Properties.ContainsKey(optionKey) &&
+                              e.Properties.ContainsKey("verb") &&
+                              e.Properties["verb"] == Sha256Hasher.Hash("PACKAGE UPDATE"));
         }
 
         [WindowsOnlyFact]

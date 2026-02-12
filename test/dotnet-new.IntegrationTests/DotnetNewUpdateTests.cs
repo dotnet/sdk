@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanCheckForUpdate(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -43,8 +43,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Package\\s+Current\\s+Latest")
                 .And.HaveStdOutMatching("Microsoft.DotNet.Common.ProjectTemplates.5.0\\s+5.0.0\\s+([\\d\\.a-z-])+")
                 .And.HaveStdOutContaining("To update the package use:")
-                .And.HaveStdOutContaining("   dotnet new install <package>::<version>")
-                .And.HaveStdOutMatching("   dotnet new install Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+");
+                .And.HaveStdOutContaining("   dotnet new install <package>@<version>")
+                .And.HaveStdOutMatching("   dotnet new install Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+");
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string nugetName = "TestNupkgInstallTemplate";
             string nugetVersion = "0.0.1";
-            string nugetFullName = $"{nugetName}::{nugetVersion}";
+            string nugetFullName = $"{nugetName}@{nugetVersion}";
             string nugetFileName = $"{nugetName}.{nugetVersion}.nupkg";
             string workingDirectory = CreateTemporaryFolder();
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -111,7 +111,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
         public void PrintInfoOnUpdateOnCreation()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -132,16 +132,16 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And
                   .NotHaveStdErr()
                   .And.HaveStdOutContaining("The template \"Console Application\" was created successfully.")
-                  .And.HaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0' is available")
+                  .And.HaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0' is available")
                   .And.HaveStdOutContaining("To update the package use:")
-                  .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0::([\\d\\.a-z-])+");
+                  .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
         [Fact]
         public void DoesNotPrintUpdateInfoOnCreation_WhenNoUpdateCheckOption()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -162,9 +162,9 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And
                   .NotHaveStdErr()
                   .And.HaveStdOutContaining("The template \"Console Application\" was created successfully.")
-                  .And.NotHaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0' is available")
+                  .And.NotHaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0' is available")
                   .And.NotHaveStdOutContaining("To update the package use:")
-                  .And.NotHaveStdOutContaining("   dotnet new --install Microsoft.DotNet.Common.ProjectTemplates.5.0::([\\d\\.a-z-])+");
+                  .And.NotHaveStdOutContaining("   dotnet new --install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
 
             new DotnetNewCommand(_log, "console", "-o", "update-check")
                   .WithCustomHive(home).WithoutBuiltInTemplates()
@@ -175,9 +175,9 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And
                   .NotHaveStdErr()
                   .And.HaveStdOutContaining("The template \"Console Application\" was created successfully.")
-                  .And.HaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0' is available")
+                  .And.HaveStdOutContaining("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0' is available")
                   .And.HaveStdOutContaining("To update the package use:")
-                  .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0::([\\d\\.a-z-])+");
+                  .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
         [Fact]
@@ -205,9 +205,9 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And
                   .NotHaveStdErr()
                   .And.HaveStdOutContaining("The template \"Console App\" was created successfully.")
-                  .And.NotHaveStdOutMatching("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0::([\\d\\.a-z-])+' is available")
+                  .And.NotHaveStdOutMatching("An update for template package 'Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+' is available")
                   .And.NotHaveStdOutContaining("To update the package use:")
-                  .And.NotHaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0::([\\d\\.a-z-])+");
+                  .And.NotHaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
         [Fact]
@@ -251,7 +251,7 @@ For more information, run:
         public void CanApplyUpdates(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -275,8 +275,8 @@ For more information, run:
                 .And.HaveStdOutMatching("Package\\s+Current\\s+Latest")
                 .And.HaveStdOutMatching("Microsoft.DotNet.Common.ProjectTemplates.5.0\\s+5.0.0\\s+([\\d\\.a-z-])+")
                 .And.HaveStdOutContaining("To update the package use:")
-                .And.HaveStdOutContaining("   dotnet new install <package>::<version>")
-                .And.HaveStdOutMatching("   dotnet new install Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+");
+                .And.HaveStdOutContaining("   dotnet new install <package>@<version>")
+                .And.HaveStdOutMatching("   dotnet new install Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+");
 
             new DotnetNewCommand(_log, testCase)
                 .WithCustomHive(home).WithoutBuiltInTemplates()
@@ -287,9 +287,9 @@ For more information, run:
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be updated:")
-                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 was successfully uninstalled")
-                .And.NotHaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 is already installed and will be replaced with version")
-                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:\\s*$", System.Text.RegularExpressions.RegexOptions.Multiline)
+                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 was successfully uninstalled")
+                .And.NotHaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 is already installed and will be replaced with version")
+                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:\\s*$", System.Text.RegularExpressions.RegexOptions.Multiline)
                 .And.HaveStdOutContaining("console")
                 .And.HaveStdOutContaining("Console App");
         }

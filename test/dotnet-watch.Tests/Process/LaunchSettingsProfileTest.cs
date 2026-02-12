@@ -3,16 +3,18 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class LaunchSettingsProfileTest
 {
-    private readonly IReporter _reporter;
+    private readonly ILogger _logger;
     private readonly TestAssetsManager _testAssets;
 
     public LaunchSettingsProfileTest(ITestOutputHelper output)
     {
-        _reporter = new TestReporter(output);
+        _logger = new TestLogger(output);
         _testAssets = new TestAssetsManager(output);
     }
 
@@ -48,15 +50,15 @@ public class LaunchSettingsProfileTest
 
         var projectPath = Path.Combine(project.TestRoot, "Project1", "Project1.csproj");
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", _reporter);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", _logger);
         Assert.NotNull(expected);
         Assert.Equal("http://localhost:5000", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", _reporter);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", _logger);
         Assert.NotNull(expected);
         Assert.Equal("https://localhost:5001", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", _reporter);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", _logger);
         Assert.NotNull(expected);
     }
 
@@ -81,7 +83,7 @@ public class LaunchSettingsProfileTest
 
         var projectPath = Path.Combine(project.Path, "Project1", "Project1.csproj");
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, _reporter);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, _logger);
         Assert.Null(expected);
     }
 
