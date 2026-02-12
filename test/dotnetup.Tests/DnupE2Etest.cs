@@ -138,7 +138,7 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         // Create an install path with special characters (spaces and single quotes)
-        var specialChars = OperatingSystem.IsWindows() ? "dotnet with `'special chars'" : "dotnet with `\"'special chars\\'";
+        var specialChars = OperatingSystem.IsWindows() ? "dotnet with 'special chars'" : "dotnet with \"'special chars'\"";
         string specialCharsPath = Path.Combine(testEnv.TempRoot, specialChars);
         Directory.CreateDirectory(specialCharsPath);
 
@@ -199,7 +199,7 @@ hash -d dotnet 2>/dev/null || true
 # Capture versions into variables first to avoid nested quoting issues on macOS bash 3.2
 _path_ver=$(dotnet --version)
 _root_ver=""$DOTNET_ROOT/dotnet""
-_root_ver_out=$($_root_ver --version)
+_root_ver_out=$(""$_root_ver"" --version)
 # Output results
 echo ""DOTNET_VERSION=$_path_ver""
 echo ""DOTNET_ROOT_VERSION=$_root_ver_out""
