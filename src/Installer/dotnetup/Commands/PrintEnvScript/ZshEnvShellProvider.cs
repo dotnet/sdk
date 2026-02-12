@@ -26,6 +26,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
             
             export DOTNET_ROOT='{escapedPath}'
             export PATH='{escapedPath}':$PATH
+            hash -d dotnet 2>/dev/null || true  # Clear cached dotnet path
             """;
     }
 }

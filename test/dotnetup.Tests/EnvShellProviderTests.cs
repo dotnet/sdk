@@ -22,6 +22,7 @@ public class EnvShellProviderTests
         script.Should().Contain("#!/usr/bin/env bash");
         script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
         script.Should().Contain($"export PATH='{installPath}':$PATH");
+        script.Should().Contain("hash -d dotnet", "should clear cached dotnet command path");
     }
 
     [Fact]
@@ -39,6 +40,7 @@ public class EnvShellProviderTests
         script.Should().Contain("#!/usr/bin/env zsh");
         script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
         script.Should().Contain($"export PATH='{installPath}':$PATH");
+        script.Should().Contain("hash -d dotnet", "should clear cached dotnet command path");
     }
 
     [Fact]

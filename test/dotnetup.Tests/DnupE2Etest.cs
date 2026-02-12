@@ -194,7 +194,10 @@ public class InstallEndToEndTests
             scriptContent = $@"#!/bin/{shell}
 set -e
 source <('{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}')
-dotnet --version
+# Use plain dotnet to verify hash clearing works (env script should clear cached path)
+echo ""DOTNET_VERSION=$(dotnet --version)""
+# Also verify DOTNET_ROOT/dotnet returns the same version
+echo ""DOTNET_ROOT_VERSION=$(""$DOTNET_ROOT/dotnet"" --version)""
 echo ""PATH=$PATH""
 echo ""DOTNET_ROOT=$DOTNET_ROOT""
 ";
@@ -217,7 +220,9 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
             scriptContent = $@"
 $ErrorActionPreference = 'Stop'
 iex (& '{Escape(dotnetupPath)}' print-env-script --shell pwsh --dotnet-install-path '{Escape(installPath)}' | Out-String)
-dotnet --version
+# Verify both dotnet and DOTNET_ROOT/dotnet return the same version
+Write-Output ""DOTNET_VERSION=$(dotnet --version)""
+Write-Output ""DOTNET_ROOT_VERSION=$(& ""$env:DOTNET_ROOT/dotnet"" --version)""
 Write-Output ""PATH=$env:PATH""
 Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
 ";
@@ -265,11 +270,23 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
 
         // Parse the output lines
         var outputLines = scriptOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        outputLines.Should().HaveCountGreaterThanOrEqualTo(3, $"Should have dotnet version, PATH, and DOTNET_ROOT output for {shell}");
+        outputLines.Should().HaveCountGreaterThanOrEqualTo(4, $"Should have DOTNET_VERSION, DOTNET_ROOT_VERSION, PATH, and DOTNET_ROOT output for {shell}");
 
-        // First line should be dotnet version
-        var dotnetVersion = outputLines[0].Trim();
+        // Find version lines
+        var dotnetVersionLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_VERSION="));
+        var dotnetRootVersionLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_ROOT_VERSION="));
+
+        dotnetVersionLine.Should().NotBeNull($"DOTNET_VERSION should be printed for {shell}");
+        dotnetRootVersionLine.Should().NotBeNull($"DOTNET_ROOT_VERSION should be printed for {shell}");
+
+        var dotnetVersion = dotnetVersionLine!.Substring("DOTNET_VERSION=".Length).Trim();
+        var dotnetRootVersion = dotnetRootVersionLine!.Substring("DOTNET_ROOT_VERSION=".Length).Trim();
+
         dotnetVersion.Should().NotBeNullOrEmpty($"dotnet --version should produce output for {shell}");
+        dotnetRootVersion.Should().NotBeNullOrEmpty($"$DOTNET_ROOT/dotnet --version should produce output for {shell}");
+
+        // Both versions should match (verifies DOTNET_ROOT points to same install as PATH)
+        dotnetVersion.Should().Be(dotnetRootVersion, $"dotnet --version and $DOTNET_ROOT/dotnet --version should return the same version for {shell}");
 
         if (expectedVersion != null)
         {
