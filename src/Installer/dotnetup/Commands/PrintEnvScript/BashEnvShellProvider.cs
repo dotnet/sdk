@@ -27,7 +27,7 @@ public class BashEnvShellProvider : IEnvShellProvider
             # Note: If you had a different dotnet in PATH before sourcing this script,
             # you may need to run 'hash -d dotnet' to clear the cached command location.
             # When dotnetup modifies shell profiles directly, it will handle this automatically.
-            
+
             export DOTNET_ROOT='{escapedPath}'
             export PATH='{escapedPath}':$PATH
             """;
