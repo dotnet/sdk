@@ -4,7 +4,6 @@
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>

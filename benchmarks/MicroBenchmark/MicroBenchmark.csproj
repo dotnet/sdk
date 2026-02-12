@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
 
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
     <NoWarn>$(NoWarn);CS8002</NoWarn>
