@@ -4,6 +4,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
     <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
     <EnableDefaultScopedCssItems>false</EnableDefaultScopedCssItems>
   </PropertyGroup>
 
