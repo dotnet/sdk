@@ -556,7 +556,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string ComputeTargetPath(string pathPrefix, char separator) => CombineNormalizedPaths(
             pathPrefix,
-            IsDiscovered() || IsComputed() ? "" : BasePath,
+            IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath,
             RelativePath, separator);
 
     public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
@@ -590,6 +590,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case SourceTypes.Computed:
             case SourceTypes.Project:
             case SourceTypes.Package:
+            case SourceTypes.Framework:
                 break;
             default:
                 throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
@@ -771,6 +772,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public bool IsPackage()
         => string.Equals(SourceType, SourceTypes.Package, StringComparison.Ordinal);
+
+    public bool IsFramework()
+        => string.Equals(SourceType, SourceTypes.Framework, StringComparison.Ordinal);
 
     public bool IsBuildOnly()
         => string.Equals(AssetKind, AssetKinds.Build, StringComparison.Ordinal);
@@ -1017,8 +1021,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         public const string Computed = nameof(Computed);
         public const string Project = nameof(Project);
         public const string Package = nameof(Package);
+        public const string Framework = nameof(Framework);
 
         public static bool IsPackage(string sourceType) => string.Equals(Package, sourceType, StringComparison.Ordinal);
+        public static bool IsFramework(string sourceType) => string.Equals(Framework, sourceType, StringComparison.Ordinal);
     }
 
     public static class AssetCopyOptions

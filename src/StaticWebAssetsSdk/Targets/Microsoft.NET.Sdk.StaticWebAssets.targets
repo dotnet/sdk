@@ -538,7 +538,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
   </Target>
-  
+
   <Target Name="_BuildCopyStaticWebAssetsIfDifferent"
     AfterTargets="_SplitStaticWebAssetsByCopyOptions">
 
@@ -741,10 +741,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets">
-    <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
+  <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <UpdatePackageStaticWebAssets
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+      ProjectPackageId="$(PackageId)"
+      ProjectBasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
+      <Output TaskParameter="MaterializedFrameworkAssets" ItemName="_MaterializedFrameworkAssets" />
+      <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
+      <Output TaskParameter="OriginalRemappedEndpoints" ItemName="_OriginalRemappedEndpoints" />
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
@@ -762,6 +771,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
+      <!-- Remap endpoints for materialized framework assets -->
+      <StaticWebAssetEndpoint Remove="@(_OriginalRemappedEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_RemappedFrameworkEndpoints)" />
     </ItemGroup>
 
   </Target>
