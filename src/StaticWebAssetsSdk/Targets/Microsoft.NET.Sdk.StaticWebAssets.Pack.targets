@@ -159,7 +159,8 @@ Copyright (c) .NET Foundation. All rights reserved.
      -->
     <GenerateStaticWebAssetsPropsFile
       StaticWebAssets="@(_PackStaticWebAssets)"
-      TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)" />
+      TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)"
+      FrameworkPattern="$(StaticWebAssetFrameworkPattern)" />
 
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props
         that describes the static web asset endpoints associated with the assets in the package.
