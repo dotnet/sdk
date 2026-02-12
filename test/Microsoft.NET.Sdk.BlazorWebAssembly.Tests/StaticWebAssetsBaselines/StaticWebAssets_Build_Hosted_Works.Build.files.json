@@ -141,6 +141,8 @@
   "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.FileSystem.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.ZipFile.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.ZipFile.wasm.gz",
+  "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.Zstandard.wasm",
+  "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.Zstandard.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.IO.Compression.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.IO.FileSystem.AccessControl.wasm",
