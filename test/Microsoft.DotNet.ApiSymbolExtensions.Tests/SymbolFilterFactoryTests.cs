@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using Xunit;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.CodeAnalysis;
 

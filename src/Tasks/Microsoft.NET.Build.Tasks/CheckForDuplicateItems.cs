@@ -8,6 +8,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class CheckForDuplicateItems : TaskBase
     {
         [Required]

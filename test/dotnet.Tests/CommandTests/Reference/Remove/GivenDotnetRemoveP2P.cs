@@ -17,7 +17,7 @@ Usage:
   dotnet remove <PROJECT | FILE> reference <PROJECT_PATH>... [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>    The paths to the referenced projects to remove.
 
 Options:
@@ -31,7 +31,7 @@ Options:
       dotnet remove <PROJECT | FILE> [command] [options]
     
     Arguments:
-      <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+      <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
     
     Options:
       -?, -h, --help    Show command line help.

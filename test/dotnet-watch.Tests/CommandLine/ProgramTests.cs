@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var program = Program.TryCreate(
                 TestOptions.GetCommandLineOptions(["--verbose"]),
                 console,
-                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
+                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
                 loggerFactory,
                 reporter,
                 out var errorCode);

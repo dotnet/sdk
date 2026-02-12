@@ -98,7 +98,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
         var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
-        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
         var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
 
         var program = Program.TryCreate(

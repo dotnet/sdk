@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
-                var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var runtimeJsonPathForTests = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
             }
 

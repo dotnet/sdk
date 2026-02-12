@@ -215,7 +215,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
                     _sdkFeatureBand,
+#if DOT_NET_BUILD_FROM_SOURCE
+                    _workloadInstaller,
+#else
                     _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+#endif
                     _sdkFeatureBand.IsPrerelease,
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
@@ -251,8 +255,8 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                 var currentWorkloadVersionInfo = _workloadResolver.GetWorkloadVersion();
                 if (resolvedWorkloadSetVersion != null && currentWorkloadVersionInfo.IsInstalled && !currentWorkloadVersionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
                 {
-                    var currentPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(currentWorkloadVersionInfo.Version, out var currentWorkloadSetSdkFeatureBand);
-                    var advertisedPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(resolvedWorkloadSetVersion, out var advertisedWorkloadSetSdkFeatureBand);
+                    var currentWorkloadSetSdkFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(currentWorkloadVersionInfo.Version, out var currentPackageVersion);
+                    var advertisedWorkloadSetSdkFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(resolvedWorkloadSetVersion, out var advertisedPackageVersion);
 
                     if (currentWorkloadSetSdkFeatureBand > advertisedWorkloadSetSdkFeatureBand ||
                         new NuGetVersion(currentPackageVersion) >= new NuGetVersion(advertisedPackageVersion))

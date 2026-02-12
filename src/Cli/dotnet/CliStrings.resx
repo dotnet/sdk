@@ -129,83 +129,23 @@
   <data name="ProjectReferenceRemoved" xml:space="preserve">
     <value>Project reference `{0}` removed.</value>
   </data>
-  <data name="Project" xml:space="preserve">
-    <value>Project</value>
-  </data>
-  <data name="Reference" xml:space="preserve">
-    <value>Reference</value>
-  </data>
-  <data name="ProjectReference" xml:space="preserve">
-    <value>Project reference</value>
-  </data>
   <data name="ProjectReferenceOneOrMore" xml:space="preserve">
     <value>Project reference(s)</value>
-  </data>
-  <data name="PackageReference" xml:space="preserve">
-    <value>Package reference</value>
   </data>
   <data name="P2P" xml:space="preserve">
     <value>Project to Project</value>
   </data>
-  <data name="Package" xml:space="preserve">
-    <value>Package</value>
-  </data>
-  <data name="Solution" xml:space="preserve">
-    <value>Solution</value>
-  </data>
-  <data name="Library" xml:space="preserve">
-    <value>Library</value>
-  </data>
   <data name="ReferenceAddedToTheProject" xml:space="preserve">
     <value>Reference `{0}` added to the project.</value>
   </data>
-  <data name="Add" xml:space="preserve">
-    <value>Add</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>Remove</value>
-  </data>
-  <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="Update" xml:space="preserve">
-    <value>Update</value>
-  </data>
-  <data name="New" xml:space="preserve">
-    <value>New</value>
-  </data>
-  <data name="List" xml:space="preserve">
-    <value>List</value>
-  </data>
-  <data name="Error" xml:space="preserve">
-    <value>Error</value>
-  </data>
-  <data name="File" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="Directory" xml:space="preserve">
-    <value>Directory</value>
-  </data>
-  <data name="Type" xml:space="preserve">
-    <value>Type</value>
-  </data>
-  <data name="Value" xml:space="preserve">
-    <value>Value</value>
-  </data>
   <data name="CommonFileNotFound" xml:space="preserve">
     <value>File `{0}` not found.</value>
-  </data>
-  <data name="SpecifyAtLeastOne" xml:space="preserve">
-    <value>Specify at least one {0}.</value>
   </data>
   <data name="RequiredCommandNotPassed" xml:space="preserve">
     <value>Required command was not provided.</value>
   </data>
   <data name="FoundInvalidProject" xml:space="preserve">
     <value>Found a project `{0}` but it is invalid.</value>
-  </data>
-  <data name="InvalidProject" xml:space="preserve">
-    <value>Invalid project `{0}`.</value>
   </data>
   <data name="InvalidProjectWithExceptionMessage" xml:space="preserve">
     <value>Invalid project `{0}`. {1}.</value>
@@ -252,9 +192,6 @@
   <data name="ProjectNotFoundInTheSolution" xml:space="preserve">
     <value>Project `{0}` could not be found in the solution.</value>
   </data>
-  <data name="ProjectRemoved" xml:space="preserve">
-    <value>Project `{0}` removed from solution.</value>
-  </data>
   <data name="SpecifyAtLeastOneProjectToRemove" xml:space="preserve">
     <value>You must specify at least one project to remove.</value>
   </data>
@@ -267,20 +204,8 @@
   <data name="ProjectArgumentName" xml:space="preserve">
     <value>PROJECT</value>
   </data>
-  <data name="ProjectOrFileArgumentName" xml:space="preserve">
-    <value>PROJECT | FILE</value>
-  </data>
   <data name="ProjectArgumentDescription" xml:space="preserve">
     <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
-  </data>
-  <data name="ProjectOrFileArgumentDescription" xml:space="preserve">
-    <value>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</value>
-  </data>
-  <data name="FileArgumentDescription" xml:space="preserve">
-    <value>The file-based app to operate on.</value>
-  </data>
-  <data name="CommonCmdFramework" xml:space="preserve">
-    <value>FRAMEWORK</value>
   </data>
   <data name="ProjectNotCompatibleWithFrameworks" xml:space="preserve">
     <value>Project `{0}` cannot be added due to incompatible targeted frameworks between the two projects. Review the project you are trying to add and verify that is compatible with the following targets:</value>
@@ -292,17 +217,8 @@
     <value>Project `{0}` could not be evaluated. Evaluation failed with following error:
 {1}.</value>
   </data>
-  <data name="VerbosityOptionDescription" xml:space="preserve">
-    <value>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
-  </data>
-  <data name="CmdVersionSuffixDescription" xml:space="preserve">
-    <value>Set the value of the $(VersionSuffix) property to use when building the project.</value>
-  </data>
   <data name="ShowHelpDescription" xml:space="preserve">
     <value>Show command line help.</value>
-  </data>
-  <data name="NoRestoreDescription" xml:space="preserve">
-    <value>Do not restore the project before building.</value>
   </data>
   <data name="ToolSettingsInvalidXml" xml:space="preserve">
     <value>Invalid XML: {0}</value>
@@ -455,38 +371,8 @@ setx PATH "%PATH%;{0}"
   <data name="FailedToFindLibraryInAssetsFile" xml:space="preserve">
     <value>Failed to find library in NuGet assets file for tool package '{0}': {1}</value>
   </data>
-  <data name="LevelArgumentName" xml:space="preserve">
-    <value>LEVEL</value>
-  </data>
-  <data name="FrameworkArgumentName" xml:space="preserve">
-    <value>FRAMEWORK</value>
-  </data>
-  <data name="RuntimeIdentifierArgumentName" xml:space="preserve">
-    <value>RUNTIME_IDENTIFIER</value>
-  </data>
-  <data name="ConfigurationArgumentName" xml:space="preserve">
-    <value>CONFIGURATION</value>
-  </data>
-  <data name="VersionSuffixArgumentName" xml:space="preserve">
-    <value>VERSION_SUFFIX</value>
-  </data>
-  <data name="SolutionOrProjectArgumentDescription" xml:space="preserve">
-    <value>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</value>
-  </data>
   <data name="SolutionOrProjectArgumentName" xml:space="preserve">
     <value>PROJECT | SOLUTION</value>
-  </data>
-  <data name="SolutionOrProjectOrFileArgumentDescription" xml:space="preserve">
-    <value>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</value>
-  </data>
-  <data name="SolutionOrProjectOrFileArgumentName" xml:space="preserve">
-    <value>PROJECT | SOLUTION | FILE</value>
-  </data>
-  <data name="CommandInteractiveOptionDescription" xml:space="preserve">
-    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
-  </data>
-  <data name="CommandPrereleaseOptionDescription" xml:space="preserve">
-    <value>Allows prerelease packages to be installed.</value>
   </data>
   <data name="SolutionArgumentMisplaced" xml:space="preserve">
     <value>Solution argument '{0}' is misplaced.</value>
@@ -494,65 +380,18 @@ setx PATH "%PATH%;{0}"
   <data name="DidYouMean" xml:space="preserve">
     <value>Did you mean the following command?</value>
   </data>
-  <data name="ArchitectureOptionDescription" xml:space="preserve">
-    <value>The target architecture.</value>
-  </data>
-  <data name="OperatingSystemOptionDescription" xml:space="preserve">
-    <value>The target operating system.</value>
-  </data>
-  <data name="CannotResolveRuntimeIdentifier" xml:space="preserve">
-    <value>Resolving the current runtime identifier failed.</value>
-  </data>
   <data name="CannotSpecifyBothRuntimeAndArchOptions" xml:space="preserve">
     <value>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</value>
   </data>
   <data name="CannotSpecifyBothRuntimeAndOsOptions" xml:space="preserve">
     <value>Specifying both the `-r|--runtime` and `-os` options is not supported.</value>
   </data>
-  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
-    <value>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</value>
-  </data>
-  <data name="CmdTestEnvironmentVariableDescription" xml:space="preserve">
-    <value>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</value>
-  </data>
-  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
-    <value>NAME="VALUE"</value>
-  </data>
   <data name="IncorrectlyFormattedEnvironmentVariables" xml:space="preserve">
     <value>Incorrectly formatted environment variables: {0}</value>
-  </data>
-  <data name="SelfContainedOptionDescription" xml:space="preserve">
-    <value>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</value>
-  </data>
-  <data name="FrameworkDependentOptionDescription" xml:space="preserve">
-    <value>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</value>
   </data>
   <data name="SelfContainAndNoSelfContainedConflict" xml:space="preserve">
     <value>The '--self-contained' and '--no-self-contained' options cannot be used together.</value>
     <comment>{Locked="--self-contained"}{Locked="--no-self-contained"}</comment>
-  </data>
-  <data name="DisableBuildServersOptionDescription" xml:space="preserve">
-    <value>Force the command to ignore any persistent build servers.</value>
   </data>
   <data name="ResponseFileNotFound" xml:space="preserve">
     <value>Response file '{0}' does not exist.</value>
@@ -563,18 +402,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="MSBuildAdditionalOptionTitle" xml:space="preserve">
     <value>.NET Cli Options:</value>
-  </data>
-  <data name="ArchArgumentName" xml:space="preserve">
-    <value>ARCH</value>
-  </data>
-  <data name="OSArgumentName" xml:space="preserve">
-    <value>OS</value>
-  </data>
-  <data name="ArtifactsPathOptionDescription" xml:space="preserve">
-    <value>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</value>
-  </data>
-  <data name="ArtifactsPathArgumentName" xml:space="preserve">
-    <value>ARTIFACTS_DIR</value>
   </data>
   <data name="UnrecognizedCommandOrArgument" xml:space="preserve">
     <value>Unrecognized command or argument '{0}'</value>
@@ -794,9 +621,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="UnableToGenerateDepsJson" xml:space="preserve">
     <value>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</value>
   </data>
-  <data name="UnableToLocateDotnetMultiplexer" xml:space="preserve">
-    <value>Unable to locate dotnet multiplexer</value>
-  </data>
   <data name="UnexpectedTypeInJson" xml:space="preserve">
     <value>Expected a {0} for property '{1}'.</value>
   </data>
@@ -816,24 +640,9 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
-  <data name="PackageIdentityArgumentDescription" xml:space="preserve">
-    <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
-  </data>
-  <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
-    <value>Package reference id and version must not be null.</value>
-  </data>
-  <data name="InvalidVersion" xml:space="preserve">
-    <value>Invalid version string: {0}</value>
-  </data>
   <data name="PackageIdentityArgumentVersionOptionConflict" xml:space="preserve">
     <value>Cannot specify --version when the package argument already contains a version.</value>
     <comment>{Locked="--version"}</comment>
-  </data>
-  <data name="YesOptionDescription" xml:space="preserve">
-    <value>Accept all confirmation prompts using "yes."</value>
-  </data>
-  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
-    <value>Display the command schema as JSON.</value>
   </data>
   <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
     <value>Only one .nuspec file can be packed at a time</value>

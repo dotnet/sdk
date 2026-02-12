@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly TestAssetsManager _testAssets = new(output);
 
         private static string MuxerPath
-            => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
+            => SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
         private static string InspectPath(string path, string rootDir)
             => path.Substring(rootDir.Length + 1).Replace("\\", "/");
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableContentFiles)
+        public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
         {
             var project = new TestProject("Project1")
             {
@@ -137,20 +137,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 },
                 AdditionalProperties =
                 {
-                    ["DotNetWatchContentFiles"] = enableContentFiles?.ToString() ?? "",
+                    ["DotNetWatchContentFiles"] = enableStaticWebAssets?.ToString() ?? "",
                 },
             };
 
-            var testAsset = _testAssets.CreateTestProject(project, identifier: enableContentFiles.ToString());
+            var testAsset = _testAssets.CreateTestProject(project, identifier: enableStaticWebAssets.ToString());
 
             await VerifyEvaluation(testAsset,
-                isWeb && enableContentFiles != false ?
+                isWeb && enableStaticWebAssets != false ?
                 [
                     new("Project1/Project1.csproj", targetsOnly: true),
                     new("Project1/Program.cs"),
-                    new("Project1/wwwroot/css/app.css", staticAssetUrl: "wwwroot/css/app.css"),
-                    new("Project1/wwwroot/js/site.js", staticAssetUrl: "wwwroot/js/site.js"),
-                    new("Project1/wwwroot/favicon.ico", staticAssetUrl: "wwwroot/favicon.ico"),
+                    new("Project1/wwwroot/css/app.css", staticAssetUrl: "css/app.css"),
+                    new("Project1/wwwroot/js/site.js", staticAssetUrl: "js/site.js"),
+                    new("Project1/wwwroot/favicon.ico", staticAssetUrl: "favicon.ico"),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
                 ] :
@@ -159,7 +159,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     new("Project1/Program.cs"),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                     new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
-                ]);
+                ],
+                suppressStaticWebAssets: enableStaticWebAssets == false);
         }
 
         [Fact]
@@ -207,9 +208,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 new($"Project1/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/Project1.AssemblyInfo.cs", graphOnly: true),
                 new("Project1/Program.cs"),
                 new("Project1/Project1.csproj", targetsOnly: true),
-                new("Project1/wwwroot/css/app.css", "wwwroot/css/app.css"),
-                new("Project1/wwwroot/favicon.ico", "wwwroot/favicon.ico"),
-                new("Project1/wwwroot/js/site.js", "wwwroot/js/site.js"),
+                new("Project1/wwwroot/css/app.css", "css/app.css"),
+                new("Project1/wwwroot/favicon.ico", "favicon.ico"),
+                new("Project1/wwwroot/js/site.js", "js/site.js"),
                 new("RCL/Code.cs"),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
@@ -221,8 +222,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 new("RCL/Page2.cshtml"),
                 new("RCL/Page2.cshtml.css"),
                 new("RCL/RCL.csproj", targetsOnly: true),
-                new("RCL/wwwroot/lib.css", "wwwroot/lib.css"),
-                new("RCL/wwwroot/lib.js", "wwwroot/lib.js"),
+                new("RCL/wwwroot/lib.css", "lib.css"),
+                new("RCL/wwwroot/lib.js", "lib.js"),
             ]);
         }
 
@@ -528,10 +529,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             public bool GraphOnly { get; } = graphOnly;
         }
 
-        private Task VerifyEvaluation(TestAsset testAsset, ExpectedFile[] expectedFiles)
-            => VerifyEvaluation(testAsset, targetFramework: null, expectedFiles);
+        private Task VerifyEvaluation(TestAsset testAsset, ExpectedFile[] expectedFiles, bool suppressStaticWebAssets = false)
+            => VerifyEvaluation(testAsset, targetFramework: null, expectedFiles, suppressStaticWebAssets);
 
-        private async Task VerifyEvaluation(TestAsset testAsset, string? targetFramework, ExpectedFile[] expectedFiles)
+        private async Task VerifyEvaluation(TestAsset testAsset, string? targetFramework, ExpectedFile[] expectedFiles, bool suppressStaticWebAssets = false)
         {
             var testDir = testAsset.Path;
             var rootProjectPath = GetTestProjectPath(testAsset);
@@ -563,6 +564,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
                 using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
+
+                if (suppressStaticWebAssets)
+                {
+                    watchableApp.EnvironmentVariables.Add("DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING", "1");
+                }
+
                 watchableApp.Start(testAsset, arguments, relativeProjectDirectory: testAsset.TestProject!.Name);
                 await watchableApp.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
@@ -576,7 +583,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 => Path.GetRelativePath(testDir, fullPath).Replace('\\', '/');
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> Inspect(IReadOnlyDictionary<string, FileItem> files)
-                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetPath)).OrderBy(f => f.relativePath);
+                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetRelativeUrl)).OrderBy(f => f.relativePath);
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> ParseOutput(IEnumerable<string> output)
             {

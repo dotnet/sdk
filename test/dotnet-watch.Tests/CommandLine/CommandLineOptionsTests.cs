@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([command]);
             var args = options.CommandArguments.ToList();
-            Assert.Equal(command, options.ExplicitCommand);
+            Assert.True(options.IsExplicitCommand);
             Assert.Equal(command, options.Command);
             Assert.Empty(args);
         }
@@ -517,7 +517,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public void ForwardedBuildOptions_ArtifactsPath()
         {
-            var path = TestContext.Current.TestAssetsDirectory;
+            var path = SdkTestContext.Current.TestAssetsDirectory;
 
             var args = new[] { "--artifacts-path", path };
             var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };

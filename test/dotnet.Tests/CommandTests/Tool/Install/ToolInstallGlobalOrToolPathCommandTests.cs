@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -74,7 +75,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     _fileSystem);
             _toolPackageUninstallerMock = new ToolPackageUninstallerMock(_fileSystem, store);
             _toolPackageDownloader = new ToolPackageDownloaderMock2(_toolPackageStore,
-                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                 currentWorkingDirectory: null,
                 fileSystem: _fileSystem);
 
@@ -605,7 +606,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = TestAssetsManager.CreateTestDirectory().Path;
-            var ridGraphPath = TestContext.GetRuntimeGraphFilePath();
+            var ridGraphPath = SdkTestContext.GetRuntimeGraphFilePath();
 
             var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(Parser.Parse($"dotnet tool install -g {UnlistedPackageId} --version {version} --add-source {nugetSourcePath}"),
                 createToolPackageStoreDownloaderUninstaller: (nonGlobalLocation, _, _) =>
@@ -618,7 +619,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     return (toolPackageStore, toolPackageStore, toolPackageDownloader, toolPackageUninstaller);
                 },
                 createShellShimRepository: _createShellShimRepository,
-                nugetPackageDownloader: new NuGetPackageDownloader(new DirectoryPath(PathUtilities.CreateTempSubdirectory()), verifySignatures: false, currentWorkingDirectory: testDir),
+                nugetPackageDownloader: new NuGetPackageDownloader(new DirectoryPath(TemporaryDirectory.CreateSubdirectory()), verifySignatures: false, currentWorkingDirectory: testDir),
                 currentWorkingDirectory: testDir,
                 verifySignatures: false);
 

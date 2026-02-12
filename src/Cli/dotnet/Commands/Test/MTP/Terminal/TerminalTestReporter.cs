@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;

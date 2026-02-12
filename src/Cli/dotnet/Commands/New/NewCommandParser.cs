@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
@@ -24,65 +24,29 @@ namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class NewCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-new";
-    public const string CommandName = "new";
     private const string EnableProjectContextEvaluationEnvVarName = "DOTNET_CLI_DISABLE_PROJECT_EVAL";
     private const string PrefferedLangEnvVarName = "DOTNET_NEW_PREFERRED_LANG";
 
     private const string HostIdentifier = "dotnetcli";
 
-    private const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
-
-    private static readonly Option<bool> s_disableSdkTemplatesOption = new Option<bool>("--debug:disable-sdk-templates")
+    public static Command ConfigureCommand(NewCommandDefinition definition)
     {
-        DefaultValueFactory = static _ => false,
-        Description = CliCommandStrings.DisableSdkTemplates_OptionDescription,
-        Recursive = true
-    }.Hide();
+        return NewCommandFactory.Create(GetEngineHost, definition);
 
-    private static readonly Option<bool> s_disableProjectContextEvaluationOption = new Option<bool>(
-        "--debug:disable-project-context")
-    {
-        DefaultValueFactory = static _ => false,
-        Description = CliCommandStrings.DisableProjectContextEval_OptionDescription,
-        Recursive = true
-    }.Hide();
-
-    private static readonly Option<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
-    {
-        DefaultValueFactory = _ => DefaultVerbosity,
-        Description = CliCommandStrings.Verbosity_OptionDescription,
-        HelpName = CliStrings.LevelArgumentName,
-        Recursive = true
-    };
-
-    private static readonly Option<bool> s_diagnosticOption =
-        CommonOptionsFactory
-            .CreateDiagnosticsOption(recursive: true)
-            .WithDescription(CliCommandStrings.Diagnostics_OptionDescription);
-
-    internal static readonly Command s_command = GetCommand();
-
-    public static Command GetCommand()
-    {
-        Command command = NewCommandFactory.Create((Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
-        command.Options.Add(s_disableSdkTemplatesOption);
-        command.Options.Add(s_disableProjectContextEvaluationOption);
-        command.Options.Add(s_verbosityOption);
-        command.Options.Add(s_diagnosticOption);
-        return command;
-
-        static CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
+        CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
         {
-            bool disableSdkTemplates = parseResult.GetValue(s_disableSdkTemplatesOption);
-            bool disableProjectContext = parseResult.GetValue(s_disableProjectContextEvaluationOption)
-                || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVarName);
-            bool diagnosticMode = parseResult.GetValue(s_diagnosticOption);
-            FileInfo? projectPath = parseResult.GetValue(SharedOptions.ProjectPathOption);
-            FileInfo? outputPath = parseResult.GetValue(SharedOptions.OutputOption);
+            var disableSdkTemplates = parseResult.GetValue(definition.DisableSdkTemplatesOption);
 
-            OptionResult? verbosityOptionResult = parseResult.GetResult(s_verbosityOption);
-            VerbosityOptions verbosity = DefaultVerbosity;
+            var disableProjectContext = parseResult.GetValue(definition.DisableProjectContextEvaluationOption)
+                || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVarName);
+
+            var diagnosticMode = parseResult.GetValue(definition.DiagnosticOption);
+            var isInteractive = parseResult.HasOption(definition.LegacyOptions.InteractiveOption);
+            var projectPath = parseResult.GetValue(definition.InstantiateOptions.ProjectOption);
+            var outputPath = parseResult.GetValue(definition.InstantiateOptions.OutputOption);
+
+            var verbosityOptionResult = parseResult.GetResult(definition.VerbosityOption);
+            var verbosity = NewCommandDefinition.DefaultVerbosity;
 
             if (diagnosticMode || CommandLoggingContext.IsVerbose)
             {
@@ -119,7 +83,7 @@ internal static class NewCommandParser
                 verbosity = userSetVerbosity;
             }
             Reporter.Reset();
-            return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, parseResult, verbosity.ToLogLevel());
+            return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, isInteractive, verbosity.ToLogLevel());
         }
     }
 
@@ -128,7 +92,7 @@ internal static class NewCommandParser
         bool disableProjectContext,
         FileInfo? projectPath,
         FileInfo? outputPath,
-        ParseResult parseResult,
+        bool isInteractive,
         LogLevel logLevel)
     {
         var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
@@ -157,7 +121,7 @@ internal static class NewCommandParser
         }
 
         builtIns.Add((typeof(IWorkloadsInfoProvider), new WorkloadsInfoProvider(
-                new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper(parseResult.HasOption(SharedOptions.InteractiveOption)))))
+                new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper(isInteractive))))
         );
         builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 

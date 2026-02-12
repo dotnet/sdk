@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -145,7 +146,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
             var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
 
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
         else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {
@@ -171,7 +172,9 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback,
                 WorkloadCommandDefinitionBase.SkipManifestUpdateOptionName, Definition.FromRollbackFileOption.Name), isUserError: true);
         }
-        else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionOnCommandLine)
+        else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionOnCommandLine &&
+            !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
+                                //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndVersion,
                 WorkloadCommandDefinitionBase.SkipManifestUpdateOptionName, Definition.SdkVersionOption.Name), isUserError: true);
@@ -353,3 +356,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }.Run(context => a(context));
     }
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IEnumerable<string>))]
+internal partial class WorkloadInstallJsonSerializerContext : JsonSerializerContext;

@@ -6,8 +6,6 @@
 namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
-using Xunit;
-using Xunit.Abstractions;
 
 public class BashShellProviderTests(ITestOutputHelper log)
 {

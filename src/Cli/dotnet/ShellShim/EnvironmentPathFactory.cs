@@ -65,6 +65,7 @@ internal static class EnvironmentPathFactory
                 environmentProvider: environmentProvider);
         }
 
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (OperatingSystem.IsWindows())
         {
             return new WindowsEnvironmentPath(
@@ -74,6 +75,7 @@ internal static class EnvironmentPathFactory
                 environmentPathEditor: new WindowsRegistryEnvironmentPathEditor(),
                 reporter: Reporter.Output);
         }
+#endif
 
         return CreateEnvironmentPath(true, environmentProvider);
     }
