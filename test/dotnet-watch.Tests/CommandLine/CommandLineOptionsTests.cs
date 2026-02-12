@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([command]);
             var args = options.CommandArguments.ToList();
-            Assert.Equal(command, options.ExplicitCommand);
+            Assert.True(options.IsExplicitCommand);
             Assert.Equal(command, options.Command);
             Assert.Empty(args);
         }

@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class UninstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseUninstallCommand(hostBuilder, CommandDefinition.Uninstall.Command)
+    internal sealed class UninstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewUninstallCommandDefinition definition)
+        : BaseUninstallCommand(hostBuilder, definition)
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             UninstallCommandArgs args,
