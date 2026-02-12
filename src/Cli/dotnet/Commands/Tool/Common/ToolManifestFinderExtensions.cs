@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -12,9 +10,9 @@ namespace Microsoft.DotNet.Cli.Commands.Tool;
 
 internal static class ToolManifestFinderExtensions
 {
-    public static (FilePath? filePath, string warningMessage) ExplicitManifestOrFindManifestContainPackageId(
+    public static (FilePath? filePath, string? warningMessage) ExplicitManifestOrFindManifestContainPackageId(
         this IToolManifestFinder toolManifestFinder,
-        string explicitManifestFile,
+        string? explicitManifestFile,
         PackageId packageId,
         bool throwIfNoManifestFound = true)
     {
@@ -39,7 +37,7 @@ internal static class ToolManifestFinderExtensions
 
         if (manifestFilesContainPackageId.Any())
         {
-            string warning = null;
+            string? warning = null;
             if (manifestFilesContainPackageId.Count > 1)
             {
                 warning =

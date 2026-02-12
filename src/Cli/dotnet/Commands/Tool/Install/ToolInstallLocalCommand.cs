@@ -102,7 +102,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
     private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
     {
-        (FilePath? manifestFileOptional, string warningMessage) =
+        (FilePath? manifestFileOptional, string? warningMessage) =
             _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, packageId, throwIfNoManifestFound: false);
 
         if (warningMessage != null)
