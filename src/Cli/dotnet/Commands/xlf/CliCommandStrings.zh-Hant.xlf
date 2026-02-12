@@ -226,7 +226,7 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">使用 MSBuild 取得專案屬性時未正確執行，結束代碼為: {0}。</target>
+        <target state="new">Build failed with exit code: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -448,7 +448,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="translated">使用 RunCommand '{0}' 和 RunArguments '{1}' 執行測試模組時，發生以下例外狀況:
+        <target state="translated">使用 RunCommand '{0}' 和 RunArguments '{1}' 執行測試模組時，發生以下例外狀況: 
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -922,7 +922,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">未安裝任何工作負載，沒有要修復的項目。請執行 `dotnet workload search` 以尋找要安裝的工作負載。</target>
+        <target state="translated">未安裝任何工作負載，沒有要修復的項目。請執行 `dotnet workload search` 以尋找要安裝的工作負載。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1239,7 +1239,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">指定輸出目錄 ({0}):</target>
+        <target state="translated">請指定輸出目錄 (按 Enter 鍵以使用預設值: '{0}'，目錄必須不存在):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1354,7 +1354,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">可用的目標架構:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1374,7 +1374,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">範例</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1392,7 +1392,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">無法使用啟動設定檔 '{0}'，因為找不到啟動設定檔檔案。嘗試的位置:
+        <target state="translated">無法使用啟動設定檔 '{0}'，因為找不到啟動設定檔檔案。嘗試的位置: 
 {1}</target>
         <note />
       </trans-unit>
@@ -1411,10 +1411,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">無法執行您的專案。
-請確定您有可執行的專案類型，並確定 '{0}' 支援此專案。
-可執行的專案應以可執行的 TFM (例如 net5.0) 為目標，且 OutputType 應為 'Exe'。
-目前的 {1} 為 '{2}'。</target>
+        <target state="translated">無法繼續處理專案 '{0}'。
+請確定您有可執行的專案類型。
+可執行的專案應以可執行的 TFM (例如 net{1}) 為目標，且 OutputType 應為 'Exe'。
+目前的 OutputType 為 '{2}'。</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
@@ -1436,7 +1436,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上下移動以顯示更多的架構</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -1451,7 +1451,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">要搜尋的類型</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -1461,7 +1461,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">選取要執行的目標架構:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
