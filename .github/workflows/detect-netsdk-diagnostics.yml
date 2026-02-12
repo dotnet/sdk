@@ -59,7 +59,7 @@ jobs:
           # Get diff of .xlf files changed by this PR.
           # Use three-dot diff (merge-base) so that only the PR's changes are included,
           # not unrelated changes on the target branch that the PR hasn't been rebased onto.
-          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf')
+          DIFF_OUTPUT=$(git diff -U0 ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf')
           
           # Use multiline output for step outputs
           # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
