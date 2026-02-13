@@ -502,13 +502,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     Gathers all the files that need to be copied to the publish directory, including R2R and ILLinker transformations
     ============================================================
     -->
+  <PropertyGroup>
+    <_ComputeFilesToPublishDependsOn>
+      $(_ComputeFilesToPublishDependsOn);
+      PrepareForPublish;
+      ComputeResolvedFilesToPublishList;
+      ILLink;
+      NativeCompile;
+      CreateReadyToRunImages;
+      GeneratePublishDependencyFile;
+      GenerateSingleFileBundle;
+    </_ComputeFilesToPublishDependsOn>
+  </PropertyGroup>
+
   <Target Name="ComputeFilesToPublish"
-          DependsOnTargets="PrepareForPublish;
-                            ComputeResolvedFilesToPublishList;
-                            ILLink;
-                            CreateReadyToRunImages;
-                            GeneratePublishDependencyFile;
-                            GenerateSingleFileBundle">
+          DependsOnTargets="$(_ComputeFilesToPublishDependsOn)">
   </Target>
 
   <!--
@@ -521,6 +529,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="ILLink" />
+
+  <!--
+    ============================================================
+                                        NativeCompile
+
+    Initially an empty placeholder target. When AOT compiling, this
+    will be redefined to perform native compilation of the app.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    =========================================================
+  -->
+  <Target Name="NativeCompile" />
 
   <PropertyGroup>
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>
