@@ -25,12 +25,15 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
 {
     private readonly ClientWebSocket _webSocket = new();
 
-    // Buffer for receiving messages - WebSocket messages need to be read completely
+    // Buffers for WebSocket messages - reused across calls to avoid allocations.
+    // SendAsync is invoked under a lock after the first message, so _sendBuffer is safe to reuse.
+    private MemoryStream? _sendBuffer;
     private MemoryStream? _receiveBuffer;
 
     public override void Dispose()
     {
         _webSocket.Dispose();
+        _sendBuffer?.Dispose();
         _receiveBuffer?.Dispose();
     }
 
@@ -64,22 +67,23 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             }
         }
 
-        // Serialize the response to a buffer
-        using var buffer = new MemoryStream();
+        // Serialize the response to a reusable buffer
+        _sendBuffer ??= new MemoryStream();
+        _sendBuffer.SetLength(0);
 
         // Write response type prefix (except for InitializationResponse which doesn't need it)
         if (response.Type != ResponseType.InitializationResponse)
         {
-            await buffer.WriteAsync((byte)response.Type, cancellationToken);
+            await _sendBuffer.WriteAsync((byte)response.Type, cancellationToken);
         }
 
-        await response.WriteAsync(buffer, cancellationToken);
+        await response.WriteAsync(_sendBuffer, cancellationToken);
 
-        Log($"Sending {response.Type} ({buffer.Length} bytes)");
+        Log($"Sending {response.Type} ({_sendBuffer.Length} bytes)");
 
         // Send as binary WebSocket message
         await _webSocket.SendAsync(
-            new ArraySegment<byte>(buffer.GetBuffer(), 0, (int)buffer.Length),
+            new ArraySegment<byte>(_sendBuffer.GetBuffer(), 0, (int)_sendBuffer.Length),
             WebSocketMessageType.Binary,
             endOfMessage: true,
             cancellationToken);
@@ -95,7 +99,6 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
         // Read the complete WebSocket message into a buffer
         _receiveBuffer ??= new MemoryStream();
         _receiveBuffer.SetLength(0);
-        _receiveBuffer.Position = 0;
 
         var buffer = ArrayPool<byte>.Shared.Rent(4096);
         try

@@ -23,6 +23,10 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
 {
     private readonly AgentWebSocketServer _server = new(logger);
 
+    // Reused across WriteAsync calls to avoid allocations.
+    // WriteAsync is invoked under a semaphore in DefaultHotReloadClient.
+    private MemoryStream? _sendBuffer;
+
     /// <summary>
     /// The bound port number, for testing. Only valid after server has started.
     /// </summary>
@@ -81,16 +85,18 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
 
     public override async ValueTask WriteAsync(byte type, Func<Stream, CancellationToken, ValueTask>? writePayload, CancellationToken cancellationToken)
     {
-        // Serialize the complete message to a buffer, then send as a single WebSocket message
-        using var buffer = new MemoryStream();
-        await buffer.WriteAsync(type, cancellationToken);
+        // Serialize the complete message to a reusable buffer, then send as a single WebSocket message
+        _sendBuffer ??= new MemoryStream();
+        _sendBuffer.SetLength(0);
+
+        await _sendBuffer.WriteAsync(type, cancellationToken);
 
         if (writePayload != null)
         {
-            await writePayload(buffer, cancellationToken);
+            await writePayload(_sendBuffer, cancellationToken);
         }
 
-        await _server.SendMessageAsync(new ArraySegment<byte>(buffer.GetBuffer(), 0, (int)buffer.Length), cancellationToken);
+        await _server.SendMessageAsync(new ArraySegment<byte>(_sendBuffer.GetBuffer(), 0, (int)_sendBuffer.Length), cancellationToken);
     }
 
     public override async ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
@@ -110,6 +116,7 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
     public override void Dispose()
     {
         logger.LogDebug("Disposing agent websocket transport");
+        _sendBuffer?.Dispose();
         _server.Dispose();
     }
 }
