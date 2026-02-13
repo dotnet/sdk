@@ -226,7 +226,7 @@ Durchsuchte Pfade: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">Das Abrufen von Projekteigenschaften mit MSBuild wurde nicht ordnungsgemäß ausgeführt. Exitcode: {0}.</target>
+        <target state="new">Build failed with exit code: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -922,7 +922,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
+        <target state="translated">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1239,7 +1239,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Ausgabeverzeichnis ({0}) angeben:</target>
+        <target state="translated">Geben Sie das Ausgabeverzeichnis an (drücken Sie die EINGABETASTE, um die Standardeinstellung zu verwenden: „{0}“, das Verzeichnis darf nicht vorhanden sein):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1354,7 +1354,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">Verfügbare Zielframeworks:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1374,7 +1374,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">Beispiel</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1411,10 +1411,10 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Ihr Projekt kann nicht ausgeführt werden.
-Stellen Sie sicher, dass der Projekttyp ausführbar ist und "{0}" dieses Projekt unterstützt.
-Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den OutputType "Exe" verwenden.
-{1} lautet aktuell "{2}".</target>
+        <target state="translated">Ihr Projekt „{0}“ kann nicht fortgesetzt werden.
+Stellen Sie sicher, dass der Projekttyp ausführbar ist.
+Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net{1}) und den OutputType „Exe“ verwenden.
+Der aktuelle OutputType lautet „{2}“.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
@@ -1436,7 +1436,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Nach oben und unten bewegen, um weitere Frameworks anzuzeigen</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -1451,7 +1451,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Zum Suchen eingeben</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -1461,7 +1461,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Wählen Sie das auszuführende Zielframework aus:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

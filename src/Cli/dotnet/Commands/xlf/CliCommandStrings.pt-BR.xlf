@@ -226,7 +226,7 @@ Caminhos pesquisados: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">As propriedades de obtenção de projetos com o MSBuild não foram executadas corretamente com o código de saída: {0}.</target>
+        <target state="new">Build failed with exit code: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -922,7 +922,7 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">Nenhuma carga de trabalho instalada, nada para reparar. Execute a 'pesquisa de carga de trabalho dotnet' para encontrar cargas de trabalho a serem instaladas.</target>
+        <target state="translated">Nenhuma carga de trabalho instalada, nada para reparar. Execute a 'pesquisa de carga de trabalho dotnet' para encontrar cargas de trabalho a serem instaladas.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1239,7 +1239,7 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Especificar o diretório de saída ({0}):</target>
+        <target state="translated">Especifique o diretório de saída (pressione Enter para o padrão: '{0}', o diretório não deve existir):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1354,7 +1354,7 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">Estruturas de destino disponíveis:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1374,7 +1374,7 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">Exemplo</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1411,10 +1411,10 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Não é possível executar o projeto.
-Verifique se você tem um tipo de projeto executável e se '{0}' dá suporte a esse projeto.
-Um projeto executável deve ter como destino um TFM executável (por exemplo, o net5.0) e ter o OutputType 'Exe'.
-O {1} atual é '{2}'.</target>
+        <target state="translated">Não é possível continuar com o projeto "{0}".
+Verifique se você tem um tipo de projeto executável.
+Um projeto executável deve ter como destino um TFM executável (por exemplo, net{1}) e ter OutputType "Exe".
+O OutputType atual é "{2}".</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
@@ -1436,7 +1436,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Mover para cima e para baixo para ver mais estruturas</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -1451,7 +1451,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Digite para pesquisar</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -1461,7 +1461,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Selecione a estrutura de destino para executar:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
