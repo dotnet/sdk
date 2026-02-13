@@ -73,8 +73,53 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
-        <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="translated">Оценка этого аргумента может быть ресурсоемкой и ненужной, если ведение журнала отключено</target>
+        <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
+        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
+        <source>anonymous object creation</source>
+        <target state="new">anonymous object creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation">
+        <source>array creation</source>
+        <target state="new">array creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression">
+        <source>await expression</source>
+        <target state="new">await expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion">
+        <source>boxing conversion</source>
+        <target state="new">boxing conversion</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression">
+        <source>collection expression</source>
+        <target state="new">collection expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation">
+        <source>method invocation</source>
+        <target state="new">method invocation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation">
+        <source>object creation</source>
+        <target state="new">object creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation">
+        <source>string interpolation</source>
+        <target state="new">string interpolation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression">
+        <source>with expression</source>
+        <target state="new">with expression</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
