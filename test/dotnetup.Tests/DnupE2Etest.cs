@@ -190,10 +190,18 @@ public class InstallEndToEndTests
 
             static string Escape(string s) => s.Replace("'", "'\\''");
 
+            // Use a temp file to capture dotnetup output instead of process substitution.
+            // Process substitution failures are silently ignored by `source`, making
+            // debugging impossible when dotnetup can't find its runtime.
+            string envScriptOutput = Path.Combine(tempRoot, $"dotnetup-env-{shell}.sh");
+
             scriptPath = Path.Combine(tempRoot, $"test-env-{shell}.sh");
             scriptContent = $@"#!/bin/{shell}
 set -e
-source <('{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}')
+# Generate env script to a file (errors will be caught by set -e)
+'{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}' > '{Escape(envScriptOutput)}'
+# Source the generated env script
+source '{Escape(envScriptOutput)}'
 # Clear cached dotnet path to ensure we use the newly configured PATH
 hash -d dotnet 2>/dev/null || true
 # Capture versions into variables first to avoid nested quoting issues on macOS bash 3.2
@@ -244,6 +252,17 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.WorkingDirectory = tempRoot;
+
+        // output which is a framework-dependent AppHost. Ensure DOTNET_ROOT is set so
+        // the AppHost can locate the runtime. On CI each script step gets a fresh shell,
+        // so DOTNET_ROOT from the restore step isn't inherited. The env script sourced
+        // later in the test will overwrite DOTNET_ROOT with the test install path.
+        string? currentDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
+            ?? (Environment.ProcessPath is string processPath ? Path.GetDirectoryName(processPath) : null);
+        if (currentDotnetRoot != null)
+        {
+            process.StartInfo.Environment["DOTNET_ROOT"] = currentDotnetRoot;
+        }
 
         var outputBuilder = new StringBuilder();
         var errorBuilder = new StringBuilder();
