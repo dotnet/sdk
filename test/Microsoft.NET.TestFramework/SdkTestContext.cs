@@ -204,9 +204,10 @@ namespace Microsoft.NET.TestFramework
             SdkTestContext testContext = new();
 
             string basePath = Path.Combine(AppContext.BaseDirectory, "TestAssets");
+            string? envTestAssetsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
             testContext.TestAssetsDirectory =
                 (Directory.Exists(basePath) ? basePath : null)
-                ?? Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")
+                ?? (!string.IsNullOrEmpty(envTestAssetsDir) ? envTestAssetsDir : null)
                 ?? FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
 
             string? repoRoot = null;
@@ -225,9 +226,10 @@ namespace Microsoft.NET.TestFramework
                 repoRoot = GetRepoRoot();
             }
 
+            string? envTestExecDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
             testContext.TestExecutionDirectory =
                 commandLine.TestExecutionDirectory
-                ?? Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY")
+                ?? (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
                 ?? Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory)!, "tmp", repoConfiguration, "testing");
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);
