@@ -79,6 +79,8 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
       ubuntu2204DebPkg:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+      sourceBuildManagedContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -88,9 +90,6 @@ extends:
         componentgovernance:
           # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
           ignoreDirectories: artifacts, .packages
-    containers:
-      sourceBuildManagedContainer:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 
     stages:
     ############### BUILD STAGE ###############
