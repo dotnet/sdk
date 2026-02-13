@@ -22,6 +22,11 @@
     <TestRunnerName>XUnitV3</TestRunnerName>
     <OutputType Condition="'$(IsTestProject)' != 'false'">Exe</OutputType>
 
+    <!-- Disable arcade's explicit MTP 2.x package references. The repo's dependency flow
+         has MTP at 2.x which is incompatible with xunit.v3's bundled MTP 1.x runner.
+         Let xunit.v3 use its own MTP 1.x dependency instead. -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+
     <DebugType>embedded</DebugType>
 
     <!-- Don't generate separate symbol packages for the test packages -->

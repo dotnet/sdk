@@ -145,6 +145,7 @@
     <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.9.3" />
     <PackageVersion Include="xunit.v3.assert" Version="$(XUnitV3Version)" Condition="'$(IsTestProject)' != 'true'" />
+
   </ItemGroup>
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
        .NET Framework (VS) or only in the .NET SDK.
