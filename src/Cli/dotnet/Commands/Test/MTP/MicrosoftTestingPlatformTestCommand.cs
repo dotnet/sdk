@@ -70,10 +70,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             // be slowing us down unnecessarily.
             // Alternatively, if we can enqueue right after every project evaluation without waiting all evaluations to be done, we can enqueue early.
             actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
-            if (!msBuildHandler.EnqueueTestApplications(actionQueue))
-            {
-                return ExitCode.GenericFailure;
-            }
+            msBuildHandler.EnqueueTestApplications(actionQueue);
         }
 
         actionQueue.EnqueueCompleted();

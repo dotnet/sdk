@@ -237,6 +237,5 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = rootCommand.Parse("dotnet new install source");
             Assert.Equal("dotnet new install my-source", Example.For<NewCommand>(parseResult).WithSubcommand<InstallCommand>().WithArguments("my-source"));
         }
-
     }
 }

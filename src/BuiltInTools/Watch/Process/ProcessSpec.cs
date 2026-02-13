@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 namespace Microsoft.DotNet.Watch
 {
     internal sealed class ProcessSpec
@@ -14,10 +13,10 @@ namespace Microsoft.DotNet.Watch
         public Action<OutputLine>? OnOutput { get; set; }
         public ProcessExitAction? OnExit { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
-        public bool UseShellExecute { get; set; } = false;
+        public bool UseShellExecute { get; set; }
 
         /// <summary>
-        /// True if the process is a user application, false if it is a helper process (e.g. dotnet build).</param>
+        /// True if the process is a user application, false if it is a helper process (e.g. dotnet build).
         /// </summary>
         public bool IsUserApplication { get; set; }
 

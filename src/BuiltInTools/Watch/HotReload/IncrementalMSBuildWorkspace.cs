@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.HotReload.Api;
 using Microsoft.CodeAnalysis.Host.Mef;
@@ -76,7 +77,7 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
                 continue;
             }
 
-            newSolution = HotReloadService.WithProjectInfo(newSolution, ProjectInfo.Create(
+            newSolution = HotReloadService.WithProjectInfo(newSolution, WithChecksumAlgorithm(ProjectInfo.Create(
                 oldProjectId,
                 newProjectInfo.Version,
                 newProjectInfo.Name,
@@ -93,7 +94,8 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
                 MapDocuments(oldProjectId, newProjectInfo.AdditionalDocuments),
                 isSubmission: false,
                 hostObjectType: null,
-                outputRefFilePath: newProjectInfo.OutputRefFilePath)
+                outputRefFilePath: newProjectInfo.OutputRefFilePath),
+                GetChecksumAlgorithm(newProjectInfo))
                 .WithAnalyzerConfigDocuments(MapDocuments(oldProjectId, newProjectInfo.AnalyzerConfigDocuments))
                 .WithCompilationOutputInfo(newProjectInfo.CompilationOutputInfo));
         }
@@ -121,6 +123,20 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
                 return docInfo.WithId(mappedDocumentId);
             }).ToImmutableArray();
     }
+
+    // TODO: remove
+    // workaround for https://github.com/dotnet/roslyn/pull/82051
+
+    private static MethodInfo? s_withChecksumAlgorithm;
+    private static PropertyInfo? s_getChecksumAlgorithm;
+
+    private static ProjectInfo WithChecksumAlgorithm(ProjectInfo info, SourceHashAlgorithm algorithm)
+        => (ProjectInfo)(s_withChecksumAlgorithm ??= typeof(ProjectInfo).GetMethod("WithChecksumAlgorithm", BindingFlags.NonPublic | BindingFlags.Instance)!)
+            .Invoke(info, [algorithm])!;
+
+    private static SourceHashAlgorithm GetChecksumAlgorithm(ProjectInfo info)
+        => (SourceHashAlgorithm)(s_getChecksumAlgorithm ??= typeof(ProjectInfo).GetProperty("ChecksumAlgorithm", BindingFlags.NonPublic | BindingFlags.Instance)!)
+            .GetValue(info)!;
 
     public async ValueTask UpdateFileContentAsync(IEnumerable<ChangedFile> changedFiles, CancellationToken cancellationToken)
     {

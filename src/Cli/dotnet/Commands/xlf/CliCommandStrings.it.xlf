@@ -92,6 +92,11 @@
         <target state="translated">Generatore .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
         <target state="new">The device identifier to use for running the application.</target>
@@ -569,8 +574,8 @@ Equivale a eliminare project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">Il recupero delle proprietà dei progetti con MSBuild non è stato eseguito correttamente, con il codice di uscita: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">Il recupero delle proprietà dei progetti con MSBuild non è stato eseguito correttamente, con il codice di uscita: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -2987,6 +2992,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">Non è possibile usare contemporaneamente le opzioni --solution-folder e --in-root. Usare una sola delle opzioni.</target>
@@ -4039,6 +4049,11 @@ Per visualizzare un valore, specifica l'opzione della riga di comando corrispond
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Una versione del carico di lavoro da visualizzare oppure uno o più carichi di lavoro e le relative versioni unite dal carattere '@'.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">Nella versione {0} del set di carichi di lavoro mancano alcuni file manifesto, probabilmente rimossi da Gestione pacchetti. Eseguire "dotnet workload repair" per risolvere il problema.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

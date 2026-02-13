@@ -83,6 +83,7 @@
     <MicrosoftBclAsyncInterfacesToolsetPackageVersion>9.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
     <MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>2.0.0-preview.1.24427.4</MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>
     <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
     <SystemCollectionsImmutableToolsetPackageVersion>9.0.0</SystemCollectionsImmutableToolsetPackageVersion>
     <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>

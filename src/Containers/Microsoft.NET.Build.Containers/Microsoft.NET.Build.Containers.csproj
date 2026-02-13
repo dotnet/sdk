@@ -85,7 +85,6 @@
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
     <Compile Remove="netframeworkDefinitions.cs" />
-    <Compile Remove="VSHostObject.cs" />
   </ItemGroup>
 
   <ItemGroup>

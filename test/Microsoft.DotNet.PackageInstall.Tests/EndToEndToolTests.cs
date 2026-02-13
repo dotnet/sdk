@@ -268,8 +268,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.Satisfy<string>(SupportAllOfTheseRuntimes([.. expectedRids, "any"]));
         }
 
-        [Fact]
-        public void InstallAndRunToolFromAnyRid()
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
+        public void InstallAndRunToolFromAnyRid(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
             {
@@ -284,7 +286,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -292,8 +299,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [Fact]
-        public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible()
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
+        public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
             {
@@ -312,7 +321,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()

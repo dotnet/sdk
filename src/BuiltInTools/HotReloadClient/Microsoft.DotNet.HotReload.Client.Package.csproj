@@ -39,6 +39,7 @@
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="$(MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" VersionOverride="$(MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">

@@ -376,4 +376,135 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"Device: {deviceId}")
             .And.HaveStdOutContaining($"RuntimeIdentifier: {rid}");
     }
+
+    [Fact]
+    public void ItPassesEnvironmentVariablesToTargets()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
+        string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId, 
+                     "-e", "FOO=BAR", "-e", "ANOTHER=VALUE",
+                     "-bl");
+
+        result.Should().Pass();
+
+        // Verify the binlog files were created
+        File.Exists(buildBinlogPath).Should().BeTrue("the build binlog file should be created");
+        File.Exists(runBinlogPath).Should().BeTrue("the run binlog file should be created");
+
+        // Verify environment variables were passed to Build target (out-of-process build)
+        AssertTargetInBinlog(buildBinlogPath, "_LogRuntimeEnvironmentVariableDuringBuild",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("_LogRuntimeEnvironmentVariableDuringBuild target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("Build: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the Build target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify environment variables were passed to ComputeRunArguments target (in-process)
+        AssertTargetInBinlog(runBinlogPath, "_LogRuntimeEnvironmentVariableDuringComputeRunArguments",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("_LogRuntimeEnvironmentVariableDuringComputeRunArguments target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("ComputeRunArguments: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the ComputeRunArguments target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify environment variables were passed to DeployToDevice target (in-process)
+        AssertTargetInBinlog(runBinlogPath, "DeployToDevice",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("DeployToDevice: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the DeployToDevice target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify the props file was created in the correct IntermediateOutputPath location
+        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
+        var build = BinaryLog.ReadBuild(buildBinlogPath);
+        var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
+        propsFile.Should().NotBeNull("dotnet-run-env.props should be embedded in the binlog");
+        propsFile.FullPath.Should().Be(tempPropsFile, "the props file should be in the IntermediateOutputPath");
+        File.Exists(tempPropsFile).Should().BeFalse("the temporary props file should be deleted after build");
+    }
+
+    [Fact]
+    public void ItDoesNotPassEnvironmentVariablesToTargetsWithoutOptIn()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
+        string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        // Run with EnableRuntimeEnvironmentVariableSupport=false to opt out of the capability
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
+                     "-e", "FOO=BAR", "-e", "ANOTHER=VALUE",
+                     "-p:EnableRuntimeEnvironmentVariableSupport=false",
+                     "-bl");
+
+        result.Should().Pass();
+
+        // Verify the binlog files were created
+        File.Exists(buildBinlogPath).Should().BeTrue("the build binlog file should be created");
+        File.Exists(runBinlogPath).Should().BeTrue("the run binlog file should be created");
+
+        // Verify _LogRuntimeEnvironmentVariableDuringBuild target did NOT execute (condition failed due to no items)
+        AssertTargetInBinlog(buildBinlogPath, "_LogRuntimeEnvironmentVariableDuringBuild",
+            targets =>
+            {
+                // The target should either not execute, or execute with no environment variable message
+                if (targets.Any())
+                {
+                    var messages = targets.First().FindChildrenRecursive<Message>();
+                    var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("Build: RuntimeEnvironmentVariable=") == true);
+                    envVarMessage.Should().BeNull("the Build target should NOT have logged the environment variables when not opted in");
+                }
+            });
+
+        // Verify _LogRuntimeEnvironmentVariableDuringComputeRunArguments target did NOT log env vars
+        AssertTargetInBinlog(runBinlogPath, "_LogRuntimeEnvironmentVariableDuringComputeRunArguments",
+            targets =>
+            {
+                if (targets.Any())
+                {
+                    var messages = targets.First().FindChildrenRecursive<Message>();
+                    var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("ComputeRunArguments: RuntimeEnvironmentVariable=") == true);
+                    envVarMessage.Should().BeNull("the ComputeRunArguments target should NOT have logged the environment variables when not opted in");
+                }
+            });
+
+        // Verify DeployToDevice target did NOT log actual env var values
+        AssertTargetInBinlog(runBinlogPath, "DeployToDevice",
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                // The message may appear (target has no condition) but should NOT contain actual env var values
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("FOO=BAR") == true || m.Text?.Contains("ANOTHER=VALUE") == true);
+                envVarMessage.Should().BeNull("the DeployToDevice target should NOT have logged the actual environment variable values when not opted in");
+            });
+
+        // Verify no props file was created (since opt-in is false)
+        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
+        var build = BinaryLog.ReadBuild(buildBinlogPath);
+        var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
+        propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
+    }
 }
