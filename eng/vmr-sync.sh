@@ -239,7 +239,7 @@ set -e
 highlight 'Installing .NET, preparing the tooling..'
 source "$scriptroot/common/tools.sh"
 InitializeDotNetCli true
-dotnetDir=$( cd $scriptroot/../.dotnet/; pwd -P )
+dotnetDir=$_InitializeDotNetCli
 dotnet=$dotnetDir/dotnet
 "$dotnet" tool restore
 
