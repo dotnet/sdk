@@ -42,7 +42,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "false";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -228,7 +228,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -278,7 +278,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -327,7 +327,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -358,7 +358,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -397,7 +397,7 @@ namespace Microsoft.NET.Publish.Tests
                     { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
                 });
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -435,7 +435,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
                 testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -459,7 +459,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject("net6.0", projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
@@ -483,7 +483,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
@@ -506,7 +506,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{rid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -529,7 +529,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{supportedTargetRid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -560,7 +560,7 @@ namespace Microsoft.NET.Publish.Tests
             // unless PublishAot is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -579,7 +579,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             buildCommand
@@ -626,7 +626,7 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true");
@@ -663,7 +663,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -694,7 +694,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -725,7 +725,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -766,7 +766,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -792,7 +792,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -822,7 +822,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -859,7 +859,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Static";
             testProject.SelfContained = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -891,7 +891,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["NativeLib"] = libType;
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["EventSourceSupport"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -912,7 +912,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Shared";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -937,7 +937,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "ImplicitRidNativeAotApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -953,7 +953,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "DynamicCodeSupportFalseApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -977,7 +977,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource();
 
@@ -997,7 +997,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>

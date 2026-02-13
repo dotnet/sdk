@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <TargetFrameworks>$(ToolsetTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ToolsetTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <CanRunTestAsTool>false</CanRunTestAsTool>

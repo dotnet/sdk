@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
@@ -323,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             //  Write pack installation record
             var packRecordPath = PackRecord(pack, sdkFeatureBand);
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath.FullName));
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+            var packRecordContents = JsonSerializer.Serialize(pack, PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(packRecordPath.FullName, packRecordContents);
 
             //  Create fake pack install
@@ -352,7 +353,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             if (_dotnetRoot == null)
             {
-                _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
+                _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
                 _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             }
         }
@@ -370,7 +371,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             Directory.CreateDirectory(manifestDirectory);
 
-            string manifestSourcePath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
+            string manifestSourcePath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
 
             File.Copy(manifestSourcePath, Path.Combine(manifestDirectory, "WorkloadManifest.json"));
         }
@@ -397,7 +398,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetRoot, sdkVersion, userProfileDir: null, globalJsonPath: null);
 
             var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, _dotnetRoot);
-            
+
 
             IWorkloadResolver GetResolver(string workloadSetVersion)
             {

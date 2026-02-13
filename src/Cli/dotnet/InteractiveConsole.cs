@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -29,6 +30,8 @@ public static class InteractiveConsole
         {
             return null;
         }
+
+        using var _ = Activities.Source.StartActivity("confirm-run-from-source");
 
         Console.Write(AddPromptOptions(message));
 

@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
 
         private BuildCommand GetBuildCommand([CallerMemberName] string callingMethod = "")
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                .CopyTestAsset("HelloWorldWithSubDirs", callingMethod)
                .WithSource();
 
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp1.1", true, true, "1.1.13")]
         [InlineData("netcoreapp1.1", false, false, "1.1.2")]
         [InlineData("netcoreapp2.0", false, true, "2.0.0")]
-        [InlineData("netcoreapp2.0", true, true, TestContext.LatestRuntimePatchForNetCoreApp2_0)]
+        [InlineData("netcoreapp2.0", true, true, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0)]
         [InlineData("netcoreapp2.0", false, false, "2.0.0")]
         public void It_targets_the_right_framework_depending_on_output_type(string targetFramework, bool selfContained, bool isExe, string expectedFrameworkVersion)
         {
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -101,10 +101,10 @@ namespace Microsoft.NET.Build.Tests
             //  Test that the resolved version is greater than or equal to the latest runtime patch
             //  we know about, so that when a new runtime patch is released the test doesn't
             //  immediately start failing
-            var minimumExpectedVersion = new NuGetVersion(TestContext.LatestRuntimePatchForNetCoreApp2_0);
+            var minimumExpectedVersion = new NuGetVersion(SdkTestContext.LatestRuntimePatchForNetCoreApp2_0);
             netCoreAppLibrary.Version.CompareTo(minimumExpectedVersion).Should().BeGreaterThanOrEqualTo(0,
                 "the version resolved from a RuntimeFrameworkVersion of '{0}' should be at least {1}",
-                testProject.RuntimeFrameworkVersion, TestContext.LatestRuntimePatchForNetCoreApp2_0);
+                testProject.RuntimeFrameworkVersion, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0);
         }
 
         private void It_targets_the_right_framework(
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
 
             var extraArgs = extraMSBuildArguments?.Split(' ') ?? Array.Empty<string>();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testIdentifier);
 
             NuGetConfigWriter.Write(testAsset.TestRoot);
 
@@ -206,7 +206,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: allowMismatch.ToString())
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: allowMismatch.ToString())
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_restores_only_ridless_tfm()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -334,7 +334,7 @@ public static class Program
 " + ConflictResolutionAssets.ConflictResolutionTestMethod + @"
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(project, project.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(project, project.Name)
                 .WithProjectChanges(p =>
                 {
                     if (includeConflicts)
@@ -387,7 +387,7 @@ public static class Program
                 IsSdkProject = true
             };
 
-            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(proj, identifier: targetFramework));
 
             var runtimeconfigFile = Path.Combine(
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
@@ -416,7 +416,7 @@ public static class Program
                 IsSdkProject = true
             };
 
-            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(proj, identifier: targetFramework));
             var runtimeconfigFile = Path.Combine(
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
                 $"{proj.Name}.runtimeconfig.dev.json");
@@ -458,7 +458,7 @@ public static class Program
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: targetFramework)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -512,7 +512,7 @@ public static class Program
                 RuntimeIdentifier = runtimeIdentifier
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: isSelfContained.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: isSelfContained.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -550,7 +550,7 @@ public static class Program
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -582,7 +582,7 @@ public static class Program
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer.Core.fr", "2.2.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer.Core.pt", "2.2.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     if (crossTarget)
@@ -622,7 +622,7 @@ public static class Program
 
             string[] extraArgs = new[] { $"/p:TargetFramework={ToolsetInfo.CurrentTargetFramework.ToUpper()}" };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: useStandardOutputPaths.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: useStandardOutputPaths.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -678,7 +678,7 @@ public static class Program
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -726,7 +726,7 @@ class Program
             // Without the change to escape the asset paths, the asset will not be found inside the package.
             testProject.PackageReferences.Add(new TestPackageReference("ContentFilesExample", "1.0.2"));
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -754,7 +754,7 @@ class Program
             testProject.PackageReferences.Add(new TestPackageReference("System.Reflection", "4.3.0"));
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -774,7 +774,7 @@ class Program
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             string testDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
 
@@ -806,7 +806,7 @@ class Program
             };
             testProject.PackageReferences.Add(new TestPackageReference("Nuget.Common", "6.5.7"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -828,7 +828,7 @@ class Program
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -855,7 +855,7 @@ class Program
                 SelfContained = "true"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -916,7 +916,7 @@ class Program
 
             testProject.AdditionalProperties["ProduceOnlyReferenceAssembly"] = produceOnlyReferenceAssembly.ToString();
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: produceOnlyReferenceAssembly.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: produceOnlyReferenceAssembly.ToString());
 
             var buildCommand = new BuildCommand(testProjectInstance);
             buildCommand
@@ -1006,7 +1006,7 @@ class Program
             // Identifer based on test inputs to create test assets that are unique for each test case
             string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
 
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject, assetIdentifier));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject, assetIdentifier));
             packCommand.Execute().Should().Pass();
             var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
@@ -1024,11 +1024,11 @@ class Program
 
             // The actual list comes from BundledVersions.props. For testing, we conditionally add a
             // subset of the list if it isn't already defined (so running on an older version)
-            testProject.AddItem("_KnownRuntimeIdentiferPlatforms",
+            testProject.AddItem("_KnownRuntimeIdentifierPlatforms",
                 new Dictionary<string, string>()
                 {
                     { "Include", "unix" },
-                    { "Condition", "'@(_KnownRuntimeIdentiferPlatforms)'==''" }
+                    { "Condition", "'@(_KnownRuntimeIdentifierPlatforms)'==''" }
                 });
 
             if (useRidGraph.HasValue)
@@ -1041,7 +1041,7 @@ class Program
                     });
             }
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, assetIdentifier);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, assetIdentifier);
             var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass();
             if (shouldWarn)
@@ -1059,7 +1059,7 @@ class Program
         {
             var packageProject = CreateProjectWithRidAssets(ToolsetInfo.CurrentTargetFramework, new string[] { "unix", "win", "alpine-x64" }, true, true);
 
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject));
             packCommand.Execute().Should().Pass();
             var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
@@ -1082,7 +1082,7 @@ class Program
             testProject.AdditionalProperties["UseAppHost"] = "false";
             testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
             var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass()
                 .And.NotHaveStdOutContaining("NETSDK1206");
@@ -1118,7 +1118,7 @@ class Program
         #endif
     }
 }";
-            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: disableTracing.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProj, identifier: disableTracing.ToString());
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProj.Name));
             buildCommand

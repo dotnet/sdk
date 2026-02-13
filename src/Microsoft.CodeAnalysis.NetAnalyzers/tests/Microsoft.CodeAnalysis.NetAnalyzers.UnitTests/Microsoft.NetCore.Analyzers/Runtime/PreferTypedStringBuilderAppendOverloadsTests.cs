@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -258,6 +259,83 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     private static void Append(string value) { }
                     private static void Append(int value) { }
+                }");
+        }
+
+        [Fact]
+        public async Task Diagnostic_StringConstructorInAppend_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append([|new string('c', 5)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append('c', 5);
+                    }
+                }
+                ");
+        }
+
+        [Fact]
+        public async Task Diagnostic_StringConstructorWithVariable_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append([|new string(c, count)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append(c, count);
+                    }
+                }
+                ");
+        }
+
+        [Fact]
+        public async Task NoDiagnostic_StringConstructorWithCharArray_CSharpAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char[] chars = new char[] { 'a', 'b', 'c' };
+                        sb.Append(new string(chars));
+                    }
                 }");
         }
     }

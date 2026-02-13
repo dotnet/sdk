@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "warningLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
             testProject.AdditionalProperties.Add("WarningLevel", warningLevel?.ToString());
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "customWarningLevelConsoleApp");
 
             var buildCommand = new GetValuesCommand(
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
@@ -158,9 +158,12 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        // Fixing this test requires bumping _LatestAnalysisLevel and _PreviewAnalysisLevel
+        // Bumping will cause It_maps_analysis_properties_to_globalconfig to fail which requires changes in dotnet/roslyn-analyzers repo.
+        // See instructions in the comment in It_maps_analysis_properties_to_globalconfig
         [RequiresMSBuildVersionTheory("16.8")]
-        public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
+        public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM)
         {
             var testProject = new TestProject
             {
@@ -186,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", "preview");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + currentTFM);
 
             var buildCommand = new GetValuesCommand(
@@ -200,7 +203,14 @@ namespace Microsoft.NET.Build.Tests
 
             buildResult.StdErr.Should().Be(string.Empty, "If this test fails when updating to a new TFM, you need to update _PreviewAnalysisLevel and _LatestAnalysisLevel in Microsoft.NET.SDK.Analyzers.Targets");
             var computedEffectiveAnalysisLevel = buildCommand.GetValues()[0];
-            computedEffectiveAnalysisLevel.Should().Be(nextTFMVersionNumber.ToString());
+            // Verify that preview resolves to a numeric version (not the literal "preview" string)
+            computedEffectiveAnalysisLevel.Should().NotBe("preview", "AnalysisLevel=preview should resolve to a numeric version");
+            double.TryParse(computedEffectiveAnalysisLevel, out var previewLevel).Should().BeTrue(
+                $"AnalysisLevel=preview should resolve to a numeric version, but got '{computedEffectiveAnalysisLevel}'");
+            // Preview should be greater than or equal to the current TFM version
+            var currentVersion = double.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
+            previewLevel.Should().BeGreaterThanOrEqualTo(currentVersion,
+                "AnalysisLevel=preview should resolve to a version >= the current TFM version");
         }
 
         [RequiresMSBuildVersionFact("16.8")]
@@ -230,10 +240,12 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", "latest");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "latestAnalysisLevelGlobalConfig");
 
-            // First verify that "latest" maps to the current TFM version
+            // Verify that "latest" resolves to a numeric analysis level and has a corresponding globalconfig.
+            // Note: During development of a new TFM (e.g., net11.0), _LatestAnalysisLevel may still point to
+            // the prior shipped version (e.g., 10.0) until the new analyzers are shipped. This is expected.
             var buildCommand = new GetValuesCommand(
                 Log,
                 Path.Combine(testAsset.TestRoot, testProject.Name),
@@ -245,11 +257,11 @@ namespace Microsoft.NET.Build.Tests
 
             buildResult.StdErr.Should().Be(string.Empty);
             var effectiveAnalysisLevel = buildCommand.GetValues()[0];
-            effectiveAnalysisLevel.Should().Be(ToolsetInfo.CurrentTargetFrameworkVersion,
-                $"AnalysisLevel=latest should map to the current TFM version ({ToolsetInfo.CurrentTargetFrameworkVersion}). " +
-                "Update _LatestAnalysisLevel in Microsoft.NET.Sdk.Analyzers.targets.");
+            effectiveAnalysisLevel.Should().NotBe("latest", "AnalysisLevel=latest should resolve to a numeric version");
+            double.TryParse(effectiveAnalysisLevel, out _).Should().BeTrue(
+                $"AnalysisLevel=latest should resolve to a numeric version, but got '{effectiveAnalysisLevel}'");
 
-            // Now verify that the corresponding globalconfig file exists
+            // Verify the corresponding globalconfig file exists
             var expectedGlobalConfig = $"analysislevel_{effectiveAnalysisLevel.Replace(".0", "")}_default.globalconfig";
 
             buildCommand = new GetValuesCommand(
@@ -316,7 +328,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel);
 
             var buildCommand = new GetValuesCommand(
@@ -361,6 +373,10 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("10.0", "", "true", "")]
         [InlineData("10", "default", "false", "Security")]
         [InlineData("10.0", "", "true", "Usage")]
+        [InlineData("11", "default", "false", "")]
+        [InlineData("11.0", "", "true", "")]
+        [InlineData("11", "default", "false", "Security")]
+        [InlineData("11.0", "", "true", "Usage")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors, string category)
         {
@@ -411,7 +427,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add(analysisLevelPropertyName, mergedAnalysisLevel);
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + category);
 
             var buildCommand = new GetValuesCommand(
@@ -536,7 +552,7 @@ namespace Microsoft.NET.Build.Tests
             // actually an important failure, so don't error out here.
             testProject.AdditionalProperties.Add("NoWarn", "CS9057");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}");
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));

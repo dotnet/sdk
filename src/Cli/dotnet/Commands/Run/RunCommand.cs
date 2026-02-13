@@ -589,10 +589,17 @@ public class RunCommand
         else
         {
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
-
-            var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
-            ValidatePreconditions(project);
-            InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+    
+            ProjectInstance project;
+            try
+            {
+                project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+                ValidatePreconditions(project);
+                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+            }
+            finally
+            {
+                    }
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);

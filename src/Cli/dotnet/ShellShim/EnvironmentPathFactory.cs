@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -13,34 +11,33 @@ internal static class EnvironmentPathFactory
 {
     public static IEnvironmentPath CreateEnvironmentPath(
         bool isDotnetBeingInvokedFromNativeInstaller = false,
-        IEnvironmentProvider environmentProvider = null)
+        IEnvironmentProvider? environmentProvider = null)
     {
-        environmentProvider ??= new EnvironmentProvider();
+        IEnvironmentPath? environmentPath = null;
 
-        IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (OperatingSystem.IsWindows())
         {
-            if (isDotnetBeingInvokedFromNativeInstaller)
-            {
-                // On Windows MSI will in charge of appending ToolShimPath
-                environmentPath = new DoNothingEnvironmentPath();
-            }
-            else
+            // On Windows MSI will in charge of appending ToolShimPath
+
+            if (!isDotnetBeingInvokedFromNativeInstaller)
             {
                 environmentPath = new WindowsEnvironmentPath(
                     CliFolderPathCalculator.ToolsShimPath,
                     CliFolderPathCalculator.WindowsNonExpandedToolsShimPath,
-                    environmentProvider,
+                    environmentProvider ?? new EnvironmentProvider(),
                     new WindowsRegistryEnvironmentPathEditor(),
                     Reporter.Output);
             }
         }
-        else if (OperatingSystem.IsLinux() && isDotnetBeingInvokedFromNativeInstaller)
+        else
+#endif
+        if (OperatingSystem.IsLinux() && isDotnetBeingInvokedFromNativeInstaller)
         {
             environmentPath = new LinuxEnvironmentPath(
                 CliFolderPathCalculator.ToolsShimPathInUnix,
                 Reporter.Output,
-                environmentProvider,
+                environmentProvider ?? new EnvironmentProvider(),
                 new FileWrapper());
         }
         else if (OperatingSystem.IsMacOS() && isDotnetBeingInvokedFromNativeInstaller)
@@ -48,15 +45,15 @@ internal static class EnvironmentPathFactory
             environmentPath = new OsxBashEnvironmentPath(
                 executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
                 reporter: Reporter.Output,
-                environmentProvider: environmentProvider,
+                environmentProvider: environmentProvider ?? new EnvironmentProvider(),
                 fileSystem: new FileWrapper());
         }
 
-        return environmentPath;
+        return environmentPath ?? new DoNothingEnvironmentPath();
     }
 
     public static IEnvironmentPathInstruction CreateEnvironmentPathInstruction(
-        IEnvironmentProvider environmentProvider = null)
+        IEnvironmentProvider? environmentProvider = null)
     {
         environmentProvider ??= new EnvironmentProvider();
 
@@ -68,6 +65,7 @@ internal static class EnvironmentPathFactory
                 environmentProvider: environmentProvider);
         }
 
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (OperatingSystem.IsWindows())
         {
             return new WindowsEnvironmentPath(
@@ -77,6 +75,7 @@ internal static class EnvironmentPathFactory
                 environmentPathEditor: new WindowsRegistryEnvironmentPathEditor(),
                 reporter: Reporter.Output);
         }
+#endif
 
         return CreateEnvironmentPath(true, environmentProvider);
     }

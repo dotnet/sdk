@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("Changed!");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/52680")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -935,7 +935,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")

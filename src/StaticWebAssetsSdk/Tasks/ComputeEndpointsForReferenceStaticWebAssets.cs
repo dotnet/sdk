@@ -24,6 +24,9 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
         var result = CandidateEndpoints;
 
+        var routeSegments = new List<PathTokenizer.Segment>();
+        var basePathSegments = new List<PathTokenizer.Segment>();
+
         for (var i = 0; i < CandidateEndpoints.Length; i++)
         {
             var candidateEndpoint = StaticWebAssetEndpoint.FromTaskItem(CandidateEndpoints[i]);
@@ -35,7 +38,7 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 // destined to be used as a reference by other project are passed to this task.
 
                 var oldRoute = candidateEndpoint.Route;
-                if (oldRoute.StartsWith(asset.BasePath))
+                if (StaticWebAssetEndpoint.RouteHasPathPrefix(oldRoute, asset.BasePath, routeSegments, basePathSegments))
                 {
                     Log.LogMessage(MessageImportance.Low, "Skipping endpoint '{0}' because route '{1}' is already updated.", asset.Identity, oldRoute);
                 }

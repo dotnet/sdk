@@ -1329,40 +1329,40 @@
   <data name="UseCrossPlatformIntrinsicsDescription" xml:space="preserve">
     <value>This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opAddition" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_Addition" xml:space="preserve">
     <value>The addition operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd" xml:space="preserve">
     <value>The bitwise-and operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opBitwiseOr" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_BitwiseOr" xml:space="preserve">
     <value>The bitwise-or operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opDivison" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_Division" xml:space="preserve">
     <value>The division operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opExclusiveOr" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr" xml:space="preserve">
     <value>The exclusive-or operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opLeftShift" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_LeftShift" xml:space="preserve">
     <value>The left-shift operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opMultiply" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_Multiply" xml:space="preserve">
     <value>The multiply operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opOnesComplement" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_OnesComplement" xml:space="preserve">
     <value>The ones-complement operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opRightShift" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_RightShift" xml:space="preserve">
     <value>The right-shift operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opSubtraction" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_Subtraction" xml:space="preserve">
     <value>The subtraction operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opUnaryNegation" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_UnaryNegation" xml:space="preserve">
     <value>The unary-negation operator should be preferred</value>
   </data>
-  <data name="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift" xml:space="preserve">
+  <data name="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift" xml:space="preserve">
     <value>The unsigned right-shift operator should be preferred</value>
   </data>
 </root>

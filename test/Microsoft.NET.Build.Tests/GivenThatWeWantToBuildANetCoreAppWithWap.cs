@@ -12,7 +12,7 @@ namespace Microsoft.NET.Publish.Tests
         [FullMSBuildOnlyFact]
         public void WhenNetCoreProjectIsReferencedByAWapProject()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset("TestAppWithWapAndWpf")
                 .WithSource();
 

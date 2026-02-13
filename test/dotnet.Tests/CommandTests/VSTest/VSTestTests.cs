@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
                 .WithSource()
                 .WithVersionVariables();
 
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             // Call vstest
             var result = new DotnetVSTestCommand(Log)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 2")
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         public void ItShouldSetDotnetRootToLocationOfDotnetExecutable()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestTestRunParameters";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
                             .WithSource()
                             .WithVersionVariables();
 

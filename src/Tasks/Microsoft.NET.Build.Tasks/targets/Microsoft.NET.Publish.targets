@@ -739,7 +739,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
-                                       Condition="('$(PublishReferencesDocumentationFiles)' == 'true' or '%(ReferenceCopyLocalPaths.Extension)' != '.xml') and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
+                                       Condition="(('$(PublishReferencesDocumentationFiles)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.xml')
+                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb')
+                                                  or ('%(ReferenceCopyLocalPaths.Extension)' != '.xml' and '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'))
+                                                  and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
       </_ResolvedCopyLocalPublishAssets>
 

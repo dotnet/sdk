@@ -517,7 +517,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public void ForwardedBuildOptions_ArtifactsPath()
         {
-            var path = TestContext.Current.TestAssetsDirectory;
+            var path = SdkTestContext.Current.TestAssetsDirectory;
 
             var args = new[] { "--artifacts-path", path };
             var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };

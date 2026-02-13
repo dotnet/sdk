@@ -22,6 +22,6 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpOverridesTargetsShim Condition = " '$(FSharpOverridesTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.Overrides.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.Overrides.NetSdk.targets</FSharpOverridesTargetsShim>
      <FSharpOverridesTargetsShim Condition = " '$(FSharpOverridesTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Overrides.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Overrides.NetSdk.targets</FSharpOverridesTargetsShim>
   </PropertyGroup>
-  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and  '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpOverridesTargetsShim)') " Project="$(FSharpOverridesTargetsShim)" />
+  <Import Condition=" '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpOverridesTargetsShim)') " Project="$(FSharpOverridesTargetsShim)" />
 
 </Project>

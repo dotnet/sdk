@@ -1,35 +1,31 @@
 <Project DefaultTargets="Build">
-  <Import Project="Version.Details.props" Condition="Exists('Version.Details.props')" />
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
+
+  <Import Project="Version.Details.props" />
+
   <PropertyGroup Label="Repo version information">
-    <VersionMajor>10</VersionMajor>
+    <VersionMajor>11</VersionMajor>
     <VersionMinor>0</VersionMinor>
-    <VersionSDKMinor>3</VersionSDKMinor>
+    <VersionSDKMinor>1</VersionSDKMinor>
     <VersionFeature>00</VersionFeature>
+    <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
+    <DotNetFinalVersionKind></DotNetFinalVersionKind>
+
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
          preview version components or anything else. E.g. 8.0.100, 9.0.300, etc. -->
     <SdkFeatureBand>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)00</SdkFeatureBand>
     <BuiltinWorkloadFeatureBand>$(VersionMajor).$(VersionMinor).100</BuiltinWorkloadFeatureBand>
-    <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
     <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
     <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
-    <!-- Enable to remove prerelease label. -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
-    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
-    <!-- Calculate prerelease label -->
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">preview</PreReleaseVersionLabel>
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and $(VersionPrefix.EndsWith('00'))">rtm</PreReleaseVersionLabel>
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and !$(VersionPrefix.EndsWith('00'))">servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">0</PreReleaseVersionIteration>
     <!-- In source-build the version of the compiler must be same or newer than the version of the
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
-    <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
   </PropertyGroup>
+
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
     <VersionFeature31>32</VersionFeature31>
@@ -37,20 +33,24 @@
     <VersionFeature60>36</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
     <!-- This version should be N-1 (ie the currently released version) in the preview branch but N-2 in main so that workloads stay behind the unreleased version -->
-    <VersionFeature80>24</VersionFeature80>
-    <VersionFeature90>13</VersionFeature90>
+    <VersionFeature80>23</VersionFeature80>
+    <VersionFeature90>12</VersionFeature90>
+    <VersionFeature100>2</VersionFeature100>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
     <!-- workload-specific version information -->
     <VersionFeature80ForWorkloads>$(VersionFeature80)</VersionFeature80ForWorkloads>
     <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
+    <VersionFeature100ForWorkloads>$(VersionFeature100)</VersionFeature100ForWorkloads>
   </PropertyGroup>
+
   <PropertyGroup Label="Restore feeds">
     <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://ci.dot.net/public/</DotNetAssetRootUrl>
     <DotNetPrivateAssetRootUrl Condition="'$(DotNetPrivateAssetRootUrl)'==''">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotNetPrivateAssetRootUrl>
   </PropertyGroup>
+
   <PropertyGroup Label="Production dependencies">
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftApplicationInsightsPackageVersion>2.23.0</MicrosoftApplicationInsightsPackageVersion>
@@ -63,17 +63,20 @@
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
-    <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
+    <MicrosoftWindowsCsWin32PackageVersion>0.3.264</MicrosoftWindowsCsWin32PackageVersion>
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
   </PropertyGroup>
+
   <PropertyGroup Label="MicroBuild.Core version">
     <MicroBuildCorePackageVersion>0.2.0</MicroBuildCorePackageVersion>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/aspire -->
     <AspirePackageVersion>9.4.0</AspirePackageVersion>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
          Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
@@ -92,6 +95,7 @@
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/msbuild -->
     <!-- In VMR modes, MicrosoftBuildVersion and MicrosoftBuildLocalizationVersion will end
@@ -114,24 +118,24 @@
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.28</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>18.0</MinimumVSVersion>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
     <!-- emscripten versions, these are are included in package IDs and need to be kept in sync with emsdk -->
     <EmscriptenVersionCurrent>3.1.56</EmscriptenVersionCurrent>
+    <EmscriptenVersionNet10>3.1.56</EmscriptenVersionNet10>
     <EmscriptenVersionNet9>3.1.56</EmscriptenVersionNet9>
     <EmscriptenVersionNet8>3.1.34</EmscriptenVersionNet8>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
   </PropertyGroup>
+
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
     <MicrosoftBuildLocatorPackageVersion>1.10.2</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>4.0.1</MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>
   </PropertyGroup>
-  <!-- Get .NET Framework reference assemblies from NuGet packages -->
-  <PropertyGroup>
-    <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
-  </PropertyGroup>
+
   <!-- Test Dependencies -->
   <PropertyGroup>
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
@@ -139,26 +143,31 @@
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
-    <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.15.6</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetDiagnosticsWindowsPackageVersion>0.14.0</BenchmarkDotNetDiagnosticsWindowsPackageVersion>
   </PropertyGroup>
+
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100</MauiFeatureBand>
+    <MauiFeatureBand>11.0.100-preview.1</MauiFeatureBand>
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
       source-build-reference-packages repo as a text-only package.
       See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
     -->
-    <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.0.11017</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.0.11017</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.0.11017</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.0.11017</XamarinTvOSWorkloadManifestVersion>
+    <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
+
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
     <CLI_NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</CLI_NETStandardLibraryNETFrameworkVersion>
   </PropertyGroup>
+
   <Import Project="ManualVersions.props" />
+
 </Project>

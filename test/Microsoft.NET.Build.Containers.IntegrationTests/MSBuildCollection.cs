@@ -3,8 +3,6 @@
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-using Xunit;
-
 /// <summary>
 /// Collection definition for tests that require MSBuild to be run.
 /// </summary>

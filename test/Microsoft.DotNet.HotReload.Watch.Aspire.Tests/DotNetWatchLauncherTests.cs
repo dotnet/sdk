@@ -16,7 +16,7 @@ public class DotNetWatchLauncherTests(ITestOutputHelper logger)
             .WithSource();
 
         var path = Path.ChangeExtension(typeof(DotNetWatchLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.');
-        var sdkRootDirectory = TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
+        var sdkRootDirectory = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
         var projectDir = Path.Combine(testAsset.Path, "AppWithDeps");
         var projectPath = Path.Combine(projectDir, "App.WithDeps.csproj");
 

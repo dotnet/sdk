@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public GivenFileBasedWorkloadInstall(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample2.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample2.json");
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 {
                     var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
                     Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+                    var packRecordContents = JsonSerializer.Serialize(pack, PackInfoJsonSerializerContext.Default.PackInfo);
                     File.WriteAllText(packRecordPath, packRecordContents);
                     Directory.CreateDirectory(pack.Path);
                 }
@@ -421,7 +421,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         private (string, FileBasedInstaller, INuGetPackageDownloader, Func<string, IWorkloadResolver>) GetTestInstaller([CallerMemberName] string testName = "", bool failingInstaller = false, string identifier = "", bool manifestDownload = false,
             PackageSourceLocation packageSourceLocation = null)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             INuGetPackageDownloader nugetInstaller = failingInstaller ? new FailingNuGetPackageDownloader(testDirectory) : new MockNuGetPackageDownloader(dotnetRoot, manifestDownload);
             var workloadResolver = CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);

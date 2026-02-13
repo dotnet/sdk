@@ -43,7 +43,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishSingleFile"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand

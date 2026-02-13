@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Tests
 
         private string GetTempPath([CallerMemberName] string callingMethod = null)
         {
-            return Path.Combine(_testAssetsManager.CreateTestDirectory(callingMethod).Path, Path.GetTempFileName());
+            return Path.Combine(TestAssetsManager.CreateTestDirectory(callingMethod).Path, Path.GetTempFileName());
         }
 
         private const string Basic =

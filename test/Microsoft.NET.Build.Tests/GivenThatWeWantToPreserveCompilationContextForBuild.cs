@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(testReference);
 
-            var testAsset = _testAssetsManager.CreateTestProject(
+            var testAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 identifier: withoutCopyingRefs.ToString());
 
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("PreserveCompilationContext", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand

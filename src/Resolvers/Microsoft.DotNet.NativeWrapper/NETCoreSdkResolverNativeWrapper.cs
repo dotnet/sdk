@@ -15,23 +15,21 @@ namespace Microsoft.DotNet.NativeWrapper
             var result = new SdkResolutionResult();
             var flags = disallowPrerelease ? Interop.hostfxr_resolve_sdk2_flags_t.disallow_prerelease : 0;
 
-            int errorCode = Interop.RunningOnWindows
-                ? Interop.Windows.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize)
-                : Interop.Unix.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize);
+            StatusCode errorCode = Interop.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize);
 
             Debug.Assert((errorCode == 0) == (result.ResolvedSdkDirectory != null));
             return result;
         }
 
-        public static string? GetGlobalJsonState(string globalJsonStartDirectory)
+        public static unsafe string? GetGlobalJsonState(string globalJsonStartDirectory)
         {
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution. This means that
             // we expect the call to fail to resolve an SDK. Set up the error writer to avoid
             // output going to stderr. We reset it after the call.
-            var swallowErrors = new Interop.hostfxr_error_writer_fn(message => { });
-            IntPtr errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
-            IntPtr previousErrorWriter = Interop.hostfxr_set_error_writer(errorWriter);
+            Interop.hostfxr_error_writer_fn swallowErrors = new(message => { });
+            nint errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
+            var previousErrorWriter = Interop.hostfxr_set_error_writer((delegate* unmanaged[Cdecl]<PlatformString, void>)errorWriter);
             try
             {
                 SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);
@@ -40,30 +38,14 @@ namespace Microsoft.DotNet.NativeWrapper
             finally
             {
                 Interop.hostfxr_set_error_writer(previousErrorWriter);
+                GC.KeepAlive(swallowErrors);
             }
         }
 
-        private sealed class SdkList
+        public static string[] GetAvailableSdks(string? dotnetExeDirectory)
         {
-            public string[]? Entries;
-
-            public void Initialize(int count, string[] entries)
-            {
-                entries = entries ?? Array.Empty<string>();
-                Debug.Assert(count == entries.Length);
-                Entries = entries;
-            }
-        }
-
-        public static string[]? GetAvailableSdks(string? dotnetExeDirectory)
-        {
-            var list = new SdkList();
-
-            int errorCode = Interop.RunningOnWindows
-                ? Interop.Windows.hostfxr_get_available_sdks(dotnetExeDirectory, list.Initialize)
-                : Interop.Unix.hostfxr_get_available_sdks(dotnetExeDirectory, list.Initialize);
-
-            return list.Entries;
+            Interop.hostfxr_get_available_sdks(dotnetExeDirectory, out string[] result);
+            return result;
         }
     }
 }

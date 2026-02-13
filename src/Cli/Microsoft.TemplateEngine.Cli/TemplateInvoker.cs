@@ -39,6 +39,7 @@ namespace Microsoft.TemplateEngine.Cli
 
         internal async Task<NewCommandStatus> InvokeTemplateAsync(TemplateCommandArgs templateArgs, CancellationToken cancellationToken)
         {
+            using var invokerActivity = Activities.Source.StartActivity("invoker-invoking");
             cancellationToken.ThrowIfCancellationRequested();
 
             CliTemplateInfo templateToRun = templateArgs.Template;
@@ -160,6 +161,7 @@ namespace Microsoft.TemplateEngine.Cli
 
             try
             {
+                using var templateCreationActivity = Activities.Source.StartActivity("actual-instantiate-template");
                 instantiateResult = await _templateCreator.InstantiateAsync(
                     templateArgs.Template,
                     templateArgs.Name,
@@ -308,6 +310,7 @@ namespace Microsoft.TemplateEngine.Cli
 
         private NewCommandStatus HandlePostActions(ITemplateCreationResult creationResult, TemplateCommandArgs args)
         {
+            using var postActionActivity = Activities.Source.StartActivity("post-actions");
             PostActionExecutionStatus result = _postActionDispatcher.Process(creationResult, args.IsDryRun, args.AllowScripts ?? AllowRunScripts.Prompt);
 
             return result switch
