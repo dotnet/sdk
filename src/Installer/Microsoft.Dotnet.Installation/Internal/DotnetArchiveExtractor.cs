@@ -310,6 +310,13 @@ internal class DotnetArchiveExtractor : IDisposable
         using var outStream = File.Create(destPath);
         entry.DataStream?.CopyTo(outStream);
         installTask?.Value += 1;
+
+        // On Unix platforms, set the file permissions after extraction
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            File.SetUnixFileMode(destPath, entry.Mode);
+        }
+        
     }
 
     /// <summary>

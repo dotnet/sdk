@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -11,7 +12,6 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 using Xunit.Abstractions;
-using FluentAssertions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 

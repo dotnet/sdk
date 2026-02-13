@@ -59,12 +59,9 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // For non-Windows platforms, determine based on path location
-            // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
-            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            bool isAdminInstall = currentInstallRoot.Path.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                                  currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            // For now, on non-Windows platforms, consider an install a user install only if it's in the default install location
+            // https://github.com/dotnet/sdk/issues/52668 tracks improving this
+            bool isAdminInstall = !currentInstallRoot.Path.StartsWith(GetDefaultDotnetInstallPath());
 
             // For now, we consider it fully configured if it's on PATH
             return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);

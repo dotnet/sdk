@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -106,12 +107,10 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Runs the dotnetup executable as a separate process
+    /// Gets the path to the dotnetup executable for the current build configuration
     /// </summary>
-    /// <param name="args">Command line arguments for dotnetup</param>
-    /// <param name="captureOutput">Whether to capture and return the output</param>
-    /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    /// <returns>Full path to dotnetup executable</returns>
+    public static string GetDotnetupExecutablePath()
     {
 #if DEBUG
         string configuration = "Debug";
@@ -120,9 +119,10 @@ internal static class DotnetupTestUtilities
 #endif
 
         string repoRoot = GetRepositoryRoot();
+        string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
         string dotnetupPath = Path.Combine(
             repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, "net10.0", "dotnetup.dll");
+            "artifacts", "bin", "dotnetup", configuration, "net10.0", executableName);
 
         // Ensure path is normalized and exists
         dotnetupPath = Path.GetFullPath(dotnetupPath);
@@ -131,10 +131,22 @@ internal static class DotnetupTestUtilities
             throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
         }
 
+        return dotnetupPath;
+    }
+
+    /// <summary>
+    /// Runs the dotnetup executable as a separate process
+    /// </summary>
+    /// <param name="args">Command line arguments for dotnetup</param>
+    /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <returns>A tuple with exit code and captured output (if requested)</returns>
+    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    {
+        string dotnetupPath = GetDotnetupExecutablePath();
+
         using var process = new Process();
-        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DotnetupUtilities.GetDotnetExeName());
-        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DotnetupUtilities.GetDotnetExeName();
-        process.StartInfo.Arguments = $"\"{dotnetupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
+        process.StartInfo.FileName = dotnetupPath;
+        process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;

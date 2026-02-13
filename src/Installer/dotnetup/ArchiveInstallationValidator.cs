@@ -103,6 +103,13 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
     private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component)
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            //  Calling HostFxr is not working on Linux, so don't use it for validation until we fix that
+            //  See https://github.com/dotnet/sdk/issues/52821
+            return true;
+        }
+
         try
         {
             var environmentInfo = HostFxrWrapper.getInfo(installRoot);

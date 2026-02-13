@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
@@ -87,6 +89,19 @@ public class InstallEndToEndTests
                 install.Version.ToString().Should().Be(channel);
             }
         });
+
+        // Test that the env script works correctly
+        if (!OperatingSystem.IsWindows())
+        {
+            // Test bash and zsh on Unix
+            VerifyEnvScriptWorks("bash", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+            VerifyEnvScriptWorks("zsh", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+        }
+        else
+        {
+            // Test PowerShell on Windows
+            VerifyEnvScriptWorks("pwsh", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+        }
     }
 
     [Theory]
@@ -112,6 +127,219 @@ public class InstallEndToEndTests
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
         VerifyManifestContains(testEnv, expectedComponent);
+    }
+
+    [Fact]
+    public void EnvScript_WorksWithSpecialCharactersInPath()
+    {
+        // Test that env scripts work correctly when the install path contains special characters
+        // such as spaces and single quotes
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Create an install path with special characters (spaces and single quotes)
+        var specialChars = OperatingSystem.IsWindows() ? "dotnet with 'special chars'" : "dotnet with \"'special chars'\"";
+        string specialCharsPath = Path.Combine(testEnv.TempRoot, specialChars);
+        Directory.CreateDirectory(specialCharsPath);
+
+        // Install SDK to this special path
+        var args = DotnetupTestUtilities.BuildSdkArguments("latest", specialCharsPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK installation failed with special characters in path. Output:\n{output}");
+
+        // Test the env script with each shell
+        if (!OperatingSystem.IsWindows())
+        {
+            // Test bash and zsh on Unix
+            VerifyEnvScriptWorks("bash", specialCharsPath, null, testEnv.TempRoot);
+            VerifyEnvScriptWorks("zsh", specialCharsPath, null, testEnv.TempRoot);
+        }
+        else
+        {
+            // Test PowerShell on Windows
+            VerifyEnvScriptWorks("pwsh", specialCharsPath, null, testEnv.TempRoot);
+        }
+    }
+
+    /// <summary>
+    /// Tests that the env script works correctly by sourcing it and verifying environment variables
+    /// </summary>
+    /// <param name="shell">Shell to test (bash, zsh, or pwsh)</param>
+    /// <param name="installPath">Path where dotnet is installed</param>
+    /// <param name="expectedVersion">Expected dotnet version to verify</param>
+    /// <param name="tempRoot">Temporary directory for test scripts</param>
+    private static void VerifyEnvScriptWorks(string shell, string installPath, string? expectedVersion, string tempRoot)
+    {
+        string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
+
+        // Determine shell-specific settings
+        string shellExecutable;
+        string scriptPath;
+        string scriptContent;
+
+        if (shell == "bash" || shell == "zsh")
+        {
+            shellExecutable = shell == "bash" ? "/bin/bash" : "/bin/zsh";
+
+            // Skip if shell is not available
+            if (!File.Exists(shellExecutable))
+            {
+                Console.WriteLine($"Skipping {shell} test - shell not available at {shellExecutable}");
+                return;
+            }
+
+            static string Escape(string s) => s.Replace("'", "'\\''");
+
+            // Use a temp file to capture dotnetup output instead of process substitution.
+            // Process substitution failures are silently ignored by `source`, making
+            // debugging impossible when dotnetup can't find its runtime.
+            string envScriptOutput = Path.Combine(tempRoot, $"dotnetup-env-{shell}.sh");
+
+            scriptPath = Path.Combine(tempRoot, $"test-env-{shell}.sh");
+            scriptContent = $@"#!/bin/{shell}
+set -e
+# Generate env script to a file (errors will be caught by set -e)
+'{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}' > '{Escape(envScriptOutput)}'
+# Source the generated env script
+source '{Escape(envScriptOutput)}'
+# Clear cached dotnet path to ensure we use the newly configured PATH
+hash -d dotnet 2>/dev/null || true
+# Capture versions into variables first to avoid nested quoting issues on macOS bash 3.2
+_path_ver=$(dotnet --version)
+_root_ver=""$DOTNET_ROOT/dotnet""
+_root_ver_out=$(""$_root_ver"" --version)
+# Output results
+echo ""DOTNET_VERSION=$_path_ver""
+echo ""DOTNET_ROOT_VERSION=$_root_ver_out""
+echo ""PATH=$PATH""
+echo ""DOTNET_ROOT=$DOTNET_ROOT""
+";
+
+            // Make the script executable
+            var chmod = Process.Start(new ProcessStartInfo
+            {
+                FileName = "chmod",
+                Arguments = $"+x \"{scriptPath}\"",
+                UseShellExecute = false,
+                WorkingDirectory = tempRoot
+            });
+            chmod?.WaitForExit();
+        }
+        else // pwsh
+        {
+            static string Escape(string s) => s.Replace("'", "''");
+
+            shellExecutable = "pwsh";
+            scriptPath = Path.Combine(tempRoot, "test-env.ps1");
+            scriptContent = $@"
+$ErrorActionPreference = 'Stop'
+iex (& '{Escape(dotnetupPath)}' print-env-script --shell pwsh --dotnet-install-path '{Escape(installPath)}' | Out-String)
+# Verify both dotnet and DOTNET_ROOT/dotnet return the same version
+Write-Output ""DOTNET_VERSION=$(dotnet --version)""
+Write-Output ""DOTNET_ROOT_VERSION=$(& ""$env:DOTNET_ROOT/dotnet"" --version)""
+Write-Output ""PATH=$env:PATH""
+Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
+";
+        }
+
+        File.WriteAllText(scriptPath, scriptContent);
+
+        // Run the script
+        using var process = new Process();
+        process.StartInfo.FileName = shellExecutable;
+        process.StartInfo.Arguments = shell == "pwsh" ? $"-File \"{scriptPath}\"" : $"\"{scriptPath}\"";
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.WorkingDirectory = tempRoot;
+
+        // output which is a framework-dependent AppHost. Ensure DOTNET_ROOT is set so
+        // the AppHost can locate the runtime. On CI each script step gets a fresh shell,
+        // so DOTNET_ROOT from the restore step isn't inherited. The env script sourced
+        // later in the test will overwrite DOTNET_ROOT with the test install path.
+        string? currentDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
+            ?? (Environment.ProcessPath is string processPath ? Path.GetDirectoryName(processPath) : null);
+        if (currentDotnetRoot != null)
+        {
+            process.StartInfo.Environment["DOTNET_ROOT"] = currentDotnetRoot;
+        }
+
+        var outputBuilder = new StringBuilder();
+        var errorBuilder = new StringBuilder();
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data != null)
+            {
+                outputBuilder.AppendLine(e.Data);
+            }
+        };
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (e.Data != null)
+            {
+                errorBuilder.AppendLine(e.Data);
+            }
+        };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        process.WaitForExit();
+
+        string scriptOutput = outputBuilder.ToString();
+        string scriptError = errorBuilder.ToString();
+
+        // Verify the script succeeded
+        process.ExitCode.Should().Be(0, $"Script execution failed for {shell}. Output:\n{scriptOutput}\nError:\n{scriptError}");
+
+        // Parse the output lines
+        var outputLines = scriptOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        outputLines.Should().HaveCountGreaterThanOrEqualTo(4, $"Should have DOTNET_VERSION, DOTNET_ROOT_VERSION, PATH, and DOTNET_ROOT output for {shell}");
+
+        // Find version lines
+        var dotnetVersionLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_VERSION="));
+        var dotnetRootVersionLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_ROOT_VERSION="));
+
+        dotnetVersionLine.Should().NotBeNull($"DOTNET_VERSION should be printed for {shell}");
+        dotnetRootVersionLine.Should().NotBeNull($"DOTNET_ROOT_VERSION should be printed for {shell}");
+
+        var dotnetVersion = dotnetVersionLine!.Substring("DOTNET_VERSION=".Length).Trim();
+        var dotnetRootVersion = dotnetRootVersionLine!.Substring("DOTNET_ROOT_VERSION=".Length).Trim();
+
+        dotnetVersion.Should().NotBeNullOrEmpty($"dotnet --version should produce output for {shell}");
+        dotnetRootVersion.Should().NotBeNullOrEmpty($"$DOTNET_ROOT/dotnet --version should produce output for {shell}");
+
+        // Both versions should match (verifies DOTNET_ROOT points to same install as PATH)
+        dotnetVersion.Should().Be(dotnetRootVersion, $"dotnet --version and $DOTNET_ROOT/dotnet --version should return the same version for {shell}");
+
+        if (expectedVersion != null)
+        {
+            dotnetVersion.Should().Be(expectedVersion, $"dotnet version should match expected version for {shell}");
+        }
+        else
+        {
+            dotnetVersion.Should().MatchRegex(@"^\d+\.\d+\.\d+", $"dotnet version should be in format x.y.z for {shell}");
+        }
+
+        // Find PATH and DOTNET_ROOT lines
+        var pathLine = outputLines.FirstOrDefault(l => l.StartsWith("PATH="));
+        var dotnetRootLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_ROOT="));
+
+        pathLine.Should().NotBeNull($"PATH should be printed for {shell}");
+        dotnetRootLine.Should().NotBeNull($"DOTNET_ROOT should be printed for {shell}");
+
+        // Verify PATH contains the install path (find first entry with 'dotnet' to handle shell startup files that may prepend entries)
+        var pathValue = pathLine!.Substring("PATH=".Length);
+        var pathSeparator = OperatingSystem.IsWindows() ? ';' : ':';
+        var pathEntries = pathValue.Split(pathSeparator);
+        var dotnetPathEntries = pathEntries.Where(p => p.Contains("dotnet", StringComparison.OrdinalIgnoreCase)).ToList();
+        var firstDotnetPathEntry = dotnetPathEntries.FirstOrDefault();
+        firstDotnetPathEntry.Should().Be(installPath, $"First PATH entry containing 'dotnet' should be the dotnet install path for {shell}. Found dotnet entries: [{string.Join(", ", dotnetPathEntries)}]");
+
+        // Verify DOTNET_ROOT matches install path
+        var dotnetRootValue = dotnetRootLine!.Substring("DOTNET_ROOT=".Length);
+        dotnetRootValue.Should().Be(installPath, $"DOTNET_ROOT should be set to the install path for {shell}");
     }
 
     private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<DotnetInstall>? additionalAssertions = null)
