@@ -3,7 +3,7 @@
 
 using System.Net;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.Publish.Tasks.MsDeploy;
+using Microsoft.NET.Sdk.Common;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
@@ -136,8 +136,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
         private bool GetDestinationCredentials(out string user, out string password)
         {
-            VSHostObject hostObj = new(HostObject as IEnumerable<ITaskItem>);
-            return hostObj.ExtractCredentials(out user, out password);
+            VSHostObject hostObj = new(HostObject, Log);
+            if (hostObj.TryGetCredentials() is (string u, string p))
+            {
+                user = u;
+                password = p;
+
+                return true;
+            }
+
+            user = string.Empty;
+            password = string.Empty;
+
+            return false;
         }
     }
 }

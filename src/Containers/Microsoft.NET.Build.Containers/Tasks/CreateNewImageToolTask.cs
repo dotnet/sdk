@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.NET.Sdk.Common;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
