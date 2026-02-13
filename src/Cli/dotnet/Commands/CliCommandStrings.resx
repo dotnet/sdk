@@ -1473,10 +1473,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
-  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
-    <value>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</value>
-  </data>
   <data name="ConfirmationPromptYesValue" xml:space="preserve">
     <value>y</value>
     <comment>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</comment>
@@ -1487,13 +1483,6 @@ Proceed?</value>
   </data>
   <data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
     <value>Please type '{0}' for yes or '{1}' for no.</value>
-  </data>
-  <data name="ToolDownloadCanceled" xml:space="preserve">
-    <value>Tool package download canceled</value>
-  </data>
-  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
-    <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
-    <comment>{Locked="--yes"}</comment>
   </data>
   <data name="TestCommandUseSolution" xml:space="preserve">
     <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
