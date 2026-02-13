@@ -55,7 +55,7 @@ jobs:
           GH_TOKEN: ""
         run: |
           # Get diff only from .targets files between base and PR head
-          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} -- '*.targets')
+          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.targets')
           
           # Check diff size to prevent resource exhaustion (limit to ~1MB)
           DIFF_SIZE=$(echo "$DIFF_OUTPUT" | wc -c)
