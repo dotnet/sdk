@@ -3103,6 +3103,24 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
+        [Fact]
+        public async Task ImplicitReferenceTypeParamsArrayCreation_NoDiagnostic_CS()
+        {
+            string source = """
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    void M(ILogger logger, string value)
+                    {
+                        logger.LogInformation("Test: {Value}", value);
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
         // VB tests
 
         [Fact]
@@ -5693,6 +5711,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 Class C
                     Sub M(logger As ILogger)
                         [|logger.LogInformation("Test: {Number1} and {Number2}", 1, 2)|]
+                    End Sub
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [Fact]
+        public async Task ImplicitReferenceTypeParamsArrayCreation_NoDiagnostic_VB()
+        {
+            string source = """
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Sub M(logger As ILogger, value As String)
+                        logger.LogInformation("Test: {Value}", value)
                     End Sub
                 End Class
                 """;

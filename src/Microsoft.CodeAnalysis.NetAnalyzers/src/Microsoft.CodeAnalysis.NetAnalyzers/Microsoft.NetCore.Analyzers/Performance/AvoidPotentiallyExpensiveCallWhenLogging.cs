@@ -110,8 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return false;
             }
 
-            if (ICollectionExpressionOperationWrapper.IsInstance(operation) ||
-                operation is IAnonymousObjectCreationOperation or IAwaitOperation or IWithOperation)
+            if (operation is IAnonymousObjectCreationOperation or IAwaitOperation or IWithOperation)
             {
                 return true;
             }
@@ -121,14 +120,31 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return !IsTrivialInvocation(invocationOperation);
             }
 
-            if (operation is IObjectCreationOperation { Type.IsReferenceType: true })
+            if (operation is IArrayCreationOperation arrayCreationOperation)
             {
+                if (IsImplicitParamsArrayCreation(arrayCreationOperation))
+                {
+                    return arrayCreationOperation.Initializer?.ElementValues.Any(IsPotentiallyExpensive) is true;
+                }
+
                 return true;
             }
 
-            if (operation is IArrayCreationOperation arrayCreationOperation)
+            if (ICollectionExpressionOperationWrapper.IsInstance(operation))
             {
-                return !IsEmptyImplicitParamsArrayCreation(arrayCreationOperation);
+                var collectionExpression = ICollectionExpressionOperationWrapper.FromOperation(operation);
+
+                if (collectionExpression.WrappedOperation.IsImplicit)
+                {
+                    return collectionExpression.Elements.Any(IsPotentiallyExpensive);
+                }
+
+                return true;
+            }
+
+            if (operation is IObjectCreationOperation { Type.IsReferenceType: true })
+            {
+                return true;
             }
 
             if (operation is IConversionOperation conversionOperation)
@@ -224,12 +240,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 conversionOperation.Type?.IsReferenceType is true &&
                 conversionOperation.Operand.Type?.IsValueType is true;
 
-            static bool IsEmptyImplicitParamsArrayCreation(IArrayCreationOperation arrayCreationOperation) =>
+            static bool IsImplicitParamsArrayCreation(IArrayCreationOperation arrayCreationOperation) =>
                 arrayCreationOperation.IsImplicit &&
                 arrayCreationOperation.DimensionSizes.Length == 1 &&
-                arrayCreationOperation.DimensionSizes[0].ConstantValue.HasValue &&
-                arrayCreationOperation.DimensionSizes[0].ConstantValue.Value is int size &&
-                size == 0;
+                arrayCreationOperation.DimensionSizes[0].ConstantValue.HasValue;
         }
 
         internal sealed class RequiredSymbols(
