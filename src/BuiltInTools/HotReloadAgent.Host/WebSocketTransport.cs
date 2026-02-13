@@ -20,23 +20,13 @@ namespace Microsoft.DotNet.HotReload;
 /// Mobile workloads add this capability since named pipes don't work over the network.
 /// Uses RSA-based shared secret for authentication (same as BrowserRefreshServer).
 /// </summary>
-internal sealed class WebSocketTransport : Transport
+internal sealed class WebSocketTransport(string serverUrl, string? serverPublicKey, Action<string> log, int connectionTimeoutMS)
+    : Transport(log)
 {
-    private readonly string _serverUrl;
-    private readonly string? _serverPublicKey;
-    private readonly int _connectionTimeoutMS;
     private readonly ClientWebSocket _webSocket = new();
 
     // Buffer for receiving messages - WebSocket messages need to be read completely
     private MemoryStream? _receiveBuffer;
-
-    public WebSocketTransport(string serverUrl, string? serverPublicKey, Action<string> log, int connectionTimeoutMS)
-        : base(log)
-    {
-        _serverUrl = serverUrl;
-        _serverPublicKey = serverPublicKey;
-        _connectionTimeoutMS = connectionTimeoutMS;
-    }
 
     public override void Dispose()
     {
@@ -45,7 +35,7 @@ internal sealed class WebSocketTransport : Transport
     }
 
     public override string DisplayName
-        => $"WebSocket {_serverUrl}";
+        => $"WebSocket {serverUrl}";
 
     public override async ValueTask SendAsync(IResponse response, CancellationToken cancellationToken)
     {
@@ -53,24 +43,24 @@ internal sealed class WebSocketTransport : Transport
         if (response.Type == ResponseType.InitializationResponse)
         {
             using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            connectCts.CancelAfter(_connectionTimeoutMS);
+            connectCts.CancelAfter(connectionTimeoutMS);
 
             try
             {
                 // Add encrypted shared secret as subprotocol for authentication
-                if (_serverPublicKey != null)
+                if (serverPublicKey != null)
                 {
-                    var encryptedSecret = EncryptSharedSecret(_serverPublicKey);
+                    var encryptedSecret = EncryptSharedSecret(serverPublicKey);
                     _webSocket.Options.AddSubProtocol(encryptedSecret);
                 }
 
-                Log($"Connecting to {_serverUrl}...");
-                await _webSocket.ConnectAsync(new Uri(_serverUrl), connectCts.Token);
+                Log($"Connecting to {serverUrl}...");
+                await _webSocket.ConnectAsync(new Uri(serverUrl), connectCts.Token);
                 Log("Connected.");
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
-                throw new TimeoutException($"Failed to connect in {_connectionTimeoutMS}ms.");
+                throw new TimeoutException($"Failed to connect in {connectionTimeoutMS}ms.");
             }
         }
 

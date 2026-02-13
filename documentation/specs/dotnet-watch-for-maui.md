@@ -34,19 +34,19 @@ For mobile, we reuse the Kestrel infrastructure but with a different protocol:
 | Server                     | Client                 | Protocol                                   |
 |----------------------------|------------------------|--------------------------------------------|
 | `BrowserRefreshServer`     | JavaScript in browser  | JSON messages for CSS/page refresh         |
-| `HotReloadWebSocketServer` | Startup hook on device | Binary delta payloads (same as named pipe) |
+| `AgentWebSocketServer`     | Startup hook on device | Binary delta payloads (same as named pipe) |
 
-The mobile server (`HotReloadWebSocketServer`) extends `KestrelWebSocketServer` and speaks the same binary protocol as the named pipe transport, just over WebSocket instead.
+The mobile server (`AgentWebSocketServer`) extends `KestrelWebSocketServer` and speaks the same binary protocol as the named pipe transport, just over WebSocket instead.
 
 ### WebSocket Authentication
 
-To prevent unauthorized processes from connecting to the hot reload server, `HotReloadWebSocketServer` uses RSA-based authentication identical to `BrowserRefreshServer`:
+To prevent unauthorized processes from connecting to the hot reload server, `AgentWebSocketServer` uses RSA-based authentication identical to `BrowserRefreshServer`:
 
 1. **Server generates RSA key pair:** `SharedSecretProvider` creates a 2048-bit RSA key on startup
 2. **Public key exported:** The public key (X.509 SubjectPublicKeyInfo, Base64-encoded) is passed to the app via `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY`
 3. **Client encrypts secret:** The startup hook generates a random 32-byte secret, encrypts it with RSA-OAEP-SHA256 using the public key
 4. **Secret sent as subprotocol:** The encrypted secret is Base64-encoded (URL-safe: `-` for `+`, `_` for `/`, no padding) and sent as the WebSocket subprotocol header
-5. **Server validates:** `HotReloadWebSocketServer.HandleRequestAsync` decrypts the subprotocol value and accepts the connection only if decryption succeeds
+5. **Server validates:** `AgentWebSocketServer.HandleRequestAsync` decrypts the subprotocol value and accepts the connection only if decryption succeeds
 
 This ensures only processes that received the public key via the environment variable can connect. The URL-safe Base64 encoding is required because WebSocket subprotocol tokens cannot contain `+`, `/`, or `=` characters.
 
@@ -56,7 +56,7 @@ This ensures only processes that received the public key via the environment var
 
 ### 1. WebSocket Capability Detection
 
-[ProjectGraphUtilities.cs](../../src/BuiltInTools/Watch/Build/ProjectGraphUtilities.cs) checks for the `HotReloadWebSockets` capability (case-insensitive).
+[ProjectGraphUtilities.cs](../../src/BuiltInTools/Watch/Build/ProjectGraphUtilities.cs) checks for the `HotReloadWebSockets` capability.
 
 ### 2. MobileAppModel
 
@@ -75,7 +75,7 @@ dotnet run --no-build \
   -e DOTNET_STARTUP_HOOKS=<path to DeltaApplier.dll>
 ```
 
-The port is dynamically assigned (defaults to 0, meaning the OS picks an available port) to avoid conflicts in CI and parallel test scenarios. The `DOTNET_WATCH_HOTRELOAD_HTTP_PORT` environment variable can override this if a specific port is needed.
+The port is dynamically assigned (defaults to 0, meaning the OS picks an available port) to avoid conflicts in CI and parallel test scenarios. The `DOTNET_WATCH_AGENT_WEBSOCKET_PORT` environment variable can override this if a specific port is needed.
 
 These environment variables are passed as `@(RuntimeEnvironmentVariable)` MSBuild items to the workload. See [dotnet-run-for-maui.md](dotnet-run-for-maui.md) for details on `dotnet run` and environment variables.
 
@@ -104,7 +104,7 @@ Enables the Android workload to receive env vars from `dotnet run -e`:
    - Set up ADB port forwarding for the dynamically assigned port
    - Rewrite env vars for on-device paths
 4. **Device:** App starts → StartupHook loads → `Transport.TryCreate()` reads env vars → `WebSocketTransport` encrypts secret with RSA public key → connects to `ws://127.0.0.1:<port>` with encrypted secret as subprotocol
-5. **Server:** `HotReloadWebSocketServer` validates the encrypted secret, accepts connection
+5. **Server:** `AgentWebSocketServer` validates the encrypted secret, accepts connection
 6. **Hot Reload:** File change → delta compiled → sent over WebSocket → applied on device
 
 ## iOS

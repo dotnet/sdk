@@ -45,11 +45,11 @@ internal abstract class KestrelWebSocketServer : IDisposable
     /// <summary>
     /// Starts the Kestrel WebSocket server.
     /// </summary>
-    /// <param name="hostName">Host name to bind to (default: localhost)</param>
+    /// <param name="hostName">Host name to bind to</param>
     /// <param name="port">Port to bind to (0 for auto-assign)</param>
     /// <param name="useTls">Whether to enable HTTPS</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    protected async ValueTask StartServerAsync(string hostName = "localhost", int port = 0, bool useTls = false, CancellationToken cancellationToken = default)
+    protected async ValueTask StartServerAsync(string hostName, int port, bool useTls, CancellationToken cancellationToken)
     {
         if (Host != null)
         {
