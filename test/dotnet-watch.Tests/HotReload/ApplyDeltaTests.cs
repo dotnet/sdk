@@ -789,7 +789,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task GracefulTermination_Windows()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
