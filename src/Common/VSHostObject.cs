@@ -126,5 +126,16 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
         }
     }
 
-    private readonly record struct TaskItemDto(string? ItemSpec, Dictionary<string, string>? Metadata);
+    private readonly struct TaskItemDto
+    {
+        public string? ItemSpec { get; }
+        public Dictionary<string, string>? Metadata { get; }
+
+        [System.Text.Json.Serialization.JsonConstructor]
+        public TaskItemDto(string? itemSpec, Dictionary<string, string>? metadata)
+        {
+            ItemSpec = itemSpec;
+            Metadata = metadata;
+        }
+    }
 }
