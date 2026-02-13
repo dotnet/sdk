@@ -33,6 +33,20 @@ namespace Microsoft.NET.TestFramework.Assertions
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
 
+        public AndConstraint<DirectoryInfoAssertions> HaveFileContent(string relativePath, string expectedContent)
+        {
+            _dirInfo.File(relativePath).Should().Exist().And.Contain(expectedContent);
+            return new AndConstraint<DirectoryInfoAssertions>(this);
+        }
+
+        public AndConstraint<DirectoryInfoAssertions> HaveFileContentPattern(string relativePath, string expectedContentWildcardPattern)
+        {
+            var file = _dirInfo.File(relativePath);
+            file.Should().Exist();
+            File.ReadAllText(file.FullName).Should().Match(expectedContentWildcardPattern);
+            return new AndConstraint<DirectoryInfoAssertions>(this);
+        }
+
         public AndConstraint<DirectoryInfoAssertions> NotHaveFile(string expectedFile)
         {
             var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(Path.Combine(_dirInfo.FullName, expectedFile));
@@ -151,5 +165,26 @@ namespace Microsoft.NET.TestFramework.Assertions
 
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
+
+#if NET
+        public AndConstraint<DirectoryInfoAssertions> HaveSubtree(string expectedSubtree)
+        {
+            string actualSubtree = string.Join(Environment.NewLine, _dirInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
+                .Select(f =>
+                {
+                    var path = Path.GetRelativePath(relativeTo: _dirInfo.FullName, path: f.FullName).Replace('\\', '/');
+                    return f is DirectoryInfo ? $"{path}/" : path;
+                })
+                .Order(StringComparer.Ordinal));
+
+            actualSubtree.Should().Be(expected: expectedSubtree, because: $"""
+                actual is:
+                {actualSubtree}
+
+                """);
+
+            return new AndConstraint<DirectoryInfoAssertions>(this);
+        }
+#endif
     }
 }

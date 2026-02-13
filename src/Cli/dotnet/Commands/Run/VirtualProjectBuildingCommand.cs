@@ -221,6 +221,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     {
                         if (result == 0)
                         {
+                            ReuseInfoFromPreviousCacheEntry(cache);
                             MarkBuildSuccess(cache);
                         }
 
@@ -249,6 +250,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
+            // Set environment variables for MSBuild.
+            foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
+            {
+                savedEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
+                Environment.SetEnvironmentVariable(key, value);
+            }
+
             // Set environment variables.
             foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
             {
@@ -326,6 +334,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     else
                     {
                         CacheCscArguments(cache, buildResult);
+                        CollectAdditionalSources(cache, buildRequest.ProjectInstance);
 
                         MarkBuildSuccess(cache);
                     }
@@ -361,15 +370,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            binaryLogger?.Value.ReallyShutdown();
+            if (binaryLogger?.IsValueCreated == true) binaryLogger.Value.ReallyShutdown();
             consoleLogger?.Shutdown();
         }
 
         static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
         {
+            // Compute the session ID outside the lambda to ensure it's the same for all project instances
+            // (since there can be multiple project instances created while evaluating file-level directives).
+            var sessionId = Guid.NewGuid().ToString("D");
             return globalProperties =>
             {
-                globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
+                globalProperties["MSBuildRestoreSessionId"] = sessionId;
                 globalProperties["MSBuildIsRestoring"] = bool.TrueString;
                 foreach (var (key, value) in RestoringCommand.RestoreOptimizationProperties)
                 {
@@ -465,6 +477,54 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 return arg;
             }
+        }
+
+        void ReuseInfoFromPreviousCacheEntry(CacheInfo cache)
+        {
+            Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
+
+            if (cache.PreviousEntry != null)
+            {
+                foreach (var file in cache.PreviousEntry.AdditionalSources)
+                {
+                    cache.CurrentEntry.AdditionalSources.Add(file);
+                }
+            }
+        }
+
+        void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
+        {
+            // We intentionally ignore new additional sources in up-to-date check
+            // to avoid the overhead of MSBuild evaluation every time (even if the app is up to date).
+            // That can lead to missed changes but we are fine with that in rare cases
+            // (another example: we ignore changes to implicit build files imported transitively).
+            // Therefore, during up-to-date check, we only check the previously cached list of additional sources,
+            // and collect new ones only here after a re-build.
+
+            Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
+
+            var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);
+            Debug.Assert(entryPointFileDirectory != null);
+
+            var mapping = Builder.GetItemMapping(projectInstance, ErrorReporters.IgnoringReporter);
+            foreach (var entry in mapping)
+            {
+                if (string.Equals(entry.ItemType, "None", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (var item in projectInstance.GetItems(entry.ItemType))
+                {
+                    var fullPath = Path.GetFullPath(
+                        path: item.GetMetadataValue("FullPath"),
+                        basePath: entryPointFileDirectory);
+
+                    cache.CurrentEntry.AdditionalSources.Add(fullPath);
+                }
+            }
+
+            cache.CurrentEntry.AdditionalSources.Remove(Builder.EntryPointFileFullPath);
         }
 
         void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
@@ -669,9 +729,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         };
 
         var entryPointFile = new FileInfo(Builder.EntryPointFileFullPath);
+        var entryPointFileDirectory = entryPointFile.Directory;
+        Debug.Assert(entryPointFileDirectory != null);
 
         // Collect current implicit build files.
-        CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
+        CollectImplicitBuildFiles(entryPointFileDirectory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
 
         return new CacheInfo
         {
@@ -682,9 +744,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     // internal for testing
-    internal static void CollectImplicitBuildFiles(DirectoryInfo? startDirectory, HashSet<string> collectedPaths, out string? exampleMSBuildFile)
+    internal static void CollectImplicitBuildFiles(DirectoryInfo startDirectory, HashSet<string> collectedPaths, out string? exampleMSBuildFile)
     {
-        Debug.Assert(startDirectory != null);
         exampleMSBuildFile = null;
         for (DirectoryInfo? directory = startDirectory; directory != null; directory = directory.Parent)
         {
@@ -833,6 +894,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!previousCacheEntry.ImplicitBuildFiles.Contains(implicitBuildFilePath))
             {
                 Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
+                return true;
+            }
+        }
+
+        // Check that additional sources are not modified.
+        // NOTE: We currently don't support the CSC-arg-reuse optimization through additional sources (i.e., we don't set `CanUseCscViaPreviousArguments=true` here).
+        //       If that changes, we will also need to make sure `RunFileBuildCacheEntry.Directives` contains directives from other files
+        //       (as that is used to determine whether we can reuse CSC args, see `GetReasonToNotReuseCscArguments`).
+        foreach (var additionalSourcePath in previousCacheEntry.AdditionalSources)
+        {
+            var additionalSourceFileInfo = ResolveLinkTargetOrSelf(new FileInfo(additionalSourcePath));
+            if (!additionalSourceFileInfo.Exists || additionalSourceFileInfo.LastWriteTimeUtc > buildTimeUtc)
+            {
+                Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
                 return true;
             }
         }
@@ -1047,11 +1122,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             projectCollection,
             ThrowingReporter,
             out var project,
-            out var evaluatedDirectives,
+            out _,
             Directives,
             addGlobalProperties);
-
-        Directives = evaluatedDirectives;
 
         return project;
     }
@@ -1076,7 +1149,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public static readonly ErrorReporter ThrowingReporter =
-        static (sourceFile, textSpan, message) => throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}");
+        static (sourceFile, textSpan, message, innerException) => throw new GracefulException(
+            $"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
+            innerException);
 }
 
 internal sealed class RunFileBuildCacheEntry
@@ -1099,9 +1174,16 @@ internal sealed class RunFileBuildCacheEntry
     public HashSet<string> ImplicitBuildFiles { get; }
 
     /// <summary>
-    /// <see cref="CSharpDirective"/>s recognized by the SDK (i.e., except shebang).
+    /// <see cref="CSharpDirective"/>s from the entry point file recognized by the SDK (i.e., except shebang).
     /// </summary>
     public ImmutableArray<string> Directives { get; set; } = [];
+
+    /// <summary>
+    /// Full paths of non-entry-point files that participate in the build
+    /// (e.g., default items like <c>.resx</c> and C# source files from <c>#:include</c> directives).
+    /// </summary>
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public HashSet<string> AdditionalSources { get; }
 
     public BuildLevel BuildLevel { get; set; }
 
@@ -1126,6 +1208,7 @@ internal sealed class RunFileBuildCacheEntry
     {
         GlobalProperties = new(GlobalPropertiesComparer);
         ImplicitBuildFiles = new(FilePathComparer);
+        AdditionalSources = new(FilePathComparer);
     }
 
     public RunFileBuildCacheEntry(Dictionary<string, string> globalProperties)
@@ -1133,6 +1216,7 @@ internal sealed class RunFileBuildCacheEntry
         Debug.Assert(globalProperties.Comparer == GlobalPropertiesComparer);
         GlobalProperties = globalProperties;
         ImplicitBuildFiles = new(FilePathComparer);
+        AdditionalSources = new(FilePathComparer);
     }
 }
 
