@@ -60,7 +60,7 @@ This ensures only processes that received the public key via the environment var
 
 ### 2. MobileAppModel
 
-Creates a `MobileHotReloadClient` with a WebSocket server instead of named pipes.
+Creates a `DefaultHotReloadClient` with a `WebSocketClientTransport` instead of the default `NamedPipeClientTransport`.
 
 ### 3. Environment Variables
 

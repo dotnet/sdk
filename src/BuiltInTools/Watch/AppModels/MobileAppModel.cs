@@ -14,5 +14,8 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
         // Mobile workloads (Android, iOS) add this capability since named pipes don't work over the network.
         // Pass the startup hook path so it can be included in the environment variables
         // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
-        => new(new HotReloadClients(new MobileHotReloadClient(clientLogger, agentLogger, context.EnvironmentOptions.AgentWebSocketPort, GetStartupHookPath(project)), browserRefreshServer: null));
+        => new(new HotReloadClients(
+            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: false,
+                new WebSocketClientTransport(context.EnvironmentOptions.AgentWebSocketPort, clientLogger)),
+            browserRefreshServer: null));
 }
