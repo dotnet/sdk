@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Versioning;
