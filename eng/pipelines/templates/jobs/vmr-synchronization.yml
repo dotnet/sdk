@@ -43,11 +43,11 @@ jobs:
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
-      image: 1es-ubuntu-2004-open
+      image: 1es-ubuntu-2204-open
       os: linux
     ${{ else }}:
       name: $(DncEngInternalBuildPool)
-      demands: ImageOverride -equals 1es-ubuntu-2004
+      demands: ImageOverride -equals 1es-ubuntu-2204
       os: linux
 
   steps:
