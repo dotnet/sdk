@@ -25,7 +25,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
             # Source this script to add .NET to your PATH and set DOTNET_ROOT
             #
             # Note: If you had a different dotnet in PATH before sourcing this script,
-            # you may need to run 'hash -d dotnet' to clear the cached command location.
+            # you may need to run 'rehash' or 'hash -d dotnet' to clear the cached command location.
             # When dotnetup modifies shell profiles directly, it will handle this automatically.
 
             export DOTNET_ROOT='{escapedPath}'

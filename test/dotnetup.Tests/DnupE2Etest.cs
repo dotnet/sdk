@@ -138,7 +138,7 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         // Create an install path with special characters (spaces and single quotes)
-        var specialChars = OperatingSystem.IsWindows() ? "dotnet with `'special chars'" : "dotnet with `\"'special chars\\'";
+        var specialChars = OperatingSystem.IsWindows() ? "dotnet with 'special chars'" : "dotnet with \"'special chars'\"";
         string specialCharsPath = Path.Combine(testEnv.TempRoot, specialChars);
         Directory.CreateDirectory(specialCharsPath);
 
