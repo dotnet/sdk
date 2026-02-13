@@ -32,9 +32,9 @@ internal sealed class BrowserRefreshServer(
     ILoggerFactory loggerFactory,
     string middlewareAssemblyPath,
     string dotnetPath,
-    string? autoReloadWebSocketHostName,
-    int? autoReloadWebSocketPort,
-    int? autoReloadWebSocketSecurePort,
+    string? browserWebSocketHostName,
+    int? browserWebSocketPort,
+    int? browserWebSocketSecurePort,
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
@@ -45,9 +45,9 @@ internal sealed class BrowserRefreshServer(
 
     protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
-        var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
-        var port = autoReloadWebSocketPort ?? 0;
-        var securePort = autoReloadWebSocketSecurePort ?? 0;
+        var hostName = browserWebSocketHostName ?? "127.0.0.1";
+        var port = browserWebSocketPort ?? 0;
+        var securePort = browserWebSocketSecurePort ?? 0;
 
         var supportsTls = await IsTlsSupportedAsync(cancellationToken);
 
@@ -114,7 +114,7 @@ internal sealed class BrowserRefreshServer(
 
         Debug.Assert(serverUrls != null);
 
-        if (autoReloadWebSocketHostName is null)
+        if (browserWebSocketHostName is null)
         {
             return [.. serverUrls.Select(s =>
                 s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
