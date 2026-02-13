@@ -41,7 +41,8 @@ internal sealed class AgentWebSocketServer : KestrelWebSocketServer
     /// Gets the first bound WebSocket URL (e.g., "ws://127.0.0.1:12345").
     /// Only valid after server has started.
     /// </summary>
-    public string WebSocketUrl => ServerUrls.FirstOrDefault() ?? throw new InvalidOperationException("Server not started");
+    public string WebSocketUrl
+        => ServerUrls.Select(ConvertToWebSocketUrl).FirstOrDefault() ?? throw new InvalidOperationException("Server not started");
 
     /// <summary>
     /// Gets the bound port number. Only valid after server has started.
