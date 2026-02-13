@@ -513,7 +513,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       GeneratePublishDependencyFile;
       GenerateSingleFileBundle;
     </_ComputeFilesToPublishDependsOn>
-  </Target>
+  </PropertyGroup>
 
   <Target Name="ComputeFilesToPublish"
           DependsOnTargets="$(_ComputeFilesToPublishDependsOn)">
