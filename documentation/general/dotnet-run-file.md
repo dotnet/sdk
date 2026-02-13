@@ -179,7 +179,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 ```
 
 Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
-The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`.  
+The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:include`.  
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
