@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests
 
         private class ResolveNothingCommandResolverPolicy : ICommandResolverPolicy
         {
-            public CompositeCommandResolver CreateCommandResolver()
+            public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
             {
                 var compositeCommandResolver = new CompositeCommandResolver();
                 compositeCommandResolver.AddCommandResolver(new ResolveNothingCommandResolver());
