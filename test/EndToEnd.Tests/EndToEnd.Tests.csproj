@@ -8,7 +8,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
   </PropertyGroup>
 
   <ItemGroup>

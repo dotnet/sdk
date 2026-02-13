@@ -2,34 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../CliStrings.resx">
     <body>
-      <trans-unit id="Add">
-        <source>Add</source>
-        <target state="translated">Ekle</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AmbiguousCommandName">
         <source>Ambiguous command name: {0}</source>
         <target state="translated">Belirsiz komut adı: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArchArgumentName">
-        <source>ARCH</source>
-        <target state="translated">ARCH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArchitectureOptionDescription">
-        <source>The target architecture.</source>
-        <target state="translated">Hedef mimari.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArtifactsPathArgumentName">
-        <source>ARTIFACTS_DIR</source>
-        <target state="translated">ARTIFACTS_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArtifactsPathOptionDescription">
-        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
-        <target state="translated">Yapıtlar yolu. Derleme, yayımlama ve paket çıkışı dahil olmak üzere projedeki tüm çıkışlar belirtilen yol altındaki alt klasörlerde bulunur.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttemptingToCreateCommandSpec">
@@ -74,11 +49,6 @@
         <target state="translated">Bildirim dosyasında paket kimliği {0} olan ile bir paket bulunamıyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotResolveRuntimeIdentifier">
-        <source>Resolving the current runtime identifier failed.</source>
-        <target state="translated">Geçerli çalışma zamanı tanımlayıcısı çözümlenemedi.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CannotSpecifyBothRuntimeAndArchOptions">
         <source>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</source>
         <target state="translated">Hem `-r|--runtime` hem de `-a|--arch` seçeneğinin belirtilmesi desteklenmiyor.</target>
@@ -87,64 +57,6 @@
       <trans-unit id="CannotSpecifyBothRuntimeAndOsOptions">
         <source>Specifying both the `-r|--runtime` and `-os` options is not supported.</source>
         <target state="translated">Hem `-r|--runtime` hem de `-os` seçeneğinin belirtilmesi desteklenmiyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableDescription">
-        <source>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</source>
-        <target state="needs-review-translation">Bir ortam değişkeninin değerini ayarlar. 
-Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
-Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
-
-Örnek:
--e DEĞİŞKEN=abc
--e DEĞİŞKEN="boşluk içeren değerler"
--e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
--e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableExpression">
-        <source>NAME="VALUE"</source>
-        <target state="translated">AD="DEĞER"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestEnvironmentVariableDescription">
-        <source>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdVersionSuffixDescription">
-        <source>Set the value of the $(VersionSuffix) property to use when building the project.</source>
-        <target state="translated">Projeyi derlerken kullanılacak $(VersionSuffix) özelliğinin değerini ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
@@ -157,34 +69,14 @@ Examples:
         <target state="translated">"{0}" için komut yürütülebilir dosyası bulunamadı. Proje geri yüklenmemiş veya geri yükleme başarısız olmuş olabilir - `dotnet restore` çalıştırın</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandInteractiveOptionDescription">
-        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="translated">Komutun durup kullanıcı girişini veya eylemini (örneğin, kimlik doğrulamasının tamamlanmasını) beklemesine izin verir .</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandPrereleaseOptionDescription">
-        <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Ön sürüm paketlerinin yüklenmesini sağlar.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandSpecIsNull">
         <source>{0}: commandSpec is null.</source>
         <target state="translated">{0}: commandSpec null.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommonCmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommonFileNotFound">
         <source>File `{0}` not found.</source>
         <target state="translated">`{0}` dosyası bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationArgumentName">
-        <source>CONFIGURATION</source>
-        <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
@@ -200,11 +92,6 @@ Examples:
       <trans-unit id="CouldNotFindToolRuntimeConfigFile">
         <source>{0}: Could not find runtimeconfig.json file for tool {1}</source>
         <target state="translated">{0}: {1} aracı için runtimeconfig.json dosyası bulunamadı</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Delete">
-        <source>Delete</source>
-        <target state="translated">Sil</target>
         <note />
       </trans-unit>
       <trans-unit id="DepsJsonGeneratorProjectNotSet">
@@ -225,16 +112,6 @@ Examples:
       <trans-unit id="DidYouMean">
         <source>Did you mean the following command?</source>
         <target state="translated">Aşağıdaki komutu mu kullanmak istediniz?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Directory">
-        <source>Directory</source>
-        <target state="translated">Dizin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableBuildServersOptionDescription">
-        <source>Force the command to ignore any persistent build servers.</source>
-        <target state="translated">Komutu kalıcı derleme sunucularını yoksaymaya zorla.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoesNotExist">
@@ -357,11 +234,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">.NET SDK’sını yüklediğinizden, yüklediğiniz aracı çalıştırmadan önce Komut İstemi penceresini yeniden açmanız gerekiyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Error">
-        <source>Error</source>
-        <target state="translated">Hata</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">'tool install' işlemini {0} 'HTTP' kaynağıyla çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. Bir HTTP kaynağı kullanmak için NuGet.Config dosyanızda 'allowInsecureConnections' ayarını açıkça true olarak ayarlamanız gerekir. Daha fazla bilgi için şuraya bakın: https://aka.ms/nuget-https-everywhere.</target>
@@ -464,16 +336,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">'commands' girişi eksik.</target>
         <note />
       </trans-unit>
-      <trans-unit id="File">
-        <source>File</source>
-        <target state="translated">Dosya</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FileArgumentDescription">
-        <source>The file-based app to operate on.</source>
-        <target state="translated">İşlem yapılacak dosya tabanlı uygulama.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">Biçim sürümü desteklenenden daha yüksek. Bu araç bu SDK sürümünde desteklenmeyebilir. SDK’nızı güncelleştirin.</target>
@@ -497,16 +359,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FoundToolLockFile">
         <source>{0}: found tool lockfile at : {1}</source>
         <target state="translated">{0}: araç kilit dosyası şurada bulundu : {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkArgumentName">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkDependentOptionDescription">
-        <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
-        <target state="translated">Uygulamanızı çerçeveye bağımlı bir uygulama olarak yayımlayın. Uygulamanızı çalıştırmak için hedef makineye uyumlu bir .NET çalışma zamanı yüklenmelidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratingDepsJson">
@@ -548,11 +400,6 @@ setx PATH "%PATH%;{0}"
 {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidProject">
-        <source>Invalid project `{0}`.</source>
-        <target state="translated">`{0}` projesi geçersiz.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InvalidProjectWithExceptionMessage">
         <source>Invalid project `{0}`. {1}.</source>
         <target state="translated">`{0}` projesi geçersiz. {1}.</target>
@@ -568,11 +415,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">`{0}` çözümü geçersiz. {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidVersion">
-        <source>Invalid version string: {0}</source>
-        <target state="translated">Geçersiz sürüm dizesi: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0}, {1} NuGet akışlarında bulunamadı.</target>
@@ -583,24 +425,9 @@ setx PATH "%PATH%;{0}"
         <target state="translated">{0} dosyasında Json ayrıştırma hatası : {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Library">
-        <source>Library</source>
-        <target state="translated">Kitaplık</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0}: kitaplık, kilit dosyasında bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="List">
-        <source>List</source>
-        <target state="translated">Liste</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForPreferCliRuntimeFile">
@@ -693,11 +520,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">"{0}" komutunu kullanabilmek için "dotnet tool restore" komutunu çalıştırın.</target>
         <note />
       </trans-unit>
-      <trans-unit id="New">
-        <source>New</source>
-        <target state="translated">Yeni</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">Çözümde proje bulunamadı.</target>
@@ -706,11 +528,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">{1} projesinde hiçbir {0} başvurusu yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoRestoreDescription">
-        <source>Do not restore the project before building.</source>
-        <target state="translated">Projeyi derlemeden önce geri yüklemeyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="NonRetriableNugetSearchFailure">
@@ -737,20 +554,10 @@ setx PATH "%PATH%;{0}"
 {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="OSArgumentName">
-        <source>OS</source>
-        <target state="translated">İS</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">-p seçeneği kullanılarak tek seferde yalnızca bir proje belirtilebilir.</target>
         <note>{Locked="-p"}</note>
-      </trans-unit>
-      <trans-unit id="OperatingSystemOptionDescription">
-        <source>The target operating system.</source>
-        <target state="translated">Hedef işletim sistemi.</target>
-        <note />
       </trans-unit>
       <trans-unit id="P2P">
         <source>Project to Project</source>
@@ -762,30 +569,10 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Tek seferde yalnızca bir .nuspec dosyası paketlenebilir</target>
         <note />
       </trans-unit>
-      <trans-unit id="Package">
-        <source>Package</source>
-        <target state="translated">Paket</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
-        <source>Package reference id and version must not be null.</source>
-        <target state="translated">Paket referans kimliği ve sürümü null olmamalıdır.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Paket bağımsız değişkeni zaten bir sürüm içeriyorsa --version belirtilemez.</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="PackageReference">
-        <source>Package reference</source>
-        <target state="translated">Paket başvurusu</target>
-        <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionDefault">
         <source>A version of {0} of package {1}</source>
@@ -810,11 +597,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
         <source>A version less than {0} of package {1}</source>
         <target state="translated">{1} paketinin {0} sürümünden düşük bir sürümü</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Project">
-        <source>Project</source>
-        <target state="translated">Proje</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectAddedToTheSolution">
@@ -869,21 +651,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">`{0}` projesi çözümde bulunamadı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectOrFileArgumentDescription">
-        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
-        <target state="translated">İşlem yapılacak proje dosyası veya C# dosyası tabanlı uygulama. Bir dosya belirtilmezse, komut geçerli dizinde bir proje dosyası arar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectOrFileArgumentName">
-        <source>PROJECT | FILE</source>
-        <target state="translated">PROJE | DOSYA</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectReference">
-        <source>Project reference</source>
-        <target state="translated">Proje başvurusu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectReferenceCouldNotBeFound">
         <source>Project reference `{0}` could not be found.</source>
         <target state="translated">`{0}` proje başvurusu bulunamadı.</target>
@@ -899,11 +666,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">`{0}` proje başvurusu kaldırıldı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectRemoved">
-        <source>Project `{0}` removed from solution.</source>
-        <target state="translated">`{0}` projesi çözümden kaldırıldı.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectRemovedFromTheSolution">
         <source>Project `{0}` removed from the solution.</source>
         <target state="translated">`{0}` projesi çözümden kaldırıldı.</target>
@@ -914,19 +676,9 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Razor derleme sunucusu</target>
         <note />
       </trans-unit>
-      <trans-unit id="Reference">
-        <source>Reference</source>
-        <target state="translated">Başvuru</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
         <source>Reference `{0}` added to the project.</source>
         <target state="translated">`{0}` başvurusu projeye eklendi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Remove">
-        <source>Remove</source>
-        <target state="translated">Kaldır</target>
         <note />
       </trans-unit>
       <trans-unit id="RequiredCommandNotPassed">
@@ -951,32 +703,15 @@ setx PATH "%PATH%;{0}"
     RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimeIdentifierArgumentName">
-        <source>RUNTIME_IDENTIFIER</source>
-        <target state="translated">RUNTIME_IDENTIFIER</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">Tanılama çıkışını etkinleştirir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">Komut şemasını JSON formatında görüntüle.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' ve '--no-self-contained' seçenekleri birlikte kullanılamaz.</target>
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
-      </trans-unit>
-      <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Uygulamanızla birlikte .NET çalışma zamanını yayımladığınızda hedef makinede çalışma zamanının yüklü olması gerekmez.
-Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtildiyse .NET 7 veya altı projeler hedeflenirken varsayılan değer 'true' olur.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
         <source>Command '{0}' conflicts with an existing command from another tool.</source>
@@ -996,11 +731,6 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
       <trans-unit id="ShutdownCommandFailed">
         <source>The shutdown command failed: {0}</source>
         <target state="translated">Kapatma komutu başarısız oldu: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Solution">
-        <source>Solution</source>
-        <target state="translated">Çözüm</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionAlreadyContainsProject">
@@ -1023,29 +753,9 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentDescription">
-        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">Üzerinde işlem yapılacak proje veya çözüm dosyası. Bir dosya belirtilmezse komut geçerli dizinde dosya arar.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
         <source>PROJECT | SOLUTION</source>
         <target state="translated">PROJECT | SOLUTION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
-        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="translated">Üzerinde işlem yapılacak proje veya çözüm veya C# (dosya tabanlı program) dosyası. Bir dosya belirtilmezse, komut geçerli dizinde bir proje veya çözüm arayacaktır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionOrProjectOrFileArgumentName">
-        <source>PROJECT | SOLUTION | FILE</source>
-        <target state="translated">PROJE | ÇÖZÜM | DOSYA</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOne">
-        <source>Specify at least one {0}.</source>
-        <target state="translated">En az bir {0} belirtin.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyAtLeastOneProjectToAdd">
@@ -1133,11 +843,6 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">Araç, geçerli mimariyi veya işletim sistemini ({0}) desteklemiyor. Desteklenen çalışma zamanları: {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="Type">
-        <source>Type</source>
-        <target state="translated">Tür</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnableToCheckCertificateChainPolicy">
         <source>The requested certificate chain policy could not be checked: {0}</source>
         <target state="translated">İstenen sertifika zinciri ilkesi denetlenemedi: {0}</target>
@@ -1151,11 +856,6 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
       <trans-unit id="UnableToGenerateDepsJson">
         <source>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</source>
         <target state="translated">deps.json oluşturulamıyor, dosya önceden oluşturulmuş olabilir.  Tanılama çıkışının "dotnet"ten sonra "-d" seçeneğini belirtebilirsiniz (örneğin, "dotnet -d &lt;toolname&gt;": {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnableToLocateDotnetMultiplexer">
-        <source>Unable to locate dotnet multiplexer</source>
-        <target state="translated">Dotnet çoğullayıcısı bulunamadı</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
@@ -1173,24 +873,9 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">'{0}' projesi bilinmeyen bir proje türüne sahip ve çözüm dosyasına eklenemiyor. Destek için SDK sağlayıcınıza başvurun.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Update">
-        <source>Update</source>
-        <target state="translated">Güncelleştir</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VBCSCompilerServer">
         <source>VB/C# compiler server</source>
         <target state="translated">VB/C# derleyici sunucusu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Value">
-        <source>Value</source>
-        <target state="translated">Değer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbosityOptionDescription">
-        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="translated">MSBuild ayrıntı düzeyini ayarlar. İzin verilen değerler: q[uiet], m[inimal], n[ormal], d[etailed] ve diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
@@ -1208,20 +893,10 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">{0} sürümü geçersiz.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionSuffixArgumentName">
-        <source>VERSION_SUFFIX</source>
-        <target state="translated">VERSION_SUFFIX</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadIntegrityCheckError">
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="translated">İş yükleri doğrulanırken bir sorunla karşılaşıldı. Daha fazla bilgi için "dotnet workload update" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload update"}</note>
-      </trans-unit>
-      <trans-unit id="YesOptionDescription">
-        <source>Accept all confirmation prompts using "yes."</source>
-        <target state="translated">"Evet" seçeneğini kullanarak tüm onay istemlerini kabul edin.</target>
-        <note />
       </trans-unit>
     </body>
   </file>

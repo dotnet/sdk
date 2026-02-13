@@ -8,7 +8,7 @@ namespace System.CommandLine.StaticCompletions.Shells;
 
 public class ZshShellProvider : IShellProvider
 {
-    public string ArgumentName => "zsh";
+    public string ArgumentName => ShellNames.Zsh;
 
     public string Extension => "zsh";
 

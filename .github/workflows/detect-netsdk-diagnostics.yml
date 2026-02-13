@@ -1,0 +1,202 @@
+# Workflow to detect new NETSDK diagnostic codes in pull requests
+#
+# This workflow automatically:
+# 1. Uses git diff to get changes from .xlf files only
+# 2. Scans for newly added NETSDK diagnostic codes (e.g., NETSDK1234:)
+# 3. Applies the 'sdk-diagnostic-docs-needed' label when new diagnostics are found
+# 4. Posts/updates a comment reminding contributors to update SDK diagnostic documentation
+#    in the dotnet/docs repository at docs/core/tools/sdk-errors/
+#
+# Prerequisites: The 'sdk-diagnostic-docs-needed' label must exist in the repository
+#
+# Security: Uses pull_request_target to run in the base branch context (safe for forks)
+# The workflow checks out the base branch and fetches the PR head, but does not execute any code from the PR.
+#
+name: Detect New NETSDK Diagnostics
+
+on:
+  # Use pull_request_target for safe execution from forks
+  # This runs in the context of the base branch, not the PR head
+  pull_request_target:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - release/*
+
+permissions: read-all
+
+jobs:
+  detect-diagnostics:
+    name: Detect New NETSDK Diagnostic Codes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      MAX_DIFF_SIZE_BYTES: 10485760  # 10MB
+    outputs:
+      found_diagnostics: ${{ steps.detect.outputs.found_diagnostics }}
+      has_diagnostics: ${{ steps.detect.outputs.has_diagnostics }}
+    
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR head
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+
+      - name: Get diff from .xlf files only
+        id: get-diff
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+        run: |
+          # Get diff of .xlf files changed by this PR.
+          # Use three-dot diff (merge-base) so that only the PR's changes are included,
+          # not unrelated changes on the target branch that the PR hasn't been rebased onto.
+          # Write to a file to avoid GitHub Actions step output size limits.
+          git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf' > "$RUNNER_TEMP/xlf_diff.txt"
+
+          # Guard against extremely large diffs that could stall the pipeline
+          DIFF_SIZE=$(wc -c < "$RUNNER_TEMP/xlf_diff.txt")
+          if [ "$DIFF_SIZE" -gt "$MAX_DIFF_SIZE_BYTES" ]; then
+            echo "::error::The .xlf diff is $(( DIFF_SIZE / 1048576 ))MB which exceeds the $(( MAX_DIFF_SIZE_BYTES / 1048576 ))MB limit. This likely means the PR contains an unusually large number of translation file changes. Try splitting the .xlf changes into smaller PRs."
+            exit 1
+          fi
+
+      - name: Detect new NETSDK diagnostics
+        id: detect
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          XLF_DIFF_PATH: ${{ runner.temp }}/xlf_diff.txt
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync(process.env.XLF_DIFF_PATH, 'utf8');
+            
+            // Pattern to match NETSDK diagnostic codes
+            const diagnosticPattern = /NETSDK(\d{4}):/g;
+            
+            // Extract only added lines from the diff (lines starting with +)
+            const addedLines = diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++'));
+            
+            // Find all NETSDK codes in added lines
+            const diagnosticCodes = new Set();
+            for (const line of addedLines) {
+              // Reset regex state for each line to avoid issues with global flag
+              diagnosticPattern.lastIndex = 0;
+              let match;
+              while ((match = diagnosticPattern.exec(line)) !== null) {
+                diagnosticCodes.add(`NETSDK${match[1]}`);
+              }
+            }
+            
+            const foundDiagnostics = Array.from(diagnosticCodes).sort();
+            
+            core.setOutput('found_diagnostics', foundDiagnostics.join(','));
+            core.setOutput('has_diagnostics', foundDiagnostics.length > 0 ? 'true' : 'false');
+            
+            if (foundDiagnostics.length > 0) {
+              core.info(`Found ${foundDiagnostics.length} new NETSDK diagnostic(s) in .xlf files: ${foundDiagnostics.join(', ')}`);
+            } else {
+              core.info('No new NETSDK diagnostics found in .xlf files in this PR.');
+            }
+            
+            return foundDiagnostics;
+
+  apply-label-and-comment:
+    name: Apply Label and Comment
+    runs-on: ubuntu-latest
+    needs: detect-diagnostics
+    if: needs.detect-diagnostics.outputs.has_diagnostics == 'true'
+    permissions:
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Add label to PR
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const labelName = 'sdk-diagnostic-docs-needed';
+            
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: [labelName]
+            });
+            
+            core.info(`Label '${labelName}' added to PR #${issue_number}`);
+
+      - name: Post or update comment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          DIAGNOSTICS: ${{ needs.detect-diagnostics.outputs.found_diagnostics }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const diagnostics = process.env.DIAGNOSTICS.split(',');
+            
+            // Create the comment body
+            const commentIdentifier = '<!-- netsdk-diagnostics-reminder -->';
+            const commentBody = `${commentIdentifier}
+            ## 📋 SDK Diagnostic Documentation Reminder
+            
+            This PR introduces **${diagnostics.length}** new SDK diagnostic code${diagnostics.length > 1 ? 's' : ''}:
+            ${diagnostics.map(code => `- \`${code}\``).join('\n')}
+            
+            ### Action Required
+            Please ensure that documentation for ${diagnostics.length > 1 ? 'these diagnostics' : 'this diagnostic'} is added or updated in the [dotnet/docs](https://github.com/dotnet/docs) repository at:
+            - Path: \`docs/core/tools/sdk-errors/\`
+            - Documentation: https://learn.microsoft.com/dotnet/core/tools/sdk-errors/
+            
+            Each diagnostic should have:
+            - A clear description of the error/warning
+            - Possible causes
+            - Recommended solutions
+            - Code examples where applicable
+            
+            Thank you for helping keep our documentation up to date! 🙏`;
+            
+            // Check if we already have a comment from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes(commentIdentifier)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              core.info(`Updated existing comment #${existingComment.id}`);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody
+              });
+              core.info('Created new comment');
+            }

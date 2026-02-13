@@ -10,6 +10,12 @@
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)'">5.0.100.0</AssemblyVersion>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</IsAotCompatible>
   </PropertyGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

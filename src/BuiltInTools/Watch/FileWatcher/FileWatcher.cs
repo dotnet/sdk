@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watch
             var watcher = DirectoryWatcher.Create(directory, fileNames, environmentOptions.IsPollingEnabled, includeSubdirectories);
             if (watcher is EventBasedDirectoryWatcher eventBasedWatcher)
             {
-                eventBasedWatcher.Logger = message => logger.LogDebug(message);
+                eventBasedWatcher.Logger = message => logger.LogTrace(message);
             }
 
             return watcher;

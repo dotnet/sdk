@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -21,17 +20,16 @@ internal static class CliSchema
     // Using UnsafeRelaxedJsonEscaping because this JSON is not transmitted over the web. Therefore, HTML-sensitive characters are not encoded.
     // See: https://learn.microsoft.com/dotnet/api/system.text.encodings.web.javascriptencoder.unsaferelaxedjsonescaping
     // Force the newline to be "\n" instead of the default "\r\n" for consistency across platforms (and for testing)
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    // Using a source-generated JsonSerializerContext as the TypeInfoResolver so that
+    // the options are AOT compatible and have a resolver set (avoiding https://github.com/dotnet/aspnetcore/issues/55692).
+    private static readonly CliSchemaJsonSerializerContext s_jsonContext = new(new JsonSerializerOptions
     {
         WriteIndented = true,
         NewLine = "\n",
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         RespectNullableAnnotations = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        // needed to workaround https://github.com/dotnet/aspnetcore/issues/55692, but will need to be removed when
-        // we tackle AOT in favor of the source-generated JsonTypeInfo stuff
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-    };
+    });
 
     public record ArgumentDetails(string? description, int order, bool hidden, string? helpName, string valueType, bool hasDefaultValue, object? defaultValue, ArityDetails arity);
     public record ArityDetails(int minimum, int? maximum);
@@ -70,7 +68,7 @@ internal static class CliSchema
     {
         var command = commandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
-        var result = JsonSerializer.Serialize(transportStructure, s_jsonSerializerOptions);
+        var result = JsonSerializer.Serialize(transportStructure, s_jsonContext.RootCommandDetails);
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
         var commandString = CommandHierarchyAsString(commandResult);
@@ -80,8 +78,8 @@ internal static class CliSchema
 
     public static object GetJsonSchema()
     {
-        var node = s_jsonSerializerOptions.GetJsonSchemaAsNode(typeof(RootCommandDetails), new JsonSchemaExporterOptions());
-        return node.ToJsonString(s_jsonSerializerOptions);
+        var node = s_jsonContext.Options.GetJsonSchemaAsNode(typeof(RootCommandDetails), new JsonSchemaExporterOptions());
+        return node.ToJsonString(s_jsonContext.Options);
     }
 
     private static ArityDetails CreateArityDetails(ArgumentArity arity)
@@ -222,3 +220,6 @@ internal static class CliSchema
         return string.Join(" ", commands.AsEnumerable().Reverse());
     }
 }
+
+[JsonSerializable(typeof(CliSchema.RootCommandDetails))]
+internal partial class CliSchemaJsonSerializerContext : JsonSerializerContext;
