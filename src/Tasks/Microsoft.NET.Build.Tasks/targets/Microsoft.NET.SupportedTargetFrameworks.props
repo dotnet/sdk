@@ -31,7 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
         <UnsupportedTargetFrameworkVersion>9.0</UnsupportedTargetFrameworkVersion>
-        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>17.8</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
+        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>17.12</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
     </PropertyGroup>
 
     <!-- .NET Standard -->

@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="pl" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
+        <target state="translated">Wyszukuje co najmniej jedno źródło pakietów, które są zgodne z wyszukiwanym terminem. Jeśli nie określono żadnego źródła, zostaną użyte wszystkie źródła zdefiniowane w NuGet.Config.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileArgumentName">
+        <source>ConfigFile</source>
+        <target state="translated">ConfigFile</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileDescription">
+        <source>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</source>
+        <target state="translated">Plik konfiguracyjny pakietu NuGet. Jeśli jest określony, używane będą tylko ustawienia z tego pliku. Jeśli nie jest określony, używana będzie hierarchia plików konfiguracyjnych z bieżącego katalogu. Aby uzyskać więcej informacji, zobacz https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExactMatchDescription">
+        <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
+        <target state="translated">Wymagaj, aby wyszukiwany termin dokładnie odpowiadał nazwie pakietu. Powoduje ignorowanie opcji „--take” i „--skip”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatArgumentName">
+        <source>Format</source>
+        <target state="translated">Formatuj</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatDescription">
+        <source>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</source>
+        <target state="translated">Odpowiednio sformatuj dane wyjściowe. Element „table” lub „json”. Wartość domyślna to „table”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="translated">Zatrzymaj i poczekaj na wprowadzenie przez użytkownika lub podjęcie przez niego akcji (na przykład ukończenie uwierzytelniania).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Include prerelease packages.</source>
+        <target state="translated">Uwzględnij pakiety wersji wstępnej.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SearchTerm</source>
+        <target state="translated">SearchTerm</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
+        <target state="translated">Wyszukaj termin, aby filtrować nazwy,opisy i tagi pakietów. Używane jako wartość literału. Przykład: „dotnet package search some.package”. Zobacz też „--exact-match”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="translated">Pomiń</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>Number of results to skip, to allow pagination. Default 0.</source>
+        <target state="translated">Liczba wyników do pominięcia, aby zezwolić na dzielenie na strony. Wartość domyślna to 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceArgumentName">
+        <source>Source</source>
+        <target state="translated">Źródło</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceDescription">
+        <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
+        <target state="translated">Źródło pakietu do wyszukania. Możesz przekazać wiele opcji „--source”, aby przeszukać wiele źródeł pakietów. Przykład: „--source https://api.nuget.org/v3/index.json”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="translated">Pobierz</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>Number of results to return. Default 20.</source>
+        <target state="translated">Liczba wyników do zwrócenia. Wartość domyślna to 20.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityArgumentName">
+        <source>Verbosity</source>
+        <target state="translated">Szczegółowość</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityDescription">
+        <source>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</source>
+        <target state="translated">Wyświetl tę ilość szczegółów w danych wyjściowych: „normalne”, „minimalne”, „szczegółowe”. Wartość domyślna to „normalne”.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

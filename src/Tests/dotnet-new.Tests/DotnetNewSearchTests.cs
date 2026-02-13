@@ -960,6 +960,7 @@ For more information, run:
                 bool rightIsShrunk = right.EndsWith("...");
                 if (!(leftIsShrunk ^ rightIsShrunk))
                 {
+                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                     return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 }
 
@@ -969,8 +970,9 @@ For more information, run:
                 }
                 if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return 1;
+                    return -1;
                 }
+                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
             }
         }
@@ -996,11 +998,11 @@ For more information, run:
 
                 if (x != "<1k")
                 {
-                    _ = int.TryParse(x.Trim().AsSpan(0, x.Length - 1), out xInt);
+                    _ = int.TryParse(x.Trim().AsSpan(0, x.Length - 1), System.Globalization.NumberStyles.AllowThousands, null, out xInt);
                 }
                 if (y != "<1k")
                 {
-                    _ = int.TryParse(y.Trim().AsSpan(0, y.Length - 1), out yInt);
+                    _ = int.TryParse(y.Trim().AsSpan(0, y.Length - 1), System.Globalization.NumberStyles.AllowThousands, null, out yInt);
                 }
                 return xInt.CompareTo(yInt);
             }

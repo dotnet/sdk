@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly PackageId _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string[] _sources;
@@ -33,7 +32,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             RestoreActionConfig restoreActionConfig = null)
         {
             _parseResult = parseResult;
-            _packageId = new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
@@ -51,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
-        public IToolPackage Install(FilePath manifestFile)
+        public IToolPackage Install(FilePath manifestFile, PackageId packageId)
         {
             if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
@@ -76,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
                             rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
-                        _packageId,
+                        packageId,
                         verbosity: _verbosity,
                         versionRange,
                         TargetFrameworkToInstall,
@@ -88,8 +86,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 throw new GracefulException(
-                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
-                    verboseMessages: new[] {ex.ToString()},
+                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, (PackageId)packageId),
+                    verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }
         }

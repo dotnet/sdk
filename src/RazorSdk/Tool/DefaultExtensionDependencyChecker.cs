@@ -18,6 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             "System",
             "Microsoft.CodeAnalysis",
             "Microsoft.AspNetCore.Razor",
+            "Microsoft.Extensions.ObjectPool"
         };
 
         private readonly ExtensionAssemblyLoader _loader;

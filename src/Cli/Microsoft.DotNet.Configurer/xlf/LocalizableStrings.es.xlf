@@ -39,7 +39,7 @@ Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cl
 Escribir su primera aplicación: https://aka.ms/dotnet-hello-world
 Descubra las novedades: https://aka.ms/dotnet-whats-new
 Explore la documentación: https://aka.ms/dotnet-docs
-Notificar problemas y encontrar el origen en GitHub: https://github.com/dotnet/core
+Notificar problemas y encontrar el código fuente en GitHub: https://github.com/dotnet/core
 Use "dotnet --help" para ver los comandos disponibles o visite: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</target>
         <note />
