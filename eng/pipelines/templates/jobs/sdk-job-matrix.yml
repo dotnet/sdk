@@ -8,10 +8,6 @@ parameters:
     publishRetryConfig: true
   - categoryName: FullFramework
     testFullMSBuild: true
-  - categoryName: TestAsTools
-    runTestsAsTool: true
-    # This job uses the build step for testing, so the extra test step is not necessary.
-    runTests: false
   - categoryName: TemplateEngine
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
