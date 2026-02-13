@@ -315,17 +315,17 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="translated">Lütfen evet için '{0}' veya hayır için '{1}' yazın.</target>
+        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="translated">h</target>
+        <target state="new">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="translated">e</target>
+        <target state="new">y</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -1775,23 +1775,6 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">.NET deneyimini genişleten araçları yükler veya yönetir.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">Araç paketi indirme işlemi iptal edildi</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">Araç paketi {0}@{1} {2} kaynağından indirilecektir.
-Devam edilsin mi?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">Araç paketinin indirilmesi için onay gerekiyor. Etkileşimli modda çalıştırın veya onaylamak için "--yes" komut satırı seçeneğini kullanın.</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}

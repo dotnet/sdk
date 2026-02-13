@@ -21,15 +21,12 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinitionBase>
 {
-    const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
-
     private readonly PackageIdentityWithRange _packageToolIdentityArgument;
     private readonly IEnumerable<string> _forwardArguments;
     private readonly bool _allowRollForward;
     private readonly string? _configFile;
     private readonly string[] _sources;
     private readonly string[] _addSource;
-    private readonly bool _interactive;
     private readonly VerbosityOptions _verbosity;
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
@@ -46,7 +43,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _configFile = result.GetValue(Definition.ConfigOption);
         _sources = result.GetValue(Definition.SourceOption) ?? [];
         _addSource = result.GetValue(Definition.AddSourceOption) ?? [];
-        _interactive = result.GetValue(Definition.RestoreOptions.InteractiveOption);
         _verbosity = result.GetValue(Definition.VerbosityOption);
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
@@ -104,21 +100,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         //  but we don't support this for local or one-shot tools.
         if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
-            if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
-            {
-                if (_interactive)
-                {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
-                    return ERROR_CANCELLED;
-                }
-                else
-                {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadNeedsConfirmation.Red().Bold());
-                    return 1;
-                }
-            }
-
-            //  We've already determined which source we will use and displayed that in a confirmation message to the user.
+            //  We've already determined which source we will use and will use it to download the package.
             //  So set the package location here to override the source feeds to just the source we already resolved to.
             //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
             //  other feeds, but this is probably OK.
@@ -140,16 +122,5 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         var command = CommandFactoryUsingResolver.Create(commandSpec);
         var result = command.Execute();
         return result.ExitCode;
-    }
-
-    private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
-    {
-        string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
-
-        return InteractiveConsole.Confirm(
-            promptMessage,
-            yesOption: _parseResult.GetValue(Definition.YesOption),
-            interactiveOption: _parseResult.GetValue(Definition.RestoreOptions.InteractiveOption),
-            acceptEscapeForFalse: true) == true;
     }
 }
