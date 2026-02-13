@@ -33,11 +33,7 @@ internal sealed class WebSocketTransport : Transport
     public WebSocketTransport(string serverUrl, string? serverPublicKey, Action<string> log, int connectionTimeoutMS)
         : base(log)
     {
-        // Convert http:// to ws:// or https:// to wss://
-        _serverUrl = serverUrl
-            .Replace("http://", "ws://", StringComparison.OrdinalIgnoreCase)
-            .Replace("https://", "wss://", StringComparison.OrdinalIgnoreCase);
-
+        _serverUrl = serverUrl;
         _serverPublicKey = serverPublicKey;
         _connectionTimeoutMS = connectionTimeoutMS;
     }
@@ -62,11 +58,10 @@ internal sealed class WebSocketTransport : Transport
             try
             {
                 // Add encrypted shared secret as subprotocol for authentication
-                if (!string.IsNullOrEmpty(_serverPublicKey))
+                if (_serverPublicKey != null)
                 {
                     var encryptedSecret = EncryptSharedSecret(_serverPublicKey);
                     _webSocket.Options.AddSubProtocol(encryptedSecret);
-                    Log("Added encrypted shared secret as subprotocol.");
                 }
 
                 Log($"Connecting to {_serverUrl}...");

@@ -37,9 +37,21 @@ internal abstract class Transport(Action<string> log) : IDisposable
         var webSocketEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint);
         if (!string.IsNullOrEmpty(webSocketEndpoint))
         {
-            log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}={webSocketEndpoint}");
+            if (!Uri.TryCreate(webSocketEndpoint, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != "ws" && uri.Scheme != "wss"))
+            {
+                log($"Invalid WebSocket endpoint (expected ws:// or wss:// URL): '{webSocketEndpoint}'");
+                return null;
+            }
 
             var serverPublicKey = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey);
+            if (string.IsNullOrEmpty(serverPublicKey))
+            {
+                log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey} must be set when using WebSocket endpoint.");
+                return null;
+            }
+
+            log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}={webSocketEndpoint}");
             return new WebSocketTransport(webSocketEndpoint, serverPublicKey, log, timeoutMS);
         }
 
