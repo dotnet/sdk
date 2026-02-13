@@ -259,6 +259,7 @@ public class RunCommand
         {
             globalProperties["Device"] = Device;
             var properties = new Dictionary<string, string> { { "Device", Device } };
+            selector.InvalidateGlobalProperties(properties);
             var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
@@ -319,6 +320,8 @@ public class RunCommand
                     _restoreDoneForDeviceSelection = false;
                 }
 
+                // Update the selector's global properties so DeployToDevice and other targets see the Device
+                selector.InvalidateGlobalProperties(properties);
                 var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
                 MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
             }
