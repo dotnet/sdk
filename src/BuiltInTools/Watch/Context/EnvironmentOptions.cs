@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Watch
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
         string? BrowserPath = null,
+        int AgentWebSocketPort = 0,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
@@ -59,6 +60,7 @@ namespace Microsoft.DotNet.Watch
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,
+            AgentWebSocketPort: EnvironmentVariables.AgentWebSocketPort,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );
