@@ -26,13 +26,16 @@ on:
 permissions: read-all
 
 jobs:
-  read-diff:
-    name: Read .xlf Diff
+  detect-diagnostics:
+    name: Detect New NETSDK Diagnostic Codes
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      MAX_DIFF_SIZE_BYTES: 10485760  # 10MB
     outputs:
-      xlf_diff: ${{ steps.get-diff.outputs.xlf_diff }}
+      found_diagnostics: ${{ steps.detect.outputs.found_diagnostics }}
+      has_diagnostics: ${{ steps.detect.outputs.has_diagnostics }}
     
     steps:
       - name: Checkout base branch
@@ -55,42 +58,28 @@ jobs:
           GITHUB_TOKEN: ""
           GH_TOKEN: ""
         run: |
-          # Get diff only from .xlf files between base and PR head
-          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} -- '*.xlf')
-          
-          # Check diff size to prevent resource exhaustion (limit to ~1MB)
-          DIFF_SIZE=$(echo "$DIFF_OUTPUT" | wc -c)
-          if [ "$DIFF_SIZE" -gt 1048576 ]; then
-            echo "Error: Diff size ($DIFF_SIZE bytes) exceeds 1MB limit"
+          # Get diff of .xlf files changed by this PR.
+          # Use three-dot diff (merge-base) so that only the PR's changes are included,
+          # not unrelated changes on the target branch that the PR hasn't been rebased onto.
+          # Write to a file to avoid GitHub Actions step output size limits.
+          git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf' > "$RUNNER_TEMP/xlf_diff.txt"
+
+          # Guard against extremely large diffs that could stall the pipeline
+          DIFF_SIZE=$(wc -c < "$RUNNER_TEMP/xlf_diff.txt")
+          if [ "$DIFF_SIZE" -gt "$MAX_DIFF_SIZE_BYTES" ]; then
+            echo "::error::The .xlf diff is $(( DIFF_SIZE / 1048576 ))MB which exceeds the $(( MAX_DIFF_SIZE_BYTES / 1048576 ))MB limit. This likely means the PR contains an unusually large number of translation file changes. Try splitting the .xlf changes into smaller PRs."
             exit 1
           fi
-          
-          # Use multiline output for job outputs
-          # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-          {
-            echo 'xlf_diff<<EOF'
-            echo "$DIFF_OUTPUT"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
 
-  detect-diagnostics:
-    name: Detect New NETSDK Diagnostic Codes
-    runs-on: ubuntu-latest
-    needs: read-diff
-    permissions: {}
-    outputs:
-      found_diagnostics: ${{ steps.detect.outputs.found_diagnostics }}
-      has_diagnostics: ${{ steps.detect.outputs.has_diagnostics }}
-    
-    steps:
       - name: Detect new NETSDK diagnostics
         id: detect
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
-          XLF_DIFF: ${{ needs.read-diff.outputs.xlf_diff }}
+          XLF_DIFF_PATH: ${{ runner.temp }}/xlf_diff.txt
         with:
           script: |
-            const diff = process.env.XLF_DIFF;
+            const fs = require('fs');
+            const diff = fs.readFileSync(process.env.XLF_DIFF_PATH, 'utf8');
             
             // Pattern to match NETSDK diagnostic codes
             const diagnosticPattern = /NETSDK(\d{4}):/g;
