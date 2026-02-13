@@ -1,20 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 
-//only Microsoft.DotNet.NativeWrapper (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
+
+using System.Diagnostics;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
     public static class NETCoreSdkResolverNativeWrapper
     {
         public static SdkResolutionResult ResolveSdk(
-            string dotnetExeDirectory, 
-            string globalJsonStartDirectory,
+            string? dotnetExeDirectory,
+            string? globalJsonStartDirectory,
             bool disallowPrerelease = false)
         {
             var result = new SdkResolutionResult();
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
         private sealed class SdkList
         {
-            public string[] Entries;
+            public string[]? Entries;
 
             public void Initialize(int count, string[] entries)
             {
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.NativeWrapper
             }
         }
 
-        public static string[] GetAvailableSdks(string dotnetExeDirectory)
+        public static string[]? GetAvailableSdks(string? dotnetExeDirectory)
         {
             var list = new SdkList();
 

@@ -27,13 +27,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
-    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net8.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net9.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson50" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.UpgradeLegacyWasmStaticWebAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BrotliCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -282,15 +283,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_UpdateBlazorWasmStaticWebAssetsForV2" DependsOnTargets="GetCurrentProjectStaticWebAssets">
     <ItemGroup>
       <_CurrentWasmProjectStaticWebAssets Include="@(_ThisProjectStaticWebAssets)" Condition="'%(SourceId)' == '$(PackageId)'" />
-      <_CurrentWasmProjectStaticWebAssets>
-        <!-- We set the asset kind explicitly to build because blazor before 6.0 did its own publishing and was
-             not fully integrated with static web assets, so we let it be even when called from 6.0 targets
-        -->
-        <AssetKind>Build</AssetKind>
-      </_CurrentWasmProjectStaticWebAssets>
-      <_ThisProjectStaticWebAssets Remove="@(_CurrentWasmProjectStaticWebAssets)" />
-      <_ThisProjectStaticWebAssets Include="@(_CurrentWasmProjectStaticWebAssets)" />
     </ItemGroup>
+
+    <UpgradeLegacyWasmStaticWebAssets
+      LegacyAssets="@(_CurrentWasmProjectStaticWebAssets)"
+    >
+      <Output TaskParameter="UpgradedAssets" ItemName="_UpgradedWasmProjectStaticWebAssets" />
+    </UpgradeLegacyWasmStaticWebAssets>
+
+    <ItemGroup>
+      <_ThisProjectStaticWebAssets Remove="@(_CurrentWasmProjectStaticWebAssets)" />
+      <_ThisProjectStaticWebAssets Include="@(_UpgradedWasmProjectStaticWebAssets)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">

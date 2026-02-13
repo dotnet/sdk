@@ -1,0 +1,84 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">Instalační program pro [WixBundleName]</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
+  <String Id="HelpHeader">Nápověda nastavení</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"adresář"[\]] – Nainstaluje, opraví, odinstaluje
+   nebo vytvoří úplnou místní kopii sady v adresáři. Výchozí nastavení je /install.
+
+/passive | /quiet – Zobrazí minimální uživatelské rozhraní bez jakýchkoli výzev nebo nezobrazí žádné uživatelské rozhraní ani
+   žádné výzvy. Ve výchozím nastavení se zobrazí uživatelské rozhraní a všechny výzvy.
+
+/norestart – Potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní zobrazí před restartováním výzvu.
+/log [\[]"log.txt"[\]] – Zapíše protokol do konkrétního souboru. Ve výchozím nastavení se soubor protokolu vytvoří ve složce %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Zavřít</String>
+  <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami.</String>
+  <String Id="InstallOptionsButton">M&amp;ožnosti</String>
+  <String Id="InstallInstallButton">&amp;Instalovat</String>
+  <String Id="InstallCloseButton">&amp;Zavřít</String>
+  <String Id="ProgressHeader">Průběh instalace</String>
+  <String Id="ProgressLabel">Probíhá zpracování:</String>
+  <String Id="OverallProgressPackageText">Inicializování...</String>
+  <String Id="ProgressCancelButton">&amp;Storno</String>
+  <String Id="ModifyHeader">Změnit instalaci</String>
+  <String Id="ModifyRepairButton">Op&amp;ravit</String>
+  <String Id="ModifyUninstallButton">O&amp;dinstalovat</String>
+  <String Id="ModifyCloseButton">&amp;Zavřít</String>
+  <String Id="SuccessRepairHeader">Oprava byla úspěšně dokončena</String>
+  <String Id="SuccessUninstallHeader">Odinstalace se úspěšně dokončila</String>
+  <String Id="SuccessHeader">Instalace byla úspěšná.</String>
+  <String Id="SuccessLaunchButton">&amp;Spustit</String>
+  <String Id="SuccessRestartText">Aby bylo možné dokončit instalaci softwaru, je nutné restartovat počítač.</String>
+  <String Id="SuccessRestartButton">&amp;Restartovat</String>
+  <String Id="SuccessCloseButton">&amp;Zavřít</String>
+  <String Id="FailureHeader">Instalace se nepovedla</String>
+  <String Id="FailureInstallHeader">Instalace se nepovedla</String>
+  <String Id="FailureUninstallHeader">Odinstalace se nepovedla</String>
+  <String Id="FailureRepairHeader">Oprava se nepovedla</String>
+  <String Id="FailureHyperlinkLogText">Nejméně jeden problém způsobil selhání instalace. Opravte prosím tyto problémy a zkuste instalaci zopakovat. Další informace najdete v &lt;a href="#"&gt;log file&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Pro dokončení vrácení změn tohoto softwaru je potřeba restartovat počítač.</String>
+  <String Id="FailureRestartButton">&amp;Restartovat</String>
+  <String Id="FailureCloseButton">&amp;Zavřít</String>
+  <String Id="FilesInUseHeader">Soubory jsou používány</String>
+  <String Id="FilesInUseLabel">Následující aplikace používají soubory, které je potřeba aktualizovat:</String>
+  <String Id="FilesInUseCloseRadioButton">Zavřete &amp;aplikace a zkuste je restartovat.</String>
+  <String Id="FilesInUseDontCloseRadioButton">A&amp;plikace nezavírejte. Bude potřeba provést restart.</String>
+  <String Id="FilesInUseOkButton">&amp;OK</String>
+  <String Id="FilesInUseCancelButton">&amp;Zrušit</String>
+  <String Id="FirstTimeWelcomeMessage">Instalace byla úspěšná.
+
+Byly nainstalovány následující produkty:
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+
+Tento produkt shromažďuje data o využití.
+    • Další informace a možnosti vyjádřit nesouhlas: https://aka.ms/dotnet-cli-telemetry
+
+Zdroje informací
+    • Dokumentace k rozhraní .NET: https://aka.ms/dotnet-docs
+    • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
+    • Zpráva k vydání verze: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Kurzy: https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">Sada .NET SDK</String>
+  <String Id="WelcomeDescription">
+    Sada .NET SDK slouží k sestavování, spouštění a testování aplikací .NET. Můžete si vybrat z několika jazyků, editorů a vývojářských nástrojů a využít rozsáhlého ekosystému knihoven k vytváření aplikací pro web, mobilní zařízení, stolní počítače, hry a IoT. Doufáme, že se vám bude líbit!</String>
+  <String Id="LearnMoreTitle">Další informace o .NET</String>
+  <String Id="ResourcesHeader">Prostředky</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Dokumentace k architektuře .NET&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Dokumentace k sadě SDK&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Prohlášení o zásadách ochrany osobních údajů&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informace o licencování pro .NET&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Kolekce telemetrie a výslovný nesouhlas&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">Poznámka k instalaci</String>
+  <String Id="InstallationNote">Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Akce se dokončí přibližně za minutu.
+  </String>
+  <String Id="VisualStudioWarning">Pokud plánujete používat rozhraní .NET [VERSIONMAJOR].[VERSIONMINOR] se sadou Visual Studio, je vyžadována verze Visual Studio 2022 [MINIMUMVSVERSION] nebo novější. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Přečtěte si další informace&lt;/A&gt;.
+  </String>
+  <String Id="LicenseAssent">Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:</String>
+  <String Id="InstallPathx64x86">Instalační cesta pro instalace sady x64 SDK[ DOTNETHOME_X64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86].</String>
+  <String Id="InstallPathARM64x86">Instalační cesta pro instalace sady ARM64 SDK[ DOTNETHOME_ARM64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86]</String>
+  <String Id="InstallPathARM64x64">Instalační cesta pro instalace sady ARM64 SDK[ DOTNETHOME_ARM64] nemůže být stejná jako u instalací sady x64 SDK: [DOTNETHOME_X64]</String>
+</WixLocalization>

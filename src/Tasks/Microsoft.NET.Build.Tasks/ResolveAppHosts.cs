@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks
         public bool NuGetRestoreSupported { get; set; } = true;
 
         public string NetCoreTargetingPackRoot { get; set; }
-        
+
         public bool EnableAppHostPackDownload { get; set; } = true;
 
         [Output]
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            var packagesToDownload = new Dictionary<string,string>();
+            var packagesToDownload = new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(AppHostRuntimeIdentifier))
             {
@@ -208,7 +208,8 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private ITaskItem ToPackageDownload(KeyValuePair<string, string> packageInformation) {
+        private ITaskItem ToPackageDownload(KeyValuePair<string, string> packageInformation)
+        {
             var item = new TaskItem(packageInformation.Key);
             item.SetMetadata(MetadataKeys.Version, packageInformation.Value);
             return item;
@@ -276,7 +277,7 @@ namespace Microsoft.NET.Build.Tasks
                 string hostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
                     hostNameWithoutExtension + (isExecutable ? ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier) : ".dll"));
 
-                TaskItem appHostItem = new TaskItem(itemName);
+                TaskItem appHostItem = new(itemName);
                 string appHostPackPath = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
@@ -304,7 +305,8 @@ namespace Microsoft.NET.Build.Tasks
                     }
 
                     // use the first one added
-                    if (!packagesToDownload.ContainsKey(hostPackName)) {
+                    if (!packagesToDownload.ContainsKey(hostPackName))
+                    {
                         packagesToDownload.Add(hostPackName, appHostPackVersion);
                     }
 

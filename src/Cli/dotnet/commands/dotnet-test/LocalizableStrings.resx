@@ -285,4 +285,16 @@ Examples:
   <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
     <value>NAME="VALUE"</value>
   </data>
+  <data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
+      <value>No serializer registered with ID '{0}'</value>
+  </data>
+  <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
+      <value>No serializer registered with type '{0}'</value>
+  </data>
+  <data name="CmdMaxParallelTestModulesDescription" xml:space="preserve">
+    <value>The max number of test modules that can run in parallel.</value>
+  </data>
+  <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
+    <value>The additional msbuild parameters to pass.</value>
+  </data>
 </root>

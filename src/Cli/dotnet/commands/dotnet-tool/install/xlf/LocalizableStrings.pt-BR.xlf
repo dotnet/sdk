@@ -93,6 +93,16 @@ Se você quiser criar um manifesto, use o sinalizador `--create-manifest-if-need
         <target state="translated">Permitir que uma ferramenta .NET seja revertida para versões mais recentes do runtime do .NET se o runtime ao qual ela se destina não estiver instalado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Substitua todas as fontes de pacote NuGet a serem usadas durante a instalação por estas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">ORIGEM</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">A versão do pacote da ferramenta a ser instalada.</target>
@@ -183,8 +193,8 @@ Para ver mais motivos, inclusive a imposição de nome de pacote, visite https:/
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

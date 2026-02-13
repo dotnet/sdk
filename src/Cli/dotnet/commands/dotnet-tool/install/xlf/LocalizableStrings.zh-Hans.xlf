@@ -93,6 +93,16 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
         <target state="translated">如果未安装所面向的运行时，则允许 .NET 工具向前滚动到较新版本的 .NET 运行时。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">将安装期间要使用的所有 NuGet 包源替换为这些源。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">SOURCE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">要安装的工具包版本。</target>
@@ -183,8 +193,8 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

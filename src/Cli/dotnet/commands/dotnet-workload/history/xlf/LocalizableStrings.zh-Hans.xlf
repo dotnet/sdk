@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Command">
+        <source>Command</source>
+        <target state="translated">命令</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="translated">显示工作负载安装操作的历史记录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Date">
+        <source>Date</source>
+        <target state="translated">日期</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonVersion">
+        <source>Global.json Version</source>
+        <target state="translated">Global.json 版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Id">
+        <source>Id</source>
+        <target state="translated">ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoHistoryFound">
+        <source>No workload history found</source>
+        <target state="translated">找不到工作负载历史记录</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownRecordsInformationalMessage">
+        <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
+        <target state="translated">具有未记录更改的行表示除 .NET CLI 工作负载命令以外的操作的更改。这通常表示对 .NET SDK 或 Visual Studio 的更新。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload Version</source>
+        <target state="translated">工作负载版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Workloads">
+        <source>Workloads</source>
+        <target state="translated">工作负载</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

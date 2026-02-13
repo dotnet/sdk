@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
     <PropertyGroup>
         <TargetFramework>$(SdkTargetFramework)</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -34,9 +34,9 @@
 
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
                           SetTargetFramework="TargetFramework=$(VSCompatTargetFramework)"
-                          OutputItemType="ContainerLibraryOutputNet472" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+                          OutputItemType="ContainerLibraryOutputNet472" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
 
-        <ProjectReference Include="../containerize/containerize.csproj" PrivateAssets="all" IncludeAssets="runtime" ReferenceOutputAssembly="true" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+        <ProjectReference Include="../containerize/containerize.csproj" PrivateAssets="all" IncludeAssets="runtime" ReferenceOutputAssembly="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     </ItemGroup>
 
     <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
@@ -47,10 +47,10 @@
     </Target>
 
     <Target Name="AddItemsForPackaging" AfterTargets="Build">
-        <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(VSCompatTargetFramework)" Targets="ResolveAssemblyReferences" Condition="'$(DotNetBuildFromSource)' != 'true'">
+        <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(VSCompatTargetFramework)" Targets="ResolveAssemblyReferences" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
             <Output TaskParameter="TargetOutputs" ItemName="_AllNet472ContainerTaskDependencies" />
         </MSBuild>
-        <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+        <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
             <NecessaryNet472ContainerTaskDependencies Include="@(_AllNet472ContainerTaskDependencies)" Condition="(
                                 $([MSBuild]::ValueOrDefault('%(_AllNet472ContainerTaskDependencies.NuGetPackageId)', '').Contains('NuGet')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNet472ContainerTaskDependencies.NuGetPackageId)', '').Contains('Newtonsoft')) or

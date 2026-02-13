@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Microsoft.WebTools.AspireServer.Test": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61653;http://localhost:61654"
+    }
+  }
+}

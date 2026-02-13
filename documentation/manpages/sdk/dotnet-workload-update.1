@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-workload-update" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-workload-update" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet workload update
 .PP
@@ -32,7 +32,7 @@ dotnet workload update
     [--from-previous-sdk] [--ignore-failed-sources]
     [--include-previews] [--interactive] [--no-cache]
     [-s|--source <SOURCE>] [--temp-dir <PATH>]
-    [-v|--verbosity <LEVEL>]
+    [-v|--verbosity <LEVEL>] [--version]
 
 dotnet workload update -?|-h|--help
 \f[R]
@@ -42,6 +42,10 @@ dotnet workload update -?|-h|--help
 The \f[V]dotnet workload update\f[R] command updates all installed workloads to the newest available versions.
 It queries Nuget.org for updated workload manifests.
 It then updates local manifests, downloads new versions of the installed workloads, and removes all old versions of each workload.
+.PP
+When the command is in \f[V]workload-set\f[R] update mode, workloads are updated according to the workload-set version, not the latest version of each individual workload.
+For more information, see .NET SDK workload sets.
+\f[V]workload-set\f[R] mode is available since 8.0.400 SDK.
 .PP
 For more information about the \f[V]dotnet workload\f[R] commands, see the dotnet workload install command.
 .SH OPTIONS
@@ -126,13 +130,35 @@ Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \
 The default is \f[V]minimal\f[R].
 If you specify \f[V]detailed\f[R] or \f[V]diagnostic\f[R] verbosity, the command displays information about the Nuget packages that it downloads.
 .RE
+.IP \[bu] 2
+\f[B]\f[VB]--version\f[B]\f[R]
+.RS 2
+.PP
+The workload set version to install or update to.
+If you specify the workload-set version in global.json, you can\[cq]t use the \f[V]--version\f[R] option to specify the workload-set version.
+To make it possible to use the \f[V]--version\f[R] option in that case, run the command outside of the path containing the global.json file.
+Available since 8.0.400 SDK.
+For more information, see .NET SDK workload sets.
+.RE
 .SH EXAMPLES
 .IP \[bu] 2
-Update the installed workloads:
+Update the installed workloads to the latest version of each individual workload:
 .RS 2
 .IP
 .nf
 \f[C]
+dotnet workload config --update-mode manifests
+dotnet workload update
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Update the installed workloads to the latest workload set version:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet workload config --update-mode workload-set
 dotnet workload update
 \f[R]
 .fi

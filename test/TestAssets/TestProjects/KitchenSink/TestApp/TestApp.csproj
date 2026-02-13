@@ -1,0 +1,110 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <ProjectGuid>{C91F7F4C-47ED-4D1C-8990-B2E886B0FAD9}</ProjectGuid>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <!-- Host configuration properties
+       Keep this list in the same order as the configProperties in GivenThatWeWantToPublishAProjectWithAllFeatures. -->
+  <PropertyGroup>
+    <VerifyDependencyInjectionOpenGenericServiceTrimmability>true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
+    <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+    <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
+    <_DesignerHostSupport>true</_DesignerHostSupport>
+    <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+    <_ComObjectDescriptorSupport>false</_ComObjectDescriptorSupport>
+    <DebuggerSupport>true</DebuggerSupport>
+    <MetricsSupport>false</MetricsSupport>
+    <StackTraceSupport>false</StackTraceSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <_UseManagedNtlm>true</_UseManagedNtlm>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+    <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <DynamicCodeSupport>true</DynamicCodeSupport>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+    <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+    <TieredCompilationQuickJitForLoops>true</TieredCompilationQuickJitForLoops>
+    <TieredPGO>true</TieredPGO>
+    <StartupHookSupport>false</StartupHookSupport>
+    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
+    <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
+    <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <_ActiveXImplSupport>true</_ActiveXImplSupport>
+    <_WinFormsBindingSupport>true</_WinFormsBindingSupport>
+    <_WinFormsDesignTimeFeaturesSupport>true</_WinFormsDesignTimeFeaturesSupport>
+    <_UseComponentModelRegisteredTypes>false</_UseComponentModelRegisteredTypes>
+    <_WinFormsImageIndexConverterSupport>true</_WinFormsImageIndexConverterSupport>
+    <_MdiWindowDialogSupport>true</_MdiWindowDialogSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="CompileCopyToOutput.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+
+    <EmbeddedResource Include="Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="**\*.resx" Exclude="Resource1.resx"/>
+
+    <Content Include="ContentAlways.txt">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="ContentPreserveNewest.txt">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="CopyOutputNotPublish.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+
+    <None Include="NoneCopyOutputAlways.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="NoneCopyOutputNever.txt">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="NoneCopyOutputPreserveNewest.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TestLibrary/TestLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      The TestLibrary has a hard dependency on Newtonsoft.Json.
+      The TestApp has a PrivateAssets=All dependency on Microsoft.Extensions.DependencyModel.
+      Microsoft.Extensions.DependencyModel depends on Newtonsoft.Json.
+      Testing that Newtonsoft.Json doesn't get excluded since a P2P reference has a hard dependency on it.
+    -->
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.0.0" PrivateAssets="All" />
+
+    <!-- Has satellite assembly -->
+    <PackageReference Include="Humanizer" Version="2.8.26" />
+  </ItemGroup>
+</Project>
