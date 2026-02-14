@@ -3778,6 +3778,11 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">I carichi di lavoro '{0}' sono già installati.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Rimuove i componenti del carico di lavoro che potrebbero essere stati lasciati indietro da aggiornamenti e disinstallazioni precedenti.</target>

@@ -2691,4 +2691,7 @@ Proceed?</value>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
+  <data name="WorkloadCleanAllComplete" xml:space="preserve">
+    <value>Successfully removed all workload sets, manifests, and installation state.</value>
+  </data>
 </root>

@@ -110,6 +110,56 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             AssertValidPackCountsMatchExpected(installRoot, expectedPackCount: 0, expectedPackRecordCount: 0);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GivenWorkloadCleanAllFileBasedItRemovesWorkloadSetsAndManifests(bool userLocal)
+        {
+            var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
+
+            string installRoot = userLocal ? userProfileDir : dotnetRoot;
+            if (userLocal)
+            {
+                WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, _sdkFeatureVersion);
+            }
+
+            // Create fake workload set directories
+            var workloadSetDir = Path.Combine(installRoot, "sdk-manifests", _sdkFeatureVersion, "workloadsets", "9.0.100");
+            Directory.CreateDirectory(workloadSetDir);
+            File.WriteAllText(Path.Combine(workloadSetDir, "9.0.100.workloadset.json"), "{}");
+
+            // Create fake manifest directories
+            var manifestDir = Path.Combine(installRoot, "sdk-manifests", _sdkFeatureVersion, "test.manifest", "1.0.0");
+            Directory.CreateDirectory(manifestDir);
+            File.WriteAllText(Path.Combine(manifestDir, "WorkloadManifest.json"), "{}");
+
+            // Create fake install state file
+            var installStateDir = Path.Combine(installRoot, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), _sdkFeatureVersion, "InstallState");
+            Directory.CreateDirectory(installStateDir);
+            var installStateFile = Path.Combine(installStateDir, "default.json");
+            File.WriteAllText(installStateFile, "{}");
+
+            // Create fake installation records for workload sets and manifests
+            var installedWorkloadSetsDir = Path.Combine(installRoot, "metadata", "workloads", "InstalledWorkloadSets");
+            Directory.CreateDirectory(installedWorkloadSetsDir);
+            File.WriteAllText(Path.Combine(installedWorkloadSetsDir, "test"), "");
+
+            var installedManifestsDir = Path.Combine(installRoot, "metadata", "workloads", "InstalledManifests");
+            Directory.CreateDirectory(installedManifestsDir);
+            File.WriteAllText(Path.Combine(installedManifestsDir, "test"), "");
+
+            // Execute clean --all
+            var cleanCommand = GenerateWorkloadCleanAllCommand(workloadResolver, userProfileDir, dotnetRoot);
+            cleanCommand.Execute();
+
+            // Verify all artifacts are removed
+            new DirectoryInfo(workloadSetDir).Should().NotExist("workload set directory should be removed");
+            new DirectoryInfo(manifestDir).Should().NotExist("manifest directory should be removed");
+            new FileInfo(installStateFile).Should().NotExist("install state file should be removed");
+            new DirectoryInfo(installedWorkloadSetsDir).Should().NotExist("workload set installation records should be removed");
+            new DirectoryInfo(installedManifestsDir).Should().NotExist("manifest installation records should be removed");
+        }
+
         private void InstallWorkload(string userProfileDir, string dotnetRoot, string testDirectory, WorkloadResolver workloadResolver, MockNuGetPackageDownloader nugetDownloader, string sdkBand = null)
         {
             sdkBand ??= _sdkFeatureVersion;
