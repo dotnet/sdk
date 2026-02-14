@@ -336,6 +336,70 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
+        [Fact]
+        public void FiltersFrameworkAssetsInRootMode()
+        {
+            // Framework assets (e.g., blazor.web.js from Microsoft.AspNetCore.App.Internal.Assets)
+            // should NOT be exported when a Root project is referenced, because the consuming
+            // project will independently discover the same framework assets from its own NuGet resolution.
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = buildEngine.Object,
+                Source = "MyPackage",
+                Assets = new[]
+                {
+                    CreateCandidate(Path.Combine("_framework", "blazor.web.js"), "MyPackage", "Framework", "_framework/blazor.web.js", "All", "CurrentProject"),
+                },
+                Patterns = new ITaskItem[] { },
+                AssetKind = "Build",
+                ProjectMode = "Root"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true);
+            task.StaticWebAssets.Should().HaveCount(0);
+        }
+
+        [Fact]
+        public void IncludesFrameworkAssetsInDefaultMode()
+        {
+            // Framework assets SHOULD be exported in Default mode (e.g., WASM client referenced
+            // by a plain ASP.NET Core server host). The server host doesn't have the framework
+            // assets and needs to receive them from the WASM client.
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = buildEngine.Object,
+                Source = "MyPackage",
+                Assets = new[]
+                {
+                    CreateCandidate(Path.Combine("_framework", "blazor.web.js"), "MyPackage", "Framework", "_framework/blazor.web.js", "All", "All"),
+                },
+                Patterns = new ITaskItem[] { },
+                AssetKind = "Build",
+                ProjectMode = "Default"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true);
+            task.StaticWebAssets.Should().HaveCount(1);
+        }
+
         private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
