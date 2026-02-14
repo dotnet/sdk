@@ -24,15 +24,12 @@ internal static class DotNetWatchLauncher
 
         commandArguments.AddRange(options.ApplicationArguments);
 
-        var rootProjectOptions = new ProjectOptions()
+        var mainProjectOptions = new ProjectOptions()
         {
-            IsRootProject = true,
-            ProjectPath = options.ProjectPath,
+            IsMainProject = true,
+            Representation = options.Project,
             WorkingDirectory = workingDirectory,
-            TargetFramework = null,
-            BuildArguments = [],
-            NoLaunchProfile = options.NoLaunchProfile,
-            LaunchProfileName = null,
+            LaunchProfileName = options.NoLaunchProfile ? default : null,
             Command = "run",
             CommandArguments = [.. commandArguments],
             LaunchEnvironmentVariables = [],
@@ -59,7 +56,10 @@ internal static class DotNetWatchLauncher
             ProcessRunner = processRunner,
             Options = globalOptions,
             EnvironmentOptions = environmentOptions,
-            RootProjectOptions = rootProjectOptions,
+            MainProjectOptions = mainProjectOptions,
+            RootProjects = [mainProjectOptions.Representation],
+            BuildArguments = [],
+            TargetFramework = null,
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
             BrowserLauncher = new BrowserLauncher(logger, reporter, environmentOptions),
         };

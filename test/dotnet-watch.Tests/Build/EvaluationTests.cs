@@ -444,9 +444,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, _logger, options);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
@@ -509,9 +508,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
+            var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, _logger, options);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
@@ -548,8 +546,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
                 var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
-                var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
+                var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, _logger, options);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);
 

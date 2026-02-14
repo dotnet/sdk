@@ -2,14 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Reflection;
+using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> globalOptions)
+internal sealed class ProjectGraphFactory(
+    ImmutableArray<ProjectRepresentation> rootProjects,
+    string? targetFramework,
+    ImmutableDictionary<string, string> buildProperties,
+    ILogger logger)
 {
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
@@ -18,7 +26,7 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
     /// https://github.com/dotnet/msbuild/blob/b6f853defccd64ae1e9c7cf140e7e4de68bff07c/src/Build/Definition/ProjectCollection.cs#L343-L354
     /// </summary>
     private readonly ProjectCollection _collection = new(
-        globalProperties: globalOptions,
+        globalProperties: buildProperties,
         loggers: [],
         remoteLoggers: [],
         ToolsetDefinitionLocations.Default,
@@ -28,23 +36,37 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
         useAsynchronousLogging: false,
         reuseProjectRootElementCache: true);
 
+    private readonly string _targetFramework = targetFramework ?? GetProductTargetFramework();
+
+    public ILogger Logger => logger;
+
+    private static string GetProductTargetFramework()
+    {
+        var attribute = typeof(VirtualProjectBuilder).Assembly.GetCustomAttribute<TargetFrameworkAttribute>() ?? throw new InvalidOperationException();
+        var version = new FrameworkName(attribute.FrameworkName).Version;
+        return $"net{version.Major}.{version.Minor}";
+    }
+
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on the <paramref name="rootProjectFile"/>.
     /// </summary>
-    public ProjectGraph? TryLoadProjectGraph(
-        string rootProjectFile,
-        ILogger logger,
-        bool projectGraphRequired,
-        CancellationToken cancellationToken)
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
     {
-        var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
+        var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
         try
         {
-            return new ProjectGraph([entryPoint], _collection, projectInstanceFactory: null, cancellationToken);
+            return new LoadedProjectGraph(
+                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
+                _collection,
+                logger);
+        }
+        catch (ProjectCreationFailedException)
+        {
+            // Errors have already been reported.
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            // ProejctGraph aggregates OperationCanceledException exception,
+            // ProjectGraph aggregates OperationCanceledException exception,
             // throw here to propagate the cancellation.
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -54,7 +76,10 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
             {
                 foreach (var inner in innerExceptions)
                 {
-                    Report(inner);
+                    if (inner is not ProjectCreationFailedException)
+                    {
+                        Report(inner);
+                    }
                 }
             }
             else
@@ -77,4 +102,48 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
 
         return null;
     }
+
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
+    {
+        if (!File.Exists(projectPath))
+        {
+            var entryPointFilePath = Path.ChangeExtension(projectPath, ".cs");
+            if (!File.Exists(entryPointFilePath))
+            {
+                // `dotnet build` reports a warning when the reference project is missing.
+                // However, ProjectGraph doesn't allow us to return null to skip the project so we need to be stricter.
+                logger.LogError("The project file could not be loaded. Could not find a part of the path '{Path}'.", projectPath);
+                throw new ProjectCreationFailedException();
+            }
+
+            var builder = new VirtualProjectBuilder(entryPointFilePath, _targetFramework);
+            var anyError = false;
+
+            builder.CreateProjectInstance(
+                projectCollection,
+                (sourceFile, textSpan, message) =>
+                {
+                    anyError = true;
+                    logger.LogError("{Location}: {Message}", sourceFile.GetLocationString(textSpan), message);
+                },
+                out var projectInstance,
+                out _);
+
+            if (anyError)
+            {
+                throw new ProjectCreationFailedException();
+            }
+
+            return projectInstance;
+        }
+
+        return new ProjectInstance(
+            projectPath,
+            globalProperties,
+            toolsVersion: "Current",
+            subToolsetVersion: null,
+            projectCollection);
+    }
+
+    private sealed class ProjectCreationFailedException() : Exception();
 }

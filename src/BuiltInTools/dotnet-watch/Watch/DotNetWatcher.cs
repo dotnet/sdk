@@ -38,9 +38,8 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraphNode? projectRootNode;
                 if (evaluationResult.ProjectGraph != null)
                 {
-                    projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
-                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Logger);
-                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, context.BrowserRefreshServerFactory);
+                    projectRootNode = evaluationResult.ProjectGraph.Graph.GraphRoots.Single();
+                    staticFileHandler = new StaticFileHandler(context.Logger, evaluationResult.ProjectGraph, context.BrowserRefreshServerFactory);
                 }
                 else
                 {
@@ -75,7 +74,8 @@ namespace Microsoft.DotNet.Watch
 
                 if (projectRootNode != null)
                 {
-                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                    Debug.Assert(context.MainProjectOptions != null);
+                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.MainProjectOptions, browserRefreshServer, shutdownCancellationToken);
                 }
 
                 // Reset for next run

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+    public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
     {
         [Fact]
         public async Task ConsoleCancelKey()
@@ -339,10 +339,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
-
-            App.AssertOutputContains(@"dotnet watch 🔨 Failed to load project graph.");
-            App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
+            await App.WaitUntilOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'.");
+            await App.WaitUntilOutputContains(@"dotnet watch 🔨 Failed to load project graph.");
+            await App.WaitUntilOutputContains("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")

@@ -7,9 +7,11 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
+    targetFramework: null,
     buildArguments: [],
     new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
-    new BuildReporter(NullLogger.Instance, new GlobalOptions(), TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options))
+    NullLogger.Instance,
+    TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options)
 {
     public Func<EvaluationResult?>? TryCreateImpl;
 

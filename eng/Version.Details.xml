@@ -124,6 +124,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>9477b510bb25fc69515d2ab188af3b72799929ac</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost" Version="5.5.0-2.26103.116">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>46a48b8c1dfce7c35da115308bedd6a5954fd78a</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.4.0-rc.10416">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>9477b510bb25fc69515d2ab188af3b72799929ac</Sha>
