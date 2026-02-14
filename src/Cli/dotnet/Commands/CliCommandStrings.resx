@@ -513,9 +513,6 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdPackage" xml:space="preserve">
     <value>PACKAGE_NAME</value>
   </data>
-  <data name="CmdPackageDescription" xml:space="preserve">
-    <value>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</value>
-  </data>
   <data name="CmdPackageDirectory" xml:space="preserve">
     <value>PACKAGE_DIR</value>
   </data>
@@ -592,12 +589,6 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
-  </data>
-  <data name="VerbRun" xml:space="preserve">
-    <value>run</value>
-  </data>
-  <data name="VerbTest" xml:space="preserve">
-    <value>test</value>
   </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
@@ -729,12 +720,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
     <value>Console is already in batching mode.</value>
     <comment>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</comment>
   </data>
-  <data name="CouldNotConvertToBoolean" xml:space="preserve">
-    <value>Could not convert the value of property '{0}' to a boolean.</value>
-  </data>
-  <data name="CouldNotConvertToString" xml:space="preserve">
-    <value>Could not convert the value of property '{0}' to a string.</value>
-  </data>
   <data name="CouldNotFindAProject" xml:space="preserve">
     <value>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
@@ -855,12 +840,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="FailedWithErrors" xml:space="preserve">
     <value>failed with {0} error(s)</value>
-  </data>
-  <data name="FailedWithErrorsAndWarnings" xml:space="preserve">
-    <value>failed with {0} error(s) and {1} warning(s)</value>
-  </data>
-  <data name="FailedWithWarnings" xml:space="preserve">
-    <value>failed with {0} warning(s)</value>
   </data>
   <data name="FormatArgumentName" xml:space="preserve">
     <value>Format</value>
@@ -1012,10 +991,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="InvalidFilePath" xml:space="preserve">
     <value>The specified file must exist and have '.cs' file extension: '{0}'</value>
     <comment>{Locked=".cs"}</comment>
-  </data>
-  <data name="InvalidSemVerVersionString" xml:space="preserve">
-    <value>Failed to parse "{0}" as a semantic version.</value>
-    <comment>{0} is a version string that the user entered that was not parsed as a Semantic Version</comment>
   </data>
   <data name="InvalidToolConfiguration" xml:space="preserve">
     <value>The settings file in the tool's NuGet package is invalid: {0}</value>
@@ -1532,14 +1507,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="ProjectConvertWouldConvertFile" xml:space="preserve">
     <value>Dry run: would remove file-level directives from file: {0}</value>
-    <comment>{0} is the file full path.</comment>
-  </data>
-  <data name="ProjectConvertWouldMoveFile" xml:space="preserve">
-    <value>Dry run: would move file '{0}' to '{1}'.</value>
-    <comment>{0} and {1} are file full paths.</comment>
-  </data>
-  <data name="ProjectConvertWouldDeleteFile" xml:space="preserve">
-    <value>Dry run: would delete file: {0}</value>
     <comment>{0} is the file full path.</comment>
   </data>
   <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
@@ -2077,12 +2044,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
     <value>NuGet configuration file '{0}' does not exist.</value>
   </data>
-  <data name="ToolInstallPackageIdArgumentDescription" xml:space="preserve">
-    <value>The NuGet Package Id of the tool to install.</value>
-  </data>
-  <data name="ToolInstallPackageIdArgumentName" xml:space="preserve">
-    <value>PACKAGE_ID</value>
-  </data>
   <data name="ToolInstallSourceOptionDescription" xml:space="preserve">
     <value>Replace all NuGet package sources to use during installation with these.</value>
   </data>
@@ -2209,12 +2170,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="ToolUpdateCommandDescription" xml:space="preserve">
     <value>Update a global or local tool.</value>
   </data>
-  <data name="ToolUpdatePackageIdArgumentDescription" xml:space="preserve">
-    <value>The NuGet Package Id of the tool to update.</value>
-  </data>
-  <data name="ToolUpdatePackageIdArgumentName" xml:space="preserve">
-    <value>PACKAGE_ID</value>
-  </data>
   <data name="ToolUpdateToolHasMultipleVersionsInstalled" xml:space="preserve">
     <value>Tool '{0}' has multiple versions installed and cannot be updated.</value>
   </data>
@@ -2297,9 +2252,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="ValidationFailedDuplicateVersion" xml:space="preserve">
     <value>Cannot specify --version when the package argument already contains a version.</value>
     <comment>{Locked="--version"}</comment>
-  </data>
-  <data name="ValueMustBeAnObject" xml:space="preserve">
-    <value>The property '{0}' must be an object if it is specified.</value>
   </data>
   <data name="VBCSCompilerOptionDescription" xml:space="preserve">
     <value>Shut down the VB/C# compiler build server.</value>
