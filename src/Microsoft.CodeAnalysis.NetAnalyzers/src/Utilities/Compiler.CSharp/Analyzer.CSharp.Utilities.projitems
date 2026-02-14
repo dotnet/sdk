@@ -8,9 +8,11 @@
     <Import_RootNamespace>Analyzer.CSharp.Utilities</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SemanticModelExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxGeneratorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxNodeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lightup\AwaitExpressionInfoWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Lightup\ForEachStatementInfoWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lightup\SyntaxKindEx.cs" />
   </ItemGroup>
 </Project>

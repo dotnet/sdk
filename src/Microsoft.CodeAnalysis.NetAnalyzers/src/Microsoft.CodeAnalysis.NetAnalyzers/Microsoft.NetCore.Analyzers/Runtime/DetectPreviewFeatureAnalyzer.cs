@@ -270,8 +270,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     OperationKind.CatchClause,
                     OperationKind.TypeOf,
                     OperationKind.EventAssignment,
-                    OperationKind.Await
-                    );
+                    OperationKind.Await,
+                    OperationKind.Using,
+                    OperationKind.Loop);
 
                 // Handle preview symbol definitions
                 context.RegisterSymbolAction(context => AnalyzeSymbol(context, requiresPreviewFeaturesSymbols, virtualStaticsInInterfaces, previewFeaturesAttribute), s_symbols);
@@ -826,6 +827,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ITypeOfOperation typeOfOperation => typeOfOperation.TypeOperand,
                 IEventAssignmentOperation eventAssignment => GetOperationSymbol(eventAssignment.EventReference),
                 IAwaitOperation awaitOperation => SymbolFromAwaitOperation(awaitOperation),
+                IUsingOperation usingOperation => SymbolFromUsingOperation(usingOperation),
+                IForEachLoopOperation forEachOperation => SymbolFromForEachOperation(forEachOperation),
                 _ => null,
             };
 
@@ -842,6 +845,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected abstract ISymbol? SymbolFromAwaitOperation(IAwaitOperation operation);
 
+        protected abstract ISymbol? SymbolFromUsingOperation(IUsingOperation operation);
+
+        protected abstract ISymbol? SymbolFromForEachOperation(IForEachLoopOperation operation);
         private bool TypeParametersHavePreviewAttribute(ISymbol namedTypeSymbolOrMethodSymbol,
                                                         ImmutableArray<ITypeParameterSymbol> typeParameters,
                                                         ConcurrentDictionary<ISymbol, (bool isPreview, string? message, string? url)> requiresPreviewFeaturesSymbols,
