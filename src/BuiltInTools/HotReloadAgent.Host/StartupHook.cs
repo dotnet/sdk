@@ -32,11 +32,21 @@ internal sealed class StartupHook
     private static PosixSignalRegistration? s_signalRegistration;
 #endif
 
+    private static string? s_logPath;
+
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
     /// </summary>
     public static void Initialize()
     {
+        var logDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
+            ? Path.Combine(ciOutputRoot, ".hotreload", "AspireMigration")
+            : "AspireMigration.hotreload";
+
+        Directory.CreateDirectory(logDir);
+
+        s_logPath = Path.Combine(logDir, "Agent.log");
+
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
         var processDir = Path.GetDirectoryName(processPath)!;
 
@@ -162,6 +172,8 @@ internal sealed class StartupHook
 
     private static void Log(string message)
     {
+        File.AppendAllLines(s_logPath!, [message]);
+
         var prefix = s_standardOutputLogPrefix;
         if (!string.IsNullOrEmpty(prefix))
         {
