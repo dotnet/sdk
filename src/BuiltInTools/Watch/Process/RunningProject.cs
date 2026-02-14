@@ -37,8 +37,7 @@ namespace Microsoft.DotNet.Watch
         public CancellationToken ProcessExitedCancellationToken = processExitedSource.Token;
 
         /// <summary>
-        /// Set to true when the process termination is being requested so that it can be restarted within
-        /// the Hot Reload session (i.e. without restarting the root project).
+        /// Set to true when the process termination is being requested so that it can be auto-restarted.
         /// </summary>
         public bool IsRestarting => _isRestarting != 0;
 
