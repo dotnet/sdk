@@ -170,7 +170,7 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        foreach (var arg in _buildOptions.UnmatchedTokens)
+        foreach (var arg in _buildOptions.TestApplicationArguments)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
