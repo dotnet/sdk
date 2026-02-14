@@ -1,0 +1,193 @@
+name: 'Needs More Info: Follow Up and Close'
+
+# This workflow manages issues with the 'needs more info' label:
+# 1. After 2 weeks of inactivity, posts a follow-up comment
+# 2. If customer replies, pings the person who added the label and any assignees
+# 3. If customer doesn't reply within 14 days of follow-up, closes the issue
+# 4. If label is removed and re-added, the cycle restarts
+# 5. Once customer replies, the issue won't be auto-closed even if team doesn't respond
+
+on:
+  schedule:
+    - cron: '30 5,17 * * *' # Twice daily at 5:30 and 17:30 UTC
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  manage-needs-more-info:
+    if: github.repository_owner == 'dotnet' # Do not run on forks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Manage issues with needs-more-info label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+            const FOLLOW_UP_MESSAGE = `👋 Hi! We haven't heard back from you in a while. Could you please provide the additional information requested? If we don't hear back within the next 14 days, we'll close this issue. Feel free to reopen or file a new issue if you have more information to share later. Thank you!`;
+            const CLOSE_MESSAGE = `This issue has been automatically closed because we haven't received the requested information. If you still need help, please feel free to reopen this issue or create a new one with the additional details. Thank you!`;
+            const LABEL_NAME = 'needs more info';
+
+            // Get all open issues with the 'needs more info' label
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: LABEL_NAME,
+              per_page: 100
+            });
+
+            console.log(`Found ${issues.length} open issues with '${LABEL_NAME}' label`);
+
+            const now = Date.now();
+
+            for (const issue of issues) {
+              console.log(`\nProcessing issue #${issue.number}: ${issue.title}`);
+
+              // Get all events for the issue to find when the label was last added
+              const events = await github.paginate(github.rest.issues.listEvents, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                per_page: 100
+              });
+
+              // Find the most recent 'labeled' event for 'needs more info'
+              // This ensures that if the label is removed and re-added,
+              // we restart the cycle from the most recent addition
+              const labelEvents = events.filter(e =>
+                e.event === 'labeled' &&
+                e.label &&
+                e.label.name === LABEL_NAME
+              ).reverse(); // Most recent first
+
+              if (labelEvents.length === 0) {
+                console.log(`No label event found for issue #${issue.number}`);
+                continue;
+              }
+
+              const lastLabelEvent = labelEvents[0];
+              const labelAddedAt = new Date(lastLabelEvent.created_at).getTime();
+              const labelAddedBy = lastLabelEvent.actor?.login;
+
+              console.log(`Label last added on ${lastLabelEvent.created_at} by ${labelAddedBy}`);
+
+              // Get all comments since the label was added
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                per_page: 100
+              });
+
+              const commentsAfterLabel = comments.filter(c =>
+                new Date(c.created_at).getTime() > labelAddedAt
+              );
+
+              // Check if bot has already posted a follow-up
+              const botFollowUpComment = commentsAfterLabel.find(c =>
+                c.user.type === 'Bot' &&
+                c.body.includes("haven't heard back from you")
+              );
+
+              // Check if issue author has replied after the label was added
+              const authorReplies = commentsAfterLabel.filter(c =>
+                c.user.login === issue.user.login
+              );
+
+              if (authorReplies.length > 0 && botFollowUpComment) {
+                // Customer has replied after follow-up - ping the label creator
+                // Per requirements: Don't close the issue after customer replies,
+                // even if it goes idle from the team's side
+                const lastAuthorReply = authorReplies[authorReplies.length - 1];
+                const lastAuthorReplyTime = new Date(lastAuthorReply.created_at).getTime();
+                const botCommentTime = new Date(botFollowUpComment.created_at).getTime();
+
+                // Only ping if the author replied after the bot's comment
+                if (lastAuthorReplyTime > botCommentTime) {
+                  // Check if we've already pinged
+                  const pingComments = commentsAfterLabel.filter(c =>
+                    c.user.type === 'Bot' &&
+                    c.body.includes('provided additional information')
+                  );
+
+                  if (pingComments.length === 0) {
+                    let pingMessage = `The issue author has provided additional information.`;
+                    if (labelAddedBy) {
+                      pingMessage += ` @${labelAddedBy}`;
+                    }
+                    if (issue.assignees && issue.assignees.length > 0) {
+                      const assigneeLogins = issue.assignees.map(a => `@${a.login}`).join(' ');
+                      pingMessage += ` ${assigneeLogins}`;
+                    }
+
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      body: pingMessage
+                    });
+
+                    console.log(`Posted ping comment on issue #${issue.number}`);
+                  }
+                  // Only continue (skip closing logic) if customer replied after follow-up
+                  continue;
+                }
+              }
+
+              // Calculate time since last activity from issue author
+              const lastActivityTime = authorReplies.length > 0
+                ? new Date(authorReplies[authorReplies.length - 1].created_at).getTime()
+                : labelAddedAt;
+
+              const daysSinceActivity = (now - lastActivityTime) / (24 * 60 * 60 * 1000);
+
+              console.log(`Days since last author activity: ${daysSinceActivity.toFixed(1)}`);
+
+              if (botFollowUpComment) {
+                // Bot has already posted follow-up, check if we should close
+                const followUpTime = new Date(botFollowUpComment.created_at).getTime();
+                const daysSinceFollowUp = (now - followUpTime) / (24 * 60 * 60 * 1000);
+
+                console.log(`Days since follow-up: ${daysSinceFollowUp.toFixed(1)}`);
+
+                // Check if there are any author replies after the follow-up comment
+                const repliesAfterFollowUp = authorReplies.filter(reply =>
+                  new Date(reply.created_at).getTime() > followUpTime
+                );
+
+                if (daysSinceFollowUp >= 14 && repliesAfterFollowUp.length === 0) {
+                  // Close the issue - no response after follow-up for 14 days
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: CLOSE_MESSAGE
+                  });
+
+                  await github.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    state: 'closed'
+                  });
+
+                  console.log(`Closed issue #${issue.number} due to no response`);
+                }
+              } else if (daysSinceActivity >= 14) {
+                // Post follow-up comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: FOLLOW_UP_MESSAGE
+                });
+
+                console.log(`Posted follow-up comment on issue #${issue.number}`);
+              }
+            }
+
+            console.log('\nProcessing complete');
