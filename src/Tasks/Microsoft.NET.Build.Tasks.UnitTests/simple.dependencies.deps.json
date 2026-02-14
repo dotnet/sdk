@@ -20,17 +20,23 @@
           "System.Runtime.Serialization.Primitives": "4.1.1"
         },
         "runtime": {
-          "lib/netstandard1.0/Newtonsoft.Json.dll": {}
+          "lib/netstandard1.0/Newtonsoft.Json.dll": {
+            "localPath": "Newtonsoft.Json.dll"
+          }
         }
       },
       "System.Collections.NonGeneric/4.0.1": {
         "runtime": {
-          "lib/netstandard1.3/System.Collections.NonGeneric.dll": {}
+          "lib/netstandard1.3/System.Collections.NonGeneric.dll": {
+            "localPath": "System.Collections.NonGeneric.dll"
+          }
         }
       },
       "System.Runtime.Serialization.Primitives/4.1.1": {
         "runtime": {
-          "lib/netstandard1.3/System.Runtime.Serialization.Primitives.dll": {}
+          "lib/netstandard1.3/System.Runtime.Serialization.Primitives.dll": {
+            "localPath": "System.Runtime.Serialization.Primitives.dll"
+          }
         }
       }
     }
