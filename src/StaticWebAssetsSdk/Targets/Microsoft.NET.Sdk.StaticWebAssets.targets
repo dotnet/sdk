@@ -538,7 +538,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
   </Target>
-  
+
   <Target Name="_BuildCopyStaticWebAssetsIfDifferent"
     AfterTargets="_SplitStaticWebAssetsByCopyOptions">
 
@@ -785,5 +785,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlAssetPlaceholders.targets" Condition="'$(OverrideHtmlAssetPlaceholders)' == 'true'" />
+
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.TypeScript.targets" Condition="'$(EnableTypeScriptNuGetTarget)' == 'true'" />
 
 </Project>

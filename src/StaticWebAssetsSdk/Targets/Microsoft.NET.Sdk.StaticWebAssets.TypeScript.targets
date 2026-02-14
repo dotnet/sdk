@@ -1,0 +1,86 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.TypeScript.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      RegisterTypeScriptStaticWebAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ResolveTypeScriptStaticWebAssetsConfiguration"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <_TypeScriptSwaManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.typescript.files.txt</_TypeScriptSwaManifestPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="RegisterTypeScriptStaticWebAssets"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration;CompileTypeScriptWithTSConfig;GetTypeScriptOutputForPublishing">
+
+    <ItemGroup>
+      <_TypeScriptWwwrootAssets Include="@(GeneratedJavascript)"
+        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(_TypeScriptSwaManifestPath)"
+      Lines="@(_TypeScriptWwwrootAssets)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_TypeScriptSwaManifestPath)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''"
+      CandidateAssets="@(_TypeScriptWwwrootAssets)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      RelativePathPattern="wwwroot/**"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_TypeScriptStaticWebAssets" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_TypeScriptStaticWebAssets)' != ''"
+      CandidateAssets="@(_TypeScriptStaticWebAssets)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+  </Target>
+
+  <Target Name="RemoveTypeScriptFromContentBeforeSwaDiscovery"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration"
+          BeforeTargets="CoreClean;ResolveProjectStaticWebAssets">
+
+    <ReadLinesFromFile File="$(_TypeScriptSwaManifestPath)"
+                       Condition="Exists('$(_TypeScriptSwaManifestPath)')">
+      <Output TaskParameter="Lines" ItemName="_RegisteredTypeScriptAssets" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <Content Remove="@(_RegisteredTypeScriptAssets)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

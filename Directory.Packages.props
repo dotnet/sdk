@@ -95,6 +95,7 @@
     <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="MSBuild.StructuredLogger" Version="2.3.45" />
+    <PackageVersion Include="Microsoft.TypeScript.MSBuild" Version="$(MicrosoftTypeScriptMSBuildPackageVersion)" />
     <PackageVersion Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageVersion Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
