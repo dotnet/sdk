@@ -773,6 +773,16 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Kaldırmak için en az bir başvuru belirtmeniz gerekir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallationTimeout">
+        <source>Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</source>
+        <target state="new">Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallationWaiting">
+        <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete... (Press Ctrl+C to cancel)</source>
+        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete... (Press Ctrl+C to cancel)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: araç kitaplığı bulundu {1}</target>

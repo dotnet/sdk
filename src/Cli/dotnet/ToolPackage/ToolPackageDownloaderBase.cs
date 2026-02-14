@@ -272,24 +272,58 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         string? targetFramework,
         VerbosityOptions verbosity)
     {
+        // Use a named mutex to serialize concurrent installations of the same tool package
+        string mutexName = GetToolInstallMutexName(packageId, packageVersion);
+        using var mutex = new Mutex(false, mutexName);
 
-        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        try
         {
-            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
-        }
-
-        CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
-
-        //  Also download RID-specific package if needed
-        if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
-        {
-            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
+            // First try a quick check to see if the mutex is immediately available
+            if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50)))
             {
-                DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
+                // Mutex is held by another process - inform the user
+                Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
+
+                // Now wait for the longer duration
+                if (!mutex.WaitOne(TimeSpan.FromMinutes(5)))
+                {
+                    throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
+                }
             }
 
-            CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+            if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+            {
+                DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
+            }
+
+            CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+
+            //  Also download RID-specific package if needed
+            if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
+            {
+                if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
+                {
+                    DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
+                }
+
+                CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+            }
         }
+        finally
+        {
+            mutex.ReleaseMutex();
+        }
+    }
+
+    private static string GetToolInstallMutexName(PackageId packageId, NuGetVersion packageVersion)
+    {
+        // Create a mutex name in the format: tool-install-{packageId}-{packageVersion}
+        // Replace characters that are invalid in mutex names with underscores
+        string safeName = $"tool-install-{packageId}-{packageVersion.ToNormalizedString()}"
+            .Replace('/', '_')
+            .Replace('\\', '_');
+
+        return safeName;
     }
 
     public bool TryGetDownloadedTool(

@@ -13,9 +13,9 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using NuGet.Configuration;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Log.WriteLine("Current Directory: " + Directory.GetCurrentDirectory());
 
             var package = downloader.InstallPackage(
-                new PackageLocation(additionalFeeds: new[] {relativePath}),
+                new PackageLocation(additionalFeeds: new[] { relativePath }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
@@ -488,14 +488,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
 
             a.Should().Throw<GracefulException>().WithMessage("simulated error");
-            
+
             fileSystem
             .Directory
                 .Exists(localToolDownloadDir)
                 .Should()
                 .BeTrue();
 
-            
+
             fileSystem
                 .Directory
                 .Exists(localToolVersionDir)
@@ -1027,6 +1027,69 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             action.Should().Throw<GracefulException>()
                 .WithMessage("*requires a higher version of .NET*")
                 .WithMessage("*.NET 99*");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task GivenConcurrentInstallationsTheyDoNotConflict(bool testMockBehaviorIsInSync)
+        {
+            var source = GetTestLocalFeedPath();
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                includeLocalFeedInNugetConfig: false);
+
+            // Run multiple installations concurrently using Task.Run
+            // This tests that the mutex prevents file system conflicts during package download/extraction
+            var tasks = new List<Task<IToolPackage>>();
+            for (int i = 0; i < 5; i++)
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    return downloader.InstallPackage(
+                        new PackageLocation(additionalFeeds: new[] { source }),
+                        packageId: TestPackageId,
+                        verbosity: TestVerbosity,
+                        versionRange: VersionRange.Parse(TestPackageVersion),
+                        targetFramework: _testTargetframework,
+                        isGlobalTool: true,
+                        verifySignatures: false);
+                }));
+            }
+
+            // Wait for all tasks to complete - some may fail with expected errors
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch
+            {
+                // Expected - some tasks may fail
+            }
+
+            // At least one task should succeed
+            var successfulTasks = tasks.Where(t => t.Status == TaskStatus.RanToCompletion).ToList();
+            successfulTasks.Should().NotBeEmpty("at least one installation should succeed");
+
+            // Verify no file system conflict errors occurred (the key issue this fix addresses)
+            var failedTasks = tasks.Where(t => t.Status == TaskStatus.Faulted).ToList();
+            foreach (var failedTask in failedTasks)
+            {
+                var exception = failedTask.Exception?.GetBaseException();
+                // The mutex should prevent IOException with "being used by another process"
+                if (exception is IOException ioEx)
+                {
+                    ioEx.Message.Should().NotContain("being used by another process",
+                        "the mutex should prevent file concurrency issues");
+                }
+            }
+
+            // Verify the package was installed correctly by the successful task(s)
+            var package = await successfulTasks.First();
+            AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
+
+            uninstaller.Uninstall(package.PackageDirectory);
         }
     }
 }
