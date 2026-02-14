@@ -13,7 +13,7 @@ public class AppBaseCommandResolver(IEnvironmentProvider environment,
     internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
     {
         return _environment.GetCommandPathFromRootPath(
-            AppContext.BaseDirectory,
+            PathResolver.Default.SdkRoot,
             commandResolverArguments.CommandName);
     }
 }

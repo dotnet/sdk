@@ -131,7 +131,7 @@ internal partial class NetSdkMsiInstallerClient
         //  To do the mapping to installed MSIs, we rely on the fact that the MSI UpgradeCode is generated in a stable fashion from the
         //  NuGet package identity and platform: Utils.CreateUuid(UpgradeCodeNamespaceUuid, $"{Package.Identity};{Platform}")
         //  The NuGet package identity used is the vanilla (non-MSI) manifest package, for example Microsoft.NET.Workload.Mono.ToolChain.Current.Manifest-8.0.100 version 8.0.0
-        string sdkManifestFolder = Path.Combine(DotNetHome, "sdk-manifests");
+        string sdkManifestFolder = PathResolver.Default.GetManifestsDirectory();
 
         foreach (var manifestFeatureBandFolder in Directory.GetDirectories(sdkManifestFolder))
         {

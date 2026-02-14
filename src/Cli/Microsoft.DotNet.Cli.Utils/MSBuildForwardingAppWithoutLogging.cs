@@ -189,9 +189,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     private static string GetMSBuildExePath()
     {
-        return Path.Combine(
-            AppContext.BaseDirectory,
-            MSBuildExeName);
+        return PathResolver.Default.GetMSBuildPath();
     }
 
     private static string GetMSBuildSDKsPath()
@@ -203,23 +201,25 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             return envMSBuildSDKsPath;
         }
 
-        return Path.Combine(
-            AppContext.BaseDirectory,
-            SdksDirectoryName);
+        return PathResolver.Default.GetMSBuildSdksPath();
     }
 
     private static string GetDotnetPath()
     {
-        return new Muxer().MuxerPath;
+        return PathResolver.Default.DotnetExecutable;
     }
 
     internal static Dictionary<string, string?> GetMSBuildRequiredEnvironmentVariables()
     {
+        var pathResolver = PathResolver.Default;
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? AppContext.BaseDirectory },
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? pathResolver.SdkRoot },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
+            // CRITICAL: Force MSBuild to use SDK location, not its assembly load location
+            // This enables portable CLI scenarios where MSBuild.dll may load from a different directory
+            { "MSBUILD_EXE_PATH", pathResolver.GetMSBuildPath() },
         };
     }
 

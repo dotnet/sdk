@@ -36,13 +36,8 @@ internal class SdkInfoProvider : ISdkInfoProvider
 
     public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken)
     {
-        // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string dotnetDir = EnvironmentProvider.GetDotnetExeDirectory(
-            key =>
-                key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
-                    ? null
-                    : Environment.GetEnvironmentVariable(key),
-            _getCurrentProcessPath);
+        // Get the dotnet directory
+        string dotnetDir = PathResolver.Default.DotnetRoot;
 
         IEnumerable<string> sdks;
         try

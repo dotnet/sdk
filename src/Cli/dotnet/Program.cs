@@ -34,6 +34,16 @@ public class Program
     public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        // Initialize path resolver early - this is the foundation for all path resolution
+        PathResolver.Initialize();
+
+        // Register MSBuild location for in-process ProjectCollection usage
+        // This ensures MSBuild.dll resolves paths correctly even in portable scenarios
+        if (!Microsoft.Build.Locator.MSBuildLocator.IsRegistered)
+        {
+            Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(PathResolver.Default.SdkRoot);
+        }
+
         // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
         // See https://github.com/dotnet/docs/issues/46226.
         using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));

@@ -13,8 +13,7 @@ public class DotnetToolsCommandResolver : ICommandResolver
     {
         if (dotnetToolPath == null)
         {
-            _dotnetToolPath = Path.Combine(AppContext.BaseDirectory,
-                "DotnetTools");
+            _dotnetToolPath = PathResolver.Default.GetBundledToolsDirectory();
         }
         else
         {

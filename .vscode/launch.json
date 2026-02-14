@@ -5,13 +5,10 @@
       "name": ".NET Core Launch (console)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100--dev${/}dotnet.dll",
-      "args": [
-      ],
+      "program": "${workspaceFolder}${/}artifacts${/}bin${/}dotnet${/}Debug${/}net10.0${/}dotnet.dll",
       "env": {
-        "MSBuildExtensionsPath": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100-dev",
-        "MSBuildSDKsPath": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100-dev${/}Sdks",
         "DOTNET_ROOT": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet",
+        "DOTNET_SDK_ROOT": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.200-dev",
       },
       "stopAtEntry": false,
       "console": "integratedTerminal",

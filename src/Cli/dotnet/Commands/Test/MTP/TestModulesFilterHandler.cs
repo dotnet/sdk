@@ -48,14 +48,14 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             return false;
         }
 
-        var muxerPath = new Muxer().MuxerPath;
+        var dotnetPath = PathResolver.Default.DotnetExecutable;
         foreach (string testModule in testModulePaths)
         {
             // We want to produce the right RunCommand and RunArguments for TestApplication implementation to consume directly.
             // We don't want TestApplication class to be concerned about whether it's running dll via test module or not.
             // If we are given dll, we use dotnet exec. Otherwise, we run the executable directly.
             RunProperties runProperties = testModule.HasExtension(CliConstants.DLLExtension)
-                ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
+                ? new RunProperties(dotnetPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
             var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
