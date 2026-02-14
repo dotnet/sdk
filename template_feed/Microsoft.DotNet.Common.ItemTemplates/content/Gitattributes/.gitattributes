@@ -14,6 +14,7 @@
 *.cshtml text diff=html
 *.csx    text diff=csharp
 *.sln    text eol=crlf
+*.slnx   text eol=crlf
 
 # Content below from: https://github.com/gitattributes/gitattributes/blob/master/Common.gitattributes
 
