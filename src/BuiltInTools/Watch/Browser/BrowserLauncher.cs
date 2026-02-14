@@ -3,10 +3,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -26,7 +25,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         AbstractBrowserRefreshServer? server,
         CancellationToken cancellationToken)
     {
-        if (!CanLaunchBrowser(projectOptions, out var launchProfile))
+        if (!CanLaunchBrowser(projectOptions, out var profileLaunchUrl))
         {
             if (environmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
             {
@@ -42,7 +41,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
                 ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.GetProjectInstanceId()))
             {
                 // first build iteration of a root project:
-                var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, url);
+                var launchUrl = GetLaunchUrl(profileLaunchUrl, url);
                 LaunchBrowser(launchUrl, server);
             }
             else if (server != null)
@@ -99,9 +98,9 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         }
     }
 
-    private bool CanLaunchBrowser(ProjectOptions projectOptions, [NotNullWhen(true)] out LaunchSettingsProfile? launchProfile)
+    private bool CanLaunchBrowser(ProjectOptions projectOptions, out string? launchUrl)
     {
-        launchProfile = null;
+        launchUrl = null;
 
         if (environmentOptions.SuppressLaunchBrowser)
         {
@@ -114,20 +113,16 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             return false;
         }
 
-        launchProfile = GetLaunchProfile(projectOptions);
-        if (launchProfile is not { LaunchBrowser: true })
+        var launchProfile = projectOptions.GetLaunchProfile(logger);
+        if (launchProfile is not ProjectLaunchProfile { LaunchBrowser: true, LaunchUrl: var url})
         {
             logger.LogDebug("launchSettings does not allow launching browsers.");
             return false;
         }
 
         logger.Log(MessageDescriptor.ConfiguredToLaunchBrowser);
-        return true;
-    }
 
-    private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
-    {
-        return (projectOptions.NoLaunchProfile == true
-            ? null : LaunchSettingsProfile.ReadLaunchProfile(projectOptions.ProjectPath, projectOptions.LaunchProfileName, logger)) ?? new();
+        launchUrl = url;
+        return true;
     }
 }

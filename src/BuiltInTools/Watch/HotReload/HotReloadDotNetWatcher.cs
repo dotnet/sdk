@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -246,7 +247,8 @@ namespace Microsoft.DotNet.Watch
                             continue;
                         }
 
-                        if (!rootProjectCapabilities.Contains("SupportsHotReload"))
+                        if (rootProjectOptions.GetLaunchProfile(_context.Logger) is not ExecutableLaunchProfile &&
+                            !rootProjectCapabilities.Contains(ProjectCapability.SupportsHotReload))
                         {
                             _context.Logger.LogWarning("Project '{Name}' does not support Hot Reload and must be rebuilt.", rootProject.GetDisplayName());
 
