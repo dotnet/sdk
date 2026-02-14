@@ -10,7 +10,16 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
+
+  <!-- Exclude xUnit v2 compile assemblies that conflict with xUnit v3 types -->
+  <ItemGroup>
+    <PackageReference Include="xunit.extensibility.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="xunit.extensibility.execution" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="xunit.assert" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />

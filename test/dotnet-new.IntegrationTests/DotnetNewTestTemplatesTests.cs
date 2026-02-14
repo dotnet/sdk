@@ -48,6 +48,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private class NullTestOutputHelper : ITestOutputHelper
         {
+            public string Output => string.Empty;
+
+            public void Write(string message) { }
+
+            public void Write(string format, params object[] args) { }
+
             public void WriteLine(string message) { }
 
             public void WriteLine(string format, params object[] args) { }

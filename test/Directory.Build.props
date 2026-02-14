@@ -14,9 +14,18 @@
     <!-- NU5125 The licenseUrl element is being replaced by the license element. -->
     <!-- NU5123 Don't warn about long filenames in packages, we bundle test assets that have long paths
          (ie HelloWorldWithSubDirs) -->
-    <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
+    <!-- xUnit1051: Suppress CancellationToken suggestions - adopting Xunit.TestContext.Current.CancellationToken
+         throughout the codebase is a separate follow-up task -->
+    <NoWarn>$(NoWarn);NU5125;NU5123;xUnit1051</NoWarn>
 
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <!-- xUnit v3: tests are self-contained executables -->
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <OutputType Condition="'$(IsTestProject)' != 'false'">Exe</OutputType>
+
+    <!-- Disable arcade's explicit MTP 2.x package references. The repo's dependency flow
+         has MTP at 2.x which is incompatible with xunit.v3's bundled MTP 1.x runner.
+         Let xunit.v3 use its own MTP 1.x dependency instead. -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
 
     <DebugType>embedded</DebugType>
 
@@ -26,6 +35,17 @@
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
+  <!-- Exclude xUnit v2 compile/runtime assemblies that conflict with xUnit v3 types
+       (e.g. FactAttribute, TheoryAttribute exist in both xunit.extensibility.core and xunit.v3.core).
+       Some packages (Microsoft.TemplateEngine.TestHelper/Mocks) still transitively depend on these.
+       Also exclude Verify.Xunit v2 which conflicts with Verify.XunitV3 (from TemplateVerifier). -->
+  <ItemGroup>
+    <PackageReference Include="xunit.extensibility.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="xunit.extensibility.execution" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="xunit.assert" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="Verify.Xunit" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Global usings -->
@@ -38,7 +58,6 @@
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
 </Project>
