@@ -31,7 +31,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _force = parseResult.GetValue(Definition.ForceOption);
         _dryRun = parseResult.GetValue(Definition.DryRunOption);
         _deleteSource = parseResult.GetValue(Definition.DeleteSourceOption);
-        _interactive = parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName);
+        _interactive = parseResult.GetValue(Definition.InteractiveOption);
     }
 
     public override int Execute()
@@ -274,9 +274,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     {
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
-        
+
         string targetDirectory;
-        
+
         // Use CLI-provided output directory if specified
         if (_outputDirectory != null)
         {
@@ -293,7 +293,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     {
                         // Determine the actual path to validate
                         string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
-                        
+
                         if (Directory.Exists(pathToValidate))
                         {
                             return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
@@ -315,7 +315,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         {
             targetDirectory = defaultValue;
         }
-        
+
         // Validate that directory doesn't exist
         if (Directory.Exists(targetDirectory))
         {
