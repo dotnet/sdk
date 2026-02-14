@@ -3088,6 +3088,11 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
         <target state="translated">Usare 'ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Memorizza nella cache e usa un'istanza 'CompositeFormat' come argomento di questa operazione di formattazione, anziché passare la stringa di formato originale. In questo modo si riduce il costo dell'operazione di formattazione.</target>

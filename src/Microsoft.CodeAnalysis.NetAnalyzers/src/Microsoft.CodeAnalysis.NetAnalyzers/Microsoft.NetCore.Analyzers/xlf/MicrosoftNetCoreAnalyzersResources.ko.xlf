@@ -3088,6 +3088,11 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">'ThrowIfCancellationRequested' 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">원래 형식 문자열을 전달하는 대신 이 서식 작업에 대한 인수로 'CompositeFormat' 인스턴스를 캐시하고 사용합니다. 이렇게 하면 서식 작업 비용이 절감됩니다.</target>
