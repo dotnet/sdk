@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Runner;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -30,6 +31,19 @@ namespace Microsoft.DotNet.PackageValidation
             {
                 return;
             }
+
+            // Don't perform api compatibility checks on placeholder files.
+            if (leftContentItems.IsPlaceholderFile() && rightContentItems.IsPlaceholderFile())
+            {
+                leftContentItems[0].Properties.TryGetValue("tfm", out object? tfmRaw);
+                string tfm = tfmRaw?.ToString() ?? string.Empty;
+
+                log.LogMessage(MessageImportance.Normal, string.Format(Resources.SkipApiCompatForPlaceholderFiles, tfm));
+            }
+
+            // Make sure placeholder package files aren't enqueued as api comparison check work items.
+            Debug.Assert(!leftContentItems.IsPlaceholderFile() && !rightContentItems.IsPlaceholderFile(),
+                "Placeholder files must not be enqueued for api comparison checks.");
 
             // If a right hand side package is provided in addition to the left side, package validation runs in baseline comparison mode.
             // The assumption stands that the right hand side is "current" and has more information than the left, i.e. assembly references.
