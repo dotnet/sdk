@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -9,52 +9,70 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     internal sealed class PhysicalConsole : IConsole
     {
-        private readonly List<Action<ConsoleKeyInfo>> _keyPressedListeners = new();
+        public const char CtrlC = '\x03';
+        public const char CtrlR = '\x12';
 
-        private PhysicalConsole()
+        public event Action<ConsoleKeyInfo>? KeyPressed;
+
+        public PhysicalConsole(TestFlags testFlags)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            Console.CancelKeyPress += (o, e) =>
-            {
-                CancelKeyPress?.Invoke(o, e);
-            };
+            _ = testFlags.HasFlag(TestFlags.ReadKeyFromStdin) ? ListenToStandardInputAsync() : ListenToConsoleKeyPressAsync();
         }
 
-        public event Action<ConsoleKeyInfo> KeyPressed
+        private async Task ListenToStandardInputAsync()
         {
-            add
+            using var stream = Console.OpenStandardInput();
+            var buffer = new byte[1];
+
+            while (true)
             {
-                _keyPressedListeners.Add(value);
-                ListenToConsoleKeyPress();
+                var bytesRead = await stream.ReadAsync(buffer, CancellationToken.None);
+                if (bytesRead != 1)
+                {
+                    break;
+                }
+
+                var c = (char)buffer[0];
+
+                // handle all input keys that watcher might consume:
+                var key = c switch
+                {
+                    CtrlC => new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true),
+                    CtrlR => new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true),
+                    >= 'a' and <= 'z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'a'), shift: false, alt: false, control: false),
+                    >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: true, alt: false, control: false),
+                    _ => default
+                };
+
+                if (key.Key != ConsoleKey.None)
+                {
+                    KeyPressed?.Invoke(key);
+                }
             }
-
-            remove => _keyPressedListeners.Remove(value);
         }
 
-        private void ListenToConsoleKeyPress()
+        private Task ListenToConsoleKeyPressAsync()
         {
-            Task.Factory.StartNew(() =>
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                KeyPressed?.Invoke(new ConsoleKeyInfo(CtrlC, ConsoleKey.C, shift: false, alt: false, control: true));
+            };
+
+            return Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
                     var key = Console.ReadKey(intercept: true);
-                    for (var i = 0; i < _keyPressedListeners.Count; i++)
-                    {
-                        _keyPressedListeners[i](key);
-                    }
+                    KeyPressed?.Invoke(key);
                 }
             }, TaskCreationOptions.LongRunning);
         }
 
-        public static IConsole Singleton { get; } = new PhysicalConsole();
-
-        public event ConsoleCancelEventHandler? CancelKeyPress;
         public TextWriter Error => Console.Error;
-        public TextReader In => Console.In;
         public TextWriter Out => Console.Out;
-        public bool IsInputRedirected => Console.IsInputRedirected;
-        public bool IsOutputRedirected => Console.IsOutputRedirected;
-        public bool IsErrorRedirected => Console.IsErrorRedirected;
+
         public ConsoleColor ForegroundColor
         {
             get => Console.ForegroundColor;

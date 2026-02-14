@@ -15,6 +15,8 @@
     <_ContainerIsTargetingNet8TFM Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">true</_ContainerIsTargetingNet8TFM>
     <_ContainerIsSelfContained>false</_ContainerIsSelfContained>
     <_ContainerIsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_ContainerIsSelfContained>
+
+    <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == '' and '$(OutputType)' != 'Library'" >true</EnableSdkContainerSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -235,10 +237,6 @@
         )"
       Code="CONTAINER005"
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
-
-    <PropertyGroup>
-      <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
-    </PropertyGroup>
   </Target>
 
   <Target Name="_PublishSingleContainer"
