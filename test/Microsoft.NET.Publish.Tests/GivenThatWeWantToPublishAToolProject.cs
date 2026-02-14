@@ -51,13 +51,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var testAsset = SetupTestAsset().SetProjProperty("PublishSelfContained", "true");
             var publishCommand = new PublishCommand(testAsset);
-
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
-                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_can_publish_selfcontained_and_has_apphost)}.binlog") :
-                "./msbuild.binlog";
-
-            publishCommand.WithWorkingDirectory(testAsset.Path).Execute($"-bl:{binlogDestPath}");
-
+            publishCommand.WithWorkingDirectory(testAsset.Path).Execute();
             publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier)
                 .Should().HaveFile("consoledemo" + Constants.ExeSuffix)
                 .And.HaveFile(HostfxrName);
