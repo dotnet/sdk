@@ -37,6 +37,11 @@
         <target state="translated">Nepovedlo se najít sadu .NET SDK. Zkontrolujte, jestli je nainstalovaná, jestli je vaše cesta nakonfigurovaná pro správnou architekturu a jestli verze zadaná v souboru global.json (pokud existuje) odpovídá nainstalované verzi.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnableToLocateNETCoreSdkButPreviewAvailable">
+        <source>Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</source>
+        <target state="new">Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
