@@ -6,8 +6,13 @@ using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.NET.Build.Containers.Tasks;
+namespace Microsoft.NET.Sdk.Common;
 
+/// <summary>
+/// Extracts task items and credentials from a Visual Studio host object.
+/// Supports both the JSON-based <c>QueryAllTaskItems</c> protocol and the legacy
+/// <see cref="IEnumerable{ITaskItem}"/> interface.
+/// </summary>
 internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
 {
     private const string CredentialItemSpecName = "MsDeployCredential";
@@ -51,7 +56,11 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
         return (username, password);
     }
 
-    private IEnumerable<ITaskItem>? GetTaskItems()
+    /// <summary>
+    /// Gets all task items from the host object.
+    /// </summary>
+    /// <returns>The task items if available, null otherwise.</returns>
+    public IEnumerable<ITaskItem>? GetTaskItems()
     {
         try
         {
@@ -62,7 +71,6 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
             //   - Returns a JSON array of objects with the shape:
             //       [{ "ItemSpec": "<string>", "Metadata": { "<key>": "<value>", ... } }, ...]
             // The JSON is deserialized into TaskItemDto records and converted to ITaskItem instances.
-            // Only UserName and Password metadata are extracted to avoid conflicts with reserved MSBuild metadata.
             string? rawTaskItems = (string?)_hostObject!.GetType().InvokeMember(
                 "QueryAllTaskItems",
                 BindingFlags.InvokeMethod,
@@ -101,14 +109,16 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
             TaskItem taskItem = new(dto.ItemSpec ?? string.Empty);
             if (dto.Metadata is not null)
             {
-                if (dto.Metadata.TryGetValue(UserMetaDataName, out string? userName))
+                foreach (KeyValuePair<string, string> kvp in dto.Metadata)
                 {
-                    taskItem.SetMetadata(UserMetaDataName, userName);
-                }
-
-                if (dto.Metadata.TryGetValue(PasswordMetaDataName, out string? password))
-                {
-                    taskItem.SetMetadata(PasswordMetaDataName, password);
+                    try
+                    {
+                        taskItem.SetMetadata(kvp.Key, kvp.Value);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // Skip reserved/built-in MSBuild metadata names (e.g. FullPath, Identity).
+                    }
                 }
             }
 
@@ -116,6 +126,16 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
         }
     }
 
-    private readonly record struct TaskItemDto(string? ItemSpec, Dictionary<string, string>? Metadata);
-}
+    private readonly struct TaskItemDto
+    {
+        public string? ItemSpec { get; }
+        public Dictionary<string, string>? Metadata { get; }
 
+        [System.Text.Json.Serialization.JsonConstructor]
+        public TaskItemDto(string? itemSpec, Dictionary<string, string>? metadata)
+        {
+            ItemSpec = itemSpec;
+            Metadata = metadata;
+        }
+    }
+}

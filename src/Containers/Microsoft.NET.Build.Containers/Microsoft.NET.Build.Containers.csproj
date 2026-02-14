@@ -53,6 +53,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\VSHostObject.cs" LinkBase="Common" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
 
@@ -74,7 +78,6 @@
     <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
     <Compile Include="ContainerHelpers.cs" />
     <Compile Include="net472Definitions.cs" />
-    <Compile Include="VSHostObject.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\Strings.Designer.cs" />
