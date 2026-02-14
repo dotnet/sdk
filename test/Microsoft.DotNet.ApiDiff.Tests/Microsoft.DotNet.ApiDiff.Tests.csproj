@@ -14,11 +14,6 @@
     <Compile Include="..\Microsoft.DotNet.GenAPI.Tests\TestAssemblyLoaderFactory.cs" />
     <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\SymbolFactory.cs" />
     <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\TempDirectory.cs" />
-    <None
-      Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff.Tool\AttributesToExclude.txt"
-      Link="AttributesToExclude.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

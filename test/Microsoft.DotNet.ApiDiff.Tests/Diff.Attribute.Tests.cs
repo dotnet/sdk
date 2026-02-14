@@ -734,15 +734,16 @@ public class DiffAttributeTests : DiffBaseTests
     [Fact]
     public Task SuppressAllDefaultAttributesUsedByTool()
     {
-        // The attributes that should get hidden in this test must all be part of
-        // the AttributesToExclude.txt file that the ApiDiff tool uses by default.
-
-        FileInfo file = new FileInfo("AttributesToExclude.txt");
-        if (!file.Exists)
-        {
-            throw new FileNotFoundException($"{file.FullName} file not found.");
-        }
-        string[] attributesToExclude = File.ReadAllLines(file.FullName);
+        // Test that the default attributes defined in FileOutputDiffGenerator are properly excluded.
+        // These are the same attributes that are excluded when no -eattrs parameter is specified.
+        string[] attributesToExclude = [
+            "T:System.AttributeUsageAttribute",
+            "T:System.ComponentModel.EditorBrowsableAttribute",
+            "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+            "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute",
+            "T:System.Windows.Markup.ContentWrapperAttribute",
+            "T:System.Windows.TemplatePartAttribute"
+        ];
 
         return RunTestAsync(
                 beforeCode: """
@@ -785,6 +786,56 @@ public class DiffAttributeTests : DiffBaseTests
                   }
                 """,
                 attributesToExclude: attributesToExclude);
+    }
+
+    [Fact]
+    public Task DefaultBehaviorExcludesDefaultAttributes()
+    {
+        // Test that when no attributesToExclude is specified (null), 
+        // the tool automatically excludes the default set of attributes.
+        // This simulates the behavior when -eattrs is not specified on the command line.
+
+        return RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                    [MyAttribute]
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [MyNamespace.MyAttributeAttribute]
+                      public class MyClass
+                      {
+                      }
+                +     public class MyAttributeAttribute : System.Attribute
+                +     {
+                +         public MyAttributeAttribute();
+                +     }
+                  }
+                """,
+                attributesToExclude: null); // null simulates default behavior
     }
 
     [Fact]
