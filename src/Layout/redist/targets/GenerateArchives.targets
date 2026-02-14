@@ -13,15 +13,15 @@
     <!-- Ensure output directories are created -->
     <MakeDir Directories="$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)" />
 
-    <!-- Create .tar.gz files on Linux/MacOS, and .zip files on Windows -->
+    <!-- Create .zip files on Windows -->
     <ZipFileCreateFromDirectory
         Condition=" '$(OSName)' == 'win' "
         SourceDirectory="$(RedistInstallerLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
         OverwriteDestination="true" />
 
+    <!-- Create .tar.gz files on all platforms -->
     <TarGzFileCreateFromDirectory
-        Condition=" '$(OSName)' != 'win' "
         SourceDirectory="$(RedistInstallerLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
         OverwriteDestination="true"

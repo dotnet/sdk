@@ -96,8 +96,13 @@
                             CrossgenLayout;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
           AfterTargets="AfterBuild">
-    <!-- TODO: This will eventually be done for all platforms as part of the deduplication work (https://github.com/dotnet/sdk/issues/52183). -->
-    <DeduplicateAssembliesWithLinks Condition="!$([MSBuild]::IsOSPlatform('Windows'))" LayoutDirectory="$(RedistInstallerLayoutPath)sdk\" UseHardLinks="false" />
+    <PropertyGroup>
+      <!-- Use hard links on Windows, symbolic links on non-Windows -->
+      <_UseHardLinks Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</_UseHardLinks>
+      <_UseHardLinks Condition="!$([MSBuild]::IsOSPlatform('Windows'))">false</_UseHardLinks>
+    </PropertyGroup>
+
+    <DeduplicateAssembliesWithLinks LayoutDirectory="$(RedistInstallerLayoutPath)sdk\" UseHardLinks="$(_UseHardLinks)" />
   </Target>
 
   <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is

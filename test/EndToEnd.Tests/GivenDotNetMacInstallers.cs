@@ -10,7 +10,7 @@ public class GivenDotNetMacInstallers(ITestOutputHelper log) : SdkTest(log)
 {
     [Fact]
     public void PkgPackagePreservesSymbolicLinks() =>
-        SymbolicLinkHelpers.VerifyInstallerSymlinks(
+        FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.OSX,
             "dotnet-sdk-*.pkg",
             excludeSubstrings: ["-internal"],
