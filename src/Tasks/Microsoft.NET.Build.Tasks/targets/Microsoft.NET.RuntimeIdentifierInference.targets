@@ -398,8 +398,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     append a RID the user never mentioned in the path and do so even in the AnyCPU case.
    -->
   <PropertyGroup Condition="'$(AppendRuntimeIdentifierToOutputPath)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(_UsingDefaultRuntimeIdentifier)' != 'true'">
-    <IntermediateOutputPath Condition="'$(UseArtifactsIntermediateOutput)' != 'true'">$(IntermediateOutputPath)$(RuntimeIdentifier)\</IntermediateOutputPath>
-    <OutputPath Condition="'$(UseArtifactsOutput)' != 'true'">$(OutputPath)$(RuntimeIdentifier)\</OutputPath>
+    <IntermediateOutputPath Condition="'$(UseArtifactsIntermediateOutput)' != 'true'">$(IntermediateOutputPath)$(RuntimeIdentifier)$([System.IO.Path]::DirectorySeparatorChar)</IntermediateOutputPath>
+    <OutputPath Condition="'$(UseArtifactsOutput)' != 'true'">$(OutputPath)$(RuntimeIdentifier)$([System.IO.Path]::DirectorySeparatorChar)</OutputPath>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetDefaultPlatformTargetForNetFramework"
