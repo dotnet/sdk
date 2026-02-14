@@ -77,6 +77,48 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46006")]
+        public void NativeAot_app_publishes_with_space_in_path()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var projectName = "HelloWorldNativeAotApp";
+
+            var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            // Use an identifier with a space to create a path with a space
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "path with spaces");
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("IL2026")
+                .And.NotHaveStdErrContaining("NETSDK1179")
+                .And.NotHaveStdErrContaining("warning")
+                .And.NotHaveStdOutContaining("warning");
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            // Verify the path contains a space
+            testAsset.TestRoot.Should().Contain(" ", "Test should run with a space in the path");
+
+            // The exe should exist and should be native
+            File.Exists(publishedExe).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
+            CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
+
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hello World");
+        }
+
         [RequiresMSBuildVersionTheory("17.12.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
