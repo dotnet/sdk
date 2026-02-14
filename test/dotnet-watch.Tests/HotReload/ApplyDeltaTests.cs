@@ -406,7 +406,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
                 .WithSource();
 
             if (!nonInteractive)
@@ -450,7 +450,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CombinatorialData]
         public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
                 .WithSource();
 
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -555,7 +555,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
                 .WithSource();
 
             if (!nonInteractive)
@@ -1170,7 +1170,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             Log("RenameSourceFile started");
 
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps", identifier: useMove.ToString())
                 .WithSource();
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
