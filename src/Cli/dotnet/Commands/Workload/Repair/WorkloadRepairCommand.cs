@@ -70,7 +70,8 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
             {
                 Reporter.WriteLine();
 
-                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
+                var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
+                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(sdkFeatureBand);
 
                 if (!workloadIds.Any())
                 {
@@ -80,7 +81,7 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
 
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand);
 
                 WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
@@ -106,4 +107,5 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
     {
         _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand);
     }
+
 }

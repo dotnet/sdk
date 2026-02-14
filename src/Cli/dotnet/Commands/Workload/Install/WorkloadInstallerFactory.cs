@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -53,7 +54,7 @@ internal class WorkloadInstallerFactory
 
         userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
-        return new FileBasedInstaller(
+        var installer = new FileBasedInstaller(
             reporter,
             sdkFeatureBand,
             workloadResolver,
@@ -64,6 +65,25 @@ internal class WorkloadInstallerFactory
             verbosity: verbosity,
             packageSourceLocation: packageSourceLocation,
             restoreActionConfig: restoreActionConfig);
+
+        // Attach corruption repairer to recover from corrupt workload sets
+        if (nugetPackageDownloader is not null &&
+            workloadResolver?.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider sdkProvider &&
+            sdkProvider.CorruptionRepairer is null)
+        {
+            sdkProvider.CorruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                reporter,
+                installer,
+                workloadResolver,
+                sdkFeatureBand,
+                dotnetDir,
+                userProfileDir,
+                nugetPackageDownloader,
+                packageSourceLocation,
+                verbosity);
+        }
+
+        return installer;
     }
 
     private static bool CanWriteToDotnetRoot(string dotnetDir = null)
