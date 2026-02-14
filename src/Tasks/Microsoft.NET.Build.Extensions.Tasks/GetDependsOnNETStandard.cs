@@ -9,8 +9,11 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Determines if any Reference depends on netstandard.dll.
     /// </summary>
-    public partial class GetDependsOnNETStandard : TaskBase
+    [MSBuildMultiThreadableTask]
+    public partial class GetDependsOnNETStandard : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+
         private const string NetStandardAssemblyName = "netstandard";
 
         // System.Runtime from netstandard1.5
@@ -43,19 +46,23 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var referenceSourcePath = ItemUtilities.GetSourcePath(reference);
 
-                if (referenceSourcePath != null && File.Exists(referenceSourcePath))
+                if (referenceSourcePath != null)
                 {
-                    try
+                    var absoluteRefPath = TaskEnvironment.GetAbsolutePath(referenceSourcePath);
+                    if (File.Exists(absoluteRefPath))
                     {
-                        if (GetFileDependsOnNETStandard(referenceSourcePath))
+                        try
                         {
-                            return true;
+                            if (GetFileDependsOnNETStandard(absoluteRefPath))
+                            {
+                                return true;
+                            }
                         }
-                    }
-                    catch (Exception e) when (IsReferenceException(e))
-                    {
-                        // ResolveAssemblyReference treats all of these exceptions as warnings so we'll do the same
-                        Log.LogWarning(Strings.GetDependsOnNETStandardFailedWithException, e.Message, referenceSourcePath);
+                        catch (Exception e) when (IsReferenceException(e))
+                        {
+                            // ResolveAssemblyReference treats all of these exceptions as warnings so we'll do the same
+                            Log.LogWarning(Strings.GetDependsOnNETStandardFailedWithException, e.Message, referenceSourcePath);
+                        }
                     }
                 }
             }

@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="NuGet.ProjectModel" />
   </ItemGroup>
 

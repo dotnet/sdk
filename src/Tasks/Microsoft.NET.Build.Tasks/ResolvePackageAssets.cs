@@ -23,8 +23,11 @@ namespace Microsoft.NET.Build.Tasks
     /// TFM/RID/etc. and written in a format that is easily decoded to ITaskItem
     /// arrays without undue allocation.
     /// </summary>
-    public sealed class ResolvePackageAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ResolvePackageAssets : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         #region Input Items
 
         /// <summary>
@@ -567,7 +570,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (IsCacheFileUpToDate())
                     {
-                        reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
+                        reader = OpenCacheFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile), settingsHash);
                     }
                 }
                 catch (IOException) { }
@@ -581,7 +584,7 @@ namespace Microsoft.NET.Build.Tasks
                         if (writer.CanWriteToCacheFile)
                         {
                             writer.WriteToCacheFile();
-                            reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
+                            reader = OpenCacheFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile), settingsHash);
                         }
                         else
                         {
@@ -593,7 +596,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 return reader;
 
-                bool IsCacheFileUpToDate() => File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile) > File.GetLastWriteTimeUtc(task.ProjectAssetsFile);
+                bool IsCacheFileUpToDate() => File.GetLastWriteTimeUtc(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile)) > File.GetLastWriteTimeUtc(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsFile));
             }
 
             private static BinaryReader OpenCacheStream(Stream stream, byte[] settingsHash)
@@ -724,7 +727,7 @@ namespace Microsoft.NET.Build.Tasks
                 _targetFramework = task.TargetFramework;
 
                 _task = task;
-                _lockFile = new LockFileCache(task).GetLockFile(task.ProjectAssetsFile);
+                _lockFile = new LockFileCache(task).GetLockFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsFile));
                 _packageResolver = NuGetPackageResolver.CreateResolver(_lockFile);
 
                 //  If we are doing a design-time build, we do not want to fail the build if we can't find the
@@ -771,8 +774,8 @@ namespace Microsoft.NET.Build.Tasks
 
             public void WriteToCacheFile()
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_task.ProjectAssetsCacheFile));
-                var stream = File.Open(_task.ProjectAssetsCacheFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+                Directory.CreateDirectory(Path.GetDirectoryName(_task.TaskEnvironment.GetAbsolutePath(_task.ProjectAssetsCacheFile)));
+                var stream = File.Open(_task.TaskEnvironment.GetAbsolutePath(_task.ProjectAssetsCacheFile), FileMode.Create, FileAccess.ReadWrite, FileShare.None);
                 using (_writer = new BinaryWriter(stream, TextEncoding, leaveOpen: false))
                 {
                     Write();
