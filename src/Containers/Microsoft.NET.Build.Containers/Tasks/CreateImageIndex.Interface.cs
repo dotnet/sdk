@@ -95,4 +95,4 @@ partial class CreateImageIndex
 
         TaskResources = Resource.Manager;
     }
-} 
+}

@@ -311,7 +311,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
             default:
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
                 return null;
-        };
+        }
+        ;
     }
 
     private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/") ?? false;

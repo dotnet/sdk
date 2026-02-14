@@ -1542,4 +1542,50 @@ public class EndToEndTests : IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
+
+    /// <summary>
+    /// Tests that zstd-compressed layers from base images are handled correctly.
+    /// Uses a Docker hardened image (dhi.io/dotnet:8-alpine3.22) which contains zstd-compressed layers.
+    /// </summary>
+    /// <remarks>
+    /// TODO: In the future, this image should be mirrored to the test ACR and the manifest updated
+    /// to use the ACR reference for deterministic test runs.
+    /// </remarks>
+    [DockerAvailableFact]
+    public async Task EndToEnd_ZstdCompressedBaseImage()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_ZstdCompressedBaseImage));
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework);
+
+        // Build the image using a Docker hardened base image that contains zstd-compressed layers
+        // Note: dhi.io/dotnet:8-alpine3.22 uses zstd compression for its layers
+        Registry registry = new("dhi.io", logger, RegistryMode.Pull);
+
+        ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
+            "dotnet",
+            "8-alpine3.22",
+            "linux-x64",
+            ToolsetUtils.RidGraphManifestPicker,
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+
+        imageBuilder.AddLayer(l);
+
+        imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Load the image into the local Docker daemon
+        var sourceReference = new SourceImageReference(registry, "dotnet", "8-alpine3.22", null);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest" });
+
+        await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+
+        // Run the image to verify it works correctly
+        ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:latest")
+            .Execute()
+            .Should().Pass();
+    }
 }

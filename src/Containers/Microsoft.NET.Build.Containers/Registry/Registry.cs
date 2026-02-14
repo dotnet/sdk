@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NuGet.Packaging;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using NuGet.Packaging;
 using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Containers;
@@ -301,7 +301,7 @@ internal sealed class Registry
         // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
         var versionPart = platform.version?.Split('.') switch
         {
-        [var major, ..] => major,
+            [var major, ..] => major,
             _ => null
         };
         var platformPart = platform.architecture switch
@@ -408,15 +408,21 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = ContentStore.PathForDescriptor(descriptor);
-    
+
         if (File.Exists(localPath))
         {
             // Assume file is up to date and just return it
             return localPath;
         }
-    
+
+        // Log when we encounter zstd-compressed layers
+        if (descriptor.MediaType == SchemaTypes.DockerLayerZstd || descriptor.MediaType == SchemaTypes.OciLayerZstdV1)
+        {
+            _logger.LogTrace("Downloading zstd-compressed layer (mediaType: {0}). Layer will be passed through unmodified.", descriptor.MediaType);
+        }
+
         string tempTarballPath = ContentStore.GetTempFile();
-    
+
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
         {
@@ -424,12 +430,12 @@ internal sealed class Registry
             {
                 // No local copy, so download one
                 using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-    
+
                 using (FileStream fs = File.Create(tempTarballPath))
                 {
                     await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
-    
+
                 // Break the loop if successful
                 break;
             }
@@ -440,16 +446,16 @@ internal sealed class Registry
                 {
                     throw new UnableToDownloadFromRepositoryException(repository);
                 }
-    
+
                 _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
-    
+
                 // Wait before retrying
                 await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
             }
         }
-    
+
         File.Move(tempTarballPath, localPath, overwrite: true);
-    
+
         return localPath;
     }
 
@@ -566,7 +572,7 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
             await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
-        }          
+        }
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
