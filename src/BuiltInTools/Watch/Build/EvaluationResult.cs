@@ -34,10 +34,13 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
 
     public void WatchFiles(FileWatcher fileWatcher)
     {
-        fileWatcher.WatchContainingDirectories(Files.Keys, includeSubdirectories: true);
+        fileWatcher.ClearWatchedDirectories();
+
+        fileWatcher.WatchContainingDirectories(Files.Keys, ItemExclusions, includeSubdirectories: true);
 
         fileWatcher.WatchContainingDirectories(
             StaticWebAssetsManifests.Values.SelectMany(static manifest => manifest.DiscoveryPatterns.Select(static pattern => pattern.Directory)),
+            ItemExclusions,
             includeSubdirectories: true);
 
         fileWatcher.WatchFiles(BuildFiles);

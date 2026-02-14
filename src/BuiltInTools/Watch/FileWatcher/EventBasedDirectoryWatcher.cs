@@ -151,7 +151,8 @@ namespace Microsoft.DotNet.Watch
 
                 _fileSystemWatcher = new FileSystemWatcher(WatchedDirectory)
                 {
-                    IncludeSubdirectories = IncludeSubdirectories
+                    IncludeSubdirectories = IncludeSubdirectories,
+                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite
                 };
 
                 _fileSystemWatcher.Created += WatcherAddedHandler;
