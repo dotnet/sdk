@@ -1,13 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Analyzer.Utilities.Extensions
 {
     internal static class IDictionaryExtensions
     {
+        [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Currently used only with ImmutableDictionary<K, V>.Builder nested type.")]
         public static void AddKeyValueIfNotNull<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary,
             TKey? key,
