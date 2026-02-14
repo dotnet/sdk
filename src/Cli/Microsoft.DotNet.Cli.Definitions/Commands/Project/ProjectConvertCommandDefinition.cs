@@ -26,7 +26,7 @@ internal sealed class ProjectConvertCommandDefinition : Command
         Arity = ArgumentArity.Zero,
     };
 
-    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption(acceptArgument: true);
 
     public readonly Option<bool> DryRunOption = new("--dry-run")
     {
