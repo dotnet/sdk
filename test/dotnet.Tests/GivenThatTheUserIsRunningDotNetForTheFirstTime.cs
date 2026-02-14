@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.Tests
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
 
             File.Exists(pathsd).Should().BeTrue();
-            File.ReadAllText(pathsd).Should().Be(CliFolderPathCalculator.ToolsShimPathInUnix.PathWithTilde);
+            File.ReadAllText(pathsd).Should().Be(CliFolderPathCalculator.ToolsShimPathInUnix.Path);
         }
 
         private string GetDotnetVersion()
