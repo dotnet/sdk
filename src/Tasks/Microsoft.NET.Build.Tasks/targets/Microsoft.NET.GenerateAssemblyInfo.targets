@@ -55,6 +55,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeCompile targets (common targets convention).
    -->
   <Target Name="GenerateAssemblyInfo"
+          AfterTargets="PrepareForBuild"
           BeforeTargets="BeforeCompile;CoreCompile"
           DependsOnTargets="PrepareForBuild;CoreGenerateAssemblyInfo"
           Condition="'$(GenerateAssemblyInfo)' == 'true'" />
