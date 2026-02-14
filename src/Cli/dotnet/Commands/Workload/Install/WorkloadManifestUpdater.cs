@@ -367,7 +367,10 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         catch (Exception e)
         {
-            _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            if (_displayManifestUpdates)
+            {
+                _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            }
             return false;
         }
         finally
@@ -406,7 +409,10 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             }
         }
 
-        _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
+        if (_displayManifestUpdates)
+        {
+            _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
+        }
     }
 
     private (ManifestVersionWithBand ManifestWithBand, WorkloadCollection Workloads)? GetAdvertisingManifestVersionAndWorkloads(ManifestId manifestId)
