@@ -1,21 +1,28 @@
+# Schema: https://editorconfig.org
+# Docs: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/categories
+
+# top-most EditorConfig file
 root = true
 
 # All files
 [*]
+charset = utf-8
 indent_style = space
+trim_trailing_whitespace = true
 
 # Xml files
 [*.xml]
 indent_size = 2
 
 # Xml project files
-[*.{csproj,fsproj,vbproj,proj,slnx}]
+[*.{csproj,fsproj,vbproj,proj,shproj,slnx}]
 indent_size = 2
 
 # Xml config files
 [*.{props,targets,config,nuspec}]
 indent_size = 2
 
+# JSON files
 [*.json]
 indent_size = 2
 
@@ -30,12 +37,14 @@ tab_width = 4
 
 # New line preferences
 insert_final_newline = false
+dotnet_style_allow_multiple_blank_lines_experimental = true:silent
+dotnet_style_allow_statement_immediately_after_block_experimental = true:silent
 
 #### .NET Coding Conventions ####
 [*.{cs,vb}]
 
 # Organize usings
-dotnet_separate_import_directive_groups = true
+dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = true
 file_header_template = unset
 
@@ -126,9 +135,11 @@ csharp_style_prefer_readonly_struct_member = true:suggestion
 # Code-block preferences
 csharp_prefer_braces = true:silent
 csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
 csharp_style_namespace_declarations = file_scoped:suggestion
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_simple_property_accessors = true:suggestion
 csharp_style_prefer_top_level_statements = true:silent
 
 # Expression-level preferences
@@ -136,11 +147,13 @@ csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
 csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_null_check_over_type_check = true:suggestion
 csharp_style_prefer_range_operator = true:suggestion
 csharp_style_prefer_tuple_swap = true:suggestion
+csharp_style_prefer_unbound_generic_type_in_nameof = true:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
@@ -159,6 +172,11 @@ csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_open_brace = all
 csharp_new_line_between_query_expression_clauses = true
+csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true:silent
+csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
+csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = true:silent
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = true:silent
+csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
 
 # Indentation preferences
 csharp_indent_block_contents = true
@@ -263,7 +281,7 @@ dotnet_naming_rule.public_static_readonly_fields_should_be_pascalcase.style = pa
 
 dotnet_naming_rule.private_static_readonly_fields_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.private_static_readonly_fields_should_be_pascalcase.symbols = private_static_readonly_fields
-dotnet_naming_rule.private_static_readonly_fields_should_be_pascalcase.style = pascalcase
+dotnet_naming_rule.private_static_readonly_fields_should_be_pascalcase.style = _camelcase
 
 dotnet_naming_rule.enums_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.enums_should_be_pascalcase.symbols = enums
@@ -386,4 +404,3 @@ dotnet_naming_style.s_camelcase.required_prefix = s_
 dotnet_naming_style.s_camelcase.required_suffix = 
 dotnet_naming_style.s_camelcase.word_separator = 
 dotnet_naming_style.s_camelcase.capitalization = camel_case
-
