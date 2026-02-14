@@ -377,5 +377,3 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero
     };
 }
-
-

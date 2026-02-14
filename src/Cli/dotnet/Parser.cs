@@ -122,6 +122,9 @@ public static class Parser
         WorkloadCommandParser.ConfigureCommand(rootCommand.WorkloadCommand);
         CompletionsCommandParser.ConfigureCommand(rootCommand.CompletionsCommand);
 
+        // Attach verbosity actions to all commands for DOTNET_CLI_CONTEXT_VERBOSE support
+        AttachVerbosityActionsToCommand(rootCommand);
+
         rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
 
         // TODO: https://github.com/dotnet/sdk/issues/52661
@@ -389,6 +392,32 @@ public static class Parser
         {
             CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// Recursively attaches ApplyVerbosityAction to all verbosity options in the command tree.
+    /// </summary>
+    private static void AttachVerbosityActionsToCommand(Command command)
+    {
+        foreach (var option in command.Options)
+        {
+            if (option.Name == "--verbosity")
+            {
+                if (option is Option<VerbosityOptions> verbosityOpt)
+                {
+                    verbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions>(verbosityOpt);
+                }
+                else if (option is Option<VerbosityOptions?> nullableVerbosityOpt)
+                {
+                    nullableVerbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions?>(nullableVerbosityOpt);
+                }
+            }
+        }
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            AttachVerbosityActionsToCommand(subcommand);
         }
     }
 }
