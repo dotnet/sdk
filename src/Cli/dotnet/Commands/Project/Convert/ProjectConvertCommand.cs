@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
@@ -19,6 +20,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     private readonly string? _outputDirectory;
     private readonly bool _force;
     private readonly bool _dryRun;
+    private readonly bool _deleteSource;
+    private readonly bool _interactive;
 
     public ProjectConvertCommand(ParseResult parseResult)
         : base(parseResult)
@@ -27,6 +30,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _outputDirectory = parseResult.GetValue(Definition.OutputOption)?.FullName;
         _force = parseResult.GetValue(Definition.ForceOption);
         _dryRun = parseResult.GetValue(Definition.DryRunOption);
+        _deleteSource = parseResult.GetValue(Definition.DeleteSourceOption);
+        _interactive = parseResult.GetValue(Definition.InteractiveOption);
     }
 
     public override int Execute()
@@ -102,6 +107,13 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             CopyFile(item.FullPath, targetItemFullPath);
         }
 
+        // Handle deletion of source file if requested.
+        bool shouldDelete = _deleteSource || TryAskForDeleteSource(file);
+        if (shouldDelete)
+        {
+            DeleteFile(file);
+        }
+
         return 0;
 
         void CreateDirectory(string path)
@@ -128,6 +140,19 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             else
             {
                 File.Copy(source, target);
+            }
+        }
+
+        void DeleteFile(string path)
+        {
+            if (_dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldDeleteSourceFile, path);
+            }
+            else
+            {
+                File.Delete(path);
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertDeletedSourceFile, path);
             }
         }
 
@@ -249,9 +274,49 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     {
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
-        string targetDirectory = _outputDirectory
-            ?? TryAskForOutputDirectory(defaultValueRelative)
-            ?? defaultValue;
+
+        string targetDirectory;
+
+        // Use CLI-provided output directory if specified
+        if (_outputDirectory != null)
+        {
+            targetDirectory = _outputDirectory;
+        }
+        // In interactive mode, prompt for output directory
+        else if (_interactive)
+        {
+            try
+            {
+                var prompt = new TextPrompt<string>(string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative))
+                    .AllowEmpty()
+                    .Validate(path =>
+                    {
+                        // Determine the actual path to validate
+                        string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
+
+                        if (Directory.Exists(pathToValidate))
+                        {
+                            return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
+                        }
+
+                        return ValidationResult.Success();
+                    });
+
+                var answer = Spectre.Console.AnsiConsole.Prompt(prompt);
+                targetDirectory = string.IsNullOrWhiteSpace(answer) ? defaultValue : Path.GetFullPath(answer);
+            }
+            catch (Exception)
+            {
+                targetDirectory = defaultValue;
+            }
+        }
+        // Non-interactive mode, use default
+        else
+        {
+            targetDirectory = defaultValue;
+        }
+
+        // Validate that directory doesn't exist
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
@@ -260,26 +325,26 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return targetDirectory;
     }
 
-    private string? TryAskForOutputDirectory(string defaultValueRelative)
+    private bool TryAskForDeleteSource(string sourceFile)
     {
-        return InteractiveConsole.Ask<string?>(
-            string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
-            _parseResult,
-            (path, out result, [NotNullWhen(returnValue: false)] out error) =>
-            {
-                if (Directory.Exists(path))
-                {
-                    result = null;
-                    error = string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path));
-                    return false;
-                }
+        if (!_interactive)
+        {
+            return false;
+        }
 
-                result = path is null ? null : Path.GetFullPath(path);
-                error = null;
-                return true;
-            },
-            out var result)
-            ? result
-            : null;
+        try
+        {
+            var choice = Spectre.Console.AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[cyan]{Markup.Escape(string.Format(CliCommandStrings.ProjectConvertAskDeleteSource, Path.GetFileName(sourceFile)))}[/]")
+                    .AddChoices([CliCommandStrings.ProjectConvertDeleteSourceChoiceYes, CliCommandStrings.ProjectConvertDeleteSourceChoiceNo])
+            );
+
+            return choice == CliCommandStrings.ProjectConvertDeleteSourceChoiceYes;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

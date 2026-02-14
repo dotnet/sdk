@@ -1237,10 +1237,30 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Proje bağlamı</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete the source file '{0}' after conversion?</source>
+        <target state="new">Delete the source file '{0}' after conversion?</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Çıkış dizinini belirtin (varsayılan için Enter tuşuna basın: '{0}', dizin mevcut olmamalıdır):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep the source file</source>
+        <target state="new">No - keep the source file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete the source file</source>
+        <target state="new">Yes - delete the source file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="new">Deleted source file: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -1261,6 +1281,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Deneme çalıştırması: şu dosya oluşturuluyor: {0}</target>
         <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="new">Dry run: would delete source file: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
