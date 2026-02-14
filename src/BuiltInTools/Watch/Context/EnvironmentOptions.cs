@@ -37,8 +37,9 @@ namespace Microsoft.DotNet.Watch
         bool SuppressEmojis = false,
         bool RestartOnRudeEdit = false,
         LogLevel? CliLogLevel = null,
-        string? AutoReloadWebSocketHostName = null,
-        int? AutoReloadWebSocketPort = null,
+        string? BrowserWebSocketHostName = null,
+        int? BrowserWebSocketPort = null,
+        int? BrowserWebSocketSecurePort = null,
         string? BrowserPath = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
@@ -56,8 +57,9 @@ namespace Microsoft.DotNet.Watch
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
             RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
             CliLogLevel: EnvironmentVariables.CliLogLevel,
-            AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
-            AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
+            BrowserWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
+            BrowserWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
+            BrowserWebSocketSecurePort: EnvironmentVariables.AutoReloadWSSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
