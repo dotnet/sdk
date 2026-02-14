@@ -77,6 +77,11 @@
         <target state="translated">既定のインターフェイス メンバー '{0}' にシールド キーワードを追加できません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStatic">
+        <source>Cannot add static keyword to '{0}'.</source>
+        <target state="new">Cannot add static keyword to '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">メンバー '{0}' に仮想キーワードを追加できません。</target>
@@ -120,6 +125,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">'{2}' の型パラメーター '{1}' の制約 '{0}' を削除できません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStatic">
+        <source>Cannot remove static keyword from '{0}'.</source>
+        <target state="new">Cannot remove static keyword from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">

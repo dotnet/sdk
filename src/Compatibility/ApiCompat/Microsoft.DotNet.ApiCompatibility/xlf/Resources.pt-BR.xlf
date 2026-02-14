@@ -77,6 +77,11 @@
         <target state="translated">Não é possível adicionar a palavra-chave selada ao membro da interface padrão '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStatic">
+        <source>Cannot add static keyword to '{0}'.</source>
+        <target state="new">Cannot add static keyword to '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">Não é possível adicionar palavra-chave virtual ao membro '{0}'.</target>
@@ -120,6 +125,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">Não é possível remover a restrição '{0}' no parâmetro de tipo '{1}' de '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStatic">
+        <source>Cannot remove static keyword from '{0}'.</source>
+        <target state="new">Cannot remove static keyword from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
