@@ -130,7 +130,9 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
             }
 
             // command line args items should be available:
-            Debug.Assert(Path.GetExtension(projectInstance.FullPath) != ".csproj" || projectInstance.GetItems("CscCommandLineArgs").Any());
+            Debug.Assert(
+                !Path.GetExtension(projectInstance.FullPath).Equals(".csproj", PathUtilities.OSSpecificPathComparison) ||
+                projectInstance.GetItems("CscCommandLineArgs").Any());
 
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
