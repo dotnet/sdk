@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
+        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest, bool trace = true)
         {
             if (testFlags != TestFlags.None)
             {
@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
+            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", trace ? "trace" : "true");
 
             // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");

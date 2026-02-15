@@ -1240,7 +1240,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // MigrationService terminated:
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
-            // working directory of the service should be it's project directory:
+            // working directory of the service should be its project directory:
             await App.WaitUntilOutputContains($"ApiService working directory: '{Path.GetDirectoryName(serviceProjectPath)}'");
 
             // Service -- valid code change:
@@ -1322,22 +1322,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
             var webSource = File.ReadAllText(webSourcePath, Encoding.UTF8);
 
-            App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost");
+            App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost", trace: false);
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+            // check that Aspire server output is logged via dotnet-watch reporter:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
+            // wait until after all DCP sessions have started:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
-            await App.WaitUntilOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+
+            // MigrationService terminated:
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
             // migration service output should not be printed to dotnet-watch output, it should be sent via DCP as a notification:
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
-
-            // wait until after DCP sessions have been started for all projects:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
-
             App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
 
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
 
             // no-effect edit:
