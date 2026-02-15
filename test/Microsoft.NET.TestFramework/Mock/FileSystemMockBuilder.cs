@@ -172,6 +172,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateFile(string path, string content)
             {
+                CreateFile(path, Encoding.UTF8.GetBytes(content));
+            }
+
+            public void CreateFile(string path, byte[] content)
+            {
                 PathModel pathModel = CreateFullPathModel(path);
 
                 if (TryGetNodeParent(path, out DirectoryNode current) && current != null)
@@ -371,7 +376,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     {
                         if (node is FileNode fileNode)
                         {
-                            return fileNode.Content;
+                            using (var ms = new MemoryStream(fileNode.Data))
+                            using (var reader = new StreamReader(ms, detectEncodingFromByteOrderMarks: true))
+                            {
+                                return reader.ReadToEnd();
+                            }
                         }
                         else
                         {
@@ -390,7 +399,19 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                return new MemoryStream(Encoding.UTF8.GetBytes(ReadAllText(path)));
+                if (_files.TryGetNodeParent(path, out DirectoryNode current) && current != null)
+                {
+                    PathModel pathModel = new(path);
+                    if (current.Subs.TryGetValue(pathModel.FileOrDirectoryName(), out var node))
+                    {
+                        if (node is FileNode fileNode)
+                        {
+                            return new MemoryStream(fileNode.Data);
+                        }
+                    }
+                }
+
+                throw new FileNotFoundException($"Could not find file '{path}'");
             }
 
             public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare,
@@ -402,7 +423,35 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     return OpenRead(path);
                 }
 
+                if (fileMode == FileMode.Create)
+                {
+                    return new MockWriteFileStream(path, _files);
+                }
+
                 throw new NotImplementedException();
+            }
+
+            private class MockWriteFileStream : MemoryStream
+            {
+                private readonly string _path;
+                private readonly MockFileSystemModel _files;
+                private bool _isDisposing;
+
+                public MockWriteFileStream(string path, MockFileSystemModel files)
+                {
+                    _path = path;
+                    _files = files;
+                }
+
+                protected override void Dispose(bool disposing)
+                {
+                    if (disposing && !_isDisposing)
+                    {
+                        _isDisposing = true;
+                        _files.CreateFile(_path, ToArray());
+                    }
+                    base.Dispose(disposing);
+                }
             }
 
             public void CreateEmptyFile(string path)
@@ -482,7 +531,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     }
 
                     current.Subs.TryAdd(new PathModel(destination).FileOrDirectoryName(),
-                        new FileNode(sourceFileNode.Content));
+                        new FileNode(sourceFileNode.Data));
                 }
                 else
                 {
@@ -667,12 +716,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileNode : IFileSystemTreeNode
         {
-            public FileNode(string content)
+            public FileNode(byte[] content)
             {
-                Content = content ?? throw new ArgumentNullException(nameof(content));
+                Data = content ?? throw new ArgumentNullException(nameof(content));
             }
 
-            public string Content { get; }
+            public byte[] Data { get; }
         }
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock

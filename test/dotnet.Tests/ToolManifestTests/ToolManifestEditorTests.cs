@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
 using System.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolManifest;
@@ -308,7 +309,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
             string content = _jsonContent + Environment.NewLine;
             var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
-            _fileSystem.File.WriteAllText(manifestFile, content, encoding);
+            using (var stream = _fileSystem.File.OpenFile(manifestFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
+            using (var writer = new StreamWriter(stream, encoding))
+            {
+                writer.Write(content);
+            }
 
             var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
 
@@ -317,7 +322,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 NuGetVersion.Parse("3.0.0"),
                 new[] { new ToolCommandName("newtool") });
 
-            byte[] bytes = _fileSystem.File.ReadAllBytes(manifestFile);
+            byte[] bytes;
+            using (var stream = _fileSystem.File.OpenRead(manifestFile))
+            {
+                bytes = new byte[stream.Length];
+                stream.ReadExactly(bytes, 0, (int)stream.Length);
+            }
 
             // Check BOM (EF BB BF)
             bytes[0].Should().Be(0xEF);
@@ -334,7 +344,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
             string content = _jsonContent + Environment.NewLine;
             var encoding = Encoding.Unicode; // UTF-16 LE
-            _fileSystem.File.WriteAllText(manifestFile, content, encoding);
+            using (var stream = _fileSystem.File.OpenFile(manifestFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
+            using (var writer = new StreamWriter(stream, encoding))
+            {
+                writer.Write(content);
+            }
 
             var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
 
@@ -343,7 +357,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 NuGetVersion.Parse("3.0.0"),
                 new[] { new ToolCommandName("newtool") });
 
-            byte[] bytes = _fileSystem.File.ReadAllBytes(manifestFile);
+            byte[] bytes;
+            using (var stream = _fileSystem.File.OpenRead(manifestFile))
+            {
+                bytes = new byte[stream.Length];
+                stream.ReadExactly(bytes, 0, (int)stream.Length);
+            }
 
             // Check UTF-16 LE BOM (FF FE)
             bytes[0].Should().Be(0xFF);

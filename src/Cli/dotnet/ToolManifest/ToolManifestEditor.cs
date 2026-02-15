@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Buffers;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -80,15 +81,17 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
     private void Write(FilePath manifest, SerializableLocalToolsManifest serializableLocalToolsManifest)
     {
         string json = serializableLocalToolsManifest.ToJson();
-        
+
         if (serializableLocalToolsManifest.DetectedNewline == "\r\n")
         {
-            json = json.Replace("\n", "\r\n");
+            json = json.ReplaceLineEndings("\r\n");
         }
 
         json += serializableLocalToolsManifest.TrailingNewline;
 
-        _fileSystem.File.WriteAllText(manifest.Value, json, serializableLocalToolsManifest.OriginalEncoding);
+        using var stream = _fileSystem.File.OpenFile(manifest.Value, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None);
+        using var writer = new StreamWriter(stream, serializableLocalToolsManifest.OriginalEncoding);
+        writer.Write(json);
     }
 
     public void Edit(
@@ -155,7 +158,7 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
             {
                 var text = reader.ReadToEnd();
                 serializableLocalToolsManifest.OriginalEncoding = reader.CurrentEncoding;
-                
+
                 if (text.EndsWith("\r\n")) serializableLocalToolsManifest.TrailingNewline = "\r\n";
                 else if (text.EndsWith("\n")) serializableLocalToolsManifest.TrailingNewline = "\n";
                 else if (text.EndsWith("\r")) serializableLocalToolsManifest.TrailingNewline = "\r";
