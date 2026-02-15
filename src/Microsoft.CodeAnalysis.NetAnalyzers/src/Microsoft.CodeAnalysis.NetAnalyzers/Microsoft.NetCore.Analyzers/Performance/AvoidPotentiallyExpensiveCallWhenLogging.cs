@@ -450,8 +450,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     if (loggerParameter is not null)
                     {
-                        var argument = invocation1.Arguments.GetArgumentForParameterAtIndex(loggerParameter.Ordinal);
-                        if (SymbolEqualityComparer.Default.Equals(argument?.Value.GetReferencedMemberOrLocalOrParameter(), instance2))
+                        if (invocation1.Arguments.TryGetArgumentForParameterAtIndex(loggerParameter.Ordinal, out var argument) &&
+                            SymbolEqualityComparer.Default.Equals(argument.Value.GetReferencedMemberOrLocalOrParameter(), instance2))
                         {
                             return true;
                         }
