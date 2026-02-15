@@ -140,6 +140,13 @@
     Documentation: A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS
   },
   {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: --dry-run,
     Kind: Keyword,
     SortText: --dry-run,
@@ -189,11 +196,25 @@
     Detail: The project that should be used for context evaluation.
   },
   {
+    Label: --verbosity,
+    Kind: Keyword,
+    SortText: --verbosity,
+    InsertText: --verbosity,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  },
+  {
     Label: -?,
     Kind: Keyword,
     SortText: -?,
     InsertText: -?,
     Detail: Show help and usage information
+  },
+  {
+    Label: -d,
+    Kind: Keyword,
+    SortText: -d,
+    InsertText: -d,
+    Detail: Enables diagnostic output.
   },
   {
     Label: -h,
@@ -215,6 +236,13 @@
     SortText: -o,
     InsertText: -o,
     Detail: Location to place the generated output.
+  },
+  {
+    Label: -v,
+    Kind: Keyword,
+    SortText: -v,
+    InsertText: -v,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
   },
   {
     Label: /?,

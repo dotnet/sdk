@@ -9,10 +9,8 @@ namespace Microsoft.DotNet.Watch
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    internal sealed class ConsoleReporter(IConsole console, bool verbose, bool quiet, bool suppressEmojis) : IReporter, IProcessOutputReporter
+    internal sealed class ConsoleReporter(IConsole console, bool suppressEmojis) : IReporter, IProcessOutputReporter
     {
-        public bool IsVerbose { get; } = verbose;
-        public bool IsQuiet { get; } = quiet;
         public bool SuppressEmojis { get; } = suppressEmojis;
 
         private readonly Lock _writeLock = new();
@@ -50,33 +48,18 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
+        public void Report(EventId id, Emoji emoji, LogLevel level, string message)
         {
-            switch (severity)
+            var color = level switch
             {
-                case MessageSeverity.Error:
-                    // Use stdout for error messages to preserve ordering with respect to other output.
-                    WriteLine(console.Error, message, ConsoleColor.Red, emoji);
-                    break;
+                LogLevel.Critical or LogLevel.Error => ConsoleColor.Red,
+                LogLevel.Warning => ConsoleColor.Yellow,
+                LogLevel.Information => (ConsoleColor?)null,
+                _ => ConsoleColor.DarkGray,
+            };
 
-                case MessageSeverity.Warning:
-                    WriteLine(console.Error, message, ConsoleColor.Yellow, emoji);
-                    break;
-
-                case MessageSeverity.Output:
-                    if (!IsQuiet)
-                    {
-                        WriteLine(console.Error, message, color: null, emoji);
-                    }
-                    break;
-
-                case MessageSeverity.Verbose:
-                    if (IsVerbose)
-                    {
-                        WriteLine(console.Error, message, ConsoleColor.DarkGray, emoji);
-                    }
-                    break;
-            }
+            // Use stdout for error messages to preserve ordering with respect to other output.
+            WriteLine(console.Error, message, color, emoji);
         }
     }
 }

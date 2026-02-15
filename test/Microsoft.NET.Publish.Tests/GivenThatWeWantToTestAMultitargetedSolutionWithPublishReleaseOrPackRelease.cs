@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProjects.Add(testProject);
             testProjects.Add(libraryProject);
-            var testAsset = _testAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: identifier);
 
             return (testAsset, testProjects);
         }
@@ -357,7 +357,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.RecordProperties("Configuration");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))

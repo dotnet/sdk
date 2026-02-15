@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
     <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
@@ -47,11 +46,7 @@
 
     <!-- TFMs -->
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
-    <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>$(NetFrameworkToolCurrent)</VisualStudioTargetFramework>
-    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
@@ -75,13 +70,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51465 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Global usings -->

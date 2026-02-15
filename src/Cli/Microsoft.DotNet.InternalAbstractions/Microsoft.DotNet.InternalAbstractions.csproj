@@ -7,12 +7,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <PublicSign Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'false'">true</PublicSign>
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
-  </ItemGroup>
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != 'net472'">true</IsAotCompatible>
+  </PropertyGroup>
 </Project>

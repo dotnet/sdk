@@ -5,16 +5,16 @@ namespace Microsoft.NET.TestFramework
 {
     public abstract class SdkTest
     {
-        protected TestAssetsManager _testAssetsManager;
-
-        protected bool? UsingFullFrameworkMSBuild => TestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
+        protected bool? UsingFullFrameworkMSBuild => SdkTestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
 
         protected ITestOutputHelper Log { get; }
+
+        protected TestAssetsManager TestAssetsManager { get; }
 
         protected SdkTest(ITestOutputHelper log)
         {
             Log = log;
-            _testAssetsManager = new TestAssetsManager(log);
+            TestAssetsManager = new TestAssetsManager(log);
         }
 
         protected static void WaitForUtcNowToAdvance()

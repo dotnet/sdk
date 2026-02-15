@@ -4,11 +4,11 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class MicrosoftTestingPlatformTestCommand
+internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
 {
     private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];

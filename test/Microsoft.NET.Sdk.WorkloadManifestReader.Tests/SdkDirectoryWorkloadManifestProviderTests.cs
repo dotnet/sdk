@@ -24,7 +24,7 @@ namespace ManifestReaderTests
         [MemberNotNull("_testDirectory", "_manifestRoot", "_manifestVersionBandDirectory", "_fakeDotnetRootDirectory")]
         void Initialize(string featureBand = "5.0.100", [CallerMemberName] string? testName = null, string? identifier = null)
         {
-            _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier).Path;
+            _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier).Path;
             _fakeDotnetRootDirectory = Path.Combine(_testDirectory, "dotnet");
             _manifestRoot = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests");
             _manifestVersionBandDirectory = Path.Combine(_manifestRoot, featureBand);
@@ -1328,7 +1328,7 @@ Microsoft.Net.Workload.Emscripten.net7"
         [Fact]
         public void ItShouldIgnoreManifestsNotFoundInFallback()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var fakeDotnetRootDirectory = Path.Combine(testDirectory, "dotnet");
 
             // Write 6.0.100 manifests-> ios only

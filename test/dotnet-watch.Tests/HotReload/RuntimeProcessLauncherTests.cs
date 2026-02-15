@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -96,8 +97,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
-        var loggerFactory = new LoggerFactory(reporter);
-        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
         var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
 
         var program = Program.TryCreate(
@@ -142,7 +143,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -303,7 +304,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -402,7 +403,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Theory]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -493,7 +494,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -548,7 +549,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Theory]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
@@ -646,7 +647,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task ProjectAndSourceFileChange()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -692,7 +693,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdatedOutput.Task;
     }
 
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task ProjectAndSourceFileChange_AddProjectReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -761,7 +762,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task ProjectAndSourceFileChange_AddPackageReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")

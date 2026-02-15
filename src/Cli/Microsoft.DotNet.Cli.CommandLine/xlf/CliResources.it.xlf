@@ -5,13 +5,13 @@
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+        <target state="translated">Non è possibile usare il profilo di avvio '{0}' perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate: 
 {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
-        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <target state="translated">Avviso: le impostazioni di "{0}" non vengono usate perché "{1}" ha la precedenza.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
     </body>

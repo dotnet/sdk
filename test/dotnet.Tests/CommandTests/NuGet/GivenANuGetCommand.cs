@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItAcceptsPrefixedOption()
         {
-            var rootPath = _testAssetsManager.CreateTestDirectory().Path;
+            var rootPath = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetCommand(Log, "nuget")
                 .WithWorkingDirectory(rootPath)
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         public void ItHasAWhySubcommand()
         {
             var testAssetName = "NewtonSoftDependentProject";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -141,12 +141,12 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         {
             // Arrange
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
-            NuGetConfigWriter.Write(projectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(projectDirectory, SdkTestContext.Current.TestPackages);
 
             new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0")
                 .WithWorkingDirectory(projectDirectory)

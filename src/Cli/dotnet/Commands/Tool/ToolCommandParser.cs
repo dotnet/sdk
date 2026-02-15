@@ -16,16 +16,17 @@ namespace Microsoft.DotNet.Cli.Commands.Tool;
 
 internal static class ToolCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(ToolCommandDefinition.Create());
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(ToolCommandDefinition command)
     {
-        return Command;
-    }
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-    private static Command ConfigureCommand(Command command)
-    {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        return command;
+        command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
+        command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
+        command.UpdateCommand.SetAction(parseResult => new ToolUpdateCommand(parseResult).Execute());
+        command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
+        command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
+        command.RestoreCommand.SetAction(parseResult => new ToolRestoreCommand(parseResult).Execute());
+        command.ExecuteCommand.SetAction(parseResult => new ToolExecuteCommand(parseResult).Execute());
     }
 }

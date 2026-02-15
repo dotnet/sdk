@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
 
@@ -23,7 +22,7 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -53,7 +52,7 @@ public class PackageTests
             "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 

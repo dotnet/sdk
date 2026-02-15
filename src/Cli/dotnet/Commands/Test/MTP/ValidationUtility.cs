@@ -13,11 +13,10 @@ internal static class ValidationUtility
 {
     public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult, PathOptions pathOptions)
     {
-        ValidatePathOptions(parseResult, pathOptions);
-
+        ValidatePathOptions(pathOptions);
         ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        static void ValidatePathOptions(ParseResult parseResult, PathOptions pathOptions)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
             if (pathOptions.TestModules is not null)
@@ -40,11 +39,13 @@ internal static class ValidationUtility
                 return;
             }
 
-            if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-                parseResult.HasOption(TestCommandDefinition.ConfigurationOption) ||
-                parseResult.HasOption(TestCommandDefinition.FrameworkOption) ||
-                parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-                parseResult.HasOption(CommonOptions.RuntimeOptionName))
+            var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
+            if (parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
+                parseResult.HasOption(definition.ConfigurationOption) ||
+                parseResult.HasOption(definition.FrameworkOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }

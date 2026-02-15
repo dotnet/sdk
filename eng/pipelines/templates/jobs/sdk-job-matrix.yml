@@ -8,10 +8,6 @@ parameters:
     publishRetryConfig: true
   - categoryName: FullFramework
     testFullMSBuild: true
-  - categoryName: TestAsTools
-    runTestsAsTool: true
-    # This job uses the build step for testing, so the extra test step is not necessary.
-    runTests: false
   - categoryName: TemplateEngine
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
@@ -30,7 +26,7 @@ parameters:
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
     # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
     disableJob: true
   - categoryName: TemplateEngine
@@ -41,10 +37,12 @@ parameters:
   macOSJobParameterSets:
   - categoryName: TestBuild
     runtimeIdentifier: osx-x64
+  # Disabled due to high failure rate. See: https://github.com/dotnet/sdk/issues/51574
   - categoryName: TemplateEngine
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
     runtimeIdentifier: osx-x64
+    disableJob: true
   - categoryName: AoT
     runAoTTests: true
     runtimeIdentifier: osx-x64

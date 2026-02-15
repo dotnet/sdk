@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([command]);
             var args = options.CommandArguments.ToList();
-            Assert.Equal(command, options.ExplicitCommand);
+            Assert.True(options.IsExplicitCommand);
             Assert.Equal(command, options.Command);
             Assert.Empty(args);
         }
@@ -164,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
 
-            Assert.True(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Debug, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
         }
@@ -184,7 +186,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
         }
@@ -194,7 +196,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "run"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--", "run"], options.CommandArguments);
         }
@@ -334,9 +336,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             args = position switch
             {
-                ArgPosition.Before => args.Prepend("run").ToArray(),
-                ArgPosition.Both => args.Concat(new[] { "run" }).Concat(args).ToArray(),
-                ArgPosition.After => args.Append("run").ToArray(),
+                ArgPosition.Before => ["run", .. args],
+                ArgPosition.Both => [.. args, "run", .. args],
+                ArgPosition.After => [.. args, "run"],
                 _ => args,
             };
 
@@ -344,8 +346,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(arg switch
             {
-                "--verbose" => options.GlobalOptions.Verbose,
-                "--quiet" => options.GlobalOptions.Quiet,
+                "--verbose" => options.GlobalOptions.LogLevel == LogLevel.Debug,
+                "--quiet" => options.GlobalOptions.LogLevel == LogLevel.Warning,
                 "--list" => options.List,
                 "--no-hot-reload" => options.GlobalOptions.NoHotReload,
                 "--non-interactive" => options.GlobalOptions.NonInteractive,
@@ -433,14 +435,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Theory]
         [InlineData(new[] { "--configuration", "release" }, new[] { "--property:Configuration=release", NugetInteractiveProperty })]
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
-        [InlineData(new[] { "--runtime", "arm64" }, new[] { "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
+        [InlineData(new[] { "--runtime", "arm64" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
+        [InlineData(new[] { "--project", "x.csproj" }, new[] { NugetInteractiveProperty }, new[] { "--project", "x.csproj" })]
+        [InlineData(new[] { "--launch-profile", "x" }, new[] { NugetInteractiveProperty }, new[] { "--launch-profile", "x" })]
+        [InlineData(new[] { "--no-launch-profile" }, new[] { NugetInteractiveProperty }, new[] { "--no-launch-profile" })]
         [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1", NugetInteractiveProperty }, new[] { "/p", "b=1" })] // it's ok to split the argument into two since `dotnet run` handles `/p b=1`
         [InlineData(new[] { "--interactive" }, new[] { "--property:NuGetInteractive=true" })]
         [InlineData(new[] { "--no-restore" }, new[] { NugetInteractiveProperty, "-restore:false" })]
         [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--verbose" }, new[] { NugetInteractiveProperty }, new string[0])]
         [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
         [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
@@ -450,33 +456,68 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "-binaryLogger" }, new[] { NugetInteractiveProperty, "-binaryLogger" })]
         [InlineData(new[] { "/binaryLogger" }, new[] { NugetInteractiveProperty, "/binaryLogger" })]
         [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { NugetInteractiveProperty, "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
-        public void ForwardedBuildOptions_Run(string[] args, string[] buildArgs, string[] commandArgs = null)
+        public void ForwardedOptionsAndArguments_Run(string[] args, string[] buildArgs, string[] commandArgs = null)
         {
             var runOptions = VerifyOptions(["run", .. args]);
             AssertEx.SequenceEqual(buildArgs, runOptions.BuildArguments);
             AssertEx.SequenceEqual(commandArgs ?? args, runOptions.CommandArguments);
         }
 
+        // TODO:
+        // Test MTP: https://github.com/dotnet/sdk/issues/52383
+
         [Theory]
-        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" })]
-        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" })]
-        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1" })]
-        [InlineData(new[] { "/bl" }, new[] { "/bl" })]
-        [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
-        public void ForwardedBuildOptions_Test(string[] args, string[] commandArgs)
+        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" }, new[] { "--property", "b=1" })]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" }, new[] { "--property", "b=1" })]
+        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1" }, new[] { "/p", "b=1" })]
+        [InlineData(new[] { "/bl" }, new[] { "/bl" }, new[] { "/bl" })]
+        [InlineData(
+            new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" },
+            new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" },
+            new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
+        [InlineData(new[] { "--launch-profile", "x" }, new string[0])]
+        [InlineData(new[] { "--no-launch-profile" }, new string[0])]
+        [InlineData(new[] { "--project", "x.csproj" }, new string[0], new[] { "x.csproj" })]
+        [InlineData(new[] { "--verbose" }, new string[0])]
+        public void ForwardedOptionsAndArguments_Test(string[] args, string[] buildArgs, string[] commandArgs = null)
         {
-            var isProperty = args[0].Contains("-p") || args[0].Contains("/p");
             var runOptions = VerifyOptions(["test", .. args]);
-            string[] expected = isProperty
-                ? ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. commandArgs, "--target:VSTest"]
-                : ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs];
-            AssertEx.SequenceEqual(expected, runOptions.BuildArguments);
+
+            var isShortProperty = args[0].Contains("-p") || args[0].Contains("/p");
+            string[] expectedBuildArgs = isShortProperty
+                ? ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. buildArgs, "--target:VSTest"]
+                : ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", "--target:VSTest", .. buildArgs];
+            AssertEx.SequenceEqual(expectedBuildArgs, runOptions.BuildArguments);
+
+            AssertEx.SequenceEqual(commandArgs ?? [], runOptions.CommandArguments);
+        }
+
+        [Theory]
+        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1", "--property:NuGetInteractive=false", "--nologo" }, new[] { "--property", "b=1" })]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", "--property:NuGetInteractive=false", "--nologo" }, new[] { "--property", "b=1" })]
+        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1", "--property:NuGetInteractive=false", "--nologo" }, new[] { "/p", "b=1" })]
+        [InlineData(new[] { "/bl" }, new[] { "--property:NuGetInteractive=false", "--nologo", "/bl" }, new[] { "/bl" })]
+        [InlineData(
+            new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" },
+            new[] { "--property:NuGetInteractive=false", "--nologo", "--binaryLogger:LogFile=output.binlog;ProjectImports=None" },
+            new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
+        [InlineData(new[] { "--launch-profile", "x" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
+        [InlineData(new[] { "--no-launch-profile" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
+        [InlineData(new[] { "--project", "x.csproj" }, new[] { "--property:NuGetInteractive=false", "--nologo" }, new[] { "x.csproj" })]
+        [InlineData(new[] { "--verbose" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
+        public void ForwardedOptionsAndArguments_Build(string[] args, string[] buildArgs, string[] commandArgs = null)
+        {
+            var runOptions = VerifyOptions(["build", .. args]);
+
+            AssertEx.SequenceEqual(buildArgs, runOptions.BuildArguments);
+
+            AssertEx.SequenceEqual(commandArgs ?? [], runOptions.CommandArguments);
         }
 
         [Fact]
         public void ForwardedBuildOptions_ArtifactsPath()
         {
-            var path = TestContext.Current.TestAssetsDirectory;
+            var path = SdkTestContext.Current.TestAssetsDirectory;
 
             var args = new[] { "--artifacts-path", path };
             var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };

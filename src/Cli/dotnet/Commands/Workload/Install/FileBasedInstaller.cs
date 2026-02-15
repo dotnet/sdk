@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -56,7 +57,7 @@ internal class FileBasedInstaller : IInstaller
     {
         _userProfileDir = userProfileDir;
         _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
-        _tempPackagesDir = new DirectoryPath(tempDirPath ?? PathUtilities.CreateTempSubdirectory());
+        _tempPackagesDir = new DirectoryPath(tempDirPath ?? TemporaryDirectory.CreateSubdirectory());
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??
@@ -97,7 +98,7 @@ internal class FileBasedInstaller : IInstaller
 
     public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
     {
-        string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+        var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var workloadSetPackageVersion);
         var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
         var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
@@ -127,7 +128,7 @@ internal class FileBasedInstaller : IInstaller
 
     public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
     {
-        string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+        var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var workloadSetPackageVersion);
         var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
                             new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
         var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
@@ -416,7 +417,7 @@ internal class FileBasedInstaller : IInstaller
         foreach ((string workloadSetVersion, _) in installedWorkloadSets)
         {
             //  Get the feature band of the workload set
-            WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+            var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion);
 
             List<SdkFeatureBand> referencingFeatureBands;
             if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))
@@ -539,7 +540,7 @@ internal class FileBasedInstaller : IInstaller
             if (!Directory.GetFileSystemEntries(installationRecordDirectory).Any())
             {
                 //  There are no installation records for the workload pack anymore, so we can delete the pack
-                var packToDelete = JsonSerializer.Deserialize<PackInfo>(jsonPackInfo);
+                var packToDelete = JsonSerializer.Deserialize(jsonPackInfo, PackInfoJsonSerializerContext.Default.PackInfo);
                 DeletePack(packToDelete);
 
                 //  Delete now-empty pack installation record directory
@@ -580,7 +581,7 @@ internal class FileBasedInstaller : IInstaller
     {
         UpdateInstallState(sdkFeatureBand, contents => contents.UseWorkloadSets = newMode);
 
-        var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+        var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet : WorkloadConfigCommandDefinition.UpdateMode_Manifests;
         _reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 
@@ -631,7 +632,7 @@ internal class FileBasedInstaller : IInstaller
         var historyDirectory = GetWorkloadHistoryDirectory();
         Directory.CreateDirectory(historyDirectory);
         string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
-        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, WorkloadHistoryJsonSerializerContext.Default.WorkloadHistoryRecord));
     }
 
     public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
@@ -642,7 +643,7 @@ internal class FileBasedInstaller : IInstaller
     public void Shutdown()
     {
         // Perform any additional cleanup here that's intended to run at the end of the command, regardless
-        // of success or failure. For file based installs, there shouldn't be any additional work to 
+        // of success or failure. For file based installs, there shouldn't be any additional work to
         // perform.
     }
 
@@ -874,7 +875,7 @@ internal class FileBasedInstaller : IInstaller
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
         }
-        File.WriteAllText(path, JsonSerializer.Serialize(packInfo));
+        File.WriteAllText(path, JsonSerializer.Serialize(packInfo, PackInfoJsonSerializerContext.Default.PackInfo));
     }
 
     private void DeletePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)

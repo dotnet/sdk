@@ -35,7 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition="'$(NETCoreAppMaximumVersion)' != ''">
         <!-- This is for a better error experience when using an older VS (with an older SDK) to target a newer TFM. The value should be the min VS version for N+1 version-->
         <UnsupportedTargetFrameworkVersion>$([MSBuild]::Add($(NETCoreAppMaximumVersion), 1)).0</UnsupportedTargetFrameworkVersion>
-        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>17.16</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
+        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>19.0</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
     </PropertyGroup>
 
     <!-- .NET Standard -->

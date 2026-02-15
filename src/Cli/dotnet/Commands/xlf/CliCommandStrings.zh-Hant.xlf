@@ -370,11 +370,11 @@ Example:
 
 根據其他設定，也可以收集擱置傾印或損毀傾印。
 
-範例:
+範例: 
   當測試所花的時間超過預設的 1 小時時，測試執行會逾時，當測試主機未預期地結束時，會收集損毀傾印。
   (損毀傾印需要其他設定，請參閱下文。)
   dotnet 測試 --blame-hang --blame-crash
-範例:
+範例: 
   當測試需要超過 20 分鐘並收集擱置傾印時，測試執行會逾時。
   dotnet 測試 --blame-hang-timeout 20min
 </target>
@@ -740,17 +740,17 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">定義要執行的專案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">定義要測試的專案或解決方案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -797,7 +797,7 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">定義要測試的解決方案檔案的路徑。請使用解決方案檔案的路徑，或包含該解決方案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -1211,7 +1211,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="translated">使用 RunCommand '{0}' 和 RunArguments '{1}' 執行測試模組時，發生以下例外狀況:
+        <target state="translated">使用 RunCommand '{0}' 和 RunArguments '{1}' 執行測試模組時，發生以下例外狀況: 
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -2282,11 +2282,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     </source>
         <target state="translated">根據其引數，'dotnet workload search version' 有三個函式:
       1. 如果未指定引數，它會從此功能帶輸出最新發行工作負載版本的清單。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。
-         範例:
+         範例: 
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
       2. 如果提供工作負載版本做為引數，它會針對指定的工作負載版本輸出各種工作負載及其版本的表格。使用 --format 選項來變更輸出格式。
-         範例:
+         範例: 
            dotnet workload search version 9.0.201
            工作負載資訊清單識別碼                               資訊清單功能帶      資訊清單版本
            ------------------------------------------------------------------------------------------------
@@ -2305,7 +2305,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. 如果提供一或多個工作負載及其版本 (使用 '@' 字元聯結它們)，它會輸出符合所提供版本的工作負載版本。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。
-         範例:
+         範例: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2388,7 +2388,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">指定輸出目錄 ({0}):</target>
+        <target state="translated">請指定輸出目錄 (按 Enter 鍵以使用預設值: '{0}'，目錄必須不存在):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2645,7 +2645,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">可用的目標架構:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2665,7 +2665,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">範例</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2683,7 +2683,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">無法使用啟動設定檔 '{0}'，因為找不到啟動設定檔檔案。嘗試的位置:
+        <target state="translated">無法使用啟動設定檔 '{0}'，因為找不到啟動設定檔檔案。嘗試的位置: 
 {1}</target>
         <note />
       </trans-unit>
@@ -2727,7 +2727,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上下移動以顯示更多的架構</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -2742,7 +2742,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">要搜尋的類型</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -2752,7 +2752,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">選取要執行的目標架構:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

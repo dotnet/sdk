@@ -24,7 +24,7 @@ namespace EndToEnd.Tests
                 PackageName = "DefaultRuntimeVersionsAreUpToDate",
                 MinorVersion = "3.0"
             };
-            var testProject = testProjectCreator.Create(_testAssetsManager);
+            var testProject = testProjectCreator.Create(TestAssetsManager);
 
             var projectFile = new DirectoryInfo(testProject.TestRoot).GetFiles("*.csproj").First().FullName;
             var project = XDocument.Load(projectFile);

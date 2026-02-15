@@ -139,7 +139,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
 
                 //  Check to see if workload set is from a different feature band
-                var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(workloadSetVersion);
+                var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion);
                 if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
                 {
                     var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);
@@ -320,15 +320,17 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
+            string versionBandString = _sdkVersionBand.ToString();
+
             if (_manifestRoots.Length == 1)
             {
                 //  Optimization for common case where test hook to add additional directories isn't being used
-                var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], _sdkVersionBand.ToString());
+                var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], versionBandString);
                 if (Directory.Exists(manifestVersionBandDirectory))
                 {
                     foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
                     {
-                        ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
+                        ProbeDirectory(workloadManifestDirectory, versionBandString);
                     }
                 }
             }
@@ -338,7 +340,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 Dictionary<string, string> directoriesWithManifests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var manifestRoot in _manifestRoots.Reverse())
                 {
-                    var manifestVersionBandDirectory = Path.Combine(manifestRoot, _sdkVersionBand.ToString());
+                    var manifestVersionBandDirectory = Path.Combine(manifestRoot, versionBandString);
                     if (Directory.Exists(manifestVersionBandDirectory))
                     {
                         foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
@@ -350,7 +352,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
                 foreach (var workloadManifestDirectory in directoriesWithManifests.Values)
                 {
-                    ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
+                    ProbeDirectory(workloadManifestDirectory, versionBandString);
                 }
             }
 

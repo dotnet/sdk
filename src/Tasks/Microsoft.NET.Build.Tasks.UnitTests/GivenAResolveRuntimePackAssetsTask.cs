@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ItFiltersSatelliteResources()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             var task = new ResolveRuntimePackAssets()
             {

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -23,10 +23,10 @@ namespace Microsoft.NET.Restore.Tests
 
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
@@ -62,10 +62,10 @@ namespace Microsoft.NET.Restore.Tests
             // avoid opt in to RoslynCompilerType=Core
             string[] args = ["-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH="];
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -97,7 +97,7 @@ namespace Microsoft.NET.Restore.Tests
 
             project.PackageReferences.Add(new TestPackageReference("Microsoft.Net.Compilers.Toolset.Framework", "4.7.0-2.23260.7"));
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
             var restoreCommand =
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Restore.Tests
             
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "false");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
@@ -150,10 +150,10 @@ namespace Microsoft.NET.Restore.Tests
             // avoid opt in to RoslynCompilerType=Core
             string[] args = ["-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH="];
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -172,11 +172,11 @@ namespace Microsoft.NET.Restore.Tests
         [FullMSBuildOnlyFact] // https://github.com/dotnet/sdk/issues/44605
         public void It_does_not_throw_a_warning_when_NuGetPackageRoot_is_empty_in_wpftmp()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopWpf")
                 .WithSource();
                 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var buildCommand = new BuildCommand(testAsset, relativePathToProject: "FxWpf")
             {

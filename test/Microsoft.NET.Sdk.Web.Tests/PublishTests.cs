@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             testProject.SelfContained = "true";
             testProject.PropertiesToRecord.Add("TrimMode");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             testProject.SelfContained = "true";
             testProject.PropertiesToRecord.Add("TrimMode");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute().Should().Pass();
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             testProject.PropertiesToRecord.Add("TrimMode");
             testProject.PropertiesToRecord.Add("PublishIISAssets");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute("/p:SelfContained=true").Should().Pass();
 

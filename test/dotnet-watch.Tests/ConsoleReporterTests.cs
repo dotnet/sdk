@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ConsoleReporterTests
@@ -15,22 +17,30 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void WritesToStandardStreams(bool suppressEmojis)
         {
             var testConsole = new TestConsole();
-            var reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
+            var reporter = new ConsoleReporter(testConsole, suppressEmojis: suppressEmojis);
 
-            reporter.Report(id: default, Emoji.Watch, MessageSeverity.Verbose, "verbose {0}");
-            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} verbose {{0}}" + EOL, testConsole.GetError());
+            reporter.Report(id: default, Emoji.Watch, LogLevel.Trace, "trace {0}");
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} trace {{0}}" + EOL, testConsole.GetError());
             testConsole.Clear();
 
-            reporter.Report(id: default, Emoji.Watch, MessageSeverity.Output, "out");
+            reporter.Report(id: default, Emoji.Watch, LogLevel.Debug, "verbose");
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} verbose" + EOL, testConsole.GetError());
+            testConsole.Clear();
+
+            reporter.Report(id: default, Emoji.Watch, LogLevel.Information, "out");
             Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} out" + EOL, testConsole.GetError());
             testConsole.Clear();
 
-            reporter.Report(id: default, Emoji.Warning, MessageSeverity.Warning, "warn");
+            reporter.Report(id: default, Emoji.Warning, LogLevel.Warning, "warn");
             Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⚠")} warn" + EOL, testConsole.GetError());
             testConsole.Clear();
 
-            reporter.Report(id: default, Emoji.Error, MessageSeverity.Error, "error");
+            reporter.Report(id: default, Emoji.Error, LogLevel.Error, "error");
             Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
+            testConsole.Clear();
+
+            reporter.Report(id: default, Emoji.Error, LogLevel.Critical, "critical");
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} critical" + EOL, testConsole.GetError());
             testConsole.Clear();
         }
 

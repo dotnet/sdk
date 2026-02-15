@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
@@ -15,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var console = new TestConsole(Logger);
             var reporter = new TestReporter(Logger);
-            var loggerFactory = new LoggerFactory(reporter);
+            var loggerFactory = new LoggerFactory(reporter, LogLevel.Debug);
 
             var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
             var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var program = Program.TryCreate(
                 TestOptions.GetCommandLineOptions(["--verbose"]),
                 console,
-                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
+                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
                 loggerFactory,
                 reporter,
                 out var errorCode);
@@ -60,7 +62,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments);
 
             Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
@@ -90,7 +92,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments:
             [
                 "--no-hot-reload",
@@ -125,7 +127,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments:
             [
                 "run",
@@ -300,13 +302,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task FormatCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
@@ -349,7 +351,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
                .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
             var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
