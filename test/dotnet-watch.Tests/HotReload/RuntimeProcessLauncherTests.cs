@@ -77,7 +77,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             var result = await service.ProjectLauncher.TryLaunchProcessAsync(
                 projectOptions,
-                new CancellationTokenSource(),
                 onOutput: null,
                 onExit: null,
                 restartOperation: startOp!,
@@ -646,6 +645,88 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             default:
                 throw new InvalidOperationException();
         }
+    }
+
+    [Fact]
+    public async Task CtrlR_RestartsBuild()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            .WithSource();
+
+        var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
+
+        await using var w = StartWatcher(testAsset, []);
+
+        var buildCounter = 0;
+
+        w.Reporter.RegisterAction(MessageDescriptor.Building, () =>
+        {
+            if (Interlocked.Increment(ref buildCounter) == 1)
+            {
+                w.Console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
+            }
+        });
+
+        var restarting = w.Reporter.RegisterSemaphore(MessageDescriptor.Restarting);
+
+        // Iteration #1 build should be canceled, iteration #2 should build and launch the app.
+        var hasExpectedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            Assert.DoesNotContain("DOTNET_WATCH_ITERATION = 1", line.Content);
+
+            if (line.Content.Contains("DOTNET_WATCH_ITERATION = 2"))
+            {
+                hasExpectedOutput.TrySetResult();
+            }
+        };
+
+        // 🔄 Restarting
+        await restarting.WaitAsync(w.ShutdownSource.Token);
+
+        // DOTNET_WATCH_ITERATION = 2
+        await hasExpectedOutput.Task;
+
+        Assert.Equal(2, buildCounter);
+    }
+
+    [Fact]
+    public async Task CtrlR_CancelsWaitForFileChange()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            .WithSource();
+
+        var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
+
+        File.WriteAllText(programFilePath, """
+            System.Console.WriteLine("<Started>");
+            """);
+
+        await using var w = StartWatcher(testAsset, []);
+
+        w.Reporter.RegisterAction(MessageDescriptor.WaitingForFileChangeBeforeRestarting, () =>
+        {
+            w.Console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
+        });
+
+        var buildCounter = 0;
+        w.Reporter.RegisterAction(MessageDescriptor.Building, () => Interlocked.Increment(ref buildCounter));
+
+        var counter = 0;
+        var hasExpectedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("<Started>") && Interlocked.Increment(ref counter) == 2)
+            {
+                hasExpectedOutput.TrySetResult();
+            }
+        };
+
+        await hasExpectedOutput.Task;
+
+        Assert.Equal(2, buildCounter);
     }
 
     [Fact]

@@ -108,14 +108,12 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
             _logger.LogDebug("Starting project: {Path}", projectOptions.ProjectPath);
 
-            var processTerminationSource = new CancellationTokenSource();
             var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
 
             RunningProject? runningProject = null;
 
             runningProject = await _projectLauncher.TryLaunchProcessAsync(
                 projectOptions,
-                processTerminationSource,
                 onOutput: line =>
                 {
                     var writeResult = outputChannel.Writer.TryWrite(line);
