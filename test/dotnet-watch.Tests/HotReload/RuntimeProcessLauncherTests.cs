@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -17,19 +16,47 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         WaitingForChanges,
     }
 
-    private record class RunningWatcher(
+    private record class TestWatcher(
         RuntimeProcessLauncherTests Test,
         HotReloadDotNetWatcher Watcher,
-        Task Task,
+        DotNetWatchContext Context,
         TestReporter Reporter,
         TestConsole Console,
         StrongBox<TestRuntimeProcessLauncher?> ServiceHolder,
         CancellationTokenSource ShutdownSource) : IAsyncDisposable
     {
         public TestRuntimeProcessLauncher? Service => ServiceHolder.Value;
+        private Task? _lazyTask;
+
+        public void Start()
+        {
+            Assert.Null(_lazyTask);
+
+            _lazyTask = Task.Run(async () =>
+            {
+                Test.Log("Starting watch");
+
+                try
+                {
+                    await Watcher.WatchAsync(ShutdownSource.Token);
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    ShutdownSource.Cancel();
+                    Test.Logger.WriteLine($"Unexpected exception {e}");
+                    throw;
+                }
+                finally
+                {
+                    Context.Dispose();
+                }
+            }, ShutdownSource.Token);
+        }
 
         public async ValueTask DisposeAsync()
         {
+            Assert.NotNull(_lazyTask);
+
             if (!ShutdownSource.IsCancellationRequested)
             {
                 Test.Log("Shutting down");
@@ -38,7 +65,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             try
             {
-                await Task;
+                await _lazyTask;
             }
             catch (OperationCanceledException)
             {
@@ -92,7 +119,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return await startOp(cancellationToken);
     }
 
-    private RunningWatcher StartWatcher(TestAsset testAsset, string[] args, string? workingDirectory = null)
+    private TestWatcher CreateWatcher(TestAsset testAsset, string[] args, string? workingDirectory = null)
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
@@ -119,27 +146,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var context = program.CreateContext(processRunner);
         var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory);
-
         var shutdownSource = new CancellationTokenSource();
-        var watchTask = Task.Run(async () =>
-        {
-            try
-            {
-                await watcher.WatchAsync(shutdownSource.Token);
-            }
-            catch (Exception e) when (e is not OperationCanceledException)
-            {
-                shutdownSource.Cancel();
-                Logger.WriteLine($"Unexpected exception {e}");
-                throw;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }, shutdownSource.Token);
 
-        return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
+        return new TestWatcher(this, watcher, context, reporter, console, serviceHolder, shutdownSource);
     }
 
     [Theory]
@@ -163,7 +172,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var launchCompletionA = w.CreateCompletionSource();
         var launchCompletionB = w.CreateCompletionSource();
@@ -198,6 +207,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectsRestarted = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRestarted);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
         var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+
+        w.Start();
+
         await launchCompletionA.Task;
         await launchCompletionB.Task;
 
@@ -253,8 +265,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             };
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
-
             UpdateSourceFile(libSource,
                 """
                 using System;
@@ -289,8 +299,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     hasUpdateSource.SetResult();
                 }
             };
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
 
             // rude edit in A (changing assembly level attribute):
             UpdateSourceFile(serviceSourceA2, """
@@ -327,7 +335,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -353,6 +361,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             }
         };
+
+        w.Start();
 
         // let the host process start:
         Log("Waiting for changes...");
@@ -417,7 +427,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
-        await using var w = StartWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
+        await using var w = CreateWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -440,9 +450,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        w.Start();
 
-        // let the host process start:
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
@@ -506,13 +515,15 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
         var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
         var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
         var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
+
+        w.Start();
 
         // let the host process start:
         Log("Waiting for changes...");
@@ -598,7 +609,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         }
 
-        await using var w = StartWatcher(testAsset, ["--no-exit"], workingDirectory);
+        await using var w = CreateWatcher(testAsset, ["--no-exit"], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -607,6 +618,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
+
+        w.Start();
 
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
@@ -653,8 +666,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
             .WithSource();
 
-
-        await using var w = StartWatcher(testAsset, []);
+        await using var w = CreateWatcher(testAsset, []);
 
         var buildCounter = 0;
 
@@ -680,6 +692,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
+        w.Start();
+
         // 🔄 Restarting
         await restarting.WaitAsync(w.ShutdownSource.Token);
 
@@ -701,7 +715,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             System.Console.WriteLine("<Started>");
             """);
 
-        await using var w = StartWatcher(testAsset, []);
+        await using var w = CreateWatcher(testAsset, []);
 
         w.Reporter.RegisterAction(MessageDescriptor.WaitingForFileChangeBeforeRestarting, () =>
         {
@@ -721,6 +735,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
+        w.Start();
+
         await hasExpectedOutput.Task;
 
         Assert.Equal(2, buildCounter);
@@ -735,7 +751,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
         var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
-        await using var w = StartWatcher(testAsset, [], workingDirectory);
+        await using var w = CreateWatcher(testAsset, [], workingDirectory);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -753,7 +769,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
-        // start process:
+        w.Start();
+
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
@@ -791,7 +808,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         UpdateSourceFile(appFile, code => code.Replace("Lib.Print();", "// Lib.Print();"));
 
-        await using var w = StartWatcher(testAsset, [], appProjDir);
+        await using var w = CreateWatcher(testAsset, [], appProjDir);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -811,7 +828,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
-        // start process:
+        w.Start();
+
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
@@ -850,7 +868,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
         var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
 
-        await using var w = StartWatcher(testAsset, []);
+        await using var w = CreateWatcher(testAsset, []);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -870,7 +888,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
-        // start process:
+        w.Start();
+
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
