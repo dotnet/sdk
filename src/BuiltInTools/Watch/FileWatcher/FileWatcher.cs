@@ -224,12 +224,13 @@ namespace Microsoft.DotNet.Watch
 
                     var pathParts = relativePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
                     
-                    // Exclude common build output and temporary directories
-                    if (pathParts.Length == 0 || string.IsNullOrEmpty(pathParts[0]))
+                    // If no path parts (file in project root), accept the change
+                    if (pathParts.Length == 0)
                     {
-                        return true; // Accept changes to files in the project root
+                        return true;
                     }
 
+                    // Exclude common build output and temporary directories
                     return !pathParts[0].Equals("bin", StringComparison.OrdinalIgnoreCase) &&
                            !pathParts[0].Equals("obj", StringComparison.OrdinalIgnoreCase) &&
                            !pathParts[0].StartsWith(".", StringComparison.Ordinal); // Exclude hidden directories like .git, .vs, etc.
