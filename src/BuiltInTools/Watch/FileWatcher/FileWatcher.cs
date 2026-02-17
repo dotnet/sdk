@@ -222,11 +222,15 @@ namespace Microsoft.DotNet.Watch
                         ? change.Path.Substring(projectDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                         : change.Path;
 
-                    var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var pathParts = relativePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
                     
                     // Exclude common build output and temporary directories
-                    return pathParts.Length > 0 && 
-                           !pathParts[0].Equals("bin", StringComparison.OrdinalIgnoreCase) &&
+                    if (pathParts.Length == 0 || string.IsNullOrEmpty(pathParts[0]))
+                    {
+                        return true; // Accept changes to files in the project root
+                    }
+
+                    return !pathParts[0].Equals("bin", StringComparison.OrdinalIgnoreCase) &&
                            !pathParts[0].Equals("obj", StringComparison.OrdinalIgnoreCase) &&
                            !pathParts[0].StartsWith(".", StringComparison.Ordinal); // Exclude hidden directories like .git, .vs, etc.
                 },
