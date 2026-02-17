@@ -238,7 +238,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
+    private IResponse OnRequest(NamedPipeServer server, IRequest request)
     {
         // We need to lock as we might be called concurrently when test app child processes all communicate with us.
         // For example, in a case of a sharding extension, we could get test result messages concurrently.
@@ -253,7 +253,7 @@ internal sealed class TestApplication(
                         _handshakes.Add(server, handshakeMessage);
                         string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
                         OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                        return CreateHandshakeMessage(negotiatedVersion);
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -278,7 +278,7 @@ internal sealed class TestApplication(
                     // If we don't recognize the message, log and skip it
                     case UnknownMessage unknownMessage:
                         Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                        return VoidResponse.CachedInstance;
 
                     default:
                         // If it doesn't match any of the above, throw an exception
@@ -301,7 +301,7 @@ internal sealed class TestApplication(
                 Environment.FailFast(exAsString);
             }
 
-            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+            return VoidResponse.CachedInstance;
         }
     }
 
