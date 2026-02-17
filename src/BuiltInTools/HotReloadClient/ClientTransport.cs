@@ -25,10 +25,10 @@ internal abstract class ClientTransport : IDisposable
 
     /// <summary>
     /// Initiates connection with the agent in the target process.
-    /// Returns a task that completes when the connection is established and capabilities are available.
+    /// Returns a task that completes when the connection is established.
     /// The task is started (hot) immediately so the transport is listening before the process launches.
     /// </summary>
-    public abstract Task<string> WaitForConnectionAsync(CancellationToken cancellationToken);
+    public abstract Task WaitForConnectionAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Writes a message to the transport: a request type byte followed by optional payload data.

@@ -15,7 +15,7 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
         // Pass the startup hook path so it can be included in the environment variables
         // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
         => new(new HotReloadClients(
-            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: false,
-                new WebSocketClientTransport(context.EnvironmentOptions.AgentWebSocketPort, clientLogger)),
+            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: true,
+                new WebSocketClientTransport(context.EnvironmentOptions.AgentWebSocketPort, context.EnvironmentOptions.AgentWebSocketSecurePort, clientLogger)),
             browserRefreshServer: null));
 }

@@ -41,7 +41,7 @@ internal sealed class BrowserRefreshServer(
         var supportsTls = await KestrelWebSocketServer.IsTlsSupportedAsync(dotnetPath, suppressTimeouts, cancellationToken);
 
         var server = new KestrelWebSocketServer(Logger, WebSocketRequestAsync);
-        await server.StartServerAsync(hostName, port, supportsTls, cancellationToken);
+        await server.StartServerAsync(hostName, port, supportsTls ? 0 : null, cancellationToken);
 
         // URLs are only available after the server has started.
         return new WebServerHost(server, GetServerUrls(server.ServerUrls), virtualDirectory: "/");

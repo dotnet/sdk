@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Net.Sockets;
@@ -19,10 +18,24 @@ namespace Microsoft.DotNet.HotReload;
 /// Named pipe transport for communication between dotnet-watch and the hot reload agent.
 /// Used for local processes where named pipes are available.
 /// </summary>
-internal sealed class NamedPipeClientTransport(ILogger logger) : ClientTransport
+internal sealed class NamedPipeClientTransport : ClientTransport
 {
-    private readonly string _namedPipeName = Guid.NewGuid().ToString("N");
-    private NamedPipeServerStream? _pipe;
+    private readonly ILogger _logger;
+    private readonly string _namedPipeName;
+    private readonly NamedPipeServerStream _pipe;
+
+    public NamedPipeClientTransport(ILogger logger)
+    {
+        _logger = logger;
+        _namedPipeName = Guid.NewGuid().ToString("N");
+
+#if NET
+        var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
+#else
+        var options = PipeOptions.Asynchronous;
+#endif
+        _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, options);
+    }
 
     /// <summary>
     /// The named pipe name, for testing.
@@ -34,23 +47,26 @@ internal sealed class NamedPipeClientTransport(ILogger logger) : ClientTransport
         env[AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName] = _namedPipeName;
     }
 
-    public override async Task<string> WaitForConnectionAsync(CancellationToken cancellationToken)
+    public override async Task WaitForConnectionAsync(CancellationToken cancellationToken)
     {
-#if NET
-        var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
-#else
-        var options = PipeOptions.Asynchronous;
-#endif
-        _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, options);
+        _logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", _namedPipeName);
 
-        logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", _namedPipeName);
+        try
+        {
+            await _pipe.WaitForConnectionAsync(cancellationToken);
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            // The process may die while we're waiting for the connection and the pipe may be disposed.
+            // Log and let subsequent ReadAsync return null gracefully.
+            if (IsExpectedPipeException(e, cancellationToken))
+            {
+                _logger.LogDebug("Pipe connection ended: {Message}", e.Message);
+                return;
+            }
 
-        await _pipe.WaitForConnectionAsync(cancellationToken);
-
-        // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
-        var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
-
-        return capabilities;
+            throw;
+        }
     }
 
     /// <summary>
@@ -65,8 +81,6 @@ internal sealed class NamedPipeClientTransport(ILogger logger) : ClientTransport
 
     public override async ValueTask WriteAsync(byte type, Func<Stream, CancellationToken, ValueTask>? writePayload, CancellationToken cancellationToken)
     {
-        Debug.Assert(_pipe != null);
-
         await _pipe.WriteAsync(type, cancellationToken);
 
         if (writePayload != null)
@@ -79,8 +93,6 @@ internal sealed class NamedPipeClientTransport(ILogger logger) : ClientTransport
 
     public override async ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
     {
-        Debug.Assert(_pipe != null);
-
         try
         {
             var type = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
@@ -95,13 +107,10 @@ internal sealed class NamedPipeClientTransport(ILogger logger) : ClientTransport
 
     public override void Dispose()
     {
-        if (_pipe != null)
-        {
-            logger.LogDebug("Disposing agent communication pipe");
+        _logger.LogDebug("Disposing agent communication pipe");
 
-            // Dispose the pipe but do not set it to null, so that any in-progress
-            // operations throw the appropriate exception type.
-            _pipe.Dispose();
-        }
+        // Dispose the pipe but do not set it to null, so that any in-progress
+        // operations throw the appropriate exception type.
+        _pipe.Dispose();
     }
 }

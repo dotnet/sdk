@@ -18,6 +18,7 @@ internal static class EnvironmentVariables
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
         public const string DotNetWatchHotReloadWebSocketEndpoint = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint;
         public const string DotNetWatchAgentWebSocketPort = "DOTNET_WATCH_AGENT_WEBSOCKET_PORT";
+        public const string DotNetWatchAgentWebSocketSecurePort = "DOTNET_WATCH_AGENT_WEBSOCKET_SECURE_PORT";
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
         public const string HotReloadDeltaClientLogMessages = HotReload.AgentEnvironmentVariables.HotReloadDeltaClientLogMessages;
@@ -67,6 +68,12 @@ internal static class EnvironmentVariables
     /// Mobile workloads (Android, iOS) add this capability. Defaults to 0 (auto-assign) if not specified.
     /// </summary>
     public static int AgentWebSocketPort => ReadInt(Names.DotNetWatchAgentWebSocketPort) ?? 0;
+
+    /// <summary>
+    /// Secure (HTTPS/WSS) port for WebSocket hot reload communication.
+    /// If not specified, HTTPS is not enabled for the agent WebSocket server.
+    /// </summary>
+    public static int? AgentWebSocketSecurePort => ReadInt(Names.DotNetWatchAgentWebSocketSecurePort);
 
     private static bool ReadBool(string variableName)
         => ParseBool(Environment.GetEnvironmentVariable(variableName));

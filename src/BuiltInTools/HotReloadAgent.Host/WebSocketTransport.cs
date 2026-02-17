@@ -71,12 +71,7 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
         _sendBuffer ??= new MemoryStream();
         _sendBuffer.SetLength(0);
 
-        // Write response type prefix (except for InitializationResponse which doesn't need it)
-        if (response.Type != ResponseType.InitializationResponse)
-        {
-            await _sendBuffer.WriteAsync((byte)response.Type, cancellationToken);
-        }
-
+        await _sendBuffer.WriteAsync((byte)response.Type, cancellationToken);
         await response.WriteAsync(_sendBuffer, cancellationToken);
 
         Log($"Sending {response.Type} ({_sendBuffer.Length} bytes)");

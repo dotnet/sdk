@@ -46,7 +46,23 @@ namespace Microsoft.DotNet.HotReload
             {
                 try
                 {
-                    var capabilities = await transport.WaitForConnectionAsync(cancellationToken);
+                    await transport.WaitForConnectionAsync(cancellationToken);
+
+                    // Read the initialization response (capabilities) from the agent.
+                    var initResponse = await transport.ReadAsync(cancellationToken);
+                    if (initResponse == null)
+                    {
+                        return [];
+                    }
+
+                    using var r = initResponse.Value;
+                    if (r.Type != ResponseType.InitializationResponse)
+                    {
+                        Logger.LogError("Expected initialization response, got: {ResponseType}", r.Type);
+                        return [];
+                    }
+
+                    var capabilities = (await ClientInitializationResponse.ReadAsync(r.Data, cancellationToken)).Capabilities;
 
                     if (string.IsNullOrEmpty(capabilities))
                     {
@@ -72,6 +88,48 @@ namespace Microsoft.DotNet.HotReload
                     }
 
                     return [];
+                }
+            }
+        }
+
+        private async Task ListenForResponsesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var response = await transport.ReadAsync(cancellationToken);
+                    if (response == null)
+                    {
+                        return;
+                    }
+
+                    using var r = response.Value;
+
+                    switch (r.Type)
+                    {
+                        case ResponseType.UpdateResponse:
+                            // update request can't be issued again until the status is read and a new source is created:
+                            _updateStatusSource.SetResult(await ReadUpdateResponseAsync(r, cancellationToken));
+                            break;
+
+                        case ResponseType.HotReloadExceptionNotification:
+                            var notification = await HotReloadExceptionCreatedNotification.ReadAsync(r.Data, cancellationToken);
+                            RuntimeRudeEditDetected(notification.Code, notification.Message);
+                            break;
+
+                        default:
+                            // can't continue, the stream is in undefined state:
+                            Logger.LogError("Unexpected response received from the agent: {ResponseType}", r.Type);
+                            return;
+                    }
+                }
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Logger.LogError("Failed to read response: {Message}", e.Message);
                 }
             }
         }
@@ -200,48 +258,6 @@ namespace Microsoft.DotNet.HotReload
                     return success;
                 },
                 applyOperationCancellationToken);
-        }
-
-        private async Task ListenForResponsesAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var response = await transport.ReadAsync(cancellationToken);
-                    if (response == null)
-                    {
-                        return;
-                    }
-
-                    using var r = response.Value;
-
-                    switch (r.Type)
-                    {
-                        case ResponseType.UpdateResponse:
-                            // update request can't be issued again until the status is read and a new source is created:
-                            _updateStatusSource.SetResult(await ReadUpdateResponseAsync(r, cancellationToken));
-                            break;
-
-                        case ResponseType.HotReloadExceptionNotification:
-                            var notification = await HotReloadExceptionCreatedNotification.ReadAsync(r.Data, cancellationToken);
-                            RuntimeRudeEditDetected(notification.Code, notification.Message);
-                            break;
-
-                        default:
-                            // can't continue, the stream is in undefined state:
-                            Logger.LogError("Unexpected response received from the agent: {ResponseType}", r.Type);
-                            return;
-                    }
-                }
-            }
-            catch (Exception e) when (e is not OperationCanceledException)
-            {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    Logger.LogError("Failed to read response: {Message}", e.Message);
-                }
-            }
         }
 
         private async ValueTask<bool> ReceiveUpdateResponseAsync(CancellationToken cancellationToken)

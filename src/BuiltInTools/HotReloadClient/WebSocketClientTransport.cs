@@ -6,10 +6,14 @@
 #nullable enable
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
@@ -18,19 +22,36 @@ namespace Microsoft.DotNet.HotReload;
 /// WebSocket transport for communication between dotnet-watch and the hot reload agent.
 /// Used for projects with the HotReloadWebSockets capability (e.g., Android, iOS)
 /// where named pipes don't work over the network.
+/// Manages a Kestrel WebSocket server and handles single-client connections with
+/// RSA-based shared secret authentication (same as BrowserRefreshServer).
 /// </summary>
-internal sealed class WebSocketClientTransport(int port, ILogger logger) : ClientTransport
+internal sealed class WebSocketClientTransport : ClientTransport
 {
-    private readonly AgentWebSocketServer _server = new(logger);
+    private readonly int _port;
+    private readonly int? _securePort;
+    private readonly ILogger _logger;
+    private readonly KestrelWebSocketServer _server;
+    private readonly SharedSecretProvider _sharedSecretProvider = new();
+    private readonly TaskCompletionSource<WebSocket?> _clientConnectedSource = new();
+
+    private WebSocket? _clientSocket;
 
     // Reused across WriteAsync calls to avoid allocations.
     // WriteAsync is invoked under a semaphore in DefaultHotReloadClient.
     private MemoryStream? _sendBuffer;
 
+    public WebSocketClientTransport(int port, int? securePort, ILogger logger)
+    {
+        _port = port;
+        _securePort = securePort;
+        _logger = logger;
+        _server = new KestrelWebSocketServer(logger, HandleRequestAsync);
+    }
+
     /// <summary>
     /// The bound port number, for testing. Only valid after server has started.
     /// </summary>
-    internal int Port => _server.BoundPort;
+    internal int Port => new Uri(_server.ServerUrls.Select(KestrelWebSocketServer.ConvertToWebSocketUrl).First()).Port;
 
     public override void ConfigureEnvironment(IDictionary<string, string> env)
     {
@@ -39,16 +60,18 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
 
         // Set the WebSocket endpoint for the app to connect to.
         // Use the actual bound URL from the server (important when port 0 was requested).
-        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.WebSocketUrl;
+        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.ServerUrls.Select(KestrelWebSocketServer.ConvertToWebSocketUrl).First();
 
         // Set the RSA public key for the client to encrypt its shared secret.
         // This is the same authentication mechanism used by BrowserRefreshServer.
-        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _server.PublicKey;
+        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _sharedSecretProvider.GetPublicKey();
     }
+
+    private bool _serverStarted;
 
     private void EnsureServerStarted()
     {
-        if (_server.IsStarted)
+        if (_serverStarted)
         {
             return;
         }
@@ -57,34 +80,79 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
         // Use 127.0.0.1 instead of "localhost" because Kestrel doesn't support dynamic port binding with "localhost".
         // System.InvalidOperationException: Dynamic port binding is not supported when binding to localhost.
         // You must either bind to 127.0.0.1:0 or [::1]:0, or both.
-        _server.StartServerAsync("127.0.0.1", port, CancellationToken.None).AsTask().GetAwaiter().GetResult();
+        _server.StartServerAsync("127.0.0.1", _port, securePort: _securePort, CancellationToken.None).AsTask().GetAwaiter().GetResult();
+        _serverStarted = true;
     }
 
-    public override async Task<string> WaitForConnectionAsync(CancellationToken cancellationToken)
+    private async Task HandleRequestAsync(HttpContext context)
+    {
+        if (!context.WebSockets.IsWebSocketRequest)
+        {
+            context.Response.StatusCode = 400;
+            return;
+        }
+
+        // Validate the shared secret from the subprotocol
+        string? subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var sp] ? sp : null;
+
+        if (subProtocol != null)
+        {
+            // Decrypt and validate the secret
+            string? decryptedSecret;
+            try
+            {
+                decryptedSecret = _sharedSecretProvider.DecryptSecret(Base64Url.DecodeToStandardBase64(subProtocol));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
+                context.Response.StatusCode = 401;
+                return;
+            }
+        }
+        else
+        {
+            _logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
+            context.Response.StatusCode = 401;
+            return;
+        }
+
+        var webSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
+
+        _logger.LogDebug("WebSocket client connected");
+
+        _clientSocket = webSocket;
+        _clientConnectedSource.TrySetResult(webSocket);
+
+        // Keep the request alive until the connection is closed or aborted
+        try
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, context.RequestAborted);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            // Expected when the client disconnects or the request is aborted
+        }
+
+        _logger.LogDebug("WebSocket client disconnected");
+    }
+
+    public override async Task WaitForConnectionAsync(CancellationToken cancellationToken)
     {
         // Server should already be started by ConfigureEnvironment, but ensure it's started
         EnsureServerStarted();
 
         // Wait for the client to connect
-        if (await _server.WaitForConnectionAsync(cancellationToken) == null)
-        {
-            return "";
-        }
-
-        // Read the initialization message (capabilities)
-        using var stream = await _server.ReceiveMessageAsync(cancellationToken);
-        if (stream == null)
-        {
-            return "";
-        }
-
-        // Parse capabilities
-        var capabilities = await ClientInitializationResponse.ReadAsync(stream, cancellationToken);
-        return capabilities.Capabilities;
+        await _clientConnectedSource.Task.WaitAsync(cancellationToken);
     }
 
     public override async ValueTask WriteAsync(byte type, Func<Stream, CancellationToken, ValueTask>? writePayload, CancellationToken cancellationToken)
     {
+        if (_clientSocket == null || _clientSocket.State != WebSocketState.Open)
+        {
+            throw new InvalidOperationException("No active WebSocket connection from the client.");
+        }
+
         // Serialize the complete message to a reusable buffer, then send as a single WebSocket message
         _sendBuffer ??= new MemoryStream();
         _sendBuffer.SetLength(0);
@@ -96,27 +164,56 @@ internal sealed class WebSocketClientTransport(int port, ILogger logger) : Clien
             await writePayload(_sendBuffer, cancellationToken);
         }
 
-        await _server.SendMessageAsync(new ArraySegment<byte>(_sendBuffer.GetBuffer(), 0, (int)_sendBuffer.Length), cancellationToken);
+        await _clientSocket.SendAsync(
+            new ArraySegment<byte>(_sendBuffer.GetBuffer(), 0, (int)_sendBuffer.Length),
+            WebSocketMessageType.Binary,
+            endOfMessage: true,
+            cancellationToken);
     }
 
     public override async ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
     {
-        // Receive a complete WebSocket message
-        var stream = await _server.ReceiveMessageAsync(cancellationToken);
-        if (stream == null)
+        if (_clientSocket == null || _clientSocket.State != WebSocketState.Open)
         {
             return null;
         }
 
-        // Read the response type byte from the message
-        var type = (ResponseType)await stream.ReadByteAsync(cancellationToken);
-        return new ClientTransportResponse(type, stream, disposeStream: true);
+        // Receive a complete WebSocket message
+        var buffer = ArrayPool<byte>.Shared.Rent(4096);
+        try
+        {
+            var stream = new MemoryStream();
+            WebSocketReceiveResult result;
+            do
+            {
+                result = await _clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    stream.Dispose();
+                    return null;
+                }
+                stream.Write(buffer, 0, result.Count);
+            }
+            while (!result.EndOfMessage);
+
+            stream.Position = 0;
+
+            // Read the response type byte from the message
+            var type = (ResponseType)await stream.ReadByteAsync(cancellationToken);
+            return new ClientTransportResponse(type, stream, disposeStream: true);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     public override void Dispose()
     {
-        logger.LogDebug("Disposing agent websocket transport");
+        _logger.LogDebug("Disposing agent websocket transport");
         _sendBuffer?.Dispose();
+        _clientSocket?.Dispose();
+        _sharedSecretProvider.Dispose();
         _server.Dispose();
     }
 }

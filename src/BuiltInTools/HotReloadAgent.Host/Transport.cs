@@ -38,7 +38,7 @@ internal abstract class Transport(Action<string> log) : IDisposable
         if (!string.IsNullOrEmpty(webSocketEndpoint))
         {
             if (!Uri.TryCreate(webSocketEndpoint, UriKind.Absolute, out var uri) ||
-                (uri.Scheme != "ws" && uri.Scheme != "wss"))
+                uri.Scheme is not ("ws" or "wss"))
             {
                 log($"Invalid WebSocket endpoint (expected ws:// or wss:// URL): '{webSocketEndpoint}'");
                 return null;

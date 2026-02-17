@@ -33,11 +33,8 @@ internal sealed class NamedPipeTransport(string pipeName, Action<string> log, in
                 throw new TimeoutException($"Failed to connect in {timeoutMS}ms.");
             }
         }
-        else
-        {
-            await _pipeClient.WriteAsync((byte)response.Type, cancellationToken);
-        }
 
+        await _pipeClient.WriteAsync((byte)response.Type, cancellationToken);
         await response.WriteAsync(_pipeClient, cancellationToken);
     }
 

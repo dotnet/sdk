@@ -9,7 +9,6 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -24,38 +23,26 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// WebSocket server using Kestrel.
-/// Can be used via inheritance (override <see cref="HandleRequestAsync"/>) or
-/// via composition (pass a request handler delegate to the constructor).
+/// Sealed WebSocket server using Kestrel.
+/// Uses a request handler delegate for all WebSocket handling.
 /// </summary>
-internal class KestrelWebSocketServer : IDisposable
+internal sealed class KestrelWebSocketServer : IDisposable
 {
-    private readonly Func<HttpContext, Task>? _requestHandler;
+    private readonly RequestDelegate _requestHandler;
+    private readonly ILogger _logger;
 
-    protected IHost? Host { get; private set; }
+    private IHost? _host;
     public ImmutableArray<string> ServerUrls { get; private set; } = [];
-    protected ILogger Logger { get; }
 
-    /// <summary>
-    /// Creates a server with a custom request handler (for composition).
-    /// </summary>
-    public KestrelWebSocketServer(ILogger logger, Func<HttpContext, Task> requestHandler)
+    public KestrelWebSocketServer(ILogger logger, RequestDelegate requestHandler)
     {
-        Logger = logger;
+        _logger = logger;
         _requestHandler = requestHandler;
     }
 
-    /// <summary>
-    /// Creates a server for subclass override (for inheritance).
-    /// </summary>
-    protected KestrelWebSocketServer(ILogger logger)
+    public void Dispose()
     {
-        Logger = logger;
-    }
-
-    public virtual void Dispose()
-    {
-        Host?.Dispose();
+        _host?.Dispose();
     }
 
     private static bool? s_lazyTlsSupported;
@@ -93,24 +80,24 @@ internal class KestrelWebSocketServer : IDisposable
     /// Starts the Kestrel WebSocket server.
     /// </summary>
     /// <param name="hostName">Host name to bind to</param>
-    /// <param name="port">Port to bind to (0 for auto-assign)</param>
-    /// <param name="useTls">Whether to enable HTTPS</param>
+    /// <param name="port">HTTP port to bind to (0 for auto-assign)</param>
+    /// <param name="securePort">HTTPS port to bind to in addition to HTTP port. Null to skip HTTPS.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    public async ValueTask StartServerAsync(string hostName, int port, bool useTls, CancellationToken cancellationToken)
+    public async ValueTask StartServerAsync(string hostName, int port, int? securePort, CancellationToken cancellationToken)
     {
-        if (Host != null)
+        if (_host != null)
         {
             throw new InvalidOperationException("Server already started");
         }
 
-        Host = new HostBuilder()
+        _host = new HostBuilder()
             .ConfigureWebHost(builder =>
             {
                 builder.UseKestrel();
 
-                if (useTls)
+                if (securePort.HasValue)
                 {
-                    builder.UseUrls($"https://{hostName}:{port}", $"http://{hostName}:{port}");
+                    builder.UseUrls($"http://{hostName}:{port}", $"https://{hostName}:{securePort.Value}");
                 }
                 else
                 {
@@ -120,15 +107,15 @@ internal class KestrelWebSocketServer : IDisposable
                 builder.Configure(app =>
                 {
                     app.UseWebSockets();
-                    app.Run(HandleRequestAsync);
+                    app.Run(_requestHandler);
                 });
             })
             .Build();
 
-        await Host.StartAsync(cancellationToken);
+        await _host.StartAsync(cancellationToken);
 
         // URLs are only available after the server has started.
-        var addresses = Host.Services
+        var addresses = _host.Services
             .GetRequiredService<IServer>()
             .Features
             .Get<IServerAddressesFeature>()?
@@ -139,36 +126,16 @@ internal class KestrelWebSocketServer : IDisposable
             ServerUrls = [.. addresses];
         }
 
-        Logger.LogDebug("WebSocket server started at: {Urls}", string.Join(", ", ServerUrls.Select(ConvertToWebSocketUrl)));
+        _logger.LogDebug("WebSocket server started at: {Urls}", string.Join(", ", ServerUrls.Select(ConvertToWebSocketUrl)));
     }
 
     /// <summary>
     /// Converts an HTTP(S) URL to a WebSocket URL.
     /// </summary>
-    protected virtual string ConvertToWebSocketUrl(string httpUrl)
+    internal static string ConvertToWebSocketUrl(string httpUrl)
         => httpUrl
             .Replace("http://", "ws://", StringComparison.Ordinal)
             .Replace("https://", "wss://", StringComparison.Ordinal);
-
-    /// <summary>
-    /// Handles incoming HTTP requests. Override to implement WebSocket logic.
-    /// </summary>
-    protected virtual Task HandleRequestAsync(HttpContext context)
-        => _requestHandler?.Invoke(context) ?? Task.CompletedTask;
-
-    /// <summary>
-    /// Helper to accept a WebSocket connection.
-    /// </summary>
-    protected async ValueTask<WebSocket?> AcceptWebSocketAsync(HttpContext context, string? subProtocol = null)
-    {
-        if (!context.WebSockets.IsWebSocketRequest)
-        {
-            context.Response.StatusCode = 400;
-            return null;
-        }
-
-        return await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-    }
 }
 
 #endif
