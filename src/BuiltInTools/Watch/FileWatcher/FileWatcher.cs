@@ -212,8 +212,24 @@ namespace Microsoft.DotNet.Watch
             // Watch the containing directory and all subdirectories to detect changes to any file in the project
             watcher.WatchContainingDirectories([filePath], includeSubdirectories: true);
 
+            var projectDir = Path.GetDirectoryName(filePath);
+
             var fileChange = await watcher.WaitForFileChangeAsync(
-                acceptChange: change => true, // Accept any file change in the directory tree
+                acceptChange: change =>
+                {
+                    // Accept changes, but exclude common build output and temporary directories
+                    var relativePath = projectDir != null && change.Path.StartsWith(projectDir, PathUtilities.OSSpecificPathComparison)
+                        ? change.Path.Substring(projectDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                        : change.Path;
+
+                    var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    
+                    // Exclude common build output and temporary directories
+                    return pathParts.Length > 0 && 
+                           !pathParts[0].Equals("bin", StringComparison.OrdinalIgnoreCase) &&
+                           !pathParts[0].Equals("obj", StringComparison.OrdinalIgnoreCase) &&
+                           !pathParts[0].StartsWith(".", StringComparison.Ordinal); // Exclude hidden directories like .git, .vs, etc.
+                },
                 startedWatching,
                 cancellationToken);
 
