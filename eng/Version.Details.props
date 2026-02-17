@@ -99,7 +99,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetWebProjectTemplates100PackageVersion>10.0.2</MicrosoftDotNetWebProjectTemplates100PackageVersion>
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.2-servicing.25612.105</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>10.0.2</MicrosoftExtensionsConfigurationIniPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>10.0.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>10.0.2</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.2</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.2</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>10.0.2</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
