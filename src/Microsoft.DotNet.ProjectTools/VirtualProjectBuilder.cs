@@ -15,13 +15,13 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal sealed class VirtualProjectBuilder
+public sealed class VirtualProjectBuilder
 {
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
-    public string EntryPointFileFullPath { get; }
+    internal string EntryPointFileFullPath { get; }
 
-    public SourceFile EntryPointSourceFile
+    internal SourceFile EntryPointSourceFile
     {
         get
         {
@@ -34,12 +34,12 @@ internal sealed class VirtualProjectBuilder
         }
     }
 
-    public string ArtifactsPath
+    internal string ArtifactsPath
         => field ??= GetArtifactsPath(EntryPointFileFullPath);
 
-    public string[]? RequestedTargets { get; }
+    internal string[]? RequestedTargets { get; }
 
-    public VirtualProjectBuilder(
+    internal VirtualProjectBuilder(
         string entryPointFileFullPath,
         string targetFrameworkVersion,
         string[]? requestedTargets = null,
@@ -56,7 +56,7 @@ internal sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
     [
         ("OutputType", "Exe"),
         ("TargetFramework", $"net{targetFrameworkVersion}"),
@@ -66,7 +66,7 @@ internal sealed class VirtualProjectBuilder
         ("PackAsTool", "true"),
     ];
 
-    public static string GetArtifactsPath(string entryPointFileFullPath)
+    internal static string GetArtifactsPath(string entryPointFileFullPath)
     {
         // Include entry point file name so the directory name is not completely opaque.
         string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
@@ -79,7 +79,7 @@ internal sealed class VirtualProjectBuilder
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
-    public static string GetTempSubdirectory()
+    internal static string GetTempSubdirectory()
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -97,7 +97,7 @@ internal sealed class VirtualProjectBuilder
     /// <summary>
     /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
     /// </summary>
-    public static string GetTempSubpath(string name)
+    internal static string GetTempSubpath(string name)
     {
         return Path.Join(GetTempSubdirectory(), name);
     }
@@ -154,7 +154,7 @@ internal sealed class VirtualProjectBuilder
         return directives;
     }
 
-    public void CreateProjectInstance(
+    internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter errorReporter,
         out ProjectInstance project,
@@ -221,7 +221,7 @@ internal sealed class VirtualProjectBuilder
         }
     }
 
-    public static void WriteProjectFile(
+    internal static void WriteProjectFile(
         TextWriter writer,
         ImmutableArray<CSharpDirective> directives,
         IEnumerable<(string name, string value)> defaultProperties,
@@ -531,7 +531,7 @@ internal sealed class VirtualProjectBuilder
         }
     }
 
-    public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
+    internal static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
     {
         if (directives.Length == 0)
         {
@@ -549,7 +549,7 @@ internal sealed class VirtualProjectBuilder
         return text;
     }
 
-    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text, string filePath)
+    internal static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text, string filePath)
     {
         if (RemoveDirectivesFromFile(directives, text) is { } modifiedText)
         {
