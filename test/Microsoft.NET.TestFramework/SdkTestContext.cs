@@ -83,8 +83,6 @@ namespace Microsoft.NET.TestFramework
             return files[0];
         }
 
-        public string? SdkVersion { get; set; }
-
         private ToolsetInfo? _toolsetUnderTest;
 
         public ToolsetInfo ToolsetUnderTest
@@ -111,9 +109,7 @@ namespace Microsoft.NET.TestFramework
             {
                 if (_current == null)
                 {
-                    //  Initialize test context in cases where it hasn't been initialized via the entry point
-                    //  (ie when using test explorer or another runner)
-                    Initialize(TestCommandLine.Parse(Array.Empty<string>()));
+                    Initialize();
                 }
                 return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
             }
@@ -154,16 +150,11 @@ namespace Microsoft.NET.TestFramework
         }
 
 
-        public static void Initialize(TestCommandLine commandLine)
+        public static void Initialize()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
-
-            foreach (var (name, value) in commandLine.EnvironmentVariables)
-            {
-                Environment.SetEnvironmentVariable(name, value);
-            }
 
             //  Reset this environment variable so that if the dotnet under test is different than the
             //  one running the tests, it won't interfere
@@ -178,26 +169,17 @@ namespace Microsoft.NET.TestFramework
                 ?? (!string.IsNullOrEmpty(envTestAssetsDir) ? envTestAssetsDir : null)
                 ?? FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
 
-            string? repoRoot = null;
 #if DEBUG
             string repoConfiguration = "Debug";
 #else
             string repoConfiguration = "Release";
 #endif
 
-            if (commandLine.SDKRepoPath != null)
-            {
-                repoRoot = commandLine.SDKRepoPath;
-            }
-            else if (!commandLine.NoRepoInference)
-            {
-                repoRoot = GetRepoRoot();
-            }
+            string? repoRoot = GetRepoRoot();
 
             string? envTestExecDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
             testContext.TestExecutionDirectory =
-                commandLine.TestExecutionDirectory
-                ?? (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
+                (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
                 ?? Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory)!, "tmp", repoConfiguration, "testing");
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);
@@ -251,12 +233,7 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            if (commandLine.SdkVersion != null)
-            {
-                testContext.SdkVersion = commandLine.SdkVersion;
-            }
-
-            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
+            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 
             //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
             //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
@@ -330,24 +307,6 @@ namespace Microsoft.NET.TestFramework
                     }
                 }
                 currentPath = parent.FullName;
-            }
-        }
-
-        public void WriteGlobalJson(string path)
-        {
-            WriteGlobalJson(path, SdkVersion);
-        }
-
-        public static void WriteGlobalJson(string path, string? sdkVersion)
-        {
-            if (!string.IsNullOrEmpty(sdkVersion))
-            {
-                string globalJsonPath = Path.Combine(path, "global.json");
-                File.WriteAllText(globalJsonPath, @"{
-  ""sdk"": {
-    ""version"": """ + sdkVersion + @"""
-  }
-}");
             }
         }
 
