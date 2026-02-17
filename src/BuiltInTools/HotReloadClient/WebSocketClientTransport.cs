@@ -98,10 +98,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
         if (subProtocol != null)
         {
             // Decrypt and validate the secret
-            string? decryptedSecret;
             try
             {
-                decryptedSecret = _sharedSecretProvider.DecryptSecret(Base64Url.DecodeToStandardBase64(subProtocol));
+                _sharedSecretProvider.DecryptSecret(Base64Url.DecodeToStandardBase64(subProtocol));
             }
             catch (Exception ex)
             {
