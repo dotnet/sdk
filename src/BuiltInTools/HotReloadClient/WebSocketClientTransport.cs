@@ -10,6 +10,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,7 +101,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
             // Decrypt and validate the secret
             try
             {
-                _sharedSecretProvider.DecryptSecret(Base64Url.DecodeToStandardBase64(subProtocol));
+                _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol));
             }
             catch (Exception ex)
             {

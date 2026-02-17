@@ -144,7 +144,7 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
         RandomNumberGenerator.Fill(secret);
         var encrypted = rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256);
 
-        // Convert to URL-safe Base64 for WebSocket subprotocol header
-        return Base64Url.EncodeToString(encrypted);
+        // URL-encode standard Base64 for WebSocket subprotocol header (same encoding as BrowserRefreshServer)
+        return WebUtility.UrlEncode(Convert.ToBase64String(encrypted));
     }
 }
