@@ -218,13 +218,14 @@ namespace Microsoft.DotNet.Watch
                 acceptChange: change =>
                 {
                     // Accept changes, but exclude common build output and temporary directories
-                    var relativePath = projectDir != null && change.Path.StartsWith(projectDir, PathUtilities.OSSpecificPathComparison)
-                        ? change.Path.Substring(projectDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    var relativePath = projectDir != null 
+                        ? Path.GetRelativePath(projectDir, change.Path)
                         : change.Path;
 
                     var pathParts = relativePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
                     
-                    // If no path parts (file in project root), accept the change
+                    // If no path parts or file is in current/parent directory (starts with '.'), accept for now
+                    // (the file watcher should only notify us about files in subdirectories anyway)
                     if (pathParts.Length == 0)
                     {
                         return true;
