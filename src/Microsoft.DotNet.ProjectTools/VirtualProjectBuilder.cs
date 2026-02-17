@@ -154,6 +154,23 @@ public sealed class VirtualProjectBuilder
         return directives;
     }
 
+    public static ProjectInstance CreateProjectInstance(string filePath, string targetFrameworkVersion)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+
+        var projectCollection = new ProjectCollection();
+
+        var builder = new VirtualProjectBuilder(fullPath, targetFrameworkVersion);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            static (sourceFile, textSpan, message) => throw new InvalidOperationException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}"),
+            out var projectInstance,
+            out _);
+
+        return projectInstance;
+    }
+
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter errorReporter,
