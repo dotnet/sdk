@@ -154,7 +154,7 @@ public sealed class VirtualProjectBuilder
         return directives;
     }
 
-    public static ProjectInstance CreateProjectInstance(string filePath, string targetFrameworkVersion)
+    public static ProjectRootElement CreateProjectRootElement(string filePath, string targetFrameworkVersion)
     {
         var fullPath = Path.GetFullPath(filePath);
 
@@ -165,16 +165,18 @@ public sealed class VirtualProjectBuilder
         builder.CreateProjectInstance(
             projectCollection,
             static (sourceFile, textSpan, message) => throw new InvalidOperationException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}"),
-            out var projectInstance,
+            out _,
+            out var projectRootElement,
             out _);
 
-        return projectInstance;
+        return projectRootElement;
     }
 
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter errorReporter,
         out ProjectInstance project,
+        out ProjectRootElement projectRootElement,
         out ImmutableArray<CSharpDirective> evaluatedDirectives,
         ImmutableArray<CSharpDirective> directives = default,
         Action<IDictionary<string, string>>? addGlobalProperties = null,
@@ -185,16 +187,16 @@ public sealed class VirtualProjectBuilder
             directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, errorReporter);
         }
 
-        project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
+        (projectRootElement, project) = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
 
         evaluatedDirectives = EvaluateDirectives(project, directives, EntryPointSourceFile, errorReporter);
         if (evaluatedDirectives != directives)
         {
-            project = CreateProjectInstance(projectCollection, evaluatedDirectives, addGlobalProperties);
+            (projectRootElement, project) = CreateProjectInstance(projectCollection, evaluatedDirectives, addGlobalProperties);
         }
     }
 
-    private ProjectInstance CreateProjectInstance(
+    private (ProjectRootElement, ProjectInstance) CreateProjectInstance(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives,
         Action<IDictionary<string, string>>? addGlobalProperties = null)
@@ -208,11 +210,13 @@ public sealed class VirtualProjectBuilder
             addGlobalProperties(globalProperties);
         }
 
-        return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
+        var projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
         {
             ProjectCollection = projectCollection,
             GlobalProperties = globalProperties,
         });
+
+        return (projectRoot, projectInstance);
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
