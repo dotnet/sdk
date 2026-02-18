@@ -10,7 +10,7 @@ using EmptyFiles;
 
 public class PowershellProviderTests(ITestOutputHelper log)
 {
-    private IShellProvider provider = new PowershellShellProvider();
+    private IShellProvider provider = new PowerShellShellProvider();
 
     [Fact]
     public async Task GenericCompletions()

@@ -8,7 +8,4 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  <ItemGroup>
-    <Using Remove="@(Using)"/>
-  </ItemGroup>
 </Project>

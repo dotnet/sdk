@@ -187,39 +187,28 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async Task ApplyStaticAssetUpdatesAsync(IEnumerable<(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)> assets, CancellationToken cancellationToken)
+    public async Task ApplyStaticAssetUpdatesAsync(IEnumerable<StaticWebAsset> assets, CancellationToken cancellationToken)
     {
         if (browserRefreshServer != null)
         {
-            await browserRefreshServer.UpdateStaticAssetsAsync(assets.Select(static a => a.relativeUrl), cancellationToken);
+            await browserRefreshServer.UpdateStaticAssetsAsync(assets.Select(static a => a.RelativeUrl), cancellationToken);
         }
         else
         {
             var updates = new List<HotReloadStaticAssetUpdate>();
 
-            foreach (var (filePath, relativeUrl, assemblyName, isApplicationProject) in assets)
+            foreach (var asset in assets)
             {
-                ImmutableArray<byte> content;
                 try
                 {
-#if NET
-                    var blob = await File.ReadAllBytesAsync(filePath, cancellationToken);
-#else
-                    var blob = File.ReadAllBytes(filePath);
-#endif
-                    content = ImmutableCollectionsMarshal.AsImmutableArray(blob);
+                    ClientLogger.LogDebug("Loading asset '{Url}' from '{Path}'.", asset.RelativeUrl, asset.FilePath);
+                    updates.Add(await HotReloadStaticAssetUpdate.CreateAsync(asset, cancellationToken));
                 }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
-                    ClientLogger.LogError("Failed to read file {FilePath}: {Message}", filePath, e.Message);
+                    ClientLogger.LogError("Failed to read file {FilePath}: {Message}", asset.FilePath, e.Message);
                     continue;
                 }
-
-                updates.Add(new HotReloadStaticAssetUpdate(
-                    assemblyName: assemblyName,
-                    relativePath: relativeUrl,
-                    content: content,
-                    isApplicationProject));
             }
 
             await ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);

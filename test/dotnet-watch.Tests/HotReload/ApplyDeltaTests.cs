@@ -997,8 +997,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(scopedCssPath, newCss);
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("RazorApp.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfScopedCssSucceeded);
+            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/RazorClassLibrary.bundle.scp.css"));
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
 
@@ -1007,9 +1007,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            // "wwwroot" directory is required for MAUI. Web sites work with or without it.
             App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
         }
@@ -1018,7 +1017,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
@@ -1052,6 +1051,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // update static asset:
             var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+            App.AssertOutputContains("No C# changes to apply.");
+            App.Process.ClearOutput();
+
+            // update scoped css:
+            var scopedCssPath = Path.Combine(testAsset.Path, "Components", "Pages", "Counter.razor.css");
+            UpdateSourceFile(scopedCssPath, content => content.Replace("background-color: green", "background-color: red"));
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             App.AssertOutputContains("Updates applied: 1 out of 1.");

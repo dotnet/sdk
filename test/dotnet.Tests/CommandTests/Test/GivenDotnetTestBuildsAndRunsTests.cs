@@ -588,5 +588,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
+                .WithSource();
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                // We need to disable output and error redirection so that the test infra doesn't
+                // hang because of a hanging child process that keeps out/err open.
+                .WithDisableOutputAndErrorRedirection()
+                .Execute("-c", configuration);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
     }
 }

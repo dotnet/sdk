@@ -46,6 +46,9 @@ namespace Microsoft.DotNet.Watch
 
                 var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
 
+                // msbuild tasks depend on host path variable:
+                Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, environmentOptions.MuxerPath);
+
                 var program = TryCreate(
                     args,
                     new PhysicalConsole(environmentOptions.TestFlags),

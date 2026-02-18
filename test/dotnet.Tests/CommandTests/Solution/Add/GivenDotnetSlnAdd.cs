@@ -31,7 +31,7 @@ Usage:
   dotnet solution [<SLN_FILE>] add [<PROJECT_PATH>...] [options]
 
 Arguments:
-  <SLN_FILE>      The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <SLN_FILE>      The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>  The paths to the projects to add to the solution.
 
 Options:
@@ -407,6 +407,46 @@ Options:
 
             File.ReadAllText(slnFullPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenMultipleProjectsFromSameDirectoryAreAddedSolutionFolderIsNotDuplicated(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+
+            var firstProject = Path.Combine("Multiple", "First.csproj");
+            var secondProject = Path.Combine("Multiple", "Second.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", firstProject, secondProject);
+            cmd.Should().Pass();
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Combine(projectDirectory, $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Combine(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
+
+            // The solution already has App project, plus we added First and Second = 3 total
+            var projectsInSolution = solution.SolutionProjects.ToList();
+            projectsInSolution.Count.Should().Be(3);
+            projectsInSolution.Should().Contain(p => p.FilePath.Contains("First.csproj"));
+            projectsInSolution.Should().Contain(p => p.FilePath.Contains("Second.csproj"));
+            
+            // Should only have one solution folder for "Multiple", not two
+            var solutionFolders = solution.SolutionFolders.ToList();
+            solutionFolders.Count.Should().Be(1);
+            solutionFolders.Single().Path.Should().Contain("Multiple");
+            
+            // Both new projects should be in the same solution folder
+            var solutionFolder = solutionFolders.Single();
+            var multipleProjects = projectsInSolution.Where(p => p.FilePath.Contains("Multiple")).ToList();
+            multipleProjects.Count.Should().Be(2);
+            multipleProjects.All(p => p.Parent?.Id == solutionFolder.Id).Should().BeTrue();
         }
 
         [Theory]
