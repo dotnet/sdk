@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" PrivateAssets="all" />
+    <!-- Must not be newer then Microsoft.Build in NuGet.CommandLine.XPlat. -->
+    <PackageReference Include="Microsoft.Build" VersionOverride="17.11.48" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
       <PrivateAssets>all</PrivateAssets>
