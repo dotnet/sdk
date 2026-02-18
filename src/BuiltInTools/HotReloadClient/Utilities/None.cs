@@ -5,6 +5,4 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct VoidResult
-{
-}
+internal readonly struct None;

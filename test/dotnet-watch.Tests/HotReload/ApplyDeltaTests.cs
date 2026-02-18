@@ -926,7 +926,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputDoesNotContain("🕵️");
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
@@ -981,7 +981,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
 
             App.SendControlR();
 
@@ -1015,7 +1015,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
             App.Process.ClearOutput();
 
             var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");

@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     else
                     {
-                        logger.Log(MessageDescriptor.ExitedWithErrorCode, exitCode);
+                        logger.Log(MessageDescriptor.ExitedWithErrorCode, exitCode.Value);
                     }
                 }
 
@@ -158,16 +158,9 @@ namespace Microsoft.DotNet.Watch
                 process.StartInfo.CreateNewProcessGroup = true;
             }
 
-            if (processSpec.EscapedArguments is not null)
+            for (var i = 0; i < processSpec.Arguments.Count; i++)
             {
-                process.StartInfo.Arguments = processSpec.EscapedArguments;
-            }
-            else if (processSpec.Arguments is not null)
-            {
-                for (var i = 0; i < processSpec.Arguments.Count; i++)
-                {
-                    process.StartInfo.ArgumentList.Add(processSpec.Arguments[i]);
-                }
+                process.StartInfo.ArgumentList.Add(processSpec.Arguments[i]);
             }
 
             foreach (var env in processSpec.EnvironmentVariables)
@@ -271,7 +264,7 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    logger.Log(MessageDescriptor.WaitingForProcessToExitWithin, state.ProcessId, timeoutValue.TotalSeconds);
+                    logger.Log(MessageDescriptor.WaitingForProcessToExitWithin, state.ProcessId, (int)timeoutValue.TotalSeconds);
                     await task.WaitAsync(timeoutValue, cancellationToken);
                 }
                 catch (TimeoutException)

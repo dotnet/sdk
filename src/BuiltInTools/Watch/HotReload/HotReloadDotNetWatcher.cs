@@ -932,6 +932,10 @@ namespace Microsoft.DotNet.Watch
                         {
                             solutionElement.Add(new XElement("Project", new XAttribute("Path", p.PhysicalPath)));
                         }
+                        else
+                        {
+                            _context.BuildLogger.LogError("File-based apps are not supported: '{Path}'", p.EntryPointFilePath);
+                        }
                     }
 
                     var doc = new XDocument(solutionElement);

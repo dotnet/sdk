@@ -66,7 +66,14 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             ? (browserPath, launchUrl, false)
             : (launchUrl, null, true);
 
-        logger.Log(MessageDescriptor.LaunchingBrowser, fileName, arg);
+        if (arg != null)
+        {
+            logger.Log(MessageDescriptor.LaunchingBrowserWithUrl, (fileName, arg));
+        }
+        else
+        {
+            logger.Log(MessageDescriptor.LaunchingBrowser, fileName);
+        }
 
         if (environmentOptions.TestFlags != TestFlags.None && environmentOptions.BrowserPath == null)
         {
