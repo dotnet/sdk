@@ -4,6 +4,7 @@
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
@@ -4862,6 +4863,60 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining($$"""
                 {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(executablePath)}},"CommandLineArguments":"","WorkingDirectory":"","EnvironmentVariables":{"DOTNET_ROOT
                 """);
+    }
+
+    [Fact]
+    public void Api_VirtualProjectBuilder_CreateProjectRootElement()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var projectRootElement = VirtualProjectBuilder.CreateProjectRootElement(
+            appPath,
+            "5.0",
+            projectCollection);
+
+        projectRootElement.FullPath.Should().Be(Path.ChangeExtension(appPath, ".csproj"));
+
+        var xml = projectRootElement.RawXml;
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // the target framework version passed in has an effect
+            .And.Contain("<TargetFramework>net5.0</TargetFramework>");
     }
 
     [Theory, CombinatorialData]
