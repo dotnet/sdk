@@ -3685,6 +3685,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         actualProject.Should().NotContain(".proto");
     }
 
+    [Fact]
+    public void IncludeDirective_DefaultMapping_InSync()
+    {
+        var parsed = CSharpDirective.IncludeOrExclude.ParseMapping(CSharpDirective.IncludeOrExclude.DefaultMappingString,
+            sourceFile: default,
+            VirtualProjectBuildingCommand.ThrowingReporter);
+        parsed.Should().BeEquivalentTo(CSharpDirective.IncludeOrExclude.DefaultMapping);
+    }
+
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
     [InlineData(false, null)]

@@ -602,8 +602,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 if (field.IsDefault)
                 {
-                    field = ParseMapping(DefaultMappingString, sourceFile: default, ErrorReporters.IgnoringReporter);
-                    Debug.Assert(!field.IsDefault);
+                    field =
+                    [
+                        (".cs", "Compile"),
+                        (".resx", "EmbeddedResource"),
+                        (".json", "None"),
+                        (".razor", "Content"),
+                    ];
                 }
 
                 return field;
