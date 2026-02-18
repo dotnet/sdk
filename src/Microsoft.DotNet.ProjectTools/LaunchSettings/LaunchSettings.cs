@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-public static class LaunchSettings
+internal static class LaunchSettings
 {
     private const string ProfilesKey = "profiles";
     private const string CommandNameKey = "commandName";
