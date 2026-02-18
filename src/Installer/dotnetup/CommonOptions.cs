@@ -66,7 +66,7 @@ internal class CommonOptions
 
     public static Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
     {
-        Description = "Fail if the muxer (dotnet executable) cannot be updated. By default, a warning is displayed but installation continues.",
+        Description = "Fail if the dotnet executable cannot be updated. By default, a warning is displayed but installation continues.",
         Arity = ArgumentArity.ZeroOrOne
     };
 
