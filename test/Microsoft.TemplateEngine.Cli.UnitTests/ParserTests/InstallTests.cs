@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanParseAddSourceOption(string optionName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new install source {optionName} my-custom-source");
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Error_NoArguments()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new install");
 
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Legacy_Error_NoArguments()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new --install --interactive");
 
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanParseInteractiveOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new install source --interactive");
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanParseForceOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new install source --force");
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanParseMultipleArgs()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new install source1 source2");
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Legacy_CanParseAddSourceOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Legacy_CanParseInteractiveOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -170,7 +170,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Legacy_CanParseMultipleArgs(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_Legacy_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -209,7 +209,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Install_CanReturnParseError(string command, string expectedInvalidTokens)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             IEnumerable<string> errorMessages = parseResult.Errors.Select(error => error.Message);
@@ -228,14 +228,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             Command rootCommand = new("dotnet")
             {
                 myCommand
             };
 
             ParseResult parseResult = rootCommand.Parse("dotnet new install source");
-            Assert.Equal("dotnet new install my-source", Example.For<NewCommand>(parseResult).WithSubcommand<InstallCommand>().WithArgument(CommandDefinition.Install.NameArgument, "my-source"));
+            Assert.Equal("dotnet new install my-source", Example.For<NewCommand>(parseResult).WithSubcommand<InstallCommand>().WithArguments("my-source"));
         }
 
     }

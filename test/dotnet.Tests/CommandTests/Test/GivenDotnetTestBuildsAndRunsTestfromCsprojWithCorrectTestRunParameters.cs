@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         }));
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         }));
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestTestRunParameters";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
                             .WithSource()
                             .WithVersionVariables();
 

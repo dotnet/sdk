@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [WindowsOnlyFact]
         public void ItShouldIgnoreAllDependenciesWithTypeNotEqualToPackageOrUnresolved()
         {
-            var testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
 
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [WindowsOnlyFact]
         public void ItShouldIdentifyDefaultImplicitPackages()
         {
-            var testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
 
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [WindowsOnlyFact]
         public void ItShouldOnlyReturnPackagesInTheSpecifiedTarget()
         {
-            var testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
 
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");
@@ -356,7 +356,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [InlineData("net6.0")]
         public void ItShouldOnlyReturnTopLevelPackages(string alias)
         {
-            var testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
 
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");

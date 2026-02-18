@@ -1,7 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -692,6 +694,26 @@ Public Class Outer
     End Class
 End Class
 ", GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
+        }
+
+        [Fact, WorkItem(51681, "https://github.com/dotnet/sdk/issues/51681")]
+        public Task CSharpNoDiagnosticExtensionMembersAsync()
+        {
+            var code = @"
+public static class E
+{
+	extension(int x)
+	{
+		public int M() => x + 1;
+	}
+}
+";
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp14,
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)

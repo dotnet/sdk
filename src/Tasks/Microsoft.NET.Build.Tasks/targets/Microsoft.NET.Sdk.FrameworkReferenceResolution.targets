@@ -90,7 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
-          DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
+          DependsOnTargets="_ComputeTargetLatestRuntimePatch;AddWindowsSdkKnownFrameworkReferences"
           Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences

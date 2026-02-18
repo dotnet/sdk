@@ -15,6 +15,7 @@ Coding Style and Changes:
 
 Testing:
 - Large changes should always include test changes.
+- When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo:
   - Use the repo-local dotnet instance: `./.dotnet/dotnet`

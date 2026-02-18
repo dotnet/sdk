@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_library_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_library_twice_in_a_row()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -126,7 +126,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("Debug-NetCore", new[] { "CONFIG=\"Debug-NetCore\"", "DEBUG_NETCORE=-1", "_MyType=\"Empty\"" })]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", "ImplicitConfigurationConstantsVB", configuration)
                 .WithSource();
 
@@ -191,7 +191,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK=-1", "UNKNOWNFRAMEWORK3_14=-1", "_MyType=\"Empty\"" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", "ImplicitFrameworkConstantsVB", targetFramework, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>

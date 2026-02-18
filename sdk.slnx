@@ -66,6 +66,8 @@
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.CoreUtils/Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.Definitions/Microsoft.DotNet.Cli.Definitions.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.Package.csproj" />
@@ -310,7 +312,10 @@
   </Folder>
   <Folder Name="/template_feed/">
     <Project Path="template_feed/Microsoft.DotNet.Common.ItemTemplates/Microsoft.DotNet.Common.ItemTemplates.csproj" />
-    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.10.0/Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj" />
+    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.11.0/Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/MicroBenchmark/MicroBenchmark.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />

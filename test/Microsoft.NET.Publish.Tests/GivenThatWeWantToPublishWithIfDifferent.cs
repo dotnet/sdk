@@ -30,7 +30,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["data2.txt"] = "Data file 2 content";
             testProject.SourceFiles["data3.txt"] = "Data file 3 content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             // Update the project file to set CopyToPublishDirectory metadata
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
@@ -79,7 +79,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["unchangedData.txt"] = "Original content";
             testProject.SourceFiles["changedData.txt"] = "Original content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -145,7 +145,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["config.json"] = "{ \"setting\": \"value\" }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -185,7 +185,7 @@ namespace PublishCompileWithIfDifferent
     public class SourceClass { }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -230,7 +230,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             
             mainProject.SourceFiles["main.txt"] = "Main project content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(mainProject);
+            var testAsset = TestAssetsManager.CreateTestProject(mainProject);
 
             // Configure the referenced project to include the file with IfDifferent
             var referencedProjectFile = Path.Combine(testAsset.Path, referencedProject.Name, $"{referencedProject.Name}.csproj");
@@ -281,7 +281,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["ifDifferent.txt"] = "IfDifferent copy";
             testProject.SourceFiles["doNotCopy.txt"] = "Do not copy";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -320,7 +320,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles[Path.Combine("source", "data.txt")] = "Data in subfolder";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -359,7 +359,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["appdata.txt"] = "Application data";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -380,6 +380,80 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             // Verify the content file is published
             publishDirectory.Should().HaveFile("appdata.txt");
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "appdata.txt")).Should().Be("Application data");
+        }
+
+        [Fact]
+        public void It_publishes_content_from_imported_targets_with_correct_path()
+        {
+            // This test verifies that Content items introduced from imported .targets files
+            // (where DefiningProjectDirectory differs from MSBuildProjectDirectory) are
+            // published with the correct project-relative path and do not escape the publish directory.
+            // 
+            // The bug scenario: when a .targets file OUTSIDE the project directory adds a Content item,
+            // using DefiningProjectDirectory to compute the relative path can result in paths with '..'
+            // segments that escape the publish directory.
+
+            var testProject = new TestProject()
+            {
+                Name = "PublishImportedContent",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
+
+            // Create the imported targets file OUTSIDE the project directory (sibling folder)
+            // This is the key difference - DefiningProjectDirectory will be different from MSBuildProjectDirectory
+            var externalImportsDir = Path.Combine(testAsset.Path, "ExternalImports");
+            Directory.CreateDirectory(externalImportsDir);
+
+            // Create the content file in the project directory (where we want it to be published from)
+            var contentFile = Path.Combine(projectDirectory, "project-content.txt");
+            File.WriteAllText(contentFile, "Content defined by external targets");
+
+            // Create an imported .targets file OUTSIDE the project that adds a Content item
+            // pointing to a file in the project directory. The issue is that DefiningProjectDirectory
+            // will be ExternalImports/, not the project directory.
+            var importedTargetsFile = Path.Combine(externalImportsDir, "ImportedContent.targets");
+            File.WriteAllText(importedTargetsFile, $@"<Project>
+  <ItemGroup>
+    <!-- This Content item points to a file in the main project directory, but is defined in external .targets -->
+    <Content Include=""$(MSBuildProjectDirectory)\project-content.txt"" CopyToPublishDirectory=""IfDifferent"" />
+  </ItemGroup>
+</Project>");
+
+            // Update the main project file to import the external targets
+            var projectFile = Path.Combine(projectDirectory, $"{testProject.Name}.csproj");
+            var projectContent = File.ReadAllText(projectFile);
+            projectContent = projectContent.Replace("</Project>", @"
+  <Import Project=""..\ExternalImports\ImportedContent.targets"" />
+</Project>");
+            File.WriteAllText(projectFile, projectContent);
+
+            var publishCommand = new PublishCommand(testAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            // The content file should be published with a simple filename, not with path segments
+            // that could escape the publish directory (e.g., "..\PublishImportedContent\project-content.txt")
+            publishDirectory.Should().HaveFile("project-content.txt");
+
+            // Verify the content is correct
+            var publishedContentPath = Path.Combine(publishDirectory.FullName, "project-content.txt");
+            File.ReadAllText(publishedContentPath).Should().Be("Content defined by external targets");
+
+            // Ensure no files escaped to parent directories
+            var parentDir = Directory.GetParent(publishDirectory.FullName);
+            var potentialEscapedFiles = Directory.GetFiles(parentDir.FullName, "project-content.txt", SearchOption.AllDirectories)
+                .Where(f => !f.StartsWith(publishDirectory.FullName));
+            potentialEscapedFiles.Should().BeEmpty("Content file should not escape to directories outside publish folder");
         }
     }
 }

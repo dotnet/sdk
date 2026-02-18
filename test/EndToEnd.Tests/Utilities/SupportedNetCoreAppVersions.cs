@@ -33,7 +33,8 @@ namespace EndToEnd.Tests.Utilities
             "7.0",
             "8.0",
             "9.0",
-            "10.0"
+            "10.0",
+            "11.0"
         };
 
         public static IEnumerable<string> TargetFrameworkShortFolderVersion

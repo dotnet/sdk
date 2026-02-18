@@ -12,22 +12,13 @@ namespace Microsoft.DotNet.Cli.Commands.Solution;
 
 internal static class SolutionCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(SolutionCommandDefinition.Create());
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConfigureCommand(Command command)
+    public static void ConfigureCommand(SolutionCommandDefinition command)
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.Subcommands.Single(c => c.Name == SolutionAddCommandDefinition.Name).SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == SolutionListCommandDefinition.Name).SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == SolutionMigrateCommandDefinition.Name).SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == SolutionRemoveCommandDefinition.Name).SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
-
-        return command;
+        command.AddCommand.SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
+        command.ListCommand.SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
+        command.MigrateCommand.SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
+        command.RemoveCommand.SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
     }
 }

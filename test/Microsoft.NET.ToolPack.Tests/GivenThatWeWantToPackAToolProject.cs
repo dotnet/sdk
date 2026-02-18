@@ -5,6 +5,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
+using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -22,7 +23,7 @@ namespace Microsoft.NET.ToolPack.Tests
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
             string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", id)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -72,7 +73,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void Given_nuget_alias_It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -310,7 +311,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void Given_targetplatform_set_It_should_error()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithTargetFramework($"{ToolsetInfo.CurrentTargetFramework}-windows");
@@ -339,7 +340,7 @@ namespace Microsoft.NET.ToolPack.Tests
             testProject.AdditionalProperties["UseAppHost"] = "false";
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var packCommand = new PackCommand(testAsset);
 
@@ -359,6 +360,60 @@ namespace Microsoft.NET.ToolPack.Tests
                 toolSettingsXml.Root.Attribute("Version").Value.Should().Be("1");
             }
 
+        }
+
+        [Fact]
+        public void Framework_dependent_tool_should_target_base_runtime_version()
+        {
+            // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
+            // instead of a specific patch version, ensuring compatibility across runtime installations.
+            // File-based apps default to PublishAot=true, which was causing the issue, so we set it here
+            // to properly test the fix.
+            var testProject = new TestProject()
+            {
+                Name = "FddToolTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                IsSdkProject = true,
+            };
+
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ToolCommandName"] = "fddtool";
+            testProject.AdditionalProperties["PublishAot"] = "true";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
+
+            var packCommand = new PackCommand(testAsset);
+            packCommand.Execute().Should().Pass();
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
+                var runtimeConfigPath = $"tools/{anyTfm}/any/{testProject.Name}.runtimeconfig.json";
+
+                // Read the runtimeconfig.json directly from the archive
+                using (var stream = nupkgReader.GetStream(runtimeConfigPath))
+                using (var reader = new StreamReader(stream))
+                {
+                    string runtimeConfigContents = reader.ReadToEnd();
+                    var runtimeConfig = JObject.Parse(runtimeConfigContents);
+
+                    // Get the framework version
+                    var frameworkVersion = runtimeConfig["runtimeOptions"]["framework"]["version"].Value<string>();
+
+                    // Parse the version to get the base version (major.minor.patch) without any prerelease suffix
+                    // e.g., "11.0.0-preview.1.26069.105" -> "11.0.0"
+                    var dashIndex = frameworkVersion.IndexOf('-');
+                    var baseVersion = dashIndex >= 0 ? frameworkVersion.Substring(0, dashIndex) : frameworkVersion;
+
+                    // Verify it matches the expected pattern (major.minor.0)
+                    var versionParts = baseVersion.Split('.');
+                    versionParts.Should().HaveCount(3, because: "version should be in format major.minor.patch");
+                    versionParts[2].Should().Be("0", because: "patch version should be 0 for FDD tools to ensure compatibility across runtime installations");
+                }
+            }
         }
     }
 }

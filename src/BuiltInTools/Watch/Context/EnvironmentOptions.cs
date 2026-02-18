@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -29,12 +30,13 @@ namespace Microsoft.DotNet.Watch
         string MuxerPath,
         TimeSpan? ProcessCleanupTimeout,
         bool IsPollingEnabled = false,
-        bool SuppressHandlingStaticContentFiles = false,
+        bool SuppressHandlingStaticWebAssets = false,
         bool SuppressMSBuildIncrementalism = false,
         bool SuppressLaunchBrowser = false,
         bool SuppressBrowserRefresh = false,
         bool SuppressEmojis = false,
         bool RestartOnRudeEdit = false,
+        LogLevel? CliLogLevel = null,
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
         string? BrowserPath = null,
@@ -47,12 +49,13 @@ namespace Microsoft.DotNet.Watch
             MuxerPath: ValidateMuxerPath(muxerPath),
             ProcessCleanupTimeout: EnvironmentVariables.ProcessCleanupTimeout,
             IsPollingEnabled: EnvironmentVariables.IsPollingEnabled,
-            SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
+            SuppressHandlingStaticWebAssets: EnvironmentVariables.SuppressHandlingStaticWebAssets,
             SuppressMSBuildIncrementalism: EnvironmentVariables.SuppressMSBuildIncrementalism,
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
             RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
+            CliLogLevel: EnvironmentVariables.CliLogLevel,
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,

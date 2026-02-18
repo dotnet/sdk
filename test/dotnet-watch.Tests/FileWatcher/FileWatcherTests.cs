@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var logger = new TestLogger(output);
             var watcher = new TestFileWatcher(logger);
-            string root = TestContext.Current.TestExecutionDirectory;
+            string root = SdkTestContext.Current.TestExecutionDirectory;
 
             var dirA = Path.Combine(root, "A");
             var dirB = Path.Combine(root, "B");

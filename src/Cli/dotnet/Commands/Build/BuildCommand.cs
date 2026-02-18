@@ -19,18 +19,20 @@ public static class BuildCommand
 
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
+        var definition = (BuildCommandDefinition)parseResult.CommandResult.Command;
+
         parseResult.ShowHelpOrErrorIfAppropriate();
 
         CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(BuildCommandDefinition.SelfContainedOption),
-            parseResult.HasOption(BuildCommandDefinition.NoSelfContainedOption));
+            parseResult.HasOption(definition.SelfContainedOption),
+            parseResult.HasOption(definition.NoSelfContainedOption));
 
-        bool noRestore = parseResult.HasOption(BuildCommandDefinition.NoRestoreOption);
+        bool noRestore = parseResult.HasOption(definition.NoRestoreOption);
 
         return CommandFactory.CreateVirtualOrPhysicalCommand(
-            BuildCommandParser.GetCommand(),
-            BuildCommandDefinition.SlnOrProjectOrFileArgument,
-            configureVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+            definition,
+            definition.SlnOrProjectOrFileArgument,
+            createVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
                 msbuildArgs: msbuildArgs)
             {
@@ -42,7 +44,14 @@ public static class BuildCommand
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
             ),
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandDefinition.TargetOption, BuildCommandDefinition.VerbosityOption, BuildCommandDefinition.NoLogoOption],
+            optionsToUseWhenParsingMSBuildFlags:
+            [
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
+                CommonOptions.CreateMSBuildTargetOption(),
+                CommonOptions.CreateVerbosityOption(),
+                CommonOptions.CreateNoLogoOption()
+            ],
             parseResult,
             msbuildPath
         );

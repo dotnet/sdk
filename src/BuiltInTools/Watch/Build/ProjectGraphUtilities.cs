@@ -10,13 +10,16 @@ namespace Microsoft.DotNet.Watch;
 internal static class ProjectGraphUtilities
 {
     public static string GetDisplayName(this ProjectGraphNode projectNode)
-        => $"{Path.GetFileNameWithoutExtension(projectNode.ProjectInstance.FullPath)} ({projectNode.GetTargetFramework()})";
+        => projectNode.ProjectInstance.GetDisplayName();
 
-    public static string GetTargetFramework(this ProjectGraphNode projectNode)
-        => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetFramework);
+    public static string GetDisplayName(this ProjectInstance project)
+        => $"{Path.GetFileNameWithoutExtension(project.FullPath)} ({project.GetTargetFramework()})";
 
-    public static IEnumerable<string> GetTargetFrameworks(this ProjectGraphNode projectNode)
-        => projectNode.GetStringListPropertyValue(PropertyNames.TargetFrameworks);
+    public static string GetTargetFramework(this ProjectInstance project)
+        => project.GetPropertyValue(PropertyNames.TargetFramework);
+
+    public static IEnumerable<string> GetTargetFrameworks(this ProjectInstance project)
+        => project.GetStringListPropertyValue(PropertyNames.TargetFrameworks);
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
     {
@@ -54,8 +57,8 @@ internal static class ProjectGraphUtilities
     public static string GetAssemblyName(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
 
-    public static string? GetIntermediateOutputDirectory(this ProjectGraphNode projectNode)
-        => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(projectNode.ProjectInstance.Directory, path) : null;
+    public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
+        => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, path) : null;
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems(ItemNames.ProjectCapability).Select(item => item.EvaluatedInclude);
@@ -120,6 +123,6 @@ internal static class ProjectGraphUtilities
         }
     }
 
-    public static ProjectInstanceId GetProjectInstanceId(this ProjectGraphNode projectNode)
-        => new(projectNode.ProjectInstance.FullPath, projectNode.GetTargetFramework());
+    public static ProjectInstanceId GetId(this ProjectInstance project)
+        => new(project.FullPath, project.GetTargetFramework());
 }

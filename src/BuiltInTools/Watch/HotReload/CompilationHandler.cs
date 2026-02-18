@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,9 +16,8 @@ namespace Microsoft.DotNet.Watch
     internal sealed class CompilationHandler : IDisposable
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
-        private readonly ILogger _logger;
+        private readonly DotNetWatchContext _context;
         private readonly HotReloadService _hotReloadService;
-        private readonly ProcessRunner _processRunner;
 
         /// <summary>
         /// Lock to synchronize:
@@ -39,11 +39,10 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(ILogger logger, ProcessRunner processRunner)
+        public CompilationHandler(DotNetWatchContext context)
         {
-            _logger = logger;
-            _processRunner = processRunner;
-            Workspace = new IncrementalMSBuildWorkspace(logger);
+            _context = context;
+            Workspace = new IncrementalMSBuildWorkspace(context.Logger);
             _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
@@ -53,9 +52,12 @@ namespace Microsoft.DotNet.Watch
             Workspace?.Dispose();
         }
 
+        private ILogger Logger
+            => _context.Logger;
+
         public async ValueTask TerminateNonRootProcessesAndDispose(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Terminating remaining child processes.");
+            Logger.LogDebug("Terminating remaining child processes.");
             await TerminateNonRootProcessesAsync(projectPaths: null, cancellationToken);
             Dispose();
         }
@@ -75,7 +77,7 @@ namespace Microsoft.DotNet.Watch
         }
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
         {
-            _logger.Log(MessageDescriptor.HotReloadSessionStarting);
+            Logger.Log(MessageDescriptor.HotReloadSessionStarting);
 
             var solution = Workspace.CurrentSolution;
 
@@ -95,7 +97,7 @@ namespace Microsoft.DotNet.Watch
                 }
             }
 
-            _logger.Log(MessageDescriptor.HotReloadSessionStarted);
+            Logger.Log(MessageDescriptor.HotReloadSessionStarted);
         }
 
         public async Task<RunningProject?> TrackRunningProjectAsync(
@@ -140,7 +142,7 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
-            var runningProcess = _processRunner.RunAsync(processSpec, clients.ClientLogger, launchResult, processTerminationSource.Token);
+            var runningProcess = _context.ProcessRunner.RunAsync(processSpec, clients.ClientLogger, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
@@ -232,7 +234,7 @@ namespace Microsoft.DotNet.Watch
             catch (OperationCanceledException) when (processExitedSource.IsCancellationRequested)
             {
                 // Process exited during initialization. This should not happen since we control the process during this time.
-                _logger.LogError("Failed to launch '{ProjectPath}'. Process {PID} exited during initialization.", projectPath, launchResult.ProcessId);
+                Logger.LogError("Failed to launch '{ProjectPath}'. Process {PID} exited during initialization.", projectPath, launchResult.ProcessId);
                 return null;
             }
         }
@@ -281,7 +283,7 @@ namespace Microsoft.DotNet.Watch
                 .Order()
                 .ToImmutableArray();
 
-            _logger.Log(MessageDescriptor.HotReloadCapabilities, string.Join(" ", capabilities));
+            Logger.Log(MessageDescriptor.HotReloadCapabilities, string.Join(" ", capabilities));
             return capabilities;
         }
 
@@ -341,7 +343,7 @@ namespace Microsoft.DotNet.Watch
             {
                 _hotReloadService.DiscardUpdate();
 
-                _logger.Log(MessageDescriptor.HotReloadSuspended);
+                Logger.Log(MessageDescriptor.HotReloadSuspended);
                 await Task.Delay(-1, cancellationToken);
 
                 return ([], [], [], []);
@@ -409,7 +411,7 @@ namespace Microsoft.DotNet.Watch
                 return projectsWithPath[0];
             }
 
-            return projectsWithPath.SingleOrDefault(p => string.Equals(p.ProjectNode.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
+            return projectsWithPath.SingleOrDefault(p => string.Equals(p.ProjectNode.ProjectInstance.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
         }
 
         private async ValueTask DisplayResultsAsync(HotReloadService.Updates updates, ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
@@ -420,11 +422,11 @@ namespace Microsoft.DotNet.Watch
                     break;
 
                 case HotReloadService.Status.NoChangesToApply:
-                    _logger.Log(MessageDescriptor.NoCSharpChangesToApply);
+                    Logger.Log(MessageDescriptor.NoCSharpChangesToApply);
                     break;
 
                 case HotReloadService.Status.Blocked:
-                    _logger.Log(MessageDescriptor.UnableToApplyChanges);
+                    Logger.Log(MessageDescriptor.UnableToApplyChanges);
                     break;
 
                 default:
@@ -433,7 +435,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!updates.ProjectsToRestart.IsEmpty)
             {
-                _logger.Log(MessageDescriptor.RestartNeededToApplyChanges);
+                Logger.Log(MessageDescriptor.RestartNeededToApplyChanges);
             }
 
             var errorsToDisplayInApp = new List<string>();
@@ -515,13 +517,13 @@ namespace Microsoft.DotNet.Watch
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
                 var args = new[] { autoPrefix, display };
 
-                _logger.Log(descriptor, args);
+                Logger.Log(descriptor, args);
 
                 if (autoPrefix != "")
                 {
                     errorsToDisplayInApp.Add(MessageDescriptor.RestartingApplicationToApplyChanges.GetMessage());
                 }
-                else if (descriptor.Severity != MessageSeverity.None)
+                else if (descriptor.Level != LogLevel.None)
                 {
                     errorsToDisplayInApp.Add(descriptor.GetMessage(args));
                 }
@@ -551,19 +553,27 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public async ValueTask<bool> HandleStaticAssetChangesAsync(IReadOnlyList<ChangedFile> files, ProjectNodeMap projectMap, CancellationToken cancellationToken)
-        {
-            var allFilesHandled = true;
+        private static readonly string[] s_targets = [TargetNames.GenerateComputedBuildStaticWebAssets, TargetNames.ResolveReferencedProjectsStaticWebAssets];
 
-            var updates = new Dictionary<RunningProject, List<(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)>>();
+        private static bool HasScopedCssTargets(ProjectInstance projectInstance)
+            => s_targets.All(t => projectInstance.Targets.ContainsKey(t));
+
+        public async ValueTask HandleStaticAssetChangesAsync(
+            IReadOnlyList<ChangedFile> files,
+            ProjectNodeMap projectMap,
+            IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> manifests,
+            CancellationToken cancellationToken)
+        {
+            var assets = new Dictionary<ProjectInstance, Dictionary<string, StaticWebAsset>>();
+            var projectInstancesToRegenerate = new HashSet<ProjectInstance>();
 
             foreach (var changedFile in files)
             {
                 var file = changedFile.Item;
+                var isScopedCss = StaticWebAsset.IsScopedCssFile(file.FilePath);
 
-                if (file.StaticWebAssetPath is null)
+                if (!isScopedCss && file.StaticWebAssetRelativeUrl is null)
                 {
-                    allFilesHandled = false;
                     continue;
                 }
 
@@ -572,48 +582,145 @@ namespace Microsoft.DotNet.Watch
                     if (!projectMap.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
                     {
                         // Shouldn't happen.
-                        _logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
+                        Logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
                         continue;
                     }
 
                     foreach (var containingProjectNode in containingProjectNodes)
                     {
+                        if (isScopedCss)
+                        {
+                            // The outer build project instance(that specifies TargetFrameworks) won't have the target.
+                            if (!HasScopedCssTargets(containingProjectNode.ProjectInstance))
+                            {
+                                continue;
+                            }
+
+                            projectInstancesToRegenerate.Add(containingProjectNode.ProjectInstance);
+                        }
+
                         foreach (var referencingProjectNode in containingProjectNode.GetAncestorsAndSelf())
                         {
-                            if (TryGetRunningProject(referencingProjectNode.ProjectInstance.FullPath, out var runningProjects))
+                            var applicationProjectInstance = referencingProjectNode.ProjectInstance;
+                            if (!TryGetRunningProject(applicationProjectInstance.FullPath, out var runningProjects))
                             {
-                                foreach (var runningProject in runningProjects)
-                                {
-                                    if (!updates.TryGetValue(runningProject, out var updatesPerRunningProject))
-                                    {
-                                        updates.Add(runningProject, updatesPerRunningProject = []);
-                                    }
-
-                                    updatesPerRunningProject.Add((file.FilePath, file.StaticWebAssetPath, containingProjectNode.GetAssemblyName(), containingProjectNode == runningProject.ProjectNode));
-                                }
+                                continue;
                             }
+
+                            string filePath;
+                            string relativeUrl;
+
+                            if (isScopedCss)
+                            {
+                                // Razor class library may be referenced by application that does not have static assets:
+                                if (!HasScopedCssTargets(applicationProjectInstance))
+                                {
+                                    continue;
+                                }
+
+                                projectInstancesToRegenerate.Add(applicationProjectInstance);
+
+                                var bundleFileName = StaticWebAsset.GetScopedCssBundleFileName(
+                                    applicationProjectFilePath: applicationProjectInstance.FullPath,
+                                    containingProjectFilePath: containingProjectNode.ProjectInstance.FullPath);
+
+                                if (!manifests.TryGetValue(applicationProjectInstance.GetId(), out var manifest))
+                                {
+                                    // Shouldn't happen.
+                                    Logger.LogWarning("[{Project}] Static web asset manifest not found.", containingProjectNode.GetDisplayName());
+                                    continue;
+                                }
+
+                                if (!manifest.TryGetBundleFilePath(bundleFileName, out var bundleFilePath))
+                                {
+                                    // Shouldn't happen.
+                                    Logger.LogWarning("[{Project}] Scoped CSS bundle file '{BundleFile}' not found.", containingProjectNode.GetDisplayName(), bundleFileName);
+                                    continue;
+                                }
+
+                                filePath = bundleFilePath;
+                                relativeUrl = bundleFileName;
+                            }
+                            else
+                            {
+                                Debug.Assert(file.StaticWebAssetRelativeUrl != null);
+                                filePath = file.FilePath;
+                                relativeUrl = file.StaticWebAssetRelativeUrl;
+                            }
+
+                            if (!assets.TryGetValue(applicationProjectInstance, out var applicationAssets))
+                            {
+                                applicationAssets = [];
+                                assets.Add(applicationProjectInstance, applicationAssets);
+                            }
+                            else if (applicationAssets.ContainsKey(filePath))
+                            {
+                                // asset already being updated in this application project:
+                                continue;
+                            }
+
+                            applicationAssets.Add(filePath, new StaticWebAsset(
+                                filePath,
+                                StaticWebAsset.WebRoot + "/" + relativeUrl,
+                                containingProjectNode.GetAssemblyName(),
+                                isApplicationProject: containingProjectNode.ProjectInstance == applicationProjectInstance));
                         }
                     }
                 }
             }
 
-            if (updates.Count == 0)
+            if (assets.Count == 0)
             {
-                return allFilesHandled;
+                return;
             }
 
-            var tasks = updates.Select(async entry =>
+            HashSet<ProjectInstance>? failedApplicationProjectInstances = null; 
+            if (projectInstancesToRegenerate.Count > 0)
             {
-                var (runningProject, assets) = entry;
-                using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedCancellationToken, cancellationToken);
-                await runningProject.Clients.ApplyStaticAssetUpdatesAsync(assets, processCommunicationCancellationSource.Token);
+                var buildReporter = new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions);
+
+                // Note: MSBuild only allows one build at a time in a process.
+                foreach (var projectInstance in projectInstancesToRegenerate)
+                {
+                    Logger.LogDebug("[{Project}] Regenerating scoped CSS bundle.", projectInstance.GetDisplayName());
+
+                    using var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "ScopedCss");
+
+                    // Deep copy so that we don't pollute the project graph:
+                    if (!projectInstance.DeepCopy().Build(s_targets, loggers))
+                    {
+                        loggers.ReportOutput();
+
+                        failedApplicationProjectInstances ??= [];
+                        failedApplicationProjectInstances.Add(projectInstance);
+                    }
+                }
+            }
+
+            var tasks = assets.Select(async entry =>
+            {
+                var (applicationProjectInstance, instanceAssets) = entry;
+
+                if (failedApplicationProjectInstances?.Contains(applicationProjectInstance) == true)
+                {
+                    return;
+                }
+
+                if (!TryGetRunningProject(applicationProjectInstance.FullPath, out var runningProjects))
+                {
+                    return;
+                }
+
+                foreach (var runningProject in runningProjects)
+                {
+                    using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedCancellationToken, cancellationToken);
+                    await runningProject.Clients.ApplyStaticAssetUpdatesAsync(instanceAssets.Values, processCommunicationCancellationSource.Token);
+                }
             });
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            _logger.Log(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
-
-            return allFilesHandled;
+            Logger.Log(MessageDescriptor.StaticAssetsReloaded);
         }
 
         /// <summary>

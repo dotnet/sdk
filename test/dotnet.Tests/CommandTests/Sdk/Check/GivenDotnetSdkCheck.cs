@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         public GivenDotnetSdkCheck(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            fakeReleasesPath = Path.Combine(_testAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
+            fakeReleasesPath = Path.Combine(TestAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
         }
 
         [Theory]
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         public void ItUsesConfigFile()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
-            var dotnetRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = TestAssetsManager.CreateTestDirectory().Path;
             var bundles = GetFakeEnvironmentInfo(new[] { "1.0.10", "2.1.809", "3.1.100", "5.0.100" }, new[] { "1.1.4", "2.1.8", "3.1.0", "3.1.3", "5.0.0" });
             var replacementString = "Mock command output";
             var configFileContent = JsonSerializer.Serialize(new SdkCheckConfig() { CommandOutputReplacementString = replacementString });
@@ -205,6 +205,32 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
 
             _reporter.Lines.Count().Should().Be(3);
             _reporter.Lines.Should().Contain(replacementString);
+        }
+
+        [Fact]
+        public void WhenSdkHasNoReleasesJsonItShowsVersionCheckUnavailable()
+        {
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
+            // Install SDK 99.0.100 which doesn't have releases.json in the test assets
+            var bundles = GetFakeEnvironmentInfo(new[] { "3.1.100", "5.0.100", "99.0.100" }, new[] { "3.1.0", "5.0.0" });
+
+            // This should not throw even though 99.0 doesn't have releases.json
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+
+            // Verify all SDKs are shown
+            foreach (var version in bundles.SdkInfo.Select(b => b.Version.ToString()))
+            {
+                string.Join(' ', _reporter.Lines)
+                    .Should()
+                    .Contain(version);
+            }
+
+            // The SDK without releases should show version check failure
+            string.Join(' ', _reporter.Lines)
+                .Should()
+                .Contain("99.0.100")
+                .And
+                .Contain(CliCommandStrings.VersionCheckFailure);
         }
 
         private NetEnvironmentInfo GetFakeEnvironmentInfo(IEnumerable<string> sdkVersions, IEnumerable<string> runtimeVersions)
