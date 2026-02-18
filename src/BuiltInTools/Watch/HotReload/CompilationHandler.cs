@@ -543,7 +543,7 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
+                    ReportDiagnostic(diagnostic, autoPrefix: "");
                 }
             }
 
@@ -571,8 +571,7 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
-                        ReportDiagnostic(diagnostic, descriptor, prefix);
+                        ReportDiagnostic(diagnostic, prefix);
                     }
                 }
             }
@@ -580,32 +579,31 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string autoPrefix = "")
+            void ReportDiagnostic(Diagnostic diagnostic, string autoPrefix)
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                var args = new[] { autoPrefix, display };
-
-                Logger.Log(descriptor, args);
 
                 if (autoPrefix != "")
                 {
+                    Logger.Log(MessageDescriptor.ApplyUpdate_AutoVerbose, autoPrefix, display);
                     errorsToDisplayInApp.Add(MessageDescriptor.RestartingApplicationToApplyChanges.GetMessage());
                 }
-                else if (descriptor.Level != LogLevel.None)
+                else
                 {
-                    errorsToDisplayInApp.Add(descriptor.GetMessage(args));
+                    var descriptor = GetMessageDescriptor(diagnostic);
+                    Logger.Log(descriptor, display);
+
+                    if (descriptor.Level != LogLevel.None)
+                    {
+                        errorsToDisplayInApp.Add(descriptor.GetMessage(display));
+                    }
                 }
             }
 
             // Use the default severity of the diagnostic as it conveys impact on Hot Reload
             // (ignore warnings as errors and other severity configuration).
-            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
+            static MessageDescriptor<string> GetMessageDescriptor(Diagnostic diagnostic)
             {
-                if (verbose)
-                {
-                    return MessageDescriptor.ApplyUpdate_Verbose;
-                }
-
                 if (diagnostic.Id == "ENC0118")
                 {
                     // Changing '<entry-point>' might not have any effect until the application is restarted.
