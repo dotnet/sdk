@@ -250,13 +250,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
-            // Set environment variables for MSBuild.
-            foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
-            {
-                savedEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
-                Environment.SetEnvironmentVariable(key, value);
-            }
-
             // Set environment variables.
             foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
             {
