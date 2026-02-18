@@ -752,7 +752,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 var extension = parts[0].Trim();
                 var itemType = parts[1].Trim();
 
-                if (!extension.StartsWith(".", StringComparison.Ordinal) || extension.Length < 2)
+                if (extension is not ['.', _, ..])
                 {
                     reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, extension, pair));
                     continue;
