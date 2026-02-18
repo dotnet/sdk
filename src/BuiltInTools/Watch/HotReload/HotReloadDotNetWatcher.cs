@@ -4,9 +4,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -89,7 +86,7 @@ namespace Microsoft.DotNet.Watch
 
                 try
                 {
-                    var buildSucceeded = await BuildProjectsAsync(_context.RootProjects, _context.BuildArguments, iterationCancellationToken);
+                    var buildSucceeded = await BuildProjectsAsync(_context.RootProjects, iterationCancellationToken);
                     if (!buildSucceeded)
                     {
                         continue;
@@ -247,7 +244,7 @@ namespace Microsoft.DotNet.Watch
                                 fileWatcher.SuppressEvents = true;
                                 try
                                 {
-                                    var success = await BuildProjectsAsync([.. updates.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)], _context.BuildArguments, iterationCancellationToken);
+                                    var success = await BuildProjectsAsync([.. updates.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)], iterationCancellationToken);
                                     if (success)
                                     {
                                         break;
@@ -910,77 +907,43 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private async Task<bool> BuildProjectsAsync(ImmutableArray<ProjectRepresentation> projects, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
+        // internal for testing
+        internal async Task<bool> BuildProjectsAsync(ImmutableArray<ProjectRepresentation> projects, CancellationToken cancellationToken)
         {
             Debug.Assert(projects.Any());
 
-            List<OutputLine>? capturedOutput = _context.EnvironmentOptions.TestFlags != TestFlags.None ? [] : null;
-            string? solutionFile = null;
-            try
+            if (projects is [var singleProject])
             {
-                // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
-                // does not work with single-file apps
-                if (projects is not [var project])
-                {
-                    solutionFile = Path.Combine(Path.GetTempFileName() + ".slnx");
-
-                    var solutionElement = new XElement("Solution");
-
-                    foreach (var p in projects)
-                    {
-                        if (p.PhysicalPath != null)
-                        {
-                            solutionElement.Add(new XElement("Project", new XAttribute("Path", p.PhysicalPath)));
-                        }
-                        else
-                        {
-                            _context.BuildLogger.LogError("File-based apps are not supported: '{Path}'", p.EntryPointFilePath);
-                        }
-                    }
-
-                    var doc = new XDocument(solutionElement);
-                    doc.Save(solutionFile);
-
-                    project = new ProjectRepresentation(projectPath: solutionFile, entryPointFilePath: null);
-                }
-
-                var processSpec = new ProcessSpec
-                {
-                    Executable = _context.EnvironmentOptions.MuxerPath,
-                    WorkingDirectory = project.GetContainingDirectory(),
-                    IsUserApplication = false,
-
-                    // Capture output if running in a test environment.
-                    // If the output is not captured dotnet build will show live build progress.
-                    OnOutput = capturedOutput != null
-                        ? line =>
-                        {
-                            lock (capturedOutput)
-                            {
-                                capturedOutput.Add(line);
-                            }
-                        }
-                    : null,
-
-                    // pass user-specified build arguments last to override defaults:
-                    Arguments = ["build", project.ProjectOrEntryPointFilePath, .. buildArguments]
-                };
-
-                _context.BuildLogger.Log(MessageDescriptor.Building, project.ProjectOrEntryPointFilePath);
-
-                var success = await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken) == 0;
-
-                if (capturedOutput != null)
-                {
-                    _context.BuildLogger.Log(success ? MessageDescriptor.BuildSucceeded : MessageDescriptor.BuildFailed, project.ProjectOrEntryPointFilePath);
-                    BuildOutput.ReportBuildOutput(_context.BuildLogger, capturedOutput, success);
-                }
-
-                return success;
+                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, cancellationToken);
             }
-            finally
+
+            // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
+
+            var success = true;
+            var projectPaths = projects.Where(p => p.PhysicalPath != null).Select(p => p.PhysicalPath!).ToArray();
+
+            if (projectPaths is [var singleProjectPath])
             {
-                if (solutionFile != null)
+                success |= await BuildFileOrProjectOrSolutionAsync(singleProjectPath, cancellationToken);
+            }
+            else if (projectPaths is not [])
+            {
+                var solutionFile = Path.Combine(Path.GetTempFileName() + ".slnx");
+                var solutionElement = new XElement("Solution");
+
+                foreach (var projectPath in projectPaths)
+                {
+                    solutionElement.Add(new XElement("Project", new XAttribute("Path", projectPath)));
+                }
+
+                var doc = new XDocument(solutionElement);
+                doc.Save(solutionFile);
+
+                try
+                {
+                    success |= await BuildFileOrProjectOrSolutionAsync(solutionFile, cancellationToken);
+                }
+                finally
                 {
                     try
                     {
@@ -992,6 +955,54 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
             }
+
+            // To maximize parallelism of building dependencies, build file-based projects after all physical projects:
+            foreach (var file in projects.Where(p => p.EntryPointFilePath != null).Select(p => p.EntryPointFilePath!))
+            {
+                success |= await BuildFileOrProjectOrSolutionAsync(file, cancellationToken);
+            }
+
+            return success;
+        }
+
+        private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, CancellationToken cancellationToken)
+        {
+            List<OutputLine>? capturedOutput = _context.EnvironmentOptions.TestFlags != TestFlags.None ? [] : null;
+            var processSpec = new ProcessSpec
+            {
+                Executable = _context.EnvironmentOptions.MuxerPath,
+                WorkingDirectory = Path.GetDirectoryName(path),
+                IsUserApplication = false,
+
+                // Capture output if running in a test environment.
+                // If the output is not captured dotnet build will show live build progress.
+                OnOutput = capturedOutput != null
+                    ? line =>
+                    {
+                        lock (capturedOutput)
+                        {
+                            capturedOutput.Add(line);
+                        }
+                    }
+                    : null,
+
+                // pass user-specified build arguments last to override defaults:
+                Arguments = ["build", path, .. _context.BuildArguments]
+            };
+
+            _context.BuildLogger.Log(MessageDescriptor.Building, path);
+
+            var success = await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken) == 0;
+
+            if (capturedOutput != null)
+            {
+                // To avoid multiple status messages, only log the status if the output of `dotnet build` is not being streamed to the console:
+                _context.BuildLogger.Log(success ? MessageDescriptor.BuildSucceeded : MessageDescriptor.BuildFailed, path);
+
+                BuildOutput.ReportBuildOutput(_context.BuildLogger, capturedOutput, success);
+            }
+
+            return success;
         }
 
         private string GetRelativeFilePath(string path)

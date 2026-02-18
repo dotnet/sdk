@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ProcessRunner(TimeSpan processCleanupTimeout)
+    internal class ProcessRunner(TimeSpan processCleanupTimeout)
     {
         private sealed class ProcessState(Process process) : IDisposable
         {
@@ -35,8 +35,9 @@ namespace Microsoft.DotNet.Watch
 
         /// <summary>
         /// Launches a process.
+        /// Virutal for testing.
         /// </summary>
-        public async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+        public virtual async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
