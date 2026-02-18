@@ -291,6 +291,7 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableAotAnalyzer = true
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
+                build_property.EnableUnsafeAnalyzer ={" "}
                 build_property.IncludeAllContentForSelfExtract ={" "}
                 build_property.VerifyReferenceTrimCompatibility ={" "}
                 build_property.VerifyReferenceAotCompatibility ={" "}
