@@ -6,10 +6,11 @@
     <VersionMajor>11</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionFeature>00</VersionFeature>
+    <VersionSDKMinorPatch>0</VersionSDKMinorPatch>
+    <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
 
@@ -44,13 +45,6 @@
     <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
     <VersionFeature100ForWorkloads>$(VersionFeature100)</VersionFeature100ForWorkloads>
   </PropertyGroup>
-
-  <PropertyGroup Label="Restore feeds">
-    <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://ci.dot.net/public/</DotNetAssetRootUrl>
-    <DotNetPrivateAssetRootUrl Condition="'$(DotNetPrivateAssetRootUrl)'==''">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotNetPrivateAssetRootUrl>
-  </PropertyGroup>
-
   <PropertyGroup Label="Production dependencies">
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftApplicationInsightsPackageVersion>2.23.0</MicrosoftApplicationInsightsPackageVersion>

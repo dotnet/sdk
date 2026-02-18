@@ -67,55 +67,21 @@ namespace Microsoft.NET.TestFramework
         /// <returns>The full path to the matching artifact.</returns>
         public static string FindSdkAcquisitionArtifact(string filePattern)
         {
-            if (!FindOptionalSdkAcquisitionArtifact(filePattern, [], out string? artifactPath))
-            {
-                throw new InvalidOperationException(
-                    $"No files matching '{filePattern}' found in '{Current.ShippingPackagesDirectory}'.");
-            }
-            return artifactPath!;
-        }
-
-        /// <summary>
-        /// Finds an optional SDK acquisition artifact matching the pattern. Returns false if no artifacts
-        /// exist (e.g., platform doesn't produce this artifact type). Throws if multiple artifacts match
-        /// after filtering (unexpected configuration error).
-        /// </summary>
-        /// <param name="filePattern">The file pattern to search for (e.g., "dotnet-sdk-*.pkg").</param>
-        /// <param name="excludeSubstrings">Substrings to exclude from filenames (e.g., "-internal", "-newkey").</param>
-        /// <param name="artifactPath">The full path to the matching artifact, or null if not found.</param>
-        /// <returns>True if exactly one matching artifact was found; false if no artifacts exist.</returns>
-        public static bool FindOptionalSdkAcquisitionArtifact(string filePattern, string[] excludeSubstrings, out string? artifactPath)
-        {
             string? shippingDir = Current.ShippingPackagesDirectory;
-            if (string.IsNullOrEmpty(shippingDir) || !Directory.Exists(shippingDir))
+            if (string.IsNullOrEmpty(shippingDir))
             {
-                throw new InvalidOperationException($"ShippingPackagesDirectory '{shippingDir}' does not exist.");
+                throw new InvalidOperationException("ShippingPackagesDirectory must be set in the current TestContext before calling FindSdkAcquisitionArtifact.");
             }
 
             var files = Directory.GetFiles(shippingDir, filePattern);
-            if (files.Length == 0)
-            {
-                artifactPath = null;
-                return false;
-            }
-
-            var filteredFiles = files.Where(f =>
-            {
-                var fileName = Path.GetFileNameWithoutExtension(f);
-                return !excludeSubstrings.Any(suffix => fileName.Contains(suffix));
-            }).ToArray();
-
-            if (filteredFiles.Length != 1)
+            if (files.Length != 1)
             {
                 throw new InvalidOperationException(
-                    $"Expected 1 {filePattern} file after filtering. Found: [{string.Join(", ", files.Select(Path.GetFileName))}], filtered: [{string.Join(", ", filteredFiles.Select(Path.GetFileName))}]");
+                    $"Expected exactly 1 file matching '{filePattern}' in {shippingDir}, but found {files.Length}.");
             }
 
-            artifactPath = filteredFiles[0];
-            return true;
+            return files[0];
         }
-
-        public string? SdkVersion { get; set; }
 
         private ToolsetInfo? _toolsetUnderTest;
 
@@ -143,9 +109,7 @@ namespace Microsoft.NET.TestFramework
             {
                 if (_current == null)
                 {
-                    //  Initialize test context in cases where it hasn't been initialized via the entry point
-                    //  (ie when using test explorer or another runner)
-                    Initialize(TestCommandLine.Parse(Array.Empty<string>()));
+                    Initialize();
                 }
                 return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
             }
@@ -186,16 +150,11 @@ namespace Microsoft.NET.TestFramework
         }
 
 
-        public static void Initialize(TestCommandLine commandLine)
+        public static void Initialize()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
-
-            foreach (var (name, value) in commandLine.EnvironmentVariables)
-            {
-                Environment.SetEnvironmentVariable(name, value);
-            }
 
             //  Reset this environment variable so that if the dotnet under test is different than the
             //  one running the tests, it won't interfere
@@ -210,26 +169,17 @@ namespace Microsoft.NET.TestFramework
                 ?? (!string.IsNullOrEmpty(envTestAssetsDir) ? envTestAssetsDir : null)
                 ?? FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
 
-            string? repoRoot = null;
 #if DEBUG
             string repoConfiguration = "Debug";
 #else
             string repoConfiguration = "Release";
 #endif
 
-            if (commandLine.SDKRepoPath != null)
-            {
-                repoRoot = commandLine.SDKRepoPath;
-            }
-            else if (!commandLine.NoRepoInference)
-            {
-                repoRoot = GetRepoRoot();
-            }
+            string? repoRoot = GetRepoRoot();
 
             string? envTestExecDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
             testContext.TestExecutionDirectory =
-                commandLine.TestExecutionDirectory
-                ?? (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
+                (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
                 ?? Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory)!, "tmp", repoConfiguration, "testing");
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);
@@ -283,12 +233,7 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            if (commandLine.SdkVersion != null)
-            {
-                testContext.SdkVersion = commandLine.SdkVersion;
-            }
-
-            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
+            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 
             //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
             //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
@@ -362,24 +307,6 @@ namespace Microsoft.NET.TestFramework
                     }
                 }
                 currentPath = parent.FullName;
-            }
-        }
-
-        public void WriteGlobalJson(string path)
-        {
-            WriteGlobalJson(path, SdkVersion);
-        }
-
-        public static void WriteGlobalJson(string path, string? sdkVersion)
-        {
-            if (!string.IsNullOrEmpty(sdkVersion))
-            {
-                string globalJsonPath = Path.Combine(path, "global.json");
-                File.WriteAllText(globalJsonPath, @"{
-  ""sdk"": {
-    ""version"": """ + sdkVersion + @"""
-  }
-}");
             }
         }
 
