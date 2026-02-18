@@ -101,9 +101,23 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private static readonly Lazy<SdkTestContext> _current = new(() => Initialize());
+        private static SdkTestContext? _current;
 
-        public static SdkTestContext Current => _current.Value;
+        public static SdkTestContext Current
+        {
+            get
+            {
+                if (_current == null)
+                {
+                    Initialize();
+                }
+                return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
+            }
+            set
+            {
+                _current = value;
+            }
+        }
 
         public const string LatestRuntimePatchForNetCoreApp2_0 = "2.0.9";
 
@@ -136,7 +150,7 @@ namespace Microsoft.NET.TestFramework
         }
 
 
-        public static SdkTestContext Initialize()
+        public static void Initialize()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
@@ -221,6 +235,10 @@ namespace Microsoft.NET.TestFramework
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 
+            //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
+            //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
+            Current = testContext;
+
             //  Set up test hooks for in-process tests
             Environment.SetEnvironmentVariable(
                 Constants.MSBUILD_EXE_PATH,
@@ -234,8 +252,6 @@ namespace Microsoft.NET.TestFramework
             MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
                 testContext.ToolsetUnderTest.SdkFolderUnderTest;
 #endif
-
-            return testContext;
         }
 
         public static string? GetRepoRoot()
