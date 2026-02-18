@@ -29,6 +29,9 @@
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet.Tests" />
     <InternalsVisibleTo Include="Microsoft.DotNet.HotReload.Watch" />
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" Key="$(MicrosoftSharedPublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Cli" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Cli.UnitTests" />
   </ItemGroup>
 
   <Import Project="..\Cli\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
