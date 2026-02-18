@@ -132,13 +132,13 @@ stages:
 
     - template: /eng/build-pr.yml
       parameters:
-        agentOs: Ubuntu_24_04
+        agentOs: Ubuntu_22_04
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'ubuntu-24.04'
+            vmImage: 'ubuntu-22.04'
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2404.amd64
+            demands: ImageOverride -equals build.ubuntu.2204.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: ubuntu.2404.amd64.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
