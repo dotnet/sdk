@@ -493,6 +493,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // (another example: we ignore changes to implicit build files imported transitively).
             // Therefore, during up-to-date check, we only check the previously cached list of additional sources,
             // and collect new ones only here after a re-build.
+            // https://github.com/dotnet/sdk/issues/53068
 
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
 

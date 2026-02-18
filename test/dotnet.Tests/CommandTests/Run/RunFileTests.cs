@@ -3413,6 +3413,28 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(utilPath, utilCode);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v3");
+
+        // Adding new file is not detected automatically for perf reasons. https://github.com/dotnet/sdk/issues/53068
+        var util2Path = Path.Join(testInstance.Path, "Util2.cs");
+        File.WriteAllText(util2Path, """
+            using System.Runtime.CompilerServices;
+
+            file class C
+            {
+                [ModuleInitializer]
+                internal static void Initialize()
+                {
+                    Console.WriteLine("Hello from Util2");
+                }
+            }
+            """);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "Hello, v3");
+
+        Build(testInstance, BuildLevel.All, args: ["--no-cache"], expectedOutput: """
+            Hello from Util2
+            Hello, v3
+            """);
     }
 
     [Fact]
@@ -4463,7 +4485,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         if (!optOut)
         {
-            // Adding a default item is not recognized for perf reasons.
+            // Adding a default item is not recognized for perf reasons. https://github.com/dotnet/sdk/issues/53068
             Build(testInstance, BuildLevel.None, expectedOutput: "Resource not found");
             Build(testInstance, BuildLevel.All, args: ["--no-cache"], expectedOutput: "[MyString, TestValue]");
         }
