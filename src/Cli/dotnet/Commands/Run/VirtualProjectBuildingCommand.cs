@@ -496,19 +496,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return false;
             }
 
+            if (EvaluatedDirectives.Any(static d =>
+                    d is CSharpDirective.IncludeOrExclude { Kind: CSharpDirective.IncludeOrExcludeKind.Include } includeDirective &&
+                    includeDirective.Name.AsSpan().ContainsAny('*', '?')))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is a glob include directive.");
+                return false;
+            }
+
             return true;
         }
 
         void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
         {
-            // We intentionally ignore new additional sources in up-to-date check
-            // to avoid the overhead of MSBuild evaluation every time (even if the app is up to date).
-            // That can lead to missed changes but we are fine with that in rare cases
-            // (another example: we ignore changes to implicit build files imported transitively).
-            // Therefore, during up-to-date check, we only check the previously cached list of additional sources,
-            // and collect new ones only here after a re-build.
-            // https://github.com/dotnet/sdk/issues/53068
-
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
 
             var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);

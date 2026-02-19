@@ -3372,8 +3372,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Combination of <see cref="UpToDate"/> optimization and <c>#:include</c> directive.
     /// </summary>
-    [Fact]
-    public void IncludeDirective_UpToDate()
+    [Theory]
+    [InlineData("*")]
+    [InlineData("$(_Star)")]
+    [InlineData("Util?")]
+    public void IncludeDirective_UpToDate_Glob(string glob)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
@@ -3387,7 +3390,73 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
-            #:include *.cs
+            #:include {glob}.cs
+            #:property _Star=*
+            {s_programDependingOnUtil}
+            """);
+
+        var utilPath = Path.Join(testInstance.Path, "Util1.cs");
+        var utilCode = s_util;
+        File.WriteAllText(utilPath, utilCode);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var expectedOutput = "Hello, String from Util";
+
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+
+        utilCode = utilCode.Replace("String from Util", "v2");
+        File.WriteAllText(utilPath, utilCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v2");
+
+        utilCode = utilCode.Replace("v2", "v3");
+        File.WriteAllText(utilPath, utilCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v3");
+
+        var util2Path = Path.Join(testInstance.Path, "Util2.cs");
+        File.WriteAllText(util2Path, """
+            using System.Runtime.CompilerServices;
+
+            file class C
+            {
+                [ModuleInitializer]
+                internal static void Initialize()
+                {
+                    Console.WriteLine("Hello from Util2");
+                }
+            }
+            """);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: """
+            Hello from Util2
+            Hello, v3
+            """);
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate"/> optimization and <c>#:include</c> directive.
+    /// </summary>
+    [Fact]
+    public void IncludeDirective_UpToDate_NoGlob()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, $"""
+            #:include Util.cs
             {s_programDependingOnUtil}
             """);
 
@@ -3414,7 +3483,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v3");
 
-        // Adding new file is not detected automatically for perf reasons. https://github.com/dotnet/sdk/issues/53068
         var util2Path = Path.Join(testInstance.Path, "Util2.cs");
         File.WriteAllText(util2Path, """
             using System.Runtime.CompilerServices;
@@ -3431,10 +3499,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         Build(testInstance, BuildLevel.None, expectedOutput: "Hello, v3");
 
-        Build(testInstance, BuildLevel.All, args: ["--no-cache"], expectedOutput: """
-            Hello from Util2
-            Hello, v3
-            """);
+        Build(testInstance, BuildLevel.All, args: ["--no-cache"], expectedOutput: "Hello, v3");
     }
 
     /// <summary>
@@ -4560,7 +4625,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         if (!optOut)
         {
-            // Adding a default item is not recognized for perf reasons. https://github.com/dotnet/sdk/issues/53068
+            // Adding a default item is currently not recognized (https://github.com/dotnet/sdk/issues/50912).
             Build(testInstance, BuildLevel.None, expectedOutput: "Resource not found");
             Build(testInstance, BuildLevel.All, args: ["--no-cache"], expectedOutput: "[MyString, TestValue]");
         }
