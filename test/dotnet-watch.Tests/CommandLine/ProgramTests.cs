@@ -202,10 +202,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-            App.AssertOutputContains("The following Tests are available:");
-            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+            await App.WaitUntilOutputContains("The following Tests are available:");
+            await App.WaitUntilOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
             App.Process.ClearOutput();
 
             // update file:
@@ -213,10 +213,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var content = File.ReadAllText(testFile, Encoding.UTF8);
             File.WriteAllText(testFile, content.Replace("VSTestXunitPassTest", "VSTestXunitPassTest2"), Encoding.UTF8);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-            App.AssertOutputContains("The following Tests are available:");
-            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
+            await App.WaitUntilOutputContains("The following Tests are available:");
+            await App.WaitUntilOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
         }
 
         [Fact]
@@ -239,13 +239,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("build"));
+            await App.WaitUntilOutputContains("warning : The value of property is '123'");
+
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
-
-            App.AssertOutputContains("dotnet watch ⌚ Command 'build' does not support Hot Reload.");
-            App.AssertOutputContains("warning : The value of property is '123'");
         }
 
         [Fact]
@@ -256,13 +256,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("msbuild"));
+            await App.WaitUntilOutputContains("warning : The value of property is '123'");
+
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // TestProperty is not passed to evaluation since msbuild command doesn't include it in forward options:
             Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
-
-            App.AssertOutputContains("dotnet watch ⌚ Command 'msbuild' does not support Hot Reload.");
-            App.AssertOutputContains("warning : The value of property is '123'");
         }
 
         [Fact]
@@ -275,13 +275,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var packagePath = Path.Combine(testAsset.Path, "bin", "Release", "WatchNoDepsApp.1.0.0.nupkg");
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("pack"));
+            await App.WaitUntilOutputContains($"Successfully created package '{packagePath}'");
+
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
-
-            App.AssertOutputContains("dotnet watch ⌚ Command 'pack' does not support Hot Reload.");
-            App.AssertOutputContains($"Successfully created package '{packagePath}'");
         }
 
         [Fact]
@@ -291,15 +291,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
+            
+            await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("publish"));
+            await App.WaitUntilOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
-            
-            App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support Hot Reload.");
-
-            App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
         }
 
         [Fact]
@@ -311,12 +310,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("format"));
+            await App.WaitUntilOutputContains("format --verbosity detailed");
+            await App.WaitUntilOutputContains("Format complete in");
 
-            App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support Hot Reload.");
-
-            App.AssertOutputContains("format --verbosity detailed");
-            App.AssertOutputContains("Format complete in");
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
         }
 
         [Fact]

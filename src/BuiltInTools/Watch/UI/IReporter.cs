@@ -175,6 +175,8 @@ namespace Microsoft.DotNet.Watch
             .Add(AspireServiceFactory.AspireLogComponentName, Emoji.Aspire);
 
         // predefined messages used for testing:
+        public static readonly MessageDescriptor<string> CommandDoesNotSupportHotReload = Create<string>("Command '{0}' does not support Hot Reload.", Emoji.HotReload, LogLevel.Debug);
+        public static readonly MessageDescriptor<None> HotReloadDisabledByCommandLineSwitch = Create("Hot Reload disabled by command line switch.", Emoji.HotReload, LogLevel.Debug);
         public static readonly MessageDescriptor<None> HotReloadSessionStarting = Create("Hot reload session starting.", Emoji.HotReload, LogLevel.None);
         public static readonly MessageDescriptor<None> HotReloadSessionStarted = Create("Hot reload session started.", Emoji.HotReload, LogLevel.Debug);
         public static readonly MessageDescriptor<int> ProjectsRebuilt = Create<int>("Projects rebuilt ({0})", Emoji.HotReload, LogLevel.Debug);
