@@ -100,6 +100,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public (BuildLevel Level, CacheInfo? Cache) LastBuild { get; private set; }
 
     /// <summary>
+    /// Filled during <see cref="Execute"/>.
+    /// </summary>
+    public RunProperties? LastRunProperties { get; private set; }
+
+    /// <summary>
     /// If <see langword="true"/>, no build markers are written
     /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
     /// Also skips automatic cleanup.
@@ -319,17 +324,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     exitCode = 1;
                 }
 
-                if (exitCode == 0 && !msbuildGet && cache is not null)
+                if (exitCode == 0 && !msbuildGet)
                 {
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
-                    cache.CurrentEntry.Run = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
+                    LastRunProperties = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
                         ? runProperties
                         : null;
 
-                    if (CanSaveCache(buildRequest.ProjectInstance))
+                    if (cache is not null && CanSaveCache(buildRequest.ProjectInstance))
                     {
+                        cache.CurrentEntry.Run = LastRunProperties;
+
                         CacheCscArguments(cache, buildResult);
                         CollectAdditionalSources(cache, buildRequest.ProjectInstance);
 

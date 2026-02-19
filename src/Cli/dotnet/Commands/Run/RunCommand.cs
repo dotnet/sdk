@@ -364,7 +364,7 @@ public class RunCommand
             projectBuilder = CreateProjectBuilder();
             buildResult = projectBuilder.Execute();
             projectFactory = CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
-            cachedRunProperties = projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
+            cachedRunProperties = projectBuilder.LastRunProperties ?? projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
