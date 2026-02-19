@@ -30,13 +30,15 @@ internal class InstallExecutor
     /// <param name="component">The component type (SDK, Runtime, ASPNETCore, WindowsDesktop).</param>
     /// <param name="manifestPath">Optional manifest path for tracking installations.</param>
     /// <param name="channelVersionResolver">The resolver to use for version resolution.</param>
+    /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
     /// <returns>The resolved install request with version information.</returns>
     public static ResolvedInstallRequest CreateAndResolveRequest(
         string installPath,
         string channel,
         InstallComponent component,
         string? manifestPath,
-        ChannelVersionResolver channelVersionResolver)
+        ChannelVersionResolver channelVersionResolver,
+        bool requireMuxerUpdate = false)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -46,7 +48,8 @@ internal class InstallExecutor
             component,
             new InstallRequestOptions
             {
-                ManifestPath = manifestPath
+                ManifestPath = manifestPath,
+                RequireMuxerUpdate = requireMuxerUpdate
             });
 
         var resolvedVersion = channelVersionResolver.Resolve(request);
@@ -90,6 +93,7 @@ internal class InstallExecutor
     /// <param name="componentDescription">Description of the component for display.</param>
     /// <param name="manifestPath">Optional manifest path.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
     /// <returns>True if all installations succeeded, false if any failed.</returns>
     public static bool ExecuteAdditionalInstalls(
         IEnumerable<string> additionalVersions,
@@ -97,7 +101,8 @@ internal class InstallExecutor
         InstallComponent component,
         string componentDescription,
         string? manifestPath,
-        bool noProgress)
+        bool noProgress,
+        bool requireMuxerUpdate = false)
     {
         bool allSucceeded = true;
 
@@ -109,7 +114,8 @@ internal class InstallExecutor
                 component,
                 new InstallRequestOptions
                 {
-                    ManifestPath = manifestPath
+                    ManifestPath = manifestPath,
+                    RequireMuxerUpdate = requireMuxerUpdate
                 });
 
             var additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);

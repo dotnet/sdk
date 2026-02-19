@@ -15,6 +15,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
@@ -70,7 +71,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             _interactive,
             _noProgress,
             component,
-            componentDescription);
+            componentDescription,
+            RequireMuxerUpdate: _requireMuxerUpdate);
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
@@ -113,7 +115,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         // No '@' - treat as version/channel for core runtime
-       return (InstallComponent.Runtime, spec, null);
+        return (InstallComponent.Runtime, spec, null);
     }
 
     /// <summary>

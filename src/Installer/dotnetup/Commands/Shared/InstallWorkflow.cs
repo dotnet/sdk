@@ -31,7 +31,8 @@ internal class InstallWorkflow
         InstallComponent Component,
         string ComponentDescription,
         bool? UpdateGlobalJson = null,
-        Func<string, string?>? ResolveChannelFromGlobalJson = null);
+        Func<string, string?>? ResolveChannelFromGlobalJson = null,
+        bool RequireMuxerUpdate = false);
 
     public record InstallWorkflowResult(int ExitCode, InstallExecutor.ResolvedInstallRequest? ResolvedRequest);
 
@@ -125,7 +126,8 @@ internal class InstallWorkflow
             context.Channel,
             context.Options.Component,
             context.Options.ManifestPath,
-            _channelVersionResolver);
+            _channelVersionResolver,
+            context.Options.RequireMuxerUpdate);
     }
 
     private bool ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
@@ -154,7 +156,8 @@ internal class InstallWorkflow
             context.Options.Component,
             context.Options.ComponentDescription,
             context.Options.ManifestPath,
-            context.Options.NoProgress);
+            context.Options.NoProgress,
+            context.Options.RequireMuxerUpdate);
 
         return true;
     }
