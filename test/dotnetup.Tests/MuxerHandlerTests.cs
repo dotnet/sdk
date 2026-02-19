@@ -303,23 +303,40 @@ public class MuxerHandlerTests : IDisposable
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows)] // File locking simulation only works on Windows; actual error handling is cross-platform
-    public void MuxerInUse_RequireMuxerUpdateTrue_FailsFastAtConstruction()
+    public void EnsureMuxerIsWritable_ThrowsWhenMuxerIsLocked()
     {
         // Arrange
         CreateRuntime("8.0.0");
         CreateExistingMuxer("existing-8.0");
 
-        // Lock the existing muxer BEFORE creating the handler
+        // Lock the existing muxer
         using var fileLock = new FileStream(_muxerPath, FileMode.Open, FileAccess.Read, FileShare.None);
 
-        // Act & Assert - should throw at construction time, before any extraction work
-        var ex = Assert.Throws<InvalidOperationException>(() => new MuxerHandler(_testDir, requireMuxerUpdate: true));
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => MuxerHandler.EnsureMuxerIsWritable(_testDir));
         ex.Message.Should().Contain(_muxerPath);
         ex.Message.Should().Contain("in use");
 
         // Existing muxer is untouched
         fileLock.Close();
         File.ReadAllText(_muxerPath).Should().Be("existing-8.0");
+    }
+
+    [PlatformSpecificFact(TestPlatforms.Windows)]
+    public void EnsureMuxerIsWritable_SucceedsWhenMuxerIsNotLocked()
+    {
+        // Arrange
+        CreateExistingMuxer("existing");
+
+        // Act & Assert — should not throw
+        MuxerHandler.EnsureMuxerIsWritable(_testDir);
+    }
+
+    [Fact]
+    public void EnsureMuxerIsWritable_NoOpWhenNoMuxer()
+    {
+        // No muxer exists — should not throw
+        MuxerHandler.EnsureMuxerIsWritable(_testDir);
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows)]

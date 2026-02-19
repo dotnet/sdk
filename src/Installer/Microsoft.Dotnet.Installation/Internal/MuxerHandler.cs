@@ -41,12 +41,32 @@ internal class MuxerHandler
 
         _preExtractionHighestRuntimeVersion = GetLatestRuntimeVersionFromInstallRoot(_targetDir);
         _hadExistingMuxer = File.Exists(_muxerTargetPath);
+    }
 
-        // Fail fast: if the muxer must be updated and the existing one is locked,
-        // throw before the caller does expensive download/extraction work.
-        if (_requireMuxerUpdate && _hadExistingMuxer)
+    /// <summary>
+    /// Checks whether the muxer at the given install root is writable.
+    /// Throws <see cref="InvalidOperationException"/> if it is locked by another process.
+    /// Callers should invoke this while holding the installation-state mutex to
+    /// avoid racing with other processes that modify the same hive.
+    /// </summary>
+    public static void EnsureMuxerIsWritable(string installRoot)
+    {
+        var muxerPath = Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
+        if (!File.Exists(muxerPath))
         {
-            ThrowIfMuxerInUse();
+            return;
+        }
+
+        try
+        {
+            // Probe with FileShare.None to detect sharing/lock violations
+            using var fs = new FileStream(muxerPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (Exception ex) when (IsFileMoveBlockedException(ex))
+        {
+            string reason = GetMoveBlockedReason(ex);
+            throw new InvalidOperationException(
+                $"Cannot update dotnet executable at '{muxerPath}' - {reason}.", ex);
         }
     }
 
@@ -61,25 +81,6 @@ internal class MuxerHandler
     /// Otherwise, it returns a temp path so the muxer can be moved into place after extraction.
     /// </summary>
     public string TempMuxerPath => _hadExistingMuxer ? _tempMuxerPath : _muxerTargetPath;
-
-    /// <summary>
-    /// Checks whether the existing muxer file is locked by another process.
-    /// Throws <see cref="InvalidOperationException"/> if it cannot be moved.
-    /// </summary>
-    private void ThrowIfMuxerInUse()
-    {
-        try
-        {
-            // Probe with FileShare.None to detect sharing/lock violations
-            using var fs = new FileStream(_muxerTargetPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-        }
-        catch (Exception ex) when (IsFileMoveBlockedException(ex))
-        {
-            string reason = GetMoveBlockedReason(ex);
-            throw new InvalidOperationException(
-                $"Cannot update dotnet executable at '{_muxerTargetPath}' - {reason}.", ex);
-        }
-    }
 
     /// <summary>
     /// Set to true by the caller when the muxer entry has been extracted.

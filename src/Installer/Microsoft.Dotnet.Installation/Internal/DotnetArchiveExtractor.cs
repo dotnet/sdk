@@ -21,7 +21,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
-    private readonly MuxerHandler? _muxerHandler;
+    private MuxerHandler? _muxerHandler;
     private string scratchDownloadDirectory;
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -47,13 +47,6 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
             _shouldDisposeDownloader = true;
-        }
-
-        // Create MuxerHandler early so that when requireMuxerUpdate is true,
-        // a locked muxer is detected before the expensive download in Prepare().
-        if (_request.InstallRoot.Path is not null)
-        {
-            _muxerHandler = new MuxerHandler(_request.InstallRoot.Path, _request.Options.RequireMuxerUpdate);
         }
     }
 
@@ -109,6 +102,13 @@ internal class DotnetArchiveExtractor : IDisposable
     private void ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IProgressTask? installTask)
     {
         Directory.CreateDirectory(targetDir);
+
+        // Capture pre-extraction muxer/runtime state right before extraction so
+        // the snapshot is as accurate as possible (caller holds the mutex here).
+        if (_muxerHandler is null && _request.InstallRoot.Path is not null)
+        {
+            _muxerHandler = new MuxerHandler(_request.InstallRoot.Path, _request.Options.RequireMuxerUpdate);
+        }
 
         // Extract everything, redirecting muxer to temp path
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
