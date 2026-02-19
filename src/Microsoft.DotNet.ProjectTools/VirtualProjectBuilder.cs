@@ -468,7 +468,7 @@ internal sealed class VirtualProjectBuilder
             bool usingOnlyDefaultSdk = firstSdkName == defaultSdkName && sdkDirectives.Count() <= 1;
             if (usingOnlyDefaultSdk)
             {
-                writer.WriteLine($"""
+                writer.WriteLine("""
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                     """);
