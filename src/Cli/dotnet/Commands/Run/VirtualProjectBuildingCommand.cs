@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
@@ -122,8 +123,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return field;
         }
 
-        set;
+        set
+        {
+            field = value;
+            EvaluatedDirectives = default;
+        }
     }
+
+    public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -179,13 +186,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (NoCache)
             {
                 cache = ComputeCacheEntry();
-                cache.CurrentEntry.BuildLevel = BuildLevel.All;
+                cache?.CurrentEntry.BuildLevel = BuildLevel.All;
                 LastBuild = (BuildLevel.All, cache);
             }
             else
             {
                 var buildLevel = GetBuildLevel(out cache);
-                cache.CurrentEntry.BuildLevel = buildLevel;
+                cache?.CurrentEntry.BuildLevel = buildLevel;
                 LastBuild = (buildLevel, cache);
 
                 if (buildLevel is BuildLevel.None)
@@ -196,7 +203,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     }
 
                     // No rebuild, can reuse run properties.
-                    cache.CurrentEntry.Run = cache.PreviousEntry?.Run;
+                    cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
 
                     MarkArtifactsFolderUsed();
                     return 0;
@@ -204,6 +211,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (buildLevel is BuildLevel.Csc)
                 {
+                    Debug.Assert(cache is not null);
+
                     MarkBuildStart();
 
                     // Execute CSC.
@@ -320,11 +329,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         ? runProperties
                         : null;
 
-                    if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
-                    {
-                        Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
-                    }
-                    else
+                    if (CanSaveCache(buildRequest.ProjectInstance))
                     {
                         CacheCscArguments(cache, buildResult);
                         CollectAdditionalSources(cache, buildRequest.ProjectInstance);
@@ -422,14 +427,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         void CacheCscArguments(CacheInfo cache, BuildResult result)
         {
-            // We cannot reuse CSC arguments from previous run and skip MSBuild if there are project references
-            // because we cannot easily detect whether any referenced projects have changed.
-            if (Directives.Any(static d => d is CSharpDirective.Project))
-            {
-                Reporter.Verbose.WriteLine("Not saving CSC arguments because there is a project directive.");
-                return;
-            }
-
             if (result.TryGetResultsForTarget(Constants.CoreCompile, out var coreCompileResult) &&
                 coreCompileResult.ResultCode == TargetResultCode.Success &&
                 result.TryGetResultsForTarget(Constants.Build, out var buildResult) &&
@@ -483,6 +480,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     cache.CurrentEntry.AdditionalSources.Add(file);
                 }
             }
+        }
+
+        bool CanSaveCache(ProjectInstance projectInstance)
+        {
+            if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
+            {
+                Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
+                return false;
+            }
+
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Project))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is a project directive.");
+                return false;
+            }
+
+            return true;
         }
 
         void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
@@ -704,14 +718,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     /// <summary>
-    /// Compute current cache entry - we need to do this always:
+    /// Compute current cache entry - we need to do this always (except if we already know we will skip saving the cache):
     /// <list type="bullet">
     /// <item>if we can skip build, we still need to check everything in the cache entry (e.g., implicit build files)</item>
     /// <item>if we have to build, we need to have the cache entry to write it to the success cache file</item>
     /// </list>
     /// </summary>
-    private CacheInfo ComputeCacheEntry()
+    private CacheInfo? ComputeCacheEntry()
     {
+        if (Directives.Any(static d => d is CSharpDirective.Project))
+        {
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
+            return null;
+        }
+
         var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary(StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
         {
             Directives = Directives
@@ -759,13 +779,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private bool NeedsToBuild(out CacheInfo cache)
+    private bool NeedsToBuild([NotNullWhen(returnValue: false)] out CacheInfo? cache)
     {
         cache = ComputeCacheEntry();
 
-        if (Directives.Any(static d => d is CSharpDirective.Project))
+        if (cache is null)
         {
-            Reporter.Verbose.WriteLine("Building because there are project directives.");
             return true;
         }
 
@@ -980,12 +999,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private BuildLevel GetBuildLevel(out CacheInfo cache)
+    private BuildLevel GetBuildLevel(out CacheInfo? cache)
     {
         if (!NeedsToBuild(out cache))
         {
             Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);
             return BuildLevel.None;
+        }
+
+        if (cache is null)
+        {
+            return BuildLevel.All;
         }
 
         if (cache.CanUseCscViaPreviousArguments)
@@ -1116,9 +1140,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             projectCollection,
             ThrowingReporter,
             out var project,
-            out _,
+            out var evaluatedDirectives,
             Directives,
             addGlobalProperties);
+
+        EvaluatedDirectives = evaluatedDirectives;
 
         return project;
     }

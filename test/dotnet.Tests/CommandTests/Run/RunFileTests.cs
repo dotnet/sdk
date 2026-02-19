@@ -3437,6 +3437,81 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
     }
 
+    /// <summary>
+    /// Combination of <see cref="UpToDate_ProjectReferences"/> test and <c>#:include</c> directive.
+    /// </summary>
+    [Fact]
+    public void IncludeDirective_UpToDate_ProjectReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libPath = Path.Join(libDir, "Lib.cs");
+        var libCode = """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Lib(v1)";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var utilPath = Path.Join(appDir, "Util.cs");
+        var utilCode = """
+            #:project ../Lib
+            class UtilClass
+            {
+                public static string GetMessage() => "Util(v1) " + Lib.LibClass.GetMessage();
+            }
+            """;
+        File.WriteAllText(utilPath, utilCode);
+
+        var programPath = Path.Join(appDir, "Program.cs");
+        var programCode = """
+            #:include Util.cs
+            Console.WriteLine("Program(v1) " + UtilClass.GetMessage());
+            """;
+        File.WriteAllText(programPath, programCode);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var expectedOutput = "Program(v1) Util(v1) Lib(v1)";
+
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        expectedOutput = "Program(v1) Util(v1) Lib(v2)";
+
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
+    }
+
     [Fact]
     public void IncludeDirective_FeatureFlags()
     {

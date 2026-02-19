@@ -898,7 +898,18 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath, Sha256Hasher.Hash);
 
-        var directives = projectBuilder.Directives;
+        var directives = projectBuilder.EvaluatedDirectives;
+
+        if (directives.IsDefault)
+        {
+            directives = projectBuilder.Directives;
+        }
+
+        if (directives.IsDefault)
+        {
+            directives = [];
+        }
+
         var sdkCount = RunTelemetry.CountSdks(directives);
         var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
         var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);
