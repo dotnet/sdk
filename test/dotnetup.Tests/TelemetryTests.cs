@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
+using UrlSanitizer = Microsoft.Dotnet.Installation.Internal.UrlSanitizer;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 
