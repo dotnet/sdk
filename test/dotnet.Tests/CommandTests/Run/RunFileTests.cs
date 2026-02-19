@@ -1056,7 +1056,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(programPath, code);
 
-        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+        var tempDir = Directory.CreateTempSubdirectory();
+        var workDir = TestPathUtility.ResolveTempPrefixLink(tempDir.FullName).TrimEnd(Path.DirectorySeparatorChar);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
@@ -1075,6 +1076,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             programFileName: programPath,
             workDir: workDir,
             expectedOutput: GetExpectedOutput("v2", workDir));
+
+        tempDir.Delete();
 
         string GetExpectedOutput(string version, string workDir) => $"""
             {version}
@@ -1105,7 +1108,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(programPath, code);
 
-        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+        var tempDir = Directory.CreateTempSubdirectory();
+        var workDir = TestPathUtility.ResolveTempPrefixLink(tempDir.FullName).TrimEnd(Path.DirectorySeparatorChar);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
@@ -1145,6 +1149,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             programFileName: programPath,
             workDir: workDir,
             expectedOutput: GetExpectedOutput("v2", workDir2));
+
+        tempDir.Delete();
 
         string GetExpectedOutput(string version, string workDir) => $"""
             {version}
