@@ -319,9 +319,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     exitCode = 1;
                 }
 
-                if (exitCode == 0 && !msbuildGet)
+                if (exitCode == 0 && !msbuildGet && cache is not null)
                 {
-                    Debug.Assert(cache != null);
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
