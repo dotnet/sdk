@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -75,6 +76,35 @@ internal static class DotnetupUtilities
         else
         {
             return ".tar.gz"; // Unix-like systems use tar.gz
+        }
+    }
+
+    /// <summary>
+    /// Attempts to find running dotnet processes and returns a formatted string with their PIDs.
+    /// Returns an empty string if no processes are found or an error occurs.
+    /// </summary>
+    public static string GetDotnetProcessPidInfo()
+    {
+        try
+        {
+            var processes = Process.GetProcessesByName("dotnet");
+            if (processes.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            var pids = new int[processes.Length];
+            for (int i = 0; i < processes.Length; i++)
+            {
+                pids[i] = processes[i].Id;
+                processes[i].Dispose();
+            }
+
+            return $" (dotnet process PIDs: {string.Join(", ", pids)})";
+        }
+        catch
+        {
+            return string.Empty;
         }
     }
 }

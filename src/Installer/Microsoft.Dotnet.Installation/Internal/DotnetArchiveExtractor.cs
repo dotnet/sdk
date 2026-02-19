@@ -21,6 +21,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
+    private readonly MuxerHandler? _muxerHandler;
     private string scratchDownloadDirectory;
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -46,6 +47,13 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
             _shouldDisposeDownloader = true;
+        }
+
+        // Create MuxerHandler early so that when requireMuxerUpdate is true,
+        // a locked muxer is detected before the expensive download in Prepare().
+        if (_request.InstallRoot.Path is not null)
+        {
+            _muxerHandler = new MuxerHandler(_request.InstallRoot.Path, _request.Options.RequireMuxerUpdate);
         }
     }
 
@@ -102,22 +110,18 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         Directory.CreateDirectory(targetDir);
 
-        // Set up muxer handling - muxer will be extracted to temp path during main extraction
-        var muxerHandler = new MuxerHandler(targetDir, _request.Options.RequireMuxerUpdate);
-        muxerHandler.RecordPreExtractionState();
-
         // Extract everything, redirecting muxer to temp path
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ExtractTarArchive(archivePath, targetDir, installTask, muxerHandler);
+            ExtractTarArchive(archivePath, targetDir, installTask, _muxerHandler);
         }
         else
         {
-            ExtractZipArchive(archivePath, targetDir, installTask, muxerHandler);
+            ExtractZipArchive(archivePath, targetDir, installTask, _muxerHandler);
         }
 
         // After extraction, decide whether to keep or discard the temp muxer
-        muxerHandler.FinalizeAfterExtraction();
+        _muxerHandler?.FinalizeAfterExtraction();
     }
 
     /// <summary>
@@ -136,7 +140,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
         if (muxerHandler != null && normalizedName == muxerHandler.MuxerEntryName)
         {
-            return muxerHandler.GetMuxerExtractionPath();
+            muxerHandler.MuxerWasExtracted = true;
+            return muxerHandler.TempMuxerPath;
         }
 
         return Path.Combine(targetDir, entryName);

@@ -20,7 +20,6 @@ namespace Microsoft.Dotnet.Installation.Internal;
 internal class MuxerHandler
 {
     private readonly string _targetDir;
-    private readonly string _muxerName;
     private readonly string _muxerTargetPath;
     private readonly string _tempMuxerPath;
     private readonly string _existingMuxerBackupPath;
@@ -28,49 +27,64 @@ internal class MuxerHandler
 
     private ReleaseVersion? _preExtractionHighestRuntimeVersion;
     private bool _hadExistingMuxer;
-    private bool _extractedNewMuxer;
     private bool _movedExistingMuxer;
 
     public MuxerHandler(string targetDir, bool requireMuxerUpdate = false)
     {
         _targetDir = targetDir;
         _requireMuxerUpdate = requireMuxerUpdate;
-        _muxerName = DotnetupUtilities.GetDotnetExeName();
-        _muxerTargetPath = Path.Combine(targetDir, _muxerName);
-        _tempMuxerPath = $"{_muxerTargetPath}.{Guid.NewGuid()}.new";
-        _existingMuxerBackupPath = $"{_muxerTargetPath}.{Guid.NewGuid()}.old";
+        var muxerName = DotnetupUtilities.GetDotnetExeName();
+        _muxerTargetPath = Path.Combine(targetDir, muxerName);
+        var guid = Guid.NewGuid();
+        _tempMuxerPath = $"{_muxerTargetPath}.{guid}.new";
+        _existingMuxerBackupPath = $"{_muxerTargetPath}.{guid}.old";
+
+        _preExtractionHighestRuntimeVersion = GetLatestRuntimeVersionFromInstallRoot(_targetDir);
+        _hadExistingMuxer = File.Exists(_muxerTargetPath);
+
+        // Fail fast: if the muxer must be updated and the existing one is locked,
+        // throw before the caller does expensive download/extraction work.
+        if (_requireMuxerUpdate && _hadExistingMuxer)
+        {
+            ThrowIfMuxerInUse();
+        }
     }
 
     /// <summary>
     /// Gets the muxer entry name to detect during extraction.
     /// </summary>
-    public string MuxerEntryName => _muxerName;
+    public string MuxerEntryName => DotnetupUtilities.GetDotnetExeName();
 
     /// <summary>
     /// Gets the path where the muxer should be extracted to during the main extraction pass.
-    /// This is a temp path - the muxer will be moved to its final location after extraction.
+    /// If there is no existing muxer, this returns the final target path directly.
+    /// Otherwise, it returns a temp path so the muxer can be moved into place after extraction.
     /// </summary>
-    public string TempMuxerPath => _tempMuxerPath;
+    public string TempMuxerPath => _hadExistingMuxer ? _tempMuxerPath : _muxerTargetPath;
 
     /// <summary>
-    /// Records the state before extraction begins.
-    /// Call this before extracting the archive.
+    /// Checks whether the existing muxer file is locked by another process.
+    /// Throws <see cref="InvalidOperationException"/> if it cannot be moved.
     /// </summary>
-    public void RecordPreExtractionState()
+    private void ThrowIfMuxerInUse()
     {
-        _preExtractionHighestRuntimeVersion = GetLatestRuntimeVersionFromInstallRoot(_targetDir);
-        _hadExistingMuxer = File.Exists(_muxerTargetPath);
+        try
+        {
+            // Probe with FileShare.None to detect sharing/lock violations
+            using var fs = new FileStream(_muxerTargetPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (Exception ex) when (IsFileMoveBlockedException(ex))
+        {
+            string reason = GetMoveBlockedReason(ex);
+            throw new InvalidOperationException(
+                $"Cannot update dotnet executable at '{_muxerTargetPath}' - {reason}.", ex);
+        }
     }
 
     /// <summary>
-    /// Called by the extractor when the muxer entry is being extracted.
-    /// Returns the path where the muxer should be written.
+    /// Set to true by the caller when the muxer entry has been extracted.
     /// </summary>
-    public string GetMuxerExtractionPath()
-    {
-        _extractedNewMuxer = true;
-        return _tempMuxerPath;
-    }
+    public bool MuxerWasExtracted { get; set; }
 
     /// <summary>
     /// After extraction completes, determines if the muxer should be updated
@@ -79,7 +93,21 @@ internal class MuxerHandler
     public void FinalizeAfterExtraction()
     {
         // If no muxer was extracted (e.g., WindowsDesktop), nothing to do
-        if (!_extractedNewMuxer || !File.Exists(_tempMuxerPath))
+        if (!MuxerWasExtracted)
+        {
+            return;
+        }
+
+        // If there was no existing muxer, the new muxer was extracted directly
+        // to its final location - nothing more to do.
+        if (!_hadExistingMuxer)
+        {
+            return;
+        }
+
+        // From here on, the muxer was extracted to a temp path and we need to
+        // decide whether to replace the existing one.
+        if (!File.Exists(_tempMuxerPath))
         {
             return;
         }
@@ -224,7 +252,8 @@ internal class MuxerHandler
 
             if (ioEx.HResult == ERROR_SHARING_VIOLATION || ioEx.HResult == ERROR_LOCK_VIOLATION)
             {
-                return "it is currently in use by another process. Close all running .NET applications and try again";
+                string pidInfo = DotnetupUtilities.GetDotnetProcessPidInfo();
+                return $"it is currently in use by another process.{pidInfo} Close all running .NET applications and try again";
             }
 
             return $"an I/O error occurred (HRESULT 0x{ioEx.HResult:X8}): {ioEx.Message}";
@@ -242,4 +271,5 @@ internal class MuxerHandler
 
         return ex.Message;
     }
+
 }
