@@ -41,7 +41,7 @@ public sealed class VirtualProjectBuilder
 
     internal VirtualProjectBuilder(
         string entryPointFileFullPath,
-        string targetFrameworkVersion,
+        string targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null)
     {
@@ -50,16 +50,16 @@ public sealed class VirtualProjectBuilder
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFrameworkVersion);
+        _defaultProperties = GetDefaultProperties(targetFramework);
     }
 
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
         ("OutputType", "Exe"),
-        ("TargetFramework", $"net{targetFrameworkVersion}"),
+        ("TargetFramework", targetFramework),
         ("ImplicitUsings", "enable"),
         ("Nullable", "enable"),
         ("PublishAot", "true"),
@@ -75,6 +75,9 @@ public sealed class VirtualProjectBuilder
 
         return GetTempSubpath(directoryName);
     }
+
+    public static string GetVirtualProjectPath(string entryPointFilePath)
+        => Path.ChangeExtension(entryPointFilePath, ".csproj");
 
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
@@ -162,7 +165,8 @@ public sealed class VirtualProjectBuilder
 
         builder.CreateProjectInstance(
             projectCollection,
-            static (sourceFile, textSpan, message) => throw new InvalidOperationException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}"),
+            static (text, path, textSpan, message) => throw new InvalidOperationException(
+                $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}"),
             out _,
             out var projectRootElement,
             out _);
@@ -218,7 +222,7 @@ public sealed class VirtualProjectBuilder
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
+            var projectFileFullPath = GetVirtualProjectPath(EntryPointFileFullPath);
             var projectFileWriter = new StringWriter();
 
             WriteProjectFile(

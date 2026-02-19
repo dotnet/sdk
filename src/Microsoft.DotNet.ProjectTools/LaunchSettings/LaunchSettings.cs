@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal static class LaunchSettings
+public static class LaunchSettings
 {
     private const string ProfilesKey = "profiles";
     private const string CommandNameKey = "commandName";
@@ -18,12 +18,12 @@ internal static class LaunchSettings
         { ExecutableLaunchProfileParser.CommandName, ExecutableLaunchProfileParser.Instance }
     };
 
-    public static IEnumerable<string> SupportedProfileTypes => s_providers.Keys;
+    internal static IEnumerable<string> SupportedProfileTypes => s_providers.Keys;
 
-    public static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
+    internal static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
         => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
 
-    public static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
+    internal static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
         => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
 
     public static string? TryFindLaunchSettingsFile(string projectOrEntryPointFilePath, string? launchProfile, Action<string, bool> report)
@@ -71,7 +71,7 @@ internal static class LaunchSettings
         return null;
     }
 
-    public static LaunchProfileParseResult ReadProfileSettingsFromFile(string launchSettingsPath, string? profileName = null)
+    internal static LaunchProfileParseResult ReadProfileSettingsFromFile(string launchSettingsPath, string? profileName = null)
     {
         try
         {
