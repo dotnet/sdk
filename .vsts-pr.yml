@@ -15,6 +15,7 @@ pr:
     - CODEOWNERS
     - .vsts-dnup-ci.yml
     - .vsts-dnup-pr.yml
+    - dotnetup.slnf
     - /eng/pipelines/templates/jobs/dotnetup/*
     - src/Installer/*
     - test/dotnetup.Tests/*

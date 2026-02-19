@@ -91,11 +91,69 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("bash")]
+    [InlineData("zsh")]
+    [InlineData("pwsh")]
+    public void Parser_ShouldParseEnvCommandWithValidShell(string shell)
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--shell", shell };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandWithCustomPath()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--shell", "bash", "--dotnet-install-path", "/custom/path" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
     [Fact]
     public void Parser_ShouldHandleVersionOption()
     {
         // Arrange
         var args = new[] { "--version" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandWithShortOptions()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "-s", "bash", "-d", "/custom/path" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandHelp()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--help" };
 
         // Act
         var parseResult = Parser.Parse(args);
