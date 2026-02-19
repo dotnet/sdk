@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            var exclusionSet = ExcludeList == null || Crossgen2Composite ? null : new HashSet<string>(ExcludeList, StringComparer.OrdinalIgnoreCase);
+            var exclusionSet = ExcludeList == null ? null : new HashSet<string>(ExcludeList, StringComparer.OrdinalIgnoreCase);
             var compositeExclusionSet = PublishReadyToRunCompositeExclusions == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeExclusions, StringComparer.OrdinalIgnoreCase);
             var compositeRootSet = PublishReadyToRunCompositeRoots == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeRoots, StringComparer.OrdinalIgnoreCase);
 
@@ -295,10 +295,7 @@ namespace Microsoft.NET.Build.Tasks
                 var compositeR2RImage = Path.Combine(OutputPath, compositeR2RImageRelativePath);
                 var compositeR2RImageFinal = Path.Combine(OutputPath, compositeR2RFinalImageRelativePath);
 
-                TaskItem r2rCompilationEntry = new(MainAssembly)
-                {
-                    ItemSpec = r2rCompositeInputList[0].ItemSpec
-                };
+                TaskItem r2rCompilationEntry = new(MainAssembly);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.CreateCompositeImage, "true");
                 r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
