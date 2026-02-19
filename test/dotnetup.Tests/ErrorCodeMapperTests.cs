@@ -3,7 +3,6 @@
 
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
@@ -22,15 +21,8 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // Details contain the win32 error code for PII safety
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_112", info.Details); // ERROR_DISK_FULL = 112
-        }
-        else
-        {
-            Assert.Equal("ERROR_DISK_FULL", info.Details);
-        }
+        // Details contain the symbolic Win32 error name for PII safety
+        Assert.Equal("ERROR_DISK_FULL", info.Details);
     }
 
     [Fact]
@@ -42,15 +34,8 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("SharingViolation", info.ErrorType);
-        // Details contain the win32 error code
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_32", info.Details); // ERROR_SHARING_VIOLATION = 32
-        }
-        else
-        {
-            Assert.Equal("ERROR_SHARING_VIOLATION", info.Details);
-        }
+        // Details contain the symbolic Win32 error name
+        Assert.Equal("ERROR_SHARING_VIOLATION", info.Details);
     }
 
     [Fact]
@@ -61,15 +46,8 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("PathTooLong", info.ErrorType);
-        // Details contain the win32 error code for PII safety
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_206", info.Details); // ERROR_FILENAME_EXCED_RANGE = 206
-        }
-        else
-        {
-            Assert.Equal("ERROR_FILENAME_EXCED_RANGE", info.Details);
-        }
+        // Details contain the symbolic Win32 error name for PII safety
+        Assert.Equal("ERROR_FILENAME_EXCED_RANGE", info.Details);
     }
 
     [Fact]
@@ -195,15 +173,8 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // Details contain the win32 error code for PII safety
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_112", info.Details); // ERROR_DISK_FULL = 112
-        }
-        else
-        {
-            Assert.Equal("ERROR_DISK_FULL", info.Details);
-        }
+        // Details contain the symbolic Win32 error name for PII safety
+        Assert.Equal("ERROR_DISK_FULL", info.Details);
     }
 
     private static Exception ThrowTestException()
@@ -245,15 +216,8 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("NetworkPathNotFound", info.ErrorType);
-        // Details contain the win32 error code for PII safety
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_53", info.Details); // ERROR_BAD_NETPATH = 53
-        }
-        else
-        {
-            Assert.Equal("ERROR_BAD_NETPATH", info.Details);
-        }
+        // Details contain the symbolic Win32 error name for PII safety
+        Assert.Equal("ERROR_BAD_NETPATH", info.Details);
     }
 
     [Fact]
@@ -266,15 +230,8 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("AlreadyExists", info.ErrorType);
         Assert.Equal(unchecked((int)0x800700B7), info.HResult);
-        // Details contain the win32 error code for PII safety
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Assert.Equal("win32_error_183", info.Details); // ERROR_ALREADY_EXISTS = 183
-        }
-        else
-        {
-            Assert.Equal("ERROR_ALREADY_EXISTS", info.Details);
-        }
+        // Details contain the symbolic Win32 error name for PII safety
+        Assert.Equal("ERROR_ALREADY_EXISTS", info.Details);
     }
 
     // Error category tests
