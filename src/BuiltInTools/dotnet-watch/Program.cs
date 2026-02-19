@@ -325,13 +325,13 @@ namespace Microsoft.DotNet.Watch
         {
             if (mainProjectOptions.Command != "run")
             {
-                logger.LogDebug("Command '{Command}' does not support Hot Reload.", mainProjectOptions.Command);
+                logger.Log(MessageDescriptor.CommandDoesNotSupportHotReload, mainProjectOptions.Command);
                 return false;
             }
 
             if (options.GlobalOptions.NoHotReload)
             {
-                logger.LogDebug("Hot Reload disabled by command line switch.");
+                logger.Log(MessageDescriptor.HotReloadDisabledByCommandLineSwitch);
                 return false;
             }
 
