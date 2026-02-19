@@ -211,4 +211,49 @@ public class ReleaseManifestFilterTests
         Assert.Equal(2, nonComposite.Count);
         Assert.All(nonComposite, f => Assert.DoesNotContain("composite", f));
     }
+
+    // ---- IsApphostPackArchive tests ----
+
+    [Theory]
+    [InlineData("dotnet-apphost-pack-win-x64.zip")]
+    [InlineData("dotnet-apphost-pack-linux-arm64.tar.gz")]
+    [InlineData("dotnet-apphost-pack-linux-musl-x64.tar.gz")]
+    [InlineData("DOTNET-APPHOST-PACK-WIN-X64.ZIP")]
+    public void IsApphostPackArchive_ReturnsTrueForApphostPacks(string fileName)
+    {
+        Assert.True(ReleaseManifest.IsApphostPackArchive(fileName));
+    }
+
+    [Theory]
+    [InlineData("dotnet-runtime-win-x64.zip")]
+    [InlineData("dotnet-runtime-linux-x64.tar.gz")]
+    [InlineData("aspnetcore-runtime-linux-x64.tar.gz")]
+    [InlineData("windowsdesktop-runtime-win-x64.zip")]
+    [InlineData("dotnet-sdk-linux-x64.tar.gz")]
+    public void IsApphostPackArchive_ReturnsFalseForRegularFiles(string fileName)
+    {
+        Assert.False(ReleaseManifest.IsApphostPackArchive(fileName));
+    }
+
+    [Fact]
+    public void ApphostPackFilter_SelectsRuntimeOverApphostPack_WhenBothShareRidAndExtension()
+    {
+        // The .NET Core Runtime component lists both dotnet-apphost-pack and dotnet-runtime files.
+        // Only the runtime archive should be selected.
+        var fileNames = new[]
+        {
+            "dotnet-apphost-pack-win-x64.zip",
+            "dotnet-runtime-win-x64.zip",
+            "dotnet-apphost-pack-linux-x64.tar.gz",
+            "dotnet-runtime-linux-x64.tar.gz",
+        };
+
+        var filtered = fileNames
+            .Where(f => !ReleaseManifest.IsCompositeArchive(f))
+            .Where(f => !ReleaseManifest.IsApphostPackArchive(f))
+            .ToList();
+
+        Assert.Equal(2, filtered.Count);
+        Assert.All(filtered, f => Assert.Contains("dotnet-runtime", f));
+    }
 }
