@@ -29,4 +29,10 @@ internal record InstallRequestOptions()
 {
     // Include options such as the custom feed, manifest path, etc.
     public string? ManifestPath { get; init; }
+
+    /// <summary>
+    /// If true, the installation will fail if the muxer (dotnet executable) cannot be updated.
+    /// If false (default), a warning is displayed but installation continues.
+    /// </summary>
+    public bool RequireMuxerUpdate { get; init; }
 }

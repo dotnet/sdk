@@ -68,7 +68,6 @@ internal class InstallerOrchestratorSingleton
         string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
-        // read write mutex only for manifest?
         using (var finalizeLock = modifyInstallStateMutex())
         {
             if (!finalizeLock.HasHandle)
@@ -93,6 +92,14 @@ internal class InstallerOrchestratorSingleton
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
                 manifestManager.AddInstalledVersion(install);
                 return new InstallResult(install, WasAlreadyInstalled: true);
+            }
+
+            // Fail fast: if the muxer must be updated and it is currently locked,
+            // throw before the expensive download.  The check is inside the mutex
+            // so it does not race with other dotnetup processes.
+            if (installRequest.Options.RequireMuxerUpdate && installRequest.InstallRoot.Path is not null)
+            {
+                MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
             }
         }
 

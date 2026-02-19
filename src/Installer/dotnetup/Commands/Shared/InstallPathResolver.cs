@@ -56,55 +56,40 @@ internal class InstallPathResolver
         out string? error)
     {
         error = null;
-        string? resolvedInstallPath = null;
-        string? installPathFromGlobalJson = null;
-        string pathSource = "default";
+        string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
+            ? globalJsonInfo.SdkPath
+            : null;
 
-        if (globalJsonInfo?.GlobalJsonPath is not null)
+        // Resolution precedence:
+        // 1. Explicit --install-path always wins
+        // 2. global.json sdk-path
+        // 3. Existing user installation
+        // 4. Interactive prompt
+        // 5. Default install path
+
+        if (explicitInstallPath is not null)
         {
-            installPathFromGlobalJson = globalJsonInfo.SdkPath;
-
-            if (installPathFromGlobalJson is not null && explicitInstallPath is not null &&
-                !DotnetupUtilities.PathsEqual(installPathFromGlobalJson, explicitInstallPath))
-            {
-                //  TODO: Add parameter to override error
-                error = $"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({explicitInstallPath}).";
-                return null;
-            }
-
-            resolvedInstallPath = installPathFromGlobalJson;
-            pathSource = "global_json";
+            return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, "explicit");
         }
 
-        if (resolvedInstallPath == null && explicitInstallPath is not null)
+        if (installPathFromGlobalJson is not null)
         {
-            resolvedInstallPath = explicitInstallPath;
-            pathSource = "explicit";
+            return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, "global_json");
         }
 
-        if (resolvedInstallPath == null && currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
+        if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
-            //  If a user installation is already set up, we don't need to prompt for the install path
-            resolvedInstallPath = currentDotnetInstallRoot.Path;
-            pathSource = "existing_user_install";
+            return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, "existing_user_install");
         }
 
-        if (resolvedInstallPath == null)
+        if (interactive)
         {
-            if (interactive)
-            {
-                resolvedInstallPath = SpectreAnsiConsole.Prompt(
-                    new TextPrompt<string>($"Where should we install the {componentDescription} to?)")
-                        .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-                pathSource = "interactive_prompt";
-            }
-            else
-            {
-                //  If no install path is specified, use the default install path
-                resolvedInstallPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-            }
+            var prompted = SpectreAnsiConsole.Prompt(
+                new TextPrompt<string>($"Where should we install the {componentDescription} to?)")
+                    .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
+            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, "interactive_prompt");
         }
 
-        return new InstallPathResolutionResult(resolvedInstallPath, installPathFromGlobalJson, pathSource);
+        return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, "default");
     }
 }
