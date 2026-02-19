@@ -89,8 +89,6 @@ internal static class FileLevelDirectiveHelpers
         ErrorReporter reportError,
         ImmutableArray<CSharpDirective>.Builder? builder)
     {
-        Debug.Assert(triviaList.Span.Start == 0);
-
         var deduplicated = new Dictionary<CSharpDirective.Named, CSharpDirective.Named>(NamedDirectiveComparer.Instance);
         TextSpan previousWhiteSpaceSpan = default;
 
