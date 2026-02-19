@@ -137,6 +137,7 @@ internal class ReleaseManifest
              .Where(f => f.Rid == rid) // TODO: Do we support musl here?
              .Where(f => f.Name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
              .Where(f => !IsCompositeArchive(f.Name))
+             .Where(f => !IsApphostPackArchive(f.Name))
              .ToList();
 
         if (matchingFiles.Count == 0)
@@ -155,5 +156,15 @@ internal class ReleaseManifest
     internal static bool IsCompositeArchive(string fileName)
     {
         return fileName.Contains("composite", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Determines whether a release file name refers to an apphost-pack archive.
+    /// Apphost packs (e.g. "dotnet-apphost-pack-win-x64.zip") contain only NuGet packs
+    /// and are not the actual runtime/SDK archives that should be installed.
+    /// </summary>
+    internal static bool IsApphostPackArchive(string fileName)
+    {
+        return fileName.Contains("apphost-pack", StringComparison.OrdinalIgnoreCase);
     }
 }

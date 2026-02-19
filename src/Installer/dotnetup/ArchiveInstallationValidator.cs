@@ -26,17 +26,28 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
     public bool Validate(DotnetInstall install)
     {
+        return Validate(install, out _);
+    }
+
+    /// <summary>
+    /// Validates a .NET installation with detailed failure reasons.
+    /// </summary>
+    /// <param name="install">The install to validate.</param>
+    /// <param name="failureReason">If validation fails, describes what went wrong.</param>
+    /// <returns>True if the installation is valid.</returns>
+    public bool Validate(DotnetInstall install, out string? failureReason)
+    {
+        failureReason = null;
         string? installRoot = install.InstallRoot.Path;
         if (string.IsNullOrEmpty(installRoot))
         {
+            failureReason = "Install root path is null or empty.";
             return false;
         }
 
         string dotnetMuxerPath = Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
         if (!File.Exists(dotnetMuxerPath))
         {
-            // Windows Desktop archive doesn't include the muxer or core runtime.
-            // If the component layout is correct, we can still consider the install valid.
             if (install.Component == InstallComponent.WindowsDesktop)
             {
                 string resolvedVersionLayout = install.Version.ToString();
@@ -45,17 +56,25 @@ internal class ArchiveInstallationValidator : IInstallationValidator
                     return true;
                 }
             }
+            failureReason = $"Muxer not found at '{dotnetMuxerPath}'.";
             return false;
         }
 
         string resolvedVersion = install.Version.ToString();
         if (!ValidateComponentLayout(installRoot, resolvedVersion, install.Component))
         {
+            string expectedDir = install.Component == InstallComponent.SDK
+                ? Path.Combine(installRoot, "sdk", resolvedVersion)
+                : RuntimeMonikerByComponent.TryGetValue(install.Component, out string? moniker)
+                    ? Path.Combine(installRoot, "shared", moniker, resolvedVersion)
+                    : "<unknown>";
+            failureReason = $"Component layout validation failed. Expected directory '{expectedDir}' to exist and be non-empty.";
             return false;
         }
 
-        if (!ValidateWithHostFxr(installRoot, install.Version, install.Component))
+        if (!ValidateWithHostFxr(installRoot, install.Version, install.Component, out string? hostFxrFailure))
         {
+            failureReason = $"HostFxr validation failed: {hostFxrFailure}";
             return false;
         }
 
@@ -101,8 +120,10 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         return ValidateComponentLayout(installRoot, install.Version.ToString(), install.Component);
     }
 
-    private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component)
+    private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
     {
+        failureReason = null;
+
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             //  Calling HostFxr is not working on Linux, so don't use it for validation until we fix that
@@ -117,26 +138,40 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             if (component == InstallComponent.SDK)
             {
                 string expectedPath = Path.Combine(installRoot, "sdk", resolvedVersion.ToString());
-                return environmentInfo.SdkInfo.Any(sdk =>
+                bool found = environmentInfo.SdkInfo.Any(sdk =>
                     string.Equals(sdk.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     DotnetupUtilities.PathsEqual(sdk.Path, expectedPath));
+                if (!found)
+                {
+                    var availableSdks = string.Join(", ", environmentInfo.SdkInfo.Select(s => $"{s.Version} @ {s.Path}"));
+                    failureReason = $"HostFxr did not report SDK {resolvedVersion} at '{expectedPath}'. Available SDKs: [{availableSdks}]";
+                }
+                return found;
             }
 
             if (!RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
             {
+                failureReason = $"No runtime moniker mapping for component '{component}'.";
                 return false;
             }
 
             // The HostFxr returns paths like shared/Microsoft.NETCore.App (without version)
             // but when comparing, we need to account for this
             string expectedRuntimeBasePath = Path.Combine(installRoot, "shared", runtimeMoniker);
-            return environmentInfo.RuntimeInfo.Any(runtime =>
+            bool runtimeFound = environmentInfo.RuntimeInfo.Any(runtime =>
                 string.Equals(runtime.Name, runtimeMoniker, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(runtime.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
                 DotnetupUtilities.PathsEqual(runtime.Path, expectedRuntimeBasePath));
+            if (!runtimeFound)
+            {
+                var availableRuntimes = string.Join(", ", environmentInfo.RuntimeInfo.Select(r => $"{r.Name} {r.Version} @ {r.Path}"));
+                failureReason = $"HostFxr did not report {runtimeMoniker} {resolvedVersion} at '{expectedRuntimeBasePath}'. Available runtimes: [{availableRuntimes}]";
+            }
+            return runtimeFound;
         }
-        catch
+        catch (Exception ex)
         {
+            failureReason = $"HostFxr threw an exception: {ex}";
             return false;
         }
     }
