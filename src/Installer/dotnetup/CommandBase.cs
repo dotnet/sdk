@@ -122,21 +122,21 @@ public abstract class CommandBase
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _commandActivity?.SetTag("sdk.requested_version", sanitized);
+        _commandActivity?.SetTag("dotnet.requested_version", sanitized);
     }
 
     /// <summary>
-    /// Records the source of the SDK request (explicit user input vs default).
+    /// Records the source of the install request (explicit user input vs default).
     /// </summary>
     /// <param name="source">The request source: "explicit", "default-latest", or "default-globaljson".</param>
     /// <param name="requestedValue">The sanitized requested value (channel/version). For defaults, this is what was defaulted to.</param>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _commandActivity?.SetTag("sdk.request_source", source);
+        _commandActivity?.SetTag("dotnet.request_source", source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _commandActivity?.SetTag("sdk.requested", sanitized);
+            _commandActivity?.SetTag("dotnet.requested", sanitized);
         }
     }
 }

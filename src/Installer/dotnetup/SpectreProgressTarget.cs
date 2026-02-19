@@ -89,16 +89,7 @@ public class SpectreProgressTarget : IProgressTarget
 
         public void SetTag(string key, object? value)
         {
-            if (_activity == null) return;
-
-            // Sanitize URL tags to prevent PII leakage
-            if (key == "download.url" && value is string url)
-            {
-                _activity.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(url));
-                return;
-            }
-
-            _activity.SetTag(key, value);
+            _activity?.SetTag(key, value);
         }
 
         public void RecordError(Exception ex)

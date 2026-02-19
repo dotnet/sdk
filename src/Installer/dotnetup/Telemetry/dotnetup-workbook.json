@@ -433,7 +433,7 @@
         "version": "KqlItem/1.0",
         "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"download\" or name == \"extract\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"download.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(version)\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
         "size": 1,
-        "title": "Most Installed SDK Versions",
+        "title": "Most Installed Versions",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "barchart"
@@ -445,10 +445,10 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend requested = tostring(customDimensions[\"sdk.requested\"]),\n    source = tostring(customDimensions[\"sdk.request_source\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15\n| render barchart",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name in (\"command/sdk/install\", \"command/runtime/install\")\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend requested = tostring(customDimensions[\"dotnet.requested\"]),\n    source = tostring(customDimensions[\"dotnet.request_source\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15\n| render barchart",
         "size": 1,
-        "title": "Requested SDK Versions (User Input)",
-        "noDataMessage": "No SDK install telemetry with request source data yet. This data is populated when users run 'dotnetup sdk install'.",
+        "title": "Requested Versions (User Input)",
+        "noDataMessage": "No install telemetry with request source data yet. This data is populated when users run 'dotnetup sdk install' or 'dotnetup runtime install'.",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "barchart"
@@ -460,10 +460,10 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend source = coalesce(tostring(customDimensions[\"sdk.request_source\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by source\n| render piechart",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name in (\"command/sdk/install\", \"command/runtime/install\")\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend source = coalesce(tostring(customDimensions[\"dotnet.request_source\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by source\n| render piechart",
         "size": 1,
         "title": "Request Source Distribution",
-        "noDataMessage": "No SDK install telemetry data yet.",
+        "noDataMessage": "No install telemetry data yet.",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "piechart"

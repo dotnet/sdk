@@ -91,8 +91,8 @@ internal class InstallWorkflow
         Activity.Current?.SetTag("install.path_source", context.PathSource);
 
         // Record request source (how the version/channel was determined)
-        Activity.Current?.SetTag("sdk.request_source", context.RequestSource);
-        Activity.Current?.SetTag("sdk.requested", VersionSanitizer.Sanitize(context.Channel));
+        Activity.Current?.SetTag("dotnet.request_source", context.RequestSource);
+        Activity.Current?.SetTag("dotnet.requested", VersionSanitizer.Sanitize(context.Channel));
 
         var resolved = CreateInstallRequest(context);
 

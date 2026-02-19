@@ -238,8 +238,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 component: installRequest.Component.ToString());
         }
 
-        // Set download URL for telemetry
-        Activity.Current?.SetTag("download.url", downloadUrl);
+        Activity.Current?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         // Check the cache first
         string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
