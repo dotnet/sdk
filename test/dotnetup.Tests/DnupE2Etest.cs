@@ -225,11 +225,19 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
             });
             chmod?.WaitForExit();
         }
-        else // pwsh
+        else // pwsh / powershell
         {
             static string Escape(string s) => s.Replace("'", "''");
 
-            shellExecutable = "pwsh";
+            // Prefer pwsh (PowerShell Core, cross-platform) over powershell.exe (Windows PowerShell 5.1).
+            // The generated env script uses standard PowerShell syntax compatible with both.
+            shellExecutable = ResolvePowerShellExecutable()!;
+            if (shellExecutable is null)
+            {
+                Console.WriteLine("Skipping pwsh test - neither pwsh nor powershell.exe found on PATH");
+                return;
+            }
+
             scriptPath = Path.Combine(tempRoot, "test-env.ps1");
             scriptContent = $@"
 $ErrorActionPreference = 'Stop'
@@ -360,6 +368,37 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         matchingInstalls[0].Component.Should().Be(expectedComponent);
 
         additionalAssertions?.Invoke(matchingInstalls[0]);
+    }
+
+    /// <summary>
+    /// Resolves a PowerShell executable, preferring pwsh (PowerShell Core) over powershell.exe (Windows PowerShell 5.1).
+    /// Returns null if neither is found.
+    /// </summary>
+    private static string? ResolvePowerShellExecutable()
+    {
+        // Try pwsh first (cross-platform PowerShell Core, matches the tool's --shell pwsh argument)
+        foreach (var candidate in new[] { "pwsh", "powershell" })
+        {
+            try
+            {
+                using var probe = new Process();
+                probe.StartInfo.FileName = candidate;
+                probe.StartInfo.Arguments = "-NoProfile -Command \"exit 0\"";
+                probe.StartInfo.UseShellExecute = false;
+                probe.StartInfo.RedirectStandardOutput = true;
+                probe.StartInfo.RedirectStandardError = true;
+                probe.StartInfo.CreateNoWindow = true;
+                probe.Start();
+                probe.WaitForExit(5000);
+                return candidate;
+            }
+            catch (Exception)
+            {
+                // Not found, try next candidate
+            }
+        }
+
+        return null;
     }
 }
 
@@ -532,4 +571,6 @@ public class ReuseAndErrorTests
             output.Should().NotContain("Downloading", "Should not download when files already exist from SDK");
         }
     }
+
+    /// <summary>
 }
