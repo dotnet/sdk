@@ -85,7 +85,7 @@ internal class InstallPathResolver
         if (interactive)
         {
             var prompted = SpectreAnsiConsole.Prompt(
-                new TextPrompt<string>($"Where should we install the {componentDescription} to?)")
+                new TextPrompt<string>($"Where should we install the {componentDescription} to?")
                     .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
             return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, "interactive_prompt");
         }

@@ -3,9 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.DotNet.Cli.Utils;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;

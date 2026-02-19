@@ -20,7 +20,7 @@ internal static class DotnetupPaths
     /// <summary>
     /// Gets the base data directory for dotnetup.
     /// On Windows: %LOCALAPPDATA%\dotnetup
-    /// On Unix: ~/.dotnetup (hidden folder in user profile)
+    /// On Unix: ~/dotnetup (folder in user profile)
     /// </summary>
     /// <remarks>
     /// Returns null if the base directory cannot be determined.

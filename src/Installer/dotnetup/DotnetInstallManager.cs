@@ -113,11 +113,11 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
     }
 
-    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channnel)
+    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channel)
     {
         DotnetInstallRequest request = new DotnetInstallRequest(
             dotnetRoot,
-            channnel,
+            channel,
             InstallComponent.SDK,
             new InstallRequestOptions()
         );
@@ -125,7 +125,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
         if (installResult.Install == null)
         {
-            throw new Exception($"Failed to install .NET SDK {channnel.Name}");
+            throw new Exception($"Failed to install .NET SDK {channel.Name}");
         }
         else
         {
