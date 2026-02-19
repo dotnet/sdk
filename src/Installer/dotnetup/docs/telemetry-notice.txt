@@ -43,16 +43,17 @@ Data collected includes:
 
 ## Crash Exception Telemetry
 
-If dotnetup crashes, it collects the name of the exception and stack trace of
-the dotnetup code and dotnetup invoked code only. The collected data contains the exception type and a
-sanitized stack trace that includes method names and line numbers from dotnetup
-source code, but NOT file paths.
+If dotnetup crashes, it collects the exception type, error category, and a
+source location identifying the dotnetup or dotnetup dependency method where the error
+originated. The source location includes the type name, method name, and line
+number from dotnetup source code. If the exception wraps
+inner exceptions, the exception type chain is also recorded.
 
 Example of collected crash data:
 
     ErrorType: IOException
     Category: Product
-    SourceLocation: Downloader.DownloadAsync:145@abc123d
+    SourceLocation: Downloader.DownloadAsync:145
     ExceptionChain: IOException->SocketException
 
 ## CI and LLM Agent Detection

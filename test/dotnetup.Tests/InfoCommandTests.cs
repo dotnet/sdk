@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class InfoCommandTests

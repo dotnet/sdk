@@ -31,7 +31,9 @@ public sealed class DotnetupTelemetry : IDisposable
         GetVersion());
 
     /// <summary>
-    /// Connection string for Application Insights (same as dotnet CLI).
+    /// Connection string for Application Insights.
+    /// TODO: Replace with the official SDK CLI Application Insights key before production release.
+    /// See https://github.com/dotnet/sdk/issues/52785
     /// </summary>
     private const string ConnectionString = "InstrumentationKey=04172778-3bc9-4db6-b50f-cafe87756a47;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/;LiveEndpoint=https://westus2.livediagnostics.monitor.azure.com/;ApplicationId=fbd94297-7083-42b8-aaa5-1886192b4272";
 
@@ -78,6 +80,9 @@ public sealed class DotnetupTelemetry : IDisposable
                     .AddAttributes(TelemetryCommonProperties.GetCommonAttributes(_sessionId)))
                 .AddSource("Microsoft.Dotnet.Bootstrapper")
                 .AddSource("Microsoft.Dotnet.Installation");  // Library's ActivitySource
+
+            // IMPORTANT: Do NOT add auto-instrumentation (e.g. AddHttpClientInstrumentation)
+            // without reviewing PII implications.
 
             // Add Azure Monitor exporter
             builder.AddAzureMonitorTraceExporter(o =>

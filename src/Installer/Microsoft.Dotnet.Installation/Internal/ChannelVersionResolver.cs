@@ -132,11 +132,28 @@ internal class ChannelVersionResolver
         if (parts.Length >= 3)
         {
             var patch = parts[2];
-            // Allow feature band pattern (e.g., "1xx", "100") or patch number
-            var normalizedPatch = patch.Replace("x", "").Replace("X", "");
-            if (normalizedPatch.Length > 0 && !int.TryParse(normalizedPatch, out _))
+            if (string.IsNullOrEmpty(patch))
             {
                 return false;
+            }
+
+            // Allow either:
+            //  - a fully specified numeric patch (e.g., "103"), or
+            //  - a feature band pattern with a numeric prefix and "xx" suffix (e.g., "1xx", "101xx").
+            if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
+            {
+                var prefix = patch.Substring(0, patch.Length - 2);
+                if (prefix.Length == 0 || !int.TryParse(prefix, out _))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!int.TryParse(patch, out var numericPatch) || numericPatch < 0)
+                {
+                    return false;
+                }
             }
         }
 

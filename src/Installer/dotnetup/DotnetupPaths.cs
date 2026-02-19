@@ -24,11 +24,19 @@ internal static class DotnetupPaths
     /// </summary>
     /// <remarks>
     /// Returns null if the base directory cannot be determined.
+    /// Can be overridden via DOTNET_TESTHOOK_DOTNETUP_DATA_DIR environment variable.
     /// </remarks>
     public static string? DataDirectory
     {
         get
         {
+            // Allow override for testing — avoids touching the real user profile.
+            var overrideDir = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DOTNETUP_DATA_DIR");
+            if (!string.IsNullOrEmpty(overrideDir))
+            {
+                return overrideDir;
+            }
+
             if (_dataDirectory is not null)
             {
                 return _dataDirectory;

@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
-using OpenTelemetry.Trace;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;

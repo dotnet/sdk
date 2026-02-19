@@ -35,7 +35,7 @@ internal class DotnetupProgram
             DotnetupTelemetry.Instance.RecordException(rootActivity, ex);
             rootActivity?.SetTag("exit.code", 1);
 
-            // Re-throw to preserve original behavior (or handle as appropriate)
+            // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);

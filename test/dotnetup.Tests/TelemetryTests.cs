@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
@@ -360,21 +359,36 @@ public class LibraryActivityTagTests
     }
 }
 
-public class FirstRunNoticeTests
+public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
+    private const string DataDirEnvVar = "DOTNET_TESTHOOK_DOTNETUP_DATA_DIR";
+
+    private readonly string _tempDir;
+    private readonly string? _originalDataDir;
+
+    public FirstRunNoticeTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), $"dotnetup-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_tempDir);
+
+        // Redirect DotnetupPaths.DataDirectory to the temp dir so tests
+        // never touch the real user profile.
+        _originalDataDir = Environment.GetEnvironmentVariable(DataDirEnvVar);
+        Environment.SetEnvironmentVariable(DataDirEnvVar, _tempDir);
+    }
+
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(DataDirEnvVar, _originalDataDir);
+
+        try { Directory.Delete(_tempDir, recursive: true); }
+        catch { /* best-effort cleanup */ }
+    }
 
     [Fact]
     public void IsFirstRun_ReturnsTrueWhenSentinelDoesNotExist()
     {
-        // Clean up any existing sentinel for this test
-        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
-
-        if (!string.IsNullOrEmpty(sentinelPath) && File.Exists(sentinelPath))
-        {
-            File.Delete(sentinelPath);
-        }
-
         Assert.True(FirstRunNotice.IsFirstRun());
     }
 
@@ -387,14 +401,8 @@ public class FirstRunNoticeTests
 
         try
         {
-            // Clean up any existing sentinel for this test
             var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
             Assert.NotNull(sentinelPath);
-
-            if (File.Exists(sentinelPath))
-            {
-                File.Delete(sentinelPath);
-            }
 
             // Simulate first run with telemetry enabled
             FirstRunNotice.ShowIfFirstRun(telemetryEnabled: true);
@@ -414,19 +422,12 @@ public class FirstRunNoticeTests
     [Fact]
     public void ShowIfFirstRun_DoesNotCreateSentinel_WhenTelemetryDisabled()
     {
-        // Clean up any existing sentinel for this test
-        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
-        Assert.NotNull(sentinelPath);
-
-        if (File.Exists(sentinelPath))
-        {
-            File.Delete(sentinelPath);
-        }
-
         // Simulate first run with telemetry disabled
         FirstRunNotice.ShowIfFirstRun(telemetryEnabled: false);
 
         // Sentinel should NOT be created (user has opted out)
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
+        Assert.NotNull(sentinelPath);
         Assert.False(File.Exists(sentinelPath));
     }
 }
