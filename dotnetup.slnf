@@ -5,7 +5,8 @@
       "src\\Installer\\dotnetup\\dotnetup.csproj",
       "src\\Installer\\Microsoft.Dotnet.Installation\\Microsoft.Dotnet.Installation.csproj",
       "test\\dotnetup.Tests\\dotnetup.Tests.csproj",
-      "src\\Resolvers\\Microsoft.DotNet.NativeWrapper\\Microsoft.DotNet.NativeWrapper.csproj"
+      "src\\Resolvers\\Microsoft.DotNet.NativeWrapper\\Microsoft.DotNet.NativeWrapper.csproj",
+      "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
     ]
   }
 }
