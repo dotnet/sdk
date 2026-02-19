@@ -12,6 +12,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
@@ -82,6 +83,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     ];
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
+    public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
 
     public bool NoRestore { get; init; }
 
@@ -139,7 +141,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFrameworkVersion, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()
@@ -1076,7 +1078,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public static readonly ErrorReporter ThrowingReporter =
-        static (sourceFile, textSpan, message) => throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}");
+        static (text, path, textSpan, message) =>
+            throw new GracefulException($"{path}({text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1}): {FileBasedProgramsResources.DirectiveError}: {message}");
 }
 
 internal sealed class RunFileBuildCacheEntry
