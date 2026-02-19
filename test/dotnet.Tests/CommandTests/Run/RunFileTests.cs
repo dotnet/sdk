@@ -3459,7 +3459,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             var msbuildFileText = File.ReadAllText(msbuildFile);
             if (cscOnlyFileText.ReplaceLineEndings() != msbuildFileText.ReplaceLineEndings())
             {
-                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, run test '{nameof(CscArguments)}' locally to re-genarate the template): {cscOnlyFile}");
+                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, run test '{nameof(CscArguments)}' locally to re-generate the template): {cscOnlyFile}");
                 const int limit = 3_000;
                 if (cscOnlyFileText.Length < limit && msbuildFileText.Length < limit)
                 {
