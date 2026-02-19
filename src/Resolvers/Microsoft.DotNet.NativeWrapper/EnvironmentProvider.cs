@@ -71,11 +71,11 @@ namespace Microsoft.DotNet.NativeWrapper
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
 
 #if NET
-                if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
+                if (dotnetExeFromPath != null && !FileInterop.RunningOnWindows)
                 {
                     // e.g. on Linux the 'dotnet' command from PATH may be a symlink so we need to
                     // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = Interop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
+                    dotnetExeFromPath = FileInterop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
                 }
 #endif
 
@@ -103,6 +103,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return dotnetDirectory;
         }
+
 
         public static string? GetDotnetExeDirectory(Func<string, string?>? getEnvironmentVariable = null, Action<FormattableString>? log = null)
         {

@@ -23,14 +23,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadCommandParser
 {
-    private static readonly WorkloadCommandDefinition Command = ConfigureCommand(new());
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    public static WorkloadCommandDefinition ConfigureCommand(WorkloadCommandDefinition def)
+    public static void ConfigureCommand(WorkloadCommandDefinition def)
     {
         def.SetAction(parseResult => parseResult.HandleMissingCommand());
         def.InfoOption.Action = new ShowWorkloadsInfoAction();
@@ -48,8 +41,6 @@ internal static class WorkloadCommandParser
         def.ElevateCommand.SetAction(parseResult => new WorkloadElevateCommand(parseResult).Execute());
         def.ConfigCommand.SetAction(parseResult => new WorkloadConfigCommand(parseResult).Execute());
         def.HistoryCommand.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
-
-        return def;
     }
 
     public static RestoreActionConfig ToRestoreActionConfig(this NuGetRestoreOptions options, ParseResult parseResult)

@@ -133,7 +133,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
         {
-            string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
+            string entryPointFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
 
             // Include only items we know are files.
             string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];

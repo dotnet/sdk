@@ -59,7 +59,8 @@ namespace Microsoft.DotNet.Watch
                     {
                         [EnvironmentVariables.Names.DotnetWatch] = "1",
                         [EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture),
-                    }
+                    },
+                    OnOutput = line => context.ProcessOutputReporter.ReportOutput(line)
                 };
 
                 var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel

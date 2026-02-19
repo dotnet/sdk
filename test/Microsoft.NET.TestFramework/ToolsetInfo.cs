@@ -251,22 +251,14 @@ namespace Microsoft.NET.TestFramework
         private static string GetDotnetHostPath(string? dotnetRoot)
             => Path.Combine(dotnetRoot ?? string.Empty, "dotnet" + Constants.ExeSuffix);
 
-        public static ToolsetInfo Create(string? repoRoot, string? repoArtifactsDir, string configuration, TestCommandLine commandLine)
+        public static ToolsetInfo Create(string? repoRoot, string? repoArtifactsDir, string configuration)
         {
-            repoRoot = commandLine.SDKRepoPath ?? repoRoot;
-            configuration = commandLine.SDKRepoConfiguration ?? configuration;
-
             string? dotnetInstallDirFromEnvironment = Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
 
             string? dotnetRoot;
             string hostNotFoundReason;
 
-            if (!string.IsNullOrEmpty(commandLine.DotnetHostPath))
-            {
-                dotnetRoot = Path.GetDirectoryName(commandLine.DotnetHostPath);
-                hostNotFoundReason = "Command line argument -dotnetPath is incorrect.";
-            }
-            else if (repoRoot != null && repoArtifactsDir is not null)
+            if (repoRoot != null && repoArtifactsDir is not null)
             {
                 dotnetRoot = Path.Combine(repoArtifactsDir, "bin", "redist", configuration, "dotnet");
                 hostNotFoundReason = "Is 'redist.csproj' built?";
@@ -300,11 +292,13 @@ namespace Microsoft.NET.TestFramework
                 RepoRoot = repoRoot,
             };
 
-            if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
+            //  Run tests on full framework MSBuild if environment variable is set pointing to it
+            string? msbuildPath = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILD_PATH");
+            if (!string.IsNullOrEmpty(msbuildPath))
             {
-                ret.FullFrameworkMSBuildPath = commandLine.FullFrameworkMSBuildPath;
+                ret.FullFrameworkMSBuildPath = msbuildPath;
             }
-            else if (commandLine.UseFullFrameworkMSBuild)
+            else if (string.Equals(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_USE_FULL_MSBUILD"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 if (TryResolveCommand("MSBuild", out string? pathToMSBuild))
                 {
@@ -312,7 +306,7 @@ namespace Microsoft.NET.TestFramework
                 }
                 else
                 {
-                    throw new InvalidOperationException("Could not resolve path to MSBuild");
+                    throw new InvalidOperationException("DOTNET_SDK_TEST_USE_FULL_MSBUILD is set but could not resolve path to MSBuild on PATH");
                 }
             }
 
@@ -336,17 +330,13 @@ namespace Microsoft.NET.TestFramework
                     // Find path to MSBuildSdkResolver for full framework
                     ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
                 }
-                else if (!string.IsNullOrWhiteSpace(commandLine.MsbuildAdditionalSdkResolverFolder))
-                {
-                    ret.SdkResolverPath = Path.Combine(commandLine.MsbuildAdditionalSdkResolverFolder, configuration, "net472", "SdkResolvers");
-                }
                 else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER") != null)
                 {
                     ret.SdkResolverPath = Path.Combine(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER")!, configuration, "net472", "SdkResolvers");
                 }
                 else
                 {
-                    throw new InvalidOperationException("Microsoft.DotNet.MSBuildSdkResolver path is not provided, set msbuildAdditionalSdkResolverFolder on test commandline or set repoRoot");
+                    throw new InvalidOperationException("Microsoft.DotNet.MSBuildSdkResolver path is not provided, set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER environment variable or set repoRoot");
                 }
             }
 

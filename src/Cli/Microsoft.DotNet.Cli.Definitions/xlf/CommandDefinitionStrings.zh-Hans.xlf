@@ -1,0 +1,2317 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../CommandDefinitionStrings.resx">
+    <body>
+      <trans-unit id="AdManifestOnlyOptionDescription">
+        <source>Only update advertising manifests.</source>
+        <target state="new">Only update advertising manifests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddAppFullName">
+        <source>Add one or more projects to a solution file.</source>
+        <target state="new">Add one or more projects to a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddProjectPathArgumentDescription">
+        <source>The paths to the projects to add to the solution.</source>
+        <target state="new">The paths to the projects to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddProjectPathArgumentName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddProjectSolutionFolderArgumentDescription">
+        <source>The destination solution folder path to add the projects to.</source>
+        <target state="new">The destination solution folder path to add the projects to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="new">Allow package downgrade when installing a .NET tool package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="new">ARCH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchitectureOptionDescription">
+        <source>The target architecture.</source>
+        <target state="new">The target architecture.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="new">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="new">The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildAppFullName">
+        <source>.NET Builder</source>
+        <target state="new">.NET Builder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildConfigurationOptionDescription">
+        <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to use for building the project. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildFrameworkOptionDescription">
+        <source>The target framework to build for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to build for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildOutputOptionDescription">
+        <source>The output directory to place built artifacts in.</source>
+        <target state="new">The output directory to place built artifacts in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildRuntimeOptionDescription">
+        <source>The target runtime to build for.</source>
+        <target state="new">The target runtime to build for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildServerCommandDescription">
+        <source>Interact with servers started from a build.</source>
+        <target state="new">Interact with servers started from a build.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildServerShutdownCommandDescription">
+        <source>Shuts down build servers that are started from dotnet. By default, all servers are shut down.</source>
+        <target state="new">Shuts down build servers that are started from dotnet. By default, all servers are shut down.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="new">Cannot specify both the {0} and {1} arguments.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotResolveRuntimeIdentifier">
+        <source>Resolving the current runtime identifier failed.</source>
+        <target state="new">Resolving the current runtime identifier failed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndArchOptions">
+        <source>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</source>
+        <target state="new">Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndOsOptions">
+        <source>Specifying both the `-r|--runtime` and `-os` options is not supported.</source>
+        <target state="new">Specifying both the `-r|--runtime` and `-os` options is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanAllOptionDescription">
+        <source>Causes clean to remove and uninstall all workload components from all SDK versions.</source>
+        <target state="new">Causes clean to remove and uninstall all workload components from all SDK versions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanAppFullName">
+        <source>.NET Clean Command</source>
+        <target state="new">.NET Clean Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanCmdOutputDirDescription">
+        <source>The directory containing the build artifacts to clean.</source>
+        <target state="new">The directory containing the build artifacts to clean.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanConfigurationOptionDescription">
+        <source>The configuration to clean for. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to clean for. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="new">Removes artifacts created for file-based apps</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="new">How many days an artifact folder needs to be unused in order to be removed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFrameworkOptionDescription">
+        <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to clean for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanRuntimeOptionDescription">
+        <source>The target runtime to clean for.</source>
+        <target state="new">The target runtime to clean for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
+        <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
+        <target state="new">Enables collecting crash dump on expected as well as unexpected testhost exit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDescription">
+        <source>Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+
+For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+
+Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+
+The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+
+To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+
+Implies --blame.</source>
+        <target state="new">Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+
+For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+
+Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+
+The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+
+To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+
+Implies --blame.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDumpTypeDescription">
+        <source>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</source>
+        <target state="new">The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameDescription">
+        <source>Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
+
+When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+
+Based on the additional settings, hang dump or crash dump can also be collected.
+
+Example:
+  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.
+  (Crash dumps require additional setup, see below.)
+  dotnet test --blame-hang --blame-crash
+Example:
+  Timeout the test run when a test takes more than 20 minutes and collect hang dump.
+  dotnet test --blame-hang-timeout 20min
+</source>
+        <target state="new">Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
+
+When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+
+Based on the additional settings, hang dump or crash dump can also be collected.
+
+Example:
+  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.
+  (Crash dumps require additional setup, see below.)
+  dotnet test --blame-hang --blame-crash
+Example:
+  Timeout the test run when a test takes more than 20 minutes and collect hang dump.
+  dotnet test --blame-hang-timeout 20min
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDescription">
+        <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
+        <target state="new">Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDumpTypeDescription">
+        <source>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</source>
+        <target state="new">The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangTimeoutDescription">
+        <source>Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
+The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
+When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
+For MSTest before 2.2.4, the timeout is used for all testcases.</source>
+        <target state="new">Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
+The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
+When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
+For MSTest before 2.2.4, the timeout is used for all testcases.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfig">
+        <source>CONFIG_FILE</source>
+        <target state="new">CONFIG_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigDescription">
+        <source>The path to the NuGet config file to use. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
+        <target state="new">The path to the NuGet config file to use. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="new">Specifies a testconfig.json file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFileOption">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="new">CONFIG_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCurrentRuntimeOptionDescription">
+        <source>Use current runtime as the target runtime.</source>
+        <target state="new">Use current runtime as the target runtime.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDeprecatedDescription">
+        <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
+        <target state="new">Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="new">Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="new">DIAGNOSTIC_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDisableParallelOptionDescription">
+        <source>Prevent restoring multiple projects in parallel.</source>
+        <target state="new">Prevent restoring multiple projects in parallel.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="new">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdExpressionName">
+        <source>EXPRESSION</source>
+        <target state="new">EXPRESSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdFileDescription">
+        <source>Path to the file-based program.</source>
+        <target state="new">Path to the file-based program.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdForceRestoreOptionDescription">
+        <source>Force all dependencies to be resolved even if the last restore was successful.
+This is equivalent to deleting project.assets.json.</source>
+        <target state="new">Force all dependencies to be resolved even if the last restore was successful.
+This is equivalent to deleting project.assets.json.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdFormatDescription">
+        <source>Specifies the output format type for the list packages command.</source>
+        <target state="new">Specifies the output format type for the list packages command.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdHighestMinorDescription">
+        <source>Consider only the packages with a matching major version number when searching for newer packages. Requires the '--outdated' option.</source>
+        <target state="new">Consider only the packages with a matching major version number when searching for newer packages. Requires the '--outdated' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdHighestPatchDescription">
+        <source>Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '--outdated' option.</source>
+        <target state="new">Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '--outdated' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdIgnoreFailedSourcesOptionDescription">
+        <source>Treat package source failures as warnings.</source>
+        <target state="new">Treat package source failures as warnings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdIncludeSourceDescription">
+        <source>Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</source>
+        <target state="new">Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdIncludeSymbolsDescription">
+        <source>Include packages with symbols in addition to regular packages in output directory.</source>
+        <target state="new">Include packages with symbols in addition to regular packages in output directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListTestsDescription">
+        <source>List the discovered tests instead of running the tests.</source>
+        <target state="new">List the discovered tests instead of running the tests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLockFilePathOption">
+        <source>LOCK_FILE_PATH</source>
+        <target state="new">LOCK_FILE_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLockFilePathOptionDescription">
+        <source>Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</source>
+        <target state="new">Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLockedModeOptionDescription">
+        <source>Don't allow updating project lock file.</source>
+        <target state="new">Don't allow updating project lock file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLoggerDescription">
+        <source>The logger to use for test results.
+                                        Examples:
+                                        Log in trx format using a unique file name: --logger trx
+                                        Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
+                                        See https://aka.ms/vstest-report for more information on logger arguments.</source>
+        <target state="new">The logger to use for test results.
+                                        Examples:
+                                        Log in trx format using a unique file name: --logger trx
+                                        Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
+                                        See https://aka.ms/vstest-report for more information on logger arguments.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLoggerOption">
+        <source>LOGGER</source>
+        <target state="new">LOGGER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoAnsiDescription">
+        <source>Disable ANSI output.</source>
+        <target state="new">Disable ANSI output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoBuildDescription">
+        <source>Do not build the project before testing. Implies --no-restore.</source>
+        <target state="new">Do not build the project before testing. Implies --no-restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoBuildOptionDescription">
+        <source>Do not build the project before packing. Implies --no-restore.</source>
+        <target state="new">Do not build the project before packing. Implies --no-restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoCacheOptionDescription">
+        <source>Do not cache packages and http requests.</source>
+        <target state="new">Do not cache packages and http requests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoDependenciesOptionDescription">
+        <source>Do not restore project-to-project references and only restore the specified project.</source>
+        <target state="new">Do not restore project-to-project references and only restore the specified project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoHttpCacheOptionDescription">
+        <source>Disable Http Caching for packages.</source>
+        <target state="new">Disable Http Caching for packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProgressDescription">
+        <source>Disable progress reporting.</source>
+        <target state="new">Disable progress reporting.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not restore before running the command.</source>
+        <target state="new">Do not restore before running the command.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNumberName">
+        <source>NUMBER</source>
+        <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionForceDescription">
+        <source>Force conversion even if there are malformed directives.</source>
+        <target state="new">Force conversion even if there are malformed directives.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutdatedDescription">
+        <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
+        <target state="new">Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutputDescription">
+        <source>The output directory to place built artifacts in.</source>
+        <target state="new">The output directory to place built artifacts in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutputVersionDescription">
+        <source>Specifies the version of machine-readable output. Requires the '--format json' option.</source>
+        <target state="new">Specifies the version of machine-readable output. Requires the '--format json' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPackage">
+        <source>PACKAGE_NAME</source>
+        <target state="new">PACKAGE_NAME</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPackageDirectory">
+        <source>PACKAGE_DIR</source>
+        <target state="new">PACKAGE_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPackageDirectoryDescription">
+        <source>The directory to restore packages to.</source>
+        <target state="new">The directory to restore packages to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPackagesOption">
+        <source>PACKAGES_DIR</source>
+        <target state="new">PACKAGES_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPackagesOptionDescription">
+        <source>The directory to restore packages to.</source>
+        <target state="new">The directory to restore packages to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathToLogFile">
+        <source>LOG_FILE</source>
+        <target state="new">LOG_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathToResultsDirectory">
+        <source>RESULTS_DIR</source>
+        <target state="new">RESULTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathTologFileDescription">
+        <source>Enable verbose logging to the specified file.</source>
+        <target state="new">Enable verbose logging to the specified file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPrereleaseDescription">
+        <source>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</source>
+        <target state="new">Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdReevaluateOptionDescription">
+        <source>Forces restore to reevaluate all dependencies even if a lock file already exists.</source>
+        <target state="new">Forces restore to reevaluate all dependencies even if a lock file already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryDescription">
+        <source>The directory where the test results will be placed.
+The specified directory will be created if it does not exist.</source>
+        <target state="new">The directory where the test results will be placed.
+The specified directory will be created if it does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdRootPathName">
+        <source>ROOT_PATH</source>
+        <target state="new">ROOT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdRuntimeOption">
+        <source>RUNTIME_IDENTIFIER</source>
+        <target state="new">RUNTIME_IDENTIFIER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdRuntimeOptionDescription">
+        <source>The target runtime to restore packages for.</source>
+        <target state="new">The target runtime to restore packages for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdServiceableDescription">
+        <source>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</source>
+        <target state="new">Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSettingsDescription">
+        <source>The settings file to use when running tests.</source>
+        <target state="new">The settings file to use when running tests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSettingsFile">
+        <source>SETTINGS_FILE</source>
+        <target state="new">SETTINGS_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionPathName">
+        <source>SOLUTION_PATH</source>
+        <target state="new">SOLUTION_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSourceOption">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSourceOptionDescription">
+        <source>The NuGet package source to use for the restore.</source>
+        <target state="new">The NuGet package source to use for the restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestAdapterPath">
+        <source>ADAPTER_PATH</source>
+        <target state="new">ADAPTER_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestAdapterPathDescription">
+        <source>The path to the custom adapters to use for the test run.</source>
+        <target state="new">The path to the custom adapters to use for the test run.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestCaseFilterDescription">
+        <source>Run tests that match the given expression.
+                                        Examples:
+                                        Run tests with priority set to 1: --filter "Priority = 1"
+                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
+                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+                                        </source>
+        <target state="new">Run tests that match the given expression.
+                                        Examples:
+                                        Run tests with priority set to 1: --filter "Priority = 1"
+                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
+                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+                                        </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestCaseFilterExpression">
+        <source>EXPRESSION</source>
+        <target state="new">EXPRESSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestOutputDescription">
+        <source>Verbosity of test output.</source>
+        <target state="new">Verbosity of test output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTransitiveDescription">
+        <source>Lists transitive and top-level packages.</source>
+        <target state="new">Lists transitive and top-level packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner '{0}' is not supported.</source>
+        <target state="new">Test runner '{0}' is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUseLockFileOptionDescription">
+        <source>Enables project lock file to be generated and used with restore.</source>
+        <target state="new">Enables project lock file to be generated and used with restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVersionDescription">
+        <source>The version of the package to add.</source>
+        <target state="new">The version of the package to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVersionSuffixDescription">
+        <source>Set the value of the $(VersionSuffix) property to use when building the project.</source>
+        <target state="new">Set the value of the $(VersionSuffix) property to use when building the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVulnerableDescription">
+        <source>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</source>
+        <target state="new">Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandArgumentDescription">
+        <source>The SDK command to launch online help for.</source>
+        <target state="new">The SDK command to launch online help for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandArgumentName">
+        <source>COMMAND_NAME</source>
+        <target state="new">COMMAND_NAME</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandInteractiveOptionDescription">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="new">Allows the command to stop and wait for user input or action (for example to complete authentication).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandNameArgumentDescription">
+        <source>The command name of the tool to run.</source>
+        <target state="new">The command name of the tool to run.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandNameArgumentName">
+        <source>COMMAND_NAME</source>
+        <target state="new">COMMAND_NAME</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="new">FILE_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionLaunchProfileDescription">
+        <source>The name of the launch profile (if any) to use when launching the application.</source>
+        <target state="new">The name of the launch profile (if any) to use when launching the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionLaunchProfileHelpName">
+        <source>LAUNCH_PROFILE</source>
+        <target state="new">LAUNCH_PROFILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoBuildDescription">
+        <source>Do not build the project before running. Implies --no-restore.</source>
+        <target state="new">Do not build the project before running. Implies --no-restore.</target>
+        <note>{Locked="--no-restore"}</note>
+      </trans-unit>
+      <trans-unit id="CommandOptionNoCacheDescription">
+        <source>Skip up to date checks and always build the program before running.</source>
+        <target state="new">Skip up to date checks and always build the program before running.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileDescription">
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
+      </trans-unit>
+      <trans-unit id="CommandOptionProjectHelpName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandPrereleaseOptionDescription">
+        <source>Allows prerelease packages to be installed.</source>
+        <target state="new">Allows prerelease packages to be installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_AliasAdd_Description">
+        <source>Creates an alias for instantiate command with a certain set of arguments.</source>
+        <target state="new">Creates an alias for instantiate command with a certain set of arguments.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_AliasShow_Description">
+        <source>Displays defined aliases.</source>
+        <target state="new">Displays defined aliases.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Alias_Description">
+        <source>Creates or displays defined aliases.</source>
+        <target state="new">Creates or displays defined aliases.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Details_Description">
+        <source>
+      Provides the details for specified template package.
+      The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.</source>
+        <target state="new">
+      Provides the details for specified template package.
+      The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Install_Argument_Package">
+        <source>NuGet package ID or path to folder or NuGet package to install. 
+To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+</source>
+        <target state="new">NuGet package ID or path to folder or NuGet package to install. 
+To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Install_Description">
+        <source>Installs a template package.</source>
+        <target state="new">Installs a template package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Instantiate_Argument_ShortName">
+        <source>A short name of the template to create.</source>
+        <target state="new">A short name of the template to create.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Instantiate_Argument_TemplateOptions">
+        <source>Template specific options to use.</source>
+        <target state="new">Template specific options to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Instantiate_Description">
+        <source>Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</source>
+        <target state="new">Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</target>
+        <note>do not translate 'dotnet new &lt;template name&gt;'</note>
+      </trans-unit>
+      <trans-unit id="Command_Legacy_Update_Check_Description">
+        <source>Checks the currently installed template packages for updates.</source>
+        <target state="new">Checks the currently installed template packages for updates.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_List_Argument_Name">
+        <source>If specified, only the templates matching the name will be shown.</source>
+        <target state="new">If specified, only the templates matching the name will be shown.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_List_Description">
+        <source>Lists templates containing the specified template name. If no name is specified, lists all templates.</source>
+        <target state="new">Lists templates containing the specified template name. If no name is specified, lists all templates.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_New_Description">
+        <source>Template Instantiation Commands for .NET CLI.</source>
+        <target state="new">Template Instantiation Commands for .NET CLI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Search_Argument_Name">
+        <source>If specified, only the templates matching the name will be shown.</source>
+        <target state="new">If specified, only the templates matching the name will be shown.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Search_Description">
+        <source>Searches for the templates on NuGet.org.</source>
+        <target state="new">Searches for the templates on NuGet.org.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Uninstall_Argument_Package">
+        <source>NuGet package ID (without version) or path to folder to uninstall. 
+If command is specified without the argument, it lists all the template packages installed.</source>
+        <target state="new">NuGet package ID (without version) or path to folder to uninstall. 
+If command is specified without the argument, it lists all the template packages installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Uninstall_Description">
+        <source>Uninstalls a template package.</source>
+        <target state="new">Uninstalls a template package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Update_Description">
+        <source>Checks the currently installed template packages for update, and install the updates.</source>
+        <target state="new">Checks the currently installed template packages for update, and install the updates.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Command_Update_Option_CheckOnly">
+        <source>Only checks for updates and display the template packages to be updated without applying update.</source>
+        <target state="new">Only checks for updates and display the template packages to be updated without applying update.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Commands_Validator_WrongTokens">
+        <source>Unrecognized command or argument(s): {0}.</source>
+        <target state="new">Unrecognized command or argument(s): {0}.</target>
+        <note>{0} - wrong token or comma-separated tokens (if multiple). Each token is enclosed with single quotes: 'token'.</note>
+      </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileArgumentName">
+        <source>ConfigFile</source>
+        <target state="new">ConfigFile</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileDescription">
+        <source>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</source>
+        <target state="new">The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationArgumentName">
+        <source>CONFIGURATION</source>
+        <target state="new">CONFIGURATION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CrashDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="new">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CreateManifestIfNeededOptionDescription">
+        <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
+        <target state="new">Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CurrentRuntimeOptionDescription">
+        <source>Use current runtime as the target runtime.</source>
+        <target state="new">Use current runtime as the target runtime.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailDescription">
+        <source>Show detail result of the query.</source>
+        <target state="new">Show detail result of the query.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Argument_PackageIdentifier">
+        <source>Package identifier</source>
+        <target state="new">Package identifier</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Diagnostics_OptionDescription">
+        <source>Enables diagnostic output.</source>
+        <target state="new">Enables diagnostic output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableBuildServersOptionDescription">
+        <source>Force the command to ignore any persistent build servers.</source>
+        <target state="new">Force the command to ignore any persistent build servers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableProjectContextEval_OptionDescription">
+        <source>Disables evaluating project context using MSBuild.</source>
+        <target state="new">Disables evaluating project context using MSBuild.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableSdkTemplates_OptionDescription">
+        <source>If present, prevents templates bundled in the SDK from being presented.</source>
+        <target state="new">If present, prevents templates bundled in the SDK from being presented.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DownloadToCacheOptionArgumentName">
+        <source>DIRECTORY</source>
+        <target state="new">DIRECTORY</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DownloadToCacheOptionDescription">
+        <source>Download packages needed to install a workload to a folder that can be used for offline installation.</source>
+        <target state="new">Download packages needed to install a workload to a folder that can be used for offline installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExactMatchDescription">
+        <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
+        <target state="new">Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="new">The file-based app to operate on.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatArgumentName">
+        <source>Format</source>
+        <target state="new">Format</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatDescription">
+        <source>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</source>
+        <target state="new">Format the output accordingly. Either `table`, or `json`. The default value is `table`.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="new">Changes the format of outputted workload versions. Can take 'json' or 'list'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkArgumentName">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkDependentOptionDescription">
+        <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
+        <target state="new">Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkVersionOption">
+        <source>FRAMEWORK_VERSION</source>
+        <target state="new">FRAMEWORK_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkVersionOptionDescription">
+        <source>The Microsoft.NETCore.App package version that will be used to run the assemblies.</source>
+        <target state="new">The Microsoft.NETCore.App package version that will be used to run the assemblies.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromCacheOptionArgumentName">
+        <source>DIRECTORY</source>
+        <target state="new">DIRECTORY</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromCacheOptionDescription">
+        <source>Complete the operation from cache (offline).</source>
+        <target state="new">Complete the operation from cache (offline).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromPreviousSdkOptionDescription">
+        <source>Include workloads installed with earlier SDK versions in update.</source>
+        <target state="new">Include workloads installed with earlier SDK versions in update.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromRollbackDefinitionOptionDescription">
+        <source>Update workloads based on specified rollback definition file.</source>
+        <target state="new">Update workloads based on specified rollback definition file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HangDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="new">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HangTimeoutArgumentName">
+        <source>TIMESPAN</source>
+        <target state="new">TIMESPAN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpAppFullName">
+        <source>.NET CLI help utility</source>
+        <target state="new">.NET CLI help utility</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InRoot">
+        <source>Place project in root of the solution, rather than creating a solution folder.</source>
+        <target state="new">Place project in root of the solution, rather than creating a solution folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncludePreviewOptionDescription">
+        <source>Allow prerelease workload manifests.</source>
+        <target state="new">Allow prerelease workload manifests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="new">Incorrectly formatted environment variables: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IntermediateWorkingDirOption">
+        <source>WORKING_DIR</source>
+        <target state="new">WORKING_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IntermediateWorkingDirOptionDescription">
+        <source>The working directory used by the command to execute.</source>
+        <target state="new">The working directory used by the command to execute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidVersion">
+        <source>Invalid version string: {0}</source>
+        <target state="new">Invalid version string: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LevelArgumentName">
+        <source>LEVEL</source>
+        <target state="new">LEVEL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListAppFullName">
+        <source>List all projects in a solution file.</source>
+        <target state="new">List all projects in a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListCommand_Option_IgnoreConstraints">
+        <source>Disables checking if the template meets the constraints to be run.</source>
+        <target state="new">Disables checking if the template meets the constraints to be run.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSolutionFoldersArgumentDescription">
+        <source>Display solution folder paths.</source>
+        <target state="new">Display solution folder paths.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildOptionDescription">
+        <source>Shut down the MSBuild build server.</source>
+        <target state="new">Shut down the MSBuild build server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestOption">
+        <source>MANIFEST</source>
+        <target state="new">MANIFEST</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestOptionDescription">
+        <source>The path to a target manifest file that contains the list of packages to be excluded from the publish step.</source>
+        <target state="new">The path to a target manifest file that contains the list of packages to be excluded from the publish step.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetAddCommand">
+        <source>.NET Add Command</source>
+        <target state="new">.NET Add Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetListCommand">
+        <source>List references or packages of a .NET project.</source>
+        <target state="new">List references or packages of a .NET project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetRemoveCommand">
+        <source>.NET Remove Command</source>
+        <target state="new">.NET Remove Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoBuildOptionDescription">
+        <source>Do not build the project before publishing. Implies --no-restore.</source>
+        <target state="new">Do not build the project before publishing. Implies --no-restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoDependenciesOptionDescription">
+        <source>Do not build project-to-project references and only build the specified project.</source>
+        <target state="new">Do not build project-to-project references and only build the specified project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoIncrementalOptionDescription">
+        <source>Do not use incremental building.</source>
+        <target state="new">Do not use incremental building.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
+        <source>Do not display the startup banner or the copyright message.</source>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoRestoreDescription">
+        <source>Do not restore the project before building.</source>
+        <target state="new">Do not restore the project before building.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="new">OS</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyLocalOptionSupportManifestFileOption">
+        <source>Specifying the tool manifest option (--tool-manifest) is only valid with the local option (--local or the default).</source>
+        <target state="new">Specifying the tool manifest option (--tool-manifest) is only valid with the local option (--local or the default).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatingSystemOptionDescription">
+        <source>The target operating system.</source>
+        <target state="new">The target operating system.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_AddSource">
+        <source>Specifies a NuGet source to use.</source>
+        <target state="new">Specifies a NuGet source to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_AuthorFilter">
+        <source>Filters the templates based on the template author.</source>
+        <target state="new">Filters the templates based on the template author.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_BaselineFilter">
+        <source>Filters the templates based on baseline defined in the template.</source>
+        <target state="new">Filters the templates based on baseline defined in the template.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Columns">
+        <source>Specifies the columns to display in the output. </source>
+        <target state="new">Specifies the columns to display in the output. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ColumnsAll">
+        <source>Displays all columns in the output.</source>
+        <target state="new">Displays all columns in the output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_Attach">
+        <source>Allows to pause execution in order to attach to the process for debug purposes.</source>
+        <target state="new">Allows to pause execution in order to attach to the process for debug purposes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_CustomSettings">
+        <source>Sets custom settings location.</source>
+        <target state="new">Sets custom settings location.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_RebuildCache">
+        <source>If specified, removes the template cache prior to command execution.</source>
+        <target state="new">If specified, removes the template cache prior to command execution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_Reinit">
+        <source>If specified, resets the settings prior to command execution.</source>
+        <target state="new">If specified, resets the settings prior to command execution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_ShowConfig">
+        <source>If specified, shows the template engine config prior to command execution.</source>
+        <target state="new">If specified, shows the template engine config prior to command execution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Debug_VirtualSettings">
+        <source>If specified, the settings will be not preserved on file system.</source>
+        <target state="new">If specified, the settings will be not preserved on file system.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Force">
+        <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
+        <target state="new">Allows installing template packages from the specified sources even if they would override a template package from another source.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Interactive">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="new">Allows the command to stop and wait for user input or action (for example to complete authentication).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_LanguageFilter">
+        <source>Filters templates based on language.</source>
+        <target state="new">Filters templates based on language.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Output">
+        <source>Location to place the generated output.</source>
+        <target state="new">Location to place the generated output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_PackageFilter">
+        <source>Filters the templates based on NuGet package ID.</source>
+        <target state="new">Filters the templates based on NuGet package ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath">
+        <source>The project that should be used for context evaluation.</source>
+        <target state="new">The project that should be used for context evaluation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_TagFilter">
+        <source>Filters the templates based on the tag.</source>
+        <target state="new">Filters the templates based on the tag.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_TypeFilter">
+        <source>Filters templates based on available types. Predefined values are "project" and "item".</source>
+        <target state="new">Filters templates based on available types. Predefined values are "project" and "item".</target>
+        <note>project and item should not be translated</note>
+      </trans-unit>
+      <trans-unit id="OptionsCannotBeCombined">
+        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
+        <target state="new">Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OutputOptionName">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackAppFullName">
+        <source>.NET Core NuGet Package Packer</source>
+        <target state="new">.NET Core NuGet Package Packer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDirDescription">
+        <source>The output directory to place built packages in.</source>
+        <target state="new">The output directory to place built packages in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackConfigurationOptionDescription">
+        <source>The configuration to use for building the package. The default is 'Release'.</source>
+        <target state="new">The configuration to use for building the package. The default is 'Release'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddAppFullName">
+        <source>Add a NuGet package reference to the project.</source>
+        <target state="new">Add a NuGet package reference to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddCmdFrameworkDescription">
+        <source>Add the reference only when targeting a specific framework.</source>
+        <target state="new">Add the reference only when targeting a specific framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddCmdNoRestoreDescription">
+        <source>Add the reference without performing restore preview and compatibility check.</source>
+        <target state="new">Add the reference without performing restore preview and compatibility check.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddCmdSource">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageAddCmdSourceDescription">
+        <source>The NuGet package source to use during the restore.</source>
+        <target state="new">The NuGet package source to use during the restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
+        <source>Package reference id and version must not be null.</source>
+        <target state="new">Package reference id and version must not be null.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListAppFullName">
+        <source>List all package references of the project or solution.</source>
+        <target state="new">List all package references of the project or solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdFramework">
+        <source>FRAMEWORK | FRAMEWORK\RID</source>
+        <target state="new">FRAMEWORK | FRAMEWORK\RID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdFrameworkDescription">
+        <source>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</source>
+        <target state="new">Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdSource">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdSourceDescription">
+        <source>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
+        <target state="new">The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageReference">
+        <source>Package reference</source>
+        <target state="new">Package reference</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageRemoveAppFullName">
+        <source>Remove a NuGet package reference from the project.</source>
+        <target state="new">Remove a NuGet package reference from the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageRemoveAppHelpText">
+        <source>The package reference to remove.</source>
+        <target state="new">The package reference to remove.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchCommandDescription">
+        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
+        <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchPrereleaseDescription">
+        <source>Include prerelease packages.</source>
+        <target state="new">Include prerelease packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchSearchTermArgumentName">
+        <source>SearchTerm</source>
+        <target state="new">SearchTerm</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchSearchTermDescription">
+        <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
+        <target state="new">Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchSkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchSkipDescription">
+        <source>Number of results to skip, to allow pagination. Default 0.</source>
+        <target state="new">Number of results to skip, to allow pagination. Default 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchTakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchTakeDescription">
+        <source>Number of results to return. Default 20.</source>
+        <target state="new">Number of results to return. Default 20.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintDownloadLinkOnlyDescription">
+        <source>Only print the list of links to download without downloading.</source>
+        <target state="new">Only print the list of links to download without downloading.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version --take 2 --format json
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
+           dotnet workload search version 9.0.201
+           Workload manifest ID                               Manifest feature band      Manifest Version
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
+           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
+           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </source>
+        <target state="new">'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version --take 2 --format json
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
+           dotnet workload search version 9.0.201
+           Workload manifest ID                               Manifest feature band      Manifest Version
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
+           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
+           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
+      </trans-unit>
+      <trans-unit id="ProjectArgumentDescription">
+        <source>The project file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="new">The project file to operate on. If a file is not specified, the command will search the current directory for one.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAppFullName">
+        <source>Convert a file-based program to a project-based program.</source>
+        <target state="new">Convert a file-based program to a project-based program.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectManifest">
+        <source>PROJECT_MANIFEST</source>
+        <target state="new">PROJECT_MANIFEST</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectManifestDescription">
+        <source>The XML file that contains the list of packages to be stored.</source>
+        <target state="new">The XML file that contains the list of packages to be stored.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="new">The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="new">PROJECT | FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishAppDescription">
+        <source>Publisher for the .NET Platform</source>
+        <target state="new">Publisher for the .NET Platform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishConfigurationOptionDescription">
+        <source>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</source>
+        <target state="new">The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishFrameworkOptionDescription">
+        <source>The target framework to publish for. The target framework has to be specified in the project file.</source>
+        <target state="new">The target framework to publish for. The target framework has to be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishOutputOption">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishOutputOptionDescription">
+        <source>The output directory to place the published artifacts in.</source>
+        <target state="new">The output directory to place the published artifacts in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishRuntimeOptionDescription">
+        <source>The target runtime to publish for. This is used when creating a self-contained deployment.
+The default is to publish a framework-dependent application.</source>
+        <target state="new">The target runtime to publish for. This is used when creating a self-contained deployment.
+The default is to publish a framework-dependent application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RazorOptionDescription">
+        <source>Shut down the Razor build server.</source>
+        <target state="new">Shut down the Razor build server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddAppFullName">
+        <source>Add a project-to-project reference to the project.</source>
+        <target state="new">Add a project-to-project reference to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddCmdFrameworkDescription">
+        <source>Add the reference only when targeting a specific framework.</source>
+        <target state="new">Add the reference only when targeting a specific framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddProjectPathArgumentDescription">
+        <source>The paths to the projects to add as references.</source>
+        <target state="new">The paths to the projects to add as references.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddProjectPathArgumentName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceListAppFullName">
+        <source>List all project-to-project references of the project.</source>
+        <target state="new">List all project-to-project references of the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceRemoveAppFullName">
+        <source>Remove a project-to-project reference from the project.</source>
+        <target state="new">Remove a project-to-project reference from the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceRemoveCmdFrameworkDescription">
+        <source>Remove the reference only when targeting a specific framework.</source>
+        <target state="new">Remove the reference only when targeting a specific framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceRemoveProjectPathArgumentDescription">
+        <source>The paths to the referenced projects to remove.</source>
+        <target state="new">The paths to the referenced projects to remove.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceRemoveProjectPathArgumentName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveAppFullName">
+        <source>Remove one or more projects from a solution file.</source>
+        <target state="new">Remove one or more projects from a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveProjectPathArgumentDescription">
+        <source>The project paths or names to remove from the solution.</source>
+        <target state="new">The project paths or names to remove from the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveProjectPathArgumentName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RequiredCommandNotPassed">
+        <source>Required command was not provided.</source>
+        <target state="new">Required command was not provided.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RestoreAppFullName">
+        <source>.NET dependency restorer</source>
+        <target state="new">.NET dependency restorer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunAppFullName">
+        <source>.NET Run Command</source>
+        <target state="new">.NET Run Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunConfigurationOptionDescription">
+        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to run for. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunFrameworkOptionDescription">
+        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunRuntimeOptionDescription">
+        <source>The target runtime to run for.</source>
+        <target state="new">The target runtime to run for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimeIdentifierArgumentName">
+        <source>RUNTIME_IDENTIFIER</source>
+        <target state="new">RUNTIME_IDENTIFIER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKDiagnosticsCommandDefinition">
+        <source>Enable diagnostic output.</source>
+        <target state="new">Enable diagnostic output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="new">Display the command schema as JSON.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkAppFullName">
+        <source>.NET SDK Command</source>
+        <target state="new">.NET SDK Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkCheckAppFullName">
+        <source>.NET SDK Check Command</source>
+        <target state="new">.NET SDK Check Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelfContainAndNoSelfContainedConflict">
+        <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
+        <target state="new">The '--self-contained' and '--no-self-contained' options cannot be used together.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
+      </trans-unit>
+      <trans-unit id="SelfContainedOptionDescription">
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipManifestUpdateOptionDescription">
+        <source>Skip updating the workload manifests.</source>
+        <target state="new">Skip updating the workload manifests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipOptimizationOptionDescription">
+        <source>Skip the optimization phase.</source>
+        <target state="new">Skip the optimization phase.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipSignCheckOptionDescription">
+        <source>Skip signature verification of workload packages and installers.</source>
+        <target state="new">Skip signature verification of workload packages and installers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipSymbolsOptionDescription">
+        <source>Skip creating symbol files which can be used for profiling the optimized assemblies.</source>
+        <target state="new">Skip creating symbol files which can be used for profiling the optimized assemblies.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
+        <source>Recursively add projects' ReferencedProjects to solution</source>
+        <target state="new">Recursively add projects' ReferencedProjects to solution</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppFullName">
+        <source>.NET modify solution file command</source>
+        <target state="new">.NET modify solution file command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionArgumentDescription">
+        <source>The solution file to operate on. If not specified, the command will search the current directory for one.</source>
+        <target state="new">The solution file to operate on. If not specified, the command will search the current directory for one.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionArgumentName">
+        <source>SLN_FILE</source>
+        <target state="new">SLN_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentDescription">
+        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="new">The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentName">
+        <source>PROJECT | SOLUTION</source>
+        <target state="new">PROJECT | SOLUTION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
+        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
+        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentName">
+        <source>PROJECT | SOLUTION | FILE</source>
+        <target state="new">PROJECT | SOLUTION | FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceArgumentName">
+        <source>Source</source>
+        <target state="new">Source</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceDescription">
+        <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
+        <target state="new">The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreAppDescription">
+        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="new">Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreFrameworkOptionDescription">
+        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
+        <target state="new">The target framework to store packages for. The target framework has to be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOption">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOptionDescription">
+        <source>The output directory to store the given assemblies in.</source>
+        <target state="new">The output directory to store the given assemblies in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreRuntimeOptionDescription">
+        <source>The target runtime to store packages for.</source>
+        <target state="new">The target runtime to store packages for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TempDirOptionDescription">
+        <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
+        <target state="new">Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_DryRun">
+        <source>Displays a summary of what would happen if the given command line were run if it would result in a template creation.</source>
+        <target state="new">Displays a summary of what would happen if the given command line were run if it would result in a template creation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Force">
+        <source>Forces content to be generated even if it would change existing files.</source>
+        <target state="new">Forces content to be generated even if it would change existing files.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name">
+        <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
+        <target state="new">The name for the output being created. If no name is specified, the name of the output directory is used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_NoUpdateCheck">
+        <source>Disables checking for the template package updates when instantiating a template.</source>
+        <target state="new">Disables checking for the template package updates when instantiating a template.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdNoLogo">
+        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft Testplatform banner</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestConfigurationOptionDescription">
+        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to use for running tests. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestFrameworkOptionDescription">
+        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run tests for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestRuntimeOptionDescription">
+        <source>The target runtime to test for.</source>
+        <target state="new">The target runtime to test for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolCommandDescription">
+        <source>Install or work with tools that extend the .NET experience.</source>
+        <target state="new">Install or work with tools that extend the .NET experience.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolExecuteCommandDescription">
+        <source>Executes a tool from source without permanently installing it.</source>
+        <target state="new">Executes a tool from source without permanently installing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallAddSourceOptionDescription">
+        <source>Add an additional NuGet package source to use during installation.</source>
+        <target state="new">Add an additional NuGet package source to use during installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallAddSourceOptionName">
+        <source>ADDSOURCE</source>
+        <target state="new">ADDSOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallCommandDescription">
+        <source>Install global or local tool. Local tools are added to manifest and restored.</source>
+        <target state="new">Install global or local tool. Local tools are added to manifest and restored.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallFrameworkOptionDescription">
+        <source>The target framework to install the tool for.</source>
+        <target state="new">The target framework to install the tool for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallFrameworkOptionName">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallGlobalOptionDescription">
+        <source>Install the tool for the current user.</source>
+        <target state="new">Install the tool for the current user.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallLocalOptionDescription">
+        <source>Install the tool and add to the local tool manifest (default).</source>
+        <target state="new">Install the tool and add to the local tool manifest (default).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallManifestPathOptionDescription">
+        <source>Path to the manifest file.</source>
+        <target state="new">Path to the manifest file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallManifestPathOptionName">
+        <source>PATH</source>
+        <target state="new">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallSourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallToolPathOptionDescription">
+        <source>The directory where the tool will be installed. The directory will be created if it does not exist.</source>
+        <target state="new">The directory where the tool will be installed. The directory will be created if it does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallToolPathOptionName">
+        <source>PATH</source>
+        <target state="new">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallVersionOptionDescription">
+        <source>The version of the tool package to install.</source>
+        <target state="new">The version of the tool package to install.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListCommandDescription">
+        <source>List tools installed globally or locally.</source>
+        <target state="new">List tools installed globally or locally.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListFormatOptionDescription">
+        <source>The output format for the list of tools.</source>
+        <target state="new">The output format for the list of tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListGlobalOptionDescription">
+        <source>List tools installed for the current user.</source>
+        <target state="new">List tools installed for the current user.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListLocalOptionDescription">
+        <source>List the tools installed in the local tool manifest.</source>
+        <target state="new">List the tools installed in the local tool manifest.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListPackageIdArgumentDescription">
+        <source>The NuGet Package Id of the tool to list</source>
+        <target state="new">The NuGet Package Id of the tool to list</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListPackageIdArgumentName">
+        <source>PACKAGE_ID</source>
+        <target state="new">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolListToolPathOptionDescription">
+        <source>The directory containing the tools to list.</source>
+        <target state="new">The directory containing the tools to list.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRestoreCommandDescription">
+        <source>Restore tools defined in the local tool manifest.</source>
+        <target state="new">Restore tools defined in the local tool manifest.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRestoreManifestPathOptionDescription">
+        <source>Path to the manifest file.</source>
+        <target state="new">Path to the manifest file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunArgumentsDescription">
+        <source>Arguments forwarded to the tool</source>
+        <target state="new">Arguments forwarded to the tool</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchCommandDescription">
+        <source>Search dotnet tools in nuget.org</source>
+        <target state="new">Search dotnet tools in nuget.org</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchPrereleaseDescription">
+        <source>Include pre-release packages.</source>
+        <target state="new">Include pre-release packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="new">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermDescription">
+        <source>Search term from package id or package description. Require at least one character.</source>
+        <target state="new">Search term from package id or package description. Require at least one character.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="new">The number of results to skip, for pagination.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeDescription">
+        <source>The number of results to return, for pagination.</source>
+        <target state="new">The number of results to return, for pagination.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUninstallCommandDescription">
+        <source>Uninstall a global tool or local tool.</source>
+        <target state="new">Uninstall a global tool or local tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUninstallGlobalOptionDescription">
+        <source>Uninstall the tool from the current user's tools directory.</source>
+        <target state="new">Uninstall the tool from the current user's tools directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUninstallLocalOptionDescription">
+        <source>Uninstall the tool and remove it from the local tool manifest.</source>
+        <target state="new">Uninstall the tool and remove it from the local tool manifest.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUninstallManifestPathOptionDescription">
+        <source>Path to the manifest file.</source>
+        <target state="new">Path to the manifest file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUninstallToolPathOptionDescription">
+        <source>The directory containing the tool to uninstall.</source>
+        <target state="new">The directory containing the tool to uninstall.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUpdateCommandDescription">
+        <source>Update a global or local tool.</source>
+        <target state="new">Update a global or local tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="new">Update all tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateModeDescription">
+        <source>Controls whether updates should look for workload sets or the latest version of each individual manifest.</source>
+        <target state="new">Controls whether updates should look for workload sets or the latest version of each individual manifest.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VBCSCompilerOptionDescription">
+        <source>Shut down the VB/C# compiler build server.</source>
+        <target state="new">Shut down the VB/C# compiler build server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidationFailedDuplicateVersion">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
+      <trans-unit id="VerbosityArgumentName">
+        <source>Verbosity</source>
+        <target state="new">Verbosity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityDescription">
+        <source>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</source>
+        <target state="new">Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityOptionDescription">
+        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
+        <target state="new">Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Verbosity_OptionDescription">
+        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
+        <target state="new">Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionSuffixArgumentName">
+        <source>VERSION_SUFFIX</source>
+        <target state="new">VERSION_SUFFIX</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadCleanCommandDescription">
+        <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
+        <target state="new">Removes workload components that may have been left behind from previous updates and uninstallations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadCommandDescription">
+        <source>Install or work with workloads that extend the .NET experience.</source>
+        <target state="new">Install or work with workloads that extend the .NET experience.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadConfigCommandDescription">
+        <source>Modify or display workload configuration values.
+To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
+        <target state="new">Modify or display workload configuration values.
+To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadElevateCommandDescription">
+        <source>Start the elevated server process to facilitate MSI based installations.</source>
+        <target state="new">Start the elevated server process to facilitate MSI based installations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdArgumentDescription">
+        <source>The NuGet package ID of the workload to install.</source>
+        <target state="new">The NuGet package ID of the workload to install.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdArgumentName">
+        <source>WORKLOAD_ID</source>
+        <target state="new">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentDescription">
+        <source>The text to search for in the IDs and descriptions of available workloads.</source>
+        <target state="new">The text to search for in the IDs and descriptions of available workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentName">
+        <source>SEARCH_STRING</source>
+        <target state="new">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInfoDescription">
+        <source>Display information about installed workloads.</source>
+        <target state="new">Display information about installed workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallCommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="new">Install one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="new">The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="new">The version of the SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadListCommandDescription">
+        <source>List workloads available.</source>
+        <target state="new">List workloads available.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadRepairCommandDescription">
+        <source>Repair workload installations.</source>
+        <target state="new">Repair workload installations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadRestoreCommandDescription">
+        <source>Restore workloads required for a project.</source>
+        <target state="new">Restore workloads required for a project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSearchCommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="new">Search for available workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUninstallCommandDescription">
+        <source>Uninstall one or more workloads.</source>
+        <target state="new">Uninstall one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateCommandDescription">
+        <source>Update all installed workloads.</source>
+        <target state="new">Update all installed workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="new">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="new">Output workload manifest versions associated with the provided workload version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="new">Display the currently installed workload version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="new">Accept all confirmation prompts using "yes."</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdCollectDescription">
+        <source>The friendly name of the data collector to use for the test run.
+                                        More info here: https://aka.ms/vstest-collect</source>
+        <target state="new">The friendly name of the data collector to use for the test run.
+                                        More info here: https://aka.ms/vstest-collect</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdCollectFriendlyName">
+        <source>DATA_COLLECTOR_NAME</source>
+        <target state="new">DATA_COLLECTOR_NAME</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
