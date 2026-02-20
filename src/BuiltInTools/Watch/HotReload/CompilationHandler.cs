@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watch
             var processCommunicationCancellationToken = processCommunicationCancellationSource.Token;
 
             // Dispose these objects on failure:
-            using var disposables = new Disposables([clients, processExitedSource, processTerminationSource]);
+            await using var disposables = new Disposables([clients, processExitedSource, processTerminationSource]);
 
             // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.
@@ -144,17 +144,27 @@ namespace Microsoft.DotNet.Watch
                 // Remove the running project if it has been published to _runningProjects (if it hasn't exited during initialization):
                 if (publishedRunningProject != null && RemoveRunningProject(publishedRunningProject))
                 {
-                    publishedRunningProject.Dispose();
+                    await publishedRunningProject.DisposeAsync(isExiting: true);
                 }
             };
 
             var launchResult = new ProcessLaunchResult();
-            var runningProcess = _context.ProcessRunner.RunAsync(processSpec, clientLogger, launchResult, processTerminationSource.Token);
+            var processTask = _context.ProcessRunner.RunAsync(processSpec, clientLogger, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
+                // process failed to start:
+                Debug.Assert(processTask.IsCompleted && processTask.Result == int.MinValue);
+
                 // error already reported
                 return null;
             }
+
+            var runningProcess = new RunningProcess(launchResult.ProcessId.Value, processTask, processExitedSource, processTerminationSource, _context.Logger);
+
+            // transfer ownership to the running process:
+            disposables.Items.Remove(processExitedSource);
+            disposables.Items.Remove(processTerminationSource);
+            disposables.Items.Add(runningProcess);
 
             var projectPath = projectNode.ProjectInstance.FullPath;
 
@@ -170,14 +180,12 @@ namespace Microsoft.DotNet.Watch
                     clients,
                     clientLogger,
                     runningProcess,
-                    launchResult.ProcessId.Value,
-                    processExitedSource: processExitedSource,
-                    processTerminationSource: processTerminationSource,
-                    restartOperation: restartOperation,
+                    restartOperation,
                     managedCodeUpdateCapabilities);
 
-                // ownership transferred to running project:
-                disposables.Items.Clear();
+                // transfer ownership to the running project:
+                disposables.Items.Remove(clients);
+                disposables.Items.Remove(runningProcess);
                 disposables.Items.Add(runningProject);
 
                 var appliedUpdateCount = 0;
@@ -217,9 +225,10 @@ namespace Microsoft.DotNet.Watch
 
                         _runningProjects = _runningProjects.SetItem(projectPath, projectInstances.Add(runningProject));
 
-                        // ownership transferred to _runningProjects
+                        // transfer ownership to _runningProjects
                         publishedRunningProject = runningProject;
-                        disposables.Items.Clear();
+                        disposables.Items.Remove(runningProject);
+                        Debug.Assert(disposables.Items is []);
                         break;
                     }
                 }
@@ -229,7 +238,7 @@ namespace Microsoft.DotNet.Watch
                     clients.OnRuntimeRudeEdit += (code, message) =>
                     {
                         // fire and forget:
-                        _ = HandleRuntimeRudeEditAsync(runningProject, message, cancellationToken);
+                        _ = HandleRuntimeRudeEditAsync(publishedRunningProject, message, cancellationToken);
                     };
 
                     // Notifies the agent that it can unblock the execution of the process:
@@ -243,7 +252,7 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
 
-                return runningProject;
+                return publishedRunningProject;
             }
             catch (OperationCanceledException) when (processExitedSource.IsCancellationRequested)
             {
@@ -274,7 +283,7 @@ namespace Microsoft.DotNet.Watch
                 await runningProject.Clients.ReportCompilationErrorsInApplicationAsync([rudeEditMessage, MessageDescriptor.RestartingApplication.GetMessage()], cancellationToken);
 
                 // Terminate the process.
-                await runningProject.TerminateAsync();
+                await runningProject.Process.TerminateAsync();
 
                 // Creates a new running project and launches it:
                 await runningProject.RestartOperation(cancellationToken);
@@ -409,7 +418,7 @@ namespace Microsoft.DotNet.Watch
                         // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
                         var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
                             ToManagedCodeUpdates(managedCodeUpdates),
-                            applyOperationCancellationToken: runningProject.ProcessExitedCancellationToken,
+                            applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                             cancellationToken);
 
                         applyTasks.Add(runningProject.CompleteApplyOperationAsync(applyTask));
@@ -426,7 +435,7 @@ namespace Microsoft.DotNet.Watch
                 // but for consistency with managed code updates we only cancel when the process exits.
                 staticAssetApplyTaskProducers.Add(runningProject.Clients.ApplyStaticAssetUpdatesAsync(
                     assets,
-                    applyOperationCancellationToken: runningProject.ProcessExitedCancellationToken,
+                    applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                     cancellationToken));
             }
 

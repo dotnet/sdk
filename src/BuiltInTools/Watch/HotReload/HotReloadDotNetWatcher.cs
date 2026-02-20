@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Watch
                         }
 
                         // Cancel iteration as soon as the main process exits, so that we don't spent time loading solution, etc. when the process is already dead.
-                        mainRunningProject.ProcessExitedCancellationToken.Register(iterationCancellationSource.Cancel);
+                        mainRunningProject.Process.ExitedCancellationToken.Register(iterationCancellationSource.Cancel);
 
                         if (shutdownCancellationToken.IsCancellationRequested)
                         {
@@ -427,7 +427,7 @@ namespace Microsoft.DotNet.Watch
 
                     if (mainRunningProject != null)
                     {
-                        await mainRunningProject.TerminateAsync();
+                        await mainRunningProject.Process.TerminateAsync();
                     }
 
                     if (runtimeProcessLauncher != null)
