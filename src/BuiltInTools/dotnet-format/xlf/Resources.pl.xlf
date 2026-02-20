@@ -117,6 +117,11 @@
         <target state="translated">Nie można zastosować poprawki kodu {0} dla elementu {1}: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Failed_to_read_binary_log_0_1">
+        <source>Failed to read binary log '{0}': {1}</source>
+        <target state="new">Failed to read binary log '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
         <target state="translated">Nie można zapisać zmian formatowania.</target>
@@ -187,6 +192,11 @@
         <target state="translated">Formatowanie plików kodu w obszarze roboczym „{0}”.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Found_0_C_compiler_invocations_in_binary_log">
+        <source>Found {0} C# compiler invocation(s) in binary log.</source>
+        <target state="new">Found {0} C# compiler invocation(s) in binary log.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Include_generated_code_files_in_formatting_operations">
         <source>Include generated code files in formatting operations.</source>
         <target state="translated">Uwzględnij wygenerowane pliki kodu w operacjach formatowania.</target>
@@ -215,6 +225,11 @@
       <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
         <target state="translated">W elemencie „{0}” znaleziono wiele plików rozwiązań MSBuild. Określ plik do użycia za pomocą argumentu &lt;workspace&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="No_C_compiler_invocations_found_in_binary_log_0">
+        <source>No C# compiler invocations found in binary log '{0}'.</source>
+        <target state="new">No C# compiler invocations found in binary log '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Project_0_is_using_configuration_from_1">
@@ -390,6 +405,21 @@
       <trans-unit id="Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted">
         <source>Verify no formatting changes would be performed. Terminates with a non-zero exit code if any files would have been formatted.</source>
         <target state="translated">Sprawdź, czy nie zostaną wprowadzone żadne zmiany formatowania. Kończy się kodem zakończenia innym niż zero, jeśli jakiekolwiek pliki zostałyby sformatowane.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Warning_Command_line_parse_errors_for_project_0">
+        <source>Warning: Command line parse errors for project '{0}'.</source>
+        <target state="new">Warning: Command line parse errors for project '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Warning_Reference_not_found_0">
+        <source>Warning: Reference not found: {0}</source>
+        <target state="new">Warning: Reference not found: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Warning_Source_file_not_found_0">
+        <source>Warning: Source file not found: {0}</source>
+        <target state="new">Warning: Source file not found: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">

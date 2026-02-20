@@ -37,7 +37,9 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : formatOptions.WorkspaceType == WorkspaceType.Binlog
+                    ? await BinlogWorkspaceLoader.LoadAsync(formatOptions.WorkspaceFilePath, logger, cancellationToken).ConfigureAwait(false)
+                    : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
             {
@@ -180,13 +182,18 @@ namespace Microsoft.CodeAnalysis.Tools
 
             foreach (var project in solution.Projects)
             {
-                if (project?.FilePath is null)
+                if (project is null)
+                {
+                    continue;
+                }
+
+                if (project.FilePath is null && formatOptions.WorkspaceType != WorkspaceType.Binlog)
                 {
                     continue;
                 }
 
                 // If a project is used as a workspace, then ignore other referenced projects.
-                if (!string.IsNullOrEmpty(projectPath) && !project.FilePath.Equals(projectPath, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(projectPath) && !projectPath.Equals(project.FilePath, StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogDebug(Resources.Skipping_referenced_project_0, project.Name);
                     continue;
@@ -195,7 +202,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 // Ignore unsupported project types.
                 if (project.Language != LanguageNames.CSharp && project.Language != LanguageNames.VisualBasic)
                 {
-                    logger.LogWarning(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, project.FilePath);
+                    logger.LogWarning(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, project.FilePath ?? project.Name);
                     continue;
                 }
 
@@ -213,6 +220,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     addedFilePaths.Add(document.FilePath);
 
                     var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
+                        formatOptions.WorkspaceType == WorkspaceType.Binlog ||
                         (formatOptions.FileMatcher.HasMatches(document.FilePath) && File.Exists(document.FilePath));
                     if (!isFileIncluded || !document.SupportsSyntaxTree)
                     {

@@ -96,7 +96,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         internal static async Task<int> FormatAsync(FormatOptions formatOptions, ILogger<Program> logger, CancellationToken cancellationToken)
         {
-            if (formatOptions.WorkspaceType != WorkspaceType.Folder)
+            if (formatOptions.WorkspaceType != WorkspaceType.Folder && formatOptions.WorkspaceType != WorkspaceType.Binlog)
             {
                 var runtimeVersion = GetRuntimeVersion();
                 logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
@@ -305,6 +305,14 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     formatOptions = formatOptions with { WorkspaceFilePath = slnOrProject };
                     formatOptions = formatOptions with { WorkspaceType = WorkspaceType.Folder };
+                    return formatOptions;
+                }
+
+                if (slnOrProject.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase))
+                {
+                    var binlogPath = Path.GetFullPath(slnOrProject, currentDirectory);
+                    formatOptions = formatOptions with { WorkspaceFilePath = binlogPath };
+                    formatOptions = formatOptions with { WorkspaceType = WorkspaceType.Binlog };
                     return formatOptions;
                 }
 

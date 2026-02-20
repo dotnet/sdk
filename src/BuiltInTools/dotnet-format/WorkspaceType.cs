@@ -6,6 +6,7 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         Folder,
         Project,
-        Solution
+        Solution,
+        Binlog
     }
 }

@@ -245,5 +245,34 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.Empty(result.Errors);
         }
+        [Fact]
+        public void CommandLine_BinlogArgument_DetectedCorrectly()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+
+            // Act
+            var result = sut.Parse(new[] { "build.binlog" });
+
+            // Assert
+            Assert.Empty(result.Errors);
+            Assert.Equal("build.binlog", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+        }
+
+        [Fact]
+        public void CommandLine_BinlogArgument_WithOptions()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+
+            // Act
+            var result = sut.Parse(new[] { "build.binlog", "--verbosity", "detailed", "--verify-no-changes" });
+
+            // Assert
+            Assert.Empty(result.Errors);
+            Assert.Equal("build.binlog", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
+            Assert.True(result.GetValue(FormatCommandCommon.VerifyNoChanges));
+        }
     }
 }
