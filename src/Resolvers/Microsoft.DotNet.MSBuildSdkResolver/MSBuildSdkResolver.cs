@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private const string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string DotNetSdkSupportsComRemoting = nameof(DotNetSdkSupportsComRemoting);
         private const string SdkResolverHonoredGlobalJson = "SdkResolverHonoredGlobalJson";
         private const string SdkResolverGlobalJsonPath = "SdkResolverGlobalJsonPath";
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
@@ -265,6 +266,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 {
                     logger?.LogMessage($"Could not set '{MSBuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
                 }
+
+                propertiesToAdd ??= new Dictionary<string, string?>();
+                propertiesToAdd.Add(DotNetSdkSupportsComRemoting, "true");
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
                 {

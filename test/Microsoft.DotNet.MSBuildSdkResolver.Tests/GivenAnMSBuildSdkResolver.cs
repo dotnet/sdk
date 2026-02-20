@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     {
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string DotNetSdkSupportsComRemoting = nameof(DotNetSdkSupportsComRemoting);
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
@@ -205,15 +206,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(3);
                 result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(1);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
             }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
+            result.PropertiesToAdd.Should().ContainKey(DotNetSdkSupportsComRemoting);
+            result.PropertiesToAdd[DotNetSdkSupportsComRemoting].Should().Be("true");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().BeNullOrEmpty();
@@ -249,9 +252,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 context,
                 new MockFactory());
             result.Success.Should().BeTrue();
-            result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+            result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(3);
             result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             result.PropertiesToAdd[DotnetHostExperimentalKey].Should().Be(localDotnetBinary);
+            result.PropertiesToAdd.Should().ContainKey(DotNetSdkSupportsComRemoting);
+            result.PropertiesToAdd[DotNetSdkSupportsComRemoting].Should().Be("true");
         }
 
         [Theory]
@@ -325,15 +330,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(4);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(5);
                 result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(3);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(4);
             }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
+            result.PropertiesToAdd.Should().ContainKey(DotNetSdkSupportsComRemoting);
+            result.PropertiesToAdd[DotNetSdkSupportsComRemoting].Should().Be("true");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverGlobalJsonPath");
             result.PropertiesToAdd["SdkResolverHonoredGlobalJson"].Should().Be("false");
