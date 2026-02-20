@@ -157,11 +157,11 @@ public sealed class VirtualProjectBuilder
         return directives;
     }
 
-    public static ProjectRootElement CreateProjectRootElement(string filePath, string targetFrameworkVersion, ProjectCollection projectCollection)
+    public static ProjectRootElement CreateProjectRootElement(string filePath, string targetFramework, ProjectCollection projectCollection)
     {
         var fullPath = Path.GetFullPath(filePath);
 
-        var builder = new VirtualProjectBuilder(fullPath, targetFrameworkVersion);
+        var builder = new VirtualProjectBuilder(fullPath, targetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,

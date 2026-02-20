@@ -2,6 +2,6 @@
 Microsoft.DotNet.ProjectTools.LaunchSettings
 Microsoft.DotNet.ProjectTools.VirtualProjectBuilder
 static Microsoft.DotNet.ProjectTools.LaunchSettings.TryFindLaunchSettingsFile(string! projectOrEntryPointFilePath, string? launchProfile, System.Action<string!, bool>! report) -> string?
-static Microsoft.DotNet.ProjectTools.VirtualProjectBuilder.CreateProjectRootElement(string! filePath, string! targetFrameworkVersion, Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.Build.Construction.ProjectRootElement!
+static Microsoft.DotNet.ProjectTools.VirtualProjectBuilder.CreateProjectRootElement(string! filePath, string! targetFramework, Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.Build.Construction.ProjectRootElement!
 static Microsoft.DotNet.ProjectTools.VirtualProjectBuilder.GetVirtualProjectPath(string! entryPointFilePath) -> string!
 static Microsoft.DotNet.ProjectTools.VirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool

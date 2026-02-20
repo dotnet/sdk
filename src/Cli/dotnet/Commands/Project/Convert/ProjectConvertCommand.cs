@@ -235,7 +235,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         IEnumerable<(string name, string value)> GetDefaultProperties()
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion))
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
                 if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))

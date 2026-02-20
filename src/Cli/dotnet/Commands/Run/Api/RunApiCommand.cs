@@ -73,7 +73,7 @@ internal abstract class RunApiInput
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
                 directives,
-                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: artifactsPath);
