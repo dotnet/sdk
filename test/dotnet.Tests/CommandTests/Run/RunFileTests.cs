@@ -4902,7 +4902,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         using var projectCollection = new ProjectCollection();
         var projectRootElement = VirtualProjectBuilder.CreateProjectRootElement(
             appPath,
-            "5.0",
+            "net5.0",
             projectCollection);
 
         projectRootElement.FullPath.Should().Be(Path.ChangeExtension(appPath, ".csproj"));
