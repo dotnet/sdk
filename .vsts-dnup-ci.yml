@@ -75,6 +75,9 @@ extends:
       azureLinux30Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
 
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean
+
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
