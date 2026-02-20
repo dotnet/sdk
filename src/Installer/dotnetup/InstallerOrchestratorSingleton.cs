@@ -127,13 +127,14 @@ internal class InstallerOrchestratorSingleton
             installer.Commit();
 
             ArchiveInstallationValidator validator = new();
-            if (validator.Validate(install))
+            if (validator.Validate(install, out string? validationFailure))
             {
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
                 manifestManager.AddInstalledVersion(install);
             }
             else
             {
+                Console.Error.WriteLine($"Installation validation failed: {validationFailure}");
                 return new InstallResult(null, WasAlreadyInstalled: false);
             }
         }

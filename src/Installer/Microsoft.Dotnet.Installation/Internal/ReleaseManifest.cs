@@ -102,6 +102,29 @@ internal class ReleaseManifest
     }
 
     /// <summary>
+    /// Determines whether a runtime component's display name matches the requested install component type.
+    /// This is used to filter <see cref="ProductRelease.Runtimes"/> to find the correct component.
+    /// </summary>
+    /// <remarks>
+    /// Known component names from the releases library:
+    /// - ".NET Core Runtime" or ".NET Runtime" for the base runtime
+    /// - "ASP.NET Core Runtime" for ASP.NET Core
+    /// - "Desktop Runtime" for Windows Desktop
+    /// The filters must be specific enough that ordering of Runtimes does not affect which component is selected.
+    /// </remarks>
+    internal static bool IsMatchingRuntimeComponent(string componentName, InstallComponent component)
+    {
+        return component switch
+        {
+            InstallComponent.ASPNETCore => componentName.Contains("ASP", StringComparison.OrdinalIgnoreCase),
+            InstallComponent.WindowsDesktop => componentName.Contains("Desktop", StringComparison.OrdinalIgnoreCase),
+            _ => !componentName.Contains("ASP.NET", StringComparison.OrdinalIgnoreCase) &&
+                 (componentName.Contains(".NET Runtime", StringComparison.OrdinalIgnoreCase) ||
+                  componentName.Contains(".NET Core Runtime", StringComparison.OrdinalIgnoreCase)),
+        };
+    }
+
+    /// <summary>
     /// Finds the specific release for the given version.
     /// </summary>
     private static ReleaseComponent? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
@@ -122,17 +145,7 @@ internal class ReleaseManifest
             }
             else
             {
-                var runtimesQuery = component switch
-                {
-                    InstallComponent.ASPNETCore => release.Runtimes
-                        .Where(r => r.Name.Contains("ASP", StringComparison.OrdinalIgnoreCase)),
-                    InstallComponent.WindowsDesktop => release.Runtimes
-                        .Where(r => r.Name.Contains("Desktop", StringComparison.OrdinalIgnoreCase)),
-                    _ => release.Runtimes
-                        .Where(r => r.Name.Contains(".NET Runtime", StringComparison.OrdinalIgnoreCase) ||
-                               r.Name.Contains(".NET Core Runtime", StringComparison.OrdinalIgnoreCase)),
-                };
-                foreach (var runtime in runtimesQuery)
+                foreach (var runtime in release.Runtimes.Where(r => IsMatchingRuntimeComponent(r.Name, component)))
                 {
                     if (runtime.Version.Equals(resolvedVersion))
                     {
@@ -148,6 +161,11 @@ internal class ReleaseManifest
     /// <summary>
     /// Finds the matching file in the release for the given installation requirements.
     /// </summary>
+    /// <remarks>
+    /// Some components (notably ASP.NET Core) include both regular and composite (AOT) archives
+    /// with the same RID and extension. Composite archives contain "composite" in the file name
+    /// and are filtered out to avoid selecting the wrong archive.
+    /// </remarks>
     private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         var rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
@@ -156,6 +174,8 @@ internal class ReleaseManifest
         var matchingFiles = release.Files
              .Where(f => f.Rid == rid) // TODO: Do we support musl here?
              .Where(f => f.Name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
+             .Where(f => !IsCompositeArchive(f.Name))
+             .Where(f => !IsApphostPackArchive(f.Name))
              .ToList();
 
         if (matchingFiles.Count == 0)
@@ -164,5 +184,25 @@ internal class ReleaseManifest
         }
 
         return matchingFiles.First();
+    }
+
+    /// <summary>
+    /// Determines whether a release file name refers to a composite (AOT) archive.
+    /// Composite archives such as "aspnetcore-runtime-composite-linux-x64.tar.gz"
+    /// should not be selected for standard installs.
+    /// </summary>
+    internal static bool IsCompositeArchive(string fileName)
+    {
+        return fileName.Contains("composite", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Determines whether a release file name refers to an apphost-pack archive.
+    /// Apphost packs (e.g. "dotnet-apphost-pack-win-x64.zip") contain only NuGet packs
+    /// and are not the actual runtime/SDK archives that should be installed.
+    /// </summary>
+    internal static bool IsApphostPackArchive(string fileName)
+    {
+        return fileName.Contains("apphost-pack", StringComparison.OrdinalIgnoreCase);
     }
 }

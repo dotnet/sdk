@@ -574,4 +574,6 @@ public class ReuseAndErrorTests
             output.Should().NotContain("Downloading", "Should not download when files already exist from SDK");
         }
     }
+
+    /// <summary>
 }
