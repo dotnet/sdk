@@ -853,7 +853,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -913,7 +913,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -935,7 +935,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -958,7 +958,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53064
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public async Task BlazorWasmHosted()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
