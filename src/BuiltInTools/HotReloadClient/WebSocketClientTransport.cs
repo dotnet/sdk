@@ -28,8 +28,6 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 internal sealed class WebSocketClientTransport : ClientTransport
 {
-    private readonly int _port;
-    private readonly int? _securePort;
     private readonly ILogger _logger;
     private readonly KestrelWebSocketServer _server;
     private readonly SharedSecretProvider _sharedSecretProvider = new();
@@ -41,48 +39,42 @@ internal sealed class WebSocketClientTransport : ClientTransport
     // WriteAsync is invoked under a semaphore in DefaultHotReloadClient.
     private MemoryStream? _sendBuffer;
 
-    public WebSocketClientTransport(int port, int? securePort, ILogger logger)
+    private WebSocketClientTransport(ILogger logger)
     {
-        _port = port;
-        _securePort = securePort;
         _logger = logger;
         _server = new KestrelWebSocketServer(logger, HandleRequestAsync);
     }
 
     /// <summary>
-    /// The bound port number, for testing. Only valid after server has started.
+    /// Creates and starts a new <see cref="WebSocketClientTransport"/> instance.
     /// </summary>
-    internal int Port => new Uri(_server.ServerUrls.Select(KestrelWebSocketServer.ConvertToWebSocketUrl).First()).Port;
-
-    public override void ConfigureEnvironment(IDictionary<string, string> env)
+    public static async Task<WebSocketClientTransport> CreateAsync(int port, int? securePort, ILogger logger, CancellationToken cancellationToken)
     {
-        // Start the server now so we know the actual bound port (when using port 0 for auto-assign)
-        EnsureServerStarted();
-
-        // Set the WebSocket endpoint for the app to connect to.
-        // Use the actual bound URL from the server (important when port 0 was requested).
-        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.ServerUrls.Select(KestrelWebSocketServer.ConvertToWebSocketUrl).First();
-
-        // Set the RSA public key for the client to encrypt its shared secret.
-        // This is the same authentication mechanism used by BrowserRefreshServer.
-        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _sharedSecretProvider.GetPublicKey();
-    }
-
-    private bool _serverStarted;
-
-    private void EnsureServerStarted()
-    {
-        if (_serverStarted)
-        {
-            return;
-        }
+        var transport = new WebSocketClientTransport(logger);
 
         // Start Kestrel server with WebSocket support.
         // Use 127.0.0.1 instead of "localhost" because Kestrel doesn't support dynamic port binding with "localhost".
         // System.InvalidOperationException: Dynamic port binding is not supported when binding to localhost.
         // You must either bind to 127.0.0.1:0 or [::1]:0, or both.
-        _server.StartServerAsync("127.0.0.1", _port, securePort: _securePort, CancellationToken.None).AsTask().GetAwaiter().GetResult();
-        _serverStarted = true;
+        await transport._server.StartServerAsync("127.0.0.1", port, securePort: securePort, cancellationToken);
+
+        return transport;
+    }
+
+    /// <summary>
+    /// The bound port number, for testing. Only valid after server has started.
+    /// </summary>
+    internal int Port => new Uri(_server.ServerUrls.Select(url => KestrelWebSocketServer.GetWebSocketUrl(url)).First()).Port;
+
+    public override void ConfigureEnvironment(IDictionary<string, string> env)
+    {
+        // Set the WebSocket endpoint for the app to connect to.
+        // Use the actual bound URL from the server (important when port 0 was requested).
+        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.ServerUrls.Select(url => KestrelWebSocketServer.GetWebSocketUrl(url)).First();
+
+        // Set the RSA public key for the client to encrypt its shared secret.
+        // This is the same authentication mechanism used by BrowserRefreshServer.
+        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _sharedSecretProvider.GetPublicKey();
     }
 
     private async Task HandleRequestAsync(HttpContext context)
@@ -96,23 +88,21 @@ internal sealed class WebSocketClientTransport : ClientTransport
         // Validate the shared secret from the subprotocol
         string? subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var sp] ? sp : null;
 
-        if (subProtocol != null)
-        {
-            // Decrypt and validate the secret
-            try
-            {
-                _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
-                context.Response.StatusCode = 401;
-                return;
-            }
-        }
-        else
+        if (subProtocol == null)
         {
             _logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
+            context.Response.StatusCode = 401;
+            return;
+        }
+
+        // Decrypt and validate the secret
+        try
+        {
+            _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
             context.Response.StatusCode = 401;
             return;
         }
@@ -137,14 +127,8 @@ internal sealed class WebSocketClientTransport : ClientTransport
         _logger.LogDebug("WebSocket client disconnected");
     }
 
-    public override async Task WaitForConnectionAsync(CancellationToken cancellationToken)
-    {
-        // Server should already be started by ConfigureEnvironment, but ensure it's started
-        EnsureServerStarted();
-
-        // Wait for the client to connect
-        await _clientConnectedSource.Task.WaitAsync(cancellationToken);
-    }
+    public override Task WaitForConnectionAsync(CancellationToken cancellationToken) =>
+        _clientConnectedSource.Task.WaitAsync(cancellationToken);
 
     public override async ValueTask WriteAsync(byte type, Func<Stream, CancellationToken, ValueTask>? writePayload, CancellationToken cancellationToken)
     {

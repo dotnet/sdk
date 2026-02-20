@@ -7,8 +7,8 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    // Matches WebSocket URLs like ws://127.0.0.1:12345 where port is non-zero
-    private static readonly Regex WebSocketServerStartedPattern = new(@"WebSocket server started at: ws://127\.0\.0\.1:([1-9]\d*)");
+    // Matches WebSocket URLs like ws://localhost:12345 where port is non-zero
+    private static readonly Regex WebSocketServerStartedPattern = new(@"WebSocket server started at: ws://localhost:([1-9]\d*)");
 
     /// <summary>
     /// Tests that hot reload works for projects with the HotReloadWebSockets capability.

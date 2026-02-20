@@ -50,21 +50,7 @@ internal sealed class BrowserRefreshServer(
     private ImmutableArray<string> GetServerUrls(ImmutableArray<string> serverUrls)
     {
         Debug.Assert(serverUrls.Length > 0);
-
-        if (autoReloadWebSocketHostName is null)
-        {
-            return [.. serverUrls.Select(s =>
-                s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
-                .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal))];
-        }
-
-        return
-        [
-            serverUrls
-                .First()
-                .Replace("https://", "wss://", StringComparison.Ordinal)
-                .Replace("http://", "ws://", StringComparison.Ordinal)
-        ];
+        return [.. serverUrls.Select(s => KestrelWebSocketServer.GetWebSocketUrl(s, autoReloadWebSocketHostName))];
     }
 
     private async Task WebSocketRequestAsync(HttpContext context)

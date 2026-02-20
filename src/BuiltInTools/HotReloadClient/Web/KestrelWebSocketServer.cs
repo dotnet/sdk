@@ -126,16 +126,26 @@ internal sealed class KestrelWebSocketServer : IDisposable
             ServerUrls = [.. addresses];
         }
 
-        _logger.LogDebug("WebSocket server started at: {Urls}", string.Join(", ", ServerUrls.Select(ConvertToWebSocketUrl)));
+        _logger.LogDebug("WebSocket server started at: {Urls}", string.Join(", ", ServerUrls.Select(url => GetWebSocketUrl(url))));
     }
 
     /// <summary>
     /// Converts an HTTP(S) URL to a WebSocket URL.
+    /// When <paramref name="hostName"/> is not specified, also replaces 127.0.0.1 with localhost.
     /// </summary>
-    internal static string ConvertToWebSocketUrl(string httpUrl)
-        => httpUrl
-            .Replace("http://", "ws://", StringComparison.Ordinal)
-            .Replace("https://", "wss://", StringComparison.Ordinal);
+    internal static string GetWebSocketUrl(string httpUrl, string? hostName = null)
+    {
+        if (hostName is null)
+        {
+            return httpUrl
+                .Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
+                .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal);
+        }
+
+        return httpUrl
+            .Replace("https://", "wss://", StringComparison.Ordinal)
+            .Replace("http://", "ws://", StringComparison.Ordinal);
+    }
 }
 
 #endif

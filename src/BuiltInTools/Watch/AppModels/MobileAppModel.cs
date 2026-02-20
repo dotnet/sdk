@@ -9,13 +9,20 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNode project) : HotReloadAppModel
 {
-    public override ValueTask<HotReloadClients?> TryCreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
-        // Use WebSocket transport for projects with HotReloadWebSockets capability.
-        // Mobile workloads (Android, iOS) add this capability since named pipes don't work over the network.
-        // Pass the startup hook path so it can be included in the environment variables
-        // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
-        => new(new HotReloadClients(
-            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: true,
-                new WebSocketClientTransport(context.EnvironmentOptions.AgentWebSocketPort, context.EnvironmentOptions.AgentWebSocketSecurePort, clientLogger)),
-            browserRefreshServer: null));
+    // Use WebSocket transport for projects with HotReloadWebSockets capability.
+    // Mobile workloads (Android, iOS) add this capability since named pipes don't work over the network.
+    // Pass the startup hook path so it can be included in the environment variables
+    // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
+    public override async ValueTask<HotReloadClients?> TryCreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
+    {
+        var transport = await WebSocketClientTransport.CreateAsync(
+            context.EnvironmentOptions.AgentWebSocketPort,
+            context.EnvironmentOptions.AgentWebSocketSecurePort,
+            clientLogger,
+            cancellationToken);
+
+        return new HotReloadClients(
+            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: true, transport),
+            browserRefreshServer: null);
+    }
 }
