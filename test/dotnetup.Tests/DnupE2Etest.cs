@@ -261,6 +261,9 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.WorkingDirectory = tempRoot;
 
+        // Suppress .NET welcome message / first-run experience in test output
+        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
         // output which is a framework-dependent AppHost. Ensure DOTNET_ROOT is set so
         // the AppHost can locate the runtime. On CI each script step gets a fresh shell,
         // so DOTNET_ROOT from the restore step isn't inherited. The env script sourced
