@@ -6,6 +6,8 @@
         <ContainerTaskFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">net10.0</ContainerTaskFramework>
         <ContainerTaskFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">net472</ContainerTaskFramework>
         <ContainerizeFolderName>containerize</ContainerizeFolderName>
+        <!-- Indicate that this SDK supports VS host object COM remoting. VS tooling uses this property to detect support instead of fragile SDK version comparisons. -->
+        <DotNetSdkSupportsVSHostObjectRemoting>true</DotNetSdkSupportsVSHostObjectRemoting>
         <!--The folder where the custom task will be present. It points to inside the nuget package. -->
         <ContainerCustomTasksFolder>$(MSBuildThisFileDirectory)..\$(ContainerTaskFolderName)\$(ContainerTaskFramework)\</ContainerCustomTasksFolder>
         <ContainerizeFolder>$(MSBuildThisFileDirectory)..\$(ContainerizeFolderName)\</ContainerizeFolder>
@@ -15,14 +17,6 @@
 
     <!--Register our custom task-->
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateNewImage" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
-
-    <!--
-      Indicate that this SDK supports VS host object COM remoting.
-      VS tooling uses this property to detect support instead of fragile SDK version comparisons.
-    -->
-    <PropertyGroup>
-      <DotNetSdkSupportsVSHostObjectRemoting>true</DotNetSdkSupportsVSHostObjectRemoting>
-    </PropertyGroup>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateImageIndex" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ParseContainerProperties" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
