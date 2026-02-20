@@ -45,6 +45,12 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
         private volatile bool _isDisposed;
 
+        // The number of sessions whose initialization is in progress.
+        private int _pendingSessionInitializationCount;
+
+        // Blocks disposal until no session initialization is in progress.
+        private readonly SemaphoreSlim _postDisposalSessionInitializationCompleted = new(initialCount: 0, maxCount: 1);
+
         public SessionManager(ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         {
             _projectLauncher = projectLauncher;
@@ -59,21 +65,20 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
         public async ValueTask DisposeAsync()
         {
-#if DEBUG
-            lock (_guard)
-            {
-                Debug.Assert(_sessions.Count == 0);
-            }
-#endif
-            _isDisposed = true;
-
-            await _service.DisposeAsync();
-        }
-
-        public async ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken)
-        {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
+            _logger.LogDebug("Disposing service factory ...");
+
+            // stop accepting requests - triggers cancellation token for in-flight operations:
+            await _service.DisposeAsync();
+
+            // should not receive any more requests at this point:
+            _isDisposed = true;
+
+            // wait for all in-flight process initialization to complete:
+            await _postDisposalSessionInitializationCompleted.WaitAsync(CancellationToken.None);
+
+            // terminate all active sessions:
             ImmutableArray<Session> sessions;
             lock (_guard)
             {
@@ -82,7 +87,11 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
                 _sessions.Clear();
             }
 
-            await Task.WhenAll(sessions.Select(TerminateSessionAsync)).WaitAsync(cancellationToken);
+            await Task.WhenAll(sessions.Select(TerminateSessionAsync)).WaitAsync(CancellationToken.None);
+
+            _postDisposalSessionInitializationCompleted.Dispose();
+
+            _logger.LogDebug("Service factory disposed");
         }
 
         public IEnumerable<(string name, string value)> GetEnvironmentVariables()
@@ -103,61 +112,73 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
         public async ValueTask<RunningProject> StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool isRestart, CancellationToken cancellationToken)
         {
+            // Neither request from DCP nor restart should happen once the disposal has started.
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            _logger.LogDebug("Starting: '{Path}'", projectOptions.Representation.ProjectOrEntryPointFilePath);
-
-            var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
+            _logger.LogDebug("[#{SessionId}] Starting: '{Path}'", sessionId, projectOptions.Representation.ProjectOrEntryPointFilePath);
 
             RunningProject? runningProject = null;
+            var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
 
-            runningProject = await _projectLauncher.TryLaunchProcessAsync(
-                projectOptions,
-                onOutput: line =>
-                {
-                    var writeResult = outputChannel.Writer.TryWrite(line);
-                    Debug.Assert(writeResult);
-                },
-                onExit: async (processId, exitCode) =>
-                {
-                    // Project can be null if the process exists while it's being initialized.
-                    if (runningProject?.IsRestarting == false)
+            Interlocked.Increment(ref _pendingSessionInitializationCount);
+
+            try
+            {
+                runningProject = await _projectLauncher.TryLaunchProcessAsync(
+                    projectOptions,
+                    onOutput: line =>
                     {
-                        try
+                        var writeResult = outputChannel.Writer.TryWrite(line);
+                        Debug.Assert(writeResult);
+                    },
+                    onExit: async (processId, exitCode) =>
+                    {
+                        // Project can be null if the process exists while it's being initialized.
+                        if (runningProject?.IsRestarting == false)
                         {
-                            await _service.NotifySessionEndedAsync(dcpId, sessionId, processId, exitCode, cancellationToken);
+                            try
+                            {
+                                await _service.NotifySessionEndedAsync(dcpId, sessionId, processId, exitCode, cancellationToken);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                // canceled on shutdown, ignore
+                            }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            // canceled on shutdown, ignore
-                        }
-                    }
-                },
-                restartOperation: cancellationToken =>
-                    StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: true, cancellationToken),
-                cancellationToken);
+                    },
+                    restartOperation: cancellationToken =>
+                        StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: true, cancellationToken),
+                    cancellationToken);
 
-            if (runningProject == null)
+                if (runningProject == null)
+                {
+                    // detailed error already reported:
+                    throw new ApplicationException($"Failed to launch '{projectOptions.Representation.ProjectOrEntryPointFilePath}'.");
+                }
+
+                await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.Process.Id, cancellationToken);
+
+                // cancel reading output when the process terminates:
+                var outputReader = StartChannelReader(runningProject.Process.ExitedCancellationToken);
+
+                lock (_guard)
+                {
+                    // When process is restarted we reuse the session id.
+                    // The session already exists, it needs to be updated with new info.
+                    Debug.Assert(_sessions.ContainsKey(sessionId) == isRestart);
+
+                    _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
+                }
+            }
+            finally
             {
-                // detailed error already reported:
-                throw new ApplicationException($"Failed to launch '{projectOptions.Representation.ProjectOrEntryPointFilePath}'.");
+                if (Interlocked.Decrement(ref _pendingSessionInitializationCount) == 0 && _isDisposed)
+                {
+                    _postDisposalSessionInitializationCompleted.Release();
+                }
             }
 
-            await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.Process.Id, cancellationToken);
-
-            // cancel reading output when the process terminates:
-            var outputReader = StartChannelReader(runningProject.Process.ExitedCancellationToken);
-
-            lock (_guard)
-            {
-                // When process is restarted we reuse the session id.
-                // The session already exists, it needs to be updated with new info.
-                Debug.Assert(_sessions.ContainsKey(sessionId) == isRestart);
-
-                _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
-            }
-
-            _logger.LogDebug("Session started: #{SessionId}", sessionId);
+            _logger.LogDebug("[#{SessionId}] Session started", sessionId);
             return runningProject;
 
             async Task StartChannelReader(CancellationToken cancellationToken)
@@ -203,7 +224,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
         private async Task TerminateSessionAsync(Session session)
         {
-            _logger.LogDebug("Stop session #{SessionId}", session.Id);
+            _logger.LogDebug("[#{SessionId}] Stop session", session.Id);
 
             await session.RunningProject.Process.TerminateAsync();
 

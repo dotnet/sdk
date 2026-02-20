@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -156,7 +155,7 @@ namespace Microsoft.DotNet.Watch
 
         private static MessageDescriptor<TArgs> Create<TArgs>(EventId id, string format, Emoji emoji, LogLevel level)
         {
-            var descriptor = new MessageDescriptor<TArgs>(format, emoji, level, id.Id);
+            var descriptor = new MessageDescriptor<TArgs>(format, emoji, level, id);
             s_descriptors = s_descriptors.Add(id, descriptor);
             return descriptor;
         }
@@ -209,8 +208,8 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor<None> ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);
-        public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is ot supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
-        public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ApplicationWillBeRestarted = Create("Browser refresh is ot supported by the project target framework. Application will be restarted when updated. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
+        public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is not supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
+        public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ApplicationWillBeRestarted = Create("Browser refresh is not supported by the project target framework. Application will be restarted when updated. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
         public static readonly MessageDescriptor<None> UpdatingDiagnostics = Create(LogEvents.UpdatingDiagnostics, Emoji.Default);
         public static readonly MessageDescriptor<None> FailedToReceiveResponseFromConnectedBrowser = Create(LogEvents.FailedToReceiveResponseFromConnectedBrowser, Emoji.Default);
         public static readonly MessageDescriptor<None> NoBrowserConnected = Create(LogEvents.NoBrowserConnected, Emoji.Default);

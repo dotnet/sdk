@@ -413,10 +413,9 @@ namespace Microsoft.DotNet.Watch
 
                     if (runtimeProcessLauncher != null)
                     {
-                        // Request cleanup of all processes created by the launcher before we terminate the main process.
-                        // Executed after the main process has terminated if the process exits on its own.
-                        // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
-                        await runtimeProcessLauncher.TerminateLaunchedProcessesAsync(CancellationToken.None);
+                        // Dispose the launcher so that it won't start any new peripheral processes.
+                        // Do this before terminating all processes, so that we don't leave any processes orphaned.
+                        await runtimeProcessLauncher.DisposeAsync();
                     }
 
                     if (compilationHandler != null)
@@ -428,11 +427,6 @@ namespace Microsoft.DotNet.Watch
                     if (mainRunningProject != null)
                     {
                         await mainRunningProject.Process.TerminateAsync();
-                    }
-
-                    if (runtimeProcessLauncher != null)
-                    {
-                        await runtimeProcessLauncher.DisposeAsync();
                     }
 
                     // Wait for file change

@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var runningProcess = new RunningProcess(launchResult.ProcessId.Value, processTask, processExitedSource, processTerminationSource, _context.Logger);
+            var runningProcess = new RunningProcess(launchResult.ProcessId.Value, processTask, processExitedSource, processTerminationSource);
 
             // transfer ownership to the running process:
             disposables.Items.Remove(processExitedSource);

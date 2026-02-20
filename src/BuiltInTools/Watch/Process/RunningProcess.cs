@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
-
 namespace Microsoft.DotNet.Watch;
 
 internal sealed class RunningProcess(
     int id,
     Task<int> task,
     CancellationTokenSource exitedSource,
-    CancellationTokenSource terminationSource,
-    ILogger logger) : IAsyncDisposable
+    CancellationTokenSource terminationSource) : IAsyncDisposable
 {
     private CancellationTokenSource? _terminationSource = terminationSource;
 
@@ -29,8 +25,6 @@ internal sealed class RunningProcess(
 
     public async ValueTask DisposeAsync(bool isExiting)
     {
-        logger.LogDebug("Disposing running process {ProcessId}, isExiting: {IsExiting}, stack: {T}", id, isExiting, new StackTrace(true));
-
         var terminationSource = Interlocked.Exchange(ref _terminationSource, null);
         ObjectDisposedException.ThrowIf(terminationSource == null, this);
 
