@@ -34,6 +34,7 @@ dotnetup:
   - `dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj`
   - `dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj`
 - Do not run `dotnet build` from within the dotnetup directory as restore may fail.
+- When creating issues, use the existing `dotnetup` label. Do NOT create new labels, such as `Area: dotnetup`.
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
