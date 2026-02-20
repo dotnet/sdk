@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -62,7 +61,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             UseDefaultCredentials = true,
             AllowAutoRedirect = true,
             MaxAutomaticRedirections = 10,
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            // Do NOT set AutomaticDecompression here. The archives are .tar.gz files
+            // whose gzip layer is handled explicitly by DecompressTarGzIfNeeded().
+            // Enabling automatic decompression causes HttpClient to add Accept-Encoding: gzip
+            // and transparently strip the gzip layer when the CDN returns Content-Encoding: gzip,
+            // resulting in a raw .tar on disk whose hash does not match the manifest's .tar.gz hash.
         };
 
         var client = new HttpClient(handler)
