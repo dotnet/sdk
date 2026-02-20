@@ -143,10 +143,10 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
                 throw new ApplicationException($"Failed to launch '{projectOptions.Representation.ProjectOrEntryPointFilePath}'.");
             }
 
-            await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.ProcessId, cancellationToken);
+            await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.Process.Id, cancellationToken);
 
             // cancel reading output when the process terminates:
-            var outputReader = StartChannelReader(runningProject.ProcessExitedCancellationToken);
+            var outputReader = StartChannelReader(runningProject.Process.ExitedCancellationToken);
 
             lock (_guard)
             {
@@ -205,7 +205,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
         {
             _logger.LogDebug("Stop session #{SessionId}", session.Id);
 
-            await session.RunningProject.TerminateAsync();
+            await session.RunningProject.Process.TerminateAsync();
 
             // process termination should cancel output reader task:
             await session.OutputReader;

@@ -1322,6 +1322,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
             await App.WaitUntilOutputContains($"dotnet watch ⭐ Starting: '{serviceProjectPath}'");
+
+            // Wait for the process to start before shutting down, so we can reliably verify Exited message below.
+            // The agent startup hook might not be initialized yet (signal handlers registered),
+            // so the process might need to be forcefully killed. We could wait until the agent is initialized
+            // but it's good to test this scenario.
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, $"WatchAspire.ApiService ({tfm})");
+
             App.Process.ClearOutput();
 
             App.SendControlC();

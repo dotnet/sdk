@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -16,64 +15,40 @@ namespace Microsoft.DotNet.Watch
         ProjectOptions options,
         HotReloadClients clients,
         ILogger clientLogger,
-        Task<int> runningProcess,
-        int processId,
-        CancellationTokenSource processExitedSource,
-        CancellationTokenSource processTerminationSource,
+        RunningProcess process,
         RestartOperation restartOperation,
-        ImmutableArray<string> managedCodeUpdateCapabilities) : IDisposable
+        ImmutableArray<string> managedCodeUpdateCapabilities) : IAsyncDisposable
     {
-        public readonly ProjectGraphNode ProjectNode = projectNode;
-        public readonly ProjectOptions Options = options;
-        public readonly HotReloadClients Clients = clients;
-        public readonly ILogger ClientLogger = clientLogger;
-        public readonly ImmutableArray<string> ManagedCodeUpdateCapabilities = managedCodeUpdateCapabilities;
-        public readonly Task<int> RunningProcess = runningProcess;
-        public readonly int ProcessId = processId;
-        public readonly RestartOperation RestartOperation = restartOperation;
+        private volatile int _isRestarting;
 
-        /// <summary>
-        /// Cancellation token triggered when the process exits.
-        /// Stores the token to allow callers to use the token even after the source has been disposed.
-        /// </summary>
-        public CancellationToken ProcessExitedCancellationToken = processExitedSource.Token;
+        public ProjectGraphNode ProjectNode => projectNode;
+        public ProjectOptions Options => options;
+        public HotReloadClients Clients => clients;
+        public ILogger ClientLogger => clientLogger;
+        public ImmutableArray<string> ManagedCodeUpdateCapabilities => managedCodeUpdateCapabilities;
+        public RunningProcess Process => process;
+        public RestartOperation RestartOperation => restartOperation;
 
         /// <summary>
         /// Set to true when the process termination is being requested so that it can be auto-restarted.
         /// </summary>
         public bool IsRestarting => _isRestarting != 0;
 
-        private volatile int _isRestarting;
-        private volatile bool _isDisposed;
-
         /// <summary>
         /// Disposes the project. Can occur unexpectedly whenever the process exits.
         /// Must only be called once per project.
         /// </summary>
-        public void Dispose()
+        /// <param name="isExiting">When invoked in <see cref="ProcessSpec.OnExit"/> handler.</param>
+        public async ValueTask DisposeAsync(bool isExiting)
         {
-            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            // disposes communication channels:
+            clients.Dispose();
 
-            _isDisposed = true;
-            processExitedSource.Cancel();
-
-            Clients.Dispose();
-            processTerminationSource.Dispose();
-            processExitedSource.Dispose();
+            await process.DisposeAsync(isExiting);
         }
 
-        /// <summary>
-        /// Terminates the process if it hasn't terminated yet.
-        /// </summary>
-        public Task TerminateAsync()
-        {
-            if (!_isDisposed)
-            {
-                processTerminationSource.Cancel();
-            }
-
-            return RunningProcess;
-        }
+        ValueTask IAsyncDisposable.DisposeAsync()
+            => DisposeAsync(isExiting: false);
 
         /// <summary>
         /// Marks the <see cref="RunningProject"/> as restarting.
@@ -89,7 +64,7 @@ namespace Microsoft.DotNet.Watch
         public Task TerminateForRestartAsync()
         {
             InitiateRestart();
-            return TerminateAsync();
+            return process.TerminateAsync();
         }
 
         public async Task CompleteApplyOperationAsync(Task applyTask)
@@ -107,7 +82,7 @@ namespace Microsoft.DotNet.Watch
                 // Handle all exceptions. If one process is terminated or fails to apply changes
                 // it shouldn't prevent applying updates to other processes.
 
-                ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
+                ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", process.Id, e.ToString());
             }
         }
     }
