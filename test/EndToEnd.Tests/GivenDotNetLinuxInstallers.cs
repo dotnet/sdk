@@ -79,7 +79,7 @@ public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
 
     [Fact]
     public void DebPackagePreservesSymbolicLinks() =>
-        SymbolicLinkHelpers.VerifyInstallerSymlinks(
+        FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.Linux,
             "dotnet-sdk-*.deb",
             ExcludedDebSuffixes,
@@ -102,13 +102,13 @@ public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
         var dataTar = Directory.GetFiles(tempDir, "data.tar*").FirstOrDefault();
         if (dataTar != null)
         {
-            SymbolicLinkHelpers.ExtractTar(dataTar, dataDir, Log);
+            FileLinkHelpers.ExtractTar(dataTar, dataDir, Log);
         }
     }
 
     [Fact]
     public void RpmPackagePreservesSymbolicLinks() =>
-        SymbolicLinkHelpers.VerifyInstallerSymlinks(
+        FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.Linux,
             "dotnet-sdk-*.rpm",
             ExcludedRpmSuffixes,

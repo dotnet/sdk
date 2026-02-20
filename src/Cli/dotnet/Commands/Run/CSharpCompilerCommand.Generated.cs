@@ -72,6 +72,7 @@ partial class CSharpCompilerCommand
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.Compression.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.Compression.FileSystem.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.Compression.ZipFile.dll",
+            $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.Compression.Zstandard.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.FileSystem.AccessControl.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net{TargetFrameworkVersion}/System.IO.FileSystem.dll",
