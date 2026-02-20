@@ -5,6 +5,8 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -45,7 +47,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
-            => AssertOutputContains(GetPattern(descriptor, projectDisplay));
+            => AssertOutputContains(GetPattern(descriptor, projectDisplay, out _));
 
         public void AssertOutputDoesNotContain(string message)
             => AssertEx.DoesNotContainSubstring(message, Process.Output);
@@ -54,69 +56,87 @@ namespace Microsoft.DotNet.Watch.UnitTests
             => AssertEx.DoesNotContainPattern(pattern, Process.Output);
 
         public void AssertOutputDoesNotContain(MessageDescriptor descriptor, string projectDisplay = null)
-            => AssertOutputDoesNotContain(GetPattern(descriptor, projectDisplay));
+            => AssertOutputDoesNotContain(GetPattern(descriptor, projectDisplay, out _));
 
-        private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay = null)
-            => new Regex(Regex.Replace(Regex.Escape((projectDisplay != null ? $"[{projectDisplay}] " : "") + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
+        private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay, out string patternDisplay)
+        {
+            var prefix = projectDisplay != null ? $"[{projectDisplay}] " : "";
+            var pattern = new Regex(Regex.Replace(Regex.Escape(prefix + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
+            patternDisplay = prefix + descriptor.Format;
+            return pattern;
+        }
+
+        private void LogFoundOutput(string pattern, string testPath, int testLine)
+            => Logger.Log($"Found output matching: '{pattern}'", testPath, testLine);
+
+        private void LogWaitingForOutput(string pattern, string testPath, int testLine)
+            => Logger.Log($"Waiting for output matching: '{pattern}'", testPath, testLine);
 
         public async ValueTask WaitUntilOutputContains(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (Process.Output.Any(line => line.Contains(text)))
+            if (!Process.Output.Any(line => line.Contains(text)))
             {
-                Logger.Log($"Test found output: '{text}'", testPath, testLine);
-            }
-            else   
-            {
-                Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
+                LogWaitingForOutput(text, testPath, testLine);
                 _ = await WaitForOutputLineMatching(line => line.Contains(text));
             }
+
+            LogFoundOutput(text, testPath, testLine);
         }
 
         public async ValueTask WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            var patternDisplay = pattern.ToString();
+
+            if (!Process.Output.Any(line => pattern.IsMatch(line)))
             {
-                Logger.Log($"Test found output pattern: '{pattern}'", testPath, testLine);
-            }
-            else
-            {
-                Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
+                LogWaitingForOutput(patternDisplay, testPath, testLine);
                 _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
             }
+
+            LogFoundOutput(patternDisplay, testPath, testLine);
         }
 
         public async ValueTask WaitUntilOutputContains(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
         {
-            var pattern = GetPattern(descriptor, projectDisplay);
-            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
+
+            if (!Process.Output.Any(line => pattern.IsMatch(line)))
             {
-                Logger.Log($"Test found output text format: '{descriptor.Format}'", testPath, testLine);
-            }
-            else
-            {
-                Logger.Log($"Test waiting for output text format: '{descriptor.Format}'", testPath, testLine);
+                LogWaitingForOutput(patternDisplay, testPath, testLine);
                 _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
             }
+
+            LogFoundOutput(patternDisplay, testPath, testLine);
         }
 
         public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
-            return Process.GetOutputLineAsync(success: line => line.Contains(text), failure: _ => false);
+            LogWaitingForOutput(text, testPath, testLine);
+            var line = Process.GetOutputLineAsync(success: line => line.Contains(text), failure: _ => false);
+            LogFoundOutput(text, testPath, testLine);
+            return line;
         }
 
         public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
         {
-            Logger.Log($"Test waiting for text format: '{descriptor.Format}'", testPath, testLine);
+            var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
 
-            var pattern = GetPattern(descriptor, projectDisplay);
-            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+            LogWaitingForOutput(patternDisplay, testPath, testLine);
+            var line = Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+            LogFoundOutput(patternDisplay, testPath, testLine);
+
+            return line;
         }
 
         public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
-            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+            var patternDisplay = pattern.ToString();
+
+            LogWaitingForOutput(patternDisplay, testPath, testLine);
+            var line = Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+            LogFoundOutput(patternDisplay, testPath, testLine);
+
+            return line;
         }
 
         private Task<string> WaitForOutputLineMatching(Predicate<string> predicate)
@@ -127,7 +147,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// </summary>
         public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            Logger.Log($"Test waiting for output: '{expectedPrefix}'", testPath, testLine);
+            var display = $"^{expectedPrefix}.*";
+
+            LogWaitingForOutput(display, testPath, testLine);
 
             var line = await Process.GetOutputLineAsync(
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
@@ -144,7 +166,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
             }
 
-            return line.Substring(expectedPrefix.Length);
+            var result = line.Substring(expectedPrefix.Length);
+            LogFoundOutput(display, testPath, testLine);
+            return result;
         }
 
         public async Task AssertOutputLineEquals(string expectedLine)
