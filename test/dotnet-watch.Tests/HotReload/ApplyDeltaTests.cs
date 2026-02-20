@@ -1263,9 +1263,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
             // wait until after all DCP sessions have started:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Session started");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
             // MigrationService terminated:
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
@@ -1321,7 +1321,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
-            await App.WaitUntilOutputContains($"dotnet watch ⭐ Starting: '{serviceProjectPath}'");
+            await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
 
             // Wait for the process to start before shutting down, so we can reliably verify Exited message below.
             // The agent startup hook might not be initialized yet (signal handlers registered),
@@ -1341,9 +1341,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #1");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #2");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Sending 'sessionTerminated'");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
@@ -1363,7 +1363,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
             await App.WaitUntilOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
@@ -1371,7 +1371,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
 
             // wait until after DCP sessions have been started for all projects:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
             App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
 
@@ -1381,7 +1381,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
             await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
             App.AssertOutputDoesNotContain("⚠");
 

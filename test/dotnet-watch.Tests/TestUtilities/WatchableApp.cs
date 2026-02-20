@@ -5,8 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
