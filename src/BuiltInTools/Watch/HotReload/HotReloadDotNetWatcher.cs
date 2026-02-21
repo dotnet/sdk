@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Watch
                             iterationCancellationToken);
 
                         // Terminate root process if it had rude edits or is non-reloadable.
-                        if (updates.ProjectsToRestart.Any(project => project.Options.IsMainProject))
+                        if (updates.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
                         {
                             Debug.Assert(mainRunningProject != null);
                             mainRunningProject.InitiateRestart();
@@ -463,7 +463,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     _context.Logger.LogInformation("Affected projects:");
 
-                    foreach (var projectName in projectNames.OrderBy(n => n))
+                    foreach (var projectName in projectNames.Order())
                     {
                         _context.Logger.LogInformation("  {ProjectName}", projectName);
                     }
@@ -893,7 +893,7 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 await FileWatcher.WaitForFileChangeAsync(
-                    _context.RootProjects.Select(p => p.ProjectOrEntryPointFilePath),
+                    _context.RootProjects.Select(static p => p.ProjectOrEntryPointFilePath),
                     _context.Logger,
                     _context.EnvironmentOptions,
                     startedWatching: () => _context.Logger.Log(MessageDescriptor.FixBuildError),
