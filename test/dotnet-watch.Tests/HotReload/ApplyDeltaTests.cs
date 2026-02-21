@@ -1211,7 +1211,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("> NewSubdir");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53058
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1311,7 +1311,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53058
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
