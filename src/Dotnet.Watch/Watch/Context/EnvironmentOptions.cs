@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -37,12 +38,9 @@ namespace Microsoft.DotNet.Watch
         bool SuppressEmojis = false,
         bool RestartOnRudeEdit = false,
         LogLevel? CliLogLevel = null,
-        string? BrowserWebSocketHostName = null,
-        int? BrowserWebSocketPort = null,
-        int? BrowserWebSocketSecurePort = null,
         string? BrowserPath = null,
-        int AgentWebSocketPort = 0,
-        int? AgentWebSocketSecurePort = null,
+        WebSocketConfig BrowserWebSocketConfig = default,
+        WebSocketConfig AgentWebSocketConfig = default,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
@@ -59,12 +57,9 @@ namespace Microsoft.DotNet.Watch
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
             RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
             CliLogLevel: EnvironmentVariables.CliLogLevel,
-            BrowserWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
-            BrowserWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
-            BrowserWebSocketSecurePort: EnvironmentVariables.AutoReloadWSSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,
-            AgentWebSocketPort: EnvironmentVariables.AgentWebSocketPort,
-            AgentWebSocketSecurePort: EnvironmentVariables.AgentWebSocketSecurePort,
+            BrowserWebSocketConfig: new(EnvironmentVariables.BrowserWebSocketPort, EnvironmentVariables.BrowserWebSocketSecurePort, EnvironmentVariables.BrowserWebSocketHostName),
+            AgentWebSocketConfig: new(EnvironmentVariables.AgentWebSocketPort, EnvironmentVariables.AgentWebSocketSecurePort, hostName: null),
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );

@@ -58,9 +58,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 context.LoggerFactory,
                 middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.MuxerPath,
-                browserWebSocketHostName: context.EnvironmentOptions.BrowserWebSocketHostName,
-                browserWebSocketPort: context.EnvironmentOptions.BrowserWebSocketPort,
-                browserWebSocketSecurePort: context.EnvironmentOptions.BrowserWebSocketSecurePort,
+                webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
 
