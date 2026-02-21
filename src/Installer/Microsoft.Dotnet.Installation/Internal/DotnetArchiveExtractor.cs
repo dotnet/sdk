@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -61,7 +62,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
 
-    public void Prepare()
+    public async Task PrepareAsync()
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
@@ -74,7 +75,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            await _archiveDownloader.DownloadArchiveWithVerificationAsync(_request, _resolvedVersion, _archivePath, reporter);
         }
         catch (Exception ex)
         {

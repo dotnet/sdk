@@ -44,7 +44,7 @@ internal static class RuntimeInstallCommandParser
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
 
-        command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
+        command.SetAction(async parseResult => await new RuntimeInstallCommand(parseResult).ExecuteAsync());
 
         return command;
     }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal
@@ -18,7 +19,7 @@ namespace Microsoft.Dotnet.Installation.Internal
             _progressTarget = progressTarget;
         }
 
-        public void Install(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version)
+        public async Task InstallAsync(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version)
         {
             using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Install");
             activity?.SetTag("install.root", dotnetRoot.Path);
@@ -31,7 +32,7 @@ namespace Microsoft.Dotnet.Installation.Internal
             var installRequest = new DotnetInstallRequest(dotnetRoot, new UpdateChannel(version.ToString()), component, new InstallRequestOptions());
 
             using DotnetArchiveExtractor installer = new(installRequest, version, new ReleaseManifest(), _progressTarget);
-            installer.Prepare();
+            await installer.PrepareAsync();
             installer.Commit();
         }
         public void Uninstall(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version) => throw new NotImplementedException();

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 
@@ -13,6 +14,9 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// </summary>
 internal class ReleaseManifest
 {
+    private const int MaxRetryCount = 3;
+    private const int RetryDelayMilliseconds = 1000;
+
     private ProductCollection? _productCollection;
 
     public ReleaseManifest()
@@ -40,7 +44,7 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Gets or loads the ProductCollection.
+    /// Gets or loads the ProductCollection with retry logic for transient network failures.
     /// TODO: Caching of the manifest or product collection after the program exits would be ideal.
     /// </summary>
     public ProductCollection GetReleasesIndex()
@@ -50,8 +54,27 @@ internal class ReleaseManifest
             return _productCollection;
         }
 
-        _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
-        return _productCollection;
+        Exception? lastException = null;
+
+        for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
+        {
+            try
+            {
+                _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
+                return _productCollection;
+            }
+            catch (HttpRequestException ex)
+            {
+                lastException = ex;
+                if (attempt < MaxRetryCount)
+                {
+                    Thread.Sleep(RetryDelayMilliseconds * attempt); // Linear backoff
+                }
+            }
+        }
+
+        throw new HttpRequestException(
+            $"Failed to fetch the releases index after {MaxRetryCount} attempts.", lastException);
     }
 
     /// <summary>

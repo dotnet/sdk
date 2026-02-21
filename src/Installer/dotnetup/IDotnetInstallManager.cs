@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -25,7 +26,7 @@ public interface IDotnetInstallManager
 
     string? GetLatestInstalledAdminVersion();
 
-    void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
+    Task InstallSdksAsync(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
 
     void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null);
 

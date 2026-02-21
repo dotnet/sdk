@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -16,12 +17,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 internal class MockArchiveDownloader : IArchiveDownloader
 {
     /// <summary>
-    /// Records all calls to DownloadArchiveWithVerification for verification.
+    /// Records all calls to DownloadArchiveWithVerificationAsync for verification.
     /// </summary>
     public List<DownloadCall> DownloadCalls { get; } = new();
 
     /// <summary>
-    /// If set, DownloadArchiveWithVerification will throw this exception.
+    /// If set, DownloadArchiveWithVerificationAsync will throw this exception.
     /// </summary>
     public Exception? ExceptionToThrow { get; set; }
 
@@ -43,7 +44,7 @@ internal class MockArchiveDownloader : IArchiveDownloader
         ReleaseVersion Version,
         string DestinationPath);
 
-    public void DownloadArchiveWithVerification(
+    public Task DownloadArchiveWithVerificationAsync(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
         string destinationPath,
@@ -71,6 +72,7 @@ internal class MockArchiveDownloader : IArchiveDownloader
 
         // Report progress completion
         progress?.Report(new DownloadProgress(100, 100));
+        return Task.CompletedTask;
     }
 
     public void Dispose()

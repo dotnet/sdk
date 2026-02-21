@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -18,7 +19,7 @@ internal interface IArchiveDownloader : IDisposable
     /// <param name="resolvedVersion">The resolved version to download.</param>
     /// <param name="destinationPath">The local path to save the downloaded file.</param>
     /// <param name="progress">Optional progress reporting.</param>
-    void DownloadArchiveWithVerification(
+    Task DownloadArchiveWithVerificationAsync(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
         string destinationPath,

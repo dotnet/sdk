@@ -60,7 +60,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(NoProgressOption);
         command.Options.Add(RequireMuxerUpdateOption);
 
-        command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
+        command.SetAction(async parseResult => await new SdkInstallCommand(parseResult).ExecuteAsync());
 
         return command;
     }

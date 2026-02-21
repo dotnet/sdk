@@ -4,6 +4,7 @@
 using System;
 using System.Formats.Tar;
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
@@ -29,7 +30,7 @@ public class DotnetArchiveExtractorTests
     }
 
     [Fact]
-    public void Prepare_DownloadFailure_ThrowsException()
+    public async Task Prepare_DownloadFailure_ThrowsException()
     {
         // Arrange
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -54,7 +55,7 @@ public class DotnetArchiveExtractorTests
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => extractor.Prepare());
+        var ex = await Assert.ThrowsAsync<Exception>(async () => await extractor.PrepareAsync());
         _log.WriteLine($"Exception message: {ex.Message}");
         ex.Message.Should().Contain("Failed to download");
         ex.InnerException!.Message.Should().Contain("Network error");
@@ -65,7 +66,7 @@ public class DotnetArchiveExtractorTests
     }
 
     [Fact]
-    public void ExistingMuxer_IsPreserved_OnExtractionFailure()
+    public async Task ExistingMuxer_IsPreserved_OnExtractionFailure()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
@@ -101,7 +102,7 @@ public class DotnetArchiveExtractorTests
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
         // Prepare succeeds (download works)
-        extractor.Prepare();
+        await extractor.PrepareAsync();
         _log.WriteLine("Prepare completed successfully");
 
         // Commit should fail due to invalid archive, but muxer should be restored
@@ -150,7 +151,7 @@ public class DotnetArchiveExtractorTests
     }
 
     [Fact]
-    public void Prepare_RecordsCorrectDownloadParameters()
+    public async Task Prepare_RecordsCorrectDownloadParameters()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
@@ -169,7 +170,7 @@ public class DotnetArchiveExtractorTests
 
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
-        extractor.Prepare();
+        await extractor.PrepareAsync();
 
         // Verify the correct parameters were passed to the downloader
         mockDownloader.DownloadCalls.Should().HaveCount(1);

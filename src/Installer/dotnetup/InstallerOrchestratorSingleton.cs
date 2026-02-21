@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -23,7 +24,7 @@ internal class InstallerOrchestratorSingleton
     private ScopedMutex modifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
     // Returns null on failure, DotnetInstall on success
-    public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
+    public async Task<DotnetInstall?> InstallAsync(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
@@ -74,7 +75,7 @@ internal class InstallerOrchestratorSingleton
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
 
         using DotnetArchiveExtractor installer = new(installRequest, versionToInstall, releaseManifest, progressTarget);
-        installer.Prepare();
+        await installer.PrepareAsync();
 
         // Extract and commit the install to the directory
         using (var finalizeLock = modifyInstallStateMutex())

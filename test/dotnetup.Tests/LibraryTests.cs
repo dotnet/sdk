@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -33,7 +34,7 @@ public class LibraryTests
     [InlineData("latest", InstallComponent.Runtime)]
     [InlineData("9", InstallComponent.ASPNETCore)]
     [InlineData("latest", InstallComponent.ASPNETCore)]
-    public void LatestVersionForChannelCanBeInstalled(string channel, InstallComponent component)
+    public async Task LatestVersionForChannelCanBeInstalled(string channel, InstallComponent component)
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
 
@@ -46,7 +47,7 @@ public class LibraryTests
 
         Log.WriteLine($"Installing to path: {testEnv.InstallPath}");
 
-        installer.Install(
+        await installer.InstallAsync(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             component,
             latestVersion!);
@@ -70,7 +71,7 @@ public class LibraryTests
     }
 
     [Fact]
-    public void MuxerIsUpdated_WhenInstallingNewerSdk()
+    public async Task MuxerIsUpdated_WhenInstallingNewerSdk()
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
@@ -82,7 +83,7 @@ public class LibraryTests
         // Install .NET SDK 9.0 first
         var sdk9Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "9.0");
         Log.WriteLine($"Installing .NET SDK 9.0: {sdk9Version}");
-        installer.Install(
+        await installer.InstallAsync(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             InstallComponent.SDK,
             sdk9Version!);
@@ -104,7 +105,7 @@ public class LibraryTests
         // Install .NET SDK 10.0 second
         var sdk10Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "10.0");
         Log.WriteLine($"Installing .NET SDK 10.0: {sdk10Version}");
-        installer.Install(
+        await installer.InstallAsync(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             InstallComponent.SDK,
             sdk10Version!);
@@ -133,7 +134,7 @@ public class LibraryTests
     }
 
     [Fact]
-    public void MuxerIsNotDowngraded_WhenInstallingOlderSdk()
+    public async Task MuxerIsNotDowngraded_WhenInstallingOlderSdk()
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
@@ -145,7 +146,7 @@ public class LibraryTests
         // Install .NET SDK 10.0 first
         var sdk10Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "10.0");
         Log.WriteLine($"Installing .NET SDK 10.0: {sdk10Version}");
-        installer.Install(
+        await installer.InstallAsync(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             InstallComponent.SDK,
             sdk10Version!);
@@ -167,7 +168,7 @@ public class LibraryTests
         // Install .NET SDK 9.0 second
         var sdk9Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "9.0");
         Log.WriteLine($"Installing .NET SDK 9.0: {sdk9Version}");
-        installer.Install(
+        await installer.InstallAsync(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             InstallComponent.SDK,
             sdk9Version!);
