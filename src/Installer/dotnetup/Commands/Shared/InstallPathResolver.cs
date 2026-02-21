@@ -26,11 +26,11 @@ internal class InstallPathResolver
     /// </summary>
     /// <param name="ResolvedInstallPath">The final resolved install path.</param>
     /// <param name="InstallPathFromGlobalJson">The install path from global.json, if any.</param>
-    /// <param name="PathSource">How the path was determined: "global_json", "explicit", "existing_user_install", "interactive_prompt", or "default".</param>
+    /// <param name="PathSource">How the path was determined.</param>
     public record InstallPathResolutionResult(
         string ResolvedInstallPath,
         string? InstallPathFromGlobalJson,
-        string PathSource);
+        PathSource PathSource);
 
     /// <summary>
     /// Resolves the install path using the following precedence:
@@ -69,17 +69,17 @@ internal class InstallPathResolver
 
         if (explicitInstallPath is not null)
         {
-            return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, "explicit");
+            return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, PathSource.Explicit);
         }
 
         if (installPathFromGlobalJson is not null)
         {
-            return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, "global_json");
+            return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, PathSource.GlobalJson);
         }
 
         if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
-            return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, "existing_user_install");
+            return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
         }
 
         if (interactive)
@@ -87,9 +87,9 @@ internal class InstallPathResolver
             var prompted = SpectreAnsiConsole.Prompt(
                 new TextPrompt<string>($"Where should we install the {componentDescription} to?")
                     .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, "interactive_prompt");
+            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, PathSource.InteractivePrompt);
         }
 
-        return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, "default");
+        return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
     }
 }

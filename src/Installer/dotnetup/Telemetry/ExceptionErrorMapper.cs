@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -83,10 +84,10 @@ internal static class ExceptionErrorMapper
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
-            // Invalid argument — user provided bad input
+            // Invalid argument — likely a bug in our code (arguments are set programmatically)
             ArgumentException argEx => new ExceptionErrorInfo(
                 "InvalidArgument",
-                Category: ErrorCategory.User,
+                Category: ErrorCategory.Product,
                 Details: argEx.ParamName,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
@@ -98,10 +99,10 @@ internal static class ExceptionErrorMapper
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
-            // Not supported — could be user trying unsupported scenario
+            // Not supported — likely a product issue (missing implementation or unsupported code path)
             NotSupportedException => new ExceptionErrorInfo(
                 "NotSupported",
-                Category: ErrorCategory.User,
+                Category: ErrorCategory.Product,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 

@@ -242,7 +242,7 @@ public class ErrorCodeMapperTests
     [InlineData(DotnetInstallErrorCode.PermissionDenied, ErrorCategory.User)]
     [InlineData(DotnetInstallErrorCode.DiskFull, ErrorCategory.User)]
     [InlineData(DotnetInstallErrorCode.NetworkError, ErrorCategory.User)]
-    [InlineData(DotnetInstallErrorCode.NoMatchingFile, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.DownloadFailed, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.HashMismatch, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.ExtractionFailed, ErrorCategory.Product)]

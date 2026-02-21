@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -17,6 +18,7 @@ public abstract class CommandBase
 {
     protected ParseResult _parseResult;
     private Activity? _commandActivity;
+    private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
     {
@@ -25,46 +27,36 @@ public abstract class CommandBase
 
     /// <summary>
     /// Executes the command with automatic telemetry tracking.
+    /// Activities automatically track duration via start/stop — no Stopwatch needed.
     /// </summary>
     /// <returns>The exit code of the command.</returns>
     public int Execute()
     {
         var commandName = GetCommandName();
         _commandActivity = DotnetupTelemetry.Instance.StartCommand(commandName);
-        var stopwatch = Stopwatch.StartNew();
+        _exitCode = 1;
 
         try
         {
-            var exitCode = ExecuteCore();
-
-            stopwatch.Stop();
-            _commandActivity?.SetTag("exit.code", exitCode);
-            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
-            _commandActivity?.SetStatus(exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-
-            return exitCode;
+            _exitCode = ExecuteCore();
+            return _exitCode;
         }
         catch (DotnetInstallException ex)
         {
             // Known installation errors - print a clean user-friendly message
-            stopwatch.Stop();
-            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
-            _commandActivity?.SetTag("exit.code", 1);
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
             AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
             return 1;
         }
         catch (Exception ex)
         {
-            stopwatch.Stop();
-            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
-            _commandActivity?.SetTag("exit.code", 1);
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            // Status is already set inside RecordException with error type (no PII)
             throw;
         }
         finally
         {
+            _commandActivity?.SetTag("exit.code", _exitCode);
+            _commandActivity?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _commandActivity?.Dispose();
         }
     }

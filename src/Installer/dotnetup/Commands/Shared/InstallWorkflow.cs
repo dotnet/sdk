@@ -52,7 +52,7 @@ internal class InstallWorkflow
         bool SetDefaultInstall,
         bool? UpdateGlobalJson,
         string RequestSource,
-        string PathSource);
+        PathSource PathSource);
 
     public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
@@ -78,7 +78,7 @@ internal class InstallWorkflow
                 "Use your system package manager or the official installer for system-wide installations.");
             Activity.Current?.SetTag("error.type", "admin_path_blocked");
             Activity.Current?.SetTag("install.path_type", "admin");
-            Activity.Current?.SetTag("install.path_source", context.PathSource);
+            Activity.Current?.SetTag("install.path_source", context.PathSource.ToString().ToLowerInvariant());
             Activity.Current?.SetTag("error.category", "user");
             return new InstallWorkflowResult(1, null);
         }
@@ -88,7 +88,7 @@ internal class InstallWorkflow
         Activity.Current?.SetTag("install.existing_install_type", context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
         Activity.Current?.SetTag("install.set_default", context.SetDefaultInstall);
         Activity.Current?.SetTag("install.path_type", InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
-        Activity.Current?.SetTag("install.path_source", context.PathSource);
+        Activity.Current?.SetTag("install.path_source", context.PathSource.ToString().ToLowerInvariant());
 
         // Record request source (how the version/channel was determined)
         Activity.Current?.SetTag("dotnet.request_source", context.RequestSource);

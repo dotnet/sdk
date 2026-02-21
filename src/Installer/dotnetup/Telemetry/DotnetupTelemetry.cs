@@ -198,26 +198,6 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Posts an install completed event.
-    /// </summary>
-    public void PostInstallEvent(InstallEventData data)
-    {
-        PostEvent("install/completed", new Dictionary<string, string>
-        {
-            ["component"] = data.Component,
-            ["version"] = data.Version,
-            ["previous_version"] = data.PreviousVersion ?? string.Empty,
-            ["was_update"] = data.WasUpdate.ToString(),
-            ["install_root_hash"] = TelemetryCommonProperties.HashPath(data.InstallRoot)
-        }, new Dictionary<string, double>
-        {
-            ["download_ms"] = data.DownloadDuration.TotalMilliseconds,
-            ["extract_ms"] = data.ExtractionDuration.TotalMilliseconds,
-            ["archive_bytes"] = data.ArchiveSizeBytes
-        });
-    }
-
-    /// <summary>
     /// Flushes any pending telemetry.
     /// </summary>
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>

@@ -33,7 +33,7 @@ internal static class TelemetryCommonProperties
         {
             ["session.id"] = sessionId,
             ["device.id"] = s_deviceId.Value,
-            ["os.platform"] = GetOSPlatform(),
+            ["os.platform"] = RuntimeInformation.OSDescription,
             ["os.version"] = Environment.OSVersion.VersionString,
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
             ["ci.detected"] = s_isCIEnvironment.Value,
@@ -74,23 +74,6 @@ internal static class TelemetryCommonProperties
         return Convert.ToHexString(hashBytes).ToLowerInvariant();
     }
 
-    private static string GetOSPlatform()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return "Windows";
-        }
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            return "Linux";
-        }
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return "macOS";
-        }
-        return "Unknown";
-    }
-
     private static string GetDeviceId()
     {
         try
@@ -100,8 +83,8 @@ internal static class TelemetryCommonProperties
         }
         catch
         {
-            // Fallback to a new GUID if device ID retrieval fails
-            return Guid.NewGuid().ToString();
+            // Fallback to empty string if device ID retrieval fails (consistent with SDK behavior)
+            return string.Empty;
         }
     }
 

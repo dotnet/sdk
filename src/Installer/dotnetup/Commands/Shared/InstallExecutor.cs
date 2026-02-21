@@ -204,7 +204,7 @@ internal class InstallExecutor
     /// </summary>
     /// <param name="path">The install path to classify.</param>
     /// <param name="pathSource">How the path was determined (e.g., "global_json", "explicit"). Null to skip source-based classification.</param>
-    public static string ClassifyInstallPath(string path, string? pathSource = null)
+    public static string ClassifyInstallPath(string path, PathSource? pathSource = null)
     {
         var fullPath = Path.GetFullPath(path);
 
@@ -259,7 +259,7 @@ internal class InstallExecutor
 
         // If the path was specified by global.json and doesn't match a well-known location,
         // classify it as global_json rather than generic "other"
-        if (pathSource == "global_json")
+        if (pathSource == PathSource.GlobalJson)
         {
             return "global_json";
         }

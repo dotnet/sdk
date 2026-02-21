@@ -18,7 +18,7 @@ public enum DotnetInstallErrorCode
     ReleaseNotFound,
 
     /// <summary>No matching file was found for the platform/architecture.</summary>
-    NoMatchingFile,
+    NoMatchingReleaseFileForPlatform,
 
     /// <summary>Failed to download the archive.</summary>
     DownloadFailed,

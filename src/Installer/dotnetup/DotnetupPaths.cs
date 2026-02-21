@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -20,13 +18,14 @@ internal static class DotnetupPaths
     /// <summary>
     /// Gets the base data directory for dotnetup.
     /// On Windows: %LOCALAPPDATA%\dotnetup
-    /// On Unix: ~/dotnetup (folder in user profile)
+    /// On macOS: ~/Library/Application Support/dotnetup
+    /// On Linux: ~/.local/share/dotnetup
     /// </summary>
     /// <remarks>
-    /// Returns null if the base directory cannot be determined.
     /// Can be overridden via DOTNET_TESTHOOK_DOTNETUP_DATA_DIR environment variable.
+    /// Throws if the base directory cannot be determined.
     /// </remarks>
-    public static string? DataDirectory
+    public static string DataDirectory
     {
         get
         {
@@ -45,7 +44,7 @@ internal static class DotnetupPaths
             var baseDir = GetBaseDirectory();
             if (string.IsNullOrEmpty(baseDir))
             {
-                return null;
+                throw new InvalidOperationException("Could not determine the local application data directory. Ensure the environment is properly configured.");
             }
 
             _dataDirectory = Path.Combine(baseDir, DotnetupFolderName);
@@ -57,10 +56,9 @@ internal static class DotnetupPaths
     /// Gets the path to the dotnetup manifest file.
     /// </summary>
     /// <remarks>
-    /// Returns null if the data directory cannot be determined.
     /// Can be overridden via DOTNET_TESTHOOK_MANIFEST_PATH environment variable.
     /// </remarks>
-    public static string? ManifestPath
+    public static string ManifestPath
     {
         get
         {
@@ -71,25 +69,14 @@ internal static class DotnetupPaths
                 return overridePath;
             }
 
-            var dataDir = DataDirectory;
-            return dataDir is null ? null : Path.Combine(dataDir, ManifestFileName);
+            return Path.Combine(DataDirectory, ManifestFileName);
         }
     }
 
     /// <summary>
     /// Gets the path to the telemetry first-run sentinel file.
     /// </summary>
-    /// <remarks>
-    /// Returns null if the data directory cannot be determined.
-    /// </remarks>
-    public static string? TelemetrySentinelPath
-    {
-        get
-        {
-            var dataDir = DataDirectory;
-            return dataDir is null ? null : Path.Combine(dataDir, TelemetrySentinelFileName);
-        }
-    }
+    public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
 
     /// <summary>
     /// Ensures the data directory exists, creating it if necessary.
@@ -97,14 +84,9 @@ internal static class DotnetupPaths
     /// <returns>True if the directory exists or was created; false otherwise.</returns>
     public static bool EnsureDataDirectoryExists()
     {
-        var dataDir = DataDirectory;
-        if (string.IsNullOrEmpty(dataDir))
-        {
-            return false;
-        }
-
         try
         {
+            var dataDir = DataDirectory;
             if (!Directory.Exists(dataDir))
             {
                 Directory.CreateDirectory(dataDir);
@@ -122,11 +104,10 @@ internal static class DotnetupPaths
     /// </summary>
     private static string? GetBaseDirectory()
     {
-        // On Windows: use LocalApplicationData (%LOCALAPPDATA%)
-        // On Unix: use UserProfile (~) - the folder name "dotnetup" will be used (not hidden)
-        //          Unix convention is to use ~/.config for app data, but we use ~/dotnetup for simplicity
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-            : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        // Use LocalApplicationData on all platforms:
+        // Windows: %LOCALAPPDATA% (e.g., C:\Users\<user>\AppData\Local)
+        // macOS:   ~/Library/Application Support
+        // Linux:   $XDG_DATA_HOME or ~/.local/share
+        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 }

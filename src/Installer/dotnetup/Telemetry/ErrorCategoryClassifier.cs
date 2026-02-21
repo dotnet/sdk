@@ -65,7 +65,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,         // User's network issue
 
             // Product errors - issues we can take action on
-            DotnetInstallErrorCode.NoMatchingFile => ErrorCategory.Product,    // Our manifest/logic issue
+            DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform => ErrorCategory.Product,    // Our manifest/logic issue
             DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
             DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue

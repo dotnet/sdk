@@ -205,7 +205,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         if (targetFile == null)
         {
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.NoMatchingFile,
+                DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
                 $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());

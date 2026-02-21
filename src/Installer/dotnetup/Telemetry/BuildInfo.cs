@@ -10,48 +10,23 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 /// </summary>
 public static class BuildInfo
 {
-    private static string? _version;
-    private static string? _commitSha;
-    private static bool _initialized;
+    private static readonly Lazy<(string Version, string CommitSha)> s_buildInfo = new(() =>
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+        return ParseInformationalVersion(informationalVersion);
+    });
 
     /// <summary>
     /// Gets the version string (e.g., "1.0.0").
     /// </summary>
-    public static string Version
-    {
-        get
-        {
-            EnsureInitialized();
-            return _version!;
-        }
-    }
+    public static string Version => s_buildInfo.Value.Version;
 
     /// <summary>
     /// Gets the short commit SHA (7 characters, e.g., "abc123d").
     /// Returns "unknown" if not available.
     /// </summary>
-    public static string CommitSha
-    {
-        get
-        {
-            EnsureInitialized();
-            return _commitSha!;
-        }
-    }
-
-    private static void EnsureInitialized()
-    {
-        if (_initialized)
-        {
-            return;
-        }
-
-        var assembly = Assembly.GetExecutingAssembly();
-        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
-
-        (_version, _commitSha) = ParseInformationalVersion(informationalVersion);
-        _initialized = true;
-    }
+    public static string CommitSha => s_buildInfo.Value.CommitSha;
 
     /// <summary>
     /// Parses the informational version string to extract version and commit SHA.
