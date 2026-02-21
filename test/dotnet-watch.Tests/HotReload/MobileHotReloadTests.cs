@@ -14,7 +14,7 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
     /// Tests that hot reload works for projects with the HotReloadWebSockets capability.
     /// Mobile workloads (Android, iOS) add this capability to indicate WebSocket transport should be used.
     /// </summary>
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
     public async Task HotReload_WithWebSocketCapability()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
