@@ -32,23 +32,6 @@ internal sealed class DotNetWatchOptions
         var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Arity = ArgumentArity.Zero };
         var applicationArguments = new Argument<string[]>("arguments") { Arity = ArgumentArity.ZeroOrMore };
 
-        verboseOption.Validators.Add(v =>
-        {
-            if (HasOption(v, quietOption) && HasOption(v, verboseOption))
-            {
-                v.AddError("Cannot specify both '--quiet' and '--verbose' options.");
-            }
-
-            if (HasOption(v, projectOption) && HasOption(v, fileOption))
-            {
-                v.AddError("Cannot specify both '--file' and '--project' options.");
-            }
-            else if (!HasOption(v, projectOption) && !HasOption(v, fileOption))
-            {
-                v.AddError("Must specify either '--file' or '--project' option.");
-            }
-        });
-
         var rootCommand = new RootCommand()
         {
             Directives = { new EnvironmentVariablesDirective() },
@@ -66,6 +49,23 @@ internal sealed class DotNetWatchOptions
                 applicationArguments
             }
         };
+
+        rootCommand.Validators.Add(v =>
+        {
+            if (HasOption(v, quietOption) && HasOption(v, verboseOption))
+            {
+                v.AddError("Cannot specify both '--quiet' and '--verbose' options.");
+            }
+
+            if (HasOption(v, projectOption) && HasOption(v, fileOption))
+            {
+                v.AddError("Cannot specify both '--file' and '--project' options.");
+            }
+            else if (!HasOption(v, projectOption) && !HasOption(v, fileOption))
+            {
+                v.AddError("Must specify either '--file' or '--project' option.");
+            }
+        });
 
         var parseResult = rootCommand.Parse(args);
         if (parseResult.Errors.Count > 0)

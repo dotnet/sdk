@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watch
 
                 var processPath = Environment.ProcessPath;
                 Debug.Assert(processPath != null);
-                
+
                 var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
 
                 // msbuild tasks depend on host path variable:
@@ -128,9 +128,9 @@ namespace Microsoft.DotNet.Watch
                     return null;
                 }
             }
-            else if (TryFindProject(workingDirectory, options, logger, out var projectPath) is { } foundProject)
+            else if (TryFindProject(workingDirectory, options, logger, out var projectPath) is bool foundProject)
             {
-                if (foundProject == false)
+                if (!foundProject)
                 {
                     // error already reported
                     return null;
@@ -175,9 +175,8 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Finds a compatible MSBuild project.
         /// <param name="workingDirectory">The base directory to search</param>
-        /// <param name="project">The filename of the project. Can be null.</param>
         /// </summary>
-        private static bool? TryFindProject(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? projectPath)
+        private static bool? TryFindProject(string workingDirectory, CommandLineOptions options, ILogger logger, out string? projectPath)
         {
             projectPath = options.ProjectPath ?? workingDirectory;
 
