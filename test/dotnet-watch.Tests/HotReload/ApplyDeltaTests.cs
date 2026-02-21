@@ -853,7 +853,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [Theory]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
