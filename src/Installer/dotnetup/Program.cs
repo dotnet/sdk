@@ -25,7 +25,7 @@ internal class DotnetupProgram
         try
         {
             var result = Parser.Invoke(args);
-            rootActivity?.SetTag("exit.code", result);
+            rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
             rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             return result;
         }
@@ -33,7 +33,7 @@ internal class DotnetupProgram
         {
             // Catch-all for unhandled exceptions
             DotnetupTelemetry.Instance.RecordException(rootActivity, ex);
-            rootActivity?.SetTag("exit.code", 1);
+            rootActivity?.SetTag(TelemetryTagNames.ExitCode, 1);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");

@@ -80,7 +80,15 @@ internal class InstallExecutor
             return new InstallResult(false, null);
         }
 
-        SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+        if (installResult.WasAlreadyInstalled)
+        {
+            SpectreAnsiConsole.MarkupLine($"[green]{componentDescription} {installResult.Install.Version} is already installed at {installResult.Install.InstallRoot}[/]");
+        }
+        else
+        {
+            SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+        }
+
         return new InstallResult(true, installResult.Install, installResult.WasAlreadyInstalled);
     }
 

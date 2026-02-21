@@ -57,16 +57,16 @@ internal class InstallWorkflow
     public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
         // Record telemetry for the install request
-        Activity.Current?.SetTag("install.component", options.Component.ToString());
-        Activity.Current?.SetTag("install.requested_version", VersionSanitizer.Sanitize(options.VersionOrChannel));
-        Activity.Current?.SetTag("install.path_explicit", options.InstallPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(options.VersionOrChannel));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, options.InstallPath is not null);
 
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
         {
             Console.Error.WriteLine(error);
-            Activity.Current?.SetTag("error.type", "context_resolution_failed");
-            Activity.Current?.SetTag("error.category", "user");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "context_resolution_failed");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
             return new InstallWorkflowResult(1, null);
         }
 
@@ -76,40 +76,40 @@ internal class InstallWorkflow
             Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is a system-managed .NET location. " +
                 "dotnetup installs to user-level locations only. " +
                 "Use your system package manager or the official installer for system-wide installations.");
-            Activity.Current?.SetTag("error.type", "admin_path_blocked");
-            Activity.Current?.SetTag("install.path_type", "admin");
-            Activity.Current?.SetTag("install.path_source", context.PathSource.ToString().ToLowerInvariant());
-            Activity.Current?.SetTag("error.category", "user");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "admin_path_blocked");
+            Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
+            Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
             return new InstallWorkflowResult(1, null);
         }
 
         // Record resolved context telemetry
-        Activity.Current?.SetTag("install.has_global_json", context.GlobalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag("install.existing_install_type", context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag("install.set_default", context.SetDefaultInstall);
-        Activity.Current?.SetTag("install.path_type", InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
-        Activity.Current?.SetTag("install.path_source", context.PathSource.ToString().ToLowerInvariant());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
+        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
 
         // Record request source (how the version/channel was determined)
-        Activity.Current?.SetTag("dotnet.request_source", context.RequestSource);
-        Activity.Current?.SetTag("dotnet.requested", VersionSanitizer.Sanitize(context.Channel));
+        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, context.RequestSource);
+        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(context.Channel));
 
         var resolved = CreateInstallRequest(context);
 
         // Record resolved version
-        Activity.Current?.SetTag("install.resolved_version", resolved.ResolvedVersion?.ToString());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
 
         var installResult = ExecuteInstallations(context, resolved);
         if (installResult is null)
         {
-            Activity.Current?.SetTag("error.type", "install_failed");
-            Activity.Current?.SetTag("error.category", "product");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "install_failed");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "product");
             return new InstallWorkflowResult(1, resolved);
         }
 
         ApplyPostInstallConfiguration(context, resolved);
 
-        Activity.Current?.SetTag("install.result", installResult.WasAlreadyInstalled ? "already_installed" : "installed");
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
         InstallExecutor.DisplayComplete();
         return new InstallWorkflowResult(0, resolved);
     }

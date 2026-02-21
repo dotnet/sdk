@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -53,7 +54,7 @@ internal class InstallWalkthrough
         if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
         {
             // Track admin-to-user migration scenario
-            Activity.Current?.SetTag("install.migrating_from_admin", true);
+            Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
 
             if (_options.Interactive)
             {
@@ -67,7 +68,7 @@ internal class InstallWalkthrough
                         defaultValue: true))
                     {
                         additionalVersions.Add(latestAdminVersion);
-                        Activity.Current?.SetTag("install.admin_version_copied", true);
+                        Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
                     }
                 }
             }

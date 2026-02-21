@@ -55,7 +55,7 @@ public abstract class CommandBase
         }
         finally
         {
-            _commandActivity?.SetTag("exit.code", _exitCode);
+            _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
             _commandActivity?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _commandActivity?.Dispose();
         }
@@ -68,16 +68,9 @@ public abstract class CommandBase
     protected abstract int ExecuteCore();
 
     /// <summary>
-    /// Gets the command name for telemetry purposes.
-    /// Override to provide a custom name.
+    /// Gets the command name for telemetry purposes (e.g., "sdk/install", "list").
     /// </summary>
-    /// <returns>The command name (e.g., "sdk/install").</returns>
-    protected virtual string GetCommandName()
-    {
-        // Default: derive from class name (SdkInstallCommand -> "sdkinstall")
-        var name = GetType().Name;
-        return name.Replace("Command", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
-    }
+    protected abstract string GetCommandName();
 
     /// <summary>
     /// Adds a tag to the current command activity.
@@ -98,11 +91,11 @@ public abstract class CommandBase
     /// <param name="category">Error category: "user" for input/environment issues, "product" for bugs (default).</param>
     protected void RecordFailure(string reason, string? message = null, string category = "product")
     {
-        _commandActivity?.SetTag("error.type", reason);
-        _commandActivity?.SetTag("error.category", category);
+        _commandActivity?.SetTag(TelemetryTagNames.ErrorType, reason);
+        _commandActivity?.SetTag(TelemetryTagNames.ErrorCategory, category);
         if (message != null)
         {
-            _commandActivity?.SetTag("error.message", message);
+            _commandActivity?.SetTag(TelemetryTagNames.ErrorMessage, message);
         }
     }
 
@@ -114,7 +107,7 @@ public abstract class CommandBase
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _commandActivity?.SetTag("dotnet.requested_version", sanitized);
+        _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
     /// <summary>
@@ -124,11 +117,11 @@ public abstract class CommandBase
     /// <param name="requestedValue">The sanitized requested value (channel/version). For defaults, this is what was defaulted to.</param>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _commandActivity?.SetTag("dotnet.request_source", source);
+        _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _commandActivity?.SetTag("dotnet.requested", sanitized);
+            _commandActivity?.SetTag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 }

@@ -51,8 +51,7 @@ public sealed record ExceptionErrorInfo(
 /// Implementation is split across single-responsibility helpers:
 /// <list type="bullet">
 ///   <item><see cref="ExceptionErrorMapper"/> — exception-type dispatch and enrichment</item>
-///   <item><see cref="ErrorCategoryClassifier"/> — Product vs User classification</item>
-///   <item><see cref="HResultMapper"/> — Win32 HResult → telemetry label</item>
+///   <item><see cref="ErrorCategoryClassifier"/> — Product vs User classification + HResult mapping</item>
 ///   <item><see cref="NetworkErrorAnalyzer"/> — PII-safe network exception diagnostics</item>
 ///   <item><see cref="ExceptionInspector"/> — stack-trace source location and exception chains</item>
 /// </list>
@@ -71,24 +70,24 @@ public static class ErrorCodeMapper
         if (activity is null) return;
 
         activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
-        activity.SetTag("error.type", errorInfo.ErrorType);
+        activity.SetTag(TelemetryTagNames.ErrorType, errorInfo.ErrorType);
         if (errorCode is not null)
         {
-            activity.SetTag("error.code", errorCode);
+            activity.SetTag(TelemetryTagNames.ErrorCode, errorCode);
         }
-        activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
+        activity.SetTag(TelemetryTagNames.ErrorCategory, errorInfo.Category.ToString().ToLowerInvariant());
 
         // Use pattern matching to set optional tags only if they have values
         if (errorInfo is { StatusCode: { } statusCode })
-            activity.SetTag("error.http_status", statusCode);
+            activity.SetTag(TelemetryTagNames.ErrorHttpStatus, statusCode);
         if (errorInfo is { HResult: { } hResult })
-            activity.SetTag("error.hresult", hResult);
+            activity.SetTag(TelemetryTagNames.ErrorHResult, hResult);
         if (errorInfo is { Details: { } details })
-            activity.SetTag("error.details", details);
+            activity.SetTag(TelemetryTagNames.ErrorDetails, details);
         if (errorInfo is { SourceLocation: { } sourceLocation })
-            activity.SetTag("error.source_location", sourceLocation);
+            activity.SetTag(TelemetryTagNames.ErrorSourceLocation, sourceLocation);
         if (errorInfo is { ExceptionChain: { } exceptionChain })
-            activity.SetTag("error.exception_chain", exceptionChain);
+            activity.SetTag(TelemetryTagNames.ErrorExceptionChain, exceptionChain);
 
         // NOTE: We intentionally do NOT call activity.RecordException(ex)
         // because exception messages/stacks can contain PII

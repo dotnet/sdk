@@ -165,8 +165,7 @@ internal static class ExceptionErrorMapper
     /// </summary>
     private static ExceptionErrorInfo MapIOException(IOException ioEx, string? sourceLocation, string? exceptionChain)
     {
-        var (errorType, details) = HResultMapper.GetErrorTypeFromHResult(ioEx.HResult);
-        var category = ErrorCategoryClassifier.ClassifyIOError(errorType);
+        var (errorType, category, details) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioEx.HResult);
 
         return new ExceptionErrorInfo(
             errorType,

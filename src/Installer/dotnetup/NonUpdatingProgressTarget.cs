@@ -28,7 +28,7 @@ public class NonUpdatingProgressTarget : IProgressTarget
         {
             var activity = InstallationActivitySource.ActivitySource.StartActivity(activityName, ActivityKind.Internal);
             // Tag library activities so consumers know they came from dotnetup CLI
-            activity?.SetTag("caller", "dotnetup");
+            activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
             var task = new ProgressTaskImpl(description, activity) { MaxValue = maxValue };
             _tasks.Add(task);
             AnsiConsole.WriteLine(description + "...");

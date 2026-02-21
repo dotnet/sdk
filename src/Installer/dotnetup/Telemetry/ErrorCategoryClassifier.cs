@@ -18,34 +18,53 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 internal static class ErrorCategoryClassifier
 {
     /// <summary>
-    /// Classifies an IO error type (from <see cref="HResultMapper"/>) as product or user error.
+    /// Classifies an IO error by its HResult, returning the error type, category, and optional details
+    /// in a single lookup. This avoids a two-step HResult→errorType→category pipeline that could
+    /// get out of sync.
     /// </summary>
-    internal static ErrorCategory ClassifyIOError(string errorType)
+    internal static (string ErrorType, ErrorCategory Category, string? Details) ClassifyIOErrorByHResult(int hResult)
     {
-        return errorType switch
+        return hResult switch
         {
-            // User environment issues - we can't control these
-            "DiskFull" => ErrorCategory.User,
-            "PermissionDenied" => ErrorCategory.User,
-            "InvalidPath" => ErrorCategory.User,            // User specified invalid path
-            "PathNotFound" => ErrorCategory.User,           // User's directory doesn't exist
-            "NetworkPathNotFound" => ErrorCategory.User,    // Network issue
-            "NetworkNameDeleted" => ErrorCategory.User,     // Network issue
-            "DeviceFailure" => ErrorCategory.User,          // Hardware issue
+            // Disk/storage errors — user environment
+            unchecked((int)0x80070070) => ("DiskFull", ErrorCategory.User, "ERROR_DISK_FULL"),
+            unchecked((int)0x80070027) => ("DiskFull", ErrorCategory.User, "ERROR_HANDLE_DISK_FULL"),
 
-            // Product issues - we should handle these gracefully
-            "SharingViolation" => ErrorCategory.Product,    // Could be our mutex/lock issue
-            "LockViolation" => ErrorCategory.Product,       // Could be our mutex/lock issue
-            "PathTooLong" => ErrorCategory.Product,         // We control the install path
-            "SemaphoreTimeout" => ErrorCategory.Product,    // Could be our concurrency issue
-            "AlreadyExists" => ErrorCategory.Product,       // We should handle existing files gracefully
-            "FileExists" => ErrorCategory.Product,          // We should handle existing files gracefully
-            "FileNotFound" => ErrorCategory.Product,        // Our code referenced missing file
-            "GeneralFailure" => ErrorCategory.Product,      // Unknown IO error
-            "InvalidParameter" => ErrorCategory.Product,    // Our code passed bad params
-            "IOException" => ErrorCategory.Product,         // Generic IO - assume product
+            // Permission errors — user environment
+            unchecked((int)0x80070005) => ("PermissionDenied", ErrorCategory.User, "ERROR_ACCESS_DENIED"),
 
-            _ => ErrorCategory.Product                      // Unknown - assume product
+            // Path errors — user environment
+            unchecked((int)0x8007007B) => ("InvalidPath", ErrorCategory.User, "ERROR_INVALID_NAME"),
+            unchecked((int)0x80070003) => ("PathNotFound", ErrorCategory.User, "ERROR_PATH_NOT_FOUND"),
+
+            // Network errors — user environment
+            unchecked((int)0x80070035) => ("NetworkPathNotFound", ErrorCategory.User, "ERROR_BAD_NETPATH"),
+            unchecked((int)0x80070033) => ("NetworkNameDeleted", ErrorCategory.User, "ERROR_NETNAME_DELETED"),
+
+            // Device/hardware errors — user environment
+            unchecked((int)0x8007001F) => ("DeviceFailure", ErrorCategory.User, "ERROR_GEN_FAILURE"),
+
+            // Sharing/lock violations — product issues (our mutex/lock logic)
+            unchecked((int)0x80070020) => ("SharingViolation", ErrorCategory.Product, "ERROR_SHARING_VIOLATION"),
+            unchecked((int)0x80070021) => ("LockViolation", ErrorCategory.Product, "ERROR_LOCK_VIOLATION"),
+
+            // Semaphore timeout — product issue (our concurrency logic)
+            unchecked((int)0x80070079) => ("SemaphoreTimeout", ErrorCategory.Product, "ERROR_SEM_TIMEOUT"),
+
+            // Path too long — product issue (we control install paths)
+            unchecked((int)0x800700CE) => ("PathTooLong", ErrorCategory.Product, "ERROR_FILENAME_EXCED_RANGE"),
+
+            // File existence — product issue (we should handle gracefully)
+            unchecked((int)0x80070002) => ("FileNotFound", ErrorCategory.Product, "ERROR_FILE_NOT_FOUND"),
+            unchecked((int)0x800700B7) => ("AlreadyExists", ErrorCategory.Product, "ERROR_ALREADY_EXISTS"),
+            unchecked((int)0x80070050) => ("FileExists", ErrorCategory.Product, "ERROR_FILE_EXISTS"),
+
+            // General failures — product issue
+            unchecked((int)0x80004005) => ("GeneralFailure", ErrorCategory.Product, "E_FAIL"),
+            unchecked((int)0x80070057) => ("InvalidParameter", ErrorCategory.Product, "ERROR_INVALID_PARAMETER"),
+
+            // Unknown — include raw HResult, assume product
+            _ => ("IOException", ErrorCategory.Product, hResult != 0 ? $"0x{hResult:X8}" : null)
         };
     }
 

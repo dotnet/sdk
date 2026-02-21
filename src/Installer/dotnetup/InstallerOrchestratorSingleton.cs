@@ -74,8 +74,8 @@ internal class InstallerOrchestratorSingleton
             {
                 // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
                 // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag("install.mutex_lock_failed", true);
-                Activity.Current?.SetTag("install.mutex_lock_phase", "pre_check");
+                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
+                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "pre_check");
                 Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
             }
             if (InstallAlreadyExists(install, customManifestPath))
@@ -115,8 +115,8 @@ internal class InstallerOrchestratorSingleton
             {
                 // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
                 // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag("install.mutex_lock_failed", true);
-                Activity.Current?.SetTag("install.mutex_lock_phase", "commit");
+                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
+                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "commit");
                 Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
             }
             if (InstallAlreadyExists(install, customManifestPath))

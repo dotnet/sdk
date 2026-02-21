@@ -41,7 +41,7 @@ public class SpectreProgressTarget : IProgressTarget
         {
             var activity = InstallationActivitySource.ActivitySource.StartActivity(activityName, ActivityKind.Internal);
             // Tag library activities so consumers know they came from dotnetup CLI
-            activity?.SetTag("caller", "dotnetup");
+            activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
             var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue), activity);
             _tasks.Add(task);
             return task;

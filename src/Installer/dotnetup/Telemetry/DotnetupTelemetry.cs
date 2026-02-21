@@ -122,15 +122,15 @@ public sealed class DotnetupTelemetry : IDisposable
         var activity = CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal);
         if (activity != null)
         {
-            activity.SetTag("command.name", commandName);
+            activity.SetTag(TelemetryTagNames.CommandName, commandName);
             // Add common properties to each span for App Insights customDimensions
             foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(_sessionId))
             {
                 activity.SetTag(attr.Key, attr.Value?.ToString());
             }
         }
-        activity?.SetTag("caller", "dotnetup");
-        activity?.SetTag("session.id", _sessionId);
+        activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
+        activity?.SetTag(TelemetryTagNames.SessionId, _sessionId);
         return activity;
     }
 
@@ -178,7 +178,7 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             activity.SetTag(attr.Key, attr.Value?.ToString());
         }
-        activity.SetTag("caller", "dotnetup");
+        activity.SetTag(TelemetryTagNames.Caller, "dotnetup");
 
         if (properties != null)
         {
