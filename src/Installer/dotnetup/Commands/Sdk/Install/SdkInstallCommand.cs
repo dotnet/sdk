@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -22,7 +23,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync().GetAwaiter().GetResult();
+
+    public async Task<int> ExecuteAsync()
     {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
 
@@ -39,7 +42,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson,
             _requireMuxerUpdate);
 
-        var result = workflow.Execute(options);
+        var result = await workflow.ExecuteAsync(options);
         return result.ExitCode;
     }
 

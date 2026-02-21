@@ -182,25 +182,14 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Downloads the archive from the specified URL to the destination path (synchronous version).
-    /// </summary>
-    /// <param name="downloadUrl">The URL to download from</param>
-    /// <param name="destinationPath">The local path to save the downloaded file</param>
-    /// <param name="progress">Optional progress reporting</param>
-    void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
-    {
-        DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
-    }
-
-    /// <summary>
     /// Downloads the archive for the specified installation and verifies its hash.
     /// Checks the download cache first to avoid re-downloading.
     /// </summary>
-    /// <param name="install">The .NET installation details</param>
+    /// <param name="installRequest">The .NET installation details</param>
+    /// <param name="resolvedVersion">The resolved version to download</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    /// <returns>True if download and verification were successful, false otherwise</returns>
-    public void DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    public async Task DownloadArchiveWithVerificationAsync(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
         string? downloadUrl = targetFile?.Address.ToString();
@@ -238,7 +227,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
 
         // Download the file if not in cache or cache is invalid
-        DownloadArchive(downloadUrl, destinationPath, progress);
+        await DownloadArchiveAsync(downloadUrl, destinationPath, progress);
 
         // Verify the downloaded file
         VerifyFileHash(destinationPath, expectedHash);

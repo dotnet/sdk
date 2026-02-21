@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
@@ -31,7 +32,9 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
     };
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync().GetAwaiter().GetResult();
+
+    public async Task<int> ExecuteAsync()
     {
         // Parse the component spec to determine runtime type and version
         var (component, versionOrChannel, errorMessage) = ParseComponentSpec(_componentSpec);
@@ -74,7 +77,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             componentDescription,
             RequireMuxerUpdate: _requireMuxerUpdate);
 
-        InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
+        InstallWorkflow.InstallWorkflowResult workflowResult = await workflow.ExecuteAsync(options);
         return workflowResult.ExitCode;
     }
 

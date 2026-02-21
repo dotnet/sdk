@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
@@ -105,15 +106,15 @@ public class DotnetInstallManager : IDotnetInstallManager
         return null;
     }
 
-    public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
+    public async Task InstallSdksAsync(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
     {
         foreach (var channelVersion in sdkVersions)
         {
-            InstallSDK(dotnetRoot, progressContext, new UpdateChannel(channelVersion));
+            await InstallSDKAsync(dotnetRoot, progressContext, new UpdateChannel(channelVersion));
         }
     }
 
-    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channnel)
+    private async Task InstallSDKAsync(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channnel)
     {
         DotnetInstallRequest request = new DotnetInstallRequest(
             dotnetRoot,
@@ -122,7 +123,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             new InstallRequestOptions()
         );
 
-        DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
+        DotnetInstall? newInstall = await InstallerOrchestratorSingleton.Instance.InstallAsync(request);
         if (newInstall == null)
         {
             throw new Exception($"Failed to install .NET SDK {channnel.Name}");

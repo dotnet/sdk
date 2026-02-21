@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -65,7 +66,7 @@ internal class InstallExecutor
     /// <param name="componentDescription">Description of the component (e.g., ".NET SDK", ".NET Runtime").</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <returns>The installation result.</returns>
-    public static InstallResult ExecuteInstall(
+    public static async Task<InstallResult> ExecuteInstallAsync(
         DotnetInstallRequest installRequest,
         string? resolvedVersion,
         string componentDescription,
@@ -73,7 +74,7 @@ internal class InstallExecutor
     {
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
 
-        var install = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+        var install = await InstallerOrchestratorSingleton.Instance.InstallAsync(installRequest, noProgress);
         if (install == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}[/]");
@@ -95,7 +96,7 @@ internal class InstallExecutor
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
     /// <returns>True if all installations succeeded, false if any failed.</returns>
-    public static bool ExecuteAdditionalInstalls(
+    public static async Task<bool> ExecuteAdditionalInstallsAsync(
         IEnumerable<string> additionalVersions,
         DotnetInstallRoot installRoot,
         InstallComponent component,
@@ -118,7 +119,7 @@ internal class InstallExecutor
                     RequireMuxerUpdate = requireMuxerUpdate
                 });
 
-            var additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
+            var additionalInstall = await InstallerOrchestratorSingleton.Instance.InstallAsync(additionalRequest, noProgress);
             if (additionalInstall == null)
             {
                 SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");

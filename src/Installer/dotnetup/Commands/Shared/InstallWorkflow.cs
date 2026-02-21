@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -50,7 +51,7 @@ internal class InstallWorkflow
         bool SetDefaultInstall,
         bool? UpdateGlobalJson);
 
-    public InstallWorkflowResult Execute(InstallWorkflowOptions options)
+    public async Task<InstallWorkflowResult> ExecuteAsync(InstallWorkflowOptions options)
     {
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
@@ -61,7 +62,7 @@ internal class InstallWorkflow
 
         var resolved = CreateInstallRequest(context);
 
-        if (!ExecuteInstallations(context, resolved))
+        if (!await ExecuteInstallationsAsync(context, resolved))
         {
             return new InstallWorkflowResult(1, resolved);
         }
@@ -130,7 +131,7 @@ internal class InstallWorkflow
             context.Options.RequireMuxerUpdate);
     }
 
-    private bool ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private async Task<bool> ExecuteInstallationsAsync(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.
@@ -139,7 +140,7 @@ internal class InstallWorkflow
             context.SetDefaultInstall,
             context.CurrentInstallRoot);
 
-        var installResult = InstallExecutor.ExecuteInstall(
+        var installResult = await InstallExecutor.ExecuteInstallAsync(
             resolved.Request,
             resolved.ResolvedVersion?.ToString(),
             context.Options.ComponentDescription,
@@ -150,7 +151,7 @@ internal class InstallWorkflow
             return false;
         }
 
-        InstallExecutor.ExecuteAdditionalInstalls(
+        await InstallExecutor.ExecuteAdditionalInstallsAsync(
             additionalVersions,
             resolved.Request.InstallRoot,
             context.Options.Component,

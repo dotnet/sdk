@@ -63,10 +63,13 @@ internal class ReleaseManifest
                 _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
                 return _productCollection;
             }
-            catch (HttpRequestException ex) when (attempt < MaxRetryCount)
+            catch (HttpRequestException ex)
             {
                 lastException = ex;
-                Thread.Sleep(RetryDelayMilliseconds * attempt); // Linear backoff
+                if (attempt < MaxRetryCount)
+                {
+                    Thread.Sleep(RetryDelayMilliseconds * attempt); // Linear backoff
+                }
             }
         }
 
