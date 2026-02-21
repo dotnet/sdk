@@ -119,34 +119,33 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_ExceptionFromOurCode_IncludesSourceLocation()
+    public void GetErrorInfo_ExceptionFromOurCode_IncludesStackTrace()
     {
         // Throw from a method to get a real stack trace
         var ex = ThrowTestException();
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Source location is only populated for our owned assemblies (dotnetup, Microsoft.Dotnet.Installation)
-        // In tests, we won't have those on the stack, so source location will be null
+        // Stack trace is collected with messages stripped
         // The important thing is that the method doesn't throw
         Assert.Equal("InvalidOperation", info.ErrorType);
     }
 
     [Fact]
-    public void GetErrorInfo_SourceLocation_FiltersToOwnedNamespaces()
+    public void GetErrorInfo_StackTrace_ContainsFramesWithoutMessages()
     {
-        // Verify that source location filtering works by namespace prefix
+        // Verify that stack trace is collected and messages are stripped
         // We must throw and catch to get a stack trace - exceptions created with 'new' have no trace
         var ex = ThrowTestException();
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Source location should be populated since test assembly is in an owned namespace
-        // (Microsoft.DotNet.Tools.Bootstrapper.Tests starts with Microsoft.DotNet.Tools.Bootstrapper)
-        Assert.NotNull(info.SourceLocation);
-        // The format is "TypeName.MethodName" - no [BCL] prefix since we found owned code
-        Assert.DoesNotContain("[BCL]", info.SourceLocation);
-        Assert.Contains("ThrowTestException", info.SourceLocation);
+        // Stack trace should be populated since we threw a real exception
+        Assert.NotNull(info.StackTrace);
+        // Should contain the method name from the stack
+        Assert.Contains("ThrowTestException", info.StackTrace);
+        // Should NOT contain the exception message (messages are stripped for PII safety)
+        Assert.DoesNotContain("Test exception", info.StackTrace);
     }
 
     [Fact]

@@ -266,7 +266,7 @@ public class ApplyErrorTagsTests
                 HResult: unchecked((int)0x80070070),
                 StatusCode: null,
                 Details: "win32_error_112",
-                SourceLocation: "InstallExecutor.cs:42",
+                StackTrace: "InstallExecutor.cs:42",
                 ExceptionChain: "IOException",
                 Category: ErrorCategory.User);
 
@@ -278,7 +278,7 @@ public class ApplyErrorTagsTests
         Assert.Equal("user", a.GetTagItem("error.category"));
         Assert.Equal(unchecked((int)0x80070070), a.GetTagItem("error.hresult"));
         Assert.Equal("win32_error_112", a.GetTagItem("error.details"));
-        Assert.Equal("InstallExecutor.cs:42", a.GetTagItem("error.source_location"));
+        Assert.Equal("InstallExecutor.cs:42", a.GetTagItem("error.stack_trace"));
         Assert.Equal("IOException", a.GetTagItem("error.exception_chain"));
     }
 
@@ -297,7 +297,7 @@ public class ApplyErrorTagsTests
                 HResult: null,
                 StatusCode: 404,
                 Details: null,
-                SourceLocation: null,
+                StackTrace: null,
                 ExceptionChain: "HttpRequestException",
                 Category: ErrorCategory.Product);
 
@@ -321,7 +321,7 @@ public class ApplyErrorTagsTests
             HResult: null,
             StatusCode: null,
             Details: null,
-            SourceLocation: null,
+            StackTrace: null,
             ExceptionChain: null,
             Category: ErrorCategory.Product);
 
@@ -345,7 +345,7 @@ public class ApplyErrorTagsTests
                 HResult: null,
                 StatusCode: null,
                 Details: null,
-                SourceLocation: null,
+                StackTrace: null,
                 ExceptionChain: null,
                 Category: ErrorCategory.Product);
 
@@ -359,7 +359,7 @@ public class ApplyErrorTagsTests
         Assert.Null(a.GetTagItem("error.hresult"));
         Assert.Null(a.GetTagItem("error.http_status"));
         Assert.Null(a.GetTagItem("error.details"));
-        Assert.Null(a.GetTagItem("error.source_location"));
+        Assert.Null(a.GetTagItem("error.stack_trace"));
         Assert.Null(a.GetTagItem("error.exception_chain"));
         Assert.Null(a.GetTagItem("error.code"));
     }
@@ -379,7 +379,7 @@ public class ApplyErrorTagsTests
                 HResult: null,
                 StatusCode: null,
                 Details: null,
-                SourceLocation: null,
+                StackTrace: null,
                 ExceptionChain: null,
                 Category: ErrorCategory.Product);
 

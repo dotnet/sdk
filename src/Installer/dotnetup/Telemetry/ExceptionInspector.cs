@@ -1,82 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
 /// Extracts PII-safe diagnostic metadata from exceptions for telemetry:
-/// source location (stack-trace inspection) and exception-type chains.
+/// full stack traces (without exception messages) and exception-type chains.
 /// </summary>
 /// <remarks>
-/// All output is designed to be safe for telemetry ingestion:
-/// <list type="bullet">
-///   <item>Source locations contain only type/method names and line numbers from our
-///         assemblies — never file paths, user names, or arguments.</item>
-///   <item>Exception chains contain only CLR type names, which are stable and non-PII.</item>
-/// </list>
-/// Uses <see cref="DiagnosticMethodInfo"/> (.NET 8+) for AOT-compatible stack frame inspection.
+/// Follows the same pattern as the .NET SDK's <c>TelemetryFilter.ExceptionToStringWithoutMessage</c>.
+/// Exception messages are stripped because they can contain user-provided input (file paths,
+/// version strings, etc.), but stack traces are safe — especially in NativeAOT where they
+/// contain only method names without source file paths or line numbers.
 /// </remarks>
 internal static class ExceptionInspector
 {
     /// <summary>
-    /// Gets a safe source location from the stack trace — finds the first frame from our assemblies.
-    /// This is typically the code in dotnetup that called into BCL/external code that threw.
-    /// No file paths that could contain user info. Line numbers from our code are included as they are not PII.
+    /// Gets the full exception details without messages, following the SDK pattern.
+    /// Includes exception type names, full stack traces, and inner exception chains.
+    /// Messages are stripped to avoid PII; stack traces are kept as they only contain
+    /// type/method names (especially safe in NativeAOT).
     /// </summary>
-    internal static string? GetSafeSourceLocation(Exception ex)
+    internal static string? GetStackTraceWithoutMessage(Exception ex)
     {
         try
         {
-            var stackTrace = new StackTrace(ex, fNeedFileInfo: true);
-            var frames = stackTrace.GetFrames();
-
-            if (frames == null || frames.Length == 0)
-            {
-                return null;
-            }
-
-            string? throwSite = null;
-
-            // Walk the stack from throw site upward, looking for the first frame in our code.
-            // This finds the dotnetup code that called into BCL/external code that threw.
-            foreach (var frame in frames)
-            {
-                var methodInfo = DiagnosticMethodInfo.Create(frame);
-                if (methodInfo == null) continue;
-
-                // DiagnosticMethodInfo provides DeclaringTypeName which includes the full type name
-                var declaringType = methodInfo.DeclaringTypeName;
-                if (string.IsNullOrEmpty(declaringType)) continue;
-
-                // Capture the first frame as the throw site (fallback)
-                if (throwSite == null)
-                {
-                    var throwTypeName = ExtractTypeName(declaringType);
-                    throwSite = $"[BCL]{throwTypeName}.{methodInfo.Name}";
-                }
-
-                // Check if it's from our assemblies by looking at the namespace prefix
-                if (IsOwnedNamespace(declaringType))
-                {
-                    // Extract just the type name (last part after the last dot, before any generic params)
-                    var typeName = ExtractTypeName(declaringType);
-
-                    // Include line number for our code (not PII), but never file paths
-                    var lineNumber = frame.GetFileLineNumber();
-                    var location = $"{typeName}.{methodInfo.Name}";
-                    if (lineNumber > 0)
-                    {
-                        location += $":{lineNumber}";
-                    }
-                    return location;
-                }
-            }
-
-            // If we didn't find our code, return the throw site as a fallback.
-            // The throw site is from BCL or our NuGet dependencies (e.g., System.IO, System.Net)
-            return throwSite;
+            return ExceptionToStringWithoutMessage(ex);
         }
         catch
         {
@@ -121,31 +70,54 @@ internal static class ExceptionInspector
     }
 
     /// <summary>
-    /// Checks if a type name belongs to one of our owned namespaces.
+    /// Converts an exception to string without its message, following the .NET SDK pattern.
+    /// For AggregateExceptions, recursively processes all inner exceptions.
     /// </summary>
-    private static bool IsOwnedNamespace(string declaringType)
+    private static string ExceptionToStringWithoutMessage(Exception e)
     {
-        return declaringType.StartsWith("Microsoft.DotNet.Tools.Bootstrapper", StringComparison.Ordinal) ||
-               declaringType.StartsWith("Microsoft.Dotnet.Installation", StringComparison.Ordinal);
+        if (e is AggregateException aggregate)
+        {
+            var text = NonAggregateExceptionToStringWithoutMessage(aggregate);
+
+            for (int i = 0; i < aggregate.InnerExceptions.Count; i++)
+            {
+                text = string.Format("{0}{1}---> (Inner Exception #{2}) {3}{4}{5}",
+                    text,
+                    Environment.NewLine,
+                    i,
+                    ExceptionToStringWithoutMessage(aggregate.InnerExceptions[i]),
+                    "<---",
+                    Environment.NewLine);
+            }
+
+            return text;
+        }
+
+        return NonAggregateExceptionToStringWithoutMessage(e);
     }
 
     /// <summary>
-    /// Extracts just the type name from a fully qualified type name.
+    /// Converts a non-aggregate exception to string: type name + inner exceptions + stack trace.
+    /// Messages are intentionally omitted to avoid PII.
     /// </summary>
-    private static string ExtractTypeName(string fullTypeName)
+    private static string NonAggregateExceptionToStringWithoutMessage(Exception e)
     {
-        var typeName = fullTypeName;
-        var lastDot = typeName.LastIndexOf('.');
-        if (lastDot >= 0)
+        const string EndOfInnerExceptionStackTrace = "--- End of inner exception stack trace ---";
+
+        var s = e.GetType().ToString();
+
+        if (e.InnerException != null)
         {
-            typeName = typeName.Substring(lastDot + 1);
+            s = s + " ---> " + ExceptionToStringWithoutMessage(e.InnerException) + Environment.NewLine +
+                "   " + EndOfInnerExceptionStackTrace;
         }
-        // Remove generic arity if present (e.g., "List`1" -> "List")
-        var genericMarker = typeName.IndexOf('`');
-        if (genericMarker >= 0)
+
+        var stackTrace = e.StackTrace;
+        if (stackTrace != null)
         {
-            typeName = typeName.Substring(0, genericMarker);
+            s += Environment.NewLine + stackTrace;
         }
-        return typeName;
+
+        return s;
     }
 }

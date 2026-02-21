@@ -38,23 +38,16 @@ Data collected includes:
 - Whether running in a CI environment
 - Whether running from an LLM agent (e.g., GitHub Copilot, Claude)
 - Exit code / success or failure status
-- For failures: error type, error category, and sanitized error details
-  (no file paths)
+- For failures: error type, error category, sanitized error details
+  (no file paths), and the full stack trace with exception messages removed
 
 ## Crash Exception Telemetry
 
-If dotnetup crashes, it collects the exception type, error category, and a
-source location identifying the dotnetup or dotnetup dependency method where the error
-originated. The source location includes the type name, method name, and line
-number from dotnetup source code. If the exception wraps
-inner exceptions, the exception type chain is also recorded.
-
-Example of collected crash data:
-
-    ErrorType: IOException
-    Category: Product
-    SourceLocation: Downloader.DownloadAsync:145
-    ExceptionChain: IOException->SocketException
+If dotnetup crashes, it collects the name of the exception and the stack trace
+of dotnetup code, following the same approach as the .NET SDK. Exception messages
+are stripped from the stack trace because they may contain user-provided input.
+For more details on crash exception telemetry, see the
+[.NET CLI telemetry documentation](https://aka.ms/dotnet-cli-telemetry).
 
 ## CI and LLM Agent Detection
 

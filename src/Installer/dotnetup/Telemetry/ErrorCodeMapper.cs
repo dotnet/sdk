@@ -32,7 +32,7 @@ public enum ErrorCategory
 /// <param name="StatusCode">HTTP status code if applicable.</param>
 /// <param name="HResult">Win32 HResult if applicable.</param>
 /// <param name="Details">Additional context (no PII - sanitized values only).</param>
-/// <param name="SourceLocation">Method name from our code where error occurred (no file paths).</param>
+/// <param name="StackTrace">Full stack trace without exception messages (safe for telemetry).</param>
 /// <param name="ExceptionChain">Chain of exception types for wrapped exceptions.</param>
 public sealed record ExceptionErrorInfo(
     string ErrorType,
@@ -40,7 +40,7 @@ public sealed record ExceptionErrorInfo(
     int? StatusCode = null,
     int? HResult = null,
     string? Details = null,
-    string? SourceLocation = null,
+    string? StackTrace = null,
     string? ExceptionChain = null);
 
 /// <summary>
@@ -53,7 +53,7 @@ public sealed record ExceptionErrorInfo(
 ///   <item><see cref="ExceptionErrorMapper"/> — exception-type dispatch and enrichment</item>
 ///   <item><see cref="ErrorCategoryClassifier"/> — Product vs User classification + HResult mapping</item>
 ///   <item><see cref="NetworkErrorAnalyzer"/> — PII-safe network exception diagnostics</item>
-///   <item><see cref="ExceptionInspector"/> — stack-trace source location and exception chains</item>
+///   <item><see cref="ExceptionInspector"/> — PII-safe stack traces and exception chains</item>
 /// </list>
 /// </remarks>
 public static class ErrorCodeMapper
@@ -84,13 +84,14 @@ public static class ErrorCodeMapper
             activity.SetTag(TelemetryTagNames.ErrorHResult, hResult);
         if (errorInfo is { Details: { } details })
             activity.SetTag(TelemetryTagNames.ErrorDetails, details);
-        if (errorInfo is { SourceLocation: { } sourceLocation })
-            activity.SetTag(TelemetryTagNames.ErrorSourceLocation, sourceLocation);
+        if (errorInfo is { StackTrace: { } stackTrace })
+            activity.SetTag(TelemetryTagNames.ErrorStackTrace, stackTrace);
         if (errorInfo is { ExceptionChain: { } exceptionChain })
             activity.SetTag(TelemetryTagNames.ErrorExceptionChain, exceptionChain);
 
-        // NOTE: We intentionally do NOT call activity.RecordException(ex)
-        // because exception messages/stacks can contain PII
+        // NOTE: We intentionally do NOT call activity.RecordException(ex) because
+        // exception messages can contain PII. Instead we collect stack traces with
+        // messages stripped via ExceptionInspector.GetStackTraceWithoutMessage.
     }
 
     /// <summary>

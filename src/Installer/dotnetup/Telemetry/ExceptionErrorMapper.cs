@@ -32,7 +32,7 @@ internal static class ExceptionErrorMapper
         }
 
         // Get common enrichment data
-        var sourceLocation = ExceptionInspector.GetSafeSourceLocation(ex);
+        var stackTrace = ExceptionInspector.GetStackTraceWithoutMessage(ex);
         var exceptionChain = ExceptionInspector.GetExceptionChain(ex);
 
         return ex switch
@@ -40,14 +40,14 @@ internal static class ExceptionErrorMapper
             // DotnetInstallException has specific error codes — categorize by error code.
             // Sanitize the version to prevent PII leakage (user could have typed anything).
             // For network-related errors, also check the inner exception for more details.
-            DotnetInstallException installEx => MapInstallException(installEx, sourceLocation, exceptionChain),
+            DotnetInstallException installEx => MapInstallException(installEx, stackTrace, exceptionChain),
 
             // HTTP errors: 4xx client errors are often user issues, 5xx are product/server issues
             HttpRequestException httpEx => new ExceptionErrorInfo(
                 httpEx.StatusCode.HasValue ? $"Http{(int)httpEx.StatusCode}" : "HttpRequestException",
                 Category: ErrorCategoryClassifier.ClassifyHttpError(httpEx.StatusCode),
                 StatusCode: (int?)httpEx.StatusCode,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // FileNotFoundException before IOException (it derives from IOException).
@@ -58,30 +58,30 @@ internal static class ExceptionErrorMapper
                 Category: ErrorCategory.Product,
                 HResult: fnfEx.HResult,
                 Details: fnfEx.FileName is not null ? "file_specified" : null,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Permission denied — user environment issue (needs elevation or different permissions)
             UnauthorizedAccessException => new ExceptionErrorInfo(
                 "PermissionDenied",
                 Category: ErrorCategory.User,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Directory not found — could be user specified bad path
             DirectoryNotFoundException => new ExceptionErrorInfo(
                 "DirectoryNotFound",
                 Category: ErrorCategory.User,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
-            IOException ioEx => MapIOException(ioEx, sourceLocation, exceptionChain),
+            IOException ioEx => MapIOException(ioEx, stackTrace, exceptionChain),
 
             // User cancelled the operation
             OperationCanceledException => new ExceptionErrorInfo(
                 "Cancelled",
                 Category: ErrorCategory.User,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Invalid argument — likely a bug in our code (arguments are set programmatically)
@@ -89,35 +89,35 @@ internal static class ExceptionErrorMapper
                 "InvalidArgument",
                 Category: ErrorCategory.Product,
                 Details: argEx.ParamName,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Invalid operation — usually a bug in our code
             InvalidOperationException => new ExceptionErrorInfo(
                 "InvalidOperation",
                 Category: ErrorCategory.Product,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Not supported — likely a product issue (missing implementation or unsupported code path)
             NotSupportedException => new ExceptionErrorInfo(
                 "NotSupported",
                 Category: ErrorCategory.Product,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Timeout — network/environment issue outside our control
             TimeoutException => new ExceptionErrorInfo(
                 "Timeout",
                 Category: ErrorCategory.User,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain),
 
             // Unknown exceptions default to product (fail-safe — we should handle known cases)
             _ => new ExceptionErrorInfo(
                 ex.GetType().Name,
                 Category: ErrorCategory.Product,
-                SourceLocation: sourceLocation,
+                StackTrace: stackTrace,
                 ExceptionChain: exceptionChain)
         };
     }
@@ -128,7 +128,7 @@ internal static class ExceptionErrorMapper
     /// </summary>
     private static ExceptionErrorInfo MapInstallException(
         DotnetInstallException installEx,
-        string? sourceLocation,
+        string? stackTrace,
         string? exceptionChain)
     {
         var errorCode = installEx.ErrorCode;
@@ -156,14 +156,14 @@ internal static class ExceptionErrorMapper
             Category: baseCategory,
             StatusCode: httpStatus,
             Details: details,
-            SourceLocation: sourceLocation,
+            StackTrace: stackTrace,
             ExceptionChain: exceptionChain);
     }
 
     /// <summary>
     /// Maps a generic <see cref="IOException"/> using its HResult.
     /// </summary>
-    private static ExceptionErrorInfo MapIOException(IOException ioEx, string? sourceLocation, string? exceptionChain)
+    private static ExceptionErrorInfo MapIOException(IOException ioEx, string? stackTrace, string? exceptionChain)
     {
         var (errorType, category, details) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioEx.HResult);
 
@@ -172,7 +172,7 @@ internal static class ExceptionErrorMapper
             Category: category,
             HResult: ioEx.HResult,
             Details: details,
-            SourceLocation: sourceLocation,
+            StackTrace: stackTrace,
             ExceptionChain: exceptionChain);
     }
 }

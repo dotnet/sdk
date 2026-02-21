@@ -23,7 +23,7 @@ internal static class TelemetryTagNames
     public const string ErrorDetails = "error.details";
     public const string ErrorHttpStatus = "error.http_status";
     public const string ErrorHResult = "error.hresult";
-    public const string ErrorSourceLocation = "error.source_location";
+    public const string ErrorStackTrace = "error.stack_trace";
     public const string ErrorExceptionChain = "error.exception_chain";
 
     // Install tags
