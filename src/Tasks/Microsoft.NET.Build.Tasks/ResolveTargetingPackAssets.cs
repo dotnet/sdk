@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                results = Resolve(inputs, BuildEngine4);
+                results = Resolve(inputs, BuildEngine4, AllowCacheLookup());
 
                 if (AllowCacheLookup())
                 {
@@ -110,7 +110,7 @@ namespace Microsoft.NET.Build.Tasks
                         NetCoreTargetingPackRoot,
                         ProjectLanguage);
 
-        private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine)
+        private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine, bool allowCacheLookup)
         {
             List<TaskItem> referencesToAdd = new();
             List<TaskItem> analyzersToAdd = new();
@@ -215,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks
                             targetingPack.NuGetPackageVersion,
                             inputs.ProjectLanguage);
 
-                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd, AllowCacheLookup());
+                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd, allowCacheLookup);
 
                         if (File.Exists(platformManifestPath))
                         {
