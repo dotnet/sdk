@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -93,6 +96,34 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 if (Directory.Exists(projectDir)) Directory.Delete(projectDir, true);
                 if (Directory.Exists(otherDir)) Directory.Delete(otherDir, true);
             }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void ResolveTargetingPackAssets_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new ResolveTargetingPackAssets
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
+                        FrameworkReferences = Array.Empty<ITaskItem>(),
+                        ResolvedTargetingPacks = Array.Empty<ITaskItem>(),
+                        RuntimeFrameworks = Array.Empty<ITaskItem>(),
+                        GenerateErrorForMissingTargetingPacks = false,
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
         }
 
         private static (bool result, MockBuildEngine engine) RunTask(string projectDir)
