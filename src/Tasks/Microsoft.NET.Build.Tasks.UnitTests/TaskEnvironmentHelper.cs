@@ -74,7 +74,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// Stores its own project directory independently from the process's CWD,
     /// enabling tests to verify tasks resolve paths relative to ProjectDirectory, not CWD.
     /// </summary>
-    public class TestDriverProxy : DispatchProxy
+    internal class TestDriverProxy : DispatchProxy
     {
         private string _projectDirectory = string.Empty;
         private Dictionary<string, string> _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
