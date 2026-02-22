@@ -4,7 +4,10 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -468,6 +471,222 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.Should().BeTrue();
             task.SupportedTargetFrameworkAlias.Should().HaveCount(1);
             task.SupportedTargetFrameworkAlias[0].ItemSpec.Should().Be("netcoreapp3.1");
+        }
+
+        #endregion
+
+        #region Concurrent Execution
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void CollectSDKReferencesDesignTime_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var sdkRef = new TaskItem("Microsoft.NETCore.App");
+                    sdkRef.SetMetadata("SDKPackageItemSpec", "");
+
+                    var implicitPkg = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+                    {
+                        { "IsImplicitlyDefined", "true" },
+                        { "Version", "8.0.0" }
+                    });
+
+                    var task = new CollectSDKReferencesDesignTime
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        SdkReferences = new ITaskItem[] { sdkRef },
+                        PackageReferences = new ITaskItem[] { implicitPkg },
+                        DefaultImplicitPackages = "Microsoft.NETCore.App"
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+
+                    if (task.SDKReferencesDesignTime == null || task.SDKReferencesDesignTime.Length != 2)
+                    {
+                        errors.Add($"Thread {i}: Expected 2 items but got {task.SDKReferencesDesignTime?.Length}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void CreateWindowsSdkKnownFrameworkReferences_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new CreateWindowsSdkKnownFrameworkReferences
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        WindowsSdkPackageVersion = "10.0.19041.31",
+                        TargetFrameworkIdentifier = ".NETCoreApp",
+                        TargetFrameworkVersion = "8.0",
+                        TargetPlatformIdentifier = "Windows",
+                        TargetPlatformVersion = "10.0.19041.0"
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+
+                    if (task.KnownFrameworkReferences == null || task.KnownFrameworkReferences.Length != 5)
+                    {
+                        errors.Add($"Thread {i}: Expected 5 items but got {task.KnownFrameworkReferences?.Length}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void FindItemsFromPackages_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var item = new MockTaskItem($"lib/net8.0/Lib{i}.dll", new Dictionary<string, string>
+                    {
+                        { "NuGetPackageId", "MyPackage" },
+                        { "NuGetPackageVersion", "1.0.0" }
+                    });
+
+                    var package = new MockTaskItem("MyPackage", new Dictionary<string, string>
+                    {
+                        { "NuGetPackageId", "MyPackage" },
+                        { "NuGetPackageVersion", "1.0.0" }
+                    });
+
+                    var task = new FindItemsFromPackages
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        Items = new ITaskItem[] { item },
+                        Packages = new ITaskItem[] { package }
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+
+                    if (task.ItemsFromPackages == null || task.ItemsFromPackages.Length != 1)
+                    {
+                        errors.Add($"Thread {i}: Expected 1 item but got {task.ItemsFromPackages?.Length}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetAssemblyVersion_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new GetAssemblyVersion
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        NuGetVersion = $"{i}.0.{i}"
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+
+                    var expected = $"{i}.0.{i}.0";
+                    if (task.AssemblyVersion != expected)
+                    {
+                        errors.Add($"Thread {i}: Expected '{expected}' but got '{task.AssemblyVersion}'");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GenerateSupportedTargetFrameworkAlias_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var tfm = new TaskItem(".NETCoreApp,Version=v8.0");
+                    tfm.SetMetadata("DisplayName", ".NET 8.0");
+
+                    var task = new GenerateSupportedTargetFrameworkAlias
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        SupportedTargetFramework = new ITaskItem[] { tfm },
+                        TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0"
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+
+                    if (task.SupportedTargetFrameworkAlias == null || task.SupportedTargetFrameworkAlias.Length != 1)
+                    {
+                        errors.Add($"Thread {i}: Expected 1 alias but got {task.SupportedTargetFrameworkAlias?.Length}");
+                    }
+                    else if (task.SupportedTargetFrameworkAlias[0].ItemSpec != "net8.0")
+                    {
+                        errors.Add($"Thread {i}: Expected 'net8.0' but got '{task.SupportedTargetFrameworkAlias[0].ItemSpec}'");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
         }
 
         #endregion
