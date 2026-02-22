@@ -1126,6 +1126,9 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
                 {
+                    // TODO: CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath() uses
+                    // Environment.GetEnvironmentVariable internally, bypassing TaskEnvironment.
+                    // Fixing this requires changes to the shared CliFolderPathCalculatorCore class.
                     if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
                         new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath() is { } userProfileDir)
                     {

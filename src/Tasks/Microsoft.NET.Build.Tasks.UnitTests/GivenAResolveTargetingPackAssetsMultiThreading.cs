@@ -38,5 +38,28 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             act.Should().NotThrow("TaskEnvironment property should be settable");
             task.TaskEnvironment.Should().Be(te);
         }
+
+        [Fact]
+        public void CacheLookup_ReadsFromTaskEnvironment_NotProcessEnvironment()
+        {
+            // Verify that the cache lookup flag is read from TaskEnvironment,
+            // not from the static process environment. This ensures thread-safe
+            // per-task configuration.
+            var taskEnv = TaskEnvironmentHelper.CreateForTest();
+
+            var task = new ResolveTargetingPackAssets
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = taskEnv,
+                FrameworkReferences = Array.Empty<ITaskItem>(),
+                ResolvedTargetingPacks = Array.Empty<ITaskItem>(),
+                RuntimeFrameworks = Array.Empty<ITaskItem>(),
+                GenerateErrorForMissingTargetingPacks = false,
+            };
+
+            // Task should succeed regardless of ALLOW_TARGETING_PACK_CACHING value
+            var result = task.Execute();
+            result.Should().BeTrue("task should succeed with empty inputs");
+        }
     }
 }

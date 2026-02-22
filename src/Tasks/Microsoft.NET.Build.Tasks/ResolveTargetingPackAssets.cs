@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] UsedRuntimeFrameworks { get; set; }
 
-        private static readonly bool s_allowCacheLookup = Environment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
+        private bool AllowCacheLookup() => TaskEnvironment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
 
         public ResolveTargetingPackAssets()
         {
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks
 
             ResolvedAssetsCacheEntry results;
 
-            if (s_allowCacheLookup &&
+            if (AllowCacheLookup() &&
                 BuildEngine4?.GetRegisteredTaskObject(
                     cacheKey,
                     RegisteredTaskObjectLifetime.AppDomain /* really "until process exit" */)
@@ -81,7 +81,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 results = Resolve(inputs, BuildEngine4);
 
-                if (s_allowCacheLookup)
+                if (AllowCacheLookup())
                 {
                     BuildEngine4?.RegisterTaskObject(cacheKey, results, RegisteredTaskObjectLifetime.AppDomain, allowEarlyCollection: true);
                 }
@@ -215,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks
                             targetingPack.NuGetPackageVersion,
                             inputs.ProjectLanguage);
 
-                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd);
+                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd, AllowCacheLookup());
 
                         if (File.Exists(platformManifestPath))
                         {
@@ -298,11 +298,11 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static void AddItemsFromFrameworkList(FrameworkListDefinition definition, IBuildEngine4 buildEngine4, List<TaskItem> referenceItems, List<TaskItem> analyzerItems)
+        private static void AddItemsFromFrameworkList(FrameworkListDefinition definition, IBuildEngine4 buildEngine4, List<TaskItem> referenceItems, List<TaskItem> analyzerItems, bool allowCacheLookup)
         {
             string frameworkListKey = definition.CacheKey();
 
-            if (s_allowCacheLookup &&
+            if (allowCacheLookup &&
                 buildEngine4?.GetRegisteredTaskObject(
                   frameworkListKey,
                   RegisteredTaskObjectLifetime.AppDomain)
@@ -393,7 +393,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (s_allowCacheLookup)
+            if (allowCacheLookup)
             {
                 FrameworkList list = new()
                 {
