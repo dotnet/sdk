@@ -35,10 +35,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     ClsidMapPath = "source\\clsidmap.bin",
                 };
 
-                // Set TaskEnvironment via reflection (may not exist yet)
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                // Set TaskEnvironment for path resolution
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 // ComHost.Create will throw because our fake files aren't valid PE binaries.
                 // The key assertion is that the exception comes from PE processing (ResourceUpdater),

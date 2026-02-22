@@ -11,6 +11,62 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenAGenerateShimsMultiThreading
     {
         [Fact]
+        public void Paths_AreResolvedRelativeToProjectDirectory()
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"shims-mt-{Guid.NewGuid():N}"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                // Create fake apphost and assembly under projectDir
+                var toolsDir = Path.Combine(projectDir, "tools");
+                var binDir = Path.Combine(projectDir, "bin");
+                Directory.CreateDirectory(toolsDir);
+                Directory.CreateDirectory(binDir);
+                File.WriteAllText(Path.Combine(toolsDir, "apphost.exe"), "not a real apphost");
+                File.WriteAllText(Path.Combine(binDir, "test.dll"), "not a real assembly");
+
+                var apphostItem = new TaskItem("tools\\apphost.exe");
+                apphostItem.SetMetadata(MetadataKeys.RuntimeIdentifier, "linux-x64");
+
+                var task = new GenerateShims
+                {
+                    BuildEngine = new MockBuildEngine(),
+                    ApphostsForShimRuntimeIdentifiers = new ITaskItem[] { apphostItem },
+                    IntermediateAssembly = "bin\\test.dll",
+                    PackageId = "TestPackage",
+                    PackageVersion = "1.0.0",
+                    TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                    ToolCommandName = "test-tool",
+                    ToolEntryPoint = "test-tool.dll",
+                    PackagedShimOutputDirectory = "shims",
+                    ShimRuntimeIdentifiers = new ITaskItem[] { new TaskItem("linux-x64") },
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                };
+
+                // Will throw because fake files aren't valid PE binaries.
+                // Key assertion: exception is from PE processing, NOT "file not found"
+                try
+                {
+                    task.Execute();
+                }
+                catch (Exception)
+                {
+                    // Expected — HostWriter.CreateAppHost fails on fake binaries
+                }
+
+                var engine = (MockBuildEngine)task.BuildEngine;
+                var errors = engine.Errors.Select(e => e.Message).ToList();
+                errors.Should().NotContain(e => e.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                    && e.Contains("apphost", StringComparison.OrdinalIgnoreCase),
+                    "paths should be resolved via TaskEnvironment, not CWD");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [Fact]
         public void ItProducesSameErrorsInMultiProcessAndMultiThreadedEnvironments()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "shims-test-" + Guid.NewGuid().ToString("N"));

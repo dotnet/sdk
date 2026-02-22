@@ -35,10 +35,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     ComManifestPath = "bin\\test.manifest",
                 };
 
-                // Set TaskEnvironment via reflection
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                // Set TaskEnvironment for path resolution
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 // Execute — will try to read the assembly version from the relative path
                 // resolved via TaskEnvironment, then create the manifest
