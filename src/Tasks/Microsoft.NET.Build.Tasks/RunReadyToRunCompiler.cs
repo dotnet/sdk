@@ -233,13 +233,14 @@ namespace Microsoft.NET.Build.Tasks
                     if (IsPdbCompilation && string.Equals(Path.GetFileName(reference.ItemSpec), Path.GetFileName(_outputR2RImage), StringComparison.OrdinalIgnoreCase))
                         continue;
 
+                    string absoluteRef = TaskEnvironment.GetAbsolutePath(reference.ItemSpec);
                     if (UseCrossgen2 && !IsPdbCompilation)
                     {
-                        result.AppendLine($"-r:\"{reference.ItemSpec}\"");
+                        result.AppendLine($"-r:\"{absoluteRef}\"");
                     }
                     else
                     {
-                        result.AppendLine($"-r \"{reference.ItemSpec}\"");
+                        result.AppendLine($"-r \"{absoluteRef}\"");
                     }
                 }
             }
@@ -251,7 +252,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (ActuallyUseCrossgen2 && !string.IsNullOrEmpty(DotNetHostPath))
             {
-                return $"\"{Crossgen2Tool.ItemSpec}\"";
+                return $"\"{TaskEnvironment.GetAbsolutePath(Crossgen2Tool.ItemSpec)}\"";
             }
             return null;
         }
@@ -281,19 +282,19 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(DiaSymReader))
                 {
-                    result.AppendLine($"/DiasymreaderPath \"{DiaSymReader}\"");
+                    result.AppendLine($"/DiasymreaderPath \"{TaskEnvironment.GetAbsolutePath(DiaSymReader)}\"");
                 }
 
                 result.AppendLine(_createPDBCommand);
-                result.AppendLine($"\"{_outputR2RImage}\"");
+                result.AppendLine($"\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
             }
             else
             {
                 result.AppendLine("/MissingDependenciesOK");
-                result.AppendLine($"/JITPath \"{CrossgenTool.GetMetadata(MetadataKeys.JitPath)}\"");
+                result.AppendLine($"/JITPath \"{TaskEnvironment.GetAbsolutePath(CrossgenTool.GetMetadata(MetadataKeys.JitPath))}\"");
                 result.Append(GetAssemblyReferencesCommands());
-                result.AppendLine($"/out \"{_outputR2RImage}\"");
-                result.AppendLine($"\"{_inputAssembly}\"");
+                result.AppendLine($"/out \"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
+                result.AppendLine($"\"{TaskEnvironment.GetAbsolutePath(_inputAssembly)}\"");
             }
 
             return result.ToString();
@@ -306,7 +307,7 @@ namespace Microsoft.NET.Build.Tasks
             string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
             if (!string.IsNullOrEmpty(jitPath))
             {
-                result.AppendLine($"--jitpath:\"{jitPath}\"");
+                result.AppendLine($"--jitpath:\"{TaskEnvironment.GetAbsolutePath(jitPath)}\"");
             }
             else
             {
@@ -322,12 +323,12 @@ namespace Microsoft.NET.Build.Tasks
                 if (Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS) == "windows")
                 {
                     result.AppendLine("--pdb");
-                    result.AppendLine($"--pdb-path:{Path.GetDirectoryName(_outputPDBImage)}");
+                    result.AppendLine($"--pdb-path:{TaskEnvironment.GetAbsolutePath(Path.GetDirectoryName(_outputPDBImage))}");
                 }
                 else
                 {
                     result.AppendLine("--perfmap");
-                    result.AppendLine($"--perfmap-path:{Path.GetDirectoryName(_outputPDBImage)}");
+                    result.AppendLine($"--perfmap-path:{TaskEnvironment.GetAbsolutePath(Path.GetDirectoryName(_outputPDBImage))}");
 
                     string perfmapFormatVersion = Crossgen2Tool.GetMetadata(MetadataKeys.PerfmapFormatVersion);
                     if (!string.IsNullOrEmpty(perfmapFormatVersion))
@@ -341,7 +342,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 foreach (var mibc in Crossgen2PgoFiles)
                 {
-                    result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
+                    result.AppendLine($"-m:\"{TaskEnvironment.GetAbsolutePath(mibc.ItemSpec)}\"");
                 }
             }
 
@@ -366,7 +367,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (Crossgen2IsVersion5)
                     result.AppendLine("--inputbubble");
 
-                result.AppendLine($"--out:\"{_outputR2RImage}\"");
+                result.AppendLine($"--out:\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
 
                 result.Append(GetAssemblyReferencesCommands());
 
@@ -374,25 +375,25 @@ namespace Microsoft.NET.Build.Tasks
                 // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
                 foreach (var reference in ReadyToRunCompositeBuildInput)
                 {
-                    result.AppendLine(reference.ItemSpec);
+                    result.AppendLine(TaskEnvironment.GetAbsolutePath(reference.ItemSpec));
                 }
 
                 if (ReadyToRunCompositeUnrootedBuildInput != null)
                 {
                     foreach (var unrooted in ReadyToRunCompositeUnrootedBuildInput)
                     {
-                        result.AppendLine($"-u:\"{unrooted.ItemSpec}\"");
+                        result.AppendLine($"-u:\"{TaskEnvironment.GetAbsolutePath(unrooted.ItemSpec)}\"");
                     }
                 }
             }
             else
             {
                 result.Append(GetAssemblyReferencesCommands());
-                result.AppendLine($"--out:\"{_outputR2RImage}\"");
+                result.AppendLine($"--out:\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
 
                 // Note: do not add double quotes around the input assembly, even if the file path contains spaces. The command line
                 // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
-                result.AppendLine($"{_inputAssembly}");
+                result.AppendLine($"{TaskEnvironment.GetAbsolutePath(_inputAssembly)}");
             }
 
             return result.ToString();

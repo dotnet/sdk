@@ -101,6 +101,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+            string absoluteOutputPath = TaskEnvironment.GetAbsolutePath(OutputPath);
+
             if (ReadyToRunUseCrossgen2)
             {
                 string isVersion5 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5);
@@ -167,7 +169,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 var outputR2RImageRelativePath = file.GetMetadata(MetadataKeys.RelativePath);
-                var outputR2RImage = Path.Combine(OutputPath, outputR2RImageRelativePath);
+                var outputR2RImage = Path.Combine(absoluteOutputPath, outputR2RImageRelativePath);
 
                 string outputPDBImage = null;
                 string outputPDBImageRelativePath = null;
@@ -295,8 +297,8 @@ namespace Microsoft.NET.Build.Tasks
                     compositeR2RFinalImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".dylib");
                 }
 
-                var compositeR2RImage = Path.Combine(OutputPath, compositeR2RImageRelativePath);
-                var compositeR2RImageFinal = Path.Combine(OutputPath, compositeR2RFinalImageRelativePath);
+                var compositeR2RImage = Path.Combine(absoluteOutputPath, compositeR2RImageRelativePath);
+                var compositeR2RImageFinal = Path.Combine(absoluteOutputPath, compositeR2RFinalImageRelativePath);
 
                 TaskItem r2rCompilationEntry = new(MainAssembly)
                 {
