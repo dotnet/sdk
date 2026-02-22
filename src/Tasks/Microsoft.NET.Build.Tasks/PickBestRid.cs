@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks;
 [MSBuildMultiThreadableTask]
 public sealed class PickBestRid : TaskBase, IMultiThreadableTask
 {
-    public TaskEnvironment TaskEnvironment { get; set; } = null!;
+    public TaskEnvironment TaskEnvironment { get; set; }
     /// <summary>
     /// The path to the RID graph to read
     /// </summary>

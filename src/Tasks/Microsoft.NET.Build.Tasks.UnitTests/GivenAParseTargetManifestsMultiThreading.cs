@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 var teProp = task.GetType().GetProperty("TaskEnvironment");
                 teProp.Should().NotBeNull("task must have a TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 var result = task.Execute();
                 result.Should().BeTrue("task should succeed when manifest is found via TaskEnvironment");

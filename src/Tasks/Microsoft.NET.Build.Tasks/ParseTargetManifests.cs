@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks
     {
         public TaskEnvironment TaskEnvironment { get; set; }
 
-        public string TargetManifestFiles{ get; set; }
+        public string TargetManifestFiles { get; set; }
 
         [Output]
         public ITaskItem[] RuntimeStorePackages { get; private set; }
