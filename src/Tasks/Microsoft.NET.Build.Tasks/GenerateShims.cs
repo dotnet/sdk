@@ -10,8 +10,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class GenerateShims : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class GenerateShims : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
         /// <summary>
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>
@@ -78,10 +80,10 @@ namespace Microsoft.NET.Build.Tasks
             var embeddedApphostPaths = new List<ITaskItem>();
             foreach (var runtimeIdentifier in ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
             {
-                var resolvedApphostAssetPath = GetApphostAsset(ApphostsForShimRuntimeIdentifiers, runtimeIdentifier);
+                var resolvedApphostAssetPath = (string)TaskEnvironment.GetAbsolutePath(GetApphostAsset(ApphostsForShimRuntimeIdentifiers, runtimeIdentifier));
 
                 var packagedShimOutputDirectoryAndRid = Path.Combine(
-                        PackagedShimOutputDirectory,
+                        (string)TaskEnvironment.GetAbsolutePath(PackagedShimOutputDirectory),
                         runtimeIdentifier);
 
                 var appHostDestinationFilePath = Path.Combine(
@@ -115,7 +117,7 @@ namespace Microsoft.NET.Build.Tasks
                                                  appHostDestinationFilePath: appHostDestinationFilePath,
                                                  appBinaryFilePath: appBinaryFilePath,
                                                  windowsGraphicalUserInterface: windowsGraphicalUserInterface,
-                                                 assemblyToCopyResourcesFrom: IntermediateAssembly);
+                                                 assemblyToCopyResourcesFrom: (string)TaskEnvironment.GetAbsolutePath(IntermediateAssembly));
                     }
                     else
                     {
