@@ -3,7 +3,10 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -115,6 +118,47 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Directory.SetCurrentDirectory(savedCwd);
                 Directory.Delete(projectDir, true);
                 if (Directory.Exists(otherDir)) Directory.Delete(otherDir, true);
+            }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void FilterResolvedFiles_ConcurrentExecution(int parallelism)
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-concurrent-{Guid.NewGuid():N}"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var objDir = Path.Combine(projectDir, "obj");
+                Directory.CreateDirectory(objDir);
+                File.WriteAllText(Path.Combine(objDir, "project.assets.json"), AssetsJson);
+
+                var errors = new ConcurrentBag<string>();
+                var barrier = new Barrier(parallelism);
+                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                {
+                    try
+                    {
+                        var task = new FilterResolvedFiles
+                        {
+                            BuildEngine = new MockBuildEngine(),
+                            AssetsFilePath = Path.Combine("obj", "project.assets.json"),
+                            ResolvedFiles = Array.Empty<ITaskItem>(),
+                            PackagesToPrune = Array.Empty<ITaskItem>(),
+                            TargetFramework = ".NETCoreApp,Version=v8.0",
+                            TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                        };
+                        barrier.SignalAndWait();
+                        task.Execute();
+                    }
+                    catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                });
+                errors.Should().BeEmpty();
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
             }
         }
     }

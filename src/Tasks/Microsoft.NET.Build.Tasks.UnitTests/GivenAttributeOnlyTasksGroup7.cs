@@ -4,7 +4,10 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -346,5 +349,116 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         // FilterResolvedFiles parity test removed — it belongs in GivenAFilterResolvedFilesMultiThreading.cs
         // (FilterResolvedFiles is Pattern B, not attribute-only). The duplicate here also had a bug:
         // it created FilterResolvedFiles without setting TaskEnvironment, causing NullReferenceException.
+
+        #region Concurrent Execution
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void SelectRuntimeIdentifierSpecificItems_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new SelectRuntimeIdentifierSpecificItems
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        TargetRuntimeIdentifier = "linux-x64",
+                        Items = new ITaskItem[]
+                        {
+                            CreateItemWithRid($"Item{i}", "linux-x64")
+                        },
+                        RuntimeIdentifierGraphPath = ""
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void SetGeneratedAppConfigMetadata_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new SetGeneratedAppConfigMetadata
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        GeneratedAppConfigFile = $"obj/app{i}.exe.config",
+                        TargetName = $"app{i}.exe.config"
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void ValidateExecutableReferences_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new ValidateExecutableReferences
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        IsExecutable = false,
+                        SelfContained = false,
+                        ReferencedProjects = Array.Empty<ITaskItem>()
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void RemoveDuplicatePackageReferences_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new RemoveDuplicatePackageReferences
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        InputPackageReferences = new ITaskItem[]
+                        {
+                            new MockTaskItem($"Package{i}", new Dictionary<string, string> { { "Version", "1.0.0" } })
+                        }
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
+        }
+
+        #endregion
     }
 }
