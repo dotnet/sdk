@@ -125,7 +125,7 @@ namespace Microsoft.NET.Build.Tasks
                 !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(TaskEnvironment.GetAbsolutePath(diaSymReaderPath));
 
             // Process input lists of files
-            ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, _r2rCompositeReferences, _r2rCompositeInput, _r2rCompositeUnrootedInput, hasValidDiaSymReaderLib);
+            ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, _r2rCompositeReferences, _r2rCompositeInput, _r2rCompositeUnrootedInput, hasValidDiaSymReaderLib, absoluteOutputPath);
         }
 
         private void ProcessInputFileList(
@@ -137,7 +137,8 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> r2rCompositeReferenceList,
             List<ITaskItem> r2rCompositeInputList,
             List<ITaskItem> r2rCompositeUnrootedInput,
-            bool hasValidDiaSymReaderLib)
+            bool hasValidDiaSymReaderLib,
+            string absoluteOutputPath)
         {
             if (inputFiles == null)
             {
