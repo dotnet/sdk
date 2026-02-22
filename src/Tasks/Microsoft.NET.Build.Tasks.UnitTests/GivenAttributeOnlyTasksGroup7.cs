@@ -343,76 +343,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         #endregion
 
-        #region FilterResolvedFiles (dual-mode parity test)
-
-        [Fact]
-        public void FilterResolvedFiles_ProducesSameResultsRegardlessOfCwd()
-        {
-            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-parity-{Guid.NewGuid():N}"));
-            var otherDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-decoy-{Guid.NewGuid():N}"));
-            Directory.CreateDirectory(projectDir);
-            Directory.CreateDirectory(otherDir);
-            var savedCwd = Directory.GetCurrentDirectory();
-            try
-            {
-                var assetsContent = @"{
-                    ""version"": 3,
-                    ""targets"": { "".NETCoreApp,Version=v8.0"": {} },
-                    ""libraries"": {},
-                    ""packageFolders"": {},
-                    ""projectFileDependencyGroups"": { "".NETCoreApp,Version=v8.0"": [] },
-                    ""project"": { ""version"": ""1.0.0"", ""frameworks"": { ""net8.0"": {} } }
-                }";
-                var assetsPath = Path.Combine(projectDir, "project.assets.json");
-                File.WriteAllText(assetsPath, assetsContent);
-
-                var resolvedFiles = new ITaskItem[]
-                {
-                    new MockTaskItem("MyLib.dll", new Dictionary<string, string>
-                    {
-                        { "NuGetPackageId", "MyPackage" },
-                        { "NuGetPackageVersion", "1.0.0" }
-                    })
-                };
-                var packagesToPrune = Array.Empty<ITaskItem>();
-
-                // --- CWD = projectDir ---
-                Directory.SetCurrentDirectory(projectDir);
-                var (cwdResult, cwdEngine) = RunFilterTask(assetsPath, resolvedFiles, packagesToPrune);
-
-                // --- CWD = otherDir ---
-                Directory.SetCurrentDirectory(otherDir);
-                var (otherResult, otherEngine) = RunFilterTask(assetsPath, resolvedFiles, packagesToPrune);
-
-                cwdResult.Should().Be(otherResult,
-                    "FilterResolvedFiles should return same success/failure in both environments");
-                cwdEngine.Errors.Count.Should().Be(otherEngine.Errors.Count,
-                    "error count should be the same in both environments");
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(savedCwd);
-                Directory.Delete(projectDir, true);
-                if (Directory.Exists(otherDir)) Directory.Delete(otherDir, true);
-            }
-        }
-
-        private static (bool result, MockBuildEngine engine) RunFilterTask(
-            string assetsPath, ITaskItem[] resolvedFiles, ITaskItem[] packagesToPrune)
-        {
-            var engine = new MockBuildEngine();
-            var task = new FilterResolvedFiles
-            {
-                BuildEngine = engine,
-                AssetsFilePath = assetsPath,
-                ResolvedFiles = resolvedFiles,
-                PackagesToPrune = packagesToPrune,
-                TargetFramework = ".NETCoreApp,Version=v8.0"
-            };
-            var result = task.Execute();
-            return (result, engine);
-        }
-
-        #endregion
+        // FilterResolvedFiles parity test removed — it belongs in GivenAFilterResolvedFilesMultiThreading.cs
+        // (FilterResolvedFiles is Pattern B, not attribute-only). The duplicate here also had a bug:
+        // it created FilterResolvedFiles without setting TaskEnvironment, causing NullReferenceException.
     }
 }
