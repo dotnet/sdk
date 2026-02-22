@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -63,6 +66,35 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 Directory.Delete(projectDir, true);
             }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void ResolveReadyToRunCompilers_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new ResolveReadyToRunCompilers
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
+                        RuntimePacks = new ITaskItem[] { new TaskItem("SomePack") },
+                        TargetingPacks = Array.Empty<ITaskItem>(),
+                        RuntimeGraphPath = "nonexistent.json",
+                        NETCoreSdkRuntimeIdentifier = "win-x64",
+                        ReadyToRunUseCrossgen2 = false,
+                    };
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+            });
+            errors.Should().BeEmpty();
         }
     }
 }
