@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -65,6 +68,46 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 var result = task.Execute();
                 result.Should().BeTrue("task should succeed when assets file is found via TaskEnvironment");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetPackageDirectory_ConcurrentExecution(int parallelism)
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"pkgdir-conc-{Guid.NewGuid():N}"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var objDir = Path.Combine(projectDir, "obj");
+                Directory.CreateDirectory(objDir);
+                File.WriteAllText(Path.Combine(objDir, "project.assets.json"), AssetsJson);
+
+                var errors = new ConcurrentBag<string>();
+                var barrier = new Barrier(parallelism);
+                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                {
+                    try
+                    {
+                        var task = new GetPackageDirectory
+                        {
+                            BuildEngine = new MockBuildEngine(),
+                            TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                            AssetsFileWithAdditionalPackageFolders = Path.Combine("obj", "project.assets.json"),
+                            Items = Array.Empty<ITaskItem>(),
+                            PackageFolders = Array.Empty<string>(),
+                        };
+                        barrier.SignalAndWait();
+                        task.Execute();
+                    }
+                    catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                });
+                errors.Should().BeEmpty();
             }
             finally
             {

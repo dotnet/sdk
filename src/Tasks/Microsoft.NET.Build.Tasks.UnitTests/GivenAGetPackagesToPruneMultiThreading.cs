@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -116,6 +119,58 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var result = task.Execute();
                 result.Should().BeTrue("task should succeed when AllowMissingPrunePackageData is true");
                 engine.Errors.Should().BeEmpty();
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetPackagesToPrune_ConcurrentExecution(int parallelism)
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"prune-conc-{Guid.NewGuid():N}"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var pruneRelPath = "PruneData";
+                WritePruneData(Path.Combine(projectDir, pruneRelPath));
+
+                var errors = new ConcurrentBag<string>();
+                var barrier = new Barrier(parallelism);
+                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                {
+                    try
+                    {
+                        var task = new GetPackagesToPrune
+                        {
+                            BuildEngine = new MockBuildEngine(),
+                            TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                            TargetFrameworkIdentifier = ".NETCoreApp",
+                            TargetFrameworkVersion = Tfm,
+                            FrameworkReferences = new ITaskItem[]
+                            {
+                                new MockTaskItem(FrameworkRef, new Dictionary<string, string>())
+                            },
+                            TargetingPacks = new ITaskItem[]
+                            {
+                                new MockTaskItem(FrameworkRef, new Dictionary<string, string>
+                                {
+                                    ["RuntimeFrameworkName"] = FrameworkRef
+                                })
+                            },
+                            TargetingPackRoots = Array.Empty<string>(),
+                            PrunePackageDataRoot = pruneRelPath,
+                            AllowMissingPrunePackageData = false,
+                        };
+                        barrier.SignalAndWait();
+                        task.Execute();
+                    }
+                    catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                });
+                errors.Should().BeEmpty();
             }
             finally
             {
