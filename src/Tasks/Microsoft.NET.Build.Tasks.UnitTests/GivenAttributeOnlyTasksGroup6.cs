@@ -4,7 +4,10 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -493,6 +496,190 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 result.Should().BeTrue();
                 task.ResolvedAssets.Should().BeEmpty("no packages in the lock file means no assets");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        #endregion
+
+        #region Concurrent Execution
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetDefaultPlatformTargetForNetFramework_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new GetDefaultPlatformTargetForNetFramework
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        PackageDependencies = Array.Empty<ITaskItem>(),
+                        NativeCopyLocalItems = Array.Empty<ITaskItem>()
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetEmbeddedApphostPaths_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new GetEmbeddedApphostPaths
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        ToolCommandName = "mytool",
+                        PackagedShimOutputDirectory = "shims",
+                        ShimRuntimeIdentifiers = new ITaskItem[] { new TaskItem("win-x64") }
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GetNuGetShortFolderName_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new GetNuGetShortFolderName
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0"
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void ProduceContentAssets_ConcurrentExecution(int parallelism)
+        {
+            var errors = new ConcurrentBag<string>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                try
+                {
+                    var task = new ProduceContentAssets
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        ContentFileDependencies = Array.Empty<ITaskItem>(),
+                        ProjectLanguage = "C#",
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
+                    };
+
+                    barrier.SignalAndWait();
+                    task.Execute();
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Thread {i}: {ex.Message}");
+                }
+            });
+
+            errors.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void ResolveCopyLocalAssets_ConcurrentExecution(int parallelism)
+        {
+            var projectDir = Path.Combine(Path.GetTempPath(), $"resolve-copy-concurrent-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var assetsContent = @"{
+                    ""version"": 3,
+                    ""targets"": { "".NETCoreApp,Version=v8.0"": {} },
+                    ""libraries"": {},
+                    ""packageFolders"": {},
+                    ""projectFileDependencyGroups"": { "".NETCoreApp,Version=v8.0"": [] },
+                    ""project"": { ""version"": ""1.0.0"", ""frameworks"": { ""net8.0"": {} } }
+                }";
+                var assetsPath = Path.Combine(projectDir, "project.assets.json");
+                File.WriteAllText(assetsPath, assetsContent);
+
+                var errors = new ConcurrentBag<string>();
+                var barrier = new Barrier(parallelism);
+
+                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                {
+                    try
+                    {
+                        var task = new ResolveCopyLocalAssets
+                        {
+                            BuildEngine = new MockBuildEngine(),
+                            AssetsFilePath = assetsPath,
+                            TargetFramework = ".NETCoreApp,Version=v8.0",
+                            RuntimeIdentifier = "",
+                            IsSelfContained = false,
+                            ResolveRuntimeTargets = false,
+                            TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir)
+                        };
+
+                        barrier.SignalAndWait();
+                        task.Execute();
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Thread {i}: {ex.Message}");
+                    }
+                });
+
+                errors.Should().BeEmpty();
             }
             finally
             {
