@@ -69,7 +69,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        protected override string GenerateFullPathToTool() => ToolName;
+        protected override string GenerateFullPathToTool() => TaskEnvironment.GetAbsolutePath(ToolName);
 
         private string DiaSymReader => CrossgenTool.GetMetadata(MetadataKeys.DiaSymReader);
 
