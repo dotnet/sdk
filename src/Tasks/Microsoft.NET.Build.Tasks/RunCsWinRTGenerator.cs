@@ -15,8 +15,10 @@ namespace Microsoft.NET.Build.Tasks;
 /// <summary>
 /// The custom MSBuild task that invokes the 'cswinrtgen' tool.
 /// </summary>
-public sealed class RunCsWinRTGenerator : ToolTask
+[MSBuildMultiThreadableTask]
+public sealed class RunCsWinRTGenerator : ToolTask, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = null!;
     /// <summary>
     /// Gets or sets the paths to assembly files that are reference assemblies, representing
     /// the entire surface area for compilation. These assemblies are the full set of assemblies
@@ -133,21 +135,21 @@ public sealed class RunCsWinRTGenerator : ToolTask
             return false;
         }
 
-        if (InteropAssemblyDirectory is null || !Directory.Exists(InteropAssemblyDirectory))
+        if (InteropAssemblyDirectory is null || !Directory.Exists(TaskEnvironment.GetAbsolutePath(InteropAssemblyDirectory)))
         {
             Log.LogWarning("Generated assembly directory '{0}' is invalid or does not exist.", InteropAssemblyDirectory);
 
             return false;
         }
 
-        if (DebugReproDirectory is not null && !Directory.Exists(DebugReproDirectory))
+        if (DebugReproDirectory is not null && !Directory.Exists(TaskEnvironment.GetAbsolutePath(DebugReproDirectory)))
         {
             Log.LogWarning("Debug repro directory '{0}' is invalid or does not exist.", DebugReproDirectory);
 
             return false;
         }
 
-        if (CsWinRTToolsDirectory is null || !Directory.Exists(CsWinRTToolsDirectory))
+        if (CsWinRTToolsDirectory is null || !Directory.Exists(TaskEnvironment.GetAbsolutePath(CsWinRTToolsDirectory)))
         {
             Log.LogWarning("Tools directory '{0}' is invalid or does not exist.", CsWinRTToolsDirectory);
 

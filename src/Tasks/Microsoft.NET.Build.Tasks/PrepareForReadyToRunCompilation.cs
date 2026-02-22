@@ -11,8 +11,11 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class PrepareForReadyToRunCompilation : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class PrepareForReadyToRunCompilation : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public ITaskItem MainAssembly { get; set; }
         public ITaskItem[] Assemblies { get; set; }
@@ -117,7 +120,7 @@ namespace Microsoft.NET.Build.Tasks
 
             bool hasValidDiaSymReaderLib =
                 ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5 ||
-                !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
+                !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(TaskEnvironment.GetAbsolutePath(diaSymReaderPath));
 
             // Process input lists of files
             ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, _r2rCompositeReferences, _r2rCompositeInput, _r2rCompositeUnrootedInput, hasValidDiaSymReaderLib);
@@ -145,7 +148,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var file in inputFiles)
             {
-                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet, compositeRootSet);
+                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet, compositeRootSet, TaskEnvironment);
 
                 if (eligibility.NoEligibility)
                 {
@@ -190,7 +193,7 @@ namespace Microsoft.NET.Build.Tasks
                         }
                         else
                         {
-                            using (FileStream fs = new(file.ItemSpec, FileMode.Open, FileAccess.Read))
+                            using (FileStream fs = new(TaskEnvironment.GetAbsolutePath(file.ItemSpec), FileMode.Open, FileAccess.Read))
                             {
                                 PEReader pereader = new(fs);
                                 MetadataReader mdReader = pereader.GetMetadataReader();
@@ -431,7 +434,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet, HashSet<string> r2rCompositeRootSet)
+        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet, HashSet<string> r2rCompositeRootSet, TaskEnvironment taskEnvironment)
         {
             // Check to see if this is a valid ILOnly image that we can compile
             if (!file.ItemSpec.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !file.ItemSpec.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -440,7 +443,7 @@ namespace Microsoft.NET.Build.Tasks
                 return Eligibility.None;
             }
 
-            using (FileStream fs = new(file.ItemSpec, FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new(taskEnvironment.GetAbsolutePath(file.ItemSpec), FileMode.Open, FileAccess.Read))
             {
                 try
                 {
