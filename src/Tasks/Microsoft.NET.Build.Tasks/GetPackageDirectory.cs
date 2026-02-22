@@ -11,8 +11,11 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  Locates the root NuGet package directory for each of the input items that has PackageName and PackageVersion,
     //  but not PackageDirectory metadata specified
-    public class GetPackageDirectory : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetPackageDirectory : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public ITaskItem[] Items { get; set; } = Array.Empty<ITaskItem>();
 
         public string[] PackageFolders { get; set; } = Array.Empty<string>();
@@ -33,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(AssetsFileWithAdditionalPackageFolders))
             {
                 var lockFileCache = new LockFileCache(this);
-                var lockFile = lockFileCache.GetLockFile(AssetsFileWithAdditionalPackageFolders);
+                var lockFile = lockFileCache.GetLockFile(TaskEnvironment.GetAbsolutePath(AssetsFileWithAdditionalPackageFolders));
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
 
