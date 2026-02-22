@@ -20,8 +20,11 @@ namespace Microsoft.NET.Build.Tasks
     /// targeting packs which provide the reference assemblies, and creates RuntimeFramework
     /// items, which are written to the runtimeconfig file
     /// </summary>
-    public class ProcessFrameworkReferences : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ProcessFrameworkReferences : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public string? TargetFrameworkIdentifier { get; set; }
 
         [Required]
@@ -1112,7 +1115,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             IEnumerable<string> GetPackFolders()
             {
-                var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+                var packRootEnvironmentVariable = TaskEnvironment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
                 if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
                 {
                     foreach (var packRoot in packRootEnvironmentVariable.Split(Path.PathSeparator))
@@ -1181,7 +1184,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
                 //  starting point to search for global.json
-                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
 
                 var manifestProvider = new SdkDirectoryWorkloadManifestProvider(NetCoreRoot, NETCoreSdkVersion, userProfileDir, globalJsonPath);
                 return WorkloadResolver.Create(manifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);

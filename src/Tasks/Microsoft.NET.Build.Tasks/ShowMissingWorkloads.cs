@@ -12,8 +12,11 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ShowMissingWorkloads : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ShowMissingWorkloads : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         private static readonly string MauiCrossPlatTopLevelVSWorkloads = "Microsoft.VisualStudio.Workload.NetCrossPlat";
         private static readonly string MauiComponentGroupVSWorkload = "Microsoft.VisualStudio.ComponentGroup.Maui.All";
         private static readonly string WasmTopLevelVSWorkload = "Microsoft.VisualStudio.Workload.NetWeb";
@@ -42,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
                 //  starting point to search for global.json
-                string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
 
                 var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(NetCoreRoot, NETCoreSdkVersion, userProfileDir, globalJsonPath);
                 var workloadResolver = Create(workloadManifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);

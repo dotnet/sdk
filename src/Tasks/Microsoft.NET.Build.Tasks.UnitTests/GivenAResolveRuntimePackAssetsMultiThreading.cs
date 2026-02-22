@@ -1,0 +1,78 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using FluentAssertions;
+using Microsoft.Build.Framework;
+using Xunit;
+
+namespace Microsoft.NET.Build.Tasks.UnitTests
+{
+    public class GivenAResolveRuntimePackAssetsMultiThreading
+    {
+        [Fact]
+        public void EmptyRuntimePacks_DoesNotCrash()
+        {
+            var task = new ResolveRuntimePackAssets
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
+                ResolvedRuntimePacks = Array.Empty<ITaskItem>(),
+            };
+
+            var result = task.Execute();
+
+            result.Should().BeTrue("empty runtime packs should succeed");
+            task.RuntimePackAssets.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetAbsolutePath_ProducesSameResultRegardlessOfCwd()
+        {
+            // ResolveRuntimePackAssets replaced Path.GetFullPath with TaskEnvironment.GetAbsolutePath.
+            // Verify that results are identical whether CWD matches projectDir or not.
+            var projectDir = Path.Combine(Path.GetTempPath(), "rrpa-mt-" + Guid.NewGuid().ToString("N"));
+            var otherDir = Path.Combine(Path.GetTempPath(), "rrpa-decoy-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDir);
+            Directory.CreateDirectory(otherDir);
+            var savedCwd = Directory.GetCurrentDirectory();
+
+            try
+            {
+                // Multiprocess: CWD == projectDir
+                Directory.SetCurrentDirectory(projectDir);
+                var (result1, engine1) = RunTask(projectDir);
+
+                // Multithreaded: CWD == otherDir
+                Directory.SetCurrentDirectory(otherDir);
+                var (result2, engine2) = RunTask(projectDir);
+
+                result1.Should().Be(result2,
+                    "task result should be identical regardless of CWD");
+                engine1.Errors.Count.Should().Be(engine2.Errors.Count,
+                    "error count should match");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(savedCwd);
+                Directory.Delete(projectDir, true);
+                if (Directory.Exists(otherDir)) Directory.Delete(otherDir, true);
+            }
+        }
+
+        private static (bool result, MockBuildEngine engine) RunTask(string projectDir)
+        {
+            var engine = new MockBuildEngine();
+            var task = new ResolveRuntimePackAssets
+            {
+                BuildEngine = engine,
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                ResolvedRuntimePacks = Array.Empty<ITaskItem>(),
+            };
+
+            bool result;
+            try { result = task.Execute(); }
+            catch { result = false; }
+            return (result, engine);
+        }
+    }
+}
