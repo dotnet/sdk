@@ -17,7 +17,8 @@ namespace Microsoft.NET.Build.Tasks
     /// Generates the $(project).runtimeconfig.json and optionally $(project).runtimeconfig.dev.json files
     /// for a project.
     /// </summary>
-    public class GenerateRuntimeConfigurationFiles : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateRuntimeConfigurationFiles : TaskBase, IMultiThreadableTask
     {
         public string AssetsFilePath { get; set; }
 
@@ -55,6 +56,8 @@ namespace Microsoft.NET.Build.Tasks
         public bool GenerateRuntimeConfigDevFile { get; set; }
 
         public bool AlwaysIncludeCoreFramework { get; set; }
+
+        public TaskEnvironment TaskEnvironment { get; set; }
 
         List<ITaskItem> _filesWritten = new();
 
@@ -127,7 +130,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+                AbsolutePath assetsPath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(assetsPath);
 
                 ProjectContext projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
@@ -176,7 +180,7 @@ namespace Microsoft.NET.Build.Tasks
                 AddAdditionalProbingPaths(config.RuntimeOptions, packageFolders);
             }
 
-            WriteToJsonFile(RuntimeConfigPath, config);
+            WriteToJsonFile(TaskEnvironment.GetAbsolutePath(RuntimeConfigPath), config);
             _filesWritten.Add(new TaskItem(RuntimeConfigPath));
         }
 
@@ -266,13 +270,19 @@ namespace Microsoft.NET.Build.Tasks
 
         private void AddUserRuntimeOptions(RuntimeOptions runtimeOptions)
         {
-            if (string.IsNullOrEmpty(UserRuntimeConfig) || !File.Exists(UserRuntimeConfig))
+            if (string.IsNullOrEmpty(UserRuntimeConfig))
+            {
+                return;
+            }
+
+            AbsolutePath userConfigPath = TaskEnvironment.GetAbsolutePath(UserRuntimeConfig);
+            if (!File.Exists(userConfigPath))
             {
                 return;
             }
 
             JObject runtimeOptionsFromProject;
-            using (JsonTextReader reader = new(File.OpenText(UserRuntimeConfig)))
+            using (JsonTextReader reader = new(File.OpenText(userConfigPath)))
             {
                 runtimeOptionsFromProject = JObject.Load(reader);
             }
@@ -340,7 +350,7 @@ namespace Microsoft.NET.Build.Tasks
 
             AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
 
-            WriteToJsonFile(RuntimeConfigDevPath, devConfig);
+            WriteToJsonFile(TaskEnvironment.GetAbsolutePath(RuntimeConfigDevPath), devConfig);
             _filesWritten.Add(new TaskItem(RuntimeConfigDevPath));
         }
 

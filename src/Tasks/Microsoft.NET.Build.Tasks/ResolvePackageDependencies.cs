@@ -18,7 +18,8 @@ namespace Microsoft.NET.Build.Tasks
     /// <remarks>
     /// Only called for backwards compatability, when <c>ResolvePackageDependencies</c> is true.
     /// </remarks>
-    public sealed class ResolvePackageDependencies : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ResolvePackageDependencies : TaskBase, IMultiThreadableTask
     {
         private readonly Dictionary<string, string> _fileTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -114,6 +115,8 @@ namespace Microsoft.NET.Build.Tasks
 
         #endregion
 
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public ResolvePackageDependencies()
         {
         }
@@ -131,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IPackageResolver PackageResolver => _packageResolver ??= NuGetPackageResolver.CreateResolver(LockFile);
 
-        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(ProjectAssetsFile);
+        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(TaskEnvironment.GetAbsolutePath(ProjectAssetsFile));
 
         private Dictionary<string, string> _targetNameToAliasMap;
 
@@ -464,7 +467,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GetAbsolutePathFromProjectRelativePath(string path)
         {
-            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ProjectPath), path));
+            string projectDirectory = Path.GetDirectoryName(ProjectPath);
+            AbsolutePath absProjectDir = string.IsNullOrEmpty(projectDirectory)
+                ? TaskEnvironment.ProjectDirectory
+                : TaskEnvironment.GetAbsolutePath(projectDirectory);
+            return new AbsolutePath(path, absProjectDir);
         }
     }
 }
