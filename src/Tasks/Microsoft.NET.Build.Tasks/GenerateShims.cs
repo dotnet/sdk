@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>
         [Required]
-        public ITaskItem[] ApphostsForShimRuntimeIdentifiers { get; private set; }
+        public ITaskItem[] ApphostsForShimRuntimeIdentifiers { get; set; }
 
         [Required]
         public string IntermediateAssembly { get; set; }
