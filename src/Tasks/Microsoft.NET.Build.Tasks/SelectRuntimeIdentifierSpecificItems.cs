@@ -12,8 +12,10 @@ namespace Microsoft.NET.Build.Tasks;
 /// compatible with a specified Runtime Identifier, according to a given RuntimeIdentifierGraph file.
 /// </summary>
 [MSBuildMultiThreadableTask]
-public class SelectRuntimeIdentifierSpecificItems : TaskBase
+public class SelectRuntimeIdentifierSpecificItems : TaskBase, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = null!;
+
     /// <summary>
     /// The target runtime identifier to check compatibility against.
     /// </summary>
@@ -53,7 +55,7 @@ public class SelectRuntimeIdentifierSpecificItems : TaskBase
 
         string ridMetadata = RuntimeIdentifierItemMetadata ?? "RuntimeIdentifier";
 
-        RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeIdentifierGraphPath);
+        RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(TaskEnvironment.GetAbsolutePath(RuntimeIdentifierGraphPath));
 
         var selectedItems = new List<ITaskItem>();
 

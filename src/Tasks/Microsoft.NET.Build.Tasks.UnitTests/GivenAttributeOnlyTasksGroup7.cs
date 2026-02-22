@@ -85,11 +85,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 // --- Run with CWD = projectDir ---
                 Directory.SetCurrentDirectory(projectDir);
-                var (cwdResult, cwdSelected) = RunSelectRidTask("linux-x64", items, graphPath);
+                var (cwdResult, cwdSelected) = RunSelectRidTask("linux-x64", items, graphPath, projectDir);
 
                 // --- Run with CWD = otherDir ---
                 Directory.SetCurrentDirectory(otherDir);
-                var (otherResult, otherSelected) = RunSelectRidTask("linux-x64", items, graphPath);
+                var (otherResult, otherSelected) = RunSelectRidTask("linux-x64", items, graphPath, projectDir);
 
                 cwdResult.Should().Be(otherResult, "task should return same result regardless of CWD");
                 cwdSelected.Length.Should().Be(otherSelected.Length, "same number of items should be selected");
@@ -108,11 +108,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         private static (bool result, ITaskItem[] selected) RunSelectRidTask(
-            string targetRid, ITaskItem[] items, string graphPath)
+            string targetRid, ITaskItem[] items, string graphPath, string projectDir)
         {
             var task = new SelectRuntimeIdentifierSpecificItems
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                 TargetRuntimeIdentifier = targetRid,
                 Items = items,
                 RuntimeIdentifierGraphPath = graphPath
@@ -366,6 +367,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     var task = new SelectRuntimeIdentifierSpecificItems
                     {
                         BuildEngine = new MockBuildEngine(),
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Path.GetTempPath()),
                         TargetRuntimeIdentifier = "linux-x64",
                         Items = new ITaskItem[]
                         {
