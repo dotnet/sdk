@@ -4,17 +4,58 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     /// <summary>
-    /// Behavioral tests for attribute-only tasks in merge-group-6.
-    /// These tasks received only the [MSBuildMultiThreadableTask] attribute — no source
-    /// code changes — so we verify they still produce correct results.
+    /// Behavioral and attribute-presence tests for tasks in merge-group-6.
+    /// GetDefaultPlatformTargetForNetFramework, GetEmbeddedApphostPaths, and
+    /// GetNuGetShortFolderName are attribute-only. ProduceContentAssets and
+    /// ResolveCopyLocalAssets were migrated to Pattern B (IMultiThreadableTask).
     /// </summary>
     public class GivenAttributeOnlyTasksGroup6
     {
+        #region Attribute Presence
+
+        [Fact]
+        public void GetDefaultPlatformTargetForNetFramework_HasMultiThreadableAttribute()
+        {
+            typeof(GetDefaultPlatformTargetForNetFramework).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void GetEmbeddedApphostPaths_HasMultiThreadableAttribute()
+        {
+            typeof(GetEmbeddedApphostPaths).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void GetNuGetShortFolderName_HasMultiThreadableAttribute()
+        {
+            typeof(GetNuGetShortFolderName).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void ProduceContentAssets_HasMultiThreadableAttribute()
+        {
+            typeof(ProduceContentAssets).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void ResolveCopyLocalAssets_HasMultiThreadableAttribute()
+        {
+            typeof(ResolveCopyLocalAssets).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        #endregion
+
         #region GetDefaultPlatformTargetForNetFramework
 
         [Fact]

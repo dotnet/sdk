@@ -13,9 +13,12 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Resolves the assets from the package dependencies that should be copied to output/publish directories.
     /// </summary>
-    public class ResolveCopyLocalAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveCopyLocalAssets : TaskBase, IMultiThreadableTask
     {
         private readonly List<ITaskItem> _resolvedAssets = new();
+
+        public TaskEnvironment TaskEnvironment { get; set; }
 
         public string AssetsFilePath { get; set; }
 
@@ -44,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             var lockFileCache = new LockFileCache(this);
-            LockFile lockFile = lockFileCache.GetLockFile(AssetsFilePath);
+            LockFile lockFile = lockFileCache.GetLockFile(TaskEnvironment.GetAbsolutePath(AssetsFilePath));
             HashSet<PackageIdentity> packagestoBeFiltered = null;
 
             if (RuntimeStorePackages != null && RuntimeStorePackages.Length > 0)
