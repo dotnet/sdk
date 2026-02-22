@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -125,6 +128,60 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 if (Directory.Exists(otherDir))
                     Directory.Delete(otherDir, true);
             }
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GenerateRegFreeComManifest_ConcurrentExecution(int parallelism)
+        {
+            // These tasks work with PE binaries. With fake inputs they will throw/fail,
+            // but the concurrent execution should not produce different failure modes
+            // (no shared-state corruption, no deadlocks, no data races).
+            var results = new ConcurrentBag<(bool success, string exType)>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                var projectDir = Path.Combine(Path.GetTempPath(), $"regfree-conc-{i}-{Guid.NewGuid():N}");
+                Directory.CreateDirectory(projectDir);
+                try
+                {
+                    var thisAssemblyPath = typeof(GivenAGenerateRegFreeComManifestMultiThreading).Assembly.Location;
+                    var binDir = Path.Combine(projectDir, "bin");
+                    Directory.CreateDirectory(binDir);
+                    var assemblyFileName = Path.GetFileName(thisAssemblyPath);
+                    File.Copy(thisAssemblyPath, Path.Combine(binDir, assemblyFileName));
+                    File.WriteAllText(Path.Combine(binDir, "clsidmap.bin"), "{}");
+
+                    var task = new GenerateRegFreeComManifest
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        IntermediateAssembly = Path.Combine("bin", assemblyFileName),
+                        ComHostName = "test.comhost.dll",
+                        ClsidMapPath = Path.Combine("bin", "clsidmap.bin"),
+                        ComManifestPath = Path.Combine("bin", "test.manifest"),
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    };
+
+                    barrier.SignalAndWait();
+                    var result = task.Execute();
+                    results.Add((result, "none"));
+                }
+                catch (Exception ex)
+                {
+                    results.Add((false, ex.GetType().Name));
+                }
+                finally
+                {
+                    if (Directory.Exists(projectDir))
+                        Directory.Delete(projectDir, true);
+                }
+            });
+
+            // All threads should get the same outcome (all succeed or all fail the same way)
+            results.Select(r => r.exType).Distinct().Should().HaveCount(1,
+                "all threads should experience the same failure mode");
         }
 
         private static (bool result, MockBuildEngine engine, Exception? exception) RunTask(

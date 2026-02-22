@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -152,6 +155,68 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             result.Should().BeTrue("empty ShimRuntimeIdentifiers means no work to do");
             engine.Errors.Should().BeEmpty("empty ShimRuntimeIdentifiers should not produce errors");
+        }
+
+        [Theory]
+        [InlineData(4)]
+        [InlineData(16)]
+        public void GenerateShims_ConcurrentExecution(int parallelism)
+        {
+            // These tasks work with PE binaries. With fake inputs they will throw/fail,
+            // but the concurrent execution should not produce different failure modes
+            // (no shared-state corruption, no deadlocks, no data races).
+            var results = new ConcurrentBag<(bool success, string exType)>();
+            var barrier = new Barrier(parallelism);
+
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            {
+                var projectDir = Path.Combine(Path.GetTempPath(), $"shims-conc-{i}-{Guid.NewGuid():N}");
+                Directory.CreateDirectory(projectDir);
+                try
+                {
+                    var toolsDir = Path.Combine(projectDir, "tools");
+                    var binDir = Path.Combine(projectDir, "bin");
+                    Directory.CreateDirectory(toolsDir);
+                    Directory.CreateDirectory(binDir);
+                    File.WriteAllText(Path.Combine(toolsDir, "apphost.exe"), "not a real apphost");
+                    File.WriteAllText(Path.Combine(binDir, "test.dll"), "not a real assembly");
+
+                    var apphostItem = new TaskItem(Path.Combine("tools", "apphost.exe"));
+                    apphostItem.SetMetadata(MetadataKeys.RuntimeIdentifier, "linux-x64");
+
+                    var task = new GenerateShims
+                    {
+                        BuildEngine = new MockBuildEngine(),
+                        ApphostsForShimRuntimeIdentifiers = new ITaskItem[] { apphostItem },
+                        IntermediateAssembly = Path.Combine("bin", "test.dll"),
+                        PackageId = "TestPackage",
+                        PackageVersion = "1.0.0",
+                        TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                        ToolCommandName = "test-tool",
+                        ToolEntryPoint = "test-tool.dll",
+                        PackagedShimOutputDirectory = "shims",
+                        ShimRuntimeIdentifiers = new ITaskItem[] { new TaskItem("linux-x64") },
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    };
+
+                    barrier.SignalAndWait();
+                    var result = task.Execute();
+                    results.Add((result, "none"));
+                }
+                catch (Exception ex)
+                {
+                    results.Add((false, ex.GetType().Name));
+                }
+                finally
+                {
+                    if (Directory.Exists(projectDir))
+                        Directory.Delete(projectDir, true);
+                }
+            });
+
+            // All threads should get the same outcome (all succeed or all fail the same way)
+            results.Select(r => r.exType).Distinct().Should().HaveCount(1,
+                "all threads should experience the same failure mode");
         }
 
         private static (bool result, MockBuildEngine engine, Exception? exception) RunTask(
