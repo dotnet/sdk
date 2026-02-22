@@ -8,6 +8,7 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class CheckForTargetInAssetsFile : TaskBase
     {
         public string AssetsFilePath { get; set; }

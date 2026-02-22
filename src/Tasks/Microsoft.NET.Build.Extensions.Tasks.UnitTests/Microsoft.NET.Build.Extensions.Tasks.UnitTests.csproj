@@ -30,6 +30,7 @@
     <Compile Include="..\..\..\test\Common\Program.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" />
+    <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\TaskEnvironmentHelper.cs" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
