@@ -4,6 +4,7 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -15,6 +16,38 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// </summary>
     public class GivenAttributeOnlyTasksGroup7
     {
+        #region Attribute Presence
+
+        [Fact]
+        public void SelectRuntimeIdentifierSpecificItems_HasMultiThreadableAttribute()
+        {
+            typeof(SelectRuntimeIdentifierSpecificItems).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void SetGeneratedAppConfigMetadata_HasMultiThreadableAttribute()
+        {
+            typeof(SetGeneratedAppConfigMetadata).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void ValidateExecutableReferences_HasMultiThreadableAttribute()
+        {
+            typeof(ValidateExecutableReferences).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        [Fact]
+        public void RemoveDuplicatePackageReferences_HasMultiThreadableAttribute()
+        {
+            typeof(RemoveDuplicatePackageReferences).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
+        #endregion
+
         #region SelectRuntimeIdentifierSpecificItems (parity test)
 
         [Fact]

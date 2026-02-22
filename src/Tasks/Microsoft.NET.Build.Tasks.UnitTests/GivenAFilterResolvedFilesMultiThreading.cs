@@ -3,12 +3,34 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAFilterResolvedFilesMultiThreading
     {
+        private const string AssetsJson = """
+            {
+              "version": 3,
+              "targets": { ".NETCoreApp,Version=v8.0": {} },
+              "libraries": {},
+              "packageFolders": {},
+              "projectFileDependencyGroups": { ".NETCoreApp,Version=v8.0": [] },
+              "project": {
+                "version": "1.0.0",
+                "frameworks": { "net8.0": {} }
+              }
+            }
+            """;
+
+        [Fact]
+        public void FilterResolvedFiles_HasMultiThreadableAttribute()
+        {
+            typeof(FilterResolvedFiles).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
+                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
+        }
+
         [Fact]
         public void AssetsFilePath_IsResolvedRelativeToProjectDirectory()
         {
@@ -16,22 +38,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Directory.CreateDirectory(projectDir);
             try
             {
-                // Create a minimal lock file at a relative path
                 var assetsDir = Path.Combine(projectDir, "obj");
                 Directory.CreateDirectory(assetsDir);
-                File.WriteAllText(Path.Combine(assetsDir, "project.assets.json"),
-                    """
-                    {
-                      "version": 3,
-                      "targets": { ".NETCoreApp,Version=v8.0": {} },
-                      "libraries": {},
-                      "projectFileDependencyGroups": { ".NETCoreApp,Version=v8.0": [] },
-                      "project": {
-                        "version": "1.0.0",
-                        "frameworks": { "net8.0": {} }
-                      }
-                    }
-                    """);
+                File.WriteAllText(Path.Combine(assetsDir, "project.assets.json"), AssetsJson);
 
                 var task = new FilterResolvedFiles
                 {
@@ -40,12 +49,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     ResolvedFiles = Array.Empty<ITaskItem>(),
                     PackagesToPrune = Array.Empty<ITaskItem>(),
                     TargetFramework = ".NETCoreApp,Version=v8.0",
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                 };
-
-                // Set TaskEnvironment via reflection
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
 
                 var result = task.Execute();
                 result.Should().BeTrue("task should succeed when assets file is found via TaskEnvironment");
@@ -53,6 +58,63 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             finally
             {
                 Directory.Delete(projectDir, true);
+            }
+        }
+
+        private static (bool result, MockBuildEngine engine) RunTask(
+            string assetsRelPath, string projectDir)
+        {
+            var engine = new MockBuildEngine();
+            var task = new FilterResolvedFiles
+            {
+                BuildEngine = engine,
+                AssetsFilePath = assetsRelPath,
+                ResolvedFiles = Array.Empty<ITaskItem>(),
+                PackagesToPrune = Array.Empty<ITaskItem>(),
+                TargetFramework = ".NETCoreApp,Version=v8.0",
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+            };
+
+            var result = task.Execute();
+            return (result, engine);
+        }
+
+        [Fact]
+        public void ItProducesSameResultsInMultiProcessAndMultiThreadedEnvironments()
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-parity-{Guid.NewGuid():N}"));
+            var otherDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-decoy-{Guid.NewGuid():N}"));
+            Directory.CreateDirectory(projectDir);
+            Directory.CreateDirectory(otherDir);
+            var savedCwd = Directory.GetCurrentDirectory();
+            try
+            {
+                var objDir = Path.Combine(projectDir, "obj");
+                Directory.CreateDirectory(objDir);
+                File.WriteAllText(Path.Combine(objDir, "project.assets.json"), AssetsJson);
+
+                var assetsRelPath = Path.Combine("obj", "project.assets.json");
+
+                // --- Multiprocess mode: CWD == projectDir ---
+                Directory.SetCurrentDirectory(projectDir);
+                var (mpResult, mpEngine) = RunTask(assetsRelPath, projectDir);
+
+                // --- Multithreaded mode: CWD == otherDir ---
+                Directory.SetCurrentDirectory(otherDir);
+                var (mtResult, mtEngine) = RunTask(assetsRelPath, projectDir);
+
+                mpResult.Should().Be(mtResult,
+                    "task should return the same success/failure in both environments");
+                mpEngine.Errors.Count.Should().Be(mtEngine.Errors.Count,
+                    "error count should be the same in both environments");
+                mpEngine.Warnings.Count.Should().Be(mtEngine.Warnings.Count,
+                    "warning count should be the same in both environments");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(savedCwd);
+                Directory.Delete(projectDir, true);
+                if (Directory.Exists(otherDir)) Directory.Delete(otherDir, true);
             }
         }
     }
