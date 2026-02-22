@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private void ProduceContentAsset(ITaskItem contentFile)
         {
-            string resolvedPath = contentFile.ItemSpec;
+            string resolvedPath = TaskEnvironment.GetAbsolutePath(contentFile.ItemSpec);
             string pathToFinalAsset = resolvedPath;
             string ppOutputPath = contentFile.GetMetadata(MetadataKeys.PPOutputPath);
             string packageName = contentFile.GetMetadata(MetadataKeys.NuGetPackageId);

@@ -485,6 +485,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new ResolveCopyLocalAssets
                 {
                     BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     AssetsFilePath = assetsPath,
                     TargetFramework = ".NETCoreApp,Version=v8.0",
                     RuntimeIdentifier = "",
