@@ -65,7 +65,10 @@ public class UpdatePackageStaticWebAssets : Task
             OriginalAssets = [.. originalAssets];
             UpdatedAssets = [.. updatedAssets];
 
-            RemapEndpoints(assetMapping);
+            if (Endpoints != null && assetMapping.Count > 0)
+            {
+                RemapEndpoints(assetMapping);
+            }
         }
         catch (Exception ex)
         {
@@ -80,53 +83,51 @@ public class UpdatePackageStaticWebAssets : Task
         var remappedEndpoints = new List<ITaskItem>();
         var originalRemappedEndpoints = new List<ITaskItem>();
 
-        if (Endpoints != null && assetMapping.Count > 0)
+        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var endpoint in Endpoints)
         {
-            var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var endpoint in Endpoints)
+            var identity = endpoint.ItemSpec;
+            if (!endpointsByIdentity.TryGetValue(identity, out var group))
             {
-                var identity = endpoint.ItemSpec;
-                if (!endpointsByIdentity.TryGetValue(identity, out var group))
+                group = new List<ITaskItem>();
+                endpointsByIdentity[identity] = group;
+            }
+            group.Add(endpoint);
+        }
+
+        foreach (var kvp in endpointsByIdentity)
+        {
+            var identity = kvp.Key;
+            var group = kvp.Value;
+            var groupNeedsRemapping = false;
+            foreach (var endpoint in group)
+            {
+                var assetFile = endpoint.GetMetadata("AssetFile");
+                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
                 {
-                    group = new List<ITaskItem>();
-                    endpointsByIdentity[identity] = group;
+                    groupNeedsRemapping = true;
+                    break;
                 }
-                group.Add(endpoint);
             }
 
-            foreach (var kvp in endpointsByIdentity)
+            if (!groupNeedsRemapping)
             {
-                var identity = kvp.Key;
-                var group = kvp.Value;
-                var groupNeedsRemapping = false;
-                foreach (var endpoint in group)
+                continue;
+            }
+
+            foreach (var endpoint in group)
+            {
+                originalRemappedEndpoints.Add(endpoint);
+
+                var assetFile = endpoint.GetMetadata("AssetFile");
+                if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
                 {
-                    var assetFile = endpoint.GetMetadata("AssetFile");
-                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
-                    {
-                        groupNeedsRemapping = true;
-                        break;
-                    }
+                    endpoint.SetMetadata("AssetFile", newAssetFile);
+                    Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
+                        identity, assetFile, newAssetFile);
                 }
 
-                if (groupNeedsRemapping)
-                {
-                    foreach (var endpoint in group)
-                    {
-                        originalRemappedEndpoints.Add(endpoint);
-
-                        var remapped = new Microsoft.Build.Utilities.TaskItem(endpoint);
-                        var assetFile = endpoint.GetMetadata("AssetFile");
-                        if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
-                        {
-                            remapped.SetMetadata("AssetFile", newAssetFile);
-                            Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                                identity, assetFile, newAssetFile);
-                        }
-
-                        remappedEndpoints.Add(remapped);
-                    }
-                }
+                remappedEndpoints.Add(endpoint);
             }
         }
 
