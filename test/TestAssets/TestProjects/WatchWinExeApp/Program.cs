@@ -44,7 +44,7 @@ class MainForm : Form
     private void OnFormClosing(object sender, FormClosingEventArgs e)
     {
         // Mark that we were closed gracefully (via CloseMainWindow)
-        ClosedGracefully = e.CloseReason == CloseReason.UserClosing || 
+        ClosedGracefully = e.CloseReason == CloseReason.UserClosing ||
                           e.CloseReason == CloseReason.WindowsShutDown ||
                           e.CloseReason == CloseReason.TaskManagerClosing;
         
