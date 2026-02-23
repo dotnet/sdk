@@ -336,6 +336,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ProduceContentAssets
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = new ITaskItem[] { contentFile },
                 ProjectLanguage = "C#"
             };
@@ -364,6 +365,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ProduceContentAssets
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = new ITaskItem[] { contentFile },
                 ProjectLanguage = "C#"
             };
@@ -392,6 +394,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ProduceContentAssets
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = new ITaskItem[] { contentFile },
                 ProjectLanguage = "C#"
             };
@@ -431,6 +434,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ProduceContentAssets
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = new ITaskItem[] { csharpFile, vbFile },
                 ProjectLanguage = "C#"
             };

@@ -211,11 +211,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
     {
         StringBuilder args = new();
 
-<<<<<<< Updated upstream
         IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(static path => path.ItemSpec);
-=======
-        IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(path => (string)TaskEnvironment.GetAbsolutePath(path.ItemSpec));
->>>>>>> Stashed changes
         string referenceAssemblyPathsArg = string.Join(",", referenceAssemblyPaths);
 
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
