@@ -64,12 +64,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void CollectSDKReferencesDesignTime_CollectsSdkReferencesAndImplicitPackages()
         {
             var sdkRef = new TaskItem("Microsoft.NETCore.App");
-            sdkRef.SetMetadata("SDKPackageItemSpec", "");
+            sdkRef.SetMetadata(MetadataKeys.SDKPackageItemSpec, "");
 
             var implicitPkg = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
             {
-                { "IsImplicitlyDefined", "true" },
-                { "Version", "8.0.0" }
+                { MetadataKeys.IsImplicitlyDefined, "true" },
+                { MetadataKeys.Version, "8.0.0" }
             });
 
             var explicitPkg = new MockTaskItem("Newtonsoft.Json", new Dictionary<string, string>
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var explicitPkg = new MockTaskItem("Newtonsoft.Json", new Dictionary<string, string>
             {
-                { "Version", "13.0.1" }
+                { MetadataKeys.Version, "13.0.1" }
             });
 
             var task = new CollectSDKReferencesDesignTime
@@ -212,19 +212,19 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var item1 = new MockTaskItem("lib/net8.0/MyLib.dll", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "MyPackage" },
-                { "NuGetPackageVersion", "1.0.0" }
+                { MetadataKeys.NuGetPackageId, "MyPackage" },
+                { MetadataKeys.NuGetPackageVersion, "1.0.0" }
             });
             var item2 = new MockTaskItem("lib/net8.0/Other.dll", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "OtherPackage" },
-                { "NuGetPackageVersion", "2.0.0" }
+                { MetadataKeys.NuGetPackageId, "OtherPackage" },
+                { MetadataKeys.NuGetPackageVersion, "2.0.0" }
             });
 
             var package = new MockTaskItem("MyPackage", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "MyPackage" },
-                { "NuGetPackageVersion", "1.0.0" }
+                { MetadataKeys.NuGetPackageId, "MyPackage" },
+                { MetadataKeys.NuGetPackageVersion, "1.0.0" }
             });
 
             var task = new FindItemsFromPackages
@@ -246,14 +246,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var item = new MockTaskItem("lib/net8.0/MyLib.dll", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "MyPackage" },
-                { "NuGetPackageVersion", "1.0.0" }
+                { MetadataKeys.NuGetPackageId, "MyPackage" },
+                { MetadataKeys.NuGetPackageVersion, "1.0.0" }
             });
 
             var package = new MockTaskItem("OtherPackage", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "OtherPackage" },
-                { "NuGetPackageVersion", "3.0.0" }
+                { MetadataKeys.NuGetPackageId, "OtherPackage" },
+                { MetadataKeys.NuGetPackageVersion, "3.0.0" }
             });
 
             var task = new FindItemsFromPackages
@@ -274,15 +274,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var itemWithMeta = new MockTaskItem("lib/net8.0/MyLib.dll", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "MyPackage" },
-                { "NuGetPackageVersion", "1.0.0" }
+                { MetadataKeys.NuGetPackageId, "MyPackage" },
+                { MetadataKeys.NuGetPackageVersion, "1.0.0" }
             });
             var itemWithoutMeta = new MockTaskItem("lib/net8.0/NoMeta.dll", new Dictionary<string, string>());
 
             var package = new MockTaskItem("MyPackage", new Dictionary<string, string>
             {
-                { "NuGetPackageId", "MyPackage" },
-                { "NuGetPackageVersion", "1.0.0" }
+                { MetadataKeys.NuGetPackageId, "MyPackage" },
+                { MetadataKeys.NuGetPackageVersion, "1.0.0" }
             });
 
             var task = new FindItemsFromPackages
@@ -480,22 +480,26 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void CollectSDKReferencesDesignTime_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task CollectSDKReferencesDesignTime_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
                     var sdkRef = new TaskItem("Microsoft.NETCore.App");
-                    sdkRef.SetMetadata("SDKPackageItemSpec", "");
+                    sdkRef.SetMetadata(MetadataKeys.SDKPackageItemSpec, "");
 
                     var implicitPkg = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
                     {
-                        { "IsImplicitlyDefined", "true" },
-                        { "Version", "8.0.0" }
+                        { MetadataKeys.IsImplicitlyDefined, "true" },
+                        { MetadataKeys.Version, "8.0.0" }
                     });
 
                     var task = new CollectSDKReferencesDesignTime
@@ -506,19 +510,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         DefaultImplicitPackages = "Microsoft.NETCore.App"
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
 
                     if (task.SDKReferencesDesignTime == null || task.SDKReferencesDesignTime.Length != 2)
                     {
-                        errors.Add($"Thread {i}: Expected 2 items but got {task.SDKReferencesDesignTime?.Length}");
+                        errors.Add($"Thread {idx}: Expected 2 items but got {task.SDKReferencesDesignTime?.Length}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -526,12 +533,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void CreateWindowsSdkKnownFrameworkReferences_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task CreateWindowsSdkKnownFrameworkReferences_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -545,19 +556,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TargetPlatformVersion = "10.0.19041.0"
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
 
                     if (task.KnownFrameworkReferences == null || task.KnownFrameworkReferences.Length != 5)
                     {
-                        errors.Add($"Thread {i}: Expected 5 items but got {task.KnownFrameworkReferences?.Length}");
+                        errors.Add($"Thread {idx}: Expected 5 items but got {task.KnownFrameworkReferences?.Length}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -565,25 +579,29 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void FindItemsFromPackages_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task FindItemsFromPackages_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
-                    var item = new MockTaskItem($"lib/net8.0/Lib{i}.dll", new Dictionary<string, string>
+                    var item = new MockTaskItem($"lib/net8.0/Lib{idx}.dll", new Dictionary<string, string>
                     {
-                        { "NuGetPackageId", "MyPackage" },
-                        { "NuGetPackageVersion", "1.0.0" }
+                        { MetadataKeys.NuGetPackageId, "MyPackage" },
+                        { MetadataKeys.NuGetPackageVersion, "1.0.0" }
                     });
 
                     var package = new MockTaskItem("MyPackage", new Dictionary<string, string>
                     {
-                        { "NuGetPackageId", "MyPackage" },
-                        { "NuGetPackageVersion", "1.0.0" }
+                        { MetadataKeys.NuGetPackageId, "MyPackage" },
+                        { MetadataKeys.NuGetPackageVersion, "1.0.0" }
                     });
 
                     var task = new FindItemsFromPackages
@@ -593,19 +611,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         Packages = new ITaskItem[] { package }
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
 
                     if (task.ItemsFromPackages == null || task.ItemsFromPackages.Length != 1)
                     {
-                        errors.Add($"Thread {i}: Expected 1 item but got {task.ItemsFromPackages?.Length}");
+                        errors.Add($"Thread {idx}: Expected 1 item but got {task.ItemsFromPackages?.Length}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -613,35 +634,42 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GetAssemblyVersion_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GetAssemblyVersion_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
                     var task = new GetAssemblyVersion
                     {
                         BuildEngine = new MockBuildEngine(),
-                        NuGetVersion = $"{i}.0.{i}"
+                        NuGetVersion = $"{idx}.0.{idx}"
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
 
-                    var expected = $"{i}.0.{i}.0";
+                    var expected = $"{idx}.0.{idx}.0";
                     if (task.AssemblyVersion != expected)
                     {
-                        errors.Add($"Thread {i}: Expected '{expected}' but got '{task.AssemblyVersion}'");
+                        errors.Add($"Thread {idx}: Expected '{expected}' but got '{task.AssemblyVersion}'");
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -649,12 +677,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GenerateSupportedTargetFrameworkAlias_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GenerateSupportedTargetFrameworkAlias_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -668,23 +700,26 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0"
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
 
                     if (task.SupportedTargetFrameworkAlias == null || task.SupportedTargetFrameworkAlias.Length != 1)
                     {
-                        errors.Add($"Thread {i}: Expected 1 alias but got {task.SupportedTargetFrameworkAlias?.Length}");
+                        errors.Add($"Thread {idx}: Expected 1 alias but got {task.SupportedTargetFrameworkAlias?.Length}");
                     }
                     else if (task.SupportedTargetFrameworkAlias[0].ItemSpec != "net8.0")
                     {
-                        errors.Add($"Thread {i}: Expected 'net8.0' but got '{task.SupportedTargetFrameworkAlias[0].ItemSpec}'");
+                        errors.Add($"Thread {idx}: Expected 'net8.0' but got '{task.SupportedTargetFrameworkAlias[0].ItemSpec}'");
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
