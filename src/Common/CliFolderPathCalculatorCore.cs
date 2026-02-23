@@ -53,14 +53,5 @@ namespace Microsoft.DotNet.Configurer
             return home;
         }
 
-        // Static convenience methods for callers that use process environment variables.
-
-        private static readonly CliFolderPathCalculatorCore s_default = new();
-
-        public static string? GetDotnetUserProfileFolderPathFromSystemEnvironment()
-            => s_default.GetDotnetUserProfileFolderPath();
-
-        public static string? GetDotnetHomePathFromSystemEnvironment()
-            => s_default.GetDotnetHomePath();
     }
 }
