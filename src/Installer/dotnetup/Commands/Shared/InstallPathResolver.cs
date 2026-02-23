@@ -71,25 +71,24 @@ internal class InstallPathResolver
         {
             return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, PathSource.Explicit);
         }
-
-        if (installPathFromGlobalJson is not null)
+        else if (installPathFromGlobalJson is not null)
         {
             return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, PathSource.GlobalJson);
         }
-
-        if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
+        else if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
             return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
         }
-
-        if (interactive)
+        else if (interactive)
         {
             var prompted = SpectreAnsiConsole.Prompt(
                 new TextPrompt<string>($"Where should we install the {componentDescription} to?")
                     .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
             return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, PathSource.InteractivePrompt);
         }
-
-        return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
+        else
+        {
+            return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
+        }
     }
 }
