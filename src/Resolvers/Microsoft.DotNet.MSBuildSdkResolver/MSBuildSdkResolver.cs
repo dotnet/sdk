@@ -234,7 +234,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? fullPathToMuxer = TryResolveMuxerFromSdkResolution(dotnetSdkDir) ?? Path.Combine(dotnetRoot, Constants.DotNetFileName);
+                string? fullPathToMuxer =
+                    TryResolveMuxerFromSdkResolution(dotnetSdkDir)
+                    ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
                 if (File.Exists(fullPathToMuxer))
                 {
                     // keeping this in until this component no longer needs to handle 17.14.
@@ -306,7 +308,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
-            string? userProfileDir = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
+            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPathFromSystemEnvironment();
             ResolutionResult? workloadResult = null;
             if (dotnetRoot is not null && netcoreSdkVersion is not null)
             {
@@ -347,9 +349,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         /// </remarks>
         private static string? TryResolveMuxerFromSdkResolution(string resolvedSdkDirectory)
         {
+            var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
             var currentDir = resolvedSdkDirectory;
             var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
-            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, Constants.DotNetFileName);
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
             if (File.Exists(expectedMuxerPath))
             {
                 return expectedMuxerPath;
