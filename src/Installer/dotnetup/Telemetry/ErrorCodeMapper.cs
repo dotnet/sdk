@@ -251,7 +251,7 @@ public static class ErrorCodeMapper
 
             var inner = ex.InnerException;
             // Limit depth to prevent infinite loops and overly long strings
-            const int maxDepth = 5;
+            const int maxDepth = 10;
             var depth = 0;
             while (inner != null && depth < maxDepth)
             {

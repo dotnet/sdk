@@ -107,8 +107,12 @@ internal class ChannelVersionResolver
             return true;
         }
 
+        // Strip prerelease suffix (e.g., "10.0.100-preview.1.32640" -> "10.0.100")
+        var dashIndex = channel.IndexOf('-');
+        var versionPart = dashIndex >= 0 ? channel.Substring(0, dashIndex) : channel;
+
         // Try to parse as a version-like string
-        var parts = channel.Split('.');
+        var parts = versionPart.Split('.');
         if (parts.Length == 0 || parts.Length > 4)
         {
             return false;
