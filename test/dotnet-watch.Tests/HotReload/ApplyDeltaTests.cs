@@ -872,7 +872,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SendControlC();
 
-            // The app should close gracefully via CloseMainWindow (reports TaskManagerClosing reason)
+            // The app should close gracefully via CloseMainWindow
             await App.WaitForOutputLineContaining("Closing gracefully: True");
 
             // The dotnet run process should exit with code 0 (not -1 from being killed)
