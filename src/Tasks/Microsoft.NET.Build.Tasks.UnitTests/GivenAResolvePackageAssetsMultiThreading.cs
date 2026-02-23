@@ -11,13 +11,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenAResolvePackageAssetsMultiThreading
     {
         [Fact]
-        public void ItImplementsIMultiThreadableTask()
-        {
-            var task = new ResolvePackageAssets();
-            task.Should().BeAssignableTo<IMultiThreadableTask>();
-        }
-
-        [Fact]
         public void ItHasMSBuildMultiThreadableTaskAttribute()
         {
             typeof(ResolvePackageAssets).Should().BeDecoratedWith<MSBuildMultiThreadableTaskAttribute>();

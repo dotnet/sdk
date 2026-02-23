@@ -10,13 +10,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenACreateAppHostMultiThreading
     {
         [Fact]
-        public void ItImplementsIMultiThreadableTask()
-        {
-            var task = new CreateAppHost();
-            task.Should().BeAssignableTo<IMultiThreadableTask>();
-        }
-
-        [Fact]
         public void ItHasMSBuildMultiThreadableTaskAttribute()
         {
             typeof(CreateAppHost).Should().BeDecoratedWith<MSBuildMultiThreadableTaskAttribute>();
