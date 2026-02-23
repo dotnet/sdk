@@ -34,6 +34,8 @@ dotnetup:
   - `dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj`
   - `dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj`
 - Do not run `dotnet build` from within the dotnetup directory as restore may fail.
+- When running dotnetup directly (e.g. `dotnet run`), use the repo-local dogfood dotnet instance:
+  - `d:\sdk\.dotnet\dotnet run --project d:\sdk\src\Installer\dotnetup\dotnetup.csproj -- <args>`
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
