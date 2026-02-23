@@ -39,9 +39,10 @@ public enum ErrorCategory
 /// <param name="StatusCode">HTTP status code if applicable.</param>
 /// <param name="HResult">Win32 HResult if applicable.</param>
 /// <param name="Details">Additional context (no PII - sanitized values only).</param>
-/// <param name="SourceLocation">Method name from our code where error occurred (no file paths).</param>
+/// <param name="SourceLocation">Method name from our code where error occurred (includes file basename and line).</param>
 /// <param name="ExceptionChain">Chain of exception types for wrapped exceptions.</param>
 /// <param name="StackTrace">Full stack trace (safe to include - contains no PII in NativeAOT).</param>
+/// <param name="ThrowSite">File name and line number where the exception was originally thrown (e.g., "DotnetArchiveExtractor.cs:139").</param>
 public sealed record ExceptionErrorInfo(
     string ErrorType,
     ErrorCategory Category = ErrorCategory.Product,
@@ -50,7 +51,8 @@ public sealed record ExceptionErrorInfo(
     string? Details = null,
     string? SourceLocation = null,
     string? ExceptionChain = null,
-    string? StackTrace = null);
+    string? StackTrace = null,
+    string? ThrowSite = null);
 
 /// <summary>
 /// Maps exceptions to error info for telemetry.
@@ -89,6 +91,8 @@ public static class ErrorCodeMapper
             activity.SetTag("error.exception_chain", exceptionChain);
         if (errorInfo is { StackTrace: { } stackTrace })
             activity.SetTag("error.stack_trace", stackTrace);
+        if (errorInfo is { ThrowSite: { } throwSite })
+            activity.SetTag("error.throw_site", throwSite);
 
         // NOTE: We intentionally do NOT call activity.RecordException(ex)
         // because exception messages/stacks can contain PII
@@ -113,17 +117,16 @@ public static class ErrorCodeMapper
             return GetErrorInfo(ex.InnerException);
         }
 
-        // Get common enrichment data
-        var sourceLocation = GetSafeSourceLocation(ex);
+        // Get common enrichment data (single stack walk for all three values)
         var exceptionChain = GetExceptionChain(ex);
-        var safeStackTrace = GetSafeStackTrace(ex);
+        var (sourceLocation, safeStackTrace, throwSite) = GetStackInfo(ex);
 
         return ex switch
         {
             // DotnetInstallException has specific error codes - categorize by error code
             // Sanitize the version to prevent PII leakage (user could have typed anything)
             // For network-related errors, also check the inner exception for more details
-            DotnetInstallException installEx => GetInstallExceptionErrorInfo(installEx, sourceLocation, exceptionChain) with { StackTrace = safeStackTrace },
+            DotnetInstallException installEx => GetInstallExceptionErrorInfo(installEx, sourceLocation, exceptionChain) with { StackTrace = safeStackTrace, ThrowSite = throwSite },
 
             // HTTP errors: 4xx client errors are often user issues, 5xx are product/server issues
             HttpRequestException httpEx => new ExceptionErrorInfo(
@@ -132,7 +135,8 @@ public static class ErrorCodeMapper
                 StatusCode: (int?)httpEx.StatusCode,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // FileNotFoundException before IOException (it derives from IOException)
             // Could be user error (wrong path) or product error (our code referenced wrong file)
@@ -144,7 +148,8 @@ public static class ErrorCodeMapper
                 Details: fnfEx.FileName is not null ? "file_specified" : null,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Permission denied - user environment issue (needs elevation or different permissions)
             UnauthorizedAccessException => new ExceptionErrorInfo(
@@ -152,7 +157,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Directory not found - could be user specified bad path
             DirectoryNotFoundException => new ExceptionErrorInfo(
@@ -160,9 +166,10 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
-            IOException ioEx => MapIOException(ioEx, sourceLocation, exceptionChain, safeStackTrace),
+            IOException ioEx => MapIOException(ioEx, sourceLocation, exceptionChain, safeStackTrace, throwSite),
 
             // User cancelled the operation
             OperationCanceledException => new ExceptionErrorInfo(
@@ -170,7 +177,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Invalid argument - user provided bad input
             ArgumentException argEx => new ExceptionErrorInfo(
@@ -179,7 +187,8 @@ public static class ErrorCodeMapper
                 Details: argEx.ParamName,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Invalid operation - usually a bug in our code
             InvalidOperationException => new ExceptionErrorInfo(
@@ -187,7 +196,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.Product,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Not supported - could be user trying unsupported scenario
             NotSupportedException => new ExceptionErrorInfo(
@@ -195,7 +205,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Timeout - network/environment issue outside our control
             TimeoutException => new ExceptionErrorInfo(
@@ -203,7 +214,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace),
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite),
 
             // Unknown exceptions default to product (fail-safe - we should handle known cases)
             _ => new ExceptionErrorInfo(
@@ -211,7 +223,8 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.Product,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain,
-                StackTrace: safeStackTrace)
+                StackTrace: safeStackTrace,
+                ThrowSite: throwSite)
         };
     }
 
@@ -231,10 +244,10 @@ public static class ErrorCodeMapper
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,         // User's network issue
 
             // Product errors - issues we can take action on
+            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue (inner IOException classified separately)
             DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform => ErrorCategory.Product,    // Our manifest/logic issue
             DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
             DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
-            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue
             DotnetInstallErrorCode.ManifestFetchFailed => ErrorCategory.Product, // Server unreachable or CDN issue
             DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product, // Bad manifest or our parsing bug
             DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,  // Bad archive from server or download
@@ -276,6 +289,20 @@ public static class ErrorCodeMapper
             }
         }
 
+        // For extraction errors, check if the inner exception is an IOException and classify
+        // by HResult using the existing ErrorCategoryClassifier. This avoids duplicating
+        // HResult→error-type logic in the extraction layer.
+        if (IsIORelatedErrorCode(errorCode) && installEx.InnerException is IOException ioInner)
+        {
+            var (ioErrorType, ioCategory, ioDetails) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioInner.HResult);
+            baseCategory = ioCategory;
+
+            if (ioDetails is not null)
+            {
+                details = details is not null ? $"{details};{ioDetails}" : ioDetails;
+            }
+        }
+
         return new ExceptionErrorInfo(
             errorCode.ToString(),
             Category: baseCategory,
@@ -294,6 +321,17 @@ public static class ErrorCodeMapper
             DotnetInstallErrorCode.ManifestFetchFailed or
             DotnetInstallErrorCode.DownloadFailed or
             DotnetInstallErrorCode.NetworkError;
+    }
+
+    /// <summary>
+    /// Checks if the error code is related to IO operations where the inner exception
+    /// may be an IOException that should be classified by HResult.
+    /// </summary>
+    private static bool IsIORelatedErrorCode(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode is
+            DotnetInstallErrorCode.ExtractionFailed or
+            DotnetInstallErrorCode.LocalManifestError;
     }
 
     /// <summary>
@@ -378,26 +416,10 @@ public static class ErrorCodeMapper
         };
     }
 
-    private static ExceptionErrorInfo MapIOException(IOException ioEx, string? sourceLocation, string? exceptionChain, string? stackTrace)
+    private static ExceptionErrorInfo MapIOException(IOException ioEx, string? sourceLocation, string? exceptionChain, string? stackTrace, string? throwSite)
     {
-        string errorType;
-        string? details;
-        ErrorCategory category;
-
-        // Use HResult to derive error type consistently across all platforms
-        if (ioEx.HResult != 0)
-        {
-            // Use our mapping which provides consistent, readable error names
-            (errorType, details) = GetErrorTypeFromHResult(ioEx.HResult);
-            category = GetIOErrorCategory(errorType);
-        }
-        else
-        {
-            // No HResult available
-            errorType = "IOException";
-            details = null;
-            category = ErrorCategory.Product;
-        }
+        // Delegate to the single-lookup classifier to avoid duplicating HResult→category logic
+        var (errorType, category, details) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioEx.HResult);
 
         return new ExceptionErrorInfo(
             errorType,
@@ -406,137 +428,24 @@ public static class ErrorCodeMapper
             Details: details,
             SourceLocation: sourceLocation,
             ExceptionChain: exceptionChain,
-            StackTrace: stackTrace);
+            StackTrace: stackTrace,
+            ThrowSite: throwSite);
     }
 
-    /// <summary>
-    /// Gets the error category for an IO error type.
-    /// </summary>
-    private static ErrorCategory GetIOErrorCategory(string errorType)
-    {
-        return errorType switch
-        {
-            // User environment issues - we can't control these
-            "DiskFull" => ErrorCategory.User,
-            "PermissionDenied" => ErrorCategory.User,
-            "InvalidPath" => ErrorCategory.User,            // User specified invalid path
-            "PathNotFound" => ErrorCategory.User,           // User's directory doesn't exist
-            "NetworkPathNotFound" => ErrorCategory.User,    // Network issue
-            "NetworkNameDeleted" => ErrorCategory.User,     // Network issue
-            "DeviceFailure" => ErrorCategory.User,          // Hardware issue
 
-            // Product issues - we should handle these gracefully
-            "SharingViolation" => ErrorCategory.Product,    // Could be our mutex/lock issue
-            "LockViolation" => ErrorCategory.Product,       // Could be our mutex/lock issue
-            "PathTooLong" => ErrorCategory.Product,         // We control the install path
-            "SemaphoreTimeout" => ErrorCategory.Product,    // Could be our concurrency issue
-            "AlreadyExists" => ErrorCategory.Product,       // We should handle existing files gracefully
-            "FileExists" => ErrorCategory.Product,          // We should handle existing files gracefully
-            "FileNotFound" => ErrorCategory.Product,        // Our code referenced missing file
-            "GeneralFailure" => ErrorCategory.Product,      // Unknown IO error
-            "InvalidParameter" => ErrorCategory.Product,    // Our code passed bad params
-            "IOException" => ErrorCategory.Product,         // Generic IO - assume product
-
-            _ => ErrorCategory.Product                      // Unknown - assume product
-        };
-    }
 
     /// <summary>
-    /// Gets error type and human-readable details from an HResult.
+    /// Extracts source location, safe stack trace, and throw site from an exception
+    /// in a single stack walk. This replaces three separate methods that each created
+    /// their own StackTrace and walked the frames independently.
     /// </summary>
-    private static (string errorType, string? details) GetErrorTypeFromHResult(int hResult)
-    {
-        return hResult switch
-        {
-            // Disk/storage errors
-            unchecked((int)0x80070070) => ("DiskFull", "ERROR_DISK_FULL"),
-            unchecked((int)0x80070027) => ("DiskFull", "ERROR_HANDLE_DISK_FULL"),
-            unchecked((int)0x80070079) => ("SemaphoreTimeout", "ERROR_SEM_TIMEOUT"),
-
-            // Permission errors
-            unchecked((int)0x80070005) => ("PermissionDenied", "ERROR_ACCESS_DENIED"),
-            unchecked((int)0x80070020) => ("SharingViolation", "ERROR_SHARING_VIOLATION"),
-            unchecked((int)0x80070021) => ("LockViolation", "ERROR_LOCK_VIOLATION"),
-
-            // Path errors
-            unchecked((int)0x800700CE) => ("PathTooLong", "ERROR_FILENAME_EXCED_RANGE"),
-            unchecked((int)0x8007007B) => ("InvalidPath", "ERROR_INVALID_NAME"),
-            unchecked((int)0x80070003) => ("PathNotFound", "ERROR_PATH_NOT_FOUND"),
-            unchecked((int)0x80070002) => ("FileNotFound", "ERROR_FILE_NOT_FOUND"),
-
-            // File/directory existence errors
-            unchecked((int)0x800700B7) => ("AlreadyExists", "ERROR_ALREADY_EXISTS"),
-            unchecked((int)0x80070050) => ("FileExists", "ERROR_FILE_EXISTS"),
-
-            // Network errors
-            unchecked((int)0x80070035) => ("NetworkPathNotFound", "ERROR_BAD_NETPATH"),
-            unchecked((int)0x80070033) => ("NetworkNameDeleted", "ERROR_NETNAME_DELETED"),
-            unchecked((int)0x80004005) => ("GeneralFailure", "E_FAIL"),
-
-            // Device/hardware errors
-            unchecked((int)0x8007001F) => ("DeviceFailure", "ERROR_GEN_FAILURE"),
-            unchecked((int)0x80070057) => ("InvalidParameter", "ERROR_INVALID_PARAMETER"),
-
-            // Default: include raw HResult for debugging
-            _ => ("IOException", hResult != 0 ? $"0x{hResult:X8}" : null)
-        };
-    }
-
-    /// <summary>
-    /// Gets a safe stack trace string containing only type and method names from our assemblies.
-    /// In NativeAOT builds, stack traces contain no file paths or PII — only method names.
-    /// We filter to our own namespaces plus the immediate throw site for safety.
-    /// </summary>
-    private static string? GetSafeStackTrace(Exception ex)
-    {
-        try
-        {
-            var stackTrace = new StackTrace(ex, fNeedFileInfo: false);
-            var frames = stackTrace.GetFrames();
-
-            if (frames == null || frames.Length == 0)
-            {
-                return null;
-            }
-
-            var safeFrames = new List<string>();
-            foreach (var frame in frames)
-            {
-                var methodInfo = DiagnosticMethodInfo.Create(frame);
-                if (methodInfo == null) continue;
-
-                var declaringType = methodInfo.DeclaringTypeName;
-                if (string.IsNullOrEmpty(declaringType)) continue;
-
-                // Only include frames from our owned namespaces
-                if (IsOwnedNamespace(declaringType))
-                {
-                    var typeName = ExtractTypeName(declaringType);
-                    var lineNumber = frame.GetFileLineNumber();
-                    var location = $"{typeName}.{methodInfo.Name}";
-                    if (lineNumber > 0)
-                    {
-                        location += $":{lineNumber}";
-                    }
-                    safeFrames.Add(location);
-                }
-            }
-
-            return safeFrames.Count > 0 ? string.Join(" -> ", safeFrames) : null;
-        }
-        catch
-        {
-            // Never fail telemetry due to stack trace parsing
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Gets a safe source location from the stack trace - finds the first frame from our assemblies.
-    /// This is typically the code in dotnetup that called into BCL/external code that threw.
-    /// No file paths that could contain user info. Line numbers from our code are included as they are not PII.
-    /// </summary>
-    private static string? GetSafeSourceLocation(Exception ex)
+    /// <returns>
+    /// A tuple of:
+    /// - SourceLocation: first frame in our code (where we called into BCL that threw)
+    /// - StackTrace: all frames from our namespaces joined with " -> "
+    /// - ThrowSite: "FileName.cs:42" from the deepest frame (or first owned frame with file info)
+    /// </returns>
+    private static (string? SourceLocation, string? StackTrace, string? ThrowSite) GetStackInfo(Exception ex)
     {
         try
         {
@@ -545,56 +454,112 @@ public static class ErrorCodeMapper
 
             if (frames == null || frames.Length == 0)
             {
-                return null;
+                return (null, null, null);
             }
 
+            string? sourceLocation = null;
             string? throwSite = null;
+            string? bclFallbackLocation = null;
+            var safeFrames = new List<string>();
 
-            // Walk the stack from throw site upward, looking for the first frame in our code.
-            // This finds the dotnetup code that called into BCL/external code that threw.
-            foreach (var frame in frames)
+            for (int i = 0; i < frames.Length; i++)
             {
+                var frame = frames[i];
                 var methodInfo = DiagnosticMethodInfo.Create(frame);
                 if (methodInfo == null) continue;
 
-                // DiagnosticMethodInfo provides DeclaringTypeName which includes the full type name
                 var declaringType = methodInfo.DeclaringTypeName;
                 if (string.IsNullOrEmpty(declaringType)) continue;
 
-                // Capture the first frame as the throw site (fallback)
-                if (throwSite == null)
+                var typeName = ExtractTypeName(declaringType);
+
+                // Throw site: get file:line from deepest frame (i == 0), falling back to first owned frame with file info
+                if (i == 0)
                 {
-                    var throwTypeName = ExtractTypeName(declaringType);
-                    throwSite = $"[BCL]{throwTypeName}.{methodInfo.Name}";
+                    var fileName = GetSafeFileName(frame);
+                    var lineNumber = frame.GetFileLineNumber();
+                    if (fileName != null && lineNumber > 0)
+                    {
+                        throwSite = $"{fileName}:{lineNumber}";
+                    }
                 }
 
-                // Check if it's from our assemblies by looking at the namespace prefix
+                // Source location fallback: first frame of any kind (BCL prefix)
+                if (bclFallbackLocation == null)
+                {
+                    bclFallbackLocation = $"[BCL]{typeName}.{methodInfo.Name}";
+                }
+
                 if (IsOwnedNamespace(declaringType))
                 {
-                    // Extract just the type name (last part after the last dot, before any generic params)
-                    var typeName = ExtractTypeName(declaringType);
+                    var location = FormatFrameLocation(typeName, methodInfo.Name, frame);
+                    safeFrames.Add(location);
 
-                    // Include line number for our code (not PII), but never file paths
-                    // Also include commit SHA so line numbers can be correlated to source
-                    var lineNumber = frame.GetFileLineNumber();
-                    var location = $"{typeName}.{methodInfo.Name}";
-                    if (lineNumber > 0)
+                    // Source location: first owned frame
+                    sourceLocation ??= location;
+
+                    // Throw site fallback: first owned frame with file info
+                    if (throwSite == null)
                     {
-                        location += $":{lineNumber}";
+                        var fn = GetSafeFileName(frame);
+                        var ln = frame.GetFileLineNumber();
+                        if (fn != null && ln > 0)
+                        {
+                            throwSite = $"{fn}:{ln}";
+                        }
                     }
-                    return location;
                 }
             }
 
-            // If we didn't find our code, return the throw site as a fallback
-            // This code is managed by dotnetup and not the library so we expect the throwsite to only be our own dependent code we call into
-            return throwSite;
+            // If no owned frame found, use the BCL fallback for source location
+            sourceLocation ??= bclFallbackLocation;
+
+            var traceString = safeFrames.Count > 0 ? string.Join(" -> ", safeFrames) : null;
+            return (sourceLocation, traceString, throwSite);
         }
         catch
         {
             // Never fail telemetry due to stack trace parsing
+            return (null, null, null);
+        }
+    }
+
+    /// <summary>
+    /// Formats a stack frame location as "FileName.cs:TypeName.Method:42" or "TypeName.Method:42".
+    /// Includes the source file basename when available for quick identification.
+    /// </summary>
+    private static string FormatFrameLocation(string typeName, string methodName, StackFrame frame)
+    {
+        var lineNumber = frame.GetFileLineNumber();
+        var fileName = GetSafeFileName(frame);
+
+        var location = fileName != null
+            ? $"{fileName}:{typeName}.{methodName}"
+            : $"{typeName}.{methodName}";
+
+        if (lineNumber > 0)
+        {
+            location += $":{lineNumber}";
+        }
+
+        return location;
+    }
+
+    /// <summary>
+    /// Extracts just the file name (no path) from a stack frame.
+    /// Returns null if no file info is available.
+    /// File names from our own build are safe (not PII) — they're paths from the build machine.
+    /// </summary>
+    private static string? GetSafeFileName(StackFrame frame)
+    {
+        var filePath = frame.GetFileName();
+        if (string.IsNullOrEmpty(filePath))
+        {
             return null;
         }
+
+        // Strip to basename only — no directory paths
+        return Path.GetFileName(filePath);
     }
 
     /// <summary>

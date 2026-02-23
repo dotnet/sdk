@@ -87,7 +87,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform => ErrorCategory.Product,    // Our manifest/logic issue
             DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
             DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
-            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue
+            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue (inner IOException classified separately)
             DotnetInstallErrorCode.ManifestFetchFailed => ErrorCategory.Product, // Server unreachable or CDN issue
             DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product, // Bad manifest or our parsing bug
             DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,  // Bad archive from server or download

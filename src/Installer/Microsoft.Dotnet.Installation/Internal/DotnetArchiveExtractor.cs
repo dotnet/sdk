@@ -133,8 +133,31 @@ internal class DotnetArchiveExtractor : IDisposable
                 version: _resolvedVersion.ToString(),
                 component: _request.Component.ToString());
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            // User environment issue — insufficient permissions to write to install directory
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (IOException ex)
+        {
+            // IO errors during extraction (disk full, permission denied, path too long, etc.)
+            // Wrap as ExtractionFailed and preserve the original IOException.
+            // The telemetry layer classifies the inner IOException by HResult via ErrorCategoryClassifier.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
         catch (Exception ex)
         {
+            // Genuine extraction issue we should investigate — product error
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
