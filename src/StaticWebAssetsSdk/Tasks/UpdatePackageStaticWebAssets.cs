@@ -103,31 +103,19 @@ public class UpdatePackageStaticWebAssets : Task
             foreach (var endpoint in group)
             {
                 var assetFile = endpoint.GetMetadata("AssetFile");
-                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
-                {
-                    groupNeedsRemapping = true;
-                    break;
-                }
-            }
-
-            if (!groupNeedsRemapping)
-            {
-                continue;
-            }
-
-            foreach (var endpoint in group)
-            {
-                originalRemappedEndpoints.Add(endpoint);
-
-                var assetFile = endpoint.GetMetadata("AssetFile");
                 if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
                 {
                     endpoint.SetMetadata("AssetFile", newAssetFile);
                     Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
                         identity, assetFile, newAssetFile);
+                    groupNeedsRemapping = true;
                 }
+            }
 
-                remappedEndpoints.Add(endpoint);
+            if (groupNeedsRemapping)
+            {
+                originalRemappedEndpoints.AddRange(group);
+                remappedEndpoints.AddRange(group);
             }
         }
 
