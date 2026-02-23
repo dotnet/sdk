@@ -107,9 +107,10 @@ internal class ChannelVersionResolver
             return true;
         }
 
-        // Strip prerelease suffix (e.g., "10.0.100-preview.1.32640" -> "10.0.100")
+        // Check for prerelease suffix (e.g., "10.0.100-preview.1.32640")
         var dashIndex = channel.IndexOf('-');
-        var versionPart = dashIndex >= 0 ? channel.Substring(0, dashIndex) : channel;
+        var hasPrerelease = dashIndex >= 0;
+        var versionPart = hasPrerelease ? channel.Substring(0, dashIndex) : channel;
 
         // Try to parse as a version-like string
         var parts = versionPart.Split('.');
@@ -142,10 +143,16 @@ internal class ChannelVersionResolver
             }
 
             // Allow either:
-            //  - a fully specified numeric patch (e.g., "103"), or
-            //  - a feature band pattern with a numeric prefix and "xx" suffix (e.g., "1xx", "101xx").
+            //  - a fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix, or
+            //  - a feature band pattern with a numeric prefix and "xx" suffix (e.g., "1xx", "101xx"),
+            //    but NOT with a prerelease suffix (wildcards with prerelease not supported).
             if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
             {
+                if (hasPrerelease)
+                {
+                    return false;
+                }
+
                 var prefix = patch.Substring(0, patch.Length - 2);
                 if (prefix.Length == 0 || !int.TryParse(prefix, out _))
                 {
