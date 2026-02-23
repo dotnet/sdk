@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -13,6 +14,12 @@ internal class DotnetupProgram
         // Handle --debug flag using the standard .NET SDK pattern
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Set up callback to notify user when waiting for another dotnetup process
+        ScopedMutex.OnWaitingForMutex = () =>
+        {
+            Console.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
+        };
 
         // Show first-run telemetry notice if needed
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);

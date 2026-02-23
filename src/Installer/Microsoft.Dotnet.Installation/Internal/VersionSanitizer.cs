@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -23,25 +24,12 @@ public static partial class VersionSanitizer
     public static readonly IReadOnlyList<string> KnownPrereleaseTokens = ["preview", "rc", "rtm", "ga", "alpha", "beta", "dev", "ci", "servicing"];
 
     /// <summary>
-    /// Regex pattern for valid version formats (without prerelease suffix):
-    /// - Major only: 8, 9, 10
-    /// - Major.Minor: 8.0, 9.0, 10.0
-    /// - Feature band wildcard: 8.0.1xx, 9.0.3xx, 10.0.1xx (single digit + xx)
-    /// - Single digit wildcard: 10.0.10x, 10.0.20x (two digits + single x)
-    /// - Specific version: 8.0.100, 9.0.304
-    /// Note: Patch versions are max 3 digits (100-999), so wildcards are constrained:
-    ///   - Nxx pattern: single digit (1-9) + xx for feature bands (100-999)
-    ///   - NNx pattern: two digits (10-99) + single x for narrower ranges (100-999)
+    /// Regex to detect wildcard patterns: single digit followed by xx, or two digits followed by x.
+    /// Examples: 1xx, 2xx, 10x, 20x
+    /// Invalid patterns (all wildcards, too many x's, etc.) will fail ReleaseVersion parse after substitution.
     /// </summary>
-    [GeneratedRegex(@"^(\d{1,2})(\.\d{1,2})?(\.\d{1,3}|\.\d{1}xx|\.\d{2}x)?$")]
-    private static partial Regex BaseVersionPatternRegex();
-
-    /// <summary>
-    /// Regex pattern for prerelease suffix: hyphen followed by numbers and dots only.
-    /// Example: -1.24234.5 (the token part like "preview" is validated separately)
-    /// </summary>
-    [GeneratedRegex(@"^(\.\d+)+$")]
-    private static partial Regex PrereleaseSuffixRegex();
+    [GeneratedRegex(@"^(\d{1,2})(\.\d{1,2})\.(\d{1}xx|\d{2}x)$")]
+    private static partial Regex WildcardPatternRegex();
 
     /// <summary>
     /// Sanitizes a version or channel string for safe telemetry collection.
@@ -74,58 +62,62 @@ public static partial class VersionSanitizer
     }
 
     /// <summary>
-    /// Checks if a version string matches a valid pattern.
+    /// Checks if a version string matches a valid pattern using ReleaseVersion parsing.
+    /// For wildcard patterns (1xx, 10x), substitutes wildcards with '00' and validates.
     /// </summary>
     private static bool IsValidVersionPattern(string version)
     {
-        // Check if there's a prerelease suffix (contains hyphen)
+        // First check for wildcard patterns (e.g., 9.0.1xx, 10.0.20x)
+        if (WildcardPatternRegex().IsMatch(version))
+        {
+            // Substitute wildcards with '00' to create a parseable version
+            // 9.0.1xx -> 9.0.100, 10.0.20x -> 10.0.200
+            var normalized = version
+                .Replace("xx", "00", StringComparison.OrdinalIgnoreCase)
+                .Replace("x", "0", StringComparison.OrdinalIgnoreCase);
+
+            return ReleaseVersion.TryParse(normalized, out _);
+        }
+
+        // Handle prerelease versions: validate the prerelease token is known
         var hyphenIndex = version.IndexOf('-');
-        if (hyphenIndex < 0)
+        if (hyphenIndex >= 0)
         {
-            // No prerelease suffix, just validate the base version
-            return BaseVersionPatternRegex().IsMatch(version);
+            var baseVersion = version[..hyphenIndex];
+            var prereleasePart = version[(hyphenIndex + 1)..];
+
+            // Base version must be valid
+            if (!ReleaseVersion.TryParse(baseVersion, out _))
+            {
+                // Also try parsing the full version - ReleaseVersion may handle some prerelease formats
+                if (!ReleaseVersion.TryParse(version, out _))
+                {
+                    return false;
+                }
+            }
+
+            // Validate prerelease token: must start with a known token
+            var dotIndex = prereleasePart.IndexOf('.');
+            var token = dotIndex < 0 ? prereleasePart : prereleasePart[..dotIndex];
+
+            return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }
 
-        // Split into base version and prerelease parts
-        var baseVersion = version[..hyphenIndex];
-        var prereleasePart = version[(hyphenIndex + 1)..];
-
-        // Validate base version
-        if (!BaseVersionPatternRegex().IsMatch(baseVersion))
+        // Simple version (no wildcards, no prerelease) - try to parse directly
+        // Also accept major-only (e.g., "8", "9", "10") and major.minor (e.g., "8.0", "9.0")
+        if (ReleaseVersion.TryParse(version, out _))
         {
-            return false;
+            return true;
         }
 
-        // Validate prerelease part: must start with a known token
-        // Format: token[.number]* (e.g., "preview", "preview.1", "preview.1.24234.5", "rc.1")
-        var dotIndex = prereleasePart.IndexOf('.');
-        string token;
-        string? suffix;
-
-        if (dotIndex < 0)
+        // Check for partial versions like "8" or "8.0" which ReleaseVersion may not parse
+        var parts = version.Split('.');
+        if (parts.Length <= 2 && parts.All(p => int.TryParse(p, out var n) && n >= 0 && n < 100))
         {
-            token = prereleasePart;
-            suffix = null;
-        }
-        else
-        {
-            token = prereleasePart[..dotIndex];
-            suffix = prereleasePart[dotIndex..]; // Includes the leading dot
+            return true;
         }
 
-        // Token must be a known prerelease identifier
-        if (!KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        // If there's a suffix, it must be numbers separated by dots
-        if (suffix != null && !PrereleaseSuffixRegex().IsMatch(suffix))
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     /// <summary>

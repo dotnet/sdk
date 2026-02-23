@@ -18,6 +18,11 @@ public class ScopedMutex : IDisposable
     /// </summary>
     public static int TimeoutSeconds { get; set; } = 300;
 
+    /// <summary>
+    /// Optional callback invoked when we need to wait for the mutex (another process holds it).
+    /// </summary>
+    public static Action? OnWaitingForMutex { get; set; }
+
     public ScopedMutex(string name)
     {
         // On Linux and Mac, "Global\" prefix doesn't work - strip it if present
@@ -28,7 +33,18 @@ public class ScopedMutex : IDisposable
         }
 
         _mutex = new Mutex(false, mutexName);
-        _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+
+        // First try immediate acquisition to see if we need to wait
+        _hasHandle = _mutex.WaitOne(0, false);
+        if (!_hasHandle)
+        {
+            // Another process holds the mutex - notify caller before blocking
+            OnWaitingForMutex?.Invoke();
+
+            // Now wait for the full timeout
+            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+        }
+
         if (_hasHandle)
         {
             _holdCount.Value = _holdCount.Value + 1;

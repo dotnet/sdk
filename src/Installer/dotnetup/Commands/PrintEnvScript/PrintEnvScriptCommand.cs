@@ -18,6 +18,8 @@ internal class PrintEnvScriptCommand : CommandBase
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
     }
 
+    protected override string GetCommandName() => "print-env-script";
+
     protected override int ExecuteCore()
     {
         try

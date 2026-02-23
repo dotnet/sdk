@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 

@@ -48,11 +48,6 @@ public abstract class CommandBase
             AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
             return 1;
         }
-        catch (Exception ex)
-        {
-            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            throw;
-        }
         finally
         {
             _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);

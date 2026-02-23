@@ -21,7 +21,7 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // Details contain the symbolic Win32 error name for PII safety
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_DISK_FULL", info.Details);
     }
 
@@ -34,7 +34,7 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("SharingViolation", info.ErrorType);
-        // Details contain the symbolic Win32 error name
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_SHARING_VIOLATION", info.Details);
     }
 
@@ -46,7 +46,7 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("PathTooLong", info.ErrorType);
-        // Details contain the symbolic Win32 error name for PII safety
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_FILENAME_EXCED_RANGE", info.Details);
     }
 
@@ -119,33 +119,34 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_ExceptionFromOurCode_IncludesStackTrace()
+    public void GetErrorInfo_ExceptionFromOurCode_IncludesSourceLocation()
     {
         // Throw from a method to get a real stack trace
         var ex = ThrowTestException();
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Stack trace is collected with messages stripped
+        // Source location is only populated for our owned assemblies (dotnetup, Microsoft.Dotnet.Installation)
+        // In tests, we won't have those on the stack, so source location will be null
         // The important thing is that the method doesn't throw
         Assert.Equal("InvalidOperation", info.ErrorType);
     }
 
     [Fact]
-    public void GetErrorInfo_StackTrace_ContainsFramesWithoutMessages()
+    public void GetErrorInfo_SourceLocation_FiltersToOwnedNamespaces()
     {
-        // Verify that stack trace is collected and messages are stripped
+        // Verify that source location filtering works by namespace prefix
         // We must throw and catch to get a stack trace - exceptions created with 'new' have no trace
         var ex = ThrowTestException();
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Stack trace should be populated since we threw a real exception
-        Assert.NotNull(info.StackTrace);
-        // Should contain the method name from the stack
-        Assert.Contains("ThrowTestException", info.StackTrace);
-        // Should NOT contain the exception message (messages are stripped for PII safety)
-        Assert.DoesNotContain("Test exception", info.StackTrace);
+        // Source location should be populated since test assembly is in an owned namespace
+        // (Microsoft.DotNet.Tools.Bootstrapper.Tests starts with Microsoft.DotNet.Tools.Bootstrapper)
+        Assert.NotNull(info.SourceLocation);
+        // The format is "TypeName.MethodName" - no [BCL] prefix since we found owned code
+        Assert.DoesNotContain("[BCL]", info.SourceLocation);
+        Assert.Contains("ThrowTestException", info.SourceLocation);
     }
 
     [Fact]
@@ -172,7 +173,7 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // Details contain the symbolic Win32 error name for PII safety
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_DISK_FULL", info.Details);
     }
 
@@ -215,7 +216,7 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("NetworkPathNotFound", info.ErrorType);
-        // Details contain the symbolic Win32 error name for PII safety
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_BAD_NETPATH", info.Details);
     }
 
@@ -229,7 +230,7 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("AlreadyExists", info.ErrorType);
         Assert.Equal(unchecked((int)0x800700B7), info.HResult);
-        // Details contain the symbolic Win32 error name for PII safety
+        // Details contain the human-readable error constant name
         Assert.Equal("ERROR_ALREADY_EXISTS", info.Details);
     }
 

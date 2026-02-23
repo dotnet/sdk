@@ -143,7 +143,7 @@ public class ClassifyInstallPathTests
             ? @"D:\repo\.dotnet"
             : "/tmp/repo/.dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: "global_json");
+        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
 
         Assert.Equal("global_json", result);
     }
@@ -161,7 +161,7 @@ public class ClassifyInstallPathTests
 
         var path = Path.Combine(localAppData, "dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: "global_json");
+        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
 
         if (OperatingSystem.IsWindows())
         {
@@ -182,7 +182,7 @@ public class ClassifyInstallPathTests
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: "explicit");
+        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.Explicit);
 
         Assert.Equal("other", result);
     }
@@ -265,7 +265,7 @@ public class ApplyErrorTagsTests
                 ErrorType: "DiskFull",
                 HResult: unchecked((int)0x80070070),
                 StatusCode: null,
-                Details: "win32_error_112",
+                Details: "ERROR_DISK_FULL",
                 StackTrace: "InstallExecutor.cs:42",
                 ExceptionChain: "IOException",
                 Category: ErrorCategory.User);
@@ -277,7 +277,7 @@ public class ApplyErrorTagsTests
         Assert.Equal("DiskFull", a.GetTagItem("error.type"));
         Assert.Equal("user", a.GetTagItem("error.category"));
         Assert.Equal(unchecked((int)0x80070070), a.GetTagItem("error.hresult"));
-        Assert.Equal("win32_error_112", a.GetTagItem("error.details"));
+        Assert.Equal("ERROR_DISK_FULL", a.GetTagItem("error.details"));
         Assert.Equal("InstallExecutor.cs:42", a.GetTagItem("error.stack_trace"));
         Assert.Equal("IOException", a.GetTagItem("error.exception_chain"));
     }

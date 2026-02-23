@@ -107,7 +107,8 @@ public class TelemetryCommonPropertiesTests
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         var osPlatform = attributes["os.platform"] as string;
-        Assert.Contains(osPlatform, new[] { "Windows", "Linux", "macOS", "Unknown" });
+        // OSDescription returns the full OS description (e.g., "Microsoft Windows 10.0.26200")
+        Assert.False(string.IsNullOrEmpty(osPlatform));
     }
 
     [Fact]

@@ -61,12 +61,14 @@ internal class DefaultInstallCommand : CommandBase
             else
             {
                 Console.Error.WriteLine("Error: Non-Windows platforms not yet supported");
+                RecordFailure("platform_not_supported", category: "user");
                 return 1;
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: Failed to configure user install root: {ex.ToString()}");
+            RecordFailure("user_install_root_failed");
             return 1;
         }
     }
@@ -102,12 +104,14 @@ internal class DefaultInstallCommand : CommandBase
             else
             {
                 Console.Error.WriteLine("Error: Admin install root is only supported on Windows.");
+                RecordFailure("platform_not_supported", category: "user");
                 return 1;
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.ToString()}");
+            RecordFailure("admin_install_root_failed");
             return 1;
         }
     }

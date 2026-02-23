@@ -74,8 +74,8 @@ internal class InstallWorkflow
         if (InstallExecutor.IsAdminInstallPath(context.InstallPath))
         {
             Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is a system-managed .NET location. " +
-                "dotnetup installs to user-level locations only. " +
-                "Use your system package manager or the official installer for system-wide installations.");
+                "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
+                "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
             Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "admin_path_blocked");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());

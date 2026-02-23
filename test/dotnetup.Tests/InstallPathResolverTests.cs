@@ -47,7 +47,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull("explicit install path should override global.json without error");
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
-        result.PathSource.Should().Be("explicit");
+        result.PathSource.Should().Be(PathSource.Explicit);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath);
-        result.PathSource.Should().Be("global_json");
+        result.PathSource.Should().Be(PathSource.GlobalJson);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(SamePath);
-        result.PathSource.Should().Be("explicit");
+        result.PathSource.Should().Be(PathSource.Explicit);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
-        result.PathSource.Should().Be("explicit");
+        result.PathSource.Should().Be(PathSource.Explicit);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(installManager.GetDefaultDotnetInstallPath());
-        result.PathSource.Should().Be("default");
+        result.PathSource.Should().Be(PathSource.Default);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be("/user/dotnet");
-        result.PathSource.Should().Be("existing_user_install");
+        result.PathSource.Should().Be(PathSource.ExistingUserInstall);
     }
 
     /// <summary>
@@ -159,7 +159,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull();
         result.Should().NotBeNull("explicit path must work even without global.json");
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
-        result.PathSource.Should().Be("explicit");
+        result.PathSource.Should().Be(PathSource.Explicit);
         result.InstallPathFromGlobalJson.Should().BeNull();
     }
 
@@ -182,7 +182,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath, "explicit path should win over existing user install");
-        result.PathSource.Should().Be("explicit");
+        result.PathSource.Should().Be(PathSource.Explicit);
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath, "global.json should win over existing user install");
-        result.PathSource.Should().Be("global_json");
+        result.PathSource.Should().Be(PathSource.GlobalJson);
     }
 
     /// <summary>
@@ -225,7 +225,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         error.Should().BeNull();
         result.Should().NotBeNull("default path fallback must always produce a result");
         result!.ResolvedInstallPath.Should().NotBeNullOrEmpty();
-        result.PathSource.Should().Be("default");
+        result.PathSource.Should().Be(PathSource.Default);
     }
 
     /// <summary>
@@ -247,7 +247,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         error.Should().BeNull();
         result!.ResolvedInstallPath.Should().NotBe("/admin/dotnet", "admin installs should not be used as fallback");
-        result.PathSource.Should().Be("default");
+        result.PathSource.Should().Be(PathSource.Default);
     }
 
     private static GlobalJsonInfo CreateGlobalJsonInfo(string sdkPath)

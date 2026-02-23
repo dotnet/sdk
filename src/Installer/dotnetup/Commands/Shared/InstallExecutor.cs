@@ -14,8 +14,12 @@ internal class InstallExecutor
 {
     /// <summary>
     /// Result of an installation execution.
+    /// Success is computed from whether Install is non-null to avoid sync issues.
     /// </summary>
-    public record InstallResult(bool Success, DotnetInstall? Install, bool WasAlreadyInstalled = false);
+    public record InstallResult(DotnetInstall? Install, bool WasAlreadyInstalled = false)
+    {
+        public bool Success => Install is not null;
+    }
 
     /// <summary>
     /// Result of creating and resolving an install request.
@@ -77,7 +81,7 @@ internal class InstallExecutor
         if (installResult.Install == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}[/]");
-            return new InstallResult(false, null);
+            return new InstallResult(null);
         }
 
         if (installResult.WasAlreadyInstalled)
@@ -89,7 +93,7 @@ internal class InstallExecutor
             SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
         }
 
-        return new InstallResult(true, installResult.Install, installResult.WasAlreadyInstalled);
+        return new InstallResult(installResult.Install, installResult.WasAlreadyInstalled);
     }
 
     /// <summary>
