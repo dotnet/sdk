@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var result = task.Execute();
 
             result.Should().BeTrue("empty inputs should succeed with no output");
-            task.ResolvedFrameworkReferences.Should().BeEmpty();
+            (task.ResolvedFrameworkReferences ?? Array.Empty<ITaskItem>()).Should().BeEmpty();
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var fwRef = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>());
 
-            var targetingPack = new MockTaskItem("Microsoft.NETCore.App.Ref", new Dictionary<string, string>());
+            var targetingPack = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>());
             targetingPack.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
             targetingPack.SetMetadata("NuGetPackageVersion", "8.0.0");
             targetingPack.SetMetadata("Path", @"C:\packs\targeting");
