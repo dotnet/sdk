@@ -356,66 +356,98 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void SelectRuntimeIdentifierSpecificItems_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task SelectRuntimeIdentifierSpecificItems_ConcurrentExecution(int parallelism)
         {
+            var projectDir = Path.Combine(Path.GetTempPath(), $"select-rid-concurrent-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(projectDir);
+            var runtimeGraphPath = Path.Combine(projectDir, "runtime.json");
+            File.WriteAllText(runtimeGraphPath, @"{ ""runtimes"": { ""linux-x64"": { ""#import"": [""linux"", ""unix""] } } }");
+            try
+            {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
                     var task = new SelectRuntimeIdentifierSpecificItems
                     {
                         BuildEngine = new MockBuildEngine(),
-                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Path.GetTempPath()),
+                        TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                         TargetRuntimeIdentifier = "linux-x64",
                         Items = new ITaskItem[]
                         {
-                            CreateItemWithRid($"Item{i}", "linux-x64")
+                            CreateItemWithRid($"Item{idx}", "linux-x64")
                         },
-                        RuntimeIdentifierGraphPath = ""
+                        RuntimeIdentifierGraphPath = "runtime.json"
                     };
-                    barrier.SignalAndWait();
-                    task.Execute();
+                    startGate.Wait();
+                    var result = task.Execute();
+                    if (!result) errors.Add($"Thread {idx}: Execute returned false");
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
         }
 
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void SetGeneratedAppConfigMetadata_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task SetGeneratedAppConfigMetadata_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
                     var task = new SetGeneratedAppConfigMetadata
                     {
                         BuildEngine = new MockBuildEngine(),
-                        GeneratedAppConfigFile = $"obj/app{i}.exe.config",
-                        TargetName = $"app{i}.exe.config"
+                        GeneratedAppConfigFile = $"obj/app{idx}.exe.config",
+                        TargetName = $"app{idx}.exe.config"
                     };
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
         }
 
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void ValidateExecutableReferences_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task ValidateExecutableReferences_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -426,22 +458,30 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         SelfContained = false,
                         ReferencedProjects = Array.Empty<ITaskItem>()
                     };
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
         }
 
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void RemoveDuplicatePackageReferences_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task RemoveDuplicatePackageReferences_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -450,14 +490,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         BuildEngine = new MockBuildEngine(),
                         InputPackageReferences = new ITaskItem[]
                         {
-                            new MockTaskItem($"Package{i}", new Dictionary<string, string> { { "Version", "1.0.0" } })
+                            new MockTaskItem($"Package{idx}", new Dictionary<string, string> { { "Version", "1.0.0" } })
                         }
                     };
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
         }
 

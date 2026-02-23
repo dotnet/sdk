@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new FilterResolvedFiles
                 {
                     BuildEngine = new MockBuildEngine(),
-                    AssetsFilePath = "obj\\project.assets.json",
+                    AssetsFilePath = Path.Combine("obj", "project.assets.json"),
                     ResolvedFiles = Array.Empty<ITaskItem>(),
                     PackagesToPrune = Array.Empty<ITaskItem>(),
                     TargetFramework = ".NETCoreApp,Version=v8.0",
@@ -124,7 +124,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void FilterResolvedFiles_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task FilterResolvedFiles_ConcurrentExecution(int parallelism)
         {
             var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"filter-concurrent-{Guid.NewGuid():N}"));
             Directory.CreateDirectory(projectDir);
@@ -135,25 +135,34 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 File.WriteAllText(Path.Combine(objDir, "project.assets.json"), AssetsJson);
 
                 var errors = new ConcurrentBag<string>();
-                var barrier = new Barrier(parallelism);
-                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                using var startGate = new ManualResetEventSlim(false);
+                var tasks = new System.Threading.Tasks.Task[parallelism];
+                for (int i = 0; i < parallelism; i++)
                 {
-                    try
+                    int idx = i;
+                    tasks[idx] = System.Threading.Tasks.Task.Run(() =>
                     {
-                        var task = new FilterResolvedFiles
+                        try
                         {
-                            BuildEngine = new MockBuildEngine(),
-                            AssetsFilePath = Path.Combine("obj", "project.assets.json"),
-                            ResolvedFiles = Array.Empty<ITaskItem>(),
-                            PackagesToPrune = Array.Empty<ITaskItem>(),
-                            TargetFramework = ".NETCoreApp,Version=v8.0",
-                            TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
-                        };
-                        barrier.SignalAndWait();
-                        task.Execute();
-                    }
-                    catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
-                });
+                            var task = new FilterResolvedFiles
+                            {
+                                BuildEngine = new MockBuildEngine(),
+                                AssetsFilePath = Path.Combine("obj", "project.assets.json"),
+                                ResolvedFiles = Array.Empty<ITaskItem>(),
+                                PackagesToPrune = Array.Empty<ITaskItem>(),
+                                TargetFramework = ".NETCoreApp,Version=v8.0",
+                                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                            };
+                            startGate.Wait();
+                            var result = task.Execute();
+                            if (!result) errors.Add($"Thread {idx}: Execute returned false");
+                        }
+                        catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
+                    });
+                }
+                startGate.Set();
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+
                 errors.Should().BeEmpty();
             }
             finally
