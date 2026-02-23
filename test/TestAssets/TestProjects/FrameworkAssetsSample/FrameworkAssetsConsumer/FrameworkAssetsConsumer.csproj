@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <!-- Diagnostic target to dump static web asset state after UpdateExistingPackageStaticWebAssets -->
+  <Target Name="DumpFrameworkAssetState" AfterTargets="UpdateExistingPackageStaticWebAssets">
+    <Message Importance="High" Text="=== Framework Assets State ===" />
+    <Message Importance="High" Text="Asset: %(StaticWebAsset.Identity) | SourceType=%(StaticWebAsset.SourceType) | SourceId=%(StaticWebAsset.SourceId) | BasePath=%(StaticWebAsset.BasePath) | AssetMode=%(StaticWebAsset.AssetMode) | ContentRoot=%(StaticWebAsset.ContentRoot) | RelativePath=%(StaticWebAsset.RelativePath)" />
+    <Message Importance="High" Text="=== End Framework Assets State ===" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="FrameworkAssetsLib" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>
