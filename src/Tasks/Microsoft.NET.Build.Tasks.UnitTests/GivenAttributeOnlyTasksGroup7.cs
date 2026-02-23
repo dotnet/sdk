@@ -17,6 +17,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// These tasks received only the [MSBuildMultiThreadableTask] attribute — no source
     /// code changes — so we verify they still produce correct results.
     /// </summary>
+    [Collection("CWD-Dependent")]
+
     public class GivenAttributeOnlyTasksGroup7
     {
         #region Attribute Presence
