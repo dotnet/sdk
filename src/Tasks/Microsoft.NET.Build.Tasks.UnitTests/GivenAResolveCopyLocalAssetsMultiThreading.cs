@@ -7,6 +7,8 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [Collection("CWD-Dependent")]
+
     public class GivenAResolveCopyLocalAssetsMultiThreading
     {
         private const string AssetsJson = """
