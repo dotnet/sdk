@@ -1124,7 +1124,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
                 {
                     if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
-                        CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath() is { } userProfileDir)
+                        CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPathFromSystemEnvironment() is { } userProfileDir)
                     {
                         yield return Path.Combine(userProfileDir, "packs");
                     }
@@ -1177,7 +1177,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             return new(() =>
         {
-                string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+                string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPathFromSystemEnvironment();
 
                 //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
                 //  starting point to search for global.json
