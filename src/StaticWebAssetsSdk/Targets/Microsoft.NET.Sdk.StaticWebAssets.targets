@@ -741,10 +741,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
-    Inputs="@(StaticWebAsset->WithMetadataValue('SourceType','Framework'))"
-    Outputs="@(StaticWebAsset->WithMetadataValue('SourceType','Framework')->'$(_StaticWebAssetsIntermediateOutputPath)fx\%(SourceId)\%(RelativePath)')">
+  <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <UpdatePackageStaticWebAssets
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
