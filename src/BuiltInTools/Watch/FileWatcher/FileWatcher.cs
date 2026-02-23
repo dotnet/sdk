@@ -9,12 +9,17 @@ namespace Microsoft.DotNet.Watch
 {
     internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions) : IDisposable
     {
-        // Directory watcher for each watched directory tree.
-        // Keyed by full path to the root directory with a trailing directory separator.
+        /// <summary>
+        /// Directory watcher for each watched directory tree.
+        /// Keyed by full path to the root directory with a trailing directory separator.
+        /// The trees do not overlap (unless there is a hard link between them).
+        /// </summary>
         protected readonly Dictionary<string, DirectoryWatcher> _directoryTreeWatchers = new(PathUtilities.OSSpecificPathComparer);
 
-        // Directory watcher for each watched directory (non-recursive).
-        // Keyed by full path to the root directory with a trailing directory separator.
+        /// <summary>
+        /// Directory watcher for each watched directory (non-recursive) not covered by <see cref="_directoryTreeWatchers"/>.
+        /// Keyed by full path to the root directory with a trailing directory separator.
+        /// </summary>
         protected readonly Dictionary<string, DirectoryWatcher> _directoryWatchers = new(PathUtilities.OSSpecificPathComparer);
 
         private bool _disposed;
@@ -53,19 +58,25 @@ namespace Microsoft.DotNet.Watch
         public bool WatchingDirectories
             => _directoryTreeWatchers.Count > 0 || _directoryWatchers.Count > 0;
 
+        public void ClearWatchedDirectories()
+        {
+            _directoryTreeWatchers.Clear();
+            _directoryWatchers.Clear();
+        }
+
         /// <summary>
         /// Watches individual files.
         /// </summary>
         public void WatchFiles(IEnumerable<string> filePaths)
-            => Watch(filePaths, containingDirectories: false, includeSubdirectories: false);
+            => Watch(filePaths, FilePathExclusions.Empty, containingDirectories: false, includeSubdirectories: false);
 
         /// <summary>
         /// Watches an entire directory or directory tree.
         /// </summary>
-        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories)
-            => Watch(filePaths, containingDirectories: true, includeSubdirectories);
+        public void WatchContainingDirectories(IEnumerable<string> filePaths, FilePathExclusions exclusions, bool includeSubdirectories)
+            => Watch(filePaths, exclusions, containingDirectories: true, includeSubdirectories);
 
-        private void Watch(IEnumerable<string> filePaths, bool containingDirectories, bool includeSubdirectories)
+        private void Watch(IEnumerable<string> filePaths, FilePathExclusions exclusions, bool containingDirectories, bool includeSubdirectories)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             Debug.Assert(containingDirectories || !includeSubdirectories);
@@ -78,6 +89,11 @@ namespace Microsoft.DotNet.Watch
 
             foreach (var (directory, fileNames) in filesByDirectory)
             {
+                if (exclusions.IsExcludedSubdirectory(directory))
+                {
+                    continue;
+                }
+
                 // the directory is watched by active directory watcher:
                 if (!includeSubdirectories && _directoryWatchers.TryGetValue(directory, out var existingDirectoryWatcher))
                 {
