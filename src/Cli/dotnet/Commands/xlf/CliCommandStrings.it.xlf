@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">Non sono stati trovati progetti di test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">Identificatore del dispositivo da usare per l'esecuzione dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">DISPOSITIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">Elencare i dispositivi disponibili per l'esecuzione dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
@@ -226,7 +226,7 @@ Percorsi cercati: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="new">Build failed with exit code: {0}.</target>
+        <target state="translated">Compilazione non riuscita con codice di uscita: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -1349,7 +1349,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">Dispositivi disponibili:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -1364,7 +1364,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">Distribuzione sul dispositivo non riuscita. Correggere eventuali errori di distribuzione ed eseguire di nuovo.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -1419,7 +1419,7 @@ L'OutputType corrente è '{2}'.</target>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">Non è possibile eseguire questo progetto perché sono disponibili più dispositivi. Specificare il dispositivo da usare passando l'argomento {0} con uno dei valori seguenti:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -1431,7 +1431,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">Scorri verso l'alto o verso il basso per visualizzare altri dispositivi</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -1441,7 +1441,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">Nessun dispositivo disponibile per questo progetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1456,7 +1456,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">Selezionare un dispositivo in cui eseguire:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -1638,7 +1638,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">I file di filtro della soluzione (.slnf) non supportano le opzioni --in-root o --solution-folder.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
