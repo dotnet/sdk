@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new ResolveCopyLocalAssets
                 {
                     BuildEngine = new MockBuildEngine(),
-                    AssetsFilePath = "obj\\project.assets.json",
+                    AssetsFilePath = Path.Combine("obj", "project.assets.json"),
                     TargetFramework = ".NETCoreApp,Version=v8.0",
                     RuntimeIdentifier = "",
                     IsSelfContained = false,

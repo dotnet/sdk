@@ -511,12 +511,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GetDefaultPlatformTargetForNetFramework_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GetDefaultPlatformTargetForNetFramework_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -527,14 +531,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         NativeCopyLocalItems = Array.Empty<ITaskItem>()
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -542,12 +549,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GetEmbeddedApphostPaths_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GetEmbeddedApphostPaths_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -559,14 +570,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         ShimRuntimeIdentifiers = new ITaskItem[] { new TaskItem("win-x64") }
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -574,12 +588,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GetNuGetShortFolderName_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GetNuGetShortFolderName_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -589,14 +607,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0"
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -604,12 +625,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void ProduceContentAssets_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task ProduceContentAssets_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
+            using var startGate = new ManualResetEventSlim(false);
 
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -621,14 +646,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Thread {i}: {ex.Message}");
+                    errors.Add($"Thread {idx}: {ex.Message}");
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             errors.Should().BeEmpty();
         }
@@ -636,7 +664,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void ResolveCopyLocalAssets_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task ResolveCopyLocalAssets_ConcurrentExecution(int parallelism)
         {
             var projectDir = Path.Combine(Path.GetTempPath(), $"resolve-copy-concurrent-{Guid.NewGuid():N}");
             Directory.CreateDirectory(projectDir);
@@ -654,9 +682,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 File.WriteAllText(assetsPath, assetsContent);
 
                 var errors = new ConcurrentBag<string>();
-                var barrier = new Barrier(parallelism);
+                using var startGate = new ManualResetEventSlim(false);
 
-                Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+                var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
                 {
                     try
                     {
@@ -671,14 +703,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                             TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir)
                         };
 
-                        barrier.SignalAndWait();
+                        startGate.Wait();
                         task.Execute();
                     }
                     catch (Exception ex)
                     {
-                        errors.Add($"Thread {i}: {ex.Message}");
+                        errors.Add($"Thread {idx}: {ex.Message}");
                     }
                 });
+                }
+                startGate.Set();
+                await System.Threading.Tasks.Task.WhenAll(tasks);
 
                 errors.Should().BeEmpty();
             }
