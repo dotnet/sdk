@@ -318,7 +318,10 @@ namespace Microsoft.NET.Build.Tasks
             {
                 AssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
             }
-            RuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+            if (!string.IsNullOrEmpty(RuntimeGraphPath))
+            {
+                RuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+            }
             WriteDepsFile(absDepsFilePath, DepsFilePath);
         }
     }
