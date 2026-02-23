@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Configurer
         {
             get
             {
-                return CliFolderPathCalculatorCore.GetDotnetHomePathFromSystemEnvironment()
+                return new CliFolderPathCalculatorCore().GetDotnetHomePath()
                     ?? throw new ConfigurationException(
                             string.Format(
                                 LocalizableStrings.FailedToDetermineUserHomeDirectory,
