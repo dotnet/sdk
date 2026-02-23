@@ -63,7 +63,9 @@ namespace Microsoft.NET.Build.Tasks
 
             ResolvedAssetsCacheEntry results;
 
-            if (AllowCacheLookup() &&
+            bool allowCacheLookup = AllowCacheLookup();
+
+            if (allowCacheLookup &&
                 BuildEngine4?.GetRegisteredTaskObject(
                     cacheKey,
                     RegisteredTaskObjectLifetime.AppDomain /* really "until process exit" */)
@@ -79,9 +81,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                results = Resolve(inputs, BuildEngine4, AllowCacheLookup());
+                results = Resolve(inputs, BuildEngine4, allowCacheLookup);
 
-                if (AllowCacheLookup())
+                if (allowCacheLookup)
                 {
                     BuildEngine4?.RegisterTaskObject(cacheKey, results, RegisteredTaskObjectLifetime.AppDomain, allowEarlyCollection: true);
                 }

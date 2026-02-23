@@ -25,6 +25,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ResolveRuntimePackAssets()
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testDirectory),
                 FrameworkReferences = new TaskItem[] { new TaskItem("TestFramework") },
                 ResolvedRuntimePacks = new TaskItem[]
                 {

@@ -145,6 +145,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ResolveTargetingPackAssets
             {
                 BuildEngine = buildEngine,
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(mockPackageDirectory),
                 FrameworkReferences = DefaultFrameworkReferences(),
                 ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
                 ProjectLanguage = "C#"

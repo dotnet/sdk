@@ -101,11 +101,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void ResolveTargetingPackAssets_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task ResolveTargetingPackAssets_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -118,11 +122,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         RuntimeFrameworks = Array.Empty<ITaskItem>(),
                         GenerateErrorForMissingTargetingPacks = false,
                     };
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
         }
 

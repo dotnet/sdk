@@ -32,14 +32,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ResolvesFrameworkReferences_WithMatchingPacks()
         {
-            var fwRef = new MockTaskItem("Microsoft.NETCore.App");
+            var fwRef = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>());
 
-            var targetingPack = new MockTaskItem("Microsoft.NETCore.App.Ref");
+            var targetingPack = new MockTaskItem("Microsoft.NETCore.App.Ref", new Dictionary<string, string>());
             targetingPack.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
             targetingPack.SetMetadata("NuGetPackageVersion", "8.0.0");
             targetingPack.SetMetadata("Path", @"C:\packs\targeting");
 
-            var runtimePack = new MockTaskItem("Microsoft.NETCore.App.Runtime.win-x64");
+            var runtimePack = new MockTaskItem("Microsoft.NETCore.App.Runtime.win-x64", new Dictionary<string, string>());
             runtimePack.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
             runtimePack.SetMetadata("NuGetPackageVersion", "8.0.0");
             runtimePack.SetMetadata("PackageDirectory", @"C:\packs\runtime");
@@ -60,11 +60,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void ResolveFrameworkReferences_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task ResolveFrameworkReferences_ConcurrentExecution(int parallelism)
         {
             var errors = new ConcurrentBag<string>();
-            var barrier = new Barrier(parallelism);
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
+            {
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
@@ -75,11 +79,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         ResolvedTargetingPacks = Array.Empty<ITaskItem>(),
                         ResolvedRuntimePacks = Array.Empty<ITaskItem>(),
                     };
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     task.Execute();
                 }
-                catch (Exception ex) { errors.Add($"Thread {i}: {ex.Message}"); }
+                catch (Exception ex) { errors.Add($"Thread {idx}: {ex.Message}"); }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
             errors.Should().BeEmpty();
         }
     }
