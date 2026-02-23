@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = engine,
                 MainAssembly = new TaskItem("nonexistent.dll"),
-                OutputPath = "",
+                OutputPath = "output",
                 IncludeSymbolsInSingleFile = false,
                 Assemblies = null,
                 ReadyToRunUseCrossgen2 = false,
@@ -169,7 +169,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         BuildEngine = new MockBuildEngine(),
                         TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                         MainAssembly = new TaskItem("nonexistent.dll"),
-                        OutputPath = "",
+                        OutputPath = "output",
                         IncludeSymbolsInSingleFile = false,
                         Assemblies = null,
                         ReadyToRunUseCrossgen2 = false,
