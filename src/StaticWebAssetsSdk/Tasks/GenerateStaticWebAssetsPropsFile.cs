@@ -40,8 +40,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
     public bool AllowEmptySourceType { get; set; }
 
-    // Glob pattern for marking assets as Framework. Assets matching this pattern
-    // will be emitted with SourceType="Framework" instead of "Package".
     public string FrameworkPattern { get; set; }
 
     public override bool Execute()
@@ -63,7 +61,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
 
-        // Build a glob matcher for the framework pattern if provided
         StaticWebAssetGlobMatcher frameworkMatcher = null;
         if (!string.IsNullOrEmpty(FrameworkPattern))
         {
@@ -89,7 +86,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
             var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
 
-            // Determine SourceType for the emitted item
             var emittedSourceType = "Package";
             if (hasFrameworkMatcher)
             {

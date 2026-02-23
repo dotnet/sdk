@@ -12,13 +12,10 @@ public class UpdatePackageStaticWebAssets : Task
     [Required]
     public ITaskItem[] Assets { get; set; }
 
-    // The intermediate output path for materializing framework assets (e.g., $(IntermediateOutputPath)staticwebassets\)
     public string IntermediateOutputPath { get; set; }
 
-    // The consuming project's PackageId
     public string ProjectPackageId { get; set; }
 
-    // The consuming project's StaticWebAssetBasePath
     public string ProjectBasePath { get; set; }
 
     [Output]
@@ -27,20 +24,12 @@ public class UpdatePackageStaticWebAssets : Task
     [Output]
     public ITaskItem[] OriginalAssets { get; set; }
 
-    // Framework assets that were materialized (original items, for endpoint remapping)
-    // ItemSpec = old asset Identity, NewPath metadata = new materialized path
-    [Output]
-    public ITaskItem[] MaterializedFrameworkAssets { get; set; }
-
-    // Endpoints with AssetFile remapped for materialized framework assets
     [Output]
     public ITaskItem[] RemappedEndpoints { get; set; }
 
-    // Original endpoints that were remapped (to remove from the endpoint list)
     [Output]
     public ITaskItem[] OriginalRemappedEndpoints { get; set; }
 
-    // All endpoints for the consuming project (needed to remap framework asset endpoints)
     public ITaskItem[] Endpoints { get; set; }
 
     public override bool Execute()
@@ -49,7 +38,7 @@ public class UpdatePackageStaticWebAssets : Task
         {
             var originalAssets = new List<ITaskItem>();
             var updatedAssets = new List<ITaskItem>();
-            var materializedFrameworkAssets = new List<ITaskItem>();
+            var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < Assets.Length; i++)
             {
@@ -64,53 +53,19 @@ public class UpdatePackageStaticWebAssets : Task
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
                     originalAssets.Add(candidate);
-                    var (transformed, mapping) = MaterializeFrameworkAsset(candidate);
+                    var (transformed, oldPath) = MaterializeFrameworkAsset(candidate);
                     if (transformed != null)
                     {
-                        updatedAssets.Add(transformed);
-                        materializedFrameworkAssets.Add(mapping);
+                        updatedAssets.Add(transformed.ToTaskItem());
+                        assetMapping[oldPath] = transformed.Identity;
                     }
                 }
             }
 
             OriginalAssets = [.. originalAssets];
             UpdatedAssets = [.. updatedAssets];
-            MaterializedFrameworkAssets = [.. materializedFrameworkAssets];
 
-            // Remap endpoints for materialized framework assets
-            var remappedEndpoints = new List<ITaskItem>();
-            var originalRemappedEndpoints = new List<ITaskItem>();
-            if (Endpoints != null && materializedFrameworkAssets.Count > 0)
-            {
-                // Build a mapping from old identity to new materialized path
-                var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var mapping in materializedFrameworkAssets)
-                {
-                    var oldPath = mapping.ItemSpec;
-                    var newPath = mapping.GetMetadata("NewPath");
-                    if (!string.IsNullOrEmpty(oldPath) && !string.IsNullOrEmpty(newPath))
-                    {
-                        assetMapping[oldPath] = newPath;
-                    }
-                }
-
-                foreach (var endpoint in Endpoints)
-                {
-                    var assetFile = endpoint.GetMetadata("AssetFile");
-                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
-                    {
-                        originalRemappedEndpoints.Add(endpoint);
-                        var remapped = new Microsoft.Build.Utilities.TaskItem(endpoint);
-                        remapped.SetMetadata("AssetFile", newAssetFile);
-                        remappedEndpoints.Add(remapped);
-                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                            endpoint.ItemSpec, assetFile, newAssetFile);
-                    }
-                }
-            }
-
-            RemappedEndpoints = [.. remappedEndpoints];
-            OriginalRemappedEndpoints = [.. originalRemappedEndpoints];
+            RemapEndpoints(assetMapping);
         }
         catch (Exception ex)
         {
@@ -120,34 +75,87 @@ public class UpdatePackageStaticWebAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private (ITaskItem, ITaskItem) MaterializeFrameworkAsset(ITaskItem candidate)
+    private void RemapEndpoints(Dictionary<string, string> assetMapping)
     {
-        // Parse the asset from V1 task item format (applies defaults, normalizes, validates)
+        var remappedEndpoints = new List<ITaskItem>();
+        var originalRemappedEndpoints = new List<ITaskItem>();
+
+        if (Endpoints != null && assetMapping.Count > 0)
+        {
+            var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var endpoint in Endpoints)
+            {
+                var identity = endpoint.ItemSpec;
+                if (!endpointsByIdentity.TryGetValue(identity, out var group))
+                {
+                    group = new List<ITaskItem>();
+                    endpointsByIdentity[identity] = group;
+                }
+                group.Add(endpoint);
+            }
+
+            foreach (var kvp in endpointsByIdentity)
+            {
+                var identity = kvp.Key;
+                var group = kvp.Value;
+                var groupNeedsRemapping = false;
+                foreach (var endpoint in group)
+                {
+                    var assetFile = endpoint.GetMetadata("AssetFile");
+                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
+                    {
+                        groupNeedsRemapping = true;
+                        break;
+                    }
+                }
+
+                if (groupNeedsRemapping)
+                {
+                    foreach (var endpoint in group)
+                    {
+                        originalRemappedEndpoints.Add(endpoint);
+
+                        var remapped = new Microsoft.Build.Utilities.TaskItem(endpoint);
+                        var assetFile = endpoint.GetMetadata("AssetFile");
+                        if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+                        {
+                            remapped.SetMetadata("AssetFile", newAssetFile);
+                            Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
+                                identity, assetFile, newAssetFile);
+                        }
+
+                        remappedEndpoints.Add(remapped);
+                    }
+                }
+            }
+        }
+
+        RemappedEndpoints = [.. remappedEndpoints];
+        OriginalRemappedEndpoints = [.. originalRemappedEndpoints];
+    }
+
+    private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)
+    {
         var asset = StaticWebAsset.FromV1TaskItem(candidate);
 
         var originalSourceId = asset.SourceId;
         var relativePath = asset.RelativePath;
         var oldIdentity = asset.Identity;
 
-        // Compute materialized destination path: {IntermediateOutputPath}fx/{OriginalSourceId}/{RelativePath}
         var fxDir = Path.Combine(IntermediateOutputPath, "fx", originalSourceId);
         var destPath = Path.Combine(fxDir, StaticWebAsset.Normalize(relativePath));
         destPath = Path.GetFullPath(destPath);
 
-        // Copy the file from the package cache to the intermediate output
         var sourceFile = asset.Identity;
         if (!File.Exists(sourceFile))
         {
-            // Let it throw naturally per the decisions document
-            Log.LogMessage(MessageImportance.Low, "Source file '{0}' does not exist for framework asset materialization.", sourceFile);
-            File.Copy(sourceFile, destPath); // This will throw FileNotFoundException
+            Log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile);
             return (null, null);
         }
 
         var destDir = Path.GetDirectoryName(destPath);
         Directory.CreateDirectory(destDir);
 
-        // Only copy if source is newer or dest doesn't exist
         if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
         {
             File.Copy(sourceFile, destPath, overwrite: true);
@@ -158,36 +166,24 @@ public class UpdatePackageStaticWebAssets : Task
             Log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile, destPath);
         }
 
-        // Transform the asset metadata to adopt it into the current project
         asset.Identity = destPath;
         asset.OriginalItemSpec = destPath;
-        asset.ContentRoot = EnsureTrailingSlash(Path.GetDirectoryName(Path.Combine(fxDir, "placeholder")));
+        asset.ContentRoot = EnsureTrailingSlash(fxDir);
         asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
         asset.SourceId = ProjectPackageId;
         asset.BasePath = ProjectBasePath;
         asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
 
-        // Recompute fingerprint/integrity since the file was copied (may have different metadata)
-        var fileInfo = new FileInfo(destPath);
-        var (fingerprint, integrity) = StaticWebAsset.ComputeFingerprintAndIntegrity(fileInfo);
-        asset.Fingerprint = fingerprint;
-        asset.Integrity = integrity;
-        asset.FileLength = fileInfo.Length;
-        asset.LastWriteTime = fileInfo.LastWriteTimeUtc;
-
-        // Create mapping item for endpoint remapping (old identity -> new identity)
-        var mapping = new Microsoft.Build.Utilities.TaskItem(oldIdentity);
-        mapping.SetMetadata("NewPath", destPath);
-
-        return (asset.ToTaskItem(), mapping);
+        return (asset, oldIdentity);
     }
 
     private static string EnsureTrailingSlash(string path)
     {
-        if (!string.IsNullOrEmpty(path) && !path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+        if (string.IsNullOrEmpty(path))
         {
-            return path + Path.DirectorySeparatorChar;
+            return path;
         }
-        return path;
+
+        return $"{path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
     }
 }

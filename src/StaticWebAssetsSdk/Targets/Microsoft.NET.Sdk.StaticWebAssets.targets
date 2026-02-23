@@ -741,7 +741,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+  <Target Name="UpdateExistingPackageStaticWebAssets"
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+    Inputs="@(StaticWebAsset->WithMetadataValue('SourceType','Framework'))"
+    Outputs="@(StaticWebAsset->WithMetadataValue('SourceType','Framework')->'$(_StaticWebAssetsIntermediateOutputPath)fx\%(SourceId)\%(RelativePath)')">
     <UpdatePackageStaticWebAssets
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
@@ -751,7 +754,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
-      <Output TaskParameter="MaterializedFrameworkAssets" ItemName="_MaterializedFrameworkAssets" />
       <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
       <Output TaskParameter="OriginalRemappedEndpoints" ItemName="_OriginalRemappedEndpoints" />
     </UpdatePackageStaticWebAssets>

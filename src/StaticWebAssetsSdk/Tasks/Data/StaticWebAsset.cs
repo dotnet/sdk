@@ -1066,7 +1066,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
         // These have been normalized already, so only contain forward slashes
-        var computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+        var computedBasePath = IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath;
         if (computedBasePath == "/")
         {
             // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
