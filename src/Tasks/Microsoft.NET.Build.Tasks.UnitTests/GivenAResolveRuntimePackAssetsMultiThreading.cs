@@ -10,6 +10,8 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [Collection("CWD-Dependent")]
+
     public class GivenAResolveRuntimePackAssetsMultiThreading
     {
         [Fact]
