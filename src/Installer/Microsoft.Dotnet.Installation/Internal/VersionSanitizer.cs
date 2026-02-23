@@ -79,31 +79,20 @@ public static partial class VersionSanitizer
             return ReleaseVersion.TryParse(normalized, out _);
         }
 
-        // Handle prerelease versions: validate the prerelease token is known
-        var hyphenIndex = version.IndexOf('-');
-        if (hyphenIndex >= 0)
+        if (ReleaseVersion.TryParse(version, out ReleaseVersion releaseVersion))
         {
-            // ReleaseVersion handles parsing the full prerelease format
-            if (!ReleaseVersion.TryParse(version, out var releaseVersion) ||
-                string.IsNullOrEmpty(releaseVersion.Prerelease))
+            if (releaseVersion.Prerelease is null)
             {
-                return false;
+                return true;
             }
 
             // Validate prerelease token: must start with a known token
-            var prerelease = releaseVersion.Prerelease;
-            var dotIndex = prerelease.IndexOf('.');
-            var token = dotIndex < 0 ? prerelease : prerelease[..dotIndex];
+            var dotIndex = releaseVersion.Prerelease.IndexOf('.');
+            var token = dotIndex < 0 ? releaseVersion.Prerelease : releaseVersion.Prerelease[..dotIndex];
 
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }
 
-        // Simple version (no wildcards, no prerelease) - try to parse directly
-        // Also accept major-only (e.g., "8", "9", "10") and major.minor (e.g., "8.0", "9.0")
-        if (ReleaseVersion.TryParse(version, out _))
-        {
-            return true;
-        }
 
         // Check for partial versions like "8" or "8.0" which ReleaseVersion may not parse
         var parts = version.Split('.');

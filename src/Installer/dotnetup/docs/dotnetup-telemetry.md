@@ -45,7 +45,7 @@ Data collected includes:
 
 If dotnetup crashes, it collects the name of the exception and the stack trace
 of dotnetup code, following the same approach as the .NET SDK. Exception messages
-are stripped from the stack trace because they may contain user-provided input.
+are not included because they may contain user-provided input.
 For more details on crash exception telemetry, see the
 [.NET CLI telemetry documentation](https://aka.ms/dotnet-cli-telemetry).
 
