@@ -213,7 +213,7 @@ public sealed class RunCsWinRTGenerator : ToolTask, IMultiThreadableTask
     {
         StringBuilder args = new();
 
-        IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(path => TaskEnvironment.GetAbsolutePath(path.ItemSpec));
+        IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(path => (string)TaskEnvironment.GetAbsolutePath(path.ItemSpec));
         string referenceAssemblyPathsArg = string.Join(",", referenceAssemblyPaths);
 
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
