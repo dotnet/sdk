@@ -181,6 +181,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor RestartInProgress = Create("Restart in progress.", Emoji.Restart, LogLevel.Information);
         public static readonly MessageDescriptor RestartRequested = Create("Restart requested.", Emoji.Restart, LogLevel.Information);
+        public static readonly MessageDescriptor Restarting = Create("Restarting.", Emoji.Restart, LogLevel.Information);
         public static readonly MessageDescriptor ShutdownRequested = Create("Shutdown requested. Press Ctrl+C again to force exit.", Emoji.Stop, LogLevel.Information);
         public static readonly MessageDescriptor ApplyUpdate_Error = Create("{0}{1}", Emoji.Error, LogLevel.Error);
         public static readonly MessageDescriptor ApplyUpdate_Warning = Create("{0}{1}", Emoji.Warning, LogLevel.Warning);
@@ -231,6 +232,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplicationKind_BlazorWebAssembly = Create("Application kind: BlazorWebAssembly.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor ApplicationKind_WebApplication = Create("Application kind: WebApplication.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor ApplicationKind_Default = Create("Application kind: Default.", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor ApplicationKind_WebSockets = Create("Application kind: WebSockets.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, LogLevel.Trace);
         public static readonly MessageDescriptor Building = Create("Building {0} ...", Emoji.Default, LogLevel.Information);
