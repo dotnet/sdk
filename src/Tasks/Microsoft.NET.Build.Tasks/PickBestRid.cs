@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks;
 [MSBuildMultiThreadableTask]
 public sealed class PickBestRid : TaskBase, IMultiThreadableTask
 {
-    public TaskEnvironment TaskEnvironment { get; set; }
+    public TaskEnvironment TaskEnvironment { get; set; } = null!;
     /// <summary>
     /// The path to the RID graph to read
     /// </summary>
@@ -39,7 +39,7 @@ public sealed class PickBestRid : TaskBase, IMultiThreadableTask
 
     protected override void ExecuteCore()
     {
-        var absoluteRuntimeGraphPath = (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+        var absoluteRuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
         if (!File.Exists(absoluteRuntimeGraphPath))
         {
             Log.LogError(Strings.RuntimeGraphFileDoesNotExist, RuntimeGraphPath);
