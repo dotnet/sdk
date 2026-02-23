@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -16,7 +13,6 @@ public class SpectreProgressTarget : IProgressTarget
     {
         private readonly TaskCompletionSource _overallTask = new();
         private readonly ProgressContext _progressContext;
-        private readonly List<ProgressTaskImpl> _tasks = new();
 
         public Reporter()
         {
@@ -32,27 +28,11 @@ public class SpectreProgressTarget : IProgressTarget
 
         public IProgressTask AddTask(string description, double maxValue)
         {
-            var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue), activity: null);
-            _tasks.Add(task);
-            return task;
-        }
-
-        public IProgressTask AddTask(string activityName, string description, double maxValue)
-        {
-            var activity = InstallationActivitySource.ActivitySource.StartActivity(activityName, ActivityKind.Internal);
-            // Tag library activities so consumers know they came from dotnetup CLI
-            activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
-            var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue), activity);
-            _tasks.Add(task);
-            return task;
+            return new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
         }
 
         public void Dispose()
         {
-            foreach (var task in _tasks)
-            {
-                task.DisposeActivity();
-            }
             _overallTask.SetResult();
         }
     }
@@ -60,13 +40,10 @@ public class SpectreProgressTarget : IProgressTarget
     private sealed class ProgressTaskImpl : IProgressTask
     {
         private readonly Spectre.Console.ProgressTask _task;
-        private readonly Activity? _activity;
-        private bool _completed;
 
-        public ProgressTaskImpl(Spectre.Console.ProgressTask task, Activity? activity)
+        public ProgressTaskImpl(Spectre.Console.ProgressTask task)
         {
             _task = task;
-            _activity = activity;
         }
 
         public double Value
@@ -85,39 +62,6 @@ public class SpectreProgressTarget : IProgressTarget
         {
             get => _task.MaxValue;
             set => _task.MaxValue = value;
-        }
-
-        public void SetTag(string key, object? value)
-        {
-            _activity?.SetTag(key, value);
-        }
-
-        public void RecordError(Exception ex)
-        {
-            if (_activity == null) return;
-
-            // Use ErrorCodeMapper for rich error metadata (same as command-level telemetry)
-            var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-            ErrorCodeMapper.ApplyErrorTags(_activity, errorInfo);
-        }
-
-        public void Complete()
-        {
-            if (_completed) return;
-            _completed = true;
-            _activity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        public void DisposeActivity()
-        {
-            // Ensure Spectre task shows as complete (visually)
-            _task.Value = _task.MaxValue;
-
-            if (!_completed)
-            {
-                _activity?.SetStatus(ActivityStatusCode.Unset);
-            }
-            _activity?.Dispose();
         }
     }
 }

@@ -19,7 +19,7 @@ internal static class DotnetupPaths
     /// Gets the base data directory for dotnetup.
     /// On Windows: %LOCALAPPDATA%\dotnetup
     /// On macOS: ~/Library/Application Support/dotnetup
-    /// On Linux: ~/.local/share/dotnetup
+    /// On Linux: $XDG_DATA_HOME/dotnetup or ~/.local/share/dotnetup
     /// </summary>
     /// <remarks>
     /// Can be overridden via DOTNET_TESTHOOK_DOTNETUP_DATA_DIR environment variable.

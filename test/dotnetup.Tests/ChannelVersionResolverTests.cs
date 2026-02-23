@@ -112,6 +112,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("10", true)]
         [InlineData("99", true)]  // Max reasonable major
         [InlineData("99.0.100", true)]
+        [InlineData("10.0.100-preview.1.32640", true)]  // Full prerelease version
         public void IsValidChannelFormat_ValidInputs_ReturnsTrue(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
@@ -127,6 +128,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("invalid", false)]
         [InlineData("-1", false)]  // Negative
         [InlineData("9.-1.100", false)]  // Negative minor
+        [InlineData("10.0.1xxx", false)]  // Invalid wildcard
+        [InlineData("10.0.1xx-preview.1", false)]  // Wildcards with prerelease not supported
         public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));

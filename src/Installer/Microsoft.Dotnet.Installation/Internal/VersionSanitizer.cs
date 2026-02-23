@@ -83,22 +83,17 @@ public static partial class VersionSanitizer
         var hyphenIndex = version.IndexOf('-');
         if (hyphenIndex >= 0)
         {
-            var baseVersion = version[..hyphenIndex];
-            var prereleasePart = version[(hyphenIndex + 1)..];
-
-            // Base version must be valid
-            if (!ReleaseVersion.TryParse(baseVersion, out _))
+            // ReleaseVersion handles parsing the full prerelease format
+            if (!ReleaseVersion.TryParse(version, out var releaseVersion) ||
+                string.IsNullOrEmpty(releaseVersion.Prerelease))
             {
-                // Also try parsing the full version - ReleaseVersion may handle some prerelease formats
-                if (!ReleaseVersion.TryParse(version, out _))
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Validate prerelease token: must start with a known token
-            var dotIndex = prereleasePart.IndexOf('.');
-            var token = dotIndex < 0 ? prereleasePart : prereleasePart[..dotIndex];
+            var prerelease = releaseVersion.Prerelease;
+            var dotIndex = prerelease.IndexOf('.');
+            var token = dotIndex < 0 ? prerelease : prerelease[..dotIndex];
 
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -17,6 +19,134 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 /// </remarks>
 internal static class ErrorCategoryClassifier
 {
+    /// <summary>
+    /// Classifies a <see cref="DotnetInstallErrorCode"/> as product or user error.
+    /// </summary>
+    internal static ErrorCategory ClassifyInstallError(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode switch
+        {
+            // User errors - bad input or environment issues
+            DotnetInstallErrorCode.VersionNotFound => ErrorCategory.User,
+            DotnetInstallErrorCode.ReleaseNotFound => ErrorCategory.User,
+            DotnetInstallErrorCode.InvalidChannel => ErrorCategory.User,
+            DotnetInstallErrorCode.PermissionDenied => ErrorCategory.User,
+            DotnetInstallErrorCode.DiskFull => ErrorCategory.User,
+            DotnetInstallErrorCode.NetworkError => ErrorCategory.User,
+
+            // Product errors - issues we can take action on
+            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform => ErrorCategory.Product,
+            DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,
+            DotnetInstallErrorCode.ManifestFetchFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,
+            DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product,
+            DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product,
+            DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product,
+            DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
+
+            _ => ErrorCategory.Product
+        };
+    }
+
+    /// <summary>
+    /// Classifies an HTTP status code as product or user error.
+    /// </summary>
+    internal static ErrorCategory ClassifyHttpError(HttpStatusCode? statusCode)
+    {
+        if (!statusCode.HasValue)
+        {
+            return ErrorCategory.User;
+        }
+
+        var code = (int)statusCode.Value;
+        return code switch
+        {
+            >= 500 => ErrorCategory.Product,
+            404 => ErrorCategory.User,
+            403 => ErrorCategory.User,
+            401 => ErrorCategory.User,
+            408 => ErrorCategory.User,
+            429 => ErrorCategory.User,
+            _ => ErrorCategory.Product
+        };
+    }
+
+    /// <summary>
+    /// Checks if the error code is related to network operations.
+    /// </summary>
+    internal static bool IsNetworkRelatedErrorCode(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode is
+            DotnetInstallErrorCode.ManifestFetchFailed or
+            DotnetInstallErrorCode.DownloadFailed or
+            DotnetInstallErrorCode.NetworkError;
+    }
+
+    /// <summary>
+    /// Checks if the error code is related to IO operations where the inner exception
+    /// may be an IOException that should be classified by HResult.
+    /// </summary>
+    internal static bool IsIORelatedErrorCode(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode is
+            DotnetInstallErrorCode.ExtractionFailed or
+            DotnetInstallErrorCode.LocalManifestError;
+    }
+
+    /// <summary>
+    /// Analyzes a network-related inner exception to determine the category and extract details.
+    /// </summary>
+    internal static (ErrorCategory Category, int? HttpStatus, string? Details) AnalyzeNetworkException(Exception inner)
+    {
+        HttpRequestException? foundHttpEx = null;
+        SocketException? foundSocketEx = null;
+
+        var current = inner;
+        while (current is not null)
+        {
+            if (current is HttpRequestException httpEx && foundHttpEx is null)
+            {
+                foundHttpEx = httpEx;
+            }
+
+            if (current is SocketException socketEx && foundSocketEx is null)
+            {
+                foundSocketEx = socketEx;
+            }
+
+            current = current.InnerException;
+        }
+
+        if (foundSocketEx is not null)
+        {
+            var socketErrorName = foundSocketEx.SocketErrorCode.ToString().ToLowerInvariant();
+            return (ErrorCategory.User, null, $"socket_{socketErrorName}");
+        }
+
+        if (foundHttpEx is not null)
+        {
+            var category = ClassifyHttpError(foundHttpEx.StatusCode);
+            var httpStatus = (int?)foundHttpEx.StatusCode;
+
+            string? details = null;
+            if (foundHttpEx.StatusCode.HasValue)
+            {
+                details = $"http_{(int)foundHttpEx.StatusCode}";
+            }
+            else if (foundHttpEx.HttpRequestError != HttpRequestError.Unknown)
+            {
+                details = $"request_error_{foundHttpEx.HttpRequestError.ToString().ToLowerInvariant()}";
+            }
+
+            return (category, httpStatus, details);
+        }
+
+        return (ErrorCategory.Product, null, "network_unknown");
+    }
+
     /// <summary>
     /// Classifies an IO error by its HResult, returning the error type, category, and optional details
     /// in a single lookup. This avoids a two-step HResult→errorType→category pipeline that could
@@ -65,62 +195,6 @@ internal static class ErrorCategoryClassifier
 
             // Unknown — include raw HResult, assume product
             _ => ("IOException", ErrorCategory.Product, hResult != 0 ? $"0x{hResult:X8}" : null)
-        };
-    }
-
-    /// <summary>
-    /// Classifies a <see cref="DotnetInstallErrorCode"/> as product or user error.
-    /// </summary>
-    internal static ErrorCategory ClassifyInstallError(DotnetInstallErrorCode errorCode)
-    {
-        return errorCode switch
-        {
-            // User errors - bad input or environment issues
-            DotnetInstallErrorCode.VersionNotFound => ErrorCategory.User,      // User typed invalid version
-            DotnetInstallErrorCode.ReleaseNotFound => ErrorCategory.User,      // User requested non-existent release
-            DotnetInstallErrorCode.InvalidChannel => ErrorCategory.User,       // User provided bad channel format
-            DotnetInstallErrorCode.PermissionDenied => ErrorCategory.User,     // User needs to elevate/fix permissions
-            DotnetInstallErrorCode.DiskFull => ErrorCategory.User,             // User's disk is full
-            DotnetInstallErrorCode.NetworkError => ErrorCategory.User,         // User's network issue
-
-            // Product errors - issues we can take action on
-            DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform => ErrorCategory.Product,    // Our manifest/logic issue
-            DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
-            DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
-            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue (inner IOException classified separately)
-            DotnetInstallErrorCode.ManifestFetchFailed => ErrorCategory.Product, // Server unreachable or CDN issue
-            DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product, // Bad manifest or our parsing bug
-            DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,  // Bad archive from server or download
-            DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product, // Our locking mechanism issue
-            DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product, // File system issue with our manifest
-            DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product, // Our manifest is corrupt - we should handle
-            DotnetInstallErrorCode.Unknown => ErrorCategory.Product,           // Unknown = assume product issue
-
-            _ => ErrorCategory.Product  // Default to product for new codes
-        };
-    }
-
-    /// <summary>
-    /// Classifies an HTTP status code as product or user error.
-    /// </summary>
-    internal static ErrorCategory ClassifyHttpError(HttpStatusCode? statusCode)
-    {
-        if (!statusCode.HasValue)
-        {
-            // No status code usually means network failure - user environment
-            return ErrorCategory.User;
-        }
-
-        var code = (int)statusCode.Value;
-        return code switch
-        {
-            >= 500 => ErrorCategory.Product,  // 5xx server errors - our infrastructure
-            404 => ErrorCategory.User,        // Not found - likely user requested invalid resource
-            403 => ErrorCategory.User,        // Forbidden - user environment/permission issue
-            401 => ErrorCategory.User,        // Unauthorized - user auth issue
-            408 => ErrorCategory.User,        // Request timeout - user network
-            429 => ErrorCategory.User,        // Too many requests - user hitting rate limits
-            _ => ErrorCategory.Product        // Other 4xx - likely our bug (bad request format, etc.)
         };
     }
 }

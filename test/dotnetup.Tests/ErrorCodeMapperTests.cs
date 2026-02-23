@@ -75,7 +75,7 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_WrappedException_IncludesChain()
+    public void GetErrorInfo_WrappedException_IncludesInnerExceptionInStackTrace()
     {
         var innerInner = new SocketException(10054); // Connection reset
         var inner = new IOException("Network error", innerInner);
@@ -84,7 +84,10 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(outer);
 
         Assert.Equal("HttpRequestException", info.ErrorType);
-        Assert.Equal("HttpRequestException->IOException->SocketException", info.ExceptionChain);
+        // Inner exception types should be included in the stack trace
+        Assert.NotNull(info.StackTrace);
+        Assert.Contains("System.IO.IOException", info.StackTrace);
+        Assert.Contains("System.Net.Sockets.SocketException", info.StackTrace);
     }
 
     [Fact]
@@ -119,38 +122,20 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_ExceptionFromOurCode_IncludesSourceLocation()
+    public void GetErrorInfo_ThrownException_HasStackTrace()
     {
         // Throw from a method to get a real stack trace
         var ex = ThrowTestException();
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Source location is only populated for our owned assemblies (dotnetup, Microsoft.Dotnet.Installation)
-        // In tests, we won't have those on the stack, so source location will be null
-        // The important thing is that the method doesn't throw
         Assert.Equal("InvalidOperation", info.ErrorType);
+        Assert.NotNull(info.StackTrace);
+        Assert.Contains("ThrowTestException", info.StackTrace);
     }
 
     [Fact]
-    public void GetErrorInfo_SourceLocation_FiltersToOwnedNamespaces()
-    {
-        // Verify that source location filtering works by namespace prefix
-        // We must throw and catch to get a stack trace - exceptions created with 'new' have no trace
-        var ex = ThrowTestException();
-
-        var info = ErrorCodeMapper.GetErrorInfo(ex);
-
-        // Source location should be populated since test assembly is in an owned namespace
-        // (Microsoft.DotNet.Tools.Bootstrapper.Tests starts with Microsoft.DotNet.Tools.Bootstrapper)
-        Assert.NotNull(info.SourceLocation);
-        // The format is "TypeName.MethodName" - no [BCL] prefix since we found owned code
-        Assert.DoesNotContain("[BCL]", info.SourceLocation);
-        Assert.Contains("ThrowTestException", info.SourceLocation);
-    }
-
-    [Fact]
-    public void GetErrorInfo_AllFieldsPopulated_ForIOExceptionWithChain()
+    public void GetErrorInfo_AllFieldsPopulated_ForIOExceptionWithInnerException()
     {
         // Create a realistic exception scenario - IOException with inner exception
         var inner = new UnauthorizedAccessException("Access denied");
@@ -158,9 +143,10 @@ public class ErrorCodeMapperTests
 
         var info = ErrorCodeMapper.GetErrorInfo(outer);
 
-        // Verify exception chain is populated
+        // Verify inner exception type is included in stack trace
         Assert.Equal("IOException", info.ErrorType);
-        Assert.Equal("IOException->UnauthorizedAccessException", info.ExceptionChain);
+        Assert.NotNull(info.StackTrace);
+        Assert.Contains("System.UnauthorizedAccessException", info.StackTrace);
     }
 
     [Fact]
@@ -190,9 +176,9 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_LongExceptionChain_LimitsDepth()
+    public void GetErrorInfo_LongExceptionChain_IncludesInnerExceptionsInStackTrace()
     {
-        // Create a chain of typed exceptions (not plain Exception which gets unwrapped)
+        // Create a chain of typed exceptions
         Exception ex = new InvalidOperationException("Root");
         for (int i = 0; i < 10; i++)
         {
@@ -201,11 +187,10 @@ public class ErrorCodeMapperTests
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        // Should have an exception chain since we're using IOException wrappers
-        Assert.NotNull(info.ExceptionChain);
-        var parts = info.ExceptionChain!.Split("->");
-        // Chain is limited to maxDepth (5) + 1 for the outer exception = 6
-        Assert.True(parts.Length <= 6, $"Chain too long: {info.ExceptionChain}");
+        // Stack trace should include inner exception types
+        Assert.NotNull(info.StackTrace);
+        Assert.Contains("System.IO.IOException", info.StackTrace);
+        Assert.Contains("System.InvalidOperationException", info.StackTrace);
     }
 
     [Fact]

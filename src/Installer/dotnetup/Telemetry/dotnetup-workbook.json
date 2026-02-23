@@ -548,7 +548,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    throw_site = tostring(customDimensions[\"error.throw_site\"]),\n    stack_trace = tostring(customDimensions[\"error.stack_trace\"]),\n    exception_chain = tostring(customDimensions[\"error.exception_chain\"]),\n    hresult = tostring(customDimensions[\"error.hresult\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, throw_site, error_details, stack_trace, exception_chain, hresult, os, version\n| order by timestamp desc\n| take 25",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    stack_trace = tostring(customDimensions[\"error.stack_trace\"]),\n    hresult = tostring(customDimensions[\"error.hresult\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, error_details, stack_trace, hresult, os, version\n| order by timestamp desc\n| take 25",
         "size": 1,
         "title": "Recent Product Failures (Detailed)",
         "queryType": 0,
@@ -575,30 +575,16 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend throw_site = tostring(customDimensions[\"error.throw_site\"]),\n    error_type = tostring(customDimensions[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| where isnotempty(throw_site)\n| summarize Count = count() by throw_site, error_type\n| order by Count desc\n| take 20\n| project ['Throw Site'] = throw_site, ['Error Type'] = error_type, Count",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend error_type = tostring(customDimensions[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| where isnotempty(error_type)\n| summarize Count = count() by error_type\n| order by Count desc\n| take 20\n| project ['Error Type'] = error_type, Count",
         "size": 1,
-        "title": "Product Errors by Throw Site",
-        "noDataMessage": "No throw site data yet. This field is populated by newer builds that emit the error.throw_site tag.",
+        "title": "Product Errors by Type",
+        "noDataMessage": "No error type data available.",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "table"
       },
       "customWidth": "50",
       "name": "errors-by-throw-site"
-    },
-    {
-      "type": 3,
-      "content": {
-        "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend exception_chain = tostring(customDimensions[\"error.exception_chain\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(exception_chain)\n| summarize Count = count() by exception_chain\n| order by Count desc\n| take 15\n| project ['Exception Chain'] = exception_chain, Count",
-        "size": 1,
-        "title": "Common Exception Chains (Product)",
-        "queryType": 0,
-        "resourceType": "microsoft.insights/components",
-        "visualization": "table"
-      },
-      "customWidth": "50",
-      "name": "exception-chains"
     },
     {
       "type": 1,
@@ -626,7 +612,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    throw_site = tostring(customDimensions[\"error.throw_site\"]),\n    stack_trace = tostring(customDimensions[\"error.stack_trace\"]),\n    exception_chain = tostring(customDimensions[\"error.exception_chain\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"user\"\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, throw_site, error_details, stack_trace, exception_chain, os, version\n| order by timestamp desc\n| take 25",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    stack_trace = tostring(customDimensions[\"error.stack_trace\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"user\"\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, error_details, stack_trace, os, version\n| order by timestamp desc\n| take 25",
         "size": 1,
         "title": "Recent User Errors",
         "noDataMessage": "No user errors recorded yet.",

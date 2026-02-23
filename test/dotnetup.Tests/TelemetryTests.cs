@@ -320,47 +320,6 @@ public class DotnetupTelemetryTests
     }
 }
 
-[Collection("ActivitySourceTests")]
-public class LibraryActivityTagTests
-{
-    [Fact]
-    public void NonUpdatingProgressTarget_SetsCallerTagOnActivity()
-    {
-        var capturedActivities = new List<System.Diagnostics.Activity>();
-
-        using var listener = new System.Diagnostics.ActivityListener
-        {
-            ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Installation",
-            Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) =>
-                System.Diagnostics.ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = activity => capturedActivities.Add(activity)
-        };
-        System.Diagnostics.ActivitySource.AddActivityListener(listener);
-
-        // Capture console output to avoid test noise
-        var originalOut = Console.Out;
-        Console.SetOut(TextWriter.Null);
-        try
-        {
-            // Use the progress target to create an activity
-            var progressTarget = new NonUpdatingProgressTarget();
-            using var reporter = progressTarget.CreateProgressReporter();
-            var task = reporter.AddTask("test-activity", "Test Description", 100);
-            task.Value = 100;
-            // Disposing the reporter will stop/dispose the activities
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
-
-        // Verify the activity was captured and has the caller tag
-        Assert.Single(capturedActivities);
-        var activity = capturedActivities[0];
-        Assert.Equal("dotnetup", activity.GetTagItem("caller")?.ToString());
-    }
-}
-
 public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
@@ -466,33 +425,5 @@ public class ActivitySourceIntegrationTests
         Assert.Single(capturedActivities);
         Assert.Equal("test-activity", capturedActivities[0].DisplayName);
         Assert.Contains(capturedActivities[0].Tags, t => t.Key == "test.key" && t.Value == "test-value");
-    }
-
-    [Fact]
-    public void NonUpdatingProgressTarget_SetsCallerTag_ToDotnetup()
-    {
-        // Arrange - set up listener to capture activities
-        var capturedActivities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == InstallationActivitySourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = activity => capturedActivities.Add(activity)
-        };
-        ActivitySource.AddActivityListener(listener);
-
-        // Act - use NonUpdatingProgressTarget which sets caller=dotnetup
-        var progressTarget = new NonUpdatingProgressTarget();
-        using (var reporter = progressTarget.CreateProgressReporter())
-        {
-            var task = reporter.AddTask("download", "Test download task", 100);
-            task.Value = 100;
-            task.Complete();
-        }
-
-        // Assert - verify caller tag is set to dotnetup
-        Assert.Single(capturedActivities);
-        var callerTag = capturedActivities[0].Tags.FirstOrDefault(t => t.Key == "caller");
-        Assert.Equal("dotnetup", callerTag.Value);
     }
 }

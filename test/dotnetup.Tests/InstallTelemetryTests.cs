@@ -266,8 +266,7 @@ public class ApplyErrorTagsTests
                 HResult: unchecked((int)0x80070070),
                 StatusCode: null,
                 Details: "ERROR_DISK_FULL",
-                StackTrace: "InstallExecutor.cs:42",
-                ExceptionChain: "IOException",
+                StackTrace: "at SomeMethod() in InstallExecutor.cs:line 42",
                 Category: ErrorCategory.User);
 
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
@@ -278,8 +277,7 @@ public class ApplyErrorTagsTests
         Assert.Equal("user", a.GetTagItem("error.category"));
         Assert.Equal(unchecked((int)0x80070070), a.GetTagItem("error.hresult"));
         Assert.Equal("ERROR_DISK_FULL", a.GetTagItem("error.details"));
-        Assert.Equal("InstallExecutor.cs:42", a.GetTagItem("error.stack_trace"));
-        Assert.Equal("IOException", a.GetTagItem("error.exception_chain"));
+        Assert.Equal("at SomeMethod() in InstallExecutor.cs:line 42", a.GetTagItem("error.stack_trace"));
     }
 
     [Fact]
@@ -298,7 +296,6 @@ public class ApplyErrorTagsTests
                 StatusCode: 404,
                 Details: null,
                 StackTrace: null,
-                ExceptionChain: "HttpRequestException",
                 Category: ErrorCategory.Product);
 
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode: "Http404");
@@ -322,7 +319,6 @@ public class ApplyErrorTagsTests
             StatusCode: null,
             Details: null,
             StackTrace: null,
-            ExceptionChain: null,
             Category: ErrorCategory.Product);
 
         var ex = Record.Exception(() => ErrorCodeMapper.ApplyErrorTags(null, errorInfo));
@@ -346,7 +342,6 @@ public class ApplyErrorTagsTests
                 StatusCode: null,
                 Details: null,
                 StackTrace: null,
-                ExceptionChain: null,
                 Category: ErrorCategory.Product);
 
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
@@ -360,7 +355,6 @@ public class ApplyErrorTagsTests
         Assert.Null(a.GetTagItem("error.http_status"));
         Assert.Null(a.GetTagItem("error.details"));
         Assert.Null(a.GetTagItem("error.stack_trace"));
-        Assert.Null(a.GetTagItem("error.exception_chain"));
         Assert.Null(a.GetTagItem("error.code"));
     }
 
@@ -380,7 +374,6 @@ public class ApplyErrorTagsTests
                 StatusCode: null,
                 Details: null,
                 StackTrace: null,
-                ExceptionChain: null,
                 Category: ErrorCategory.Product);
 
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
