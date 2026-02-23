@@ -32,10 +32,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new GenerateRegFreeComManifest
                 {
                     BuildEngine = new MockBuildEngine(),
-                    IntermediateAssembly = $"bin\\{assemblyFileName}",
+                    IntermediateAssembly = Path.Combine("bin", assemblyFileName),
                     ComHostName = "test.comhost.dll",
-                    ClsidMapPath = "bin\\clsidmap.bin",
-                    ComManifestPath = "bin\\test.manifest",
+                    ClsidMapPath = Path.Combine("bin", "clsidmap.bin"),
+                    ComManifestPath = Path.Combine("bin", "test.manifest"),
                 };
 
                 // Set TaskEnvironment for path resolution
@@ -133,17 +133,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GenerateRegFreeComManifest_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GenerateRegFreeComManifest_ConcurrentExecution(int parallelism)
         {
-            // These tasks work with PE binaries. With fake inputs they will throw/fail,
-            // but the concurrent execution should not produce different failure modes
-            // (no shared-state corruption, no deadlocks, no data races).
             var results = new ConcurrentBag<(bool success, string exType)>();
-            var barrier = new Barrier(parallelism);
-
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
             {
-                var projectDir = Path.Combine(Path.GetTempPath(), $"regfree-conc-{i}-{Guid.NewGuid():N}");
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
+            {
+                var projectDir = Path.Combine(Path.GetTempPath(), $"regfree-conc-{idx}-{Guid.NewGuid():N}");
                 Directory.CreateDirectory(projectDir);
                 try
                 {
@@ -164,7 +164,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     var result = task.Execute();
                     results.Add((result, "none"));
                 }
@@ -178,6 +178,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         Directory.Delete(projectDir, true);
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             // All threads should get the same outcome (all succeed or all fail the same way)
             results.Select(r => r.exType).Distinct().Should().HaveCount(1,

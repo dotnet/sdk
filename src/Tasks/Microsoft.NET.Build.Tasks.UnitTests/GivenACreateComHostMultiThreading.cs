@@ -33,9 +33,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new CreateComHost
                 {
                     BuildEngine = new MockBuildEngine(),
-                    ComHostSourcePath = "source\\comhost.dll",
-                    ComHostDestinationPath = "output\\comhost.dll",
-                    ClsidMapPath = "source\\clsidmap.bin",
+                    ComHostSourcePath = Path.Combine("source", "comhost.dll"),
+                    ComHostDestinationPath = Path.Combine("output", "comhost.dll"),
+                    ClsidMapPath = Path.Combine("source", "clsidmap.bin"),
                 };
 
                 // Set TaskEnvironment for path resolution
@@ -130,17 +130,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void CreateComHost_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task CreateComHost_ConcurrentExecution(int parallelism)
         {
             // These tasks work with PE binaries. With fake inputs they will throw/fail,
             // but the concurrent execution should not produce different failure modes
             // (no shared-state corruption, no deadlocks, no data races).
             var results = new ConcurrentBag<(bool success, string exType)>();
-            var barrier = new Barrier(parallelism);
-
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
             {
-                var projectDir = Path.Combine(Path.GetTempPath(), $"comhost-conc-{i}-{Guid.NewGuid():N}");
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
+            {
+                var projectDir = Path.Combine(Path.GetTempPath(), $"comhost-conc-{idx}-{Guid.NewGuid():N}");
                 Directory.CreateDirectory(projectDir);
                 try
                 {
@@ -160,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     var result = task.Execute();
                     results.Add((result, "none"));
                 }
@@ -174,6 +177,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         Directory.Delete(projectDir, true);
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             // All threads should get the same outcome (all succeed or all fail the same way)
             results.Select(r => r.exType).Distinct().Should().HaveCount(1,

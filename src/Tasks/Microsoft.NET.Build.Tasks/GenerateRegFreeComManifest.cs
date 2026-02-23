@@ -43,16 +43,7 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
 
-                // Absolutize type library paths
-                if (typeLibIdMap != null)
-                {
-                    foreach (var key in typeLibIdMap.Keys.ToList())
-                    {
-                        typeLibIdMap[key] = TaskEnvironment.GetAbsolutePath(typeLibIdMap[key]);
-                    }
-                }
-
-                var absoluteIntermediateAssembly = (string)TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
+                var absoluteIntermediateAssembly = TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
 
                 RegFreeComManifest.CreateManifestFromClsidmap(
                     Path.GetFileNameWithoutExtension(absoluteIntermediateAssembly),

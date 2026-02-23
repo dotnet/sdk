@@ -28,14 +28,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 File.WriteAllText(Path.Combine(toolsDir, "apphost.exe"), "not a real apphost");
                 File.WriteAllText(Path.Combine(binDir, "test.dll"), "not a real assembly");
 
-                var apphostItem = new TaskItem("tools\\apphost.exe");
+                var apphostItem = new TaskItem(Path.Combine("tools", "apphost.exe"));
                 apphostItem.SetMetadata(MetadataKeys.RuntimeIdentifier, "linux-x64");
 
                 var task = new GenerateShims
                 {
                     BuildEngine = new MockBuildEngine(),
                     ApphostsForShimRuntimeIdentifiers = new ITaskItem[] { apphostItem },
-                    IntermediateAssembly = "bin\\test.dll",
+                    IntermediateAssembly = Path.Combine("bin", "test.dll"),
                     PackageId = "TestPackage",
                     PackageVersion = "1.0.0",
                     TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
@@ -160,17 +160,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Theory]
         [InlineData(4)]
         [InlineData(16)]
-        public void GenerateShims_ConcurrentExecution(int parallelism)
+        public async System.Threading.Tasks.Task GenerateShims_ConcurrentExecution(int parallelism)
         {
-            // These tasks work with PE binaries. With fake inputs they will throw/fail,
-            // but the concurrent execution should not produce different failure modes
-            // (no shared-state corruption, no deadlocks, no data races).
             var results = new ConcurrentBag<(bool success, string exType)>();
-            var barrier = new Barrier(parallelism);
-
-            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, i =>
+            using var startGate = new ManualResetEventSlim(false);
+            var tasks = new System.Threading.Tasks.Task[parallelism];
+            for (int i = 0; i < parallelism; i++)
             {
-                var projectDir = Path.Combine(Path.GetTempPath(), $"shims-conc-{i}-{Guid.NewGuid():N}");
+                int idx = i;
+                tasks[idx] = System.Threading.Tasks.Task.Run(() =>
+            {
+                var projectDir = Path.Combine(Path.GetTempPath(), $"shims-conc-{idx}-{Guid.NewGuid():N}");
                 Directory.CreateDirectory(projectDir);
                 try
                 {
@@ -199,7 +199,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     };
 
-                    barrier.SignalAndWait();
+                    startGate.Wait();
                     var result = task.Execute();
                     results.Add((result, "none"));
                 }
@@ -213,6 +213,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         Directory.Delete(projectDir, true);
                 }
             });
+            }
+            startGate.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             // All threads should get the same outcome (all succeed or all fail the same way)
             results.Select(r => r.exType).Distinct().Should().HaveCount(1,
