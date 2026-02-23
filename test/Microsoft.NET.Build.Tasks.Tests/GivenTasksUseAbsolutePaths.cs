@@ -224,6 +224,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new GenerateDepsFile
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             ProjectPath = "myapp.csproj",
             AssetsFilePath = "obj/project.assets.json",
             DepsFilePath = "obj/myapp.deps.json",
@@ -299,6 +300,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new WriteAppConfigWithSupportedRuntime
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             AppConfigFile = new MockTaskItem("App.config", new Dictionary<string, string>()),
             OutputAppConfigFile = new MockTaskItem("bin/myapp.exe.config", new Dictionary<string, string>()),
             TargetFrameworkIdentifier = ".NETFramework",
