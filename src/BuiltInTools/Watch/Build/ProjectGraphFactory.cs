@@ -48,7 +48,7 @@ internal sealed class ProjectGraphFactory(
     }
 
     /// <summary>
-    /// Tries to create a project graph by running the build evaluation phase on the <paramref name="rootProjectFile"/>.
+    /// Tries to create a project graph by running the build evaluation phase on root projects.
     /// </summary>
     public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
     {
@@ -121,7 +121,7 @@ internal sealed class ProjectGraphFactory(
 
             builder.CreateProjectInstance(
                 projectCollection,
-                (sourceFile, textSpan, message) =>
+                (sourceFile, textSpan, message, _) =>
                 {
                     anyError = true;
                     logger.LogError("{Location}: {Message}", sourceFile.GetLocationString(textSpan), message);

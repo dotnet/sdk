@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal readonly struct Optional<T>(T value)
 {
-    public static readonly Optional<T> NoValue = default;
+    public static readonly Optional<T> NoValue;
 
     public bool HasValue { get; } = true;
     public T Value => value;

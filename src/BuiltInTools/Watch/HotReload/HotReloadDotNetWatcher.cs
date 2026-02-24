@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
