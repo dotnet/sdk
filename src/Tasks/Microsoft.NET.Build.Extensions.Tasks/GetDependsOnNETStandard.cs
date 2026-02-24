@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks
             set => _taskEnvironment = value;
         }
         #else
-        public TaskEnvironment TaskEnvironment { get; set; }
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
         #endif
 
         private const string NetStandardAssemblyName = "netstandard";
