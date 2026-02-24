@@ -215,8 +215,10 @@ echo ""PATH=$PATH""
 echo ""DOTNET_ROOT=$DOTNET_ROOT""
 ";
 
-            // Make the script executable
+            // Make the script executable (this branch only runs for bash/zsh on Unix)
+#pragma warning disable CA1416 // Platform compatibility - guarded by shell == "bash" || "zsh"
             File.SetUnixFileMode(scriptPath, File.GetUnixFileMode(scriptPath) | UnixFileMode.UserExecute);
+#pragma warning restore CA1416
         }
         else // pwsh / powershell
         {
