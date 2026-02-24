@@ -69,7 +69,11 @@ jobs:
         displayName: 🍱 Bootstrap toolset (Unix)
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}"
-          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          CROSS_ARGS=""
+          if [ -n "$ROOTFS_DIR" ]; then
+            CROSS_ARGS="-p:SysRoot=$ROOTFS_DIR -p:LinkerFlavor=lld"
+          fi
+          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained $CROSS_ARGS -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
           # Copy the published output to the artifact staging directory
           cp -r "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release/net10.0/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})

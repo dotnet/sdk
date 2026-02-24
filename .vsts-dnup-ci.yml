@@ -74,6 +74,24 @@ extends:
     containers:
       azureLinux30Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+      # Cross-build containers for NAOT executables (link against older glibc/musl sysroots).
+      # See: https://github.com/dotnet/runtime/blob/main/docs/workflow/using-docker.md
+      crossBuildLinuxX64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
+        env:
+          ROOTFS_DIR: /crossrootfs/x64
+      crossBuildLinuxArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
+      crossBuildMuslX64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
+        env:
+          ROOTFS_DIR: /crossrootfs/x64
+      crossBuildMuslArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
 
     sdl:
       sourceAnalysisPool:
@@ -179,6 +197,7 @@ extends:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-x64
+            container: crossBuildLinuxX64
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -191,6 +210,7 @@ extends:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-arm64
+            container: crossBuildLinuxArm64
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -203,7 +223,7 @@ extends:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-musl-x64
-            container: azureLinux30Amd64
+            container: crossBuildMuslX64
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -217,7 +237,7 @@ extends:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-musl-arm64
-            container: azureLinux30Amd64
+            container: crossBuildMuslArm64
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
