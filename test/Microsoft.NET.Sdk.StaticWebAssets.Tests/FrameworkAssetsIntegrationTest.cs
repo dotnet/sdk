@@ -148,8 +148,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
-            // The materialized file should exist on disk under the fx directory
-            var fxDir = Path.Combine(intermediateOutputPath, "fx", "FrameworkAssetsLib");
+            // The materialized file should exist on disk under the staticwebassets/fx directory
+            var fxDir = Path.Combine(intermediateOutputPath, "staticwebassets", "fx", "FrameworkAssetsLib");
             var materializedFile = Directory.GetFiles(fxDir, "framework.js", SearchOption.AllDirectories);
 
             materializedFile.Should().HaveCount(1, "framework.js should be materialized exactly once");
@@ -179,20 +179,30 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
 
-            // Check that endpoints for framework.js point to the materialized file
+            // Check that the framework asset in the manifest has been remapped to the materialized path
+            var frameworkAssets = manifest.Assets
+                .Where(a => a.RelativePath.Contains("framework.js")
+                    && a.Identity.Contains(Path.Combine("staticwebassets", "fx", "FrameworkAssetsLib")))
+                .ToList();
+
+            frameworkAssets.Should().NotBeEmpty(
+                "the manifest should contain a materialized framework asset under staticwebassets/fx/");
+
+            // Endpoints for the route should exist (some may be compressed variants)
             var fxEndpoints = manifest.Endpoints
                 ?.Where(e => e.Route.Contains("framework.js"))
                 .ToList();
 
-            if (fxEndpoints != null && fxEndpoints.Count > 0)
-            {
-                foreach (var endpoint in fxEndpoints)
-                {
-                    // The endpoint's AssetFile should point to the materialized path (under fx/)
-                    endpoint.AssetFile.Should().Contain(Path.Combine("fx", "FrameworkAssetsLib"),
-                        "endpoints for framework assets should point to the materialized file path");
-                }
-            }
+            fxEndpoints.Should().NotBeNull().And.NotBeEmpty(
+                "there should be at least one endpoint for framework.js");
+
+            // At least one endpoint should reference the materialized asset (not all will — compressed endpoints point elsewhere)
+            var endpointsPointingToMaterialized = fxEndpoints
+                .Where(e => e.AssetFile.Contains(Path.Combine("staticwebassets", "fx", "FrameworkAssetsLib")))
+                .ToList();
+
+            endpointsPointingToMaterialized.Should().NotBeEmpty(
+                "at least one endpoint for framework.js should point to the materialized file path under staticwebassets/fx/");
         }
 
         [Fact]
@@ -214,7 +224,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ExecuteCommand(build1).Should().Pass();
 
             var intermediateOutputPath = build1.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var fxDir = Path.Combine(intermediateOutputPath, "fx", "FrameworkAssetsLib");
+            var fxDir = Path.Combine(intermediateOutputPath, "staticwebassets", "fx", "FrameworkAssetsLib");
             var materializedFile = Directory.GetFiles(fxDir, "framework.js", SearchOption.AllDirectories).Single();
             var firstWriteTime = File.GetLastWriteTimeUtc(materializedFile);
 
