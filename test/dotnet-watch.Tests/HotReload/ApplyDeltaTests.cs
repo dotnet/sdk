@@ -875,9 +875,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // The app should close gracefully via CloseMainWindow
             await App.WaitForOutputLineContaining("Closing gracefully: True");
 
-            // The dotnet run process should exit with code 0 (not -1 from being killed)
+            // The dotnet run process should exit with code 0, not be force-killed after timeout
             await App.WaitUntilOutputContains("exited with exit code 0.");
-            App.AssertOutputDoesNotContain("Exited with error code -1");
+            App.AssertOutputDoesNotContain("(Kill)");
         }
 
         [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
