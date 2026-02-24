@@ -19,7 +19,16 @@ namespace Microsoft.NET.Build.Tasks
         private readonly List<ITaskItem> _assembliesToPublish = new();
         private readonly List<ITaskItem> _packagesResolved = new();
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         public string AssetsFilePath { get; set; }
 
