@@ -248,7 +248,7 @@ internal class MuxerHandler
     /// </summary>
     private static bool IsFileMoveBlockedException(Exception ex)
     {
-        return ex is IOException || ex is UnauthorizedAccessException;
+        return ex is IOException or UnauthorizedAccessException;
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ internal class MuxerHandler
             const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
             const int ERROR_LOCK_VIOLATION = unchecked((int)0x80070021);
 
-            if (ioEx.HResult == ERROR_SHARING_VIOLATION || ioEx.HResult == ERROR_LOCK_VIOLATION)
+            if (ioEx.HResult is ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION)
             {
                 string pidInfo = DotnetupUtilities.GetDotnetProcessPidInfo();
                 return $"it is currently in use by another process.{pidInfo} Close all running .NET applications and try again";

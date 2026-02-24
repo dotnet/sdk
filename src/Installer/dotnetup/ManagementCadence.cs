@@ -15,7 +15,7 @@ public struct ManagementCadence
     public ManagementCadence()
     {
         Type = ManagementCadenceType.Dotnetup;
-        Metadata = new Dictionary<string, string>();
+        Metadata = [];
     }
     public ManagementCadence(ManagementCadenceType managementStyle) : this()
     {

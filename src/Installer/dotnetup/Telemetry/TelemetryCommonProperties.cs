@@ -17,6 +17,13 @@ internal static class TelemetryCommonProperties
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
 
     /// <summary>
+    /// Environment variable to mark telemetry as coming from a dev build.
+    /// </summary>
+#pragma warning disable IDE0051, CA1823 // Referenced in #else branch (Release builds only)
+    private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
+#pragma warning restore IDE0051, CA1823
+
+    /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
     public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)

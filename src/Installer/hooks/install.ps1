@@ -17,7 +17,8 @@ if (Test-Path $hookDst) {
     $alt = Join-Path $repoRoot '.git/hooks/pre-commit-dotnetup'
     Copy-Item $hookSrc $alt -Force
     Write-Host "Copied dotnetup hook to $alt - call it from your existing hook."
-} else {
+}
+else {
     Copy-Item $hookSrc $hookDst -Force
     Write-Host "Pre-commit hook installed at $hookDst"
 }

@@ -108,19 +108,19 @@ internal class DownloadCache
     {
         if (!File.Exists(s_cacheIndexPath))
         {
-            return new Dictionary<string, string>();
+            return [];
         }
 
         try
         {
             string json = File.ReadAllText(s_cacheIndexPath);
             var index = JsonSerializer.Deserialize(json, DownloadCacheJsonContext.Default.DictionaryStringString);
-            return index ?? new Dictionary<string, string>();
+            return index ?? [];
         }
         catch
         {
             // If the index is corrupted, start fresh
-            return new Dictionary<string, string>();
+            return [];
         }
     }
 

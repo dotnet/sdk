@@ -17,13 +17,11 @@ internal sealed record InstallResult(DotnetInstall? Install, bool WasAlreadyInst
 
 internal class InstallerOrchestratorSingleton
 {
-    private static readonly InstallerOrchestratorSingleton s_instance = new();
+    public static InstallerOrchestratorSingleton Instance { get; } = new();
 
     private InstallerOrchestratorSingleton()
     {
     }
-
-    public static InstallerOrchestratorSingleton Instance => s_instance;
 
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 

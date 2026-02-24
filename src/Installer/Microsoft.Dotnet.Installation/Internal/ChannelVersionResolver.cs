@@ -112,7 +112,7 @@ internal class ChannelVersionResolver
 
         // Try to parse as a version-like string
         var parts = versionPart.Split('.');
-        if (parts.Length == 0 || parts.Length > 4)
+        if (parts.Length is 0 or > 4)
         {
             return false;
         }

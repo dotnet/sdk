@@ -15,13 +15,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public abstract class CommandBase
 {
-    protected ParseResult _parseResult;
+    protected ParseResult ParseResult { get; }
     private Activity? _commandActivity;
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
     {
-        _parseResult = parseResult;
+        ParseResult = parseResult;
     }
 
     /// <summary>

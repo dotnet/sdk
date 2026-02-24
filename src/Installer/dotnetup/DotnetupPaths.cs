@@ -13,7 +13,9 @@ internal static class DotnetupPaths
     private const string ManifestFileName = "dotnetup_manifest.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
 
+#pragma warning disable IDE0032 // Lazy-init cache; not convertible to auto-property
     private static string? s_dataDirectory;
+#pragma warning restore IDE0032
 
     /// <summary>
     /// Gets the base data directory for dotnetup.

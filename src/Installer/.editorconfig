@@ -114,8 +114,26 @@ dotnet_diagnostic.CA1001.severity = warning
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
+# CA1032: Implement standard exception constructors
+dotnet_diagnostic.CA1032.severity = warning
+
+# CA1034: Nested types should not be visible
+dotnet_diagnostic.CA1034.severity = warning
+
+# CA1036: Override methods on comparable types
+dotnet_diagnostic.CA1036.severity = warning
+
+# CA1040: Avoid empty interfaces
+dotnet_diagnostic.CA1040.severity = warning
+
+# CA1046: Do not overload equality operator on reference types
+dotnet_diagnostic.CA1046.severity = warning
+
 # CA1047: Do not declare protected member in sealed type
 dotnet_diagnostic.CA1047.severity = warning
+
+# CA1051: Do not declare visible instance fields
+dotnet_diagnostic.CA1051.severity = warning
 
 # CA1065: Do not raise exceptions in unexpected locations
 dotnet_diagnostic.CA1065.severity = warning
@@ -125,6 +143,9 @@ dotnet_diagnostic.CA1068.severity = warning
 
 # CA1069: Enums values should not be duplicated
 dotnet_diagnostic.CA1069.severity = warning
+
+# CA1200: Avoid using cref tags with a prefix
+dotnet_diagnostic.CA1200.severity = warning
 
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = warning
@@ -144,6 +165,22 @@ dotnet_diagnostic.CA1512.severity = warning
 # CA1513: Use ObjectDisposedException throw helper
 dotnet_diagnostic.CA1513.severity = warning
 
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = warning
+dotnet_code_quality.CA1707.api_surface = public
+
+# CA1715: Identifiers should have correct prefix
+dotnet_diagnostic.CA1715.severity = warning
+
+# CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = warning
+
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = warning
+
+# CA1724: Type names should not match namespaces
+dotnet_diagnostic.CA1724.severity = warning
+
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = suggestion
 
@@ -155,6 +192,15 @@ dotnet_diagnostic.CA1805.severity = warning
 
 # CA1810: Do not initialize unnecessarily
 dotnet_diagnostic.CA1810.severity = warning
+
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = warning
+
+# CA1816: Dispose methods should call SuppressFinalize
+dotnet_diagnostic.CA1816.severity = warning
+
+# CA1820: Test for empty strings using string length
+dotnet_diagnostic.CA1820.severity = warning
 
 # CA1821: Remove empty Finalizers
 dotnet_diagnostic.CA1821.severity = warning
@@ -253,6 +299,9 @@ dotnet_diagnostic.CA1857.severity = warning
 # CA1858: Use 'StartsWith' instead of 'IndexOf'
 dotnet_diagnostic.CA1858.severity = warning
 
+# CA1859: Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1859.severity = warning
+
 # CA2002: Do not lock on objects with weak identity
 dotnet_diagnostic.CA2002.severity = warning
 
@@ -277,8 +326,17 @@ dotnet_diagnostic.CA2013.severity = warning
 # CA2014: Do not use stackalloc in loops.
 dotnet_diagnostic.CA2014.severity = warning
 
+# CA2015: Do not define finalizers for types derived from MemoryManager<T>
+dotnet_diagnostic.CA2015.severity = warning
+
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = warning
+
+# CA2017: Parameter count mismatch in logging message
+dotnet_diagnostic.CA2017.severity = warning
+
+# CA2018: Buffer.BlockCopy expects the number of bytes to be copied
+dotnet_diagnostic.CA2018.severity = warning
 
 # CA2200: Rethrow to preserve stack details
 dotnet_diagnostic.CA2200.severity = warning
@@ -360,8 +418,26 @@ dotnet_diagnostic.IDE0043.severity = warning
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = warning
 
+# IDE0019: Use pattern matching to avoid 'as' followed by null check
+dotnet_diagnostic.IDE0019.severity = warning
+
+# IDE0028: Use collection initializers
+dotnet_diagnostic.IDE0028.severity = warning
+
+# IDE0032: Use auto-property
+dotnet_diagnostic.IDE0032.severity = warning
+
+# IDE0041: Use is null check
+dotnet_diagnostic.IDE0041.severity = warning
+
+# IDE0048: Add parentheses for clarity
+dotnet_diagnostic.IDE0048.severity = warning
+
 # IDE0051: Remove unused private members
 dotnet_diagnostic.IDE0051.severity = warning
+
+# IDE0052: Remove unread private members
+dotnet_diagnostic.IDE0052.severity = warning
 
 # IDE0055: All formatting rules
 dotnet_diagnostic.IDE0055.severity = suggestion
@@ -375,6 +451,18 @@ dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = warning
+
+# IDE0063: Use simple 'using' statement
+dotnet_diagnostic.IDE0063.severity = warning
+
+# IDE0066: Use switch expression
+dotnet_diagnostic.IDE0066.severity = warning
+
+# IDE0078: Use pattern matching
+dotnet_diagnostic.IDE0078.severity = warning
+
+# IDE0083: Use pattern matching (not operator)
+dotnet_diagnostic.IDE0083.severity = warning
 
 # IDE0090: Simplify new expression
 dotnet_diagnostic.IDE0090.severity = warning
@@ -520,6 +608,42 @@ dotnet_diagnostic.CA5359.severity = suggestion
 dotnet_diagnostic.IDE0040.severity = suggestion
 # IDE0090: Simplify new expression
 dotnet_diagnostic.IDE0090.severity = suggestion
+# CA1032: Implement standard exception constructors
+dotnet_diagnostic.CA1032.severity = suggestion
+# CA1051: Do not declare visible instance fields
+dotnet_diagnostic.CA1051.severity = suggestion
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = suggestion
+# CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = suggestion
+# CA1724: Type names should not match namespaces
+dotnet_diagnostic.CA1724.severity = suggestion
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = suggestion
+# CA1816: Dispose methods should call SuppressFinalize
+dotnet_diagnostic.CA1816.severity = suggestion
+# CA1820: Test for empty strings using string length
+dotnet_diagnostic.CA1820.severity = suggestion
+# CA1859: Use concrete types when possible
+dotnet_diagnostic.CA1859.severity = suggestion
+# IDE0019: Use pattern matching
+dotnet_diagnostic.IDE0019.severity = suggestion
+# IDE0028: Use collection initializers
+dotnet_diagnostic.IDE0028.severity = suggestion
+# IDE0032: Use auto-property
+dotnet_diagnostic.IDE0032.severity = suggestion
+# IDE0041: Use is null check
+dotnet_diagnostic.IDE0041.severity = suggestion
+# IDE0052: Remove unread private members
+dotnet_diagnostic.IDE0052.severity = suggestion
+# IDE0063: Use simple 'using' statement
+dotnet_diagnostic.IDE0063.severity = suggestion
+# IDE0066: Use switch expression
+dotnet_diagnostic.IDE0066.severity = suggestion
+# IDE0078: Use pattern matching
+dotnet_diagnostic.IDE0078.severity = suggestion
+# IDE0083: Use pattern matching (not operator)
+dotnet_diagnostic.IDE0083.severity = suggestion
 
 # Defaults for content in the shared src/ and shared runtime dir
 

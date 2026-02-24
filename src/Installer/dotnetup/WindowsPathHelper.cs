@@ -376,7 +376,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
         var pathEntries = SplitPath(adminPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
-        foundDotnetPaths = new List<string>();
+        foundDotnetPaths = [];
         var indices = FindPathIndices(pathEntries, programFilesDotnetPaths);
 
         foreach (var index in indices)

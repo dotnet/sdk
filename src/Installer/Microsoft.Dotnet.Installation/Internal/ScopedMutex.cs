@@ -6,7 +6,6 @@ namespace Microsoft.Dotnet.Installation.Internal;
 public class ScopedMutex : IDisposable
 {
     private readonly Mutex _mutex;
-    private readonly bool _hasHandle;
     // Track recursive holds on a per-thread basis so we can assert manifest access without re-acquiring.
     private static readonly ThreadLocal<int> s_holdCount = new(() => 0);
 
@@ -32,33 +31,34 @@ public class ScopedMutex : IDisposable
         _mutex = new Mutex(false, mutexName);
 
         // First try immediate acquisition to see if we need to wait
-        _hasHandle = _mutex.WaitOne(0, false);
-        if (!_hasHandle)
+        HasHandle = _mutex.WaitOne(0, false);
+        if (!HasHandle)
         {
             // Another process holds the mutex - notify caller before blocking
             OnWaitingForMutex?.Invoke();
 
             // Now wait for the full timeout
-            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+            HasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
         }
 
-        if (_hasHandle)
+        if (HasHandle)
         {
             s_holdCount.Value = s_holdCount.Value + 1;
         }
-        // Note: If _hasHandle is false, caller should check HasHandle property.
+        // Note: If HasHandle is false, caller should check HasHandle property.
         // We don't throw here because:
         // 1. The mutex may be acquired multiple times in a single process flow
         // 2. The caller may want to handle the failure gracefully
         // Telemetry for lock contention is recorded by the caller when HasHandle is false.
     }
 
-    public bool HasHandle => _hasHandle;
+    public bool HasHandle { get; }
     public static bool CurrentThreadHoldsMutex => s_holdCount.Value > 0;
 
     public void Dispose()
     {
-        if (_hasHandle)
+        GC.SuppressFinalize(this);
+        if (HasHandle)
         {
             try
             {

@@ -21,7 +21,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         if (!File.Exists(ManifestPath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
-            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DotnetupManifestJsonContext.Default.ListDotnetInstall));
+            File.WriteAllText(ManifestPath, JsonSerializer.Serialize((List<DotnetInstall>)[], DotnetupManifestJsonContext.Default.ListDotnetInstall));
         }
     }
 
