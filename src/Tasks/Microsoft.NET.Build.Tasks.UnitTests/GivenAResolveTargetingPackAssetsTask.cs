@@ -236,7 +236,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             inputProperties = typeof(ResolveTargetingPackAssets)
                 .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
                 .Where(p => !p.IsDefined(typeof(OutputAttribute)) &&
-                            p.Name != nameof(ResolvePackageAssets.DesignTimeBuild))
+                            p.Name != nameof(ResolvePackageAssets.DesignTimeBuild) &&
+                            p.Name != nameof(ResolveTargetingPackAssets.TaskEnvironment))
                 .OrderBy(p => p.Name, StringComparer.Ordinal);
 
             var requiredProperties = inputProperties
