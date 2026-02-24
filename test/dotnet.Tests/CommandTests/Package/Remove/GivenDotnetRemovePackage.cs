@@ -15,7 +15,7 @@ Usage:
   dotnet remove [<PROJECT | FILE>] package <PACKAGE_NAME>... [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PACKAGE_NAME>    The package reference to remove.
 
 Options:
@@ -29,7 +29,7 @@ Usage:
   dotnet remove <PROJECT | FILE> [command] [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.

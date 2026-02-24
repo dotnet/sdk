@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 namespace Microsoft.DotNet.Watch
 {
@@ -14,8 +13,6 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public required List<string> ContainingProjectPaths { get; init; }
 
-        public string? StaticWebAssetPath { get; init; }
-
-        public bool IsStaticFile => StaticWebAssetPath != null;
+        public string? StaticWebAssetRelativeUrl { get; init; }
     }
 }

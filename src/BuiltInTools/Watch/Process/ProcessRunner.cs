@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -16,17 +15,15 @@ namespace Microsoft.DotNet.Watch
             public int ProcessId;
             public bool HasExited;
 
-            // True if Ctrl+C was sent to the process on Windows.
-            public bool SentWindowsCtrlC;
-
             public void Dispose()
                 => Process.Dispose();
         }
 
-        private const int CtlrCExitCode = unchecked((int)0xC000013A);
-
         // For testing purposes only, lock on access.
         private static readonly HashSet<int> s_runningApplicationProcesses = [];
+
+        // Exit code used by the OS when process is terminated by an external signal.
+        private static readonly int s_processTerminatedExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xC000013A) : 137;
 
         public static IReadOnlyCollection<int> GetRunningApplicationProcesses()
         {
@@ -111,7 +108,7 @@ namespace Microsoft.DotNet.Watch
 
                 if (processSpec.IsUserApplication)
                 {
-                    if (exitCode == 0 || state.SentWindowsCtrlC && exitCode == CtlrCExitCode)
+                    if (exitCode == 0 || exitCode == s_processTerminatedExitCode)
                     {
                         logger.Log(MessageDescriptor.Exited);
                     }
@@ -362,11 +359,7 @@ namespace Microsoft.DotNet.Watch
             else
             {
                 var error = ProcessUtilities.SendWindowsCtrlCEvent(state.ProcessId);
-                if (error == null)
-                {
-                    state.SentWindowsCtrlC = true;
-                }
-                else
+                if (error != null)
                 {
                     logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
                 }

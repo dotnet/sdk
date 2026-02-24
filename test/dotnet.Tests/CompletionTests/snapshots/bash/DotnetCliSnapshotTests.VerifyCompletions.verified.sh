@@ -781,7 +781,7 @@ _testhost_nuget_trust_author() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-untrusted-root --configfile --verbosity --help" 
+    opts="--configfile --verbosity --allow-untrusted-root --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -805,7 +805,7 @@ _testhost_nuget_trust_repository() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-untrusted-root --owners --configfile --verbosity --help" 
+    opts="--configfile --verbosity --allow-untrusted-root --owners --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -829,7 +829,7 @@ _testhost_nuget_trust_source() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--owners --source-url --configfile --verbosity --help" 
+    opts="--configfile --verbosity --owners --source-url --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -853,7 +853,7 @@ _testhost_nuget_trust_certificate() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-untrusted-root --algorithm --configfile --verbosity --help" 
+    opts="--configfile --verbosity --allow-untrusted-root --algorithm --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -861,12 +861,12 @@ _testhost_nuget_trust_certificate() {
     fi
     
     case $prev in
-        --algorithm)
-            COMPREPLY=( $(compgen -W "SHA256 SHA384 SHA512" -- "$cur") )
-            return
-        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --algorithm)
+            COMPREPLY=( $(compgen -W "SHA256 SHA384 SHA512" -- "$cur") )
             return
         ;;
     esac
@@ -1379,7 +1379,7 @@ _testhost_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configuration --framework --project --file --launch-profile --no-launch-profile --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --runtime --arch --os --disable-build-servers --artifacts-path --environment --help" 
+    opts="--configuration --framework --project --file --launch-profile --no-launch-profile --device --list-devices --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --runtime --arch --os --disable-build-servers --artifacts-path --environment --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

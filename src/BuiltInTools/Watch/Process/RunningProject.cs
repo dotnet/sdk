@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -38,8 +37,7 @@ namespace Microsoft.DotNet.Watch
         public CancellationToken ProcessExitedCancellationToken = processExitedSource.Token;
 
         /// <summary>
-        /// Set to true when the process termination is being requested so that it can be restarted within
-        /// the Hot Reload session (i.e. without restarting the root project).
+        /// Set to true when the process termination is being requested so that it can be auto-restarted.
         /// </summary>
         public bool IsRestarting => _isRestarting != 0;
 
@@ -110,6 +108,25 @@ namespace Microsoft.DotNet.Watch
         {
             InitiateRestart();
             return TerminateAsync();
+        }
+
+        public async Task CompleteApplyOperationAsync(Task applyTask)
+        {
+            try
+            {
+                await applyTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Do not report error.
+            }
+            catch (Exception e)
+            {
+                // Handle all exceptions. If one process is terminated or fails to apply changes
+                // it shouldn't prevent applying updates to other processes.
+
+                Clients.ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
+            }
         }
     }
 }

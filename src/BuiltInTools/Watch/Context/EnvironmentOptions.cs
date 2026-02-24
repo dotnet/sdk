@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch
         string MuxerPath,
         TimeSpan? ProcessCleanupTimeout,
         bool IsPollingEnabled = false,
-        bool SuppressHandlingStaticContentFiles = false,
+        bool SuppressHandlingStaticWebAssets = false,
         bool SuppressMSBuildIncrementalism = false,
         bool SuppressLaunchBrowser = false,
         bool SuppressBrowserRefresh = false,
@@ -40,6 +40,8 @@ namespace Microsoft.DotNet.Watch
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
         string? BrowserPath = null,
+        int AgentWebSocketPort = 0,
+        int? AgentWebSocketSecurePort = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
@@ -49,7 +51,7 @@ namespace Microsoft.DotNet.Watch
             MuxerPath: ValidateMuxerPath(muxerPath),
             ProcessCleanupTimeout: EnvironmentVariables.ProcessCleanupTimeout,
             IsPollingEnabled: EnvironmentVariables.IsPollingEnabled,
-            SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
+            SuppressHandlingStaticWebAssets: EnvironmentVariables.SuppressHandlingStaticWebAssets,
             SuppressMSBuildIncrementalism: EnvironmentVariables.SuppressMSBuildIncrementalism,
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
@@ -59,11 +61,13 @@ namespace Microsoft.DotNet.Watch
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,
+            AgentWebSocketPort: EnvironmentVariables.AgentWebSocketPort,
+            AgentWebSocketSecurePort: EnvironmentVariables.AgentWebSocketSecurePort,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );
 
-        public TimeSpan GetProcessCleanupTimeout(bool isHotReloadEnabled)
+        public TimeSpan GetProcessCleanupTimeout()
             // Allow sufficient time for the process to exit gracefully and release resources (e.g., network ports).
             => ProcessCleanupTimeout ?? TimeSpan.FromSeconds(5);
 

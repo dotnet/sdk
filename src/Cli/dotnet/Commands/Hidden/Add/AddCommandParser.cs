@@ -10,20 +10,11 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {
-    private static readonly AddCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(AddCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static AddCommandDefinition CreateCommand()
-    {
-        var command = new AddCommandDefinition();
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
         command.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
-        return command;
     }
 }

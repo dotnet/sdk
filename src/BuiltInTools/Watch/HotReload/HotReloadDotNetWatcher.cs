@@ -1,8 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.Encodings.Web;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
@@ -71,13 +73,10 @@ namespace Microsoft.DotNet.Watch
             {
                 Interlocked.Exchange(ref forceRestartCancellationSource, new CancellationTokenSource())?.Dispose();
 
-                using var rootProcessTerminationSource = new CancellationTokenSource();
-
-                // This source will signal when the user cancels (either Ctrl+R or Ctrl+C) or when the root process terminates:
-                using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token, rootProcessTerminationSource.Token);
+                // This source will signal when the user cancels (either Ctrl+R or Ctrl+C):
+                using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
                 var iterationCancellationToken = iterationCancellationSource.Token;
 
-                var waitForFileChangeBeforeRestarting = true;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
@@ -113,8 +112,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
-                    compilationHandler = new CompilationHandler(_context.Logger, _context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, _context.BrowserRefreshServerFactory, _context.Options, _context.EnvironmentOptions);
+                    compilationHandler = new CompilationHandler(_context);
                     var projectLauncher = new ProjectLauncher(_context, projectMap, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
 
@@ -130,32 +128,24 @@ namespace Microsoft.DotNet.Watch
 
                     rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
                         rootProjectOptions,
-                        rootProcessTerminationSource,
                         onOutput: null,
-                        onExit: null,
+                        onExit: (_, _) =>
+                        {
+                            iterationCancellationSource.Cancel();
+                            return ValueTask.CompletedTask;
+                        },
                         restartOperation: new RestartOperation(_ => default), // the process will automatically restart
                         iterationCancellationToken);
 
                     if (rootRunningProject == null)
                     {
-                        // error has been reported:
-                        waitForFileChangeBeforeRestarting = false;
-                        return;
-                    }
-
-                    // Cancel iteration as soon as the root process exits, so that we don't spent time loading solution, etc. when the process is already dead.
-                    rootRunningProject.ProcessExitedCancellationToken.Register(() => iterationCancellationSource.Cancel());
-
-                    if (shutdownCancellationToken.IsCancellationRequested)
-                    {
-                        // Ctrl+C:
-                        return;
+                        // error has been reported
+                        continue;
                     }
 
                     if (!await rootRunningProject.WaitForProcessRunningAsync(iterationCancellationToken))
                     {
                         // Process might have exited while we were trying to communicate with it.
-                        // Cancel the iteration, but wait for a file change before starting a new one.
                         iterationCancellationSource.Cancel();
                         iterationCancellationSource.Token.ThrowIfCancellationRequested();
                     }
@@ -196,63 +186,38 @@ namespace Microsoft.DotNet.Watch
                     fileWatcher.OnFileChange += fileChangedCallback;
                     _context.Logger.Log(MessageDescriptor.WaitingForChanges);
 
-                    // Hot Reload loop - exits when the root process needs to be restarted.
-                    bool extendTimeout = false;
-                    while (true)
+                    if (Test_FileChangesCompletedTask != null)
                     {
-                        try
-                        {
-                            if (Test_FileChangesCompletedTask != null)
-                            {
-                                await Test_FileChangesCompletedTask;
-                            }
+                        await Test_FileChangesCompletedTask;
+                    }
 
+                    // Hot Reload loop
+                    while (!iterationCancellationToken.IsCancellationRequested)
+                    {
+                        ImmutableArray<ChangedFile> changedFiles;
+                        do
+                        {
                             // Use timeout to batch file changes. If the process doesn't exit within the given timespan we'll check
                             // for accumulated file changes. If there are any we attempt Hot Reload. Otherwise we come back here to wait again.
-                            _ = await rootRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
+                            await Task.Delay(50, iterationCancellationToken);
 
-                            // Process exited: cancel the iteration, but wait for a file change before starting a new one
-                            waitForFileChangeBeforeRestarting = true;
-                            iterationCancellationSource.Cancel();
-                            break;
-                        }
-                        catch (TimeoutException)
-                        {
-                            // check for changed files
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Ctrl+C, forced restart, or process exited.
-                            Debug.Assert(iterationCancellationToken.IsCancellationRequested);
+                            // If the changes include addition/deletion wait a little bit more for possible matching deletion/addition.
+                            // This eliminates reevaluations caused by teared add + delete of a temp file or a move of a file.
+                            if (changedFilesAccumulator.Any(change => change.Kind is ChangeKind.Add or ChangeKind.Delete))
+                            {
+                                await Task.Delay(150, iterationCancellationToken);
+                            }
 
-                            // Will wait for a file change if process exited.
-                            waitForFileChangeBeforeRestarting = true;
-                            break;
+                            changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: []);
                         }
-
-                        // If the changes include addition/deletion wait a little bit more for possible matching deletion/addition.
-                        // This eliminates reevaluations caused by teared add + delete of a temp file or a move of a file.
-                        if (!extendTimeout && changedFilesAccumulator.Any(change => change.Kind is ChangeKind.Add or ChangeKind.Delete))
-                        {
-                            extendTimeout = true;
-                            continue;
-                        }
-
-                        extendTimeout = false;
-
-                        var changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: []);
-                        if (changedFiles is [])
-                        {
-                            continue;
-                        }
+                        while (changedFiles is []);
 
                         if (!rootProjectCapabilities.Contains("SupportsHotReload"))
                         {
                             _context.Logger.LogWarning("Project '{Name}' does not support Hot Reload and must be rebuilt.", rootProject.GetDisplayName());
 
                             // file change already detected
-                            waitForFileChangeBeforeRestarting = false;
-                            iterationCancellationSource.Cancel();
+                            rootRunningProject.InitiateRestart();
                             break;
                         }
 
@@ -260,12 +225,8 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
-
-                        HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
-                        await scopedCssFileHandler.HandleFileChangesAsync(changedFiles, iterationCancellationToken);
-                        HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
@@ -316,10 +277,9 @@ namespace Microsoft.DotNet.Watch
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.Main);
 
                         // Terminate root process if it had rude edits or is non-reloadable.
-                        if (projectsToRestart.SingleOrDefault(project => project.Options.IsRootProject) is { } rootProjectToRestart)
+                        if (projectsToRestart.Any(project => project.Options.IsRootProject))
                         {
-                            // Triggers rootRestartCancellationToken.
-                            waitForFileChangeBeforeRestarting = false;
+                            rootRunningProject.InitiateRestart();
                             break;
                         }
 
@@ -381,7 +341,7 @@ namespace Microsoft.DotNet.Watch
                         // so that updated code doesn't attempt to access the dependency before it has been deployed.
                         if (!managedCodeUpdates.IsEmpty)
                         {
-                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, iterationCancellationToken);
+                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, stopwatch, iterationCancellationToken);
                         }
 
                         if (!projectsToRestart.IsEmpty)
@@ -397,9 +357,7 @@ namespace Microsoft.DotNet.Watch
                             _context.Logger.Log(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
                         }
 
-                        _context.Logger.Log(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
-
-                        async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
+                        async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
                         {
                             var changedPaths = Interlocked.Exchange(ref changedFilesAccumulator, []);
                             if (changedPaths is [])
@@ -432,22 +390,14 @@ namespace Microsoft.DotNet.Watch
                                         new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
                                         changedPath.Kind);
                                 })
-                                .ToImmutableList();
+                                .ToList();
 
                             ReportFileChanges(changedFiles);
 
-                            // When a new file is added we need to run design-time build to find out
-                            // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
-                            // We also need to re-evaluate the project if any project files have been modified.
-                            // We don't need to rebuild and restart the application though.
-                            var fileAdded = changedFiles.Any(f => f.Kind is ChangeKind.Add);
-                            var projectChanged = !fileAdded && changedFiles.Any(f => evaluationResult.BuildFiles.Contains(f.Item.FilePath));
-                            var evaluationRequired = fileAdded || projectChanged;
+                            AnalyzeFileChanges(changedFiles, evaluationResult, out var evaluationRequired);
 
                             if (evaluationRequired)
                             {
-                                _context.Logger.Log(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
-
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(restore: true, iterationCancellationToken);
 
@@ -463,9 +413,14 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 // Update files in the change set with new evaluation info.
-                                changedFiles = [.. changedFiles
-                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
-                                ];
+                                for (var i = 0; i < changedFiles.Count; i++)
+                                {
+                                    var file = changedFiles[i];
+                                    if (evaluationResult.Files.TryGetValue(file.Item.FilePath, out var evaluatedFile))
+                                    {
+                                        changedFiles[i] = file with { Item = evaluatedFile };
+                                    }
+                                }
 
                                 _context.Logger.Log(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -478,13 +433,13 @@ namespace Microsoft.DotNet.Watch
                                 var rebuiltProjectPaths = rebuiltProjects.ToHashSet();
 
                                 var newAccumulator = ImmutableList<ChangedPath>.Empty;
-                                var newChangedFiles = ImmutableList<ChangedFile>.Empty;
+                                var newChangedFiles = new List<ChangedFile>();
 
                                 foreach (var file in changedFiles)
                                 {
-                                    if (file.Item.ContainingProjectPaths.All(containingProjectPath => rebuiltProjectPaths.Contains(containingProjectPath)))
+                                    if (file.Item.ContainingProjectPaths.All(rebuiltProjectPaths.Contains))
                                     {
-                                        newChangedFiles = newChangedFiles.Add(file);
+                                        newChangedFiles.Add(file);
                                     }
                                     else
                                     {
@@ -504,18 +459,13 @@ namespace Microsoft.DotNet.Watch
                                 await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                             }
 
-                            return changedFiles;
+                            return [.. changedFiles];
                         }
                     }
                 }
                 catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
                 {
                     // start next iteration unless shutdown is requested
-                }
-                catch (Exception) when ((waitForFileChangeBeforeRestarting = false) == true)
-                {
-                    // unreachable
-                    throw new InvalidOperationException();
                 }
                 finally
                 {
@@ -528,6 +478,7 @@ namespace Microsoft.DotNet.Watch
                     if (runtimeProcessLauncher != null)
                     {
                         // Request cleanup of all processes created by the launcher before we terminate the root process.
+                        // Executed after the main process has terminated if the process exits on its own.
                         // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
                         await runtimeProcessLauncher.TerminateLaunchedProcessesAsync(CancellationToken.None);
                     }
@@ -548,16 +499,123 @@ namespace Microsoft.DotNet.Watch
                         await runtimeProcessLauncher.DisposeAsync();
                     }
 
-                    if (waitForFileChangeBeforeRestarting &&
-                        !shutdownCancellationToken.IsCancellationRequested &&
-                        !forceRestartCancellationSource.IsCancellationRequested &&
-                        rootRunningProject?.IsRestarting != true)
+                    // Wait for file change
+                    // - if the process hasn't launched (e.g. build failed)
+                    // - if the process launched, has been terminated and is not being auto-restarted (rude edit),
+                    // unless Ctrl+R or Ctrl+C were pressed.
+                    if (shutdownCancellationToken.IsCancellationRequested)
+                    {
+                        // no op
+                    }
+                    else if (forceRestartCancellationSource.IsCancellationRequested)
+                    {
+                        _context.Logger.Log(MessageDescriptor.Restarting);
+                    }
+                    else if (rootRunningProject?.IsRestarting != true)
                     {
                         using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
                         await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
                     }
                 }
             }
+        }
+
+        private void AnalyzeFileChanges(
+            List<ChangedFile> changedFiles,
+            EvaluationResult evaluationResult,
+            out bool evaluationRequired)
+        {
+            // If any build file changed (project, props, targets) we need to re-evaluate the projects.
+            // Currently we re-evaluate the whole project graph even if only a single project file changed.
+            if (changedFiles.Select(f => f.Item.FilePath).FirstOrDefault(path => evaluationResult.BuildFiles.Contains(path) || MatchesBuildFile(path)) is { } firstBuildFilePath)
+            {
+                _context.Logger.Log(MessageDescriptor.ProjectChangeTriggeredReEvaluation, firstBuildFilePath);
+                evaluationRequired = true;
+                return;
+            }
+
+            for (var i = 0; i < changedFiles.Count; i++)
+            {
+                var changedFile = changedFiles[i];
+                var filePath = changedFile.Item.FilePath;
+
+                if (changedFile.Kind is ChangeKind.Add)
+                {
+                    if (MatchesStaticWebAssetFilePattern(evaluationResult, filePath, out var staticWebAssetUrl))
+                    {
+                        changedFiles[i] = changedFile with
+                        {
+                            Item = changedFile.Item with { StaticWebAssetRelativeUrl = staticWebAssetUrl }
+                        };
+                    }
+                    else
+                    {
+                        // TODO: https://github.com/dotnet/sdk/issues/52390
+                        // Get patterns from evaluation that match Compile, AdditionalFile, AnalyzerConfigFile items.
+                        // Avoid re-evaluating on addition of files that don't affect the project.
+
+                        // project file or other file:
+                        _context.Logger.Log(MessageDescriptor.FileAdditionTriggeredReEvaluation, filePath);
+                        evaluationRequired = true;
+                        return;
+                    }
+                }
+            }
+
+            evaluationRequired = false;
+        }
+
+        /// <summary>
+        /// True if the file path looks like a file that might be imported by MSBuild.
+        /// </summary>
+        private static bool MatchesBuildFile(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".props", PathUtilities.OSSpecificPathComparison)
+                || extension.Equals(".targets", PathUtilities.OSSpecificPathComparison)
+                || extension.EndsWith("proj", PathUtilities.OSSpecificPathComparison)
+                || extension.Equals("projitems", PathUtilities.OSSpecificPathComparison) // shared project items
+                || string.Equals(Path.GetFileName(filePath), "global.json", PathUtilities.OSSpecificPathComparison);
+        }
+
+        /// <summary>
+        /// Determines if the given file path is a static web asset file path based on
+        /// the discovery patterns.
+        /// </summary>
+        private static bool MatchesStaticWebAssetFilePattern(EvaluationResult evaluationResult, string filePath, out string? staticWebAssetUrl)
+        {
+            staticWebAssetUrl = null;
+
+            if (StaticWebAsset.IsScopedCssFile(filePath))
+            {
+                return true;
+            }
+
+            foreach (var (_, manifest) in evaluationResult.StaticWebAssetsManifests)
+            {
+                foreach (var pattern in manifest.DiscoveryPatterns)
+                {
+                    var match = pattern.Glob.MatchInfo(filePath);
+                    if (match.IsMatch)
+                    {
+                        var dirUrl = match.WildcardDirectoryPartMatchGroup.Replace(Path.DirectorySeparatorChar, '/');
+
+                        Debug.Assert(!dirUrl.EndsWith('/'));
+                        Debug.Assert(!pattern.BaseUrl.EndsWith('/'));
+
+                        var url = UrlEncoder.Default.Encode(dirUrl + "/" + match.FilenamePartMatchGroup);
+                        if (pattern.BaseUrl != "")
+                        {
+                            url = pattern.BaseUrl + "/" + url;
+                        }
+
+                        staticWebAssetUrl = url;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void DeployProjectDependencies(ProjectGraph graph, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
@@ -646,7 +704,7 @@ namespace Microsoft.DotNet.Watch
                 fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
-                    acceptChange: change => AcceptChange(change),
+                    acceptChange: AcceptChange,
                     startedWatching: () => _context.Logger.Log(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }

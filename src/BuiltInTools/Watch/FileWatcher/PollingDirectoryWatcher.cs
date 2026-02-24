@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watch
         private Dictionary<string, DateTime> _snapshotBuilder = new(PathUtilities.OSSpecificPathComparer);
         private readonly Dictionary<string, ChangeKind> _changesBuilder = new(PathUtilities.OSSpecificPathComparer);
 
-        private Thread _pollingThread;
+        private readonly Thread _pollingThread;
         private bool _raiseEvents;
 
         private volatile bool _disposed;
@@ -88,10 +88,7 @@ namespace Microsoft.DotNet.Watch
         {
             Debug.Assert(_currentSnapshot.Count == 0);
 
-            ForeachEntityInDirectory(_watchedDirectory, (filePath, writeTime) =>
-            {
-                _currentSnapshot.Add(filePath, writeTime);
-            });
+            ForeachEntityInDirectory(_watchedDirectory, _currentSnapshot.Add);
         }
 
         private void CheckForChangedFiles()

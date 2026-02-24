@@ -13,5 +13,5 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class DefaultAppModel(ProjectGraphNode project) : HotReloadAppModel
 {
     public override ValueTask<HotReloadClients?> TryCreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
-        => new(new HotReloadClients(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: true), browserRefreshServer: null));
+        => new(new HotReloadClients(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), enableStaticAssetUpdates: true, new NamedPipeClientTransport(clientLogger)), browserRefreshServer: null));
 }

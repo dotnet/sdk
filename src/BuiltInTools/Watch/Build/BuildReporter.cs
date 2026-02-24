@@ -23,12 +23,12 @@ internal sealed class BuildReporter(ILogger logger, GlobalOptions options, Envir
     {
         logger.Log(MessageDescriptor.WatchingFilesForChanges, fileItems.Count);
 
-        if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+        if (logger.IsEnabled(LogLevel.Trace))
         {
             foreach (var file in fileItems.Values)
             {
-                logger.Log(MessageDescriptor.WatchingFilesForChanges_FilePath, file.StaticWebAssetPath != null
-                    ? $"{file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
+                logger.Log(MessageDescriptor.WatchingFilesForChanges_FilePath, file.StaticWebAssetRelativeUrl != null
+                    ? $"{file.FilePath}{Path.PathSeparator}{string.Join(Path.PathSeparator, file.StaticWebAssetRelativeUrl)}"
                     : $"{file.FilePath}");
             }
         }
