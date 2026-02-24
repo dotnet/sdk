@@ -110,6 +110,32 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     }
 
     [Fact]
+    public void LeadingWhiteSpace()
+    {
+        Verify(
+            """
+
+            #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+
+            Console.WriteLine();
+            """));
+
+        Verify(
+            """
+              #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            Console.WriteLine();
+            """));
+    }
+
+    [Fact]
     public void Comments()
     {
         Verify(

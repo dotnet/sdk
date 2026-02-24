@@ -111,7 +111,7 @@ internal static class FileLevelDirectiveHelpers
             {
                 TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
 
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index, span);
                 var info = new CSharpDirective.ParseInfo
                 {
                     SourceFile = sourceFile,
@@ -133,7 +133,7 @@ internal static class FileLevelDirectiveHelpers
                 var value = parts.Length > 1 ? parts[1] : "";
                 Debug.Assert(!(parts.Length > 2));
 
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index, span);
                 var context = new CSharpDirective.ParseContext
                 {
                     Info = new()
@@ -182,35 +182,38 @@ internal static class FileLevelDirectiveHelpers
             return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
         }
 
-        static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index)
+        static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index, TextSpan excludeSpan)
         {
             (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) result = default;
 
             for (int i = index - 1; i >= 0; i--)
             {
-                if (!Fill(ref result.Leading, triviaList, i)) break;
+                if (!Fill(ref result.Leading, triviaList, i, excludeSpan)) break;
             }
 
             for (int i = index + 1; i < triviaList.Count; i++)
             {
-                if (!Fill(ref result.Trailing, triviaList, i)) break;
+                if (!Fill(ref result.Trailing, triviaList, i, excludeSpan)) break;
             }
 
             return result;
 
-            static bool Fill(ref WhiteSpaceInfo info, in SyntaxTriviaList triviaList, int index)
+            static bool Fill(ref WhiteSpaceInfo info, in SyntaxTriviaList triviaList, int index, TextSpan excludeSpan)
             {
                 var trivia = triviaList[index];
+
+                var length = trivia.FullSpan.Length - (trivia.FullSpan.Intersection(excludeSpan)?.Length ?? 0);
+
                 if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
-                    info.LineBreaks += 1;
-                    info.TotalLength += trivia.FullSpan.Length;
+                    info.LineBreaks += length != 0 ? 1 : 0;
+                    info.TotalLength += length;
                     return true;
                 }
 
                 if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
                 {
-                    info.TotalLength += trivia.FullSpan.Length;
+                    info.TotalLength += length;
                     return true;
                 }
 
@@ -286,11 +289,20 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     public readonly struct ParseInfo
     {
         public required SourceFile SourceFile { get; init; }
+
         /// <summary>
         /// Span of the full line including the trailing line break.
         /// </summary>
         public required TextSpan Span { get; init; }
+
+        /// <summary>
+        /// Additional leading whitespace not included in <see cref="Span"/>.
+        /// </summary>
         public required WhiteSpaceInfo LeadingWhiteSpace { get; init; }
+
+        /// <summary>
+        /// Additional trailing whitespace not included in <see cref="Span"/>.
+        /// </summary>
         public required WhiteSpaceInfo TrailingWhiteSpace { get; init; }
     }
 
