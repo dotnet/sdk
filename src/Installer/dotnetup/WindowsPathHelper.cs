@@ -268,7 +268,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string AddProgramFilesDotnetToPath(string unexpandedPath, string expandedPath)
     {
-        _ = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Get the primary Program Files dotnet path (non-x86)
