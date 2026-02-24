@@ -65,6 +65,8 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Extensions\dump*\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
+      <!-- Removing Microsoft.Diagnostics.NETCore.Client from crossgen as its EmbeddedAttribute causes code generation failures -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.Diagnostics.NETCore.Client.dll" />
 
       <!-- Removing Containers as containerize .DLLs and net472 components shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />

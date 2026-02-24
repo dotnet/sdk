@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -63,7 +65,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
 
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
@@ -76,23 +79,92 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
 
         downloadTask.Value = 100;
     }
+
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
 
         string componentDescription = _request.Component.GetDisplayName();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
-        // Extract archive directly to target directory with special handling for muxer
-        ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
-        installTask.Value = installTask.MaxValue;
+        try
+        {
+            // Extract archive directly to target directory with special handling for muxer
+            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
+            installTask.Value = installTask.MaxValue;
+        }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (InvalidDataException ex)
+        {
+            // Archive is corrupted (invalid zip/tar format)
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ArchiveCorrupted,
+                $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // User environment issue — insufficient permissions to write to install directory
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (IOException ex)
+        {
+            // IO errors during extraction (disk full, permission denied, path too long, etc.)
+            // Wrap as ExtractionFailed and preserve the original IOException.
+            // The telemetry layer classifies the inner IOException by HResult via ErrorCategoryClassifier.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (Exception ex)
+        {
+            // Genuine extraction issue we should investigate — product error
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
     }
 
     /// <summary>
@@ -274,6 +346,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
             installTask?.Value += 1;
         }
+
     }
 
     public void Dispose()

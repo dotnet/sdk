@@ -21,11 +21,16 @@ internal class InstallPathResolver
     }
 
     /// <summary>
-    /// Result of install path resolution containing the resolved path and any path from global.json.
+    /// Result of install path resolution containing the resolved path, any path from global.json,
+    /// and how the path was determined (for telemetry).
     /// </summary>
+    /// <param name="ResolvedInstallPath">The final resolved install path.</param>
+    /// <param name="InstallPathFromGlobalJson">The install path from global.json, if any.</param>
+    /// <param name="PathSource">How the path was determined.</param>
     public record InstallPathResolutionResult(
         string ResolvedInstallPath,
-        string? InstallPathFromGlobalJson);
+        string? InstallPathFromGlobalJson,
+        PathSource PathSource);
 
     /// <summary>
     /// Resolves the install path using the following precedence:
@@ -51,51 +56,39 @@ internal class InstallPathResolver
         out string? error)
     {
         error = null;
-        string? resolvedInstallPath = null;
-        string? installPathFromGlobalJson = null;
+        string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
+            ? globalJsonInfo.SdkPath
+            : null;
 
-        if (globalJsonInfo?.GlobalJsonPath is not null)
+        // Resolution precedence:
+        // 1. Explicit --install-path always wins
+        // 2. global.json sdk-path
+        // 3. Existing user installation
+        // 4. Interactive prompt
+        // 5. Default install path
+
+        if (explicitInstallPath is not null)
         {
-            installPathFromGlobalJson = globalJsonInfo.SdkPath;
-
-            // If explicit path is provided, use it (it takes precedence over global.json)
-            // If no explicit path, fall back to global.json path
-            if (explicitInstallPath is not null)
-            {
-                resolvedInstallPath = explicitInstallPath;
-            }
-            else
-            {
-                resolvedInstallPath = installPathFromGlobalJson;
-            }
+            return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, PathSource.Explicit);
         }
-
-        if (resolvedInstallPath == null)
+        else if (installPathFromGlobalJson is not null)
         {
-            resolvedInstallPath = explicitInstallPath;
+            return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, PathSource.GlobalJson);
         }
-
-        if (resolvedInstallPath == null && currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
+        else if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
-            //  If a user installation is already set up, we don't need to prompt for the install path
-            resolvedInstallPath = currentDotnetInstallRoot.Path;
+            return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
         }
-
-        if (resolvedInstallPath == null)
+        else if (interactive)
         {
-            if (interactive)
-            {
-                resolvedInstallPath = SpectreAnsiConsole.Prompt(
-                    new TextPrompt<string>($"Where should we install the {componentDescription} to?)")
-                        .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-            }
-            else
-            {
-                //  If no install path is specified, use the default install path
-                resolvedInstallPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-            }
+            var prompted = SpectreAnsiConsole.Prompt(
+                new TextPrompt<string>($"Where should we install the {componentDescription} to?")
+                    .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
+            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, PathSource.InteractivePrompt);
         }
-
-        return new InstallPathResolutionResult(resolvedInstallPath, installPathFromGlobalJson);
+        else
+        {
+            return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
+        }
     }
 }

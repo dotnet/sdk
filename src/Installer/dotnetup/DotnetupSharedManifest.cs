@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -40,18 +36,9 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             return _customManifestPath;
         }
 
-        // Fall back to environment variable override
-        var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
-        if (!string.IsNullOrEmpty(overridePath))
-        {
-            return overridePath;
-        }
-
-        // Default location
-        return Path.Combine(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "dotnetup",
-            "dotnetup_manifest.json");
+        // Use centralized path logic (includes env var override)
+        return DotnetupPaths.ManifestPath
+            ?? throw new InvalidOperationException("Could not determine dotnetup data directory.");
     }
 
     private void AssertHasFinalizationMutex()
@@ -70,7 +57,24 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         AssertHasFinalizationMutex();
         EnsureManifestExists();
 
-        var json = File.ReadAllText(ManifestPath);
+        string json;
+        try
+        {
+            json = File.ReadAllText(ManifestPath);
+        }
+        catch (FileNotFoundException)
+        {
+            // Manifest doesn't exist yet - return empty list
+            return [];
+        }
+        catch (IOException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestError,
+                $"Failed to read dotnetup manifest at {ManifestPath}: {ex.Message}",
+                ex);
+        }
+
         try
         {
             var installs = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
@@ -90,7 +94,10 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
         catch (JsonException ex)
         {
-            throw new InvalidOperationException($"The dotnetup manifest is corrupt or inaccessible", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestCorrupted,
+                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.",
+                ex);
         }
     }
 

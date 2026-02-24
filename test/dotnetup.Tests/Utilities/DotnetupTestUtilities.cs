@@ -153,6 +153,9 @@ internal static class DotnetupTestUtilities
         process.StartInfo.RedirectStandardError = captureOutput;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
+        // Suppress the .NET welcome message / first-run experience in test output
+        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
         StringBuilder outputBuilder = new();
         if (captureOutput)
         {

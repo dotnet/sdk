@@ -404,6 +404,8 @@ public class MuxerHandlerTests : IDisposable
         proc.StartInfo.CreateNoWindow = true;
         proc.StartInfo.RedirectStandardOutput = true;
         proc.StartInfo.RedirectStandardError = true;
+        // Suppress .NET welcome message / first-run experience in test output
+        proc.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
         proc.Start();
 
         try

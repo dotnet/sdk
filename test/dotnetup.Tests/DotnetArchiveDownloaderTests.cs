@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using FluentAssertions;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
@@ -161,7 +162,7 @@ public class DotnetArchiveDownloaderTests
         var wrongHash = "0000000000000000000000000000000000000000000000000000000000000000" +
                         "0000000000000000000000000000000000000000000000000000000000000000";
 
-        var ex = Assert.Throws<Exception>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, wrongHash));
+        var ex = Assert.Throws<DotnetInstallException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, wrongHash));
         ex.Message.Should().Contain("File hash mismatch");
         _log.WriteLine($"Exception: {ex.Message}");
     }

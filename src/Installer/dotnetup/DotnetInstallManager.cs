@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -59,9 +60,8 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // For now, on non-Windows platforms, consider an install a user install only if it's in the default install location
-            // https://github.com/dotnet/sdk/issues/52668 tracks improving this
-            bool isAdminInstall = !currentInstallRoot.Path.StartsWith(GetDefaultDotnetInstallPath());
+            // For non-Windows platforms, determine based on path location
+            bool isAdminInstall = InstallExecutor.IsAdminInstallPath(currentInstallRoot.Path);
 
             // For now, we consider it fully configured if it's on PATH
             return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
@@ -113,23 +113,23 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
     }
 
-    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channnel)
+    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channel)
     {
         DotnetInstallRequest request = new DotnetInstallRequest(
             dotnetRoot,
-            channnel,
+            channel,
             InstallComponent.SDK,
             new InstallRequestOptions()
         );
 
-        DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
-        if (newInstall == null)
+        InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
+        if (installResult.Install == null)
         {
-            throw new Exception($"Failed to install .NET SDK {channnel.Name}");
+            throw new Exception($"Failed to install .NET SDK {channel.Name}");
         }
         else
         {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.Version}, available via {newInstall.InstallRoot}[/]");
+            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
         }
     }
 
