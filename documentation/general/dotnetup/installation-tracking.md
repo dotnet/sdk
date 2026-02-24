@@ -4,7 +4,7 @@ dotnetup should support installing various versions of the .NET SDK or runtime, 
 
 ## Desired behavior
 
-When a user installs a .NET SDK or runtime with dotnetup, we will call the information about what the requested to be installed the "Install Spec".  This includes the component that should be installed as well as the version or channel that should be installed.  An install spec may also be derived from a global.json file, in which case the spec should also include the path to the corresponding global.json.
+When a user installs a .NET SDK or runtime with dotnetup, we will call the information about what they requested to be installed the "Install Spec".  This includes the component that should be installed as well as the version or channel that should be installed.  An install spec may also be derived from a global.json file, in which case the spec should also include the path to the corresponding global.json.
 
 The effect of an update operation should be to install the latest version of the SDK or runtimes that matches each active install spec.  Any installations that are no longer needed by any active install specs would then be removed.
 
@@ -12,29 +12,40 @@ An uninstall operation would be implemented as deleting an install spec and then
 
 ## Dotnetup shared manifest contents
 
+We will store the manifest in json format.  At the top level it should have a schemaVersion property to help make it possible to update the format if we need to.
+
+### Dotnet roots
+
+- Path to dotnet root
+- Architecture of installs in the root
+
 ### Install specs
 
 - Component (SDK or one of the runtimes)
 - Version, channel, or version range
-- Source: explicit install command or global.json (could there be other sources in the future?)
+- Source: explicit install command, global.json, or previous (non-dotnetup) install
 - Global.json path
-- Dotnet root
 
 ### Installation
 - Component
 - Version (this is the exact version that is installed)
-- Dotnet root
 - Subcomponents
 
 ### Subcomponent
 
-Subcomponents are sub-pieces of an installation.  We need to represent these because different installed components or versions may have overlapping subcomponents.  So for each installation, we will keeep a list of subcomponents that are part of that installation.
+Subcomponents are sub-pieces of an installation.  We need to represent these because different installed components or versions may have overlapping subcomponents.  So for each installation, we will keep a list of subcomponents that are part of that installation.
 
 A subcomponent can be identified by a relative path to a folder from the dotnet root.  The depth of the folder depends on the top-level subfolder under the dotnet root.  For example:
 
 - `sdk/10.0.102` - 2 levels
 - `packs/Microsoft.AspNetCore.App.Ref/10.0.2` - 3 levels
 - `sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2` - 4 levels
+
+### Manifest structure
+
+Each dotnet root may have multiple install specs and installations.  Each Installation may have multiple subcomponents.
+
+We could represent the dotnet roots in the manifest as a node which has properties for the dotnet root path and the architecture, as well as the list of install specs and installations.  Alternatively, we could have Install specs and installations be top-level properties in the manifest and each of them could have a dotnet root path and an architecture property.
 
 ## Implementation
 
@@ -69,3 +80,11 @@ A subcomponent can be identified by a relative path to a folder from the dotnet 
   - For each install spec, find the latest installation record that matches.  Mark that installation record to keep for this garbage collection.
 - Delete all installation records from the manifest which weren't marked.
 - Iterate through all components installed in the dotnet root.  Remove any which are no longer listed under an installation record in the manifest.
+
+### Using dotnet roots that were not previously managed by dotnetup
+
+Users may use dotnetup to install SDKs or runtimes into a folder that already has other versions installed, which were not installed by dotnetup.  This means that the dotnetup manifest won't contain any entries for that dotnet root.  If we don't do any special handling of the existing items in the root, then garbage collection would immediately delete them all.
+
+When dotnetup encounters this situation, it should examine the dotnet root for existing .NET SDK and runtime installation folders, and create install specs in the manifest for those.  That way all existing components will stay until they are explicitly uninstalled.
+
+We may also eventually want to have an experience where channels can be assigned to the specific versions installed when this happens, so that they can be updated instead of pinned at the specific version.
