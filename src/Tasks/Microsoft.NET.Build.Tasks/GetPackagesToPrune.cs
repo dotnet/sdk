@@ -15,7 +15,16 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GetPackagesToPrune : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         // Minimum .NET Core version that supports package pruning
         private const int FrameworkReferenceMinVersion = 3;
         
