@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
@@ -19,14 +20,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return null;
                 }
 
-                using var fileStream = File.OpenRead(globalJsonPath);
+                using var streamReader = new StreamReader(globalJsonPath, detectEncodingFromByteOrderMarks: true);
+                var content = streamReader.ReadToEnd();
+                using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
                 var readerOptions = new JsonReaderOptions
                 {
                     AllowTrailingCommas = true,
                     CommentHandling = JsonCommentHandling.Skip
                 };
-                var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
+                var reader = new Utf8JsonStreamReader(memStream, readerOptions);
 
                 string? workloadVersion = null;
 
