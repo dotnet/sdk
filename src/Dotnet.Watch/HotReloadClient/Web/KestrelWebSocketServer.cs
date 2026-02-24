@@ -75,11 +75,20 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
     /// Converts an HTTP(S) URL to a WebSocket URL and replaces 127.0.0.1 with localhost.
     /// </summary>
     internal static string GetWebSocketUrl(string httpUrl)
-        => httpUrl
-            .Replace("http://127.0.0.1:", "ws://localhost:", StringComparison.Ordinal)
-            .Replace("https://127.0.0.1:", "wss://localhost:", StringComparison.Ordinal)
-            .Replace("https://", "wss://", StringComparison.Ordinal)
-            .Replace("http://", "ws://", StringComparison.Ordinal);
+    {
+        var uri = new Uri(httpUrl, UriKind.Absolute);
+        var builder = new UriBuilder(uri)
+        {
+            Scheme = uri.Scheme == "https" ? "wss" : "ws"
+        };
+
+        if (builder.Host == "127.0.0.1")
+        {
+            builder.Host = "localhost";
+        }
+
+        return builder.Uri.ToString().TrimEnd('/');
+    }
 
     /// <summary>
     /// Checks whether TLS is supported by running <c>dotnet dev-certs https --check --quiet</c>.
