@@ -73,6 +73,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new CheckForTargetInAssetsFile
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             AssetsFilePath = "obj/project.assets.json",
             TargetFramework = "net8.0"
         };
@@ -108,6 +109,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new ResolvePackageAssets
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             ProjectAssetsCacheFile = "obj/project.assets.cache",
             ProjectAssetsFile = relativePath,
             ProjectPath = "myapp.csproj",

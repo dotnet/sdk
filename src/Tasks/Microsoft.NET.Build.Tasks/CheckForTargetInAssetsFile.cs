@@ -9,8 +9,19 @@ using NuGet.ProjectModel;
 namespace Microsoft.NET.Build.Tasks
 {
     [MSBuildMultiThreadableTask]
-    public class CheckForTargetInAssetsFile : TaskBase
+    public class CheckForTargetInAssetsFile : TaskBase, IMultiThreadableTask
     {
+        #if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+        #else
+        public TaskEnvironment TaskEnvironment { get; set; }
+        #endif
+
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -21,7 +32,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+            string assetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+            LockFile lockFile = new LockFileCache(this).GetLockFile(assetsFilePath);
 
             lockFile.GetTargetAndThrowIfNotFound(TargetFramework, RuntimeIdentifier);
         }
