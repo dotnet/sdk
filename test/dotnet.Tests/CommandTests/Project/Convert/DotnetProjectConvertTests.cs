@@ -2044,7 +2044,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var csFile = Path.Combine(testInstance.Path, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
 
-        // Without --delete-source and without --interactive, source file should remain (current behavior)
+        // Without --delete-source and without --interactive, source file should remain
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
