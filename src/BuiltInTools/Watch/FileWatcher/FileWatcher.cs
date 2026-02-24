@@ -209,16 +209,39 @@ namespace Microsoft.DotNet.Watch
         {
             using var watcher = new FileWatcher(logger, environmentOptions);
 
-            watcher.WatchContainingDirectories([filePath], includeSubdirectories: false);
+            // Watch the containing directory and all subdirectories to detect changes to any file in the project
+            watcher.WatchContainingDirectories([filePath], includeSubdirectories: true);
+
+            var projectDir = Path.GetDirectoryName(filePath);
 
             var fileChange = await watcher.WaitForFileChangeAsync(
-                acceptChange: change => change.Path == filePath,
+                acceptChange: change =>
+                {
+                    // Accept changes, but exclude common build output and temporary directories
+                    var relativePath = projectDir != null 
+                        ? Path.GetRelativePath(projectDir, change.Path)
+                        : change.Path;
+
+                    var pathParts = relativePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                    
+                    // If no path parts or file is in current/parent directory (starts with '.'), accept for now
+                    // (the file watcher should only notify us about files in subdirectories anyway)
+                    if (pathParts.Length == 0)
+                    {
+                        return true;
+                    }
+
+                    // Exclude common build output and temporary directories
+                    return !pathParts[0].Equals("bin", StringComparison.OrdinalIgnoreCase) &&
+                           !pathParts[0].Equals("obj", StringComparison.OrdinalIgnoreCase) &&
+                           !pathParts[0].StartsWith(".", StringComparison.Ordinal); // Exclude hidden directories like .git, .vs, etc.
+                },
                 startedWatching,
                 cancellationToken);
 
             if (fileChange != null)
             {
-                logger.LogInformation("File changed: {FilePath}", filePath);
+                logger.LogInformation("File changed: {FilePath}", fileChange.Value.Path);
             }
         }
     }
