@@ -16,6 +16,8 @@
     <VersionPrefix>0.1.1</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup>
