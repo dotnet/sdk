@@ -13,7 +13,16 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public sealed class GenerateShims : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         /// <summary>
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>
@@ -77,6 +86,12 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+            if (ShimRuntimeIdentifiers == null || ShimRuntimeIdentifiers.Length == 0)
+            {
+                EmbeddedApphostPaths = Array.Empty<ITaskItem>();
+                return;
+            }
+
             var embeddedApphostPaths = new List<ITaskItem>();
             foreach (var runtimeIdentifier in ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
             {
