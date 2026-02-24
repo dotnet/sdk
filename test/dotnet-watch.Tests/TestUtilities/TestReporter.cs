@@ -11,9 +11,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public readonly List<string> ProcessOutput = [];
         public readonly List<(LogLevel level, string text)> Messages = [];
 
-        public bool IsVerbose
-            => true;
-
         bool IProcessOutputReporter.PrefixProcessOutput
             => true;
 

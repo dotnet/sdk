@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="..\Sdk\TargetFrameworks.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -43,6 +44,9 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <OutputItemType>AdditionalContent</OutputItemType>
+      <PackagePath>hotreload\$(WasmAgentTargetFrameworkV10)</PackagePath>
+      <Targets>Build;ContentFilesProjectOutputGroup</Targets>
     </ProjectReference>
     <AdditionalContent Include="$(WasmSdkRoot)targets\**\*.*">
       <Pack>true</Pack>
@@ -51,10 +55,6 @@
     <AdditionalContent Include="$(WasmSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
-    </AdditionalContent>
-    <AdditionalContent Include="$(ArtifactsBinDir)\Microsoft.DotNet.HotReload.WebAssembly.Browser\$(Configuration)\**\*.*">
-      <Pack>true</Pack>
-      <PackagePath>hotreload</PackagePath>
     </AdditionalContent>
   </ItemGroup>
 
@@ -67,11 +67,11 @@
   </Target>
 
   <Target Name="CopyAdditionalFilesToLayout"
-          Condition="'$(TargetFramework)' == ''"
+          Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'"
           DependsOnTargets="PrepareAdditionalFilesToLayout"
           AfterTargets="Build" Inputs="@(LayoutFile)"
-          Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
-    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+          Outputs="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
   </Target>

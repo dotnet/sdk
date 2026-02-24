@@ -105,10 +105,10 @@ namespace Microsoft.DotNet.Watch
             HotReloadClients clients,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
-            CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
             var processExitedSource = new CancellationTokenSource();
+            var processTerminationSource = new CancellationTokenSource();
 
             // Cancel process communication as soon as process termination is requested, shutdown is requested, or the process exits (whichever comes first).
             // If we only cancel after we process exit event handler is triggered the pipe might have already been closed and may fail unexpectedly.
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Watch
             var processCommunicationCancellationToken = processCommunicationCancellationSource.Token;
 
             // Dispose these objects on failure:
-            using var disposables = new Disposables([clients, processExitedSource]);
+            using var disposables = new Disposables([clients, processExitedSource, processTerminationSource]);
 
             // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.

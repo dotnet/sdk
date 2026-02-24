@@ -25,11 +25,11 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001", ""));
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
     public async Task BrowserDiagnostics()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
-                .WithSource();
+            .WithSource();
 
         App.UseTestBrowser();
 
