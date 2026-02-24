@@ -116,18 +116,17 @@ internal sealed class ProjectGraphFactory(
                 throw new ProjectCreationFailedException();
             }
 
-            var builder = new VirtualProjectBuilder(entryPointFilePath, _targetFramework);
             var anyError = false;
 
-            builder.CreateProjectInstance(
+            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+                entryPointFilePath,
+                _targetFramework,
                 projectCollection,
-                (sourceFile, textSpan, message, _) =>
+                (path, line, message) =>
                 {
                     anyError = true;
-                    logger.LogError("{Location}: {Message}", sourceFile.GetLocationString(textSpan), message);
-                },
-                out var projectInstance,
-                out _);
+                    logger.LogError("{Path}({Line}): {Message}", path, line, message);
+                });
 
             if (anyError)
             {

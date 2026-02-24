@@ -64,7 +64,7 @@ public sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
         ("OutputType", "Exe"),
         ("TargetFramework", targetFramework),
@@ -209,6 +209,23 @@ public sealed class VirtualProjectBuilder
                 EntryPointSourceFile,
                 reportError)
             : CSharpDirective.IncludeOrExclude.DefaultMapping;
+    }
+
+    public static ProjectInstance CreateProjectInstance(
+        string entryPointFilePath,
+        string targetFramework,
+        ProjectCollection projectCollection,
+        Action<string, int, string> errorReporter)
+    {
+        var builder = new VirtualProjectBuilder(entryPointFilePath, targetFramework);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
+            out var projectInstance,
+            out _);
+
+        return projectInstance;
     }
 
     internal void CreateProjectInstance(
