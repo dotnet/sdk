@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
@@ -3808,7 +3809,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var builder = new VirtualProjectBuilder(
             entryPointFileFullPath: programPath,
-            targetFrameworkVersion: VirtualProjectBuildingCommand.TargetFrameworkVersion,
+            targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(code, Encoding.UTF8));
 
         var directives = FileLevelDirectiveHelpers.FindDirectives(
@@ -5513,7 +5514,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #!/program
             #:sdk Microsoft.NET.Sdk
             #:sdk Aspire.AppHost.Sdk@9.1.0
-            #:property TargetFramework=net11.0
+            #:property TargetFramework=net5.0
             #:package System.CommandLine@2.0.0-beta4.22272.1
             #:property LangVersion=preview
             Console.WriteLine();
@@ -5554,7 +5555,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Aspire.AppHost.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
-                        <TargetFramework>net11.0</TargetFramework>
+                        <TargetFramework>net5.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>

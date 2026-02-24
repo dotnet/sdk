@@ -67,7 +67,7 @@ internal abstract class RunApiInput
         {
             var builder = new VirtualProjectBuilder(
                 entryPointFileFullPath: EntryPointFileFullPath,
-                targetFrameworkVersion: VirtualProjectBuildingCommand.TargetFrameworkVersion,
+                targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);
 
             var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
@@ -83,7 +83,7 @@ internal abstract class RunApiInput
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
                 evaluatedDirectives,
-                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
                 artifactsPath: builder.ArtifactsPath);

@@ -36,7 +36,7 @@ internal static class FileLevelDirectiveHelpers
     /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
     /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
     /// </param>
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter reportError)
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var tokenizer = CreateTokenizer(sourceFile.Text);
@@ -44,7 +44,7 @@ internal static class FileLevelDirectiveHelpers
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
 
-        FindLeadingDirectives(sourceFile, triviaList, reportError, builder);
+        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -73,7 +73,7 @@ internal static class FileLevelDirectiveHelpers
         {
             if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
             {
-                reportError(sourceFile, trivia.Span, FileBasedProgramsResources.CannotConvertDirective);
+                errorReporter(sourceFile.Text, sourceFile.Path, trivia.Span, FileBasedProgramsResources.CannotConvertDirective);
             }
         }
 
@@ -86,7 +86,7 @@ internal static class FileLevelDirectiveHelpers
     public static void FindLeadingDirectives(
         SourceFile sourceFile,
         SyntaxTriviaList triviaList,
-        ErrorReporter reportError,
+        ErrorReporter errorReporter,
         ImmutableArray<CSharpDirective>.Builder? builder)
     {
         var deduplicated = new Dictionary<CSharpDirective.Named, CSharpDirective.Named>(NamedDirectiveComparer.Instance);
@@ -144,7 +144,7 @@ internal static class FileLevelDirectiveHelpers
                         LeadingWhiteSpace = whiteSpace.Leading,
                         TrailingWhiteSpace = whiteSpace.Trailing,
                     },
-                    ReportError = reportError,
+                    ErrorReporter = errorReporter,
                     DirectiveKind = name,
                     DirectiveText = value,
                 };
@@ -152,7 +152,7 @@ internal static class FileLevelDirectiveHelpers
                 // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
                 if (value.Contains('"'))
                 {
-                    reportError(sourceFile, context.Info.Span, FileBasedProgramsResources.QuoteInDirective);
+                    context.ReportError(FileBasedProgramsResources.QuoteInDirective);
                 }
 
                 if (CSharpDirective.Parse(context) is { } directive)
@@ -161,7 +161,7 @@ internal static class FileLevelDirectiveHelpers
                     if (deduplicated.TryGetValue(directive, out var existingDirective))
                     {
                         var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        reportError(sourceFile, directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+                        context.ReportError(directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
                     }
                     else
                     {
@@ -230,16 +230,6 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
         return new SourceFile(filePath, SourceText.From(stream, encoding: null));
     }
 
-    public SourceFile WithPath(string newPath)
-    {
-        return new SourceFile(newPath, Text);
-    }
-
-    public SourceFile WithText(SourceText newText)
-    {
-        return new SourceFile(Path, newText);
-    }
-
     public void Save()
     {
         using var stream = File.Open(Path, FileMode.Create, FileAccess.Write);
@@ -249,15 +239,9 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
         Text.Write(writer);
     }
 
-    public FileLinePositionSpan GetFileLinePositionSpan(TextSpan span)
-    {
-        return new FileLinePositionSpan(Path, Text.Lines.GetLinePositionSpan(span));
-    }
-
     public string GetLocationString(TextSpan span)
     {
-        var positionSpan = GetFileLinePositionSpan(span);
-        return $"{positionSpan.Path}({positionSpan.StartLinePosition.Line + 1})";
+        return $"{Path}({Text.Lines.GetLinePositionSpan(span).Start.Line + 1})";
     }
 }
 
@@ -298,9 +282,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     public readonly struct ParseContext
     {
         public required ParseInfo Info { get; init; }
-        public required ErrorReporter ReportError { get; init; }
+        public required ErrorReporter ErrorReporter { get; init; }
         public required string DirectiveKind { get; init; }
         public required string DirectiveText { get; init; }
+
+        public void ReportError(string message)
+            => ErrorReporter(Info.SourceFile.Text, Info.SourceFile.Path, Info.Span, message);
+
+        public void ReportError(TextSpan span, string message)
+            => ErrorReporter(Info.SourceFile.Text, Info.SourceFile.Path, span, message);
     }
 
     public static Named? Parse(in ParseContext context)
@@ -313,7 +303,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "project": return Project.Parse(context);
             case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
-                context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
+                context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
                 return null;
         }
     }
@@ -326,14 +316,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
         {
-            context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+            context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
             return null;
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
         if (Patterns.DisallowedNameCharacters.Match(context.DirectiveText, beginning: 0, length: firstPart.Length).Success)
         {
-            context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
+            context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
             return null;
         }
 
@@ -409,7 +399,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                context.ReportError(context.Info.SourceFile, context.Info.Span, FileBasedProgramsResources.PropertyDirectiveMissingParts);
+                context.ReportError(FileBasedProgramsResources.PropertyDirectiveMissingParts);
                 return null;
             }
 
@@ -419,14 +409,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (XmlException ex)
             {
-                context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message), ex);
+                context.ReportError(string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message));
                 return null;
             }
 
             if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
                 MSBuildUtilities.ConvertStringToBool(propertyValue))
             {
-                context.ReportError(context.Info.SourceFile, context.Info.Span, FileBasedProgramsResources.StaticGraphRestoreNotSupported);
+                context.ReportError(FileBasedProgramsResources.StaticGraphRestoreNotSupported);
             }
 
             return new Property(context.Info)
@@ -498,8 +488,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             var directiveText = context.DirectiveText;
             if (directiveText.IsWhiteSpace())
             {
-                string directiveKind = context.DirectiveKind;
-                context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
                 return null;
             }
 
@@ -537,14 +526,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// <summary>
         /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
         /// </summary>
-        public Project EnsureProjectFilePath(ErrorReporter reportError)
+        public Project EnsureProjectFilePath(ErrorReporter errorReporter)
         {
             var resolvedName = Name;
+            var sourcePath = Info.SourceFile.Path;
 
             // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
             // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
-            var sourceDirectory = Path.GetDirectoryName(Info.SourceFile.Path)
-                ?? throw new InvalidOperationException($"Source file path '{Info.SourceFile.Path}' does not have a containing directory.");
+            var sourceDirectory = Path.GetDirectoryName(sourcePath)
+                ?? throw new InvalidOperationException($"Source file path '{sourcePath}' does not have a containing directory.");
 
             var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
             if (Directory.Exists(resolvedProjectPath))
@@ -558,16 +548,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 }
                 else
                 {
-                    reportError(Info.SourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, error));
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidProjectDirective, error));
                 }
             }
             else if (!File.Exists(resolvedProjectPath))
             {
-                reportError(Info.SourceFile, Info.Span,
-                    string.Format(FileBasedProgramsResources.InvalidProjectDirective, string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedProjectPath)));
+                ReportError(string.Format(FileBasedProgramsResources.InvalidProjectDirective, string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedProjectPath)));
             }
 
             return WithName(resolvedName, NameKind.ProjectFilePath);
+
+            void ReportError(string message)
+                => errorReporter(Info.SourceFile.Text, sourcePath, Info.Span, message);
         }
 
         public override string ToString() => $"#:project {Name}";
@@ -628,7 +620,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (directiveText.IsWhiteSpace())
             {
                 string directiveKind = context.DirectiveKind;
-                context.ReportError(context.Info.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
                 return null;
             }
 
@@ -659,7 +651,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (itemType is null)
             {
-                reportError(Info.SourceFile, Info.Span,
+                reportError(Info.SourceFile.Text, Info.SourceFile.Path, Info.Span,
                     string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType,
                     $"#:{KindToString()}",
                     string.Join(", ", mapping.Select(static e => e.Extension))));
@@ -730,7 +722,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public static ImmutableArray<(string Extension, string ItemType)> ParseMapping(
             string value,
             SourceFile sourceFile,
-            ErrorReporter reportError)
+            ErrorReporter errorReporter)
         {
             var pairs = value.Split(';');
 
@@ -742,7 +734,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
                 if (parts.Length != 2)
                 {
-                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, pair));
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, pair));
                     continue;
                 }
 
@@ -751,13 +743,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
                 if (extension is not ['.', _, ..])
                 {
-                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, extension, pair));
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, extension, pair));
                     continue;
                 }
 
                 if (itemType.IsWhiteSpace())
                 {
-                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair));
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair));
                     continue;
                 }
 
@@ -765,6 +757,9 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
 
             return builder.DrainToImmutable();
+
+            void ReportError(string message)
+                => errorReporter(sourceFile.Text, sourceFile.Path, default, message);
         }
     }
 }
@@ -817,25 +812,25 @@ internal sealed class SimpleDiagnostic
     }
 }
 
-internal delegate void ErrorReporter(SourceFile sourceFile, TextSpan textSpan, string message, Exception? innerException = null);
+internal delegate void ErrorReporter(SourceText text, string path, TextSpan textSpan, string message, Exception? innerException = null);
 
 internal static partial class ErrorReporters
 {
     public static readonly ErrorReporter IgnoringReporter =
-        static (_, _, _, _) => { };
+        static (_, _, _, _, _) => { };
 
     public static ErrorReporter CreateCollectingReporter(out ImmutableArray<SimpleDiagnostic>.Builder builder)
     {
         var capturedBuilder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
 
-        return (sourceFile, textSpan, message, _) =>
+        return (text, path, textSpan, message, _) =>
             capturedBuilder.Add(new SimpleDiagnostic
             {
                 Location = new SimpleDiagnostic.Position()
                 {
-                    Path = sourceFile.Path,
+                    Path = path,
                     TextSpan = textSpan,
-                    Span = sourceFile.GetFileLinePositionSpan(textSpan).Span
+                    Span = text.Lines.GetLinePositionSpan(textSpan)
                 },
                 Message = message
             });
