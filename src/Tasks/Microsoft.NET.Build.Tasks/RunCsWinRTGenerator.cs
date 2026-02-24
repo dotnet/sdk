@@ -18,7 +18,16 @@ namespace Microsoft.NET.Build.Tasks;
 [MSBuildMultiThreadableTask]
 public sealed class RunCsWinRTGenerator : ToolTask, IMultiThreadableTask
 {
+#if NETFRAMEWORK
+    private TaskEnvironment _taskEnvironment;
+    public TaskEnvironment TaskEnvironment
+    {
+        get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+        set => _taskEnvironment = value;
+    }
+#else
     public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
     /// <summary>
     /// Gets or sets the paths to assembly files that are reference assemblies, representing
     /// the entire surface area for compilation. These assemblies are the full set of assemblies
