@@ -115,6 +115,7 @@ internal static class FileLevelDirectiveHelpers
                 var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
                 var info = new CSharpDirective.ParseInfo
                 {
+                    SourceFile = sourceFile,
                     Span = span,
                     LeadingWhiteSpace = whiteSpace.Leading,
                     TrailingWhiteSpace = whiteSpace.Trailing,
@@ -138,12 +139,12 @@ internal static class FileLevelDirectiveHelpers
                 {
                     Info = new()
                     {
+                        SourceFile = sourceFile,
                         Span = span,
                         LeadingWhiteSpace = whiteSpace.Leading,
                         TrailingWhiteSpace = whiteSpace.Trailing,
                     },
                     ErrorReporter = errorReporter,
-                    SourceFile = sourceFile,
                     DirectiveKind = name,
                     DirectiveText = value,
                 };
@@ -269,6 +270,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     public readonly struct ParseInfo
     {
+        public required SourceFile SourceFile { get; init; }
         /// <summary>
         /// Span of the full line including the trailing line break.
         /// </summary>
@@ -281,15 +283,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     {
         public required ParseInfo Info { get; init; }
         public required ErrorReporter ErrorReporter { get; init; }
-        public required SourceFile SourceFile { get; init; }
         public required string DirectiveKind { get; init; }
         public required string DirectiveText { get; init; }
 
         public void ReportError(string message)
-            => ErrorReporter(SourceFile.Text, SourceFile.Path, Info.Span, message);
+            => ErrorReporter(Info.SourceFile.Text, Info.SourceFile.Path, Info.Span, message);
 
         public void ReportError(TextSpan span, string message)
-            => ErrorReporter(SourceFile.Text, SourceFile.Path, span, message);
+            => ErrorReporter(Info.SourceFile.Text, Info.SourceFile.Path, span, message);
     }
 
     public static Named? Parse(in ParseContext context)
@@ -300,10 +301,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "property": return Property.Parse(context);
             case "package": return Package.Parse(context);
             case "project": return Project.Parse(context);
+            case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
                 context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
                 return null;
-        };
+        }
     }
 
     private static (string, string?)? ParseOptionalTwoParts(in ParseContext context, char separator)
@@ -524,10 +526,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// <summary>
         /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
         /// </summary>
-        public Project EnsureProjectFilePath(SourceFile sourceFile, ErrorReporter errorReporter)
+        public Project EnsureProjectFilePath(ErrorReporter errorReporter)
         {
             var resolvedName = Name;
-            var sourcePath = sourceFile.Path;
+            var sourcePath = Info.SourceFile.Path;
 
             // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
             // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
@@ -557,10 +559,208 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return WithName(resolvedName, NameKind.ProjectFilePath);
 
             void ReportError(string message)
-                => errorReporter(sourceFile.Text, sourcePath, Info.Span, message);
+                => errorReporter(Info.SourceFile.Text, sourcePath, Info.Span, message);
         }
 
         public override string ToString() => $"#:project {Name}";
+    }
+
+    public enum IncludeOrExcludeKind
+    {
+        Include,
+        Exclude,
+    }
+
+    /// <summary>
+    /// <c>#:include</c> or <c>#:exclude</c> directive.
+    /// </summary>
+    public sealed class IncludeOrExclude(in ParseInfo info) : Named(info)
+    {
+        public const string ExperimentalFileBasedProgramEnableIncludeDirective = nameof(ExperimentalFileBasedProgramEnableIncludeDirective);
+        public const string ExperimentalFileBasedProgramEnableExcludeDirective = nameof(ExperimentalFileBasedProgramEnableExcludeDirective);
+        public const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
+        public const string ExperimentalFileBasedProgramEnableItemMapping = nameof(ExperimentalFileBasedProgramEnableItemMapping);
+
+        public const string MappingPropertyName = "FileBasedProgramsItemMapping";
+
+        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
+
+        public static ImmutableArray<(string Extension, string ItemType)> DefaultMapping
+        {
+            get
+            {
+                if (field.IsDefault)
+                {
+                    field =
+                    [
+                        (".cs", "Compile"),
+                        (".resx", "EmbeddedResource"),
+                        (".json", "None"),
+                        (".razor", "Content"),
+                    ];
+                }
+
+                return field;
+            }
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
+        /// </summary>
+        public required string OriginalName { get; init; }
+
+        public required IncludeOrExcludeKind Kind { get; init; }
+
+        public string? ItemType { get; init; }
+
+        public static new IncludeOrExclude? Parse(in ParseContext context)
+        {
+            var directiveText = context.DirectiveText;
+            if (directiveText.IsWhiteSpace())
+            {
+                string directiveKind = context.DirectiveKind;
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+                return null;
+            }
+
+            return new IncludeOrExclude(context.Info)
+            {
+                OriginalName = directiveText,
+                Name = directiveText,
+                Kind = KindFromString(context.DirectiveKind),
+            };
+        }
+
+        /// <param name="mapping">
+        /// See <see cref="ParseMapping"/>.
+        /// </param>
+        public IncludeOrExclude WithDeterminedItemType(ErrorReporter reportError, ImmutableArray<(string Extension, string ItemType)> mapping)
+        {
+            Debug.Assert(ItemType is null);
+
+            string? itemType = null;
+            foreach (var entry in mapping)
+            {
+                if (Name.EndsWith(entry.Extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    itemType = entry.ItemType;
+                    break;
+                }
+            }
+
+            if (itemType is null)
+            {
+                reportError(Info.SourceFile.Text, Info.SourceFile.Path, Info.Span,
+                    string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType,
+                    $"#:{KindToString()}",
+                    string.Join(", ", mapping.Select(static e => e.Extension))));
+                return this;
+            }
+
+            return new IncludeOrExclude(Info)
+            {
+                OriginalName = OriginalName,
+                Name = Name,
+                Kind = Kind,
+                ItemType = itemType,
+            };
+        }
+
+        public IncludeOrExclude WithName(string name)
+        {
+            if (Name == name)
+            {
+                return this;
+            }
+
+            return new IncludeOrExclude(Info)
+            {
+                OriginalName = OriginalName,
+                Name = name,
+                Kind = Kind,
+                ItemType = ItemType,
+            };
+        }
+
+        private static IncludeOrExcludeKind KindFromString(string kind)
+        {
+            return kind switch
+            {
+                "include" => IncludeOrExcludeKind.Include,
+                "exclude" => IncludeOrExcludeKind.Exclude,
+                _ => throw new InvalidOperationException($"Unexpected include/exclude directive kind '{kind}'."),
+            };
+        }
+
+        public string KindToString()
+        {
+            return Kind switch
+            {
+                IncludeOrExcludeKind.Include => "include",
+                IncludeOrExcludeKind.Exclude => "exclude",
+                _ => throw new InvalidOperationException($"Unexpected {nameof(IncludeOrExcludeKind)} value '{Kind}'."),
+            };
+        }
+
+        public string KindToMSBuildString()
+        {
+            return Kind switch
+            {
+                IncludeOrExcludeKind.Include => "Include",
+                IncludeOrExcludeKind.Exclude => "Remove",
+                _ => throw new InvalidOperationException($"Unexpected {nameof(IncludeOrExcludeKind)} value '{Kind}'."),
+            };
+        }
+
+        public override string ToString() => $"#:{KindToString()} {Name}";
+
+        /// <summary>
+        /// Parses a <paramref name="value"/> in the format <c>.protobuf=Protobuf;.cshtml=Content</c>.
+        /// Should come from MSBuild property with name <see cref="MappingPropertyName"/>.
+        /// </summary>
+        public static ImmutableArray<(string Extension, string ItemType)> ParseMapping(
+            string value,
+            SourceFile sourceFile,
+            ErrorReporter errorReporter)
+        {
+            var pairs = value.Split(';');
+
+            var builder = ImmutableArray.CreateBuilder<(string Extension, string ItemType)>(pairs.Length);
+
+            foreach (var pair in pairs)
+            {
+                var parts = pair.Split('=');
+
+                if (parts.Length != 2)
+                {
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, pair));
+                    continue;
+                }
+
+                var extension = parts[0].Trim();
+                var itemType = parts[1].Trim();
+
+                if (extension is not ['.', _, ..])
+                {
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, extension, pair));
+                    continue;
+                }
+
+                if (itemType.IsWhiteSpace())
+                {
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair));
+                    continue;
+                }
+
+                builder.Add((extension, itemType));
+            }
+
+            return builder.DrainToImmutable();
+
+            void ReportError(string message)
+                => errorReporter(sourceFile.Text, sourceFile.Path, default, message);
+        }
     }
 }
 
@@ -612,18 +812,18 @@ internal sealed class SimpleDiagnostic
     }
 }
 
-internal delegate void ErrorReporter(SourceText text, string path, TextSpan textSpan, string message);
+internal delegate void ErrorReporter(SourceText text, string path, TextSpan textSpan, string message, Exception? innerException = null);
 
 internal static partial class ErrorReporters
 {
     public static readonly ErrorReporter IgnoringReporter =
-        static (_, _, _, _) => { };
+        static (_, _, _, _, _) => { };
 
     public static ErrorReporter CreateCollectingReporter(out ImmutableArray<SimpleDiagnostic>.Builder builder)
     {
         var capturedBuilder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
 
-        return (text, path, textSpan, message) =>
+        return (text, path, textSpan, message, _) =>
             capturedBuilder.Add(new SimpleDiagnostic
             {
                 Location = new SimpleDiagnostic.Position()
