@@ -57,7 +57,16 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool AlwaysIncludeCoreFramework { get; set; }
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         List<ITaskItem> _filesWritten = new();
 
