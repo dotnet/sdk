@@ -110,17 +110,16 @@ internal class ProcessReaper : IDisposable
         // Ignore SIGINT/SIGQUIT so that the process can handle the signal
         e.Cancel = true;
 
-        // Set to true for WinExe apps on Windows, since they don't respond to Ctrl+C
-        if (CloseMainWindow)
+        // For WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C,
+        // CloseMainWindow() posts WM_CLOSE to gracefully shut them down.
+        // For console apps this is a no-op (returns false) since they have no main window.
+        try
         {
-            try
-            {
-                _process.CloseMainWindow();
-            }
-            catch (InvalidOperationException)
-            {
-                // The process hasn't started yet or has already exited; nothing to signal
-            }
+            _process.CloseMainWindow();
+        }
+        catch (InvalidOperationException)
+        {
+            // The process hasn't started yet or has already exited; nothing to signal
         }
     }
 
@@ -222,10 +221,4 @@ internal class ProcessReaper : IDisposable
     private Process _process;
     private SafeWaitHandle? _job;
     private Mutex? _shutdownMutex;
-
-    /// <summary>
-    /// If true, uses CloseMainWindow() to terminate the process on Windows instead of letting it handle Ctrl+C.
-    /// This is needed for WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C.
-    /// </summary>
-    public bool CloseMainWindow { get; set; }
 }

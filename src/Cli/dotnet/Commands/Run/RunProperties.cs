@@ -13,11 +13,10 @@ internal sealed record RunProperties(
     string? WorkingDirectory,
     string RuntimeIdentifier,
     string DefaultAppHostRuntimeIdentifier,
-    string TargetFrameworkVersion,
-    string OutputType)
+    string TargetFrameworkVersion)
 {
     internal RunProperties(string command, string? arguments, string? workingDirectory)
-        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty, string.Empty)
+        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
     {
     }
 
@@ -29,8 +28,7 @@ internal sealed record RunProperties(
             WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
             RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
             DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"),
-            OutputType: project.GetPropertyValue("OutputType"));
+            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
 
         if (string.IsNullOrEmpty(result.Command))
         {
