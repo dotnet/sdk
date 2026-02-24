@@ -7,7 +7,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class DotnetInstaller : IDotnetInstaller
 {
-    readonly IProgressTarget _progressTarget;
+    private readonly IProgressTarget _progressTarget;
 
     public DotnetInstaller(IProgressTarget progressTarget)
     {

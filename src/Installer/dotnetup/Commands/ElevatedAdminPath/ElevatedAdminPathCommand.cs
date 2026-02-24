@@ -17,7 +17,7 @@ internal class ElevatedAdminPathCommand : CommandBase
         _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
     }
 
-    void Log(string message)
+    private void Log(string message)
     {
         Console.WriteLine(message);
         File.AppendAllText(_outputFile, message + Environment.NewLine);

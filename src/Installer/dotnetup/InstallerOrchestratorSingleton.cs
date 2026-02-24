@@ -25,7 +25,7 @@ internal class InstallerOrchestratorSingleton
 
     public static InstallerOrchestratorSingleton Instance => s_instance;
 
-    private static ScopedMutex ModifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+    private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
     // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton

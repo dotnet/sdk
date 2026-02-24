@@ -18,7 +18,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
+    private readonly ChannelVersionResolver _channelVersionResolver = new();
 
     /// <summary>
     /// Maps user-friendly runtime type names to InstallComponent enum values.

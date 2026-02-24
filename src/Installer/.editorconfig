@@ -108,11 +108,23 @@ charset = utf-8-bom
 # SYSLIB1054: Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 dotnet_diagnostic.SYSLIB1054.severity = warning
 
+# CA1001: Types that own disposable fields should implement IDisposable
+dotnet_diagnostic.CA1001.severity = warning
+
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
 # CA1047: Do not declare protected member in sealed type
 dotnet_diagnostic.CA1047.severity = warning
+
+# CA1065: Do not raise exceptions in unexpected locations
+dotnet_diagnostic.CA1065.severity = warning
+
+# CA1068: CancellationToken parameters must come last
+dotnet_diagnostic.CA1068.severity = warning
+
+# CA1069: Enums values should not be duplicated
+dotnet_diagnostic.CA1069.severity = warning
 
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = warning
@@ -241,6 +253,9 @@ dotnet_diagnostic.CA1857.severity = warning
 # CA1858: Use 'StartsWith' instead of 'IndexOf'
 dotnet_diagnostic.CA1858.severity = warning
 
+# CA2002: Do not lock on objects with weak identity
+dotnet_diagnostic.CA2002.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -274,6 +289,9 @@ dotnet_diagnostic.CA2201.severity = warning
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = warning
 
+# CA2213: Disposable fields should be disposed
+dotnet_diagnostic.CA2213.severity = warning
+
 # CA2245: Do not assign a property to itself
 dotnet_diagnostic.CA2245.severity = warning
 
@@ -282,6 +300,27 @@ dotnet_diagnostic.CA2246.severity = warning
 
 # CA2249: Use string.Contains instead of string.IndexOf to improve readability.
 dotnet_diagnostic.CA2249.severity = warning
+
+# CA2247: Argument passed to TaskCompletionSource constructor should be TaskCreationOptions
+dotnet_diagnostic.CA2247.severity = warning
+
+# CA2248: Provide correct 'enum' argument to 'Enum.HasFlag'
+dotnet_diagnostic.CA2248.severity = warning
+
+# CA2250: Use 'ThrowIfCancellationRequested'
+dotnet_diagnostic.CA2250.severity = warning
+
+# CA2251: Use 'string.Equals' over comparison operators for ordinal comparisons
+dotnet_diagnostic.CA2251.severity = warning
+
+# CA5350: Do not use weak cryptographic algorithms
+dotnet_diagnostic.CA5350.severity = warning
+
+# CA5351: Do not use broken cryptographic algorithms
+dotnet_diagnostic.CA5351.severity = warning
+
+# CA5359: Do not disable certificate validation
+dotnet_diagnostic.CA5359.severity = warning
 
 # IDE0005: Remove unnecessary usings
 dotnet_diagnostic.IDE0005.severity = warning
@@ -311,6 +350,10 @@ dotnet_diagnostic.IDE0036.severity = warning
 # IDE0038: Use pattern matching to avoid is check followed by a cast (without variable)
 dotnet_diagnostic.IDE0038.severity = warning
 
+# IDE0040: Add accessibility modifiers
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_diagnostic.IDE0040.severity = warning
+
 # IDE0043: Format string contains invalid placeholder
 dotnet_diagnostic.IDE0043.severity = warning
 
@@ -332,6 +375,9 @@ dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = warning
+
+# IDE0090: Simplify new expression
+dotnet_diagnostic.IDE0090.severity = warning
 
 # IDE0073: File header
 dotnet_diagnostic.IDE0073.severity = warning
@@ -452,6 +498,28 @@ dotnet_diagnostic.IDE0200.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
+# CA1001: Types that own disposable fields should implement IDisposable
+dotnet_diagnostic.CA1001.severity = suggestion
+# CA1068: CancellationToken parameters must come last
+dotnet_diagnostic.CA1068.severity = suggestion
+# CA2002: Do not lock on objects with weak identity
+dotnet_diagnostic.CA2002.severity = suggestion
+# CA2213: Disposable fields should be disposed
+dotnet_diagnostic.CA2213.severity = suggestion
+# CA2250: Use 'ThrowIfCancellationRequested'
+dotnet_diagnostic.CA2250.severity = suggestion
+# CA2251: Use 'string.Equals'
+dotnet_diagnostic.CA2251.severity = suggestion
+# CA5350: Do not use weak cryptographic algorithms
+dotnet_diagnostic.CA5350.severity = suggestion
+# CA5351: Do not use broken cryptographic algorithms
+dotnet_diagnostic.CA5351.severity = suggestion
+# CA5359: Do not disable certificate validation
+dotnet_diagnostic.CA5359.severity = suggestion
+# IDE0040: Add accessibility modifiers
+dotnet_diagnostic.IDE0040.severity = suggestion
+# IDE0090: Simplify new expression
+dotnet_diagnostic.IDE0090.severity = suggestion
 
 # Defaults for content in the shared src/ and shared runtime dir
 

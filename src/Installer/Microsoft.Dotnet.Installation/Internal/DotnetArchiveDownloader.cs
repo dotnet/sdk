@@ -81,7 +81,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    private async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         // Create temp file path in same directory for atomic move when complete
         string tempPath = $"{destinationPath}.download";
@@ -182,7 +182,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    private void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
     }
