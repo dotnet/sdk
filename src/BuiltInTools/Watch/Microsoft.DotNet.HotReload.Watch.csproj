@@ -31,8 +31,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" />
-
-    <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Utilities" />
   </ItemGroup>
 
   <ItemGroup>

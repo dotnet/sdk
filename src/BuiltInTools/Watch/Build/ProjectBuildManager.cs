@@ -41,7 +41,7 @@ internal sealed class ProjectBuildManager(ProjectCollection collection, BuildRep
         await s_buildSemaphore.WaitAsync(cancellationToken);
 
         var manager = BuildManager.DefaultBuildManager;
-        using var _ = buildCancellationTokenSource.Token.Register(() => manager.CancelAllSubmissions());
+        using var _ = buildCancellationTokenSource.Token.Register(manager.CancelAllSubmissions);
 
         var buildParameters = new BuildParameters(Collection)
         {
