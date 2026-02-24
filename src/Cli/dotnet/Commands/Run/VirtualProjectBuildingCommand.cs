@@ -1186,25 +1186,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return sourceFile;
         }
 
-#if DEBUG
-        var filteredDirectives = directives.Where(d => d.Info.SourceFile.Path == sourceFile.Path);
-        Debug.Assert(
-            filteredDirectives.OrderBy(static d => d.Info.Span.Start).SequenceEqual(filteredDirectives),
-            "Directives should be ordered by source location.");
-#endif
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
 
-        var text = sourceFile.Text;
-
-        for (int i = directives.Length - 1; i >= 0; i--)
+        foreach (var directive in directives)
         {
-            var directive = directives[i];
-            if (directive.Info.SourceFile.Path == sourceFile.Path)
-            {
-                text = text.Replace(directive.Info.Span, string.Empty);
-            }
+            editor.Remove(directive);
         }
 
-        return sourceFile.WithText(text);
+        return editor.SourceFile;
     }
 
     public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile, string targetFilePath)

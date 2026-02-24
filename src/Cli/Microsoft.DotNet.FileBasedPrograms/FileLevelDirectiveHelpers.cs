@@ -77,7 +77,6 @@ internal static class FileLevelDirectiveHelpers
             }
         }
 
-        // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
     }
 
