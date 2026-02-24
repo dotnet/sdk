@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <Copyright>© Microsoft</Copyright>
     <Product>Framework Assets Test</Product>
@@ -12,8 +12,7 @@
     <!-- Marks all .js assets as Framework for the pack pipeline -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
 
-    <!-- Pack to local test feed -->
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\packages</PackageOutputPath>
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
     <PackageVersion>1.0.0</PackageVersion>
   </PropertyGroup>
 
