@@ -230,16 +230,23 @@ internal sealed class FileBasedAppSourceEditor
     {
         var span = directive.Info.Span;
         var start = span.Start;
-        var length = span.Length + DetermineTrailingLengthToRemove(directive);
+        var length = span.Length;
+
+        DetermineWhiteSpaceToRemove(directive, out int leadingLength, out int trailingLength);
+        start -= leadingLength;
+        length += trailingLength;
+
         SourceFile = SourceFile.WithText(SourceFile.Text.Replace(start: start, length: length, newText: string.Empty));
     }
 
-    private static int DetermineTrailingLengthToRemove(CSharpDirective directive)
+    private static void DetermineWhiteSpaceToRemove(CSharpDirective directive, out int leadingLength, out int trailingLength)
     {
         // If there are blank lines both before and after the directive, remove the trailing white space.
         if (directive.Info.LeadingWhiteSpace.LineBreaks > 0 && directive.Info.TrailingWhiteSpace.LineBreaks > 0)
         {
-            return directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = 0;
+            trailingLength = directive.Info.TrailingWhiteSpace.TotalLength;
+            return;
         }
 
         // If the directive (including leading white space) starts at the beginning of the file,
@@ -247,10 +254,13 @@ internal sealed class FileBasedAppSourceEditor
         var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.TotalLength;
         if (startBeforeWhiteSpace == 0)
         {
-            return directive.Info.LeadingWhiteSpace.TotalLength + directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = directive.Info.LeadingWhiteSpace.TotalLength;
+            trailingLength = directive.Info.TrailingWhiteSpace.TotalLength;
+            return;
         }
 
         Debug.Assert(startBeforeWhiteSpace > 0);
-        return 0;
+        leadingLength = 0;
+        trailingLength = 0;
     }
 }

@@ -1645,7 +1645,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """,
             expectedProject: expectedProject,
             expectedCSharp: """
-
                 Console.WriteLine();
                 """);
 
