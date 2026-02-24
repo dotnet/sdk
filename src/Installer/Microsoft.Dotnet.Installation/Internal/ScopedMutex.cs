@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -6,7 +6,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 public class ScopedMutex : IDisposable
 {
     private readonly Mutex _mutex;
-    private bool _hasHandle;
+    private readonly bool _hasHandle;
     // Track recursive holds on a per-thread basis so we can assert manifest access without re-acquiring.
     private static readonly ThreadLocal<int> _holdCount = new(() => 0);
 

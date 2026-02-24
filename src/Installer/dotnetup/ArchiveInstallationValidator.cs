@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Deployment.DotNet.Releases;
@@ -8,7 +8,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class ArchiveInstallationValidator : IInstallationValidator
 {
-    private const string HostFxrRuntimeProperty = "HOSTFXR_PATH";
     private static readonly Dictionary<InstallComponent, string> RuntimeMonikerByComponent = new()
     {
         [InstallComponent.Runtime] = "Microsoft.NETCore.App",

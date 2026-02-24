@@ -1,15 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+internal interface IDotnetupManifest
 {
-    internal interface IDotnetupManifest
-    {
-        IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null);
-        IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null);
-        void AddInstalledVersion(DotnetInstall version);
-        void RemoveInstalledVersion(DotnetInstall version);
-    }
+    IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null);
+    IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null);
+    void AddInstalledVersion(DotnetInstall version);
+    void RemoveInstalledVersion(DotnetInstall version);
 }

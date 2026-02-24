@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -56,7 +56,10 @@ public static class ErrorCodeMapper
     /// <param name="errorCode">Optional error code override.</param>
     public static void ApplyErrorTags(Activity? activity, ExceptionErrorInfo errorInfo, string? errorCode = null)
     {
-        if (activity is null) return;
+        if (activity is null)
+        {
+            return;
+        }
 
         activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
         activity.SetTag("error.type", errorInfo.ErrorType);
@@ -68,13 +71,24 @@ public static class ErrorCodeMapper
 
         // Use pattern matching to set optional tags only if they have values
         if (errorInfo is { StatusCode: { } statusCode })
+        {
             activity.SetTag("error.http_status", statusCode);
+        }
+
         if (errorInfo is { HResult: { } hResult })
+        {
             activity.SetTag("error.hresult", hResult);
+        }
+
         if (errorInfo is { Details: { } details })
+        {
             activity.SetTag("error.details", details);
+        }
+
         if (errorInfo is { StackTrace: { } stackTrace })
+        {
             activity.SetTag("error.stack_trace", stackTrace);
+        }
     }
 
     /// <summary>
@@ -201,7 +215,7 @@ public static class ErrorCodeMapper
 
         if (ErrorCategoryClassifier.IsIORelatedErrorCode(errorCode) && installEx.InnerException is IOException ioInner)
         {
-            var (ioErrorType, ioCategory, ioDetails) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioInner.HResult);
+            var (_, ioCategory, ioDetails) = ErrorCategoryClassifier.ClassifyIOErrorByHResult(ioInner.HResult);
             baseCategory = ioCategory;
 
             if (ioDetails is not null)
@@ -229,8 +243,6 @@ public static class ErrorCodeMapper
             Details: details,
             StackTrace: stackTrace);
     }
-
-
 
     /// <summary>
     /// Builds a full stack trace string including inner exception types and their stack traces.

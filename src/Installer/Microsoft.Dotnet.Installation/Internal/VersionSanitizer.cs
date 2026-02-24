@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -92,7 +92,6 @@ public static partial class VersionSanitizer
 
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }
-
 
         // Check for partial versions like "8" or "8.0" which ReleaseVersion may not parse
         var parts = version.Split('.');

@@ -1,8 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Deployment.DotNet.Releases;
-
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -39,7 +38,7 @@ internal class ChannelVersionResolver
     /// </summary>
     internal const int MaxReasonableMajorVersion = 99;
 
-    private ReleaseManifest _releaseManifest = new();
+    private readonly ReleaseManifest _releaseManifest = new();
 
     public ChannelVersionResolver()
     {
@@ -354,7 +353,6 @@ internal class ChannelVersionResolver
             .Substring(0, 3);
         return int.Parse(bandString);
     }
-
 
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").

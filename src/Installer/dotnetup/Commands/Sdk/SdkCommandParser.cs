@@ -1,30 +1,29 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
+
+internal class SdkCommandParser
 {
-    internal class SdkCommandParser
+    private static readonly Command Command = ConstructCommand();
+
+    public static Command GetCommand()
     {
-        private static readonly Command Command = ConstructCommand();
+        return Command;
+    }
 
-        public static Command GetCommand()
-        {
-            return Command;
-        }
+    private static Command ConstructCommand()
+    {
+        Command command = new("sdk", "Manage sdk installations");
+        command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
+        command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
 
-        private static Command ConstructCommand()
-        {
-            Command command = new("sdk", "Manage sdk installations");
-            command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
-            command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
+        //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-            //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }

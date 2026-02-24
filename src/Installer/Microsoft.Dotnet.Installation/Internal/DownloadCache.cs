@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -27,7 +27,7 @@ internal class DownloadCache
 
     private static readonly string CacheIndexPath = Path.Combine(CacheDirectory, "cache-index.json");
 
-    private Dictionary<string, string> _cacheIndex;
+    private readonly Dictionary<string, string> _cacheIndex;
 
     public DownloadCache()
     {

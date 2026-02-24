@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -24,8 +24,8 @@ internal class MuxerHandler
     private readonly string _existingMuxerBackupPath;
     private readonly bool _requireMuxerUpdate;
 
-    private ReleaseVersion? _preExtractionHighestRuntimeVersion;
-    private bool _hadExistingMuxer;
+    private readonly ReleaseVersion? _preExtractionHighestRuntimeVersion;
+    private readonly bool _hadExistingMuxer;
     private bool _movedExistingMuxer;
 
     public MuxerHandler(string targetDir, bool requireMuxerUpdate = false)

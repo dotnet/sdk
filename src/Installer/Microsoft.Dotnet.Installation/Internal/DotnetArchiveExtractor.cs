@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Formats.Tar;
@@ -17,7 +17,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
     private MuxerHandler? _muxerHandler;
-    private string scratchDownloadDirectory;
+    private readonly string scratchDownloadDirectory;
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
 
@@ -217,10 +217,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private static void InitializeExtractionProgress(IProgressTask? installTask, long totalEntries)
     {
-        if (installTask is not null)
-        {
-            installTask.MaxValue = totalEntries > 0 ? totalEntries : 1;
-        }
+        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
     }
 
     /// <summary>

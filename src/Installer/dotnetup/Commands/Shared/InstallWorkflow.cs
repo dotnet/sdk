@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -116,7 +116,6 @@ internal class InstallWorkflow
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
     {
-        error = null;
         var walkthrough = new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver, options);
         var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var currentInstallRoot = _dotnetInstaller.GetConfiguredInstallType();

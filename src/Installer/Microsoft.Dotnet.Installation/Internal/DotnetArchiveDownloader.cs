@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -18,7 +18,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private readonly HttpClient _httpClient;
     private readonly bool _shouldDisposeHttpClient;
-    private ReleaseManifest _releaseManifest;
+    private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
@@ -280,7 +280,6 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             // Ignore errors adding to cache - it's not critical
         }
     }
-
 
     /// <summary>
     /// Computes the SHA512 hash of a file.

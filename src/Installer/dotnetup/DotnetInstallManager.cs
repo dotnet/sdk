@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -90,7 +90,10 @@ public class DotnetInstallManager : IDotnetInstallManager
             }
             var parent = Directory.GetParent(directory);
             if (parent == null)
+            {
                 break;
+            }
+
             directory = parent.FullName;
         }
         return new GlobalJsonInfo();
@@ -143,12 +146,14 @@ public class DotnetInstallManager : IDotnetInstallManager
             {
                 case InstallType.User:
                     if (string.IsNullOrEmpty(dotnetRoot))
+                    {
                         throw new ArgumentNullException(nameof(dotnetRoot));
+                    }
 
                     var userChanges = installRootManager.GetUserInstallRootChanges();
                     bool succeeded = installRootManager.ApplyUserInstallRoot(
                         userChanges,
-                        msg => AnsiConsole.WriteLine(msg),
+                        AnsiConsole.WriteLine,
                         msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
 
                     if (!succeeded)
@@ -161,7 +166,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     var adminChanges = installRootManager.GetAdminInstallRootChanges();
                     bool adminSucceeded = installRootManager.ApplyAdminInstallRoot(
                         adminChanges,
-                        msg => AnsiConsole.WriteLine(msg),
+                        AnsiConsole.WriteLine,
                         msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
 
                     if (!adminSucceeded)
@@ -188,7 +193,9 @@ public class DotnetInstallManager : IDotnetInstallManager
             {
                 case InstallType.User:
                     if (string.IsNullOrEmpty(dotnetRoot))
+                    {
                         throw new ArgumentNullException(nameof(dotnetRoot));
+                    }
                     // Add dotnetRoot to PATH
                     pathEntries.Insert(0, dotnetRoot);
                     // Set DOTNET_ROOT
@@ -196,7 +203,9 @@ public class DotnetInstallManager : IDotnetInstallManager
                     break;
                 case InstallType.Admin:
                     if (string.IsNullOrEmpty(dotnetRoot))
+                    {
                         throw new ArgumentNullException(nameof(dotnetRoot));
+                    }
                     // Add dotnetRoot to PATH
                     pathEntries.Insert(0, dotnetRoot);
                     // Unset DOTNET_ROOT

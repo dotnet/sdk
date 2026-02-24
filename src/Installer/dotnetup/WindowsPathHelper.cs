@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -70,8 +70,6 @@ internal sealed class WindowsPathHelper : IDisposable
             _disposed = true;
         }
     }
-
-
 
     /// <summary>
     /// Reads the machine-wide PATH environment variable from the registry.
@@ -270,7 +268,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string AddProgramFilesDotnetToPath(string unexpandedPath, string expandedPath)
     {
-        var expandedEntries = SplitPath(expandedPath);
+        _ = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Get the primary Program Files dotnet path (non-x86)

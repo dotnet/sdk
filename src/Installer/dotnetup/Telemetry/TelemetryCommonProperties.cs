@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
@@ -15,11 +15,6 @@ internal static class TelemetryCommonProperties
     private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
     private static readonly Lazy<string?> s_llmEnvironment = new(DetectLLMEnvironment);
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
-
-    /// <summary>
-    /// Environment variable to mark telemetry as coming from a dev build.
-    /// </summary>
-    private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
 
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
