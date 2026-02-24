@@ -1,0 +1,75 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  dependsOn: ''
+  helixTargetQueue: ''
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  container: ''
+  helixTargetContainer: ''
+  categoryName: dotnetup
+  runTests: true
+  publishRetryConfig: false
+  publishXunitResults: false
+  enableSbom: true
+  timeoutInMinutes: 150
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    displayName: '${{ parameters.pool.emoji }} dotnetup package: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    strategy: ${{ parameters.strategy }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    - name: _officialBuildProperties
+      value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '🌐 Publish dotnetup library packages'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
+        artifactName: 'dotnetup-library-packages'
+        publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '📊 Publish dotnetup library build binlogs'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
+        artifactName: 'dotnetup-library-binlogs'
+        publishLocation: Container
+    steps:
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          & .\restore.cmd $(_officialBuildProperties)
+        displayName: 🍱 Bootstrap toolset (Windows)
+      - powershell: |
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-build.binlog $(_officialBuildProperties)
+        displayName: 💻 Build Windows
+      - powershell: |
+          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-package.binlog $(_officialBuildProperties)
+        displayName: 📦 Package dotnetup library
+      - powershell: |
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-sign.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup library packages with arcade signtool
+      - task: 1ES.PublishNuget@1
+        displayName: 🟣 Publish packages to AzDO
+        inputs:
+          useDotNetTask: true
+          packagesToPush: '$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.nupkg;!$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.symbols.nupkg'
+          packageParentPath: $(Build.SourcesDirectory)/artifacts/packages/Release
+          publishVstsFeed: public/dotnet-tools

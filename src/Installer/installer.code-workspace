@@ -1,0 +1,169 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "installer"
+        },
+        {
+            "path": "../../test/dotnetup.Tests",
+            "name": "dotnetup.Tests"
+        },
+        {
+            "path": "../.."
+        }
+    ],
+    "settings": {
+        "dotnet.defaultSolution": "../../dotnetup.slnf",
+        "csharp.debug.console": "integratedTerminal",
+        "debug.terminal.clearBeforeReusing": true,
+        "editor.formatOnSave": true,
+        "omnisharp.useModernNet": true
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Launch dotnetup",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+                "args": "${input:dotnetupArgs}",
+                "cwd": "${workspaceFolder:installer}/dotnetup",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                },
+                "env": {
+                    "DOTNETUP_DEV_BUILD": "1"
+                }
+            },
+            {
+                "name": "Run dotnetup tests (launch)",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "/p:ContinuousIntegrationBuild=false",
+                ],
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "env": {
+                    "DOTNETUP_TEST_DEBUG": "0"
+                }
+            },
+            {
+                "name": "Debug dotnetup test",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "--no-build",
+                    "--filter",
+                    "FullyQualifiedName~${input:testName}",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                },
+                "env": {
+                    "DOTNETUP_TEST_DEBUG": "1"
+                }
+            }
+        ],
+        "compounds": [],
+        "inputs": [
+            {
+                "id": "dotnetupArgs",
+                "type": "promptString",
+                "description": "Command line arguments (e.g., --info, sdk install latest)",
+                "default": "--info"
+            },
+            {
+                "id": "testName",
+                "type": "promptString",
+                "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
+            }
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "build",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "build",
+                    "dotnetup/dotnetup.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "test",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "test",
+                    "isDefault": true
+                }
+            },
+        ]
+    }
+}
