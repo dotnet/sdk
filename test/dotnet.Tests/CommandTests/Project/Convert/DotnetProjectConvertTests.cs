@@ -1963,7 +1963,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VirtualProjectBuilder.WriteProjectFile(
             projectWriter,
             directives,
-            VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+            VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
             isVirtualProject: false);
 
         actualProject = projectWriter.ToString();
