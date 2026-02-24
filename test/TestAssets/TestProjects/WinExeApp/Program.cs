@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 // <metadata update handler placeholder>
 
-namespace WatchWinExeApp;
+namespace WinExeApp;
 
 static class Program
 {
@@ -29,7 +29,7 @@ class MainForm : Form
 
     public MainForm()
     {
-        Text = "WatchWinExeApp";
+        Text = "WinExeApp";
         FormClosing += OnFormClosing;
         Shown += OnShown;
     }

@@ -860,7 +860,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // sends Ctrl+C. The `dotnet run` process receives Ctrl+C and calls CloseMainWindow() on the
             // WinForms app. See https://github.com/dotnet/sdk/issues/52473
 
-            var testAsset = TestAssets.CopyTestAsset("WatchWinExeApp")
+            var testAsset = TestAssets.CopyTestAsset("WinExeApp")
                .WithSource();
 
             App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
