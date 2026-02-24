@@ -119,8 +119,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Exception? caught = null;
                 try { result = task.Execute(); } catch (Exception ex) { caught = ex; }
 
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "empty RuntimeGraphPath should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "empty RuntimeGraphPath should not cause NullReferenceException");
+                }
             }
             finally
             {

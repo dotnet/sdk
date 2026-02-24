@@ -95,8 +95,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Exception? caught = null;
                 try { result = task.Execute(); } catch (Exception ex) { caught = ex; }
 
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "empty OutputAppConfigFile should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "empty OutputAppConfigFile should not cause NullReferenceException");
+                }
             }
             finally
             {
@@ -124,8 +127,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Exception? caught = null;
                 try { result = task.Execute(); } catch (Exception ex) { caught = ex; }
 
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "empty AppConfigFile ItemSpec should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "empty AppConfigFile ItemSpec should not cause NullReferenceException");
+                }
             }
             finally
             {
@@ -154,8 +160,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 try { result = task.Execute(); } catch (Exception ex) { caught = ex; }
 
                 // Whitespace-only path should not cause NullReferenceException
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "whitespace-only OutputAppConfigFile should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "whitespace-only OutputAppConfigFile should not cause NullReferenceException");
+                }
             }
             finally
             {
@@ -184,8 +193,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 try { result = task.Execute(); } catch (Exception ex) { caught = ex; }
 
                 // Whitespace-only path should not cause NullReferenceException
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "whitespace-only AppConfigFile should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "whitespace-only AppConfigFile should not cause NullReferenceException");
+                }
             }
             finally
             {

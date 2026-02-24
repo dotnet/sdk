@@ -39,7 +39,16 @@ namespace Microsoft.NET.Build.Tasks
         public bool EnableCompressionInSingleFile { get; set; }
         public bool EnableMacOsCodeSign { get; set; } = true;
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
 
         [Output]
         public ITaskItem[] ExcludedFiles { get; set; } = null!;
