@@ -5,7 +5,7 @@ using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class HostFxrWrapper
+internal partial class HostFxrWrapper
 {
     public static NetEnvironmentInfo getInfo(string installRoot)
     {
@@ -51,8 +51,8 @@ internal class HostFxrWrapper
     // lpFileName passed to LoadLibraryEx must be a full path.
     private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    private static extern IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
+    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
 
     private static void PreloadHostFxrLibrary(string dotnetExeDirectory)
     {

@@ -72,7 +72,7 @@ internal class MuxerHandler
     /// <summary>
     /// Gets the muxer entry name to detect during extraction.
     /// </summary>
-    public string MuxerEntryName => DotnetupUtilities.GetDotnetExeName();
+    public static string MuxerEntryName => DotnetupUtilities.GetDotnetExeName();
 
     /// <summary>
     /// Gets the path where the muxer should be extracted to during the main extraction pass.

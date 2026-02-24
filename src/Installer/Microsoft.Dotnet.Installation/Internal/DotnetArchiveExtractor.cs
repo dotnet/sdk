@@ -17,7 +17,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
     private MuxerHandler? _muxerHandler;
-    private readonly string scratchDownloadDirectory;
+    private readonly string _scratchDownloadDirectory;
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
 
@@ -31,7 +31,7 @@ internal class DotnetArchiveExtractor : IDisposable
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
-        scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
+        _scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
         {
@@ -48,7 +48,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Gets the scratch download directory path. Exposed for testing.
     /// </summary>
-    internal string ScratchDownloadDirectory => scratchDownloadDirectory;
+    internal string ScratchDownloadDirectory => _scratchDownloadDirectory;
 
     /// <summary>
     /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
@@ -62,7 +62,7 @@ internal class DotnetArchiveExtractor : IDisposable
         activity?.SetTag("download.version", _resolvedVersion.ToString());
 
         var archiveName = $"dotnet-{Guid.NewGuid()}";
-        _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
+        _archivePath = Path.Combine(_scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
         string componentDescription = _request.Component.GetDisplayName();
         var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
@@ -203,7 +203,7 @@ internal class DotnetArchiveExtractor : IDisposable
             ? entryName.Substring(2)
             : entryName;
 
-        if (muxerHandler != null && normalizedName == muxerHandler.MuxerEntryName)
+        if (muxerHandler != null && normalizedName == MuxerHandler.MuxerEntryName)
         {
             muxerHandler.MuxerWasExtracted = true;
             return muxerHandler.TempMuxerPath;
@@ -223,7 +223,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
@@ -245,7 +245,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Decompresses a .tar.gz file if needed, returning the path to the tar file.
     /// </summary>
-    private string DecompressTarGzIfNeeded(string archivePath, out bool needsDecompression)
+    private static string DecompressTarGzIfNeeded(string archivePath, out bool needsDecompression)
     {
         needsDecompression = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
         if (!needsDecompression)
@@ -266,7 +266,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Counts the number of entries in a tar file for progress reporting.
     /// </summary>
-    private long CountTarEntries(string tarPath)
+    private static long CountTarEntries(string tarPath)
     {
         long totalFiles = 0;
         using var tarStream = File.OpenRead(tarPath);
@@ -315,7 +315,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a zip archive to the target directory.
     /// </summary>
-    private void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
         InitializeExtractionProgress(installTask, zip.Entries.Count);
@@ -365,9 +365,9 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             // Clean up temporary download directory
-            if (Directory.Exists(scratchDownloadDirectory))
+            if (Directory.Exists(_scratchDownloadDirectory))
             {
-                Directory.Delete(scratchDownloadDirectory, recursive: true);
+                Directory.Delete(_scratchDownloadDirectory, recursive: true);
             }
         }
         catch

@@ -97,7 +97,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 long? totalBytes = null;
 
                 // Make the actual download request
-                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
                 if (response.Content.Headers.ContentLength.HasValue)
@@ -105,7 +105,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                     totalBytes = response.Content.Headers.ContentLength.Value;
                 }
 
-                using var contentStream = await response.Content.ReadAsStreamAsync();
+                using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
                 var buffer = new byte[81920]; // 80KB buffer
@@ -114,9 +114,9 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
                 var lastProgressReport = DateTime.MinValue;
 
-                while ((read = await contentStream.ReadAsync(buffer)) > 0)
+                while ((read = await contentStream.ReadAsync(buffer).ConfigureAwait(false)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                    await fileStream.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
 
                     bytesRead += read;
 
@@ -133,7 +133,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 progress?.Report(new DownloadProgress(bytesRead, totalBytes));
 
                 // Ensure all data is written to disk
-                await fileStream.FlushAsync();
+                await fileStream.FlushAsync().ConfigureAwait(false);
                 fileStream.Close();
 
                 // Atomic move to final destination
@@ -149,7 +149,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             {
                 if (attempt < MaxRetryCount)
                 {
-                    await Task.Delay(RetryDelayMilliseconds * attempt); // Linear backoff
+                    await Task.Delay(RetryDelayMilliseconds * attempt).ConfigureAwait(false); // Linear backoff
                 }
                 else
                 {

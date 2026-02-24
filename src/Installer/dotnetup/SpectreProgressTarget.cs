@@ -20,7 +20,7 @@ public class SpectreProgressTarget : IProgressTarget
             var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
-                await _overallTask.Task;
+                await _overallTask.Task.ConfigureAwait(false);
             });
 
             _progressContext = tcs.Task.GetAwaiter().GetResult();

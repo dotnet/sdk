@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -113,7 +113,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
     }
 
-    private void InstallSDK(DotnetInstallRoot dotnetRoot, UpdateChannel channel)
+    private static void InstallSDK(DotnetInstallRoot dotnetRoot, UpdateChannel channel)
     {
         DotnetInstallRequest request = new DotnetInstallRequest(
             dotnetRoot,
@@ -125,7 +125,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
         if (installResult.Install == null)
         {
-            throw new Exception($"Failed to install .NET SDK {channel.Name}");
+            throw new InvalidOperationException($"Failed to install .NET SDK {channel.Name}");
         }
         else
         {
@@ -151,7 +151,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     }
 
                     var userChanges = installRootManager.GetUserInstallRootChanges();
-                    bool succeeded = installRootManager.ApplyUserInstallRoot(
+                    bool succeeded = InstallRootManager.ApplyUserInstallRoot(
                         userChanges,
                         AnsiConsole.WriteLine,
                         msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
@@ -164,7 +164,7 @@ public class DotnetInstallManager : IDotnetInstallManager
 
                 case InstallType.Admin:
                     var adminChanges = installRootManager.GetAdminInstallRootChanges();
-                    bool adminSucceeded = installRootManager.ApplyAdminInstallRoot(
+                    bool adminSucceeded = InstallRootManager.ApplyAdminInstallRoot(
                         adminChanges,
                         AnsiConsole.WriteLine,
                         msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));

@@ -8,13 +8,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class ArchiveInstallationValidator : IInstallationValidator
 {
-    private static readonly Dictionary<InstallComponent, string> RuntimeMonikerByComponent = new()
+    private static readonly Dictionary<InstallComponent, string> s_runtimeMonikerByComponent = new()
     {
         [InstallComponent.Runtime] = "Microsoft.NETCore.App",
         [InstallComponent.ASPNETCore] = "Microsoft.AspNetCore.App",
         [InstallComponent.WindowsDesktop] = "Microsoft.WindowsDesktop.App"
     };
 
+#pragma warning disable CA1822 // Validate methods implement IInstallationValidator and cannot be made static
     public bool Validate(DotnetInstall install)
     {
         return Validate(install, out _);
@@ -56,7 +57,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         {
             string expectedDir = install.Component == InstallComponent.SDK
                 ? Path.Combine(installRoot, "sdk", resolvedVersion)
-                : RuntimeMonikerByComponent.TryGetValue(install.Component, out string? moniker)
+                : s_runtimeMonikerByComponent.TryGetValue(install.Component, out string? moniker)
                     ? Path.Combine(installRoot, "shared", moniker, resolvedVersion)
                     : "<unknown>";
             failureReason = $"Component layout validation failed. Expected directory '{expectedDir}' to exist and be non-empty.";
@@ -73,6 +74,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
         return true;
     }
+#pragma warning restore CA1822
 
     private static bool ValidateComponentLayout(string installRoot, string resolvedVersion, InstallComponent component)
     {
@@ -82,7 +84,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             return DirectoryExistsAndNotEmpty(sdkDirectory);
         }
 
-        if (RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
+        if (s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
         {
             string runtimeDirectory = Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion);
             return DirectoryExistsAndNotEmpty(runtimeDirectory);
@@ -111,7 +113,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         return ValidateComponentLayout(installRoot, install.Version.ToString(), install.Component);
     }
 
-    private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
+    private static bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
     {
         failureReason = null;
 
@@ -140,7 +142,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
                 return found;
             }
 
-            if (!RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
+            if (!s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
             {
                 failureReason = $"No runtime moniker mapping for component '{component}'.";
                 return false;

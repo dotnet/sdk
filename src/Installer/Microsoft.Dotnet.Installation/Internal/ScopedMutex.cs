@@ -8,7 +8,7 @@ public class ScopedMutex : IDisposable
     private readonly Mutex _mutex;
     private readonly bool _hasHandle;
     // Track recursive holds on a per-thread basis so we can assert manifest access without re-acquiring.
-    private static readonly ThreadLocal<int> _holdCount = new(() => 0);
+    private static readonly ThreadLocal<int> s_holdCount = new(() => 0);
 
     /// <summary>
     /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
@@ -44,7 +44,7 @@ public class ScopedMutex : IDisposable
 
         if (_hasHandle)
         {
-            _holdCount.Value = _holdCount.Value + 1;
+            s_holdCount.Value = s_holdCount.Value + 1;
         }
         // Note: If _hasHandle is false, caller should check HasHandle property.
         // We don't throw here because:
@@ -54,7 +54,7 @@ public class ScopedMutex : IDisposable
     }
 
     public bool HasHandle => _hasHandle;
-    public static bool CurrentThreadHoldsMutex => _holdCount.Value > 0;
+    public static bool CurrentThreadHoldsMutex => s_holdCount.Value > 0;
 
     public void Dispose()
     {
@@ -67,9 +67,9 @@ public class ScopedMutex : IDisposable
             finally
             {
                 // Decrement hold count even if release throws.
-                if (_holdCount.Value > 0)
+                if (s_holdCount.Value > 0)
                 {
-                    _holdCount.Value = _holdCount.Value - 1;
+                    s_holdCount.Value = s_holdCount.Value - 1;
                 }
             }
         }

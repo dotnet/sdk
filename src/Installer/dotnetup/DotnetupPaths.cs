@@ -13,7 +13,7 @@ internal static class DotnetupPaths
     private const string ManifestFileName = "dotnetup_manifest.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
 
-    private static string? _dataDirectory;
+    private static string? s_dataDirectory;
 
     /// <summary>
     /// Gets the base data directory for dotnetup.
@@ -36,9 +36,9 @@ internal static class DotnetupPaths
                 return overrideDir;
             }
 
-            if (_dataDirectory is not null)
+            if (s_dataDirectory is not null)
             {
-                return _dataDirectory;
+                return s_dataDirectory;
             }
 
             var baseDir = GetBaseDirectory();
@@ -47,8 +47,8 @@ internal static class DotnetupPaths
                 throw new InvalidOperationException("Could not determine the local application data directory. Ensure the environment is properly configured.");
             }
 
-            _dataDirectory = Path.Combine(baseDir, DotnetupFolderName);
-            return _dataDirectory;
+            s_dataDirectory = Path.Combine(baseDir, DotnetupFolderName);
+            return s_dataDirectory;
         }
     }
 

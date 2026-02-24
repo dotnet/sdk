@@ -40,7 +40,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             ?? throw new InvalidOperationException("Could not determine dotnetup data directory.");
     }
 
-    private void AssertHasFinalizationMutex()
+    private static void AssertHasFinalizationMutex()
     {
         // Instead of attempting to reacquire the named mutex (which can create race conditions
         // or accidentally succeed when we *don't* hold it), rely on the thread-local tracking

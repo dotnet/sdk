@@ -58,14 +58,14 @@ internal class ElevatedAdminPathCommand : CommandBase
     }
 
     [SupportedOSPlatform("windows")]
-    private int RemoveDotnet()
+    private static int RemoveDotnet()
     {
         using var pathHelper = new WindowsPathHelper();
         return pathHelper.RemoveDotnetFromAdminPath();
     }
 
     [SupportedOSPlatform("windows")]
-    private int AddDotnet()
+    private static int AddDotnet()
     {
         using var pathHelper = new WindowsPathHelper();
         return pathHelper.AddDotnetToAdminPath();

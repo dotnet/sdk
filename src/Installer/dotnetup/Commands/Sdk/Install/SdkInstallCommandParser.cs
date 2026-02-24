@@ -28,21 +28,21 @@ internal static class SdkInstallCommandParser
         DefaultValueFactory = r => null
     };
 
-    private static readonly Command SdkInstallCommand = ConstructCommand();
+    private static readonly Command s_sdkInstallCommand = ConstructCommand();
 
     public static Command GetSdkInstallCommand()
     {
-        return SdkInstallCommand;
+        return s_sdkInstallCommand;
     }
 
     //  Trying to use the same command object for both "dotnetup install" and "dotnetup sdk install" causes the following exception:
     //  System.InvalidOperationException: Command install has more than one child named "channel".
     //  So we create a separate instance for each case
-    private static readonly Command RootInstallCommand = ConstructCommand();
+    private static readonly Command s_rootInstallCommand = ConstructCommand();
 
     public static Command GetRootInstallCommand()
     {
-        return RootInstallCommand;
+        return s_rootInstallCommand;
     }
 
     private static Command ConstructCommand()

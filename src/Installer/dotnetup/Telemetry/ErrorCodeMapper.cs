@@ -1,7 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -265,7 +266,7 @@ public static class ErrorCodeMapper
             while (inner != null && depth < maxDepth)
             {
                 sb.AppendLine();
-                sb.AppendLine($"Inner Exception: {inner.GetType().FullName}");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"Inner Exception: {inner.GetType().FullName}");
                 if (inner.StackTrace is { } innerTrace)
                 {
                     sb.Append(innerTrace);

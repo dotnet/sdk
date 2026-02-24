@@ -23,20 +23,20 @@ internal static class SdkUpdateCommandParser
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
-    private static readonly Command SdkUpdateCommand = ConstructCommand();
+    private static readonly Command s_sdkUpdateCommand = ConstructCommand();
 
     public static Command GetSdkUpdateCommand()
     {
-        return SdkUpdateCommand;
+        return s_sdkUpdateCommand;
     }
 
     //  Trying to use the same command object for both "dotnetup udpate" and "dotnetup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
-    private static readonly Command RootUpdateCommand = ConstructCommand();
+    private static readonly Command s_rootUpdateCommand = ConstructCommand();
 
     public static Command GetRootUpdateCommand()
     {
-        return RootUpdateCommand;
+        return s_rootUpdateCommand;
     }
 
     private static Command ConstructCommand()

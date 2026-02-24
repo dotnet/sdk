@@ -24,11 +24,11 @@ internal static class RuntimeInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    private static readonly Command Command = ConstructCommand();
+    private static readonly Command s_command = ConstructCommand();
 
     public static Command GetRuntimeInstallCommand()
     {
-        return Command;
+        return s_command;
     }
 
     private static Command ConstructCommand()

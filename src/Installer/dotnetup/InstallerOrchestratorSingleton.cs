@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -17,17 +17,18 @@ internal sealed record InstallResult(DotnetInstall? Install, bool WasAlreadyInst
 
 internal class InstallerOrchestratorSingleton
 {
-    private static readonly InstallerOrchestratorSingleton _instance = new();
+    private static readonly InstallerOrchestratorSingleton s_instance = new();
 
     private InstallerOrchestratorSingleton()
     {
     }
 
-    public static InstallerOrchestratorSingleton Instance => _instance;
+    public static InstallerOrchestratorSingleton Instance => s_instance;
 
-    private ScopedMutex modifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+    private static ScopedMutex ModifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
     // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
+#pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Validate channel format before attempting resolution
@@ -64,7 +65,7 @@ internal class InstallerOrchestratorSingleton
         string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
-        using (var finalizeLock = modifyInstallStateMutex())
+        using (var finalizeLock = ModifyInstallStateMutex())
         {
             if (!finalizeLock.HasHandle)
             {
@@ -105,7 +106,7 @@ internal class InstallerOrchestratorSingleton
         installer.Prepare();
 
         // Extract and commit the install to the directory
-        using (var finalizeLock = modifyInstallStateMutex())
+        using (var finalizeLock = ModifyInstallStateMutex())
         {
             if (!finalizeLock.HasHandle)
             {
@@ -137,11 +138,12 @@ internal class InstallerOrchestratorSingleton
 
         return new InstallResult(install, WasAlreadyInstalled: false);
     }
+#pragma warning restore CA1822
 
     /// <summary>
     /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
     /// </summary>
-    private IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    private static IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
     {
         var manifestManager = new DotnetupSharedManifest(customManifestPath);
         // Use the overload that filters by muxer directory
@@ -151,7 +153,7 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Checks if the installation already exists. Must hold a mutex over the directory.
     /// </summary>
-    private bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
+    private static bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
     {
         var existingInstalls = GetExistingInstalls(install.InstallRoot, customManifestPath);
 

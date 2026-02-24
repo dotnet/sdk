@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Helper class for Windows-specific PATH management operations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsPathHelper : IDisposable
+internal sealed partial class WindowsPathHelper : IDisposable
 {
     private const string RegistryEnvironmentPath = @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
     private const string PathVariableName = "Path";
@@ -23,8 +23,8 @@ internal sealed class WindowsPathHelper : IDisposable
     private readonly string? _logFilePath;
     private bool _disposed;
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern IntPtr SendMessageTimeout(
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageTimeoutW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    private static partial IntPtr SendMessageTimeout(
         IntPtr hWnd,
         int Msg,
         IntPtr wParam,

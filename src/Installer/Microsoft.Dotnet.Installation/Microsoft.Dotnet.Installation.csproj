@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>

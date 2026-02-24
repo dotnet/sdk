@@ -8,11 +8,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime;
 
 internal class RuntimeCommandParser
 {
-    private static readonly Command Command = ConstructCommand();
+    private static readonly Command s_command = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return Command;
+        return s_command;
     }
 
     private static Command ConstructCommand()
