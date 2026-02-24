@@ -1178,6 +1178,40 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         static (sourceFile, textSpan, message, innerException) => throw new GracefulException(
             $"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
+
+    public static SourceFile RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile)
+    {
+        if (directives.Length == 0)
+        {
+            return sourceFile;
+        }
+
+#if DEBUG
+        var filteredDirectives = directives.Where(d => d.Info.SourceFile.Path == sourceFile.Path);
+        Debug.Assert(
+            filteredDirectives.OrderBy(static d => d.Info.Span.Start).SequenceEqual(filteredDirectives),
+            "Directives should be ordered by source location.");
+#endif
+
+        var text = sourceFile.Text;
+
+        for (int i = directives.Length - 1; i >= 0; i--)
+        {
+            var directive = directives[i];
+            if (directive.Info.SourceFile.Path == sourceFile.Path)
+            {
+                text = text.Replace(directive.Info.Span, string.Empty);
+            }
+        }
+
+        return sourceFile.WithText(text);
+    }
+
+    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile, string targetFilePath)
+    {
+        var modifiedFile = RemoveDirectivesFromFile(directives, sourceFile);
+        modifiedFile.WithPath(targetFilePath).Save();
+    }
 }
 
 internal sealed class RunFileBuildCacheEntry

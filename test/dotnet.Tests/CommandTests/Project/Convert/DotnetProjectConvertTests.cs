@@ -1968,7 +1968,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         actualProject = projectWriter.ToString();
 
-        var convertedFile = VirtualProjectBuilder.RemoveDirectivesFromFile(directives, builder.EntryPointSourceFile);
+        var convertedFile = VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, builder.EntryPointSourceFile);
         actualCSharp = convertedFile.Text != builder.EntryPointSourceFile.Text ? convertedFile.Text.ToString() : null;
     }
 
