@@ -28,7 +28,6 @@ internal sealed class ProjectLauncher(
 
     public async ValueTask<RunningProject?> TryLaunchProcessAsync(
         ProjectOptions projectOptions,
-        CancellationTokenSource processTerminationSource,
         Action<OutputLine>? onOutput,
         ProcessExitAction? onExit,
         RestartOperation restartOperation,
@@ -111,7 +110,6 @@ internal sealed class ProjectLauncher(
             clients,
             processSpec,
             restartOperation,
-            processTerminationSource,
             cancellationToken);
     }
 

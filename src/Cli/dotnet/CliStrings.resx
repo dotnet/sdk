@@ -455,6 +455,9 @@ setx PATH "%PATH%;{0}"
   <data name="FailedToFindToolAssembly" xml:space="preserve">
     <value>{0}: failed to find toolAssembly for {1}</value>
   </data>
+  <data name="CannotUseAddSourceWithSourceMapping" xml:space="preserve">
+    <value>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</value>
+  </data>
   <data name="FailedToLoadNuGetSource" xml:space="preserve">
     <value>Failed to load NuGet source {0}</value>
   </data>
