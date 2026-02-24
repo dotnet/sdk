@@ -1,7 +1,4 @@
-using System;
-using Microsoft.Dotnet.Installation;
-
-namespace Microsoft.Dotnet.Installation.Internal
+﻿namespace Microsoft.Dotnet.Installation.Internal
 {
     public class DownloadProgressReporter : IProgress<DownloadProgress>
     {

@@ -1,12 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32;
 
@@ -349,7 +344,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
-    /// <param name="pathToRemove">The path to remove.</param>
+    /// <param name="pathsToRemove">The paths to remove.</param>
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {

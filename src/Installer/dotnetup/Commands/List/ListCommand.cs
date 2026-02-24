@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 

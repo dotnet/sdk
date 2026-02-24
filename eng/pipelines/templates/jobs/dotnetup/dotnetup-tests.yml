@@ -57,6 +57,14 @@ jobs:
           & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release --no-restore
         displayName: 💻 Build Windows
       - powershell: |
+          & .\.dotnet\dotnet format src\Installer\dotnetup\dotnetup.csproj --verify-no-changes --no-restore
+          if ($LASTEXITCODE -ne 0) { Write-Error 'dotnetup has formatting violations. Run: dotnet format src\Installer\dotnetup\dotnetup.csproj'; exit 1 }
+          & .\.dotnet\dotnet format src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj --verify-no-changes --no-restore
+          if ($LASTEXITCODE -ne 0) { Write-Error 'Microsoft.Dotnet.Installation has formatting violations. Run: dotnet format src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj'; exit 1 }
+          & .\.dotnet\dotnet format test\dotnetup.Tests\dotnetup.Tests.csproj --verify-no-changes --no-restore
+          if ($LASTEXITCODE -ne 0) { Write-Error 'dotnetup.Tests has formatting violations. Run: dotnet format test\dotnetup.Tests\dotnetup.Tests.csproj'; exit 1 }
+        displayName: 📏 Verify code formatting (Windows)
+      - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |
@@ -72,6 +80,11 @@ jobs:
       - script: |
           ./.dotnet/dotnet build test/dotnetup.Tests/dotnetup.Tests.csproj -c Release --no-restore
         displayName: 🐧 Build (Unix)
+      - script: |
+          ./.dotnet/dotnet format src/Installer/dotnetup/dotnetup.csproj --verify-no-changes --no-restore || { echo '##vso[task.logissue type=error]dotnetup has formatting violations. Run: dotnet format src/Installer/dotnetup/dotnetup.csproj'; exit 1; }
+          ./.dotnet/dotnet format src/Installer/Microsoft.Dotnet.Installation/Microsoft.Dotnet.Installation.csproj --verify-no-changes --no-restore || { echo '##vso[task.logissue type=error]Microsoft.Dotnet.Installation has formatting violations. Run: dotnet format src/Installer/Microsoft.Dotnet.Installation/Microsoft.Dotnet.Installation.csproj'; exit 1; }
+          ./.dotnet/dotnet format test/dotnetup.Tests/dotnetup.Tests.csproj --verify-no-changes --no-restore || { echo '##vso[task.logissue type=error]dotnetup.Tests has formatting violations. Run: dotnet format test/dotnetup.Tests/dotnetup.Tests.csproj'; exit 1; }
+        displayName: 📏 Verify code formatting (Unix)
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 📁 Create test results directory (Unix)

@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.Diagnostics;
-using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;

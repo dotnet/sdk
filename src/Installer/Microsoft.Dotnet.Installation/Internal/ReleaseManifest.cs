@@ -1,11 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Net.Http;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -23,7 +19,8 @@ internal class ReleaseManifest
     /// <summary>
     /// Finds the appropriate release file for the given installation.
     /// </summary>
-    /// <param name="install">The .NET installation details</param>
+    /// <param name="installRequest">The .NET installation request details</param>
+    /// <param name="resolvedVersion">The resolved release version to find</param>
     /// <returns>The matching ReleaseFile, throws if none are available.</returns>
     public ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
@@ -42,7 +39,7 @@ internal class ReleaseManifest
                     $"No release found for version {resolvedVersion}",
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
-            return FindMatchingFile(release, installRequest, resolvedVersion);
+            return FindMatchingFile(release, installRequest);
         }
         catch (DotnetInstallException)
         {
@@ -166,7 +163,7 @@ internal class ReleaseManifest
     /// with the same RID and extension. Composite archives contain "composite" in the file name
     /// and are filtered out to avoid selecting the wrong archive.
     /// </remarks>
-    private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest)
     {
         var rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var fileExtension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();

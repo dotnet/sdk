@@ -1,6 +1,4 @@
-using System;
-
-namespace Microsoft.Dotnet.Installation
+﻿namespace Microsoft.Dotnet.Installation
 {
     /// <summary>
     /// Represents download progress information.

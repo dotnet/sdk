@@ -10,11 +10,12 @@
 
 
     <!-- Strong naming not needed on .NET Core -->
-    <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
 
     <!-- dotnetup versioning -->
     <VersionPrefix>0.1.1</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
