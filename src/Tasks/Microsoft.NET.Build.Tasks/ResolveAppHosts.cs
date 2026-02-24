@@ -58,7 +58,16 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool EnableAppHostPackDownload { get; set; } = true;
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         [Output]
         public ITaskItem[] PackagesToDownload { get; set; }

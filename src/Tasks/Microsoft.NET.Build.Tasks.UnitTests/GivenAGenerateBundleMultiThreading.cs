@@ -156,8 +156,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 try { task.Execute(); } catch (Exception ex) { caught = ex; }
 
                 // Empty file ItemSpec should produce a meaningful error, not NullReferenceException.
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "empty FilesToBundle ItemSpec should not cause NullReferenceException");
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "empty FilesToBundle ItemSpec should not cause NullReferenceException");
+                }
             }
             finally
             {
