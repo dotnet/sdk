@@ -67,7 +67,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
         else
         {
-            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(evaluatedDirectives, builder.EntryPointSourceFile, targetFile);
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(builder.EntryPointSourceFile, targetFile);
         }
 
         // Create project file.
@@ -112,7 +112,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 else
                 {
                     var sourceFile = SourceFile.Load(item.FullPath);
-                    VirtualProjectBuildingCommand.RemoveDirectivesFromFile(evaluatedDirectives, sourceFile, targetItemFullPath);
+                    VirtualProjectBuildingCommand.RemoveDirectivesFromFile(sourceFile, targetItemFullPath);
                 }
             }
             else

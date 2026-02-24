@@ -1179,16 +1179,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             $"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
 
-    public static SourceFile RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile)
+    public static SourceFile RemoveDirectivesFromFile(SourceFile sourceFile)
     {
-        if (directives.Length == 0)
-        {
-            return sourceFile;
-        }
-
         var editor = FileBasedAppSourceEditor.Load(sourceFile);
 
-        foreach (var directive in directives)
+        while (editor.Directives is [{ } directive, ..])
         {
             editor.Remove(directive);
         }
@@ -1196,9 +1191,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return editor.SourceFile;
     }
 
-    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile, string targetFilePath)
+    public static void RemoveDirectivesFromFile(SourceFile sourceFile, string targetFilePath)
     {
-        var modifiedFile = RemoveDirectivesFromFile(directives, sourceFile);
+        var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         modifiedFile.WithPath(targetFilePath).Save();
     }
 }
