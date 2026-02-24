@@ -349,5 +349,92 @@ namespace Microsoft.NET.Build.Tests
                 $"apphost{Constants.ExeSuffix}",
             });
         }
+
+        [Fact]
+        public void It_filters_runtime_assets_by_RuntimeAssetRuntimeIdentifiers()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            // sqlite package has RID-specific native assets for linux-x64, osx-x64, win7-x64, win7-x86.
+            // Setting RuntimeAssetRuntimeIdentifiers to linux-x64 should filter output to only linux-x64 assets.
+            testProject.AdditionalProperties["RuntimeAssetRuntimeIdentifiers"] = "linux-x64";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager
+               .CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            var expectedFiles = new[]
+            {
+                $"{ProjectName}{Constants.ExeSuffix}",
+                $"{ProjectName}.deps.json",
+                $"{ProjectName}.dll",
+                $"{ProjectName}.pdb",
+                $"{ProjectName}.runtimeconfig.json",
+                "Newtonsoft.Json.dll",
+                "runtimes/linux-x64/native/libsqlite3.so",
+            };
+
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [Fact]
+        public void It_filters_runtime_assets_to_multiple_RuntimeAssetRuntimeIdentifiers()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            // sqlite package has RID-specific native assets for linux-x64, osx-x64, win7-x64, win7-x86.
+            // Setting RuntimeAssetRuntimeIdentifiers to linux-x64;win7-x64 should include linux and win7-x64 assets only.
+            testProject.AdditionalProperties["RuntimeAssetRuntimeIdentifiers"] = "linux-x64;win7-x64";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager
+               .CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            var expectedFiles = new[]
+            {
+                $"{ProjectName}{Constants.ExeSuffix}",
+                $"{ProjectName}.deps.json",
+                $"{ProjectName}.dll",
+                $"{ProjectName}.pdb",
+                $"{ProjectName}.runtimeconfig.json",
+                "Newtonsoft.Json.dll",
+                "runtimes/linux-x64/native/libsqlite3.so",
+                "runtimes/win7-x64/native/sqlite3.dll",
+            };
+
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
     }
 }
