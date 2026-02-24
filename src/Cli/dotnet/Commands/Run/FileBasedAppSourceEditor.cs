@@ -241,21 +241,21 @@ internal sealed class FileBasedAppSourceEditor
 
     private static void DetermineWhiteSpaceToRemove(CSharpDirective directive, out int leadingLength, out int trailingLength)
     {
-        // If there are blank lines both before and after the directive, remove the trailing white space.
-        if (directive.Info.LeadingWhiteSpace.LineBreaks > 0 && directive.Info.TrailingWhiteSpace.LineBreaks > 0)
+        // If there are blank lines both before and after the directive, remove the trailing blank lines.
+        if (directive.Info.LeadingWhiteSpace.BlankLineLength > 0 && directive.Info.TrailingWhiteSpace.BlankLineLength > 0)
         {
             leadingLength = 0;
-            trailingLength = directive.Info.TrailingWhiteSpace.TotalLength;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
             return;
         }
 
         // If the directive (including leading white space) starts at the beginning of the file,
-        // remove both the leading and trailing white space.
-        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.TotalLength;
+        // remove both the leading and trailing blank lines.
+        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.BlankLineLength;
         if (startBeforeWhiteSpace == 0)
         {
-            leadingLength = directive.Info.LeadingWhiteSpace.TotalLength;
-            trailingLength = directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = directive.Info.LeadingWhiteSpace.BlankLineLength;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
             return;
         }
 

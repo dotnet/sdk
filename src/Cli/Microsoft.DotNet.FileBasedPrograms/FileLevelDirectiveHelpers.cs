@@ -206,14 +206,18 @@ internal static class FileLevelDirectiveHelpers
 
                 if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
-                    info.LineBreaks += length != 0 ? 1 : 0;
-                    info.TotalLength += length;
+                    if (length != 0)
+                    {
+                        info.BlankLineLength += info.RestLength + length;
+                        info.RestLength = 0;
+                    }
+
                     return true;
                 }
 
                 if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
                 {
-                    info.TotalLength += length;
+                    info.RestLength += length;
                     return true;
                 }
 
@@ -274,8 +278,15 @@ internal static partial class Patterns
 
 internal struct WhiteSpaceInfo
 {
-    public int LineBreaks;
-    public int TotalLength;
+    /// <summary>
+    /// Size of whitespace that consists of only blank lines (i.e., lines that contain only whitespace).
+    /// </summary>
+    public int BlankLineLength;
+
+    /// <summary>
+    /// Size of the remaining whitespace on a not-entirely-blank line.
+    /// </summary>
+    public int RestLength;
 }
 
 /// <summary>
