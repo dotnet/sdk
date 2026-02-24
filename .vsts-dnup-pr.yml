@@ -65,4 +65,18 @@ stages:
           emoji: 💪
         helixTargetQueue: osx.13.arm64.open
 
+- stage: executables
+  displayName: 🏗️ Build dotnetup executables
+  dependsOn: []
+  jobs:
+  ### Build a single platform executable for PR validation ###
+  - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+    parameters:
+      rid: linux-x64
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        os: linux
+        emoji: 🐧
+
 

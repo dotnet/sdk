@@ -1,0 +1,75 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  dependsOn: ''
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  enableSbom: true
+  timeoutInMinutes: 150
+  ### PUBLISH ###
+  # The RID to publish for (e.g. win-x64, linux-arm64, osx-x64, linux-musl-x64, etc.)
+  rid: ''
+  pool: {}
+  container: ''
+  preSteps: []
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    displayName: '${{ parameters.pool.emoji }} dotnetup executable: ${{ parameters.rid }}'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    - name: _officialBuildProperties
+      value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\*Tests\**;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '📦 Publish dotnetup ${{ parameters.rid }} executable'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/'
+        artifactName: 'dotnetup-executable-${{ parameters.rid }}'
+        publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '📊 Publish dotnetup ${{ parameters.rid }} binlogs'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
+        artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
+        publishLocation: Container
+
+    steps:
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          & .\restore.cmd $(_officialBuildProperties)
+        displayName: 🍱 Bootstrap toolset (Windows)
+      - powershell: |
+          New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
+          & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          # Copy the published output to the artifact staging directory
+          Copy-Item -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release\net10.0\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+
+    - ${{ if ne(parameters.pool.os, 'windows') }}:
+      - script: |
+          ./restore.sh $(_officialBuildProperties)
+        displayName: 🍱 Bootstrap toolset (Unix)
+      - script: |
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}"
+          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          # Copy the published output to the artifact staging directory
+          cp -r "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release/net10.0/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})

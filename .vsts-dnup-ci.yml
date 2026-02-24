@@ -136,3 +136,120 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+      ### Executables ###
+      - stage: executables
+        displayName: 🏗️ Build dotnetup executables
+        dependsOn: []
+        jobs:
+        ############### WINDOWS ###############
+        ### win-x64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: win-x64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2022.amd64
+              os: windows
+              emoji: 🪟
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            preSteps:
+            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+              displayName: Create artifacts/bin directory
+        ### win-arm64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: win-arm64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2022.amd64
+              os: windows
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            preSteps:
+            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+              displayName: Create artifacts/bin directory
+
+        ############### LINUX ###############
+        ### linux-x64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-x64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🐧
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+        ### linux-arm64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-arm64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+        ### linux-musl-x64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-musl-x64
+            container: azureLinux30Amd64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🏔️
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            enableSbom: false
+        ### linux-musl-arm64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-musl-arm64
+            container: azureLinux30Amd64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🏔️
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            enableSbom: false
+
+        ############### MACOS ###############
+        ### osx-x64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: osx-x64
+            pool:
+              name: Azure Pipelines
+              image: macOS-latest
+              os: macOS
+              emoji: 🍎
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+        ### osx-arm64 ###
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: osx-arm64
+            pool:
+              name: Azure Pipelines
+              image: macOS-latest
+              os: macOS
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
