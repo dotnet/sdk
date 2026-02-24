@@ -5,11 +5,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-
-    <!-- NuGet -->
-    <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
-    <PackageId>Microsoft.DotNet.ProjectTools</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,8 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Must not be newer then Microsoft.Build in NuGet.CommandLine.XPlat. -->
-    <PackageReference Include="Microsoft.Build" VersionOverride="17.11.48" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
       <PrivateAssets>all</PrivateAssets>
