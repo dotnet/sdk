@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -37,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var dependencyPackageReferences = new List<TestPackageReference>();
+            var dependencyPackageReferences = new ConcurrentBag<TestPackageReference>();
 
             // Process all dependencies in parallel
             Parallel.ForEach(
@@ -56,10 +57,9 @@ namespace Microsoft.NET.Build.Tests
                         "1.0.0",
                         ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
 
-                    // Create package if it doesn't exist
-                    if (!dependencyPackageReference.NuGetPackageExists() &&
-                        (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
                     {
+                        // Create package if it doesn't exist
                         if (!dependencyPackageReference.NuGetPackageExists())
                         {
                             var dependencyTestAsset = TestAssetsManager.CreateTestProject(
@@ -77,6 +77,7 @@ namespace Microsoft.NET.Build.Tests
                                 .Execute().Should().Pass();
                         }
 
+                        dependencyPackageReferences.Add(dependencyPackageReference);
                     }
                 });
 
