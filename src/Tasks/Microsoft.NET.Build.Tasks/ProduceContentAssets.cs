@@ -22,7 +22,16 @@ namespace Microsoft.NET.Build.Tasks
         private readonly List<ITaskItem> _copyLocalItems = new();
         private IContentAssetPreprocessor _assetPreprocessor;
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         #region Output Items
 

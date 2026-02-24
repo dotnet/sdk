@@ -18,7 +18,16 @@ namespace Microsoft.NET.Build.Tasks
     {
         private readonly List<ITaskItem> _resolvedAssets = new();
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
         public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         public string AssetsFilePath { get; set; }
 
