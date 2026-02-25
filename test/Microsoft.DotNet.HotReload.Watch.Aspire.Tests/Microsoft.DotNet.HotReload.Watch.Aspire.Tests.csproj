@@ -6,6 +6,10 @@
     <RootNamespace>Microsoft.DotNet.Watch.Aspire.UnitTests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" />
     <ProjectReference Include="..\..\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />

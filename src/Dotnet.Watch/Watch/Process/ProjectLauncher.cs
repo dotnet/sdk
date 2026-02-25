@@ -27,6 +27,9 @@ internal sealed class ProjectLauncher(
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
 
+    public CompilationHandler CompilationHandler
+        => compilationHandler;
+
     public async ValueTask<RunningProject?> TryLaunchProcessAsync(
         ProjectOptions projectOptions,
         Action<OutputLine>? onOutput,
@@ -51,7 +54,7 @@ internal sealed class ProjectLauncher(
 
         var processSpec = new ProcessSpec
         {
-            Executable = EnvironmentOptions.MuxerPath,
+            Executable = EnvironmentOptions.GetMuxerPath(),
             IsUserApplication = true,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
@@ -82,7 +85,7 @@ internal sealed class ProjectLauncher(
         if (clients.IsManagedAgentSupported && Logger.IsEnabled(LogLevel.Trace))
         {
             environmentBuilder[EnvironmentVariables.Names.HotReloadDeltaClientLogMessages] =
-                (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix() + $"[{projectDisplayName}]";
+                (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix(EnvironmentOptions.LogMessagePrefix) + $"[{projectDisplayName}]";
         }
 
         clients.ConfigureLaunchEnvironment(environmentBuilder);

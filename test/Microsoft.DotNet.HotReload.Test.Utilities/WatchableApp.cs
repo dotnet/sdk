@@ -3,36 +3,47 @@
 
 #nullable disable
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal sealed class WatchableApp(DebugTestOutputLogger logger) : IDisposable
+    internal sealed class WatchableApp : IDisposable
     {
-        // Test apps should output this message as soon as they start running:
-        private const string StartedMessage = "Started";
-
-        // Test apps should output this message as soon as they exit:
-        private const string ExitingMessage = "Exiting";
-
         private const string WatchErrorOutputEmoji = "❌";
-        private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
+        private readonly string _executablePath;
+        private readonly string _commandName;
+
+        public WatchableApp(ITestOutputHelper logger, string executablePath, string commandName, IEnumerable<string> commandArguments)
+        {
+            _executablePath = executablePath;
+            _commandName = commandName;
+            Logger = new DebugTestOutputLogger(logger);
+            WatchArgs = [.. commandArguments];
+        }
+
+        public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
+            => new(logger, TestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
+
+        public DebugTestOutputLogger Logger { get; }
 
         public TestFlags TestFlags { get; private set; }
 
-        public DebugTestOutputLogger Logger => logger;
-
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = ["--verbose", "-bl"];
+        public List<string> WatchArgs { get; }
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
         public void SuppressVerboseLogging()
         {
-            // remove default --verbose and -bl args
-            DotnetWatchArgs.Clear();
+            // remove default -bl args
+            WatchArgs.Clear();
 
             // override the default used for testing ("trace"):
             EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
@@ -70,41 +81,47 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private void LogWaitingForOutput(string pattern, string testPath, int testLine)
             => Logger.Log($"Waiting for output matching: '{pattern}'", testPath, testLine);
 
-        public async ValueTask WaitUntilOutputContains(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        public async ValueTask<string> WaitUntilOutputContains(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (!Process.Output.Any(line => line.Contains(text)))
+            var matchingLine = Process.Output.FirstOrDefault(line => line.Contains(text));
+            if (matchingLine == null)
             {
                 LogWaitingForOutput(text, testPath, testLine);
-                _ = await WaitForOutputLineMatching(line => line.Contains(text));
+                matchingLine = await WaitForOutputLineMatching(line => line.Contains(text));
             }
 
             LogFoundOutput(text, testPath, testLine);
+            return matchingLine;
         }
 
-        public async ValueTask WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        public async ValueTask<string> WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
             var patternDisplay = pattern.ToString();
 
-            if (!Process.Output.Any(line => pattern.IsMatch(line)))
+            var matchingLine = Process.Output.FirstOrDefault(pattern.IsMatch);
+            if (matchingLine == null)
             {
                 LogWaitingForOutput(patternDisplay, testPath, testLine);
-                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
+                matchingLine = await WaitForOutputLineMatching(pattern.IsMatch);
             }
 
             LogFoundOutput(patternDisplay, testPath, testLine);
+            return matchingLine;
         }
 
-        public async ValueTask WaitUntilOutputContains(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
+        public async ValueTask<string> WaitUntilOutputContains(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
         {
             var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
+            var matchingLine = Process.Output.FirstOrDefault(pattern.IsMatch);
 
-            if (!Process.Output.Any(line => pattern.IsMatch(line)))
+            if (matchingLine == null)
             {
                 LogWaitingForOutput(patternDisplay, testPath, testLine);
-                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
+                matchingLine = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
             }
 
             LogFoundOutput(patternDisplay, testPath, testLine);
+            return matchingLine;
         }
 
         public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
@@ -172,16 +189,58 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
 
-        public Task AssertStarted()
-            => AssertOutputLineEquals(StartedMessage);
+        public ProcessStartInfo GetProcessStartInfo(string workingDirectory, string testOutputPath, IEnumerable<string> arguments, TestFlags testFlags)
+        {
+            var args = new List<string>()
+            {
+                _commandName
+            };
 
-        public Task AssertFileChanged()
-            => AssertOutputLineStartsWith(WatchFileChanged);
+            args.AddRange(WatchArgs);
+            args.AddRange(arguments);
 
-        public Task AssertExiting()
-            => AssertOutputLineStartsWith(ExitingMessage);
+            var info = new ProcessStartInfo
+            {
+                FileName = _executablePath,
+                WorkingDirectory = workingDirectory,
+                Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args),
+                UseShellExecute = false,
+                RedirectStandardInput = false,
+            };
 
-        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
+            // FileSystemWatcher is unreliable. Use polling for testing to avoid flakiness.
+            info.Environment.Add("DOTNET_USE_POLLING_FILE_WATCHER", "true");
+            info.Environment.Add("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
+            info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
+            info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
+            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
+
+            // suppress all timeouts:
+            info.Environment.Add("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
+            info.Environment.Add("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
+            info.Environment.Add("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
+            info.Environment.Add("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
+            info.Environment.Add("ASPIRE_WATCH_PIPE_CONNECTION_TIMEOUT_SECONDS", "100000");
+
+            // override defaults:
+            foreach (var (name, value) in EnvironmentVariables)
+            {
+                info.Environment[name] = value;
+            }
+
+            TestContext.Current.AddTestEnvironmentVariables(info.Environment);
+
+            return info;
+        }
+
+        public void Start(
+            TestAsset asset,
+            IEnumerable<string> arguments,
+            string relativeProjectDirectory = null,
+            string workingDirectory = null,
+            TestFlags testFlags = TestFlags.RunningAsTest,
+            [CallerFilePath] string testPath = null,
+            [CallerLineNumber] int testLine = 0)
         {
             if (testFlags != TestFlags.None)
             {
@@ -190,43 +249,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
-            var commandSpec = new DotnetCommand(Logger, ["watch", .. DotnetWatchArgs, .. arguments])
-            {
-                WorkingDirectory = workingDirectory ?? projectDirectory,
-            };
-
             var testOutputPath = asset.GetWatchTestOutputPath();
             Directory.CreateDirectory(testOutputPath);
 
-            // FileSystemWatcher is unreliable. Use polling for testing to avoid flakiness.
-            commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
+            var processStartInfo = GetProcessStartInfo(workingDirectory ?? projectDirectory, testOutputPath, arguments, testFlags);
 
-            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
-            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
-            commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
-
-            // suppress all timeouts:
-            commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
-
-            // Set up automatic dump collection on uncaught exception for launched processes
-            // See https://learn.microsoft.com/en-us/dotnet/core/diagnostics/collect-dumps-crash
-            commandSpec.WithEnvironmentVariable("DOTNET_DbgEnableMiniDump", "1");
-            commandSpec.WithEnvironmentVariable("DOTNET_DbgMiniDumpType", "2"); // heap dump
-            commandSpec.WithEnvironmentVariable("DOTNET_DbgMiniDumpName", Path.Combine(testOutputPath, "%e.%p.%t.dmp")); // <executable>.<pid>.<timestamp>.dmp
-            commandSpec.WithEnvironmentVariable("DOTNET_EnableCrashReport", "1");
-
-            foreach (var env in EnvironmentVariables)
-            {
-                commandSpec.WithEnvironmentVariable(env.Key, env.Value);
-            }
-
-            var processStartInfo = commandSpec.GetProcessStartInfo();
             Process = new AwaitableProcess(Logger);
             Process.Start(processStartInfo);
+
+            Logger.Log($"Process started: '{processStartInfo.FileName} {processStartInfo.Arguments}'", testPath, testLine);
 
             TestFlags = testFlags;
         }

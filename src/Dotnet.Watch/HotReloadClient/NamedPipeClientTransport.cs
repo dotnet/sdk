@@ -49,7 +49,7 @@ internal sealed class NamedPipeClientTransport : ClientTransport
 
     public override async Task WaitForConnectionAsync(CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", _namedPipeName);
+        _logger.LogDebug("Waiting for application to connect to pipe '{NamedPipeName}'.", _namedPipeName);
 
         try
         {

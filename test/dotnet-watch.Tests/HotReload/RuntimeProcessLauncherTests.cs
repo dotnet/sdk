@@ -33,7 +33,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         w.Reporter.RegisterAction(trigger switch
         {
-            TriggerEvent.HotReloadSessionStarting => MessageDescriptor.HotReloadSessionStarting,
+            TriggerEvent.HotReloadSessionStarting => MessageDescriptor.HotReloadSessionStartingNotification,
             TriggerEvent.HotReloadSessionStarted => MessageDescriptor.HotReloadSessionStarted,
             TriggerEvent.WaitingForChanges => MessageDescriptor.WaitingForChanges,
             _ => throw new InvalidOperationException(),

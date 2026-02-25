@@ -10,26 +10,26 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class AwaitableProcess(ITestOutputHelper logger) : IDisposable
+    internal class AwaitableProcess(DebugTestOutputLogger logger) : IDisposable
     {
         // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
             ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 
-        private readonly object _testOutputLock = new();
+        private readonly Lock _testOutputLock = new();
 
         private readonly List<string> _lines = [];
         private readonly BufferBlock<string> _source = new();
-        private Process _process;
-        private bool _disposed;
 
         public IEnumerable<string> Output => _lines;
-        public int Id => _process.Id;
-        public Process Process => _process;
+
+        public int Id { get; private set; }
+        public Process Process { get; private set; }
+        private bool _disposed;
 
         public void Start(ProcessStartInfo processStartInfo)
         {
-            if (_process != null)
+            if (Process != null)
             {
                 throw new InvalidOperationException("Already started");
             }
@@ -49,21 +49,28 @@ namespace Microsoft.DotNet.Watch.UnitTests
             processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.StandardErrorEncoding = Encoding.UTF8;
 
-            _process = new Process
+            Process = new Process
             {
                 EnableRaisingEvents = true,
                 StartInfo = processStartInfo,
             };
 
-            _process.OutputDataReceived += OnData;
-            _process.ErrorDataReceived += OnData;
-            _process.Exited += OnExit;
+            Process.OutputDataReceived += OnData;
+            Process.ErrorDataReceived += OnData;
+            Process.Exited += OnExit;
 
-            WriteTestOutput($"{DateTime.Now}: starting process: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
-            _process.Start();
-            _process.BeginErrorReadLine();
-            _process.BeginOutputReadLine();
-            WriteTestOutput($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
+            Process.Start();
+
+            try
+            {
+                Id = Process.Id;
+            }
+            catch
+            {
+            }
+
+            Process.BeginErrorReadLine();
+            Process.BeginOutputReadLine();
         }
 
         public void ClearOutput()
@@ -158,7 +165,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private void OnExit(object sender, EventArgs args)
         {
             // Wait to ensure the process has exited and all output consumed
-            _process.WaitForExit();
+            Process.WaitForExit();
 
             // Signal test methods waiting on all process output to be completed:
             _source.Complete();
@@ -173,17 +180,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 _disposed = true;
             }
 
-            if (_process == null)
+            if (Process == null)
             {
                 return;
             }
 
-            _process.ErrorDataReceived -= OnData;
-            _process.OutputDataReceived -= OnData;
+            Process.ErrorDataReceived -= OnData;
+            Process.OutputDataReceived -= OnData;
 
             try
             {
-                _process.CancelErrorRead();
+                Process.CancelErrorRead();
             }
             catch
             {
@@ -191,7 +198,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
-                _process.CancelOutputRead();
+                Process.CancelOutputRead();
             }
             catch
             {
@@ -199,14 +206,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
-                _process.Kill(entireProcessTree: false);
+                Process.Kill(entireProcessTree: true);
             }
             catch
             {
             }
 
-            _process.Dispose();
-            _process = null;
+            Process.Dispose();
+            Process = null;
         }
     }
 }

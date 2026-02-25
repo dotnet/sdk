@@ -14,8 +14,15 @@ internal static class TestOptions
 
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions(GetCommandLineOptions([]));
 
-    public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-        => new(workingDirectory, muxerPath, ProcessCleanupTimeout: null, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
+    public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", TestAsset? asset = null)
+        => new(
+            WorkingDirectory: workingDirectory,
+            SdkDirectory: TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+            LogMessagePrefix: "dotnet watch",
+            ProcessCleanupTimeout: null,
+            IsPollingEnabled: true,
+            TestFlags: TestFlags.RunningAsTest,
+            TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();

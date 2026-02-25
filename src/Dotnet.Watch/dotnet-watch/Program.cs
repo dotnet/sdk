@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Watch
         EnvironmentOptions environmentOptions)
     {
         public const string LogComponentName = nameof(Program);
+        private const string LogMessagePrefix = "dotnet watch";
 
         public static async Task<int> Main(string[] args)
         {
@@ -37,18 +38,14 @@ namespace Microsoft.DotNet.Watch
                     sdkRootDirectory = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..");
                 }
 
+                var environmentOptions = EnvironmentOptions.FromEnvironment(sdkRootDirectory, LogMessagePrefix);
+
                 MSBuildLocator.RegisterMSBuildPath(sdkRootDirectory);
 
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
-
-                var processPath = Environment.ProcessPath;
-                Debug.Assert(processPath != null);
-
-                var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
-
                 // msbuild tasks depend on host path variable:
-                Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, environmentOptions.MuxerPath);
+                Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, environmentOptions.GetMuxerPath());
 
                 var program = TryCreate(
                     args,
@@ -73,7 +70,8 @@ namespace Microsoft.DotNet.Watch
 
         private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, out int errorCode)
         {
-            var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, environmentOptions.SuppressEmojis), environmentOptions.CliLogLevel ?? LogLevel.Information);
+            var reporter = new ConsoleReporter(console, environmentOptions.LogMessagePrefix, environmentOptions.SuppressEmojis);
+            var parsingLoggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? LogLevel.Information);
             var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
             if (options == null)
             {
@@ -81,9 +79,7 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var logLevel = environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel;
-            var reporter = new ConsoleReporter(console, environmentOptions.SuppressEmojis);
-            var loggerFactory = new LoggerFactory(reporter, logLevel);
+            var loggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel);
             return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
         }
 

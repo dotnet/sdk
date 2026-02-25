@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
 
-            await App.WaitUntilOutputContains(MessageDescriptor.Building.GetMessage(serviceProjectPath));
+            await App.WaitUntilOutputContains(MessageDescriptor.Building);
             await App.WaitUntilOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
             App.Process.ClearOutput();
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
 
-            await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
+            await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded);
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
             await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
 
