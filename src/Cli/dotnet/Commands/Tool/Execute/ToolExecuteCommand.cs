@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -128,13 +128,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             }
 
             //  We've already determined which source we will use and displayed that in a confirmation message to the user.
-            //  So set the package location here to override the source feeds to just the source we already resolved to.
+            //  So set the package location here to override the source feeds to the explicit source we already resolved to.
             //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
             //  other feeds, but this is probably OK.
             var downloadPackageLocation = new PackageLocation(
                 nugetConfig: _configFile != null ? new(_configFile) : null,
-                sourceFeedOverrides: [packageSource.Source],
-                additionalFeeds: _addSource);
+                sourceFeedOverrides: _sources,
+                additionalFeeds: _addSource,
+                explicitSource: packageSource);
 
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,

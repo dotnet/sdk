@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
@@ -14,7 +15,8 @@ internal class PackageSourceLocation
         DirectoryPath? rootConfigDirectory = null,
         string[] sourceFeedOverrides = null,
         string[] additionalSourceFeeds = null,
-        string basePath = null)
+        string basePath = null,
+        PackageSource explicitSource = null)
     {
         basePath = basePath ?? Directory.GetCurrentDirectory();
 
@@ -24,12 +26,14 @@ internal class PackageSourceLocation
         SourceFeedOverrides = ExpandLocalFeed(sourceFeedOverrides, basePath);
         // Feeds to be using in addition to config
         AdditionalSourceFeed = ExpandLocalFeed(additionalSourceFeeds, basePath);
+        ExplicitSource = explicitSource;
     }
 
     public FilePath? NugetConfig { get; }
     public DirectoryPath? RootConfigDirectory { get; }
     public string[] SourceFeedOverrides { get; private set; }
     public string[] AdditionalSourceFeed { get; private set; }
+    public PackageSource ExplicitSource { get; private set; }
 
     private static string[] ExpandLocalFeed(string[] sourceFeedOverrides, string basePath)
     {
