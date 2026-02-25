@@ -480,7 +480,8 @@ namespace Microsoft.NET.Build.Tasks
             AbsolutePath absProjectDir = string.IsNullOrEmpty(projectDirectory)
                 ? TaskEnvironment.ProjectDirectory
                 : TaskEnvironment.GetAbsolutePath(projectDirectory);
-            return new AbsolutePath(path, absProjectDir);
+            // GetCanonicalForm resolves ".." segments so output matches the old Path.GetFullPath behavior
+            return new AbsolutePath(path, absProjectDir).GetCanonicalForm();
         }
     }
 }
