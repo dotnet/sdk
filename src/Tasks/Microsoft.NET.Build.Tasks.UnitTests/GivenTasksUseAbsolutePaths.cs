@@ -206,8 +206,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
     {
         var task = new ShowPreviewMessage
         {
-            BuildEngine = new MockBuildEngine(),
-            TaskEnvironment = _env.TaskEnvironment
+            BuildEngine = new MockBuildEngine()
         };
 
         var result = task.Execute();
