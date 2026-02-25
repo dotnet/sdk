@@ -346,7 +346,6 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         result.Should().BeTrue();
         // No framework assets => no remapping done
         task.RemappedEndpoints.Should().BeNullOrEmpty();
-        task.OriginalRemappedEndpoints.Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -382,7 +381,6 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         // Assert
         result.Should().BeTrue();
         task.RemappedEndpoints.Should().HaveCount(1);
-        task.OriginalRemappedEndpoints.Should().HaveCount(1);
 
         var remapped = task.RemappedEndpoints[0];
         var expectedPath = Path.GetFullPath(Path.Combine(intermediateOutput, "fx", "FxLib", "framework.js"));
@@ -431,7 +429,6 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         // Assert
         result.Should().BeTrue();
         task.RemappedEndpoints.Should().HaveCount(2);
-        task.OriginalRemappedEndpoints.Should().HaveCount(2);
 
         var expectedPath = Path.GetFullPath(Path.Combine(intermediateOutput, "fx", "FxLib", "framework.js"));
         task.RemappedEndpoints[0].GetMetadata("AssetFile").Should().Be(expectedPath);

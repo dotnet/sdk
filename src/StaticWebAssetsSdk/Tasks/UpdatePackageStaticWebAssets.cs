@@ -3,7 +3,9 @@
 
 #nullable disable
 
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -27,9 +29,6 @@ public class UpdatePackageStaticWebAssets : Task
     [Output]
     public ITaskItem[] RemappedEndpoints { get; set; }
 
-    [Output]
-    public ITaskItem[] OriginalRemappedEndpoints { get; set; }
-
     public ITaskItem[] Endpoints { get; set; }
 
     public override bool Execute()
@@ -38,7 +37,7 @@ public class UpdatePackageStaticWebAssets : Task
         {
             var originalAssets = new List<ITaskItem>();
             var updatedAssets = new List<ITaskItem>();
-            var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
 
             for (var i = 0; i < Assets.Length; i++)
             {
@@ -81,9 +80,8 @@ public class UpdatePackageStaticWebAssets : Task
     private void RemapEndpoints(Dictionary<string, string> assetMapping)
     {
         var remappedEndpoints = new List<ITaskItem>();
-        var originalRemappedEndpoints = new List<ITaskItem>();
 
-        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.OrdinalIgnoreCase);
+        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.Ordinal);
         foreach (var endpoint in Endpoints)
         {
             var identity = endpoint.ItemSpec;
@@ -103,24 +101,31 @@ public class UpdatePackageStaticWebAssets : Task
             foreach (var endpoint in group)
             {
                 var assetFile = endpoint.GetMetadata("AssetFile");
-                if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
                 {
-                    endpoint.SetMetadata("AssetFile", newAssetFile);
-                    Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                        identity, assetFile, newAssetFile);
                     groupNeedsRemapping = true;
+                    break;
                 }
             }
 
             if (groupNeedsRemapping)
             {
-                originalRemappedEndpoints.AddRange(group);
-                remappedEndpoints.AddRange(group);
+                foreach (var endpoint in group)
+                {
+                    var newEndpoint = new TaskItem(endpoint);
+                    var assetFile = endpoint.GetMetadata("AssetFile");
+                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+                    {
+                        newEndpoint.SetMetadata("AssetFile", newAssetFile);
+                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
+                            identity, assetFile, newAssetFile);
+                    }
+                    remappedEndpoints.Add(newEndpoint);
+                }
             }
         }
 
         RemappedEndpoints = [.. remappedEndpoints];
-        OriginalRemappedEndpoints = [.. originalRemappedEndpoints];
     }
 
     private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)
@@ -157,22 +162,14 @@ public class UpdatePackageStaticWebAssets : Task
 
         asset.Identity = destPath;
         asset.OriginalItemSpec = destPath;
-        asset.ContentRoot = EnsureTrailingSlash(fxDir);
+        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
         asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
         asset.SourceId = ProjectPackageId;
         asset.BasePath = ProjectBasePath;
         asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
+        asset.Normalize();
 
         return (asset, oldIdentity);
     }
 
-    private static string EnsureTrailingSlash(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return path;
-        }
-
-        return $"{path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
-    }
 }
