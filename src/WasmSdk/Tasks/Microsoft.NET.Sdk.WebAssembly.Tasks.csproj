@@ -40,7 +40,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BuiltInTools\HotReloadAgent.WebAssembly.Browser\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj">
+    <ProjectReference Include="..\..\Dotnet.Watch\HotReloadAgent.WebAssembly.Browser\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj">
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
