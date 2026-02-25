@@ -13,6 +13,13 @@ internal static class SdkUninstallCommandParser
         Description = "The channel or version of the install spec to remove (e.g., 10, 9.0, 9.0.103).",
     };
 
+    public static readonly Option<string> SourceOption = new("--source")
+    {
+        HelpName = "SOURCE",
+        Description = "The install source to target: explicit (default), previous, globaljson, or all.",
+        DefaultValueFactory = _ => "explicit"
+    };
+
     public static readonly Option<string> ManifestPathOption = new("--manifest-path")
     {
         HelpName = "MANIFEST_PATH",
@@ -46,6 +53,7 @@ internal static class SdkUninstallCommandParser
         Command command = new("uninstall", "Removes an install spec and cleans up unused installations");
 
         command.Arguments.Add(ChannelArgument);
+        command.Options.Add(SourceOption);
         command.Options.Add(ManifestPathOption);
         command.Options.Add(InstallPathOption);
         command.Options.Add(NoProgressOption);

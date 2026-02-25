@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
 {
     private readonly string _versionOrChannel = result.GetValue(SdkUninstallCommandParser.ChannelArgument)!;
+    private readonly string _sourceFilter = result.GetValue(SdkUninstallCommandParser.SourceOption)!;
     private readonly string? _manifestPath = result.GetValue(SdkUninstallCommandParser.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(SdkUninstallCommandParser.InstallPathOption);
 
@@ -38,15 +39,42 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
 
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 
-        // Find matching install spec(s)
-        var matchingSpecs = root.InstallSpecs
+        // Parse the source filter
+        var allowedSources = ParseSourceFilter(_sourceFilter);
+        if (allowedSources is null)
+        {
+            AnsiConsole.MarkupLineInterpolated($"[red]Invalid --source value '{_sourceFilter}'. Valid values: explicit, previous, globaljson, all.[/]");
+            return 1;
+        }
+
+        // Find all specs matching the channel
+        var allMatchingSpecs = root.InstallSpecs
             .Where(s => s.Component == InstallComponent.SDK &&
                         string.Equals(s.VersionOrChannel, _versionOrChannel, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
+        // Filter by source
+        var matchingSpecs = allMatchingSpecs
+            .Where(s => allowedSources.Contains(s.InstallSource))
+            .ToList();
+
         if (matchingSpecs.Count == 0)
         {
-            AnsiConsole.MarkupLineInterpolated($"[yellow]No install spec found for SDK channel '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
+            // Check if there are matches with other sources
+            var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
+            if (otherSourceSpecs.Count > 0)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[yellow]No [bold]explicit[/] install spec found for SDK channel '{_versionOrChannel}', but matching specs exist with other sources:[/]");
+                foreach (var spec in otherSourceSpecs)
+                {
+                    AnsiConsole.MarkupLineInterpolated($"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
+                }
+                AnsiConsole.MarkupLine("[dim]Use --source previous, --source globaljson, or --source all to target these specs.[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLineInterpolated($"[yellow]No install spec found for SDK channel '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
+            }
             return 1;
         }
 
@@ -54,7 +82,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
         foreach (var spec in matchingSpecs)
         {
             manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated($"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/]");
+            AnsiConsole.MarkupLineInterpolated($"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
         }
 
         // Run garbage collection
@@ -93,5 +121,17 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
 
         AnsiConsole.MarkupLine("[green]Done.[/]");
         return 0;
+    }
+
+    internal static HashSet<InstallSource>? ParseSourceFilter(string source)
+    {
+        return source.ToLowerInvariant() switch
+        {
+            "explicit" => [InstallSource.Explicit],
+            "previous" => [InstallSource.Previous],
+            "globaljson" => [InstallSource.GlobalJson],
+            "all" => [InstallSource.Explicit, InstallSource.Previous, InstallSource.GlobalJson],
+            _ => null
+        };
     }
 }
