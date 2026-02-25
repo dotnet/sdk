@@ -20,17 +20,43 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return null;
                 }
 
-                using var streamReader = new StreamReader(globalJsonPath, detectEncodingFromByteOrderMarks: true);
-                var content = streamReader.ReadToEnd();
-                using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                using var fileStream = File.OpenRead(globalJsonPath);
+
+                // Probe for UTF-16 BOM (global.json is user-generated and may not be UTF-8)
+                var bomBuffer = new byte[4];
+                int bomBytesRead = fileStream.Read(bomBuffer, 0, bomBuffer.Length);
+                fileStream.Seek(0, SeekOrigin.Begin);
+
+                bool isUtf16 = bomBytesRead >= 2 &&
+                    ((bomBuffer[0] == 0xFF && bomBuffer[1] == 0xFE) || // UTF-16 LE
+                     (bomBuffer[0] == 0xFE && bomBuffer[1] == 0xFF));  // UTF-16 BE
 
                 var readerOptions = new JsonReaderOptions
                 {
                     AllowTrailingCommas = true,
                     CommentHandling = JsonCommentHandling.Skip
                 };
-                var reader = new Utf8JsonStreamReader(memStream, readerOptions);
 
+                if (isUtf16)
+                {
+                    // For UTF-16 encoded files, transcode to UTF-8 in memory
+                    // (global.json files are small so this is acceptable)
+                    using var streamReader = new StreamReader(fileStream, detectEncodingFromByteOrderMarks: true);
+                    var content = streamReader.ReadToEnd();
+                    using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                    var reader = new Utf8JsonStreamReader(memStream, readerOptions);
+                    return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
+                }
+                else
+                {
+                    var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
+                    return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
+                }
+            }
+
+            private static string? ParseGlobalJson(ref Utf8JsonStreamReader reader, out bool? shouldUseWorkloadSets)
+            {
+                shouldUseWorkloadSets = null;
                 string? workloadVersion = null;
 
                 JsonReader.ConsumeToken(ref reader, JsonTokenType.StartObject);
