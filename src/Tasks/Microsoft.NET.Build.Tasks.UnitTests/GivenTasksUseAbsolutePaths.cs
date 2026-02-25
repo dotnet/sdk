@@ -139,6 +139,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new ResolveAppHosts
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             TargetFrameworkIdentifier = ".NETCoreApp",
             TargetFrameworkVersion = "8.0",
             TargetingPackRoot = "packs",
@@ -205,7 +206,8 @@ public class GivenTasksUseAbsolutePaths : IDisposable
     {
         var task = new ShowPreviewMessage
         {
-            BuildEngine = new MockBuildEngine()
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment
         };
 
         var result = task.Execute();
