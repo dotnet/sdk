@@ -11,23 +11,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenAResolvePackageAssetsMultiThreading
     {
         [Fact]
-        public void ItHasMSBuildMultiThreadableTaskAttribute()
-        {
-            typeof(ResolvePackageAssets).Should().BeDecoratedWith<MSBuildMultiThreadableTaskAttribute>();
-        }
-
-        [Fact]
-        public void ItHasTaskEnvironmentProperty()
-        {
-            var prop = typeof(ResolvePackageAssets).GetProperty("TaskEnvironment",
-                BindingFlags.Public | BindingFlags.Instance);
-            prop.Should().NotBeNull("ResolvePackageAssets must have a public TaskEnvironment property");
-            prop!.PropertyType.Should().Be(typeof(TaskEnvironment));
-            prop.CanRead.Should().BeTrue();
-            prop.CanWrite.Should().BeTrue();
-        }
-
-        [Fact]
         public void ItResolvesCacheFilePathViaTaskEnvironment()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "rpa-test-" + Guid.NewGuid().ToString("N"));

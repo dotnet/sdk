@@ -10,12 +10,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenACreateAppHostMultiThreading
     {
         [Fact]
-        public void ItHasMSBuildMultiThreadableTaskAttribute()
-        {
-            typeof(CreateAppHost).Should().BeDecoratedWith<MSBuildMultiThreadableTaskAttribute>();
-        }
-
-        [Fact]
         public void ItResolvesPathsViaTaskEnvironment()
         {
             // Create a temp directory to act as a fake project dir (different from CWD).

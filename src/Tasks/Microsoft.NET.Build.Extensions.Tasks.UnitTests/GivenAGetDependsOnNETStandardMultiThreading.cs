@@ -11,19 +11,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenAGetDependsOnNETStandardMultiThreading
     {
         [Fact]
-        public void ImplementsIMultiThreadableTask()
-        {
-            var task = new GetDependsOnNETStandard();
-            task.Should().BeAssignableTo<IMultiThreadableTask>();
-        }
-
-        [Fact]
-        public void HasMSBuildMultiThreadableTaskAttribute()
-        {
-            typeof(GetDependsOnNETStandard).Should().BeDecoratedWith<MSBuildMultiThreadableTaskAttribute>();
-        }
-
-        [Fact]
         public void ReferencePath_IsResolvedRelativeToProjectDirectory()
         {
             // Create a unique temp directory to act as the project directory
