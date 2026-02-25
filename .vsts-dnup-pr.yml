@@ -104,6 +104,7 @@ stages:
         displayName: '📦 Publish 7.0 results'
         condition: always()
         inputs:
+          targetPath: '$(Build.SourcesDirectory)/src/Installer/releases/7.0'
           artifactName: 'hash-verification-7.0'
   - template: /eng/common/templates/job/job.yml
     parameters:
