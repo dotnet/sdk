@@ -125,7 +125,7 @@ namespace Microsoft.Build.Framework
                 throw new ArgumentException("Path must not be null or empty.", nameof(path));
             }
 
-            Value = Path.GetFullPath(Path.Combine(basePath.Value, path));
+            Value = Path.Combine(basePath.Value, path);
             OriginalValue = path;
         }
 
