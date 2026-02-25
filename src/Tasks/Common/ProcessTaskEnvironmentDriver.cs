@@ -103,6 +103,7 @@ namespace Microsoft.Build.Framework
             var startInfo = new ProcessStartInfo
             {
                 WorkingDirectory = _projectDirectory.Value,
+                UseShellExecute = false,
             };
 
             // Populate environment from the scoped environment dictionary
