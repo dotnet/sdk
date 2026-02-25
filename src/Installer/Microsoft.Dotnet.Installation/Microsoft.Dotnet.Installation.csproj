@@ -8,6 +8,7 @@
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>true</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
