@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -41,6 +41,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets(assetPreprocessor)
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = contentPreprocessorValues,
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
@@ -94,6 +95,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets(assetPreprocessor)
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = contentPreprocessorValues,
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
@@ -154,6 +156,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets(assetPreprocessor)
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = contentPreprocessorValues,
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
@@ -230,6 +233,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets(assetPreprocessor)
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = contentPreprocessorValues,
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
@@ -312,6 +316,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets(assetPreprocessor)
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = contentPreprocessorValues,
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
@@ -368,6 +373,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets()
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = null,
                 ContentPreprocessorOutputDirectory = null,
@@ -410,6 +416,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets()
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = null,
                 ContentPreprocessorOutputDirectory = null,
@@ -454,6 +461,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // execute task
             var task = new ProduceContentAssets()
             {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 ContentFileDependencies = contentFileDependencies,
                 ContentPreprocessorValues = null,
                 ContentPreprocessorOutputDirectory = null,
