@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch
 
         private static string ValidateMuxerPath(string path)
         {
-            Debug.Assert(Path.GetFileName(path).Equals("dotnet" + PathUtilities.ExecutableExtension, StringComparison.OrdinalIgnoreCase));
+            Debug.Assert(Path.GetFileName(path) == $"dotnet{PathUtilities.ExecutableExtension}");
             return path;
         }
 
