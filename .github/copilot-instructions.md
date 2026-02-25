@@ -37,6 +37,20 @@ dotnetup:
 - When running dotnetup directly (e.g. `dotnet run`), use the repo-local dogfood dotnet instance:
   - `d:\sdk\.dotnet\dotnet run --project d:\sdk\src\Installer\dotnetup\dotnetup.csproj -- <args>`
 
+dotnetup Code Style:
+- dotnetup has an `.editorconfig` at `src/Installer/.editorconfig` that enforces strict style rules (file-scoped namespaces, `s_` prefix for static fields, `_` prefix for instance fields, CA analyzers as warnings, etc.).
+- All three projects (dotnetup, Microsoft.Dotnet.Installation, dotnetup.Tests) build with `TreatWarningsAsErrors`, so style violations break the build.
+- When writing new code, follow the `.editorconfig` conventions. Key rules:
+  - File-scoped namespaces (`namespace Foo;`)
+  - File header: `// Licensed to the .NET Foundation under one or more agreements.` / `// The .NET Foundation licenses this file to you under the MIT license.`
+  - Static fields: `s_camelCase` prefix. Instance fields: `_camelCase` prefix.
+  - Use `.ConfigureAwait(false)` on awaited tasks (CA2007).
+  - Use `CultureInfo.InvariantCulture` for string formatting (CA1305), or suppress with pragma if the API doesn't support it.
+  - Mark methods `static` if they don't access instance data (CA1822), unless they implement an interface.
+- When fixing bugs or iterating quickly, it is acceptable to skip formatting and add `// TODO: fix style` comments. Style can be cleaned up in a follow-up commit. Do not let formatting slow down urgent fixes.
+- To auto-format: `d:\sdk\.dotnet\dotnet format <project.csproj> --no-restore`
+- A pre-commit hook is available at `src/Installer/hooks/`. Install with `powershell -File src/Installer/hooks/install.ps1` (Windows) or `sh src/Installer/hooks/install.sh` (Unix).
+
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
 

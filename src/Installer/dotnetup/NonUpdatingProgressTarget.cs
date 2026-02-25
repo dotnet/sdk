@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Spectre.Console;
@@ -25,7 +25,9 @@ public class NonUpdatingProgressTarget : IProgressTarget
 
     private sealed class ProgressTaskImpl : IProgressTask
     {
+#pragma warning disable IDE0032 // Setter has side-effect logic; not convertible to auto-property
         private double _value;
+#pragma warning restore IDE0032
         private bool _completed;
 
         public ProgressTaskImpl(string description)

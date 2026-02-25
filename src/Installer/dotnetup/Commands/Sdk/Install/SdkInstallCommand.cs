@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -19,7 +19,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _requireMuxerUpdate = result.GetValue(SdkInstallCommandParser.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
+    private readonly ChannelVersionResolver _channelVersionResolver = new();
 
     protected override string GetCommandName() => "sdk/install";
 
@@ -44,7 +44,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return result.ExitCode;
     }
 
-    string? ResolveChannelFromGlobalJson(string globalJsonPath)
+    private string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
         return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }

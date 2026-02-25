@@ -24,11 +24,11 @@ internal static class DefaultInstallCommandParser
         return argument;
     }
 
-    private static readonly Command DefaultInstallCommand = ConstructCommand();
+    private static readonly Command s_defaultInstallCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return DefaultInstallCommand;
+        return s_defaultInstallCommand;
     }
 
     private static Command ConstructCommand()

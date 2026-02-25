@@ -22,7 +22,9 @@ internal class InstallWalkthrough
     private readonly IDotnetInstallManager _dotnetInstaller;
     private readonly ChannelVersionResolver _channelVersionResolver;
     private readonly InstallWorkflow.InstallWorkflowOptions _options;
+#pragma warning disable IDE0032 // Lazy-init via ??=; not convertible to auto-property
     private InstallRootManager? _installRootManager;
+#pragma warning restore IDE0032
 
     public InstallWalkthrough(
         IDotnetInstallManager dotnetInstaller,
