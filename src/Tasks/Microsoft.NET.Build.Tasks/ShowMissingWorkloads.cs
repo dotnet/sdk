@@ -12,8 +12,20 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ShowMissingWorkloads : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ShowMissingWorkloads : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         private static readonly string MauiCrossPlatTopLevelVSWorkloads = "Microsoft.VisualStudio.Workload.NetCrossPlat";
         private static readonly string MauiComponentGroupVSWorkload = "Microsoft.VisualStudio.ComponentGroup.Maui.All";
         private static readonly string WasmTopLevelVSWorkload = "Microsoft.VisualStudio.Workload.NetWeb";
@@ -38,11 +50,11 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (MissingWorkloadPacks.Any())
             {
-                string userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+                string userProfileDir = new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath();
 
                 //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
                 //  starting point to search for global.json
-                string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
 
                 var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(NetCoreRoot, NETCoreSdkVersion, userProfileDir, globalJsonPath);
                 var workloadResolver = Create(workloadManifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);

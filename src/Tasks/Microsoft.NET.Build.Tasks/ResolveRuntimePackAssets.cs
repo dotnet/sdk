@@ -8,8 +8,20 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveRuntimePackAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveRuntimePackAssets : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public ITaskItem[] ResolvedRuntimePacks { get; set; }
 
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
@@ -196,7 +208,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 //  Call GetFullPath to normalize slashes
-                string assetPath = Path.GetFullPath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
+                string assetPath = TaskEnvironment.GetAbsolutePath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;

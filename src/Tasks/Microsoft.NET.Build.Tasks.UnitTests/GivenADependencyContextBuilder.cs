@@ -73,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Build();
 
             JObject result = Save(dependencyContext);
-            JObject baseline = ReadJson($"{baselineFileName}.deps.json");
+            JObject baseline = ReadJson(Path.Combine(TestLockFiles.TestAssemblyDirectory, $"{baselineFileName}.deps.json"));
 
             try
             {

@@ -10,8 +10,20 @@ using static Microsoft.DotNet.Cli.EnvironmentVariableNames;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveTargetingPackAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveTargetingPackAssets : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
 
         public ITaskItem[] ResolvedTargetingPacks { get; set; } = Array.Empty<ITaskItem>();
@@ -46,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] UsedRuntimeFrameworks { get; set; }
 
-        private static readonly bool s_allowCacheLookup = Environment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
+        private bool AllowCacheLookup() => TaskEnvironment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
 
         public ResolveTargetingPackAssets()
         {
@@ -60,7 +72,9 @@ namespace Microsoft.NET.Build.Tasks
 
             ResolvedAssetsCacheEntry results;
 
-            if (s_allowCacheLookup &&
+            bool allowCacheLookup = AllowCacheLookup();
+
+            if (allowCacheLookup &&
                 BuildEngine4?.GetRegisteredTaskObject(
                     cacheKey,
                     RegisteredTaskObjectLifetime.AppDomain /* really "until process exit" */)
@@ -76,9 +90,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                results = Resolve(inputs, BuildEngine4);
+                results = Resolve(inputs, BuildEngine4, allowCacheLookup);
 
-                if (s_allowCacheLookup)
+                if (allowCacheLookup)
                 {
                     BuildEngine4?.RegisterTaskObject(cacheKey, results, RegisteredTaskObjectLifetime.AppDomain, allowEarlyCollection: true);
                 }
@@ -107,7 +121,7 @@ namespace Microsoft.NET.Build.Tasks
                         NetCoreTargetingPackRoot,
                         ProjectLanguage);
 
-        private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine)
+        private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine, bool allowCacheLookup)
         {
             List<TaskItem> referencesToAdd = new();
             List<TaskItem> analyzersToAdd = new();
@@ -212,7 +226,7 @@ namespace Microsoft.NET.Build.Tasks
                             targetingPack.NuGetPackageVersion,
                             inputs.ProjectLanguage);
 
-                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd);
+                        AddItemsFromFrameworkList(definition, buildEngine, referencesToAdd, analyzersToAdd, allowCacheLookup);
 
                         if (File.Exists(platformManifestPath))
                         {
@@ -295,11 +309,11 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static void AddItemsFromFrameworkList(FrameworkListDefinition definition, IBuildEngine4 buildEngine4, List<TaskItem> referenceItems, List<TaskItem> analyzerItems)
+        private static void AddItemsFromFrameworkList(FrameworkListDefinition definition, IBuildEngine4 buildEngine4, List<TaskItem> referenceItems, List<TaskItem> analyzerItems, bool allowCacheLookup)
         {
             string frameworkListKey = definition.CacheKey();
 
-            if (s_allowCacheLookup &&
+            if (allowCacheLookup &&
                 buildEngine4?.GetRegisteredTaskObject(
                   frameworkListKey,
                   RegisteredTaskObjectLifetime.AppDomain)
@@ -390,7 +404,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (s_allowCacheLookup)
+            if (allowCacheLookup)
             {
                 FrameworkList list = new()
                 {

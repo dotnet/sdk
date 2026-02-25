@@ -25,6 +25,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ResolveRuntimePackAssets()
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testDirectory),
                 FrameworkReferences = new TaskItem[] { new TaskItem("TestFramework") },
                 ResolvedRuntimePacks = new TaskItem[]
                 {
@@ -51,8 +52,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute();
             task.RuntimePackAssets.Should().HaveCount(1);
-            string expectedResource = Path.Combine("runtimes", "de", "a.resources.dll");
-            task.RuntimePackAssets.FirstOrDefault().ItemSpec.Should().Contain(expectedResource);
+            string expectedResource = Path.Combine("runtimes", "de", "a.resources.dll").Replace('\\', '/');
+            task.RuntimePackAssets.FirstOrDefault().ItemSpec.Replace('\\', '/').Should().Contain(expectedResource);
         }
     }
 }
