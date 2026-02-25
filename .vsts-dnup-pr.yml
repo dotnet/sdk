@@ -8,6 +8,7 @@ pr:
     - dnup
     - release/dnup
     - release/dotnetup
+    - nagilson-dnup-executables
 
 parameters:
 - name: enableArm64Job
@@ -65,4 +66,109 @@ stages:
           emoji: 💪
         helixTargetQueue: osx.13.arm64.open
 
+- stage: executables
+  displayName: 🏗️ Build dotnetup executables
+  dependsOn: []
+  jobs:
+  ### Build a single platform executable for PR validation ###
+  - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+    parameters:
+      rid: linux-x64
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        os: linux
+        emoji: 🐧
+
+- stage: hash_verification
+  displayName: 🔐 Verify release manifest hashes
+  dependsOn: []
+  jobs:
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      displayName: '🔐 Verify 7.0 release hashes'
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixRepo: dotnet/sdk
+      timeoutInMinutes: 360
+      enableTelemetry: true
+      steps:
+      - powershell: |
+          New-Item -ItemType Directory -Force -Path '$(Build.SourcesDirectory)/src/Installer/releases/7.0' | Out-Null
+          try { & '$(Build.SourcesDirectory)/src/Installer/releases/Verify-ReleaseHashes.ps1' -ChannelVersion '7.0' -OutputDir '$(Build.SourcesDirectory)/src/Installer/releases/7.0' } catch { Write-Host $_ }
+          Write-Host "Script exited with code: $LASTEXITCODE"
+        displayName: '🔐 Verify 7.0 hashes'
+      - task: PublishPipelineArtifact@1
+        displayName: '📦 Publish 7.0 results'
+        condition: always()
+        inputs:
+          artifactName: 'hash-verification-7.0'
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      displayName: '🔐 Verify 8.0 release hashes'
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixRepo: dotnet/sdk
+      timeoutInMinutes: 360
+      enableTelemetry: true
+      steps:
+      - powershell: |
+          New-Item -ItemType Directory -Force -Path '$(Build.SourcesDirectory)/src/Installer/releases/8.0' | Out-Null
+          try { & '$(Build.SourcesDirectory)/src/Installer/releases/Verify-ReleaseHashes.ps1' -ChannelVersion '8.0' -OutputDir '$(Build.SourcesDirectory)/src/Installer/releases/8.0' } catch { Write-Host $_ }
+          Write-Host "Script exited with code: $LASTEXITCODE"
+        displayName: '🔐 Verify 8.0 hashes'
+      - task: PublishPipelineArtifact@1
+        displayName: '📦 Publish 8.0 results'
+        condition: always()
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/src/Installer/releases/8.0'
+          artifactName: 'hash-verification-8.0'
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      displayName: '🔐 Verify 9.0 release hashes'
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixRepo: dotnet/sdk
+      timeoutInMinutes: 360
+      enableTelemetry: true
+      steps:
+      - powershell: |
+          New-Item -ItemType Directory -Force -Path '$(Build.SourcesDirectory)/src/Installer/releases/9.0' | Out-Null
+          try { & '$(Build.SourcesDirectory)/src/Installer/releases/Verify-ReleaseHashes.ps1' -ChannelVersion '9.0' -OutputDir '$(Build.SourcesDirectory)/src/Installer/releases/9.0' } catch { Write-Host $_ }
+          Write-Host "Script exited with code: $LASTEXITCODE"
+        displayName: '🔐 Verify 9.0 hashes'
+      - task: PublishPipelineArtifact@1
+        displayName: '📦 Publish 9.0 results'
+        condition: always()
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/src/Installer/releases/9.0'
+          artifactName: 'hash-verification-9.0'
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      displayName: '🔐 Verify 10.0 release hashes'
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixRepo: dotnet/sdk
+      timeoutInMinutes: 360
+      enableTelemetry: true
+      steps:
+      - powershell: |
+          New-Item -ItemType Directory -Force -Path '$(Build.SourcesDirectory)/src/Installer/releases/10.0' | Out-Null
+          try { & '$(Build.SourcesDirectory)/src/Installer/releases/Verify-ReleaseHashes.ps1' -ChannelVersion '10.0' -OutputDir '$(Build.SourcesDirectory)/src/Installer/releases/10.0' } catch { Write-Host $_ }
+          Write-Host "Script exited with code: $LASTEXITCODE"
+        displayName: '🔐 Verify 10.0 hashes'
+      - task: PublishPipelineArtifact@1
+        displayName: '📦 Publish 10.0 results'
+        condition: always()
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/src/Installer/releases/10.0'
+          artifactName: 'hash-verification-10.0'
 
