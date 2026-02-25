@@ -64,7 +64,7 @@ jobs:
         displayName: 🔍 Test Windows
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
-          ./restore.sh -projects dotnetup.slnf
+          ./restore.sh -projects $(Build.SourcesDirectory)/dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Unix)
       - script: |
           ./.dotnet/dotnet restore test/dotnetup.Tests/dotnetup.Tests.csproj
