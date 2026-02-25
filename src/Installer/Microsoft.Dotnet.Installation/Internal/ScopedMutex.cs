@@ -10,9 +10,10 @@ public class ScopedMutex : IDisposable
     private static readonly ThreadLocal<int> s_holdCount = new(() => 0);
 
     /// <summary>
-    /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
+    /// Timeout in seconds for mutex acquisition. Default is 10 minutes.
+    /// CI agents (especially Helix) can be very slow, so this must be generous.
     /// </summary>
-    public static int TimeoutSeconds { get; set; } = 300;
+    public static int TimeoutSeconds { get; set; } = 600;
 
     /// <summary>
     /// Optional callback invoked when we need to wait for the mutex (another process holds it).
@@ -30,15 +31,24 @@ public class ScopedMutex : IDisposable
 
         _mutex = new Mutex(false, mutexName);
 
-        // First try immediate acquisition to see if we need to wait
-        HasHandle = _mutex.WaitOne(0, false);
-        if (!HasHandle)
+        try
         {
-            // Another process holds the mutex - notify caller before blocking
-            OnWaitingForMutex?.Invoke();
+            // First try immediate acquisition to see if we need to wait
+            HasHandle = _mutex.WaitOne(0, false);
+            if (!HasHandle)
+            {
+                // Another process holds the mutex - notify caller before blocking
+                OnWaitingForMutex?.Invoke();
 
-            // Now wait for the full timeout
-            HasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+                // Now wait for the full timeout
+                HasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+            }
+        }
+        catch (AbandonedMutexException)
+        {
+            // A previous process holding the mutex exited without releasing it.
+            // The OS still grants ownership to this thread, so we can proceed safely.
+            HasHandle = true;
         }
 
         if (HasHandle)
