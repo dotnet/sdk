@@ -43,7 +43,7 @@
     <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.Package.csproj" />
     <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.shproj" />
     <Project Path="src/BuiltInTools/BrowserRefresh/Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
-    <Project Path="src/BuiltInTools/dotnet-format/dotnet-format.csproj" />
+    <Project Path="src/Dotnet.Format/dotnet-format/dotnet-format.csproj" />
     <Project Path="src/BuiltInTools/dotnet-watch/dotnet-watch.csproj" />
     <Project Path="src/BuiltInTools/DotNetDeltaApplier/Microsoft.Extensions.DotNetDeltaApplier.csproj" />
     <Project Path="src/BuiltInTools/DotNetWatchTasks/DotNetWatchTasks.csproj" />
