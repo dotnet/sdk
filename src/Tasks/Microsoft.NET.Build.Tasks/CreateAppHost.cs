@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         HostWriter.CreateAppHost(appHostSourceFilePath: appHostSource,
                                                 appHostDestinationFilePath: appHostDest,
-                                                appBinaryFilePath: AppBinaryName,
+                                                appBinaryFilePath: AppBinaryName, // Not absolutized — HostWriter embeds this as a relative path, never resolves it on disk
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
                                                 enableMacOSCodeSign: EnableMacOSCodeSign,

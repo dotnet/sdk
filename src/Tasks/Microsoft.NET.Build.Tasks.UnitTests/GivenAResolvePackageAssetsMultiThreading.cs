@@ -19,12 +19,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 var task = new ResolvePackageAssets();
                 task.BuildEngine = new MockBuildEngine();
-
-                // Set TaskEnvironment via reflection to work both before and after migration
-                var teProp = typeof(ResolvePackageAssets).GetProperty("TaskEnvironment",
-                    BindingFlags.Public | BindingFlags.Instance);
-                teProp.Should().NotBeNull("ResolvePackageAssets must have TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 var objDir = Path.Combine(projectDir, "obj");
                 Directory.CreateDirectory(objDir);

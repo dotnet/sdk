@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            string assetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+            AbsolutePath assetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
             LockFile lockFile = new LockFileCache(this).GetLockFile(assetsFilePath);
 
             lockFile.GetTargetAndThrowIfNotFound(TargetFramework, RuntimeIdentifier);

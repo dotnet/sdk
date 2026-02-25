@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -13,88 +12,73 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ReferencePath_IsResolvedRelativeToProjectDirectory()
         {
-            // Create a unique temp directory to act as the project directory
-            var projectDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"netstandard-mt-{Guid.NewGuid():N}"));
-            Directory.CreateDirectory(projectDir);
+            using var env = new TaskTestEnvironment();
+
+            // Place a copy of this test assembly at a relative path under the project dir
+            var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardMultiThreading).Assembly.Location;
+            var assemblyFileName = Path.GetFileName(thisAssemblyPath);
+            env.CreateProjectDirectory("refs");
+            File.Copy(thisAssemblyPath, Path.Combine(env.ProjectDirectory, "refs", assemblyFileName));
+
+            var task = new GetDependsOnNETStandard
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = env.TaskEnvironment,
+                References = new ITaskItem[]
+                {
+                    new MockTaskItem { ItemSpec = $"refs\\{assemblyFileName}" }
+                }
+            };
+
+            var result = task.Execute();
+
+            result.Should().BeTrue("task should succeed");
+            task.DependsOnNETStandard.Should().BeTrue(
+                "the assembly at the relative path (resolved via TaskEnvironment) references System.Runtime");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void DependsOnNETStandard_IsConsistent_RegardlessOfCwd(bool useDifferentCwd)
+        {
+            // Use the test assembly itself as input — it references System.Runtime.
+            var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardMultiThreading).Assembly.Location;
+
+            string projectDir = useDifferentCwd
+                ? Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"netstandard-mt-{Guid.NewGuid():N}"))
+                : Directory.GetCurrentDirectory();
+
+            if (useDifferentCwd)
+            {
+                Directory.CreateDirectory(projectDir);
+            }
+
             try
             {
-                // Place a copy of this test assembly at a relative path under the project dir
-                var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardMultiThreading).Assembly.Location;
-                var relativeRefDir = Path.Combine(projectDir, "refs");
-                Directory.CreateDirectory(relativeRefDir);
-                var assemblyFileName = Path.GetFileName(thisAssemblyPath);
-                var destPath = Path.Combine(relativeRefDir, assemblyFileName);
-                File.Copy(thisAssemblyPath, destPath);
-
                 var task = new GetDependsOnNETStandard
                 {
                     BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     References = new ITaskItem[]
                     {
-                        new MockTaskItem { ItemSpec = $"refs\\{assemblyFileName}" }
+                        new MockTaskItem { ItemSpec = thisAssemblyPath }
                     }
                 };
-
-                // Set TaskEnvironment via reflection (property may not exist yet)
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property after migration");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
 
                 var result = task.Execute();
 
                 result.Should().BeTrue("task should succeed");
-                // This test assembly references System.Runtime, so DependsOnNETStandard should be true
-                // when the relative path is resolved via TaskEnvironment (project dir), not CWD
                 task.DependsOnNETStandard.Should().BeTrue(
-                    "the assembly at the relative path (resolved via TaskEnvironment) references System.Runtime");
+                    "test assembly references System.Runtime, so DependsOnNETStandard should be true");
             }
             finally
             {
-                Directory.Delete(projectDir, true);
+                if (useDifferentCwd && Directory.Exists(projectDir))
+                {
+                    Directory.Delete(projectDir, true);
+                }
             }
-        }
-
-        [Fact]
-        public void OutputMatchesBetweenSingleAndMultiProcessMode()
-        {
-            // Use the test assembly itself as input — it references System.Runtime.
-            var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardMultiThreading).Assembly.Location;
-            var cwd = Directory.GetCurrentDirectory();
-
-            // --- Single-process mode: TaskEnvironment based on CWD (no explicit project dir) ---
-            var singleProcessTask = new GetDependsOnNETStandard
-            {
-                BuildEngine = new MockBuildEngine(),
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
-                References = new ITaskItem[]
-                {
-                    new MockTaskItem { ItemSpec = thisAssemblyPath }
-                }
-            };
-
-            var singleResult = singleProcessTask.Execute();
-
-            // --- Multi-process mode: TaskEnvironment with explicit project dir == CWD ---
-            var multiProcessTask = new GetDependsOnNETStandard
-            {
-                BuildEngine = new MockBuildEngine(),
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(cwd),
-                References = new ITaskItem[]
-                {
-                    new MockTaskItem { ItemSpec = thisAssemblyPath }
-                }
-            };
-
-            var multiResult = multiProcessTask.Execute();
-
-            // Both should succeed
-            singleResult.Should().BeTrue("single-process mode should succeed");
-            multiResult.Should().BeTrue("multi-process mode should succeed");
-
-            // The output must be identical
-            multiProcessTask.DependsOnNETStandard.Should().Be(
-                singleProcessTask.DependsOnNETStandard,
-                "DependsOnNETStandard output should be identical between single-process and multi-process modes");
         }
     }
 }
