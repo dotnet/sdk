@@ -31,10 +31,11 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" />
+    <PackageReference Include="Microsoft.DotNet.ProjectTools" Condition="'$(ProjectToolsProjectDir)' == ''" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
+    <ProjectReference Include="$(ProjectToolsProjectDir)Microsoft.DotNet.ProjectTools.csproj" />
   </ItemGroup>
 
 </Project>
