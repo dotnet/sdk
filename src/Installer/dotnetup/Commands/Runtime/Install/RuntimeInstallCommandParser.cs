@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
@@ -25,11 +24,11 @@ internal static class RuntimeInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    private static readonly Command Command = ConstructCommand();
+    private static readonly Command s_command = ConstructCommand();
 
     public static Command GetRuntimeInstallCommand()
     {
-        return Command;
+        return s_command;
     }
 
     private static Command ConstructCommand()

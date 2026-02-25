@@ -65,7 +65,7 @@ public class EnvShellProviderTests
     public void ShellProviders_ShouldHaveCorrectArgumentName(string expectedName)
     {
         // Arrange
-        var provider = PrintEnvScriptCommandParser.SupportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
+        var provider = PrintEnvScriptCommandParser.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
 
         // Assert
         provider.Should().NotBeNull();

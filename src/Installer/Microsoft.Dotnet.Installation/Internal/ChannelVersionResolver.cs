@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
-
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -41,7 +39,7 @@ internal class ChannelVersionResolver
     /// </summary>
     internal const int MaxReasonableMajorVersion = 99;
 
-    private ReleaseManifest _releaseManifest = new();
+    private readonly ReleaseManifest _releaseManifest = new();
 
     public ChannelVersionResolver()
     {
@@ -114,7 +112,7 @@ internal class ChannelVersionResolver
 
         // Try to parse as a version-like string
         var parts = versionPart.Split('.');
-        if (parts.Length == 0 || parts.Length > 4)
+        if (parts.Length is 0 or > 4)
         {
             return false;
         }
@@ -176,7 +174,7 @@ internal class ChannelVersionResolver
     /// </summary>
     /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
     /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
-    private (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
+    private static (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
     {
         var parts = channel.Name.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
@@ -260,7 +258,7 @@ internal class ChannelVersionResolver
         return null;
     }
 
-    private IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
+    private static IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
     {
         var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}."));
         return validProducts;
@@ -269,7 +267,7 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Gets the latest version for a major-only channel (e.g., "9").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
+    private static ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
     {
         // Assumption: The manifest is designed so that the first product for a major version will always be latest.
         Product? latestProductWithMajor = GetProductsInMajorOrMajorMinor(index, major, minor).FirstOrDefault();
@@ -295,7 +293,7 @@ internal class ChannelVersionResolver
     /// <param name="index">The product collection to search</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest preview or GoLive version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
+    private static ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
     {
         ReleaseVersion? latestPreviewVersion = GetLatestVersionBySupportPhase(index, component, [SupportPhase.Preview, SupportPhase.GoLive]);
         if (latestPreviewVersion is not null)
@@ -354,14 +352,13 @@ internal class ChannelVersionResolver
             .Replace("x", "0")
             .PadRight(3, '0')
             .Substring(0, 3);
-        return int.Parse(bandString);
+        return int.Parse(bandString, CultureInfo.InvariantCulture);
     }
-
 
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
         if (component != InstallComponent.SDK)
         {

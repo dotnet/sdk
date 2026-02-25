@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -26,8 +24,8 @@ internal class MuxerHandler
     private readonly string _existingMuxerBackupPath;
     private readonly bool _requireMuxerUpdate;
 
-    private ReleaseVersion? _preExtractionHighestRuntimeVersion;
-    private bool _hadExistingMuxer;
+    private readonly ReleaseVersion? _preExtractionHighestRuntimeVersion;
+    private readonly bool _hadExistingMuxer;
     private bool _movedExistingMuxer;
 
     public MuxerHandler(string targetDir, bool requireMuxerUpdate = false)
@@ -74,7 +72,7 @@ internal class MuxerHandler
     /// <summary>
     /// Gets the muxer entry name to detect during extraction.
     /// </summary>
-    public string MuxerEntryName => DotnetupUtilities.GetDotnetExeName();
+    public static string MuxerEntryName => DotnetupUtilities.GetDotnetExeName();
 
     /// <summary>
     /// Gets the path where the muxer should be extracted to during the main extraction pass.
@@ -250,7 +248,7 @@ internal class MuxerHandler
     /// </summary>
     private static bool IsFileMoveBlockedException(Exception ex)
     {
-        return ex is IOException || ex is UnauthorizedAccessException;
+        return ex is IOException or UnauthorizedAccessException;
     }
 
     /// <summary>
@@ -263,7 +261,7 @@ internal class MuxerHandler
             const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
             const int ERROR_LOCK_VIOLATION = unchecked((int)0x80070021);
 
-            if (ioEx.HResult == ERROR_SHARING_VIOLATION || ioEx.HResult == ERROR_LOCK_VIOLATION)
+            if (ioEx.HResult is ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION)
             {
                 string pidInfo = DotnetupUtilities.GetDotnetProcessPidInfo();
                 return $"it is currently in use by another process.{pidInfo} Close all running .NET applications and try again";

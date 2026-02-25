@@ -24,6 +24,38 @@ stages:
 - stage: dotnetup
   displayName: 🏰 dotnetup tests
   jobs:
+  ############### STYLE CHECK ###############
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      displayName: '📏 dotnetup style check'
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixRepo: dotnet/sdk
+      timeoutInMinutes: 15
+      enableMicrobuild: false
+      enablePublishBuildAssets: false
+      enableTelemetry: true
+      enableSbom: false
+      steps:
+      - powershell: |
+          & .\restore.cmd
+        displayName: 🍱 Bootstrap toolset
+      - powershell: |
+          & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
+        displayName: ♻️ Restore
+      - powershell: |
+          $failed = $false
+          & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore
+          if ($LASTEXITCODE -ne 0) { $failed = $true }
+          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore
+          if ($LASTEXITCODE -ne 0) { $failed = $true }
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore
+          if ($LASTEXITCODE -ne 0) { $failed = $true }
+          if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
+        displayName: 🔨 Build with -warnaserror
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
     parameters:

@@ -91,7 +91,7 @@ internal class InstallRootManager
     /// Returns true if successful, false if elevation was cancelled.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public bool ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static bool ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
     {
         if (changes.NeedsRemoveAdminPath)
         {
@@ -121,7 +121,7 @@ internal class InstallRootManager
     /// Returns true if successful, false if elevation was cancelled.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public bool ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static bool ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
     {
         if (changes.NeedsModifyAdminPath)
         {
@@ -147,7 +147,7 @@ internal class InstallRootManager
     }
 
     [SupportedOSPlatform("windows")]
-    private bool RemoveAdminPathIfNeeded(List<string> foundDotnetPaths, Action<string> writeOutput, Action<string> writeError)
+    private static bool RemoveAdminPathIfNeeded(List<string> foundDotnetPaths, Action<string> writeOutput, Action<string> writeError)
     {
         if (Environment.IsPrivilegedProcess)
         {
@@ -196,7 +196,7 @@ internal class InstallRootManager
     }
 
     [SupportedOSPlatform("windows")]
-    private bool AddAdminPathIfNeeded(string programFilesDotnetPath, Action<string> writeOutput, Action<string> writeError)
+    private static bool AddAdminPathIfNeeded(string programFilesDotnetPath, Action<string> writeOutput, Action<string> writeError)
     {
         if (Environment.IsPrivilegedProcess)
         {

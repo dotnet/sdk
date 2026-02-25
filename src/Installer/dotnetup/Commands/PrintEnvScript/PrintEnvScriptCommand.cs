@@ -31,13 +31,13 @@ internal class PrintEnvScriptCommand : CommandBase
                 if (shellPath is null)
                 {
                     Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
-                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
                 }
                 else
                 {
                     var shellName = Path.GetFileName(shellPath);
                     Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
-                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
                     Console.Error.WriteLine("Please specify the shell using --shell option.");
                 }
                 return 1;

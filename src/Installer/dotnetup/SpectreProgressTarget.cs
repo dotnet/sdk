@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Spectre.Console;
@@ -20,7 +20,7 @@ public class SpectreProgressTarget : IProgressTarget
             var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
-                await _overallTask.Task;
+                await _overallTask.Task.ConfigureAwait(false);
             });
 
             _progressContext = tcs.Task.GetAwaiter().GetResult();

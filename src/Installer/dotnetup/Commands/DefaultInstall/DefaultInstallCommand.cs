@@ -44,7 +44,7 @@ internal class DefaultInstallCommand : CommandBase
 
                 Console.WriteLine($"Setting up user install root at: {changes.UserDotnetPath}");
 
-                bool succeeded = _installRootManager.ApplyUserInstallRoot(
+                bool succeeded = InstallRootManager.ApplyUserInstallRoot(
                     changes,
                     Console.WriteLine,
                     Console.Error.WriteLine);
@@ -87,7 +87,7 @@ internal class DefaultInstallCommand : CommandBase
                     return 0;
                 }
 
-                bool succeeded = _installRootManager.ApplyAdminInstallRoot(
+                bool succeeded = InstallRootManager.ApplyAdminInstallRoot(
                     changes,
                     Console.WriteLine,
                     Console.Error.WriteLine);

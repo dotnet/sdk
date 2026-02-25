@@ -75,7 +75,9 @@ internal class InstallExecutor
         string componentDescription,
         bool noProgress)
     {
+#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
+#pragma warning restore CA1305
 
         var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
         if (installResult.Install == null)

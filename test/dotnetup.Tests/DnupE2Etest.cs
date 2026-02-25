@@ -215,15 +215,6 @@ echo ""PATH=$PATH""
 echo ""DOTNET_ROOT=$DOTNET_ROOT""
 ";
 
-            // Make the script executable
-            var chmod = Process.Start(new ProcessStartInfo
-            {
-                FileName = "chmod",
-                Arguments = $"+x \"{scriptPath}\"",
-                UseShellExecute = false,
-                WorkingDirectory = tempRoot
-            });
-            chmod?.WaitForExit();
         }
         else // pwsh / powershell
         {
@@ -251,6 +242,17 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         }
 
         File.WriteAllText(scriptPath, scriptContent);
+
+        // Make the script executable (only for bash/zsh on Unix)
+        if (shell == "bash" || shell == "zsh")
+        {
+#pragma warning disable CA1416 // Platform compatibility - guarded by shell check above
+            File.SetUnixFileMode(scriptPath, File.GetUnixFileMode(scriptPath) | UnixFileMode.UserExecute);
+#pragma warning restore CA1416
+        }
+
+        // Ensure working directory exists before starting the process
+        Directory.CreateDirectory(tempRoot);
 
         // Run the script
         using var process = new Process();

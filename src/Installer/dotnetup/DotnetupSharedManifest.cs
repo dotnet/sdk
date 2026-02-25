@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -22,11 +21,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         if (!File.Exists(ManifestPath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
-            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DotnetupManifestJsonContext.Default.ListDotnetInstall));
+            File.WriteAllText(ManifestPath, JsonSerializer.Serialize((List<DotnetInstall>)[], DotnetupManifestJsonContext.Default.ListDotnetInstall));
         }
     }
 
-    private string? _customManifestPath;
+    private readonly string? _customManifestPath;
 
     private string GetManifestPath()
     {
@@ -41,7 +40,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             ?? throw new InvalidOperationException("Could not determine dotnetup data directory.");
     }
 
-    private void AssertHasFinalizationMutex()
+    private static void AssertHasFinalizationMutex()
     {
         // Instead of attempting to reacquire the named mutex (which can create race conditions
         // or accidentally succeed when we *don't* hold it), rely on the thread-local tracking
