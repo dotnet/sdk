@@ -129,6 +129,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new GenerateRuntimeConfigurationFiles
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             RuntimeConfigPath = "obj/myapp.runtimeconfig.json",
             TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
             RuntimeFrameworks = Array.Empty<ITaskItem>(),
@@ -164,6 +165,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new GenerateToolsSettingsFile
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             EntryPointRelativePath = "myapp.dll",
             CommandName = "mytool",
             ToolsSettingsFilePath = "obj/DotnetToolSettings.xml"
@@ -192,6 +194,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new GetAssemblyAttributes
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             PathToTemplateFile = "obj/AssemblyInfo.cs.template"
         };
 
@@ -269,6 +272,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new ResolvePackageDependencies
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             ProjectAssetsFile = "obj/project.assets.json",
             ProjectPath = "myapp.csproj"
         };
