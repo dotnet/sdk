@@ -63,7 +63,7 @@ try {
 }
 catch {
     Write-Error "Failed to fetch manifest for $ChannelVersion : $_"
-    return
+    exit 1
 }
 
 # Collect all files to verify: (url, hash, name, releaseVersion, component)
@@ -142,19 +142,29 @@ if ($DryRun) {
     exit 0
 }
 
-# Results tracking
-$allResults = @()
+# Results tracking (thread-safe)
+$allResults = [System.Collections.Concurrent.ConcurrentBag[hashtable]]::new()
 
 # Create a single HttpClient for all downloads (no automatic decompression - critical for hash matching)
 Add-Type -AssemblyName System.Net.Http
 $handler = New-Object System.Net.Http.HttpClientHandler
+$handler.MaxConnectionsPerServer = 32
 $client = New-Object System.Net.Http.HttpClient($handler)
 $client.Timeout = [timespan]::FromMinutes(15)
 
-$batchIndex = 0
+# Parallel download + verify using runspaces
+$maxParallel = 16
+$completedCount = [ref]0
+$printLock = [object]::new()
 
-foreach ($entry in $filesToVerify) {
-    $batchIndex++
+$runspacePool = [runspacefactory]::CreateRunspacePool(1, $maxParallel)
+$runspacePool.Open()
+
+$jobs = [System.Collections.Generic.List[object]]::new()
+
+$scriptBlock = {
+    param($entry, $outputDir, $client, $totalFiles, $completedCount, $printLock, $allResults)
+
     $url = $entry.Url
     $expectedHash = $entry.ExpectedHash
     $fileName = $entry.FileName
@@ -162,9 +172,8 @@ foreach ($entry in $filesToVerify) {
     $component = $entry.Component
     $rid = $entry.Rid
 
-    # Build a unique local filename to avoid collisions
     $localName = "${releaseVersion}_${component}_${rid}_${fileName}" -replace '[<>:"/\\|?*]', '_'
-    $localPath = Join-Path $OutputDir $localName
+    $localPath = [System.IO.Path]::Combine($outputDir, $localName)
 
     $result = @{
         FileName       = $fileName
@@ -179,16 +188,20 @@ foreach ($entry in $filesToVerify) {
         Error          = ''
     }
 
-    Write-Host "[$batchIndex/$totalFiles] Downloading: $fileName ($releaseVersion $component $rid)..." -NoNewline
-
     try {
         $response = $client.GetAsync($url).GetAwaiter().GetResult()
         if (-not $response.IsSuccessStatusCode) {
             $result.Status = 'DownloadFailed'
             $result.Error = "HTTP $($response.StatusCode)"
-            Write-Host " DOWNLOAD FAILED ($($response.StatusCode))" -ForegroundColor Red
-            $allResults += $result
-            continue
+            $idx = [System.Threading.Interlocked]::Increment($completedCount)
+            lock ($printLock) {
+                [Console]::ForegroundColor = 'Red'
+                [Console]::WriteLine("[$idx/$totalFiles] $url ... DOWNLOAD FAILED ($($response.StatusCode))")
+                [Console]::ResetColor()
+            }
+            $allResults.Add($result)
+            $response.Dispose()
+            return
         }
 
         $fs = [System.IO.File]::Create($localPath)
@@ -199,6 +212,7 @@ foreach ($entry in $filesToVerify) {
             $fs.Close()
             $fs.Dispose()
         }
+        $response.Dispose()
 
         # Compute SHA-512
         $sha512 = [System.Security.Cryptography.SHA512]::Create()
@@ -212,30 +226,76 @@ foreach ($entry in $filesToVerify) {
             $sha512.Dispose()
         }
 
-        $actualHash = [BitConverter]::ToString($hashBytes).Replace('-', '').ToLowerInvariant()
+        $actualHash = [System.BitConverter]::ToString($hashBytes).Replace('-', '').ToLowerInvariant()
         $result.ActualHash = $actualHash
 
         if ($actualHash -eq $expectedHash.ToLowerInvariant()) {
             $result.Status = 'Valid'
-            Remove-Item -Path $localPath -Force -ErrorAction SilentlyContinue
-            Write-Host " OK" -ForegroundColor Green
+            [System.IO.File]::Delete($localPath)
+            $idx = [System.Threading.Interlocked]::Increment($completedCount)
+            lock ($printLock) {
+                [Console]::ForegroundColor = 'Green'
+                [Console]::WriteLine("[$idx/$totalFiles] $url ... OK")
+                [Console]::ResetColor()
+            }
         }
         else {
             $result.Status = 'MISMATCH'
-            Write-Host " MISMATCH!" -ForegroundColor Red
+            $idx = [System.Threading.Interlocked]::Increment($completedCount)
+            lock ($printLock) {
+                [Console]::ForegroundColor = 'Red'
+                [Console]::WriteLine("[$idx/$totalFiles] $url ... MISMATCH!")
+                [Console]::ResetColor()
+            }
         }
     }
     catch {
         $result.Status = 'Error'
         $result.Error = $_.Exception.Message
-        Write-Host " ERROR: $($_.Exception.Message)" -ForegroundColor Yellow
+        $idx = [System.Threading.Interlocked]::Increment($completedCount)
+        lock ($printLock) {
+            [Console]::ForegroundColor = 'Yellow'
+            [Console]::WriteLine("[$idx/$totalFiles] $url ... ERROR: $($_.Exception.Message)")
+            [Console]::ResetColor()
+        }
     }
 
-    $allResults += $result
+    $allResults.Add($result)
 }
 
+Write-Host "Starting parallel verification with $maxParallel concurrent downloads..." -ForegroundColor Cyan
+
+foreach ($entry in $filesToVerify) {
+    $ps = [powershell]::Create()
+    $ps.RunspacePool = $runspacePool
+    [void]$ps.AddScript($scriptBlock)
+    [void]$ps.AddArgument($entry)
+    [void]$ps.AddArgument($OutputDir)
+    [void]$ps.AddArgument($client)
+    [void]$ps.AddArgument($totalFiles)
+    [void]$ps.AddArgument($completedCount)
+    [void]$ps.AddArgument($printLock)
+    [void]$ps.AddArgument($allResults)
+
+    $jobs.Add(@{
+        PowerShell = $ps
+        Handle     = $ps.BeginInvoke()
+    })
+}
+
+# Wait for all jobs to complete
+foreach ($job in $jobs) {
+    $job.PowerShell.EndInvoke($job.Handle)
+    $job.PowerShell.Dispose()
+}
+
+$runspacePool.Close()
+$runspacePool.Dispose()
 $client.Dispose()
 $handler.Dispose()
+
+# Convert ConcurrentBag to array for downstream processing
+$allResults = @($allResults.ToArray())
 
 # Summary
 $valid = @($allResults | Where-Object { $_.Status -eq 'Valid' })
@@ -258,6 +318,7 @@ if ($mismatched.Count -gt 0) {
     foreach ($m in $mismatched) {
         Write-Host "  Release:  $($m.ReleaseVersion)" -ForegroundColor White
         Write-Host "  File:     $($m.FileName)" -ForegroundColor White
+        Write-Host "  URL:      $($m.Url)" -ForegroundColor White
         Write-Host "  RID:      $($m.Rid)" -ForegroundColor White
         Write-Host "  Component:$($m.Component)" -ForegroundColor White
         Write-Host "  Expected: $($m.ExpectedHash)" -ForegroundColor Yellow
@@ -296,9 +357,14 @@ $allResults | ForEach-Object {
 Write-Host "Full results exported to: $csvPath" -ForegroundColor Cyan
 Write-Host ""
 
-# Exit with code 1 if any mismatches found (useful for CI)
-if ($mismatched.Count -gt 0) {
-    Write-Host "FAILURE: $($mismatched.Count) hash mismatch(es) detected." -ForegroundColor Red
+# Exit with code 1 if any mismatches or failures found (useful for CI)
+if ($mismatched.Count -gt 0 -or $failed.Count -gt 0) {
+    if ($mismatched.Count -gt 0) {
+        Write-Host "FAILURE: $($mismatched.Count) hash mismatch(es) detected." -ForegroundColor Red
+    }
+    if ($failed.Count -gt 0) {
+        Write-Host "FAILURE: $($failed.Count) file(s) failed to download or verify." -ForegroundColor Red
+    }
     exit 1
 }
 else {
