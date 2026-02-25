@@ -1229,7 +1229,7 @@ class Program
                 });
             }
 
-            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}"));
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}"));
             buildCommand.Execute().Should().Pass();
 
             // Expected package and local output paths for package assets
@@ -1372,7 +1372,7 @@ class Program
                 });
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
 
