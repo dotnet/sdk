@@ -267,7 +267,7 @@ extends:
             rid: osx-arm64
             pool:
               name: Azure Pipelines
-              image: macOS-latest
+              image: macOS-15-arm64
               os: macOS
               emoji: 💪
             oneESCompat:

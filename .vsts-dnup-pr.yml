@@ -60,7 +60,7 @@ stages:
       parameters:
         pool:
           name: Azure Pipelines
-          vmImage: macOS-latest
+          vmImage: macOS-15-arm64
           os: macOS
           emoji: 💪
         helixTargetQueue: osx.13.arm64.open
