@@ -631,7 +631,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the xml documentation (if enabled) -->
       <ResolvedFileToPublish Include="@(FinalDocFile)"
-                              Condition="'$(PublishDocumentationFile)' == 'true'">
+                              Condition="'$(PublishDocumentationFile)' == 'true' and
+                                         '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
         <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>

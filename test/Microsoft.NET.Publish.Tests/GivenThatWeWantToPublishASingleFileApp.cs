@@ -1181,5 +1181,36 @@ class C
                     .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a valid Mach-O signature for {rid}.");
             }
         }
+
+        [Fact]
+        public void It_succeeds_when_xml_docs_generated_but_not_copied_to_output()
+        {
+            // Regression test: PublishSingleFile fails when GenerateDocumentationFile=true and
+            // CopyDocumentationFileToOutputDirectory=false because the doc file
+            // never exists in the output dir (bin/), yet was being added to the
+            // publish list using the bin/ path.
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileWithDocXml",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            testProject.AdditionalProperties["CopyDocumentationFileToOutputDirectory"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            // The XML doc file should NOT be in the publish output since
+            // CopyDocumentationFileToOutputDirectory=false.
+            GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework)
+                .Should()
+                .NotHaveFile($"{testProject.Name}.xml");
+        }
     }
 }
