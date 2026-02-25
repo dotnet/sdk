@@ -114,6 +114,14 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     /// <summary>
+    /// Writes the manifest data back to disk. Used by GarbageCollector after in-place mutation.
+    /// </summary>
+    internal void WriteManifestData(DotnetupManifestData manifest)
+    {
+        WriteManifest(manifest);
+    }
+
+    /// <summary>
     /// Migrates a legacy flat list of DotnetInstall records to the new manifest format.
     /// Each legacy install becomes both an install spec (pinned to exact version) and an installation record.
     /// </summary>

@@ -19,6 +19,12 @@ internal class DotnetArchiveExtractor : IDisposable
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
+    private readonly HashSet<string> _extractedSubcomponents = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
+    /// </summary>
+    public IReadOnlyList<string> ExtractedSubcomponents => _extractedSubcomponents.ToList();
 
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
@@ -101,6 +107,8 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
         activity?.SetTag("download.version", _resolvedVersion.ToString());
+
+        _extractedSubcomponents.Clear();
 
         string componentDescription = _request.Component.GetDisplayName();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
@@ -222,7 +230,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
@@ -281,7 +289,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// Extracts the contents of a tar file to the target directory.
     /// Exposed as internal static for testing.
     /// </summary>
-    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    internal void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -307,6 +315,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 }
             }
 
+            TrackSubcomponent(entry.Name);
             installTask?.Value += 1;
         }
     }
@@ -314,7 +323,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a zip archive to the target directory.
     /// </summary>
-    private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
         InitializeExtractionProgress(installTask, zip.Entries.Count);
@@ -333,9 +342,18 @@ internal class DotnetArchiveExtractor : IDisposable
                 entry.ExtractToFile(destPath, overwrite: true);
             }
 
+            TrackSubcomponent(entry.FullName);
             installTask?.Value += 1;
         }
 
+
+    private void TrackSubcomponent(string relativeEntryPath)
+    {
+        var subcomponent = SubcomponentResolver.Resolve(relativeEntryPath);
+        if (subcomponent is not null)
+        {
+            _extractedSubcomponents.Add(subcomponent);
+        }
     }
 
     public void Dispose()

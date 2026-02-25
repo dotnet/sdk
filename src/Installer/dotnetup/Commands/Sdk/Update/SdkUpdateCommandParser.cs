@@ -10,7 +10,7 @@ internal static class SdkUpdateCommandParser
 
     public static readonly Option<bool> UpdateAllOption = new("--all")
     {
-        Description = "Update all installed SDKs",
+        Description = "Update all installed components, not just SDKs",
         Arity = ArgumentArity.Zero
     };
 
@@ -18,6 +18,18 @@ internal static class SdkUpdateCommandParser
     {
         Description = "Update the sdk version in applicable global.json files to the updated SDK version",
         Arity = ArgumentArity.Zero
+    };
+
+    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
+    {
+        HelpName = "MANIFEST_PATH",
+        Description = "Custom path to the manifest file for tracking .NET SDK installations",
+    };
+
+    public static readonly Option<string> InstallPathOption = new("--install-path")
+    {
+        HelpName = "INSTALL_PATH",
+        Description = "The dotnet root to update",
     };
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
@@ -30,7 +42,7 @@ internal static class SdkUpdateCommandParser
         return s_sdkUpdateCommand;
     }
 
-    //  Trying to use the same command object for both "dotnetup udpate" and "dotnetup sdk update" causes an InvalidOperationException
+    //  Trying to use the same command object for both "dotnetup update" and "dotnetup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
     private static readonly Command s_rootUpdateCommand = ConstructCommand();
 
@@ -41,15 +53,17 @@ internal static class SdkUpdateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("update", "Updates the .NET SDK");
+        Command command = new("update", "Updates the .NET SDK to the latest version matching each install spec");
 
         command.Options.Add(UpdateAllOption);
         command.Options.Add(UpdateGlobalJsonOption);
+        command.Options.Add(ManifestPathOption);
+        command.Options.Add(InstallPathOption);
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);
 
-        command.SetAction(parseResult => 0);
+        command.SetAction(parseResult => new SdkUpdateCommand(parseResult).Execute());
 
         return command;
     }

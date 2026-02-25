@@ -125,6 +125,10 @@ internal class InstallerOrchestratorSingleton
             if (validator.Validate(install, out string? validationFailure))
             {
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
+
+                // Detect pre-existing installations before first tracked install
+                PreexistingRootDetector.EnsureRootIsTracked(manifestManager, installRequest.InstallRoot);
+
                 manifestManager.AddInstalledVersion(install);
 
                 // Record the install spec for the channel that was requested
@@ -139,8 +143,8 @@ internal class InstallerOrchestratorSingleton
                 manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
                 {
                     Component = installRequest.Component,
-                    Version = versionToInstall.ToString()
-                    // TODO: Populate subcomponents from the extracted archive contents
+                    Version = versionToInstall.ToString(),
+                    Subcomponents = installer.ExtractedSubcomponents.ToList()
                 });
             }
             else
