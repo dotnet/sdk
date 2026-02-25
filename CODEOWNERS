@@ -80,9 +80,9 @@
 /test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
 /test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
