@@ -3,22 +3,10 @@ on:
   schedule:
     - cron: '19 4,16 * * *' # Twice daily at 19 minutes after the hour (random/uncommon time)
 
-  workflow_dispatch:
-    # Manual triggering through the GitHub UI, API, or CLI
-    inputs:
-      daysBeforeStale:
-        required: true
-        default: "1827"
-      daysBeforeClose:
-        required: true
-        default: "30"
-      operationsPerRun:
-        required: true
-        default: "4000"
-
 permissions:
   actions: write # For managing the operation state cache
   issues: write
+  pull-requests: write
 
 jobs:
   stale:
@@ -29,11 +17,10 @@ jobs:
       - uses: actions/stale@v9 # https://github.com/actions/stale/blob/v9/README.md
         with:
           ascending: true # Process the oldest issues first
-          stale-issue-label: 'stale'
-          stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'stale'. It will be closed if no further activity occurs within 30 more days. Any new comment will remove the label."
-          close-issue-message: "This issue will now be closed since it has been labeled 'stale' without activity for 30 days."
-          days-before-stale: ${{ fromJson(inputs.daysBeforeStale || 2192) }} # Default to 6 years if not specified as input
-          days-before-close: ${{ fromJson(inputs.daysBeforeClose || 30  ) }} # Default to 30 days if not specified as input
-          days-before-pr-stale: -1 # Do not label PRs as 'stale'
-          days-before-pr-close: -1 # Do not close PRs labeled as 'stale'
-          operations-per-run: ${{ fromJson(inputs.operationsPerRun || 4000 )}}
+          stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'Stale'. It will be closed if no further activity occurs within 30 more days. Any new comment will remove the label."
+          stale-pr-message: "Due to lack of recent activity, this PR has been labeled as 'Stale'. It will be closed if no further activity occurs within 7 more days. Any new comment will remove the label."
+          days-before-issue-stale: 1827 # ~5 years
+          days-before-issue-close: 30
+          days-before-pr-stale: 180 # 6 months
+          days-before-pr-close: 7
+          operations-per-run: 4000

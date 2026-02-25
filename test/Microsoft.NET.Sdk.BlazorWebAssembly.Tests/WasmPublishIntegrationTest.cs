@@ -522,7 +522,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -709,7 +709,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
@@ -1128,7 +1128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
@@ -1610,6 +1610,16 @@ public class TestReference
             var outputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
             var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
             fileInWwwroot.Should().Exist();
+        }
+
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [InlineData("")]
+        [InlineData("/p:BlazorFingerprintBlazorJs=false")]
+        public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
+            var publishCommand = CreatePublishCommand(testInstance, "Server");
+            ExecuteCommand(publishCommand, publishArg).Should().Pass();
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)

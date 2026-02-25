@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.AspNetCore.Watch.BrowserRefresh</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

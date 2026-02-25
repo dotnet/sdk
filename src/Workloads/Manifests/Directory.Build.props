@@ -12,11 +12,13 @@
     <IsShipping Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">false</IsShipping>
     <IsShippingPackage>$(IsShipping)</IsShippingPackage>
     <IncludeSymbols>false</IncludeSymbols>
+    <PackageVersion Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">$(DotNet1xxWorkloadManifestVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
-    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
+    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and
+                                       '$(PrereleaseVersionLabel)' != 'rtm' and
+                                       '$(PrereleaseVersionLabel)' != 'servicing'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
     <PackageId>$(MSBuildProjectName)-$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)</PackageId>
     <PackageId Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">Microsoft.NET.Workload.Emscripten.Current.Manifest-$(BuiltinWorkloadFeatureBand).Transport</PackageId>
   </PropertyGroup>

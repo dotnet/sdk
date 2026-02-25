@@ -1,5 +1,6 @@
 ﻿These templates matched your input: 
 Template
+.NET
 API
 ASP.NET
 Blazor
@@ -18,5 +19,7 @@ Protocol
 Razor
 Solution
 Web
+Windows
 Worker
+WPF
 xUnit

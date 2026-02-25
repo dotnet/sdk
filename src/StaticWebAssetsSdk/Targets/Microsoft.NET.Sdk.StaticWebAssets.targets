@@ -443,6 +443,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
       <StaticWebAssetEndpointsPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.endpoints.json</StaticWebAssetEndpointsPublishManifestPath>
+      <StaticWebAssetEndpointsBuildExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)swae.build.ex.cache</StaticWebAssetEndpointsBuildExclusionPatternsCachePath>
+      <StaticWebAssetEndpointsPublishExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)swae.publish.ex.cache</StaticWebAssetEndpointsPublishExclusionPatternsCachePath>
       <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
@@ -496,6 +498,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BuildStaticWebAssetsCopyAlways Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'Always'" />
       <_BuildStaticWebAssetsPreserveNewest Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'PreserveNewest'" />
+      <_BuildStaticWebAssetsIfDifferent Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'IfDifferent'" />
     </ItemGroup>
 
   </Target>
@@ -535,8 +538,29 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
   </Target>
+  
+  <Target Name="_BuildCopyStaticWebAssetsIfDifferent"
+    AfterTargets="_SplitStaticWebAssetsByCopyOptions">
 
-  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways">
+    <!--
+        Using SkipUnchangedFiles="true" because we want only differing files.
+    -->
+    <Copy SourceFiles="@(_BuildStaticWebAssetsIfDifferent)"
+      DestinationFiles="@(_BuildStaticWebAssetsIfDifferent->'%(TargetPath)')"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways;_BuildCopyStaticWebAssetsIfDifferent">
 
     <ItemGroup>
       <_UpToDateCheckStaticWebAssetCandidate Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
@@ -632,7 +656,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
       ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
-      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)"
+      ExclusionPatterns="$(StaticWebAssetEndpointExclusionPattern)"
+      ExclusionPatternsCacheFilePath="$(StaticWebAssetEndpointsBuildExclusionPatternsCachePath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
@@ -655,6 +681,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(StaticWebAssetsBuildManifestCacheFilePath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetEndpointsBuildExclusionPatternsCachePath)" Condition="Exists('$(StaticWebAssetEndpointsBuildExclusionPatternsCachePath)')" />
     </ItemGroup>
 
   </Target>

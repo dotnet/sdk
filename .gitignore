@@ -46,7 +46,11 @@ cmake/
 # Test results
 **/*.trx
 /TestResults
+**/TestResults
 /test/dotnet.Tests/CompletionTests/snapshots/**/**.received.*
 
 # Live Unit Testing
 *.lutconfig
+
+# Claude code config files
+.claude/settings.local.json

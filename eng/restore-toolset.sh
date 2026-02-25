@@ -25,6 +25,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
   InstallDotNetSharedFramework "9.0.0"
+  InstallDotNetSharedFramework "10.0.0"
 
   CreateBuildEnvScript
 }
@@ -54,7 +55,6 @@ function CreateBuildEnvScript {
   scriptPath="$artifacts_dir/sdk-build-env.sh"
   scriptContents="
 #!/usr/bin/env bash
-export DOTNET_MULTILEVEL_LOOKUP=0
 
 export DOTNET_ROOT=$DOTNET_INSTALL_DIR
 export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_INSTALL_DIR
@@ -65,6 +65,7 @@ export DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 "
 
   echo "$scriptContents" > ${scriptPath}
+  chmod +x ${scriptPath}
 }
 
 # ReadVersionFromJson [json key]

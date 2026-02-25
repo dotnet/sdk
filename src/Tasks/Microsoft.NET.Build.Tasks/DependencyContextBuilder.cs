@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tasks
                 runtimeIdentifier,
                 string.IsNullOrWhiteSpace(platformLibraryName));
 
-            _isPortable = _isFrameworkDependent && string.IsNullOrEmpty(_runtimeIdentifier);
+            _isPortable = _isFrameworkDependent && (string.IsNullOrEmpty(_runtimeIdentifier) || _runtimeIdentifier == "any");
 
             if (_isFrameworkDependent != true || _isPortable != true)
             {

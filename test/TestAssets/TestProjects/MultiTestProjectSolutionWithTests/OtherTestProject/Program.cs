@@ -3,6 +3,12 @@ using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
 
+for (int i = 0; i < 3; i++)
+{
+	Console.WriteLine(new string('a', 10000));
+	Console.Error.WriteLine(new string('e', 10000));
+}
+
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
 testApplicationBuilder.RegisterTestFramework(_ => new TestFrameworkCapabilities(), (_, __) => new DummyTestAdapter());

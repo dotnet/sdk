@@ -27,13 +27,13 @@ namespace Microsoft.NET.TestFramework
         //  The TestProject from which this asset was created, if any
         public TestProject? TestProject { get; set; }
 
-        internal TestAsset(string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testDestination, ITestOutputHelper log) : base(testDestination)
         {
             Log = log;
             Name = new DirectoryInfo(testDestination).Name;
         }
 
-        internal TestAsset(string testAssetRoot, string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testAssetRoot, string testDestination, ITestOutputHelper log) : base(testDestination)
         {
             if (string.IsNullOrEmpty(testAssetRoot))
             {
@@ -60,6 +60,10 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
+        /// <summary>
+        ///  Copies all of the source code from the TestAsset's original location to the previously-configured destination directory.
+        /// </summary>
+        /// <returns></returns>
         public TestAsset WithSource()
         {
             _projectFiles = new List<string>();
@@ -127,6 +131,20 @@ namespace Microsoft.NET.TestFramework
                     {
                         node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
                     }
+                }
+            });
+        }
+
+        public TestAsset SetProjProperty(string propertyName, string value)
+        {
+            return WithProjectChanges(
+            p =>
+            {
+                if (p.Root is not null)
+                {
+                    var ns = p.Root.Name.Namespace;
+                    var pg = p.Root.Elements(ns + "PropertyGroup").First();
+                    pg.Add(new XElement(ns + propertyName, value));
                 }
             });
         }

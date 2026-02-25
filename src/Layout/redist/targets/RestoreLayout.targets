@@ -15,7 +15,6 @@
     <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
     <NetRuntimeBlobVersion>$(MicrosoftNETCorePlatformsPackageVersion)</NetRuntimeBlobVersion>
     <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppInternalPackageVersion)</WindowsDesktopBlobVersion>
-    <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
 
     <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x86'">x64</AlternateArchitecture>
     <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x64'">x86</AlternateArchitecture>
@@ -28,11 +27,6 @@
     <DownloadedAlternateNetCoreAppHostPackInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_$(AlternateArchitecture)$(InstallerExtension)</DownloadedAlternateNetCoreAppHostPackInstallerFileName>
     <DownloadedArm64NetCoreAppHostPackInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_arm64$(InstallerExtension)</DownloadedArm64NetCoreAppHostPackInstallerFileName>
     <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
-    <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
-    <!-- osx-arm64 netstandard targeting pack pkg is unavailable. Use osx-x64.
-          This should be OK, because the package is just a compressed file containing reference assemblies and
-          runtime independent manifest text files. -->
-    <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
     <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
@@ -65,7 +59,6 @@
 
     <!-- Generate the version specific URLs to the targeting packs, runtime packs, etc. -->
     <NetRuntimeRootUrl>$(PublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</NetRuntimeRootUrl>
-    <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
     <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
     <SdkRootUrl>$(PublicBaseURL)Sdk/$(FullNugetVersion)</SdkRootUrl>
@@ -79,11 +72,6 @@
     <BundledLayoutPackage Include="Microsoft.NETCore.App.Ref"
       PackageName="Microsoft.NETCore.App.Ref"
       PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
-
-    <BundledLayoutPackage Include="NETStandard.Library.Ref"
-      PackageName="NETStandard.Library.Ref"
-      PackageVersion="$(NETStandardLibraryRefPackageVersion)"
       RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
     <BundledLayoutPackage Include="Microsoft.AspNetCore.App.Ref"
@@ -210,13 +198,6 @@
                                 Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
-    </BundledInstallerComponent>
-
-    <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
-    <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
-                          Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'osx-arm64')">
-      <BaseUrl>$(NetStandardTargetingPackRootUrl)</BaseUrl>
-      <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"

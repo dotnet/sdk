@@ -7,8 +7,8 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
+using Microsoft.NET.Sdk.Razor.Tool.Json;
 using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -171,13 +171,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
-                b.Features.Add(new DefaultTagHelperDescriptorProvider());
+
+                b.RegisterDefaultTagHelperProducer();
 
                 CompilerFeatures.Register(b);
             });
 
             var feature = engine.Engine.Features.OfType<ITagHelperFeature>().Single();
-            var tagHelpers = feature.GetDescriptors();
+            var tagHelpers = feature.GetTagHelpers();
 
             using (var stream = new MemoryStream())
             {
@@ -246,8 +247,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096, leaveOpen: true))
             {
                 var serializer = new JsonSerializer();
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
+                serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
                 serializer.Serialize(writer, tagHelpers);
             }

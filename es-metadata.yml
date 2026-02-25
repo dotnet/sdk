@@ -1,0 +1,9 @@
+# Docs: https://aka.ms/inventory-as-code
+schemaVersion: 0.0.1
+isProduction: true
+accountableOwners:
+  service: 30f635d8-2918-48af-8ddf-d9bc854b7584
+routing:
+  defaultAreaPath:
+    org: devdiv
+    path: DevDiv\NET Tools\SDK

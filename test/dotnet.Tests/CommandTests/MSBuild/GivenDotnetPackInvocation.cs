@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetPackInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "--target:Pack"];
-        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--target:Pack"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "--target:Pack"];
+        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--target:Pack"];
         private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "--property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = PackCommand.FromArgs(args, msbuildPath);
+                var command = (PackCommand)PackCommand.FromArgs(args, msbuildPath);
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : [.. ExpectedPrefix, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
 
                 command.SeparateRestoreCommand.Should().BeNull();

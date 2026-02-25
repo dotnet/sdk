@@ -4,7 +4,6 @@ using System.IO;
 #if NET472
 using System.Management;
 #endif
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 {

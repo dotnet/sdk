@@ -29,43 +29,98 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
-        public bool UsePollingWatcher { get; set; }
+        public void SuppressVerboseLogging()
+        {
+            // remove default --verbose and -bl args
+            DotnetWatchArgs.Clear();
 
-        public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
-            => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
+            // override the default used for testing ("trace"):
+            EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
+        }
 
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
-
-        public void AssertOutputDoesNotContain(string message)
-            => Assert.DoesNotContain(Process.Output, line => line.Contains(message));
 
         public void AssertOutputContains(Regex pattern)
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
-            => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
+            => AssertOutputContains(GetPattern(descriptor, projectDisplay));
 
-        public async ValueTask WaitUntilOutputContains(string message, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        public void AssertOutputDoesNotContain(string message)
+            => AssertEx.DoesNotContainSubstring(message, Process.Output);
+
+        public void AssertOutputDoesNotContain(Regex pattern)
+            => AssertEx.DoesNotContainPattern(pattern, Process.Output);
+
+        public void AssertOutputDoesNotContain(MessageDescriptor descriptor, string projectDisplay = null)
+            => AssertOutputDoesNotContain(GetPattern(descriptor, projectDisplay));
+
+        private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay = null)
+            => new Regex(Regex.Replace(Regex.Escape((projectDisplay != null ? $"[{projectDisplay}] " : "") + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
+
+        public async ValueTask WaitUntilOutputContains(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (!Process.Output.Any(line => line.Contains(message)))
+            if (Process.Output.Any(line => line.Contains(text)))
             {
-                Logger.Log($"Test waiting for output: '{message}'", testPath, testLine);
-                _ = await AssertOutputLine(line => line.Contains(message));
+                Logger.Log($"Test found output: '{text}'", testPath, testLine);
+            }
+            else   
+            {
+                Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
+                _ = await WaitForOutputLineMatching(line => line.Contains(text));
             }
         }
 
         public async ValueTask WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (!Process.Output.Any(line => pattern.IsMatch(line)))
+            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            {
+                Logger.Log($"Test found output pattern: '{pattern}'", testPath, testLine);
+            }
+            else
             {
                 Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
-                _ = await AssertOutputLine(line => pattern.IsMatch(line));
+                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
             }
         }
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure, testPath, testLine);
+        public async ValueTask WaitUntilOutputContains(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
+        {
+            var pattern = GetPattern(descriptor, projectDisplay);
+            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            {
+                Logger.Log($"Test found output text format: '{descriptor.Format}'", testPath, testLine);
+            }
+            else
+            {
+                Logger.Log($"Test waiting for output text format: '{descriptor.Format}'", testPath, testLine);
+                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
+            }
+        }
+
+        public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        {
+            Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
+            return Process.GetOutputLineAsync(success: line => line.Contains(text), failure: _ => false);
+        }
+
+        public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
+        {
+            Logger.Log($"Test waiting for text format: '{descriptor.Format}'", testPath, testLine);
+
+            var pattern = GetPattern(descriptor, projectDisplay);
+            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+        }
+
+        public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        {
+            Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
+            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+        }
+
+        private Task<string> WaitForOutputLineMatching(Predicate<string> predicate)
+            => Process.GetOutputLineAsync(success: predicate, failure: _ => false);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -92,29 +147,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return line.Substring(expectedPrefix.Length);
         }
 
-        public Task<string> AssertOutputLine(Predicate<string> predicate)
-            => Process.GetOutputLineAsync(success: predicate, failure: _ => false);
-
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
 
         public Task AssertStarted()
             => AssertOutputLineEquals(StartedMessage);
-
-        /// <summary>
-        /// Wait till file watcher starts watching for file changes.
-        /// </summary>
-        public Task AssertWaitingForChanges([CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
-            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, testPath: testPath, testLine: testLine);
-
-        public async Task AssertWaitingForFileChangeBeforeRestarting()
-        {
-            // wait for user facing message:
-            await AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-
-            // wait for the file watcher to start watching for changes:
-            await AssertWaitingForChanges();
-        }
 
         public Task AssertFileChanged()
             => AssertOutputLineStartsWith(WatchFileChanged);
@@ -145,12 +182,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
+            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
 
             // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "100000");
             commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
 
             foreach (var env in EnvironmentVariables)
@@ -158,8 +195,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 commandSpec.WithEnvironmentVariable(env.Key, env.Value);
             }
 
-            Process = new AwaitableProcess(commandSpec, Logger);
-            Process.Start();
+            var processStartInfo = commandSpec.GetProcessStartInfo();
+            Process = new AwaitableProcess(Logger);
+            Process.Start(processStartInfo);
 
             TestFlags = testFlags;
         }
@@ -181,6 +219,23 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();
+        }
+
+        public void UseTestBrowser()
+        {
+            var path = GetTestBrowserPath();
+            EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", path);
+
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserExecute);
+            }
+        }
+
+        public static string GetTestBrowserPath()
+        {
+            var exeExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
+            return Path.Combine(Path.GetDirectoryName(typeof(WatchableApp).Assembly.Location!)!, "test-browser", "dotnet-watch-test-browser" + exeExtension);
         }
     }
 }

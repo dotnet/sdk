@@ -1,5 +1,5 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <PropertyGroup>
     <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">
       GenerateSdkMsi;
@@ -146,7 +146,7 @@
                          OutputPath=$([System.IO.Path]::GetDirectoryName(%(MSIInstallerFile)));
                          OutputName=$([System.IO.Path]::GetFileNameWithoutExtension(%(MSIInstallerFile)));
                          DependencyKeyName=%(DependencyKeyName);TemplateLayoutDirectoryToHarvest=%(LayoutPath);
-                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode); 
+                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode);
                          DotnetSrc=%(LayoutPath)"/>
     <ItemGroup>
       <ChainMsi Include="%(TemplatesMsi.MSIInstallerFile)" />
@@ -249,7 +249,8 @@
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)"/>
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName);
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)"/>
 
       <!-- ASP.NET Core Runtime -->
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName);
@@ -258,12 +259,6 @@
       <!-- .NET Windows Desktop Runtime -->
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)"/>
-
-      <!-- Additional apphost and targeting packs -->
-      <_DotNetMsiPackages Condition="'$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64'"
-                          Include="$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)" />
     </ItemGroup>
 
     <PropertyGroup>

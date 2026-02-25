@@ -1,9 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
     [Fact]
     public async Task ReferenceOutputAssembly_False()
@@ -15,15 +18,29 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
 
-        var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
-
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
-        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
+        var factory = new ProjectGraphFactory(globalOptions: []);
+        var projectGraph = factory.TryLoadProjectGraph(options.ProjectPath, NullLogger.Instance, projectGraphRequired: false, CancellationToken.None);
 
-        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], reporter, projectGraphRequired: false, CancellationToken.None);
-        var handler = new CompilationHandler(reporter, processRunner);
+        var processOutputReporter = new TestProcessOutputReporter();
+
+        var context = new DotNetWatchContext()
+        {
+            ProcessOutputReporter = processOutputReporter,
+            Logger = NullLogger.Instance,
+            BuildLogger = NullLogger.Instance,
+            LoggerFactory = NullLoggerFactory.Instance,
+            ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
+            Options = new(),
+            RootProjectOptions = TestOptions.ProjectOptions,
+            EnvironmentOptions = environmentOptions,
+            BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
+            BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
+        };
+
+        var handler = new CompilationHandler(context);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 

@@ -92,7 +92,22 @@
         <target state="translated">.NET 작성기</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
         <note />
@@ -184,11 +199,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.  옵션 중 하나를 제거하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">일부 지시문을 변환할 수 없습니다. 첫 번째 오류는 {0}에 있습니다. 파일을 실행하여 모든 컴파일 오류를 확인하세요. 변환을 강제로 진행하려면 '--force'를 지정하세요.</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">이름이 '{0}'인 명령이 있는 매니페스트 파일에서 도구를 찾을 수 없습니다.</target>
@@ -232,11 +242,6 @@ Paths searched: '{1}', '{2}'.</source>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">.NET 정리 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -408,7 +413,7 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">testconfig.json 파일을 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
@@ -423,7 +428,7 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,23 +454,13 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">진단 로깅의 출력 디렉터리입니다.
+지정하지 않으면 파일이 기본 'TestResults' 디렉터리 내에 생성됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 디렉터리의 경로를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -581,6 +576,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="translated">실행될 것으로 예상되는 최소 테스트 수를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -738,14 +738,19 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">최신 패키지를 검색할 때 시험판 버전이 있는 패키지를 고려합니다. '--outdated' 옵션이 필요합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 프로젝트 파일의 경로(폴더 이름 또는 전체 경로)를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">실행할 프로젝트 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -791,8 +796,8 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 솔루션 파일의 경로를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">테스트할 솔루션 파일의 경로를 정의합니다. 솔루션 파일의 경로 또는 솔루션 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -873,19 +878,18 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config는 Test Runner를 Microsoft.Testing.Platform으로 정의합니다. 모든 프로젝트는 해당 Test Runner를 사용해야 합니다.
+        <target state="translated">global.json은 Test Runner를 Microsoft.Testing.Platform으로 정의합니다. 모든 프로젝트는 해당 Test Runner를 사용해야 합니다.
 다음 테스트 프로젝트에서 VSTest Test Runner를 사용하고 있습니다.
 {0}
 
 자세한 내용은 https://aka.ms/dotnet-test/mtp를 참조하세요.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -982,11 +986,6 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">launchSettings.json 또는 [app].run.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">실행할 프로젝트 파일의 경로입니다(프로젝트가 하나만 있는 경우 현재 디렉터리로 기본 설정됨).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1067,11 +1066,6 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">날짜</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(기본값)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">워크로드 매니페스트 {0} 버전 {1} 제거 중...</target>
@@ -1101,11 +1095,6 @@ dotnet.config is a name don't translate.</note>
         <source>Description</source>
         <target state="translated">설명</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}'을 읽는 동안 오류가 발생했습니다. {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1153,9 +1142,39 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">다음에서 테스트 검색하는 중</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">.NET 테스트 명령</target>
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Microsoft.Testing.Platform용 .NET 테스트 명령입니다('global.json' 파일을 통해 옵트인). 이는 Microsoft.Testing.Platform만 지원하며 VSTest를 지원하지 않습니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">VSTest에 대한 .NET 테스트 명령입니다. Microsoft.Testing.Platform을 사용하려면 global.json을 통해 Microsoft.Testing.Platform 기반 명령을 옵트인합니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="translated">Microsoft.Testing.Platform에서 보낸 지원되는 프로토콜 버전은 '{0}'입니다. SDK는 호환되지 않는 '{1}'을(를) 지원합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMismatchingExecutionId">
+        <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
+        <target state="translated">핸드셰이크 메시지에서 받은 'ExecutionId'가 '{2}'인 동안 메시지 '{1}'에 대해 값 '{0}'의 'ExecutionId'가 수신되었습니다.</target>
+        <note>{Locked="ExecutionId"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="translated">핸드셰이크에 해당하는 'NamedPipeServer'를 삭제하는 동안 오류가 발생했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="translated">'NamedPipeServer'를 삭제하는 동안 오류가 발생하여 핸드셰이크를 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="translated">'dotnet'이 'dotnet test'로 명명된 파이프에서 예기치 않게 겹치는 메시지를 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1178,19 +1197,25 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">다운로드</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">대/소문자를 구분하는 이름을 가진 여러 시작 프로필이 있으며 이는 허용되지 않습니다.
-{0}
-고유한 프로필 이름을 사용하세요.</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">기간:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">중복된 지시문은 지원되지 않습니다. {1}의 {0}.</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">오류:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="translated">RunCommand '{0}' 및 RunArguments '{1}'(으)로 테스트 모듈을 실행하는 동안 다음 예외가 발생했습니다.
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1230,6 +1255,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">광고 매니페스트 {0}: {1}을(를) 업데이트하지 못했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">실패:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1517,10 +1547,10 @@ Make the profile names distinct.</source>
         <target state="translated">실행할 명령에서 사용하는 작업 디렉터리입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">'{2}'의 지시문에는 특수 문자가 없는 이름과 '{1}' 구분 기호로 구분되는 선택적 값('#:{0} 이름{1}값')이 포함되어야 합니다.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="translated">'{0}' 메서드가 성공적으로 종료되지 않았습니다.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1536,11 +1566,6 @@ Make the profile names distinct.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">'-'를 사용하여 표준 입력에서 파일을 읽는 경우에도 '{0}' 옵션을 지정할 수 없습니다.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">'{0}'의 '#:project' 지시문이 잘못되었습니다. {1}.</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1561,26 +1586,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">최신 버전</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">시작 프로필 형식 '{0}'은(는) 지원되지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">지정된 이름의 프로필은 유효한 JSON 개체가 아닙니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">시작 설정 문서의 '프로필' 속성이 JSON 개체가 아닙니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1674,10 +1679,15 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">예상되는 최소 테스트 정책 위반, 테스트 실행 {0}, 필요한 최소 {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">{1}에 ' {0}'의 이름이 없습니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="translated">이전 핸드셰이크 '{1}'과(와) 일치하지 않는 테스트 애플리케이션에 대해 새 핸드셰이크 '{0}'이(가) 수신되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="translated">해당 테스트 세션 종료 없이 테스트 세션 시작 이벤트를 받았습니다.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -1845,8 +1855,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
-        <note />
+        <target state="needs-review-translation">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1893,11 +1903,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet 패키지 패커</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1906,6 +1911,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">빌드된 패키지를 배치할 출력 디렉터리입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">생성할 패키지의 버전</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2372,8 +2387,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">출력 디렉터리 지정({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="translated">출력 디렉터리를 지정합니다(Enter 키를 누르면 '{0}' 기본값 사용, 기존 디렉터리가 없어야 함).</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2426,24 +2441,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">프로젝트</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">{0}의 속성 이름이 잘못되었습니다. {1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다. {0}.</target>
-        <note>{0} is the file path and line number.</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 플랫폼용 게시자입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2588,6 +2588,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">복원하지 못했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">부분적으로 복원하지 못했습니다.</target>
@@ -2596,6 +2601,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">'{0}' 도구(버전 '{1}')가 복원되었습니다. 사용 가능한 명령: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">다시 시도됨</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2628,15 +2638,35 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET 실행 명령</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="translated">사용 가능한 대상 프레임워크:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">빌드하는 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">이 프로젝트에 대해 실행 명령을 검색하기 위해 {0} 대상을 실행하지 못했습니다. 오류 및 경고를 수정하고 다시 실행합니다.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="translated">예제</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2668,14 +2698,19 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">프로젝트를 실행할 수 없습니다.
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">프로젝트를 실행할 수 없습니다.
 실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
 실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
 현재 {1}은(는) '{2}'입니다.</target>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2685,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 프로젝트에서 여러 프레임워크를 대상으로 합니다. '{0}'을(를) 사용하여 실행할 프레임워크를 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">더 많은 프레임워크를 보려면 위아래로 이동하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">검색할 형식</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">실행할 대상 프레임워크 선택:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2818,8 +2883,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">워크로드 버전을 사용하여 설치하고 업데이트하도록 워크로드를 구성했지만, 워크로드 버전을 찾을 수 없습니다. "dotnet workload restore"를 실행하여 워크로드 버전을 설치하세요.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="translated">워크로드 집합이 설치되어 있지 않습니다. "dotnet workload restore"를 실행하여 워크로드 집합을 설치하세요.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2875,6 +2940,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="SkipSymbolsOptionDescription">
         <source>Skip creating symbol files which can be used for profiling the optimized assemblies.</source>
         <target state="translated">최적화된 어셈블리 프로파일링에 대해 사용할 수 있는 기호 파일 만들기를 건너뜁니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">건너뜀:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3007,6 +3077,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">패키지를 저장할 대상 런타임입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">성공:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">요약</target>
@@ -3022,11 +3097,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">NuGet 패키지를 다운로드하고 추출하려면 이 명령의 임시 디렉터리를 지정합니다(보안이 있어야 합니다).</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET 테스트 드라이버</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Microsoft Testplatform 배너를 표시하지 않고 테스트 실행</target>
@@ -3035,6 +3105,26 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="translated">'dotnet test'에 대한 디렉터리를 지정하려면 '--project' 또는 '--solution'을 통해 지정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="translated">'dotnet test'에 대한 프로젝트를 지정하려면 '--project'를 통해 지정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="translated">'dotnet test'에 대한 솔루션을 지정하려면 '--solution'을 통해 지정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="translated">'dotnet test'에 대한 dll 또는 실행 파일을 지정하는 것은 '--test-modules'를 통해 지정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3204,6 +3294,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3453,10 +3548,35 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">'{0}' 도구가 '{1}' 버전에서 '{2}' 버전으로 업데이트되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">합계:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">{0} 시도</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="translated">'--help'를 사용하지 않았는데 예기치 않은 도움말 관련 메시지를 받았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="translated">도움말 모드에서 예상치 못하게 '{0}' 형식의 메시지를 받았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="translated">핸드셰이크를 받기 전에 예기치 않게 '{0}' 형식의 메시지가 수신되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="translated">해당 테스트 세션을 시작하지 않고 테스트 세션 종료 이벤트를 받았습니다.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
@@ -3472,11 +3592,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">'{0}' 지시문을 {1}에서 인식할 수 없습니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3553,11 +3668,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">{0}을(를) 사용하도록 워크로드 설치 모드를 업데이트했습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">사용법</target>
@@ -3601,6 +3711,16 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">'{0}' 속성이 지정된 경우 개체여야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
@@ -3845,10 +3965,15 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드 매니페스트 ID</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">새 매니페스트를 설치할 때 {0}을(를) 사용하도록 구성됩니다.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="translated">새 매니페스트를 설치할 때 느슨한 매니페스트를 사용하도록 구성됩니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="translated">새 매니페스트를 설치할 때 use workload sets 사용하도록 구성됩니다.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>
@@ -3896,8 +4021,8 @@ To display a value, specify the corresponding command-line option without provid
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">사용 가능한 워크로드를 검색합니다.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">사용 가능한 워크로드를 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

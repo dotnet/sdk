@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -23,10 +23,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj"]);
 
-            result.GetValue<string>(PackageCommandParser.ProjectOrFileArgument)
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+
+            result.GetValue(command.Parent.ProjectOrFileArgument)
                 .Should()
                 .BeEquivalentTo(
-                    PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+                    PathUtilities.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
         }
 
         [Fact]
@@ -34,7 +36,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive"]);
 
-            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+
+            result.GetValue(command.InteractiveOption)
                 .Should().BeTrue();
         }
 
@@ -47,7 +51,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var argument = (result.Errors.SingleOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
 
-            argument.Should().Be(ReferenceAddCommandParser.ProjectPathArgument);
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+            argument.Should().Be(command.ProjectPathArgument);
         }
     }
 }

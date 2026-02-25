@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -455,6 +455,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string CliTemplateSearchCoordinator_Info_SearchInProgress {
             get {
                 return ResourceManager.GetString("CliTemplateSearchCoordinator_Info_SearchInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The colon separator &quot;::&quot; has been deprecated in favor of the at symbol &quot;@&quot; for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}..
+        /// </summary>
+        internal static string Colon_Separator_Deprecated {
+            get {
+                return ResourceManager.GetString("Colon_Separator_Deprecated", resourceCulture);
             }
         }
         
@@ -1431,6 +1440,17 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The result of parsing the following JSON was &apos;null&apos;:
+        ///
+        ///{0}.
+        /// </summary>
+        internal static string PostAction_ModifyJson_Error_NullJson {
+            get {
+                return ResourceManager.GetString("PostAction_ModifyJson_Error_NullJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parent property path &apos;{0}&apos; could not be traversed..
         /// </summary>
         internal static string PostAction_ModifyJson_Error_ParentPropertyPathInvalid {
@@ -1870,35 +1890,21 @@ namespace Microsoft.TemplateEngine.Cli {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_OverrideNotice", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to The following template packages will be installed:.
+        ///   Looks up a localized string similar to The following template package(s) are already available:.
         /// </summary>
-        internal static string TemplatePackageCoordinator_Install_Info_PackageIsAvailable
-        {
-            get
-            {
+        internal static string TemplatePackageCoordinator_Install_Info_PackageIsAvailable {
+            get {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackageIsAvailable", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string indicating that :: as a separator is deprecated in favor of @.
-        /// </summary>
-        internal static string Colon_Separator_Deprecated
-        {
-            get {
-                return ResourceManager.GetString("Colon_Separator_Deprecated", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The following template packages will be installed:.
         /// </summary>
-        internal static string TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled
-        {
-            get
-            {
+        internal static string TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled {
+            get {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled", resourceCulture);
             }
         }

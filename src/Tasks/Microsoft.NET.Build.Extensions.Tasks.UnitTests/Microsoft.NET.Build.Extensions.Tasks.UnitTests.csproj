@@ -1,6 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
@@ -13,7 +11,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />
     <PackageReference Include="Microsoft.Build.Framework" />
@@ -35,5 +33,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>

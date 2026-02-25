@@ -8,6 +8,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class ResolveFrameworkReferences : TaskBase
     {
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();

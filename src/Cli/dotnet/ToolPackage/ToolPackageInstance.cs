@@ -97,7 +97,7 @@ internal class ToolPackageInstance : IToolPackage
             ResolvedPackageVersion = Version;
         }
 
-        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, _fileSystem);
+        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, ResolvedPackageId, _fileSystem);
         Warnings = toolConfiguration.Warnings;
 
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
@@ -165,17 +165,58 @@ internal class ToolPackageInstance : IToolPackage
     {
         var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
         var lockFileTargetLibrary = FindLibraryInLockFile(lockFile);
-        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, fileSystem);
+        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, id, fileSystem);
 
     }
 
-    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, IFileSystem fileSystem)
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId packageId, IFileSystem fileSystem)
     {
         try
         {
             var dotnetToolSettings = FindItemInTargetLibrary(library, ToolSettingsFileName);
             if (dotnetToolSettings == null)
             {
+                // Check if this is because of framework incompatibility
+                // Load available frameworks from the package to provide better error messages
+                var installPath = new VersionFolderPathResolver(packageDirectory.Value).GetInstallPath(library.Name, library.Version);
+                var toolsPackagePath = Path.Combine(installPath, "tools");
+                
+                if (fileSystem.Directory.Exists(toolsPackagePath))
+                {
+                    var availableFrameworks = fileSystem.Directory.EnumerateDirectories(toolsPackagePath)
+                        .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)))
+                        .Where(f => f.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
+                        .ToList();
+
+                    if (availableFrameworks.Count > 0)
+                    {
+                        var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
+
+                        // Find the minimum framework version required by the tool
+                        var minRequiredFramework = availableFrameworks.MinBy(f => f.Version);
+
+                        // If all available frameworks require a higher version than current runtime
+                        if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
+                        {
+                            var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
+                            var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
+
+                            var errorMessage = string.Format(
+                                CliStrings.ToolRequiresHigherDotNetVersion,
+                                packageId,
+                                requiredVersionString,
+                                currentVersionString);
+
+                            var suggestion = string.Format(
+                                CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
+                                minRequiredFramework.Version.Major,
+                                currentFramework.Version.Major);
+
+                            throw new GracefulException($"{errorMessage} {suggestion}", isUserError: false);
+                        }
+                    }
+                }
+
                 throw new ToolConfigurationException(
                     CliStrings.MissingToolSettingsFile);
             }

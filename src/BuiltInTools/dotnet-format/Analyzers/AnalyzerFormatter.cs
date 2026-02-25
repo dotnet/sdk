@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -315,6 +316,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
                 foreach (var analyzer in filteredAnalyzer)
                 {
+                    // Allow suppressors unconditionally
+                    if (analyzer is DiagnosticSuppressor suppressor)
+                    {
+                        analyzers.Add(suppressor);
+                        continue;
+                    }
+
                     // Filter by excluded diagnostics
                     if (!excludeDiagnostics.IsEmpty &&
                         analyzer.SupportedDiagnostics.All(descriptor => excludeDiagnostics.Contains(descriptor.Id)))

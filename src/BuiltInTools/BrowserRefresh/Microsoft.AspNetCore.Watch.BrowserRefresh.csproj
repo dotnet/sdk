@@ -1,29 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- Intentionally pinned. This feature is supported in projects targeting 8.0 or newer.-->
-    <!-- This should always use the oldest supported TFM -->
-    <TargetFramework>net8.0</TargetFramework>
-    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+  <Import Project="..\Watch\TargetFrameworks.props"/>
 
-    <IsPackable>false</IsPackable>
+  <PropertyGroup>
+    <!--
+      This assembly may be loaded .NET 6.0+ web server.
+      When adding new TFM also update versions in dotnet-watch.csproj and WebApplicationAppModel.cs.
+    -->
+    <TargetFramework>$(MiddlewareTargetFrameworkV6)</TargetFramework>
+    <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
+
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <EmbeddedResource Include="WebSocketScriptInjection.js" />
-
-    <!-- Back compat only -->
-    <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Reference 8.0.0 targeting packs in Source Build -->
-    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="8.0.0" />
-    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="8.0.0" />
+    <!-- Reference 6.0 targeting packs in Source Build -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.2" />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
 
+  <Import Project="..\Web.Middleware\Microsoft.DotNet.HotReload.Web.Middleware.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Update="@(EmbeddedResource)">
+      <LogicalName>%(FileName)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

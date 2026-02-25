@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-push" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-nuget-push" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet nuget push
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-nuget-push - Pushes a package to the server and publishes it.
@@ -26,7 +26,7 @@ dotnet-nuget-push - Pushes a package to the server and publishes it.
 .IP
 .nf
 \f[C]
-dotnet nuget push [<ROOT>] [-d|--disable-buffering] [--force-english-output]
+dotnet nuget push [<ROOT>] [--allow-insecure-connections] [-d|--disable-buffering] [--force-english-output]
     [--interactive] [-k|--api-key <API_KEY>] [-n|--no-symbols]
     [--no-service-endpoint] [-s|--source <SOURCE>] [--skip-duplicate]
     [-sk|--symbol-api-key <API_KEY>] [-ss|--symbol-source <SOURCE>]
@@ -72,6 +72,12 @@ For more information, see Local feeds.
 Specifies the file path to the package to be pushed.
 .RE
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--allow-insecure-connections\f[B]\f[R]
+.RS 2
+.PP
+Allows pushing to HTTP sources (insecure).
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-d|--disable-buffering\f[B]\f[R]
 .RS 2
@@ -230,16 +236,6 @@ Push all \f[I].nupkg\f[R] files in the current directory to the default push sou
 dotnet nuget push \[dq]*.nupkg\[dq]
 \f[R]
 .fi
-.RS
-.PP
-If this command doesn\[cq]t work, it might be due to a bug that existed in older versions of the SDK (.NET Core 2.1 SDK and earlier versions).
-To fix this, upgrade your SDK version or run the following command instead: \f[V]dotnet nuget push \[dq]**/*.nupkg\[dq]\f[R]
-.RE
-.RS
-.PP
-The enclosing quotes are required for shells such as bash that perform file globbing.
-For more information, see NuGet/Home#4393 (https://github.com/NuGet/Home/issues/4393#issuecomment-667618120).
-.RE
 .RE
 .IP \[bu] 2
 Push all \f[I].nupkg\f[R] files to the default push source specified in the NuGet config file, even if a 409 Conflict response is returned by an HTTP(S) server:
