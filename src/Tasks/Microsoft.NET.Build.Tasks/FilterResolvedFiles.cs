@@ -13,10 +13,22 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Filters out the assemblies from the list based on a given package closure.
     /// </summary>
-    public class FilterResolvedFiles : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class FilterResolvedFiles : TaskBase, IMultiThreadableTask
     {
         private readonly List<ITaskItem> _assembliesToPublish = new();
         private readonly List<ITaskItem> _packagesResolved = new();
+
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         public string AssetsFilePath { get; set; }
 
@@ -52,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             var lockFileCache = new LockFileCache(this);
-            LockFile lockFile = lockFileCache.GetLockFile(AssetsFilePath);
+            LockFile lockFile = lockFileCache.GetLockFile(TaskEnvironment.GetAbsolutePath(AssetsFilePath));
 
             ProjectContext projectContext = lockFile.CreateProjectContext(
                 TargetFramework,
