@@ -94,9 +94,31 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         [Theory]
         [InlineData("packages/NuGet.Common")]
-        [InlineData("packages\\NuGet.Common")]
         public void PathItemSpec_PreservesFormat(string pathSpec)
         {
+            var task = new CollatePackageDownloads
+            {
+                BuildEngine = new MockBuildEngine(),
+                Packages = new ITaskItem[]
+                {
+                    new MockTaskItem(pathSpec, new Dictionary<string, string> { { "Version", "5.0.0" } }),
+                    new MockTaskItem(pathSpec, new Dictionary<string, string> { { "Version", "6.0.0" } }),
+                },
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.PackageDownloads.Should().HaveCount(1);
+            task.PackageDownloads[0].ItemSpec.Should().Be(pathSpec,
+                "output ItemSpec must preserve the exact input format without path normalization");
+            task.PackageDownloads[0].GetMetadata("Version").Should().Contain("[5.0.0]").And.Contain("[6.0.0]");
+        }
+
+        // Backslash is only a path separator on Windows. On Linux, TaskItem normalizes '\' to '/'.
+        [WindowsOnlyFact]
+        public void PathItemSpec_PreservesBackslashOnWindows()
+        {
+            var pathSpec = "packages\\NuGet.Common";
             var task = new CollatePackageDownloads
             {
                 BuildEngine = new MockBuildEngine(),
