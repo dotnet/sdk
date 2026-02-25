@@ -1294,35 +1294,13 @@ class Program
 
             string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
             var result = new DotnetCommand(Log, app).Execute();
-            result.Should().Pass();
-
-            if (useCustomSubdirectory)
+            result.Should().Pass().And.NotHaveStdErr();
+            foreach (var pkg in testProject.PackageReferences)
             {
-                // TODO: This should not have errors once we have a runtime that supports localPath
-                result.Should().HaveStdErrContaining("System.IO.FileNotFoundException");
-                if (shouldUseLibuv)
-                {
-                    result.Should().HaveStdErrContaining("System.DllNotFoundException");
-                }
+                if (!shouldUseLibuv && pkg.ID == "Libuv")
+                    continue;
 
-                foreach (var pkg in testProject.PackageReferences)
-                {
-                    if (!shouldUseLibuv && pkg.ID == "Libuv")
-                        continue;
-
-                    result.Should().HaveStdErrContaining($"Failure using {pkg.ID}");
-                }
-            }
-            else
-            {
-                result.Should().NotHaveStdErr();
-                foreach (var pkg in testProject.PackageReferences)
-                {
-                    if (!shouldUseLibuv && pkg.ID == "Libuv")
-                        continue;
-
-                    result.Should().HaveStdOutContaining($"Used {pkg.ID}");
-                }
+                result.Should().HaveStdOutContaining($"Used {pkg.ID}");
             }
         }
 
@@ -1396,18 +1374,8 @@ class Program
 
             string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
             var result = new DotnetCommand(Log, app).Execute();
-
-            if (useCustomSubdirectory)
-            {
-                // TODO: This should pass once we have a runtime that supports localPath
-                result.Should().Fail()
-                    .And.HaveStdErrContaining("System.IO.FileNotFoundException");
-            }
-            else
-            {
-                result.Should().Pass()
-                    .And.HaveStdOutContaining(referencedProject.Name);
-            }
+            result.Should().Pass()
+                .And.HaveStdOutContaining(referencedProject.Name);
         }
     }
 }
