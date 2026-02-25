@@ -142,8 +142,8 @@ if ($DryRun) {
     exit 0
 }
 
-# Results tracking (thread-safe)
-$allResults = [System.Collections.Concurrent.ConcurrentBag[hashtable]]::new()
+# Results tracking
+$allResults = @()
 
 # Create a single HttpClient for all downloads (no automatic decompression - critical for hash matching)
 Add-Type -AssemblyName System.Net.Http
@@ -152,150 +152,125 @@ $handler.MaxConnectionsPerServer = 32
 $client = New-Object System.Net.Http.HttpClient($handler)
 $client.Timeout = [timespan]::FromMinutes(15)
 
-# Parallel download + verify using runspaces
-$maxParallel = 16
-$completedCount = [ref]0
-$printLock = [object]::new()
+# Process files in parallel batches
+$batchSize = 16
+$completedCount = 0
 
-$runspacePool = [runspacefactory]::CreateRunspacePool(1, $maxParallel)
-$runspacePool.Open()
+Write-Host "Starting parallel verification ($batchSize concurrent downloads)..." -ForegroundColor Cyan
 
-$jobs = [System.Collections.Generic.List[object]]::new()
+for ($batchStart = 0; $batchStart -lt $totalFiles; $batchStart += $batchSize) {
+    $batchEnd = [Math]::Min($batchStart + $batchSize, $totalFiles)
+    $batch = $filesToVerify.GetRange($batchStart, $batchEnd - $batchStart)
 
-$scriptBlock = {
-    param($entry, $outputDir, $client, $totalFiles, $completedCount, $printLock, $allResults)
-
-    $url = $entry.Url
-    $expectedHash = $entry.ExpectedHash
-    $fileName = $entry.FileName
-    $releaseVersion = $entry.ReleaseVersion
-    $component = $entry.Component
-    $rid = $entry.Rid
-
-    $localName = "${releaseVersion}_${component}_${rid}_${fileName}" -replace '[<>:"/\\|?*]', '_'
-    $localPath = [System.IO.Path]::Combine($outputDir, $localName)
-
-    $result = @{
-        FileName       = $fileName
-        ReleaseVersion = $releaseVersion
-        Component      = $component
-        Rid            = $rid
-        Url            = $url
-        ExpectedHash   = $expectedHash
-        ActualHash     = ''
-        Status         = 'Unknown'
-        LocalPath      = $localPath
-        Error          = ''
+    # Start all downloads in this batch simultaneously
+    $pendingDownloads = @()
+    foreach ($entry in $batch) {
+        $localName = "$($entry.ReleaseVersion)_$($entry.Component)_$($entry.Rid)_$($entry.FileName)" -replace '[<>:"/\\|?*]', '_'
+        $localPath = Join-Path $OutputDir $localName
+        $pendingDownloads += @{
+            Entry     = $entry
+            LocalPath = $localPath
+            Task      = $client.GetAsync($entry.Url)
+        }
     }
 
+    # Wait for all downloads in this batch to complete
     try {
-        $response = $client.GetAsync($url).GetAwaiter().GetResult()
-        if (-not $response.IsSuccessStatusCode) {
-            $result.Status = 'DownloadFailed'
-            $result.Error = "HTTP $($response.StatusCode)"
-            $idx = [System.Threading.Interlocked]::Increment($completedCount)
-            lock ($printLock) {
-                [Console]::ForegroundColor = 'Red'
-                [Console]::WriteLine("[$idx/$totalFiles] $url ... DOWNLOAD FAILED ($($response.StatusCode))")
-                [Console]::ResetColor()
-            }
-            $allResults.Add($result)
-            $response.Dispose()
-            return
-        }
-
-        $fs = [System.IO.File]::Create($localPath)
-        try {
-            $response.Content.CopyToAsync($fs).GetAwaiter().GetResult()
-        }
-        finally {
-            $fs.Close()
-            $fs.Dispose()
-        }
-        $response.Dispose()
-
-        # Compute SHA-512
-        $sha512 = [System.Security.Cryptography.SHA512]::Create()
-        $fileStream = [System.IO.File]::OpenRead($localPath)
-        try {
-            $hashBytes = $sha512.ComputeHash($fileStream)
-        }
-        finally {
-            $fileStream.Close()
-            $fileStream.Dispose()
-            $sha512.Dispose()
-        }
-
-        $actualHash = [System.BitConverter]::ToString($hashBytes).Replace('-', '').ToLowerInvariant()
-        $result.ActualHash = $actualHash
-
-        if ($actualHash -eq $expectedHash.ToLowerInvariant()) {
-            $result.Status = 'Valid'
-            [System.IO.File]::Delete($localPath)
-            $idx = [System.Threading.Interlocked]::Increment($completedCount)
-            lock ($printLock) {
-                [Console]::ForegroundColor = 'Green'
-                [Console]::WriteLine("[$idx/$totalFiles] $url ... OK")
-                [Console]::ResetColor()
-            }
-        }
-        else {
-            $result.Status = 'MISMATCH'
-            $idx = [System.Threading.Interlocked]::Increment($completedCount)
-            lock ($printLock) {
-                [Console]::ForegroundColor = 'Red'
-                [Console]::WriteLine("[$idx/$totalFiles] $url ... MISMATCH!")
-                [Console]::ResetColor()
-            }
-        }
+        [System.Threading.Tasks.Task]::WaitAll(@($pendingDownloads | ForEach-Object { $_.Task }))
     }
     catch {
-        $result.Status = 'Error'
-        $result.Error = $_.Exception.Message
-        $idx = [System.Threading.Interlocked]::Increment($completedCount)
-        lock ($printLock) {
-            [Console]::ForegroundColor = 'Yellow'
-            [Console]::WriteLine("[$idx/$totalFiles] $url ... ERROR: $($_.Exception.Message)")
-            [Console]::ResetColor()
-        }
+        # Individual failures are handled below; WaitAll throws AggregateException
     }
 
-    $allResults.Add($result)
+    # Process each result
+    foreach ($dl in $pendingDownloads) {
+        $completedCount++
+        $entry = $dl.Entry
+        $localPath = $dl.LocalPath
+        $url = $entry.Url
+
+        $result = @{
+            FileName       = $entry.FileName
+            ReleaseVersion = $entry.ReleaseVersion
+            Component      = $entry.Component
+            Rid            = $entry.Rid
+            Url            = $url
+            ExpectedHash   = $entry.ExpectedHash
+            ActualHash     = ''
+            Status         = 'Unknown'
+            LocalPath      = $localPath
+            Error          = ''
+        }
+
+        try {
+            if ($dl.Task.IsFaulted) {
+                $result.Status = 'Error'
+                $result.Error = $dl.Task.Exception.InnerException.Message
+                Write-Host "[$completedCount/$totalFiles] $url ... ERROR: $($result.Error)" -ForegroundColor Yellow
+                $allResults += $result
+                continue
+            }
+
+            $response = $dl.Task.Result
+            try {
+                if (-not $response.IsSuccessStatusCode) {
+                    $result.Status = 'DownloadFailed'
+                    $result.Error = "HTTP $($response.StatusCode)"
+                    Write-Host "[$completedCount/$totalFiles] $url ... DOWNLOAD FAILED ($($response.StatusCode))" -ForegroundColor Red
+                    $allResults += $result
+                    continue
+                }
+
+                $fs = [System.IO.File]::Create($localPath)
+                try {
+                    $response.Content.CopyToAsync($fs).GetAwaiter().GetResult()
+                }
+                finally {
+                    $fs.Close()
+                    $fs.Dispose()
+                }
+            }
+            finally {
+                $response.Dispose()
+            }
+
+            # Compute SHA-512
+            $sha512 = [System.Security.Cryptography.SHA512]::Create()
+            $fileStream = [System.IO.File]::OpenRead($localPath)
+            try {
+                $hashBytes = $sha512.ComputeHash($fileStream)
+            }
+            finally {
+                $fileStream.Close()
+                $fileStream.Dispose()
+                $sha512.Dispose()
+            }
+
+            $actualHash = [BitConverter]::ToString($hashBytes).Replace('-', '').ToLowerInvariant()
+            $result.ActualHash = $actualHash
+
+            if ($actualHash -eq $entry.ExpectedHash.ToLowerInvariant()) {
+                $result.Status = 'Valid'
+                Remove-Item -Path $localPath -Force -ErrorAction SilentlyContinue
+                Write-Host "[$completedCount/$totalFiles] $url ... OK" -ForegroundColor Green
+            }
+            else {
+                $result.Status = 'MISMATCH'
+                Write-Host "[$completedCount/$totalFiles] $url ... MISMATCH!" -ForegroundColor Red
+            }
+        }
+        catch {
+            $result.Status = 'Error'
+            $result.Error = $_.Exception.Message
+            Write-Host "[$completedCount/$totalFiles] $url ... ERROR: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+
+        $allResults += $result
+    }
 }
 
-Write-Host "Starting parallel verification with $maxParallel concurrent downloads..." -ForegroundColor Cyan
-
-foreach ($entry in $filesToVerify) {
-    $ps = [powershell]::Create()
-    $ps.RunspacePool = $runspacePool
-    [void]$ps.AddScript($scriptBlock)
-    [void]$ps.AddArgument($entry)
-    [void]$ps.AddArgument($OutputDir)
-    [void]$ps.AddArgument($client)
-    [void]$ps.AddArgument($totalFiles)
-    [void]$ps.AddArgument($completedCount)
-    [void]$ps.AddArgument($printLock)
-    [void]$ps.AddArgument($allResults)
-
-    $jobs.Add(@{
-        PowerShell = $ps
-        Handle     = $ps.BeginInvoke()
-    })
-}
-
-# Wait for all jobs to complete
-foreach ($job in $jobs) {
-    $job.PowerShell.EndInvoke($job.Handle)
-    $job.PowerShell.Dispose()
-}
-
-$runspacePool.Close()
-$runspacePool.Dispose()
 $client.Dispose()
 $handler.Dispose()
-
-# Convert ConcurrentBag to array for downstream processing
-$allResults = @($allResults.ToArray())
 
 # Summary
 $valid = @($allResults | Where-Object { $_.Status -eq 'Valid' })
