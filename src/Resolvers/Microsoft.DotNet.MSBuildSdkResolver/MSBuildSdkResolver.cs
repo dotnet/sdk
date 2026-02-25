@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
-            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+            string? userProfileDir = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
             ResolutionResult? workloadResult = null;
             if (dotnetRoot is not null && netcoreSdkVersion is not null)
             {

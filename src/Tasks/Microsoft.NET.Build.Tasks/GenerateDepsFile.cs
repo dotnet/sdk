@@ -244,7 +244,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
-                .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
+                .WithReferenceAssembliesPath(new FrameworkReferenceResolver().GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWereFiltered(GetFilteredPackages());
 
             if (CompileReferences.Length > 0)
