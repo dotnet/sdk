@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TaskEnvironment = env.TaskEnvironment,
                 References = new ITaskItem[]
                 {
-                    new MockTaskItem { ItemSpec = $"refs\\{assemblyFileName}" }
+                    new MockTaskItem { ItemSpec = Path.Combine("refs", assemblyFileName) }
                 }
             };
 
