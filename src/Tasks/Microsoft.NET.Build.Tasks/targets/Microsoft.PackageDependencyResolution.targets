@@ -335,29 +335,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
                      FilterRuntimeAssetsByRuntimeIdentifier
 
-    When RuntimeAssetRuntimeIdentifiers is set, filter RuntimeTargetsCopyLocalItems
+    When BundledRuntimeAssetRuntimeIdentifiers is set, filter RuntimeTargetsCopyLocalItems
     to only include assets that are compatible with at least one of the specified
     RuntimeIdentifiers. This reduces the runtimes/ folder in the build output to
     only contain assets needed for the targeted platforms.
 
     Example usage:
       <PropertyGroup>
-        <RuntimeAssetRuntimeIdentifiers>linux-x64;win-x64</RuntimeAssetRuntimeIdentifiers>
+        <BundledRuntimeAssetRuntimeIdentifiers>linux-x64;win-x64</BundledRuntimeAssetRuntimeIdentifiers>
       </PropertyGroup>
-
-    Alternative property names considered:
-      - RuntimeAssetRuntimeIdentifiers  (chosen: RID allow-list for runtime assets)
-      - AllowedRuntimeAssetRuntimeIdentifiers
-      - RuntimeIdentifierAssetAllowList
     ============================================================
     -->
 
   <Target Name="FilterRuntimeAssetsByRuntimeIdentifier"
           AfterTargets="ResolvePackageAssets"
-          Condition="'$(RuntimeAssetRuntimeIdentifiers)' != ''">
+          Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != ''">
 
     <ItemGroup>
-      <_RuntimeAssetFilterRids Include="$(RuntimeAssetRuntimeIdentifiers)" />
+      <_RuntimeAssetFilterRids Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
     </ItemGroup>
 
     <!-- For each specified RID, collect the compatible runtime target items. -->
