@@ -1936,7 +1936,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var builder = new VirtualProjectBuilder(
             entryPointFileFullPath: filePath,
-            targetFrameworkVersion: VirtualProjectBuildingCommand.TargetFrameworkVersion,
+            targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(inputCSharp, Encoding.UTF8));
 
         var errorReporter = ErrorReporters.CreateCollectingReporter(out actualDiagnostics);
@@ -1962,7 +1962,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VirtualProjectBuilder.WriteProjectFile(
             projectWriter,
             directives,
-            VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+            VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
             isVirtualProject: false);
 
         actualProject = projectWriter.ToString();

@@ -80,7 +80,7 @@ internal sealed class FileBasedAppSourceEditor
     public void Add(CSharpDirective directive)
     {
         var change = DetermineAddChange(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.WithChanges([change]));
+        SourceFile = SourceFile with { Text = SourceFile.Text.WithChanges([change]) };
     }
 
     private TextChange DetermineAddChange(CSharpDirective directive)
@@ -236,7 +236,7 @@ internal sealed class FileBasedAppSourceEditor
         start -= leadingLength;
         length += trailingLength;
 
-        SourceFile = SourceFile.WithText(SourceFile.Text.Replace(start: start, length: length, newText: string.Empty));
+        SourceFile = SourceFile with { Text = SourceFile.Text.Replace(start: start, length: length, newText: string.Empty) };
     }
 
     private static void DetermineWhiteSpaceToRemove(CSharpDirective directive, out int leadingLength, out int trailingLength)
