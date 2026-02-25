@@ -107,7 +107,8 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Gets the path to the dotnetup executable for the current build configuration
+    /// Gets the path to the dotnetup executable for the current build configuration.
+    /// Prefers the AOT-published native binary if available, otherwise falls back to the managed build output.
     /// </summary>
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
@@ -120,18 +121,38 @@ internal static class DotnetupTestUtilities
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        string dotnetupPath = Path.Combine(
-            repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, "net10.0", executableName);
+        string rid = RuntimeInformation.RuntimeIdentifier;
+        string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
 
-        // Ensure path is normalized and exists
-        dotnetupPath = Path.GetFullPath(dotnetupPath);
-        if (!File.Exists(dotnetupPath))
+        // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
+        // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
+        if (Directory.Exists(configDir))
         {
-            throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
+            foreach (string tfmDir in Directory.GetDirectories(configDir))
+            {
+                string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
+                if (File.Exists(publishedPath))
+                {
+                    return Path.GetFullPath(publishedPath);
+                }
+            }
+
+            // Fall back to the managed (framework-dependent) build output
+            foreach (string tfmDir in Directory.GetDirectories(configDir))
+            {
+                string managedPath = Path.Combine(tfmDir, executableName);
+                if (File.Exists(managedPath))
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
+                    return Path.GetFullPath(managedPath);
+                }
+            }
         }
 
-        return dotnetupPath;
+        throw new FileNotFoundException(
+            $"dotnetup executable not found under '{configDir}'. " +
+            $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
+            $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
     /// <summary>

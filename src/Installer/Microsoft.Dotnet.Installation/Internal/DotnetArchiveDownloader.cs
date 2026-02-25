@@ -306,7 +306,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // osx-x64 dotnet-runtime-7.0.20 — repackaged archive with different hash
         [
             "acdcde92f2f2e43584ee59be447f778f4a152c308975c7bdc5c2372b5bbd3092eb9d2233aec3b82756ba1e352a0877ffc17e4c8cfb20a9de91ca6db54d79b591"
-        ] = "5cc4e788f9fffefb4a92ada95c9d99011fb7d52eb213e6e33b10ff02c63b2cc59fb8d01bfe247e3067a5cadb69feda03da3dccb20f662a8afe24c53a9cbad891"
+        ] = "5cc4e788f9fffefb4a92ada95c9d99011fb7d52eb213e6e33b10ff02c63b2cc59fb8d01bfe247e3067a5cadb69feda03da3dccb20f662a8afe24c53a9cbad891",
+        // osx-arm64 dotnet-runtime-7.0.20 — repackaged archive with different hash
+        [
+            "af1cb62e29c69648ebe334e651c2703cd5e87fa0bb28c670bacb3b3dd1608aeae35ae53402c5eb4ed8bf34abd831a08ccb5ef84e5ec70617d9f8d9969fe7b8fa"
+        ] = "5eb176f4df5ea0795cf29f01661913cf1f5b8c8b889e80c175de8fe7984cb8db4d8aa188556832e9fcd9973b1a4ca065545ce1db9a2e3fc492466b931a58554b"
     };
 
     /// <summary>
