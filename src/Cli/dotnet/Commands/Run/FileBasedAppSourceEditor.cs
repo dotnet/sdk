@@ -80,7 +80,7 @@ internal sealed class FileBasedAppSourceEditor
     public void Add(CSharpDirective directive)
     {
         var change = DetermineAddChange(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.WithChanges([change]));
+        SourceFile = SourceFile with { Text = SourceFile.Text.WithChanges([change]) };
     }
 
     private TextChange DetermineAddChange(CSharpDirective directive)
@@ -231,7 +231,7 @@ internal sealed class FileBasedAppSourceEditor
         var span = directive.Info.Span;
         var start = span.Start;
         var length = span.Length + DetermineTrailingLengthToRemove(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.Replace(start: start, length: length, newText: string.Empty));
+        SourceFile = SourceFile with { Text = SourceFile.Text.Replace(start: start, length: length, newText: string.Empty) };
     }
 
     private static int DetermineTrailingLengthToRemove(CSharpDirective directive)
