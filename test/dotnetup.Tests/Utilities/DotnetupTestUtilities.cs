@@ -115,29 +115,56 @@ internal static class DotnetupTestUtilities
     {
 #if DEBUG
         string configuration = "Debug";
+        string fallbackConfiguration = "Release";
 #else
         string configuration = "Release";
+        string fallbackConfiguration = "Debug";
 #endif
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
         string rid = RuntimeInformation.RuntimeIdentifier;
-        string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
 
-        // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
-        // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
-        if (Directory.Exists(configDir))
+        // Try matching configuration first, then fall back to the other.
+        // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
+        string[] configurationsToSearch = [configuration, fallbackConfiguration];
+
+        foreach (string config in configurationsToSearch)
         {
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
+            // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
             foreach (string tfmDir in Directory.GetDirectories(configDir))
             {
                 string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
                 if (File.Exists(publishedPath))
                 {
+                    if (config != configuration)
+                    {
+                        Console.WriteLine($"Note: Using AOT binary from '{config}' configuration (no '{configuration}' AOT binary found).");
+                    }
+
                     return Path.GetFullPath(publishedPath);
                 }
             }
+        }
 
-            // Fall back to the managed (framework-dependent) build output
+        // Fall back to managed build output (same search order)
+        foreach (string config in configurationsToSearch)
+        {
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
             foreach (string tfmDir in Directory.GetDirectories(configDir))
             {
                 string managedPath = Path.Combine(tfmDir, executableName);
@@ -149,8 +176,9 @@ internal static class DotnetupTestUtilities
             }
         }
 
+        string primaryDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
         throw new FileNotFoundException(
-            $"dotnetup executable not found under '{configDir}'. " +
+            $"dotnetup executable not found under '{primaryDir}'. " +
             $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
