@@ -47,6 +47,57 @@ Each dotnet root may have multiple install specs and installations.  Each Instal
 
 We could represent the dotnet roots in the manifest as a node which has properties for the dotnet root path and the architecture, as well as the list of install specs and installations.  Alternatively, we could have Install specs and installations be top-level properties in the manifest and each of them could have a dotnet root path and an architecture property.
 
+### Sample manifest
+
+```json
+{
+  schemaVersion: "1",
+  dotnetRoots:
+  [
+    {
+      path: "C:\\Users\\Daniel\\AppData\\Local\\dotnet",
+      architecture: "x64",
+      installSpecs:
+      [
+        {
+          "component": "sdk",
+          "versionOrChannel": "10",
+          "installSource": "explicit"
+        },
+        {
+          "component": "runtime",
+          "versionOrChannel": "9",
+          "installSource": "explicit"
+        }
+      ],
+      installations:
+      [
+        {
+          "component": "sdk",
+          "version": "10.0.103",
+          "subcomponents":
+          [
+            "sdk/10.0.103",
+            "shared/Microsoft.AspNetCore.App/10.0.3",
+            "shared/Microsoft.NETCore.App/10.0.3",
+            "shared/Microsoft.WindowsDesktop.App/10.0.3",
+            "etc."
+          ]
+        },
+        {
+          "component": "runtime",
+          "version": "9.0.12",
+          "subcomponents":
+          [
+            "shared/Microsoft.NETCore.App/9.0.12",
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Implementation
 
 ### Installing a component
