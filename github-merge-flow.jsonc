@@ -43,6 +43,12 @@
             "ExtraSwitches": "-QuietComments",
             "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
         },
+        // Automate opening PRs to merge sdk repos from main to release/dnup
+        "main":{
+            "MergeToBranch": "release/dnup",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
+        },
         // Automate opening PRs to merge sdk repos from dnup to release/dnup
         "dnup":{
             "MergeToBranch": "release/dnup",
