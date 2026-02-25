@@ -1,48 +1,50 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.Dotnet.Installation;
+namespace Microsoft.Dotnet.Installation.Internal;
 
-namespace Microsoft.Dotnet.Installation.Internal
+public class DownloadProgressReporter : IProgress<DownloadProgress>
 {
-    public class DownloadProgressReporter : IProgress<DownloadProgress>
+    private readonly IProgressTask _task;
+    private readonly string _description;
+    private long? _totalBytes;
+
+    public DownloadProgressReporter(IProgressTask task, string description)
     {
-        private readonly IProgressTask _task;
-        private readonly string _description;
-        private long? _totalBytes;
+        _task = task;
+        _description = description;
+    }
 
-        public DownloadProgressReporter(IProgressTask task, string description)
+    public void Report(DownloadProgress value)
+    {
+        if (value.TotalBytes.HasValue)
         {
-            _task = task;
-            _description = description;
+            _totalBytes = value.TotalBytes;
+        }
+        if (_totalBytes.HasValue && _totalBytes.Value > 0)
+        {
+            double percent = (double)value.BytesDownloaded / _totalBytes.Value * 100.0;
+            _task.Value = percent;
+            _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)} / {FormatBytes(_totalBytes.Value)})";
+        }
+        else
+        {
+            _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)})";
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes > 1024 * 1024)
+        {
+            return $"{bytes / (1024 * 1024)} MB";
         }
 
-        public void Report(DownloadProgress value)
+        if (bytes > 1024)
         {
-            if (value.TotalBytes.HasValue)
-            {
-                _totalBytes = value.TotalBytes;
-            }
-            if (_totalBytes.HasValue && _totalBytes.Value > 0)
-            {
-                double percent = (double)value.BytesDownloaded / _totalBytes.Value * 100.0;
-                _task.Value = percent;
-                _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)} / {FormatBytes(_totalBytes.Value)})";
-            }
-            else
-            {
-                _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)})";
-            }
+            return $"{bytes / 1024} KB";
         }
 
-        private static string FormatBytes(long bytes)
-        {
-            if (bytes > 1024 * 1024)
-                return $"{bytes / (1024 * 1024)} MB";
-            if (bytes > 1024)
-                return $"{bytes / 1024} KB";
-            return $"{bytes} B";
-        }
+        return $"{bytes} B";
     }
 }

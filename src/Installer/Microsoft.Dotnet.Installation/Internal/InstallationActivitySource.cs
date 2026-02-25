@@ -49,9 +49,7 @@ internal static class InstallationActivitySource
     /// </summary>
     public const string SourceName = "Microsoft.Dotnet.Installation";
 
-    private static readonly ActivitySource s_activitySource = new(
+    public static ActivitySource ActivitySource { get; } = new(
         SourceName,
         typeof(InstallationActivitySource).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
-
-    public static ActivitySource ActivitySource => s_activitySource;
 }

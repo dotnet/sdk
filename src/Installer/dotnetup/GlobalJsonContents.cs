@@ -7,9 +7,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 public class GlobalJsonContents
 {
-    public SdkSection? Sdk { get; set; }
+    internal SdkSection? Sdk { get; set; }
 
-    public class SdkSection
+    internal class SdkSection
     {
         public string? Version { get; set; }
         public bool? AllowPrerelease { get; set; }

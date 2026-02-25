@@ -3,25 +3,24 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
-using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 internal static class PrintEnvScriptCommandParser
 {
-    internal static readonly IEnvShellProvider[] SupportedShells =
+    internal static readonly IEnvShellProvider[] s_supportedShells =
     [
         new BashEnvShellProvider(),
         new ZshEnvShellProvider(),
         new PowerShellEnvShellProvider()
     ];
 
-    private static readonly Dictionary<string, IEnvShellProvider> ShellMap =
-        SupportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, IEnvShellProvider> s_shellMap =
+        s_supportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
 
     public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
     {
-        Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", SupportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
+        Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
         Arity = ArgumentArity.ZeroOrOne,
         // called when no token is presented at all
         DefaultValueFactory = (optionResult) => LookupShellFromEnvironment(),
@@ -32,7 +31,7 @@ internal static class PrintEnvScriptCommandParser
             {
                 // shouldn't be required because of the DefaultValueFactory above
                 [] => LookupShellFromEnvironment(),
-                [var shellToken] => ShellMap[shellToken.Value],
+                [var shellToken] => s_shellMap[shellToken.Value],
                 _ => throw new InvalidOperationException("Unexpected number of tokens") // this is impossible because of the Arity set above
             };
         }
@@ -55,11 +54,11 @@ internal static class PrintEnvScriptCommandParser
         ShellOption.CompletionSources.Add(CreateCompletions());
     }
 
-    private static readonly Command PrintEnvScriptCommand = ConstructCommand();
+    private static readonly Command s_printEnvScriptCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return PrintEnvScriptCommand;
+        return s_printEnvScriptCommand;
     }
 
     private static Command ConstructCommand()
@@ -78,7 +77,7 @@ internal static class PrintEnvScriptCommandParser
     {
         if (OperatingSystem.IsWindows())
         {
-            return ShellMap["pwsh"];
+            return s_shellMap["pwsh"];
         }
 
         var shellPath = Environment.GetEnvironmentVariable("SHELL");
@@ -90,7 +89,7 @@ internal static class PrintEnvScriptCommandParser
         }
 
         var shellName = Path.GetFileName(shellPath);
-        if (ShellMap.TryGetValue(shellName, out var shellProvider))
+        if (s_shellMap.TryGetValue(shellName, out var shellProvider))
         {
             return shellProvider;
         }
@@ -111,9 +110,9 @@ internal static class PrintEnvScriptCommandParser
                 return;
             }
             var singleToken = optionResult.Tokens[0];
-            if (!ShellMap.ContainsKey(singleToken.Value))
+            if (!s_shellMap.ContainsKey(singleToken.Value))
             {
-                optionResult.AddError($"Unsupported shell '{singleToken.Value}'. Supported shells: {string.Join(", ", ShellMap.Keys)}");
+                optionResult.AddError($"Unsupported shell '{singleToken.Value}'. Supported shells: {string.Join(", ", s_shellMap.Keys)}");
             }
         };
     }
@@ -122,7 +121,7 @@ internal static class PrintEnvScriptCommandParser
     {
         return (CompletionContext context) =>
         {
-            return ShellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, documentation: shellProvider.HelpDescription));
+            return s_shellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, documentation: shellProvider.HelpDescription));
         };
     }
 }

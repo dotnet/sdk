@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -22,7 +19,9 @@ internal static class TelemetryCommonProperties
     /// <summary>
     /// Environment variable to mark telemetry as coming from a dev build.
     /// </summary>
+#pragma warning disable IDE0051, CA1823 // Referenced in #else branch (Release builds only)
     private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
+#pragma warning restore IDE0051, CA1823
 
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.

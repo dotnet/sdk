@@ -15,11 +15,11 @@ internal static class ListCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    private static readonly Command ListCommand = ConstructCommand();
+    private static readonly Command s_listCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return ListCommand;
+        return s_listCommand;
     }
 
     private static Command ConstructCommand()

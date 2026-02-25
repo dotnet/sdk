@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
-using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 

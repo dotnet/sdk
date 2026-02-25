@@ -15,11 +15,11 @@ internal static class InfoCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    private static readonly Command InfoCommand = ConstructCommand();
+    private static readonly Command s_infoCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return InfoCommand;
+        return s_infoCommand;
     }
 
     private static Command ConstructCommand()
