@@ -29,6 +29,7 @@
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.CoreUtils\EnvironmentVariableParser.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ILLMEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
