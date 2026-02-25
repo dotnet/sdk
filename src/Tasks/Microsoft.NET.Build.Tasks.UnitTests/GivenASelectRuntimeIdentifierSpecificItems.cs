@@ -28,7 +28,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetRuntimeIdentifier = "ubuntu.18.04-x64",
                 Items = items,
                 RuntimeIdentifierGraphPath = testRuntimeGraphPath,
-                BuildEngine = new MockBuildEngine()
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             // Act
@@ -59,7 +60,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetRuntimeIdentifier = "win-x64",
                 Items = items,
                 RuntimeIdentifierGraphPath = testRuntimeGraphPath,
-                BuildEngine = new MockBuildEngine()
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             // Act
@@ -88,7 +90,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetRuntimeIdentifier = "linux-x64",
                 Items = items,
                 RuntimeIdentifierGraphPath = testRuntimeGraphPath,
-                BuildEngine = new MockBuildEngine()
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             // Act
@@ -114,7 +117,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Items = new[] { item },
                 RuntimeIdentifierItemMetadata = "CustomRID",
                 RuntimeIdentifierGraphPath = testRuntimeGraphPath,
-                BuildEngine = new MockBuildEngine()
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             // Act
@@ -137,7 +141,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetRuntimeIdentifier = "linux-x64",
                 Items = new ITaskItem[0],
                 RuntimeIdentifierGraphPath = testRuntimeGraphPath,
-                BuildEngine = new MockBuildEngine()
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             // Act

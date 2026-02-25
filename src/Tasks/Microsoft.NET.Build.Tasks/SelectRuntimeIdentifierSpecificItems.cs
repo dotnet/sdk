@@ -14,7 +14,16 @@ namespace Microsoft.NET.Build.Tasks;
 [MSBuildMultiThreadableTask]
 public class SelectRuntimeIdentifierSpecificItems : TaskBase, IMultiThreadableTask
 {
+#if NETFRAMEWORK
+    private TaskEnvironment _taskEnvironment;
+    public TaskEnvironment TaskEnvironment
+    {
+        get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+        set => _taskEnvironment = value;
+    }
+#else
     public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
 
     /// <summary>
     /// The target runtime identifier to check compatibility against.
