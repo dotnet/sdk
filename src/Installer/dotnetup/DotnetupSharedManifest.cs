@@ -21,7 +21,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         if (!File.Exists(ManifestPath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
-            File.WriteAllText(ManifestPath, JsonSerializer.Serialize((List<DotnetInstall>)[], DotnetupManifestJsonContext.Default.ListDotnetInstall));
+            var emptyManifest = new DotnetupManifestData();
+            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(emptyManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
         }
     }
 
@@ -51,7 +52,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
     }
 
-    public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)
+    internal DotnetupManifestData ReadManifest()
     {
         AssertHasFinalizationMutex();
         EnsureManifestExists();
@@ -76,20 +77,24 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
         try
         {
-            var installs = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-            var validInstalls = installs ?? [];
-
-            if (validator is not null)
+            // Try new format first
+            var manifest = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+            if (manifest is not null)
             {
-                var invalids = validInstalls.Where(i => !validator.Validate(i)).ToList();
-                if (invalids.Count > 0)
-                {
-                    validInstalls = validInstalls.Except(invalids).ToList();
-                    var newJson = JsonSerializer.Serialize(validInstalls, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-                    File.WriteAllText(ManifestPath, newJson);
-                }
+                return manifest;
             }
-            return validInstalls;
+        }
+        catch (JsonException)
+        {
+            // May be old format — try migration
+        }
+
+        try
+        {
+            var legacyInstalls = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
+            var migrated = MigrateFromLegacy(legacyInstalls ?? []);
+            WriteManifest(migrated);
+            return migrated;
         }
         catch (JsonException ex)
         {
@@ -100,42 +105,238 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
     }
 
+    private void WriteManifest(DotnetupManifestData manifest)
+    {
+        AssertHasFinalizationMutex();
+        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
+        var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        File.WriteAllText(ManifestPath, json);
+    }
+
     /// <summary>
-    /// Gets installed versions filtered by a specific muxer directory.
+    /// Migrates a legacy flat list of DotnetInstall records to the new manifest format.
+    /// Each legacy install becomes both an install spec (pinned to exact version) and an installation record.
     /// </summary>
-    /// <param name="installRoot">Directory to filter by (must match the InstallRoot property)</param>
-    /// <param name="validator">Optional validator to check installation validity</param>
-    /// <returns>Installations that match the specified directory</returns>
+    private static DotnetupManifestData MigrateFromLegacy(List<DotnetInstall> legacyInstalls)
+    {
+        var manifest = new DotnetupManifestData();
+
+        foreach (var install in legacyInstalls)
+        {
+            var root = GetOrAddDotnetRoot(manifest, install.InstallRoot.Path, install.InstallRoot.Architecture);
+
+            root.InstallSpecs.Add(new InstallSpec
+            {
+                Component = install.Component,
+                VersionOrChannel = install.Version.ToString(),
+                InstallSource = InstallSource.Previous
+            });
+
+            if (!root.Installations.Any(i => i.Component == install.Component && i.Version == install.Version.ToString()))
+            {
+                root.Installations.Add(new Installation
+                {
+                    Component = install.Component,
+                    Version = install.Version.ToString()
+                });
+            }
+        }
+
+        return manifest;
+    }
+
+    private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
+    {
+        var existing = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture == architecture);
+
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var newRoot = new DotnetRootEntry
+        {
+            Path = path,
+            Architecture = architecture
+        };
+        manifest.DotnetRoots.Add(newRoot);
+        return newRoot;
+    }
+
+    // --- Install Spec operations ---
+
+    public IEnumerable<InstallSpec> GetInstallSpecs(DotnetInstallRoot installRoot)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        return root?.InstallSpecs ?? [];
+    }
+
+    public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
+    {
+        var manifest = ReadManifest();
+        var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
+
+        // Don't add duplicate install specs
+        if (!root.InstallSpecs.Any(s =>
+            s.Component == spec.Component &&
+            s.VersionOrChannel == spec.VersionOrChannel &&
+            s.InstallSource == spec.InstallSource &&
+            s.GlobalJsonPath == spec.GlobalJsonPath))
+        {
+            root.InstallSpecs.Add(spec);
+        }
+
+        WriteManifest(manifest);
+    }
+
+    public void RemoveInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+
+        if (root is null)
+        {
+            return;
+        }
+
+        root.InstallSpecs.RemoveAll(s =>
+            s.Component == spec.Component &&
+            s.VersionOrChannel == spec.VersionOrChannel &&
+            s.InstallSource == spec.InstallSource &&
+            s.GlobalJsonPath == spec.GlobalJsonPath);
+
+        WriteManifest(manifest);
+    }
+
+    // --- Installation operations ---
+
+    public IEnumerable<Installation> GetInstallations(DotnetInstallRoot installRoot)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        return root?.Installations ?? [];
+    }
+
+    public void AddInstallation(DotnetInstallRoot installRoot, Installation installation)
+    {
+        var manifest = ReadManifest();
+        var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
+
+        // Don't add duplicate installations
+        if (!root.Installations.Any(i => i.Component == installation.Component && i.Version == installation.Version))
+        {
+            root.Installations.Add(installation);
+        }
+
+        WriteManifest(manifest);
+    }
+
+    public void RemoveInstallation(DotnetInstallRoot installRoot, Installation installation)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+
+        if (root is null)
+        {
+            return;
+        }
+
+        root.Installations.RemoveAll(i => i.Component == installation.Component && i.Version == installation.Version);
+
+        WriteManifest(manifest);
+    }
+
+    // --- Backward-compatible DotnetInstall operations ---
+
+    public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)
+    {
+        var manifest = ReadManifest();
+        var installs = ManifestToLegacyInstalls(manifest);
+
+        if (validator is not null)
+        {
+            var validInstalls = installs.Where(i => validator.Validate(i)).ToList();
+            if (validInstalls.Count != installs.Count)
+            {
+                // Remove invalid installations from the manifest
+                foreach (var invalid in installs.Except(validInstalls))
+                {
+                    var root = manifest.DotnetRoots.FirstOrDefault(r =>
+                        DotnetupUtilities.PathsEqual(r.Path, invalid.InstallRoot.Path) && r.Architecture == invalid.InstallRoot.Architecture);
+                    root?.Installations.RemoveAll(i => i.Component == invalid.Component && i.Version == invalid.Version.ToString());
+                }
+                WriteManifest(manifest);
+                return validInstalls;
+            }
+        }
+
+        return installs;
+    }
+
     public IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null)
     {
-        // TODO: Manifest read operations should protect against data structure changes and be able to reformat an old manifest version.
         var installedVersions = GetInstalledVersions(validator);
         var expectedInstallRootPath = Path.GetFullPath(installRoot.Path);
-        var installedVersionsInRoot = installedVersions
+        return installedVersions
             .Where(install => DotnetupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
-        return installedVersionsInRoot;
     }
 
     public void AddInstalledVersion(DotnetInstall version)
     {
-        AssertHasFinalizationMutex();
-        EnsureManifestExists();
+        var manifest = ReadManifest();
+        var root = GetOrAddDotnetRoot(manifest, version.InstallRoot.Path, version.InstallRoot.Architecture);
 
-        var installs = GetInstalledVersions().ToList();
-        installs.Add(version);
-        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
-        File.WriteAllText(ManifestPath, json);
+        if (!root.Installations.Any(i => i.Component == version.Component && i.Version == version.Version.ToString()))
+        {
+            root.Installations.Add(new Installation
+            {
+                Component = version.Component,
+                Version = version.Version.ToString()
+            });
+        }
+
+        WriteManifest(manifest);
     }
 
     public void RemoveInstalledVersion(DotnetInstall version)
     {
-        AssertHasFinalizationMutex();
-        EnsureManifestExists();
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, version.InstallRoot.Path) && r.Architecture == version.InstallRoot.Architecture);
 
-        var installs = GetInstalledVersions().ToList();
-        installs.RemoveAll(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, version.InstallRoot.Path) && i.Version.Equals(version.Version));
-        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-        File.WriteAllText(ManifestPath, json);
+        if (root is null)
+        {
+            return;
+        }
+
+        root.Installations.RemoveAll(i => i.Component == version.Component && i.Version == version.Version.ToString());
+
+        WriteManifest(manifest);
+    }
+
+    /// <summary>
+    /// Converts the new manifest model to legacy DotnetInstall records for backward compatibility.
+    /// </summary>
+    private static List<DotnetInstall> ManifestToLegacyInstalls(DotnetupManifestData manifest)
+    {
+        var installs = new List<DotnetInstall>();
+        foreach (var root in manifest.DotnetRoots)
+        {
+            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+            foreach (var installation in root.Installations)
+            {
+                installs.Add(new DotnetInstall(
+                    installRoot,
+                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
+                    installation.Component));
+            }
+        }
+        return installs;
     }
 }

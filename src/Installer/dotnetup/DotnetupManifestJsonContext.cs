@@ -6,8 +6,13 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-[JsonSourceGenerationOptions(WriteIndented = false, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     Converters = new[] { typeof(ReleaseVersionJsonConverter) })]
+[JsonSerializable(typeof(DotnetupManifestData))]
+[JsonSerializable(typeof(DotnetRootEntry))]
+[JsonSerializable(typeof(InstallSpec))]
+[JsonSerializable(typeof(Installation))]
+[JsonSerializable(typeof(InstallSource))]
 [JsonSerializable(typeof(List<DotnetInstall>))]
 [JsonSerializable(typeof(InstallComponent))]
 [JsonSerializable(typeof(InstallArchitecture))]

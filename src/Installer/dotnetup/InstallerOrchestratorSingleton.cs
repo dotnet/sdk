@@ -126,6 +126,22 @@ internal class InstallerOrchestratorSingleton
             {
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
                 manifestManager.AddInstalledVersion(install);
+
+                // Record the install spec for the channel that was requested
+                manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                {
+                    Component = installRequest.Component,
+                    VersionOrChannel = installRequest.Channel.Name,
+                    InstallSource = InstallSource.Explicit
+                });
+
+                // Record the installation with its resolved version
+                manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
+                {
+                    Component = installRequest.Component,
+                    Version = versionToInstall.ToString()
+                    // TODO: Populate subcomponents from the extracted archive contents
+                });
             }
             else
             {
