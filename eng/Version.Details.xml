@@ -521,53 +521,53 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="11.0.0-beta.25567.101">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="11.0.0-beta.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.MetadataLoadContext" Version="10.0.0-rc.3.25567.101">
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="11.0.0-preview.3.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.25569.2">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.2.0-preview.26113.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>0439522cbd54eeebbc883d59075bbb5971755812</Sha>
+      <Sha>ccf96ba4397538159d356f5c82530c2ff6f8f352</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.1.0-preview.25569.2">
+    <Dependency Name="MSTest" Version="4.2.0-preview.26113.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>0439522cbd54eeebbc883d59075bbb5971755812</Sha>
+      <Sha>ccf96ba4397538159d356f5c82530c2ff6f8f352</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.3.25567.101">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-preview.3.26118.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f67b36f27be47c1fe753f85bfd86ba10fcdf4c4e</Sha>
+      <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
