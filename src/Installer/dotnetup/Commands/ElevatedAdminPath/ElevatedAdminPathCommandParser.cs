@@ -21,11 +21,11 @@ internal static class ElevatedAdminPathCommandParser
         Arity = ArgumentArity.ExactlyOne,
     };
 
-    private static readonly Command ElevatedAdminPathCommand = ConstructCommand();
+    private static readonly Command s_elevatedAdminPathCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return ElevatedAdminPathCommand;
+        return s_elevatedAdminPathCommand;
     }
 
     private static Command ConstructCommand()

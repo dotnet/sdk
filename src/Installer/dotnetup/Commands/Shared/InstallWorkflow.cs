@@ -116,7 +116,6 @@ internal class InstallWorkflow
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
     {
-        error = null;
         var walkthrough = new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver, options);
         var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var currentInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
@@ -181,7 +180,7 @@ internal class InstallWorkflow
             context.Options.RequireMuxerUpdate);
     }
 
-    private InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.

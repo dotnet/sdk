@@ -18,13 +18,13 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
+    private readonly ChannelVersionResolver _channelVersionResolver = new();
 
     /// <summary>
     /// Maps user-friendly runtime type names to InstallComponent enum values.
     /// Descriptions are obtained from InstallComponentExtensions.GetDisplayName().
     /// </summary>
-    private static readonly Dictionary<string, InstallComponent> RuntimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, InstallComponent> s_runtimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
     {
         ["runtime"] = InstallComponent.Runtime,
         ["aspnetcore"] = InstallComponent.ASPNETCore,
@@ -111,7 +111,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 return (default, null, $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
             }
 
-            if (!RuntimeTypeMap.TryGetValue(componentName, out var component))
+            if (!s_runtimeTypeMap.TryGetValue(componentName, out var component))
             {
                 return (default, null, $"Error: Unknown component type '{componentName}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
             }
@@ -128,7 +128,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     /// </summary>
     internal static IEnumerable<string> GetValidRuntimeTypes()
     {
-        foreach (var kvp in RuntimeTypeMap)
+        foreach (var kvp in s_runtimeTypeMap)
         {
             // Windows Desktop is only valid on Windows
             if (kvp.Value == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
@@ -18,7 +17,7 @@ internal class ElevatedAdminPathCommand : CommandBase
         _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
     }
 
-    void Log(string message)
+    private void Log(string message)
     {
         Console.WriteLine(message);
         File.AppendAllText(_outputFile, message + Environment.NewLine);
@@ -59,14 +58,14 @@ internal class ElevatedAdminPathCommand : CommandBase
     }
 
     [SupportedOSPlatform("windows")]
-    private int RemoveDotnet()
+    private static int RemoveDotnet()
     {
         using var pathHelper = new WindowsPathHelper();
         return pathHelper.RemoveDotnetFromAdminPath();
     }
 
     [SupportedOSPlatform("windows")]
-    private int AddDotnet()
+    private static int AddDotnet()
     {
         using var pathHelper = new WindowsPathHelper();
         return pathHelper.AddDotnetToAdminPath();

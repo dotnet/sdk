@@ -43,7 +43,6 @@ public sealed class DotnetupTelemetry : IDisposable
     private const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
 
     private readonly TracerProvider? _tracerProvider;
-    private readonly string _sessionId;
     private bool _disposed;
 
     /// <summary>
@@ -54,11 +53,11 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <summary>
     /// Gets the current session ID.
     /// </summary>
-    public string SessionId => _sessionId;
+    public string SessionId { get; }
 
     private DotnetupTelemetry()
     {
-        _sessionId = Guid.NewGuid().ToString();
+        SessionId = Guid.NewGuid().ToString();
 
         // Check opt-out (same env var as SDK)
         var optOutValue = Environment.GetEnvironmentVariable(TelemetryOptOutEnvVar);
@@ -77,7 +76,7 @@ public sealed class DotnetupTelemetry : IDisposable
                     .AddService(
                         serviceName: "dotnetup",
                         serviceVersion: GetVersion())
-                    .AddAttributes(TelemetryCommonProperties.GetCommonAttributes(_sessionId)))
+                    .AddAttributes(TelemetryCommonProperties.GetCommonAttributes(SessionId)))
                 .AddSource("Microsoft.Dotnet.Bootstrapper")
                 .AddSource("Microsoft.Dotnet.Installation");  // Library's ActivitySource
 
@@ -124,13 +123,13 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             activity.SetTag(TelemetryTagNames.CommandName, commandName);
             // Add common properties to each span for App Insights customDimensions
-            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(_sessionId))
+            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
             {
                 activity.SetTag(attr.Key, attr.Value?.ToString());
             }
         }
         activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
-        activity?.SetTag(TelemetryTagNames.SessionId, _sessionId);
+        activity?.SetTag(TelemetryTagNames.SessionId, SessionId);
         return activity;
     }
 
@@ -174,7 +173,7 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Add common properties to each span for App Insights customDimensions
-        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(_sessionId))
+        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
         {
             activity.SetTag(attr.Key, attr.Value?.ToString());
         }

@@ -80,6 +80,23 @@ public class DotnetInstallException : Exception
     /// </summary>
     public string? Component { get; }
 
+    /// <summary>Standard parameterless constructor.</summary>
+    public DotnetInstallException()
+    {
+    }
+
+    /// <summary>Standard message constructor.</summary>
+    public DotnetInstallException(string message)
+        : base(message)
+    {
+    }
+
+    /// <summary>Standard message + inner exception constructor.</summary>
+    public DotnetInstallException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+
     public DotnetInstallException(DotnetInstallErrorCode errorCode, string message)
         : base(message)
     {
@@ -107,4 +124,5 @@ public class DotnetInstallException : Exception
         Version = version;
         Component = component;
     }
+
 }

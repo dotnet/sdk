@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32;
 
@@ -16,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Helper class for Windows-specific PATH management operations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsPathHelper : IDisposable
+internal sealed partial class WindowsPathHelper : IDisposable
 {
     private const string RegistryEnvironmentPath = @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
     private const string PathVariableName = "Path";
@@ -28,8 +23,8 @@ internal sealed class WindowsPathHelper : IDisposable
     private readonly string? _logFilePath;
     private bool _disposed;
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern IntPtr SendMessageTimeout(
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageTimeoutW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    private static partial IntPtr SendMessageTimeout(
         IntPtr hWnd,
         int Msg,
         IntPtr wParam,
@@ -75,8 +70,6 @@ internal sealed class WindowsPathHelper : IDisposable
             _disposed = true;
         }
     }
-
-
 
     /// <summary>
     /// Reads the machine-wide PATH environment variable from the registry.
@@ -275,7 +268,6 @@ internal sealed class WindowsPathHelper : IDisposable
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string AddProgramFilesDotnetToPath(string unexpandedPath, string expandedPath)
     {
-        var expandedEntries = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Get the primary Program Files dotnet path (non-x86)
@@ -349,7 +341,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
-    /// <param name="pathToRemove">The path to remove.</param>
+    /// <param name="pathsToRemove">The paths to remove.</param>
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
@@ -383,7 +375,7 @@ internal sealed class WindowsPathHelper : IDisposable
         var pathEntries = SplitPath(adminPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
-        foundDotnetPaths = new List<string>();
+        foundDotnetPaths = [];
         var indices = FindPathIndices(pathEntries, programFilesDotnetPaths);
 
         foreach (var index in indices)
