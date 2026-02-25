@@ -57,6 +57,9 @@ jobs:
           & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release --no-restore
         displayName: 💻 Build Windows
       - powershell: |
+          & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release --self-contained
+        displayName: 🔨 Publish dotnetup AOT (Windows)
+      - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |
@@ -72,6 +75,9 @@ jobs:
       - script: |
           ./.dotnet/dotnet build test/dotnetup.Tests/dotnetup.Tests.csproj -c Release --no-restore
         displayName: 🐧 Build (Unix)
+      - script: |
+          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release --self-contained
+        displayName: 🔨 Publish dotnetup AOT (Unix)
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 📁 Create test results directory (Unix)

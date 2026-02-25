@@ -27,7 +27,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/${input:targetFramework}/dotnetup.dll",
                 "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -43,7 +43,7 @@
                 "name": "Run dotnetup tests (launch)",
                 "type": "coreclr",
                 "request": "launch",
-                "preLaunchTask": "build",
+                "preLaunchTask": "publish-aot",
                 "program": "dotnet",
                 "args": [
                     "test",
@@ -61,7 +61,7 @@
                 "name": "Debug dotnetup test",
                 "type": "coreclr",
                 "request": "launch",
-                "preLaunchTask": "build",
+                "preLaunchTask": "publish-aot",
                 "program": "dotnet",
                 "args": [
                     "test",
@@ -98,6 +98,12 @@
                 "id": "testName",
                 "type": "promptString",
                 "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
+            },
+            {
+                "id": "targetFramework",
+                "type": "promptString",
+                "description": "Target framework moniker (e.g., net10.0, net11.0)",
+                "default": "net10.0"
             }
         ]
     },
@@ -133,6 +139,28 @@
                     "kind": "build",
                     "isDefault": true
                 }
+            },
+            {
+                "label": "publish-aot",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "publish",
+                    "dotnetup/dotnetup.csproj",
+                    "--self-contained",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile"
             },
             {
                 "label": "test",

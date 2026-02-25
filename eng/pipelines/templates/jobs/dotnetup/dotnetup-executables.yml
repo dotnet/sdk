@@ -59,8 +59,9 @@ jobs:
       - powershell: |
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory
-          Copy-Item -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release\net10.0\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
+          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
@@ -74,6 +75,7 @@ jobs:
             CROSS_ARGS="-p:SysRoot=$ROOTFS_DIR -p:LinkerFlavor=lld"
           fi
           ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained $CROSS_ARGS -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory
-          cp -r "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release/net10.0/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
