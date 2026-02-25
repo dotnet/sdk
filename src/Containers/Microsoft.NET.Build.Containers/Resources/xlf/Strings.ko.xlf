@@ -461,7 +461,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
-        <target state="translated">mediaType '{0}' 대한 tarball을 만들 수 없습니다.</target>
+        <target state="translated">mediaType '{0}'에 대한 tarball을 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="_Test">

@@ -47,7 +47,6 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
 
         var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
         var sdkDirectory = sdksDirectory.Parent!;
-        var sdkVersion = sdkDirectory.Name;
         var dotnetRootPath = sdkDirectory.Parent!.Parent!;
         // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
         string templatesRootFolder = Path.Combine(dotnetRootPath.FullName, "templates");
@@ -87,7 +86,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         return versionFileInfo;
     }
 
-    private static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
+    internal static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
@@ -107,6 +106,6 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
             }
         }
 
-        return [.. bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path)];
+        return [.. bestVersionsByBucket.OrderBy(x => x.Value.version).Select(x => x.Value.path)];
     }
 }

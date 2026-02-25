@@ -29,11 +29,21 @@ public static class Constants
     // MSBuild targets
     public const string Build = nameof(Build);
     public const string ComputeRunArguments = nameof(ComputeRunArguments);
+    public const string ComputeAvailableDevices = nameof(ComputeAvailableDevices);
+    public const string DeployToDevice = nameof(DeployToDevice);
     public const string CoreCompile = nameof(CoreCompile);
 
     // MSBuild item metadata
     public const string Identity = nameof(Identity);
     public const string FullPath = nameof(FullPath);
+
+    // MSBuild CLI flags
+
+    /// <summary>
+    /// Disables the live-updating node display in the terminal logger, which is useful for LLM/agentic environments.
+    /// </summary>
+    public const string TerminalLogger_DisableNodeDisplay = "-tlp:DISABLENODEDISPLAY";
+
 
     public static readonly string ProjectArgumentName = "<PROJECT>";
     public static readonly string SolutionArgumentName = "<SLN_FILE>";

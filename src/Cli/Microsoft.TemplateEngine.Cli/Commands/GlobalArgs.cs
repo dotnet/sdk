@@ -9,29 +9,25 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class GlobalArgs : ICommandArgs
     {
-        public GlobalArgs(BaseCommand command, ParseResult parseResult)
+        public GlobalArgs(ParseResult parseResult)
         {
-            DebugCustomSettingsLocation = parseResult.GetValue(NewCommand.DebugCustomSettingsLocationOption);
-            DebugVirtualizeSettings = parseResult.GetValue(NewCommand.DebugVirtualizeSettingsOption);
-            DebugAttach = parseResult.GetValue(NewCommand.DebugAttachOption);
-            DebugReinit = parseResult.GetValue(NewCommand.DebugReinitOption);
-            DebugRebuildCache = parseResult.GetValue(NewCommand.DebugRebuildCacheOption);
-            DebugShowConfig = parseResult.GetValue(NewCommand.DebugShowConfigOption);
-            ParseResult = parseResult;
-            Command = command;
             RootCommand = GetNewCommandFromParseResult(parseResult);
+
+            var definition = RootCommand.Definition;
+
+            DebugCustomSettingsLocation = parseResult.GetValue(definition.DebugCustomSettingsLocationOption);
+            DebugVirtualizeSettings = parseResult.GetValue(definition.DebugVirtualizeSettingsOption);
+            DebugAttach = parseResult.GetValue(definition.DebugAttachOption);
+            DebugReinit = parseResult.GetValue(definition.DebugReinitOption);
+            DebugRebuildCache = parseResult.GetValue(definition.DebugRebuildCacheOption);
+            DebugShowConfig = parseResult.GetValue(definition.DebugShowConfigOption);
+            ParseResult = parseResult;
             HasHelpOption = parseResult.CommandResult.Children.Any(child => child is OptionResult optionResult && optionResult.Option is HelpOption);
         }
 
-        protected GlobalArgs(GlobalArgs args) : this(args.Command, args.ParseResult) { }
-
         public NewCommand RootCommand { get; }
 
-        public BaseCommand Command { get; }
-
         public ParseResult ParseResult { get; }
-
-        Command ICommandArgs.Command => Command;
 
         internal bool DebugAttach { get; private set; }
 

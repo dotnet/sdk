@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_has_target_path_and_final_outputput_path_metadata(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -51,7 +51,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
                 RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
                 RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             testAsset = testAsset.WithProjectChanges(project =>
             {

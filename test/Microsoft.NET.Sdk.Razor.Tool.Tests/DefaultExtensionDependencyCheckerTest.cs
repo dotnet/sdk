@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void Check_ReturnsFalse_WithMissingDependency()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var output = new StringWriter();
 
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void Check_ReturnsTrue_WithAllDependenciesProvided()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var output = new StringWriter();
 
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void Check_ReturnsFalse_WhenAssemblyHasDifferentMVID()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var output = new StringWriter();
 
             // Load Beta.dll from the future Alpha.dll path to prime the assembly loader
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void Check_ReturnsFalse_WhenLoaderThrows()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var output = new StringWriter();
 
             var deltaFilePath = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");

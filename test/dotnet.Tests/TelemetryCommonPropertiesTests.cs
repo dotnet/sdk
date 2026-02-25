@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
@@ -183,21 +181,27 @@ namespace Microsoft.DotNet.Tests
 
         [Theory]
         [MemberData(nameof(LLMTelemetryTestCases))]
-        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string> envVars, string expected)
+        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
         {
             try
             {
-                foreach (var (key, value) in envVars)
+                if (envVars is not null)
                 {
-                    Environment.SetEnvironmentVariable(key, value);
+                    foreach (var (key, value) in envVars)
+                    {
+                        Environment.SetEnvironmentVariable(key, value);
+                    }
                 }
                 new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
             }
             finally
             {
-                foreach (var (key, value) in envVars)
+                if (envVars is not null)
                 {
-                    Environment.SetEnvironmentVariable(key, null);
+                    foreach (var (key, value) in envVars)
+                    {
+                        Environment.SetEnvironmentVariable(key, null);
+                    }
                 }
             }
         }
@@ -205,7 +209,7 @@ namespace Microsoft.DotNet.Tests
         [Theory]
         [InlineData("dummySessionId")]
         [InlineData(null)]
-        public void TelemetryCommonPropertiesShouldContainSessionId(string sessionId)
+        public void TelemetryCommonPropertiesShouldContainSessionId(string? sessionId)
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
             var commonProperties = unitUnderTest.GetTelemetryCommonProperties(sessionId);
@@ -215,34 +219,69 @@ namespace Microsoft.DotNet.Tests
         }
 
 
-        public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
-            new object[] { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
-            new object[] { new Dictionary<string, string>(), null },
+        public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
+        {
+            { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
+            { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
+            { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+            { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
+            { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
+            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
+            { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
+            { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
+            { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
+            { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
+            { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
+            { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
+            { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
+            { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
+            { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
+            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
+            { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
+            { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
+            { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
+            { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
+            // Test combinations of older tools
+            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
+            { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
+            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
+            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+            // Test combinations of newer tools
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
+            { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
+            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
+            { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
+            { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
+            { new Dictionary<string, string>(), null },
         };
 
-        public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
-            new object[] { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
-            new object[] { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
-            new object[] { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
-            new object[] { new Dictionary<string, string> { { "CI", "true"} }, true },
-            new object[] { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
-            new object[] { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
-
-            new object[] { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
-            new object[] { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
-            new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
-            new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-            new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
-            new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-
-            new object[] { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
-            new object[] { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
-            new object[] { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
-            new object[] { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
-
-            new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+        public static TheoryData<Dictionary<string, string>, bool> CITelemetryTestCases => new()
+        {
+            { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
+            { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
+            { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
+            { new Dictionary<string, string> { { "CI", "true"} }, true },
+            { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
+            { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
+            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
+            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
+            { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
+            { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+            { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
+            { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
+            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
+            { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
+            { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
+            { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
         };
 
         private class NothingCache : IUserLevelCacheWriter

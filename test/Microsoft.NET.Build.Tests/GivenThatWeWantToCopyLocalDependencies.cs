@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -177,7 +177,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -213,7 +213,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -246,7 +246,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -282,7 +282,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -318,7 +318,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);

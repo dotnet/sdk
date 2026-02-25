@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Analyzer.Utilities
 {
@@ -276,6 +277,7 @@ namespace Analyzer.Utilities
         public const string SystemLinqEnumerable = "System.Linq.Enumerable";
         public const string SystemLinqExpressionsExpression1 = "System.Linq.Expressions.Expression`1";
         public const string SystemLinqIOrderedEnumerable1 = "System.Linq.IOrderedEnumerable`1";
+        public const string SystemLinqParallelEnumerable = "System.Linq.ParallelEnumerable";
         public const string SystemLinqQueryable = "System.Linq.Queryable";
         public const string SystemMarshalByRefObject = "System.MarshalByRefObject";
         public const string SystemMemory1 = "System.Memory`1";

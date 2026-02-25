@@ -13,9 +13,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             environmentOptions ??= TestOptions.GetEnvironmentOptions();
 
+            var processOutputReporter = new TestProcessOutputReporter();
+
             return new()
             {
-                ProcessOutputReporter = new TestProcessOutputReporter(),
+                ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = NullLoggerFactory.Instance,
                 Logger = NullLogger.Instance,
                 BuildLogger = NullLogger.Instance,
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Options = new(),
                 RootProjectOptions = TestOptions.GetProjectOptions(args),
                 EnvironmentOptions = environmentOptions,
-                BrowserLauncher = new BrowserLauncher(NullLogger.Instance, environmentOptions),
+                BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
             };
         }

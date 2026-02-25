@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         public void Properly_changes_implicit_defines(string configuration, string expected)
         {
             var targetFramework = "netcoreapp1.0";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldVB", configuration)
                 .WithSource()
                 .WithProjectChanges(project =>

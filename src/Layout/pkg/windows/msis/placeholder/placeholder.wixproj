@@ -1,4 +1,7 @@
-﻿<Project Sdk="Microsoft.WixToolset.Sdk">
+<Project Sdk="Microsoft.WixToolset.Sdk">
+  <PropertyGroup>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />

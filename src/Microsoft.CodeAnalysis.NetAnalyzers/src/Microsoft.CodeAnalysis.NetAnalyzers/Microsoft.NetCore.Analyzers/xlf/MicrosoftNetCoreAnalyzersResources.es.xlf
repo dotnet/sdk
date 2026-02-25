@@ -237,6 +237,26 @@
         <target state="translated">Los métodos Dispose deberían llamar a SuppressFinalize</target>
         <note />
       </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
+        <source>Collapse into single Path.{0} operation</source>
+        <target state="new">Collapse into single Path.{0} operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsDescription">
+        <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
+        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsMessage">
+        <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
+        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsTitle">
+        <source>Collapse consecutive Path.Combine or Path.Join operations</source>
+        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
@@ -1008,6 +1028,21 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">Use la SAS de servicio en lugar de la SAS de cuenta para el control de acceso detallado y la directiva de acceso de nivel de contenedor</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
+        <source>Do not use 'AsParallel' in 'foreach'</source>
+        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
         <source>Do Not Use Broken Cryptographic Algorithms</source>
         <target state="translated">No usar algoritmos criptográficos dañados</target>
@@ -1146,6 +1181,21 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
         <target state="translated">{0} es un generador de números aleatorios no seguro. Use generadores de números aleatorios que sean criptográficamente seguros cuando se requiera aleatoriedad por seguridad.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
+        <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
+        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
+        <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
+        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
+        <source>Cancel Task.Delay after Task.WhenAny completes</source>
+        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -2278,6 +2328,26 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">Es preferible comparar "Length" con 0 en lugar de usar "Any()", tanto por claridad como por rendimiento.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
+        <source>Change to '{0}'</source>
+        <target state="new">Change to '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanDescription">
+        <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
+        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanMessage">
+        <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
+        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanTitle">
+        <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
+        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" tiene una sobrecarga "ReadAsync" que toma "Memory&lt;Byte&gt;" como primer argumento y una sobrecarga "WriteAsync" que toma "ReadOnlyMemory&lt;Byte&gt;" como primer argumento. Es preferible llamar a las sobrecargas basadas en memory, que son más eficaces.</target>
@@ -2314,18 +2384,23 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
-        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="translated">StringBuilder.Append y StringBuilder.Insert proporcionan sobrecargas para varios tipos aparte de System.String. Cuando sea posible, elija preferentemente las sobrecargas fuertemente tipadas frente al uso de ToString() y la sobrecarga basada en cadenas.</target>
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
+        <target state="needs-review-translation">StringBuilder.Append y StringBuilder.Insert proporcionan sobrecargas para varios tipos aparte de System.String. Cuando sea posible, elija preferentemente las sobrecargas fuertemente tipadas frente al uso de ToString() y la sobrecarga basada en cadenas.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="translated">Quite la llamada a ToString para usar una sobrecarga StringBuilder fuertemente tipada.</target>
+        <source>Prefer strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">Quite la llamada a ToString para usar una sobrecarga StringBuilder fuertemente tipada.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
         <target state="translated">Quitar la llamada a ToString</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
+        <source>Use StringBuilder.Append(char, int) overload</source>
+        <target state="new">Use StringBuilder.Append(char, int) overload</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">

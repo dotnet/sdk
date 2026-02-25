@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         public void GivenAnExecutablePathDirectoryThatDoesNotExistItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
-            var testFolder = _testAssetsManager.CreateTestDirectory().Path;
+            var testFolder = TestAssetsManager.CreateTestDirectory().Path;
             var extraNonExistDirectory = Path.GetRandomFileName();
             var shellShimRepository = new ShellShimRepository(new DirectoryPath(Path.Combine(testFolder, extraNonExistDirectory)), GetAppHostTemplateFromStage2());
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         [InlineData("netcoreapp3.1")]
         public void WhenRidNotSupportedOnWindowsItIsImplicit(string tfm)
         {
-            var tempDir = _testAssetsManager.CreateTestDirectory(identifier: tfm).Path;
+            var tempDir = TestAssetsManager.CreateTestDirectory(identifier: tfm).Path;
             var templateFinder = new ShellShimTemplateFinder(new MockNuGetPackageDownloader(), new DirectoryPath(tempDir), null);
             var path = templateFinder.ResolveAppHostSourceDirectoryAsync(null, NuGetFramework.Parse(tfm), Architecture.Arm64).Result;
             path.Should().Contain(tfm.Equals("net5.0") ? "AppHostTemplate" : "win-x64");
@@ -471,12 +471,12 @@ namespace Microsoft.DotNet.ShellShim.Tests
             if (Environment.Is64BitProcess)
             {
                 processStartInfo.EnvironmentVariables["DOTNET_ROOT"] =
-                    TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             }
             else
             {
                 processStartInfo.EnvironmentVariables["DOTNET_ROOT(x86)"] =
-                    TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             }
 
             processStartInfo.ExecuteAndCaptureOutput(out var stdOut, out var stdErr);
@@ -489,7 +489,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         private static string GetAppHostTemplateFromStage2()
         {
             var stage2AppHostTemplateDirectory =
-                Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "AppHostTemplate");
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "AppHostTemplate");
             return stage2AppHostTemplateDirectory;
         }
 
@@ -497,7 +497,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         {
             const string testAppName = "TestAppSimple";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         private string GetNewCleanFolderUnderTempRoot([CallerMemberName] string callingMethod = null, string identifier = "")
         {
-            return _testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
+            return TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
         }
 
         private ShellShimRepository GetShellShimRepositoryWithMockMaker(string pathToShim)

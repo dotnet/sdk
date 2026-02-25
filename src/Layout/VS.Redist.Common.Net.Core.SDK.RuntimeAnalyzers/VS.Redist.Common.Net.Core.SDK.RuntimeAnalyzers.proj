@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
     <ProjectReference Include="..\redist\redist.csproj" />
   </ItemGroup>
 
@@ -21,6 +20,7 @@
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
+      <SdkRuntimeAnalyzersMetadataFile>$(OutputPath)\metadata.json</SdkRuntimeAnalyzersMetadataFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,18 +29,27 @@
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
-      <RedirectingRuntimeAnalyzersContent Include="$(ArtifactsBinDir)Microsoft.Net.Sdk.AnalyzerRedirecting\$(Configuration)\net472\**\*.*" DeploymentSubpath="AnalyzerRedirecting" />
     </ItemGroup>
 
     <Error Condition="'@(RedistRuntimeAnalyzersContent)' == ''" Text="The 'RedistRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
-    <Error Condition="'@(RedirectingRuntimeAnalyzersContent)' == ''" Text="The 'RedirectingRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
+
+    <!-- The custom task cannot access %(RecursiveDir) without this. -->
+    <ItemGroup>
+      <RedistRuntimeAnalyzersContent Update="@(RedistRuntimeAnalyzersContent)">
+        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>      
+      </RedistRuntimeAnalyzersContent>
+    </ItemGroup>
+
+    <ProcessRuntimeAnalyzerVersions Inputs="@(RedistRuntimeAnalyzersContent)" MetadataFilePath="$(SdkRuntimeAnalyzersMetadataFile)">
+      <Output TaskParameter="Outputs" ItemName="ProcessedRedistRuntimeAnalyzersContent" />
+    </ProcessRuntimeAnalyzerVersions>
 
     <ItemGroup>
-      <RuntimeAnalyzersContent Include="@(RedistRuntimeAnalyzersContent);@(RedirectingRuntimeAnalyzersContent)" />
+      <RuntimeAnalyzersContent Include="@(ProcessedRedistRuntimeAnalyzersContent)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeAnalyzersContent)"
-          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(CustomRecursiveDir)%(Filename)%(Extension)')"
           UseHardlinksIfPossible="true" />
 
     <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
@@ -49,7 +58,8 @@
     <ItemGroup>
       <!-- Include the swr file in the nuget package for VS authoring -->
       <Content Include="$(SdkRuntimeAnalyzersSwrFile)" PackagePath="/" />
-      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)/%(RecursiveDir)%(Filename)%(Extension)" />
+      <Content Include="$(SdkRuntimeAnalyzersMetadataFile)" PackagePath="/" />
+      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)/%(RuntimeAnalyzersContent.CustomRecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 

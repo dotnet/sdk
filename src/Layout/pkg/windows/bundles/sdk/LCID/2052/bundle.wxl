@@ -75,7 +75,7 @@
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value=".NET SDK 用于生成、运行和测试 .NET 应用程序。可以从多种语言、编辑器和开发人员工具中进行选择，并利用大型库生态系统来生成面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你会喜欢它!"/>
-  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2026 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
   <String Id="LearnMoreTitle" Value="了解有关 .NET 的详细信息"/>
   <String Id="ResourcesHeader" Value="资源"/>
@@ -87,7 +87,7 @@
   <String Id="InstallationNoteTitle" Value="安装说明"/>
   <String Id="InstallationNote" Value="将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。"/>
   
-  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2026 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
   <String Id="InstallPathx64x86" Value="x64 SDK 安装的安装路径: &quot;[DOTNETHOME_X64]&quot; 不能与 x86 SDK 安装的路径相同: &quot;[DOTNETHOME_X86]&quot;"/>
   <String Id="InstallPathARM64x86" Value="ARM64 SDK 安装的安装路径: &quot;[DOTNETHOME_ARM64]&quot; 不能与 x86 SDK 安装的路径相同: &quot;[DOTNETHOME_X86]&quot;"/>

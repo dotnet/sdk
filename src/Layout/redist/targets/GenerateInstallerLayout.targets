@@ -67,7 +67,6 @@
   <Target Name="LayoutDnxShim">
     <ItemGroup>
       <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
-      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.ps1" />
       <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
     </ItemGroup>
     <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
@@ -96,7 +95,10 @@
                             LayoutDnxShim;
                             CrossgenLayout;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          AfterTargets="AfterBuild" />
+          AfterTargets="AfterBuild">
+    <!-- TODO: This will eventually be done for all platforms as part of the deduplication work (https://github.com/dotnet/sdk/issues/52183). -->
+    <DeduplicateAssembliesWithLinks Condition="!$([MSBuild]::IsOSPlatform('Windows'))" LayoutDirectory="$(RedistInstallerLayoutPath)sdk\" UseHardLinks="false" />
+  </Target>
 
   <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
        necessary for the msi/pkg to install correctly and put the content under that sub path. -->
@@ -110,14 +112,12 @@
       <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(SdkOutputFile)"
-          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"
-          UseHardLinksIfPossible="true"
-          SkipUnchangedFiles="true" />
+    <CopyPreservingRelativeSymlinks
+          SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
     <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
-    
   </Target>
 
 </Project>

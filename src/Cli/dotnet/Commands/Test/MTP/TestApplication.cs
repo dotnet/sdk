@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
@@ -10,6 +11,7 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -20,6 +22,7 @@ internal sealed class TestApplication(
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
+    private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
@@ -54,20 +57,59 @@ internal sealed class TestApplication(
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
-            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
+            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
+            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
+            var stdOutBuilder = new ConcurrentQueue<string>();
+            var stdErrBuilder = new ConcurrentQueue<string>();
 
-            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
+            var stdOutTask = Task.Factory.StartNew(() =>
+            {
+                var stdOut = process.StandardOutput;
+                string? currentLine;
+                while ((currentLine = stdOut.ReadLine()) is not null)
+                {
+                    stdOutBuilder.Enqueue(currentLine);
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            var stdErrTask = Task.Factory.StartNew(() =>
+            {
+                var stdErr = process.StandardError;
+                string? currentLine;
+                while ((currentLine = stdErr.ReadLine()) is not null)
+                {
+                    stdErrBuilder.Enqueue(currentLine);
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
+            // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
             await process.WaitForExitAsync();
 
-            _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
+            // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
+            // We might not be able to consume all the output if the test app has exited but left a child process alive.
+            try
+            {
+                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException)
+            {
+            }
 
-            if (_handler.HasMismatchingTestSessionEventCount())
+            var exitCode = process.ExitCode;
+            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
+
+            // This condition is to prevent considering the test app as successful when we didn't receive test session end.
+            // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
+            // For example, if hangdump timeout is reached, the process will be killed and we will have mismatching count.
+            // Or if there is a crash (e.g, Environment.FailFast), etc.
+            // So this is only a safe guard to avoid passing the test run if Environment.Exit(0) is called in one of the tests for example.
+            if (exitCode == 0 && _handler.HasMismatchingTestSessionEventCount())
             {
                 throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
             }
 
-            return process.ExitCode;
+            return exitCode;
         }
         finally
         {
@@ -96,12 +138,11 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is not null)
+        if (Module.LaunchSettings is ProjectLaunchProfile)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
-                string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.Environment[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
             // Env variables specified on command line override those specified in launch profile:
@@ -143,25 +184,25 @@ internal sealed class TestApplication(
 
         if (TestOptions.IsDiscovery)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
         if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
         }
 
         if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        foreach (var arg in _buildOptions.UnmatchedTokens)
+        foreach (var arg in _buildOptions.TestApplicationArguments)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
@@ -199,63 +240,69 @@ internal sealed class TestApplication(
 
     private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
-        try
+        // We need to lock as we might be called concurrently when test app child processes all communicate with us.
+        // For example, in a case of a sharding extension, we could get test result messages concurrently.
+        // To be the most safe, we lock the whole OnRequest.
+        lock (_requestLock)
         {
-            switch (request)
+            try
             {
-                case HandshakeMessage handshakeMessage:
-                    _handshakes.Add(server, handshakeMessage);
-                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                switch (request)
+                {
+                    case HandshakeMessage handshakeMessage:
+                        _handshakes.Add(server, handshakeMessage);
+                        string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
-                case CommandLineOptionMessages commandLineOptionMessages:
-                    OnCommandLineOptionMessages(commandLineOptionMessages);
-                    break;
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
 
-                case DiscoveredTestMessages discoveredTestMessages:
-                    OnDiscoveredTestMessages(discoveredTestMessages);
-                    break;
+                    case DiscoveredTestMessages discoveredTestMessages:
+                        OnDiscoveredTestMessages(discoveredTestMessages);
+                        break;
 
-                case TestResultMessages testResultMessages:
-                    OnTestResultMessages(testResultMessages);
-                    break;
+                    case TestResultMessages testResultMessages:
+                        OnTestResultMessages(testResultMessages);
+                        break;
 
-                case FileArtifactMessages fileArtifactMessages:
-                    OnFileArtifactMessages(fileArtifactMessages);
-                    break;
+                    case FileArtifactMessages fileArtifactMessages:
+                        OnFileArtifactMessages(fileArtifactMessages);
+                        break;
 
-                case TestSessionEvent sessionEvent:
-                    OnSessionEvent(sessionEvent);
-                    break;
+                    case TestSessionEvent sessionEvent:
+                        OnSessionEvent(sessionEvent);
+                        break;
 
-                // If we don't recognize the message, log and skip it
-                case UnknownMessage unknownMessage:
-                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
-                default:
-                    // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            // BE CAREFUL:
-            // When handling some of the messages, we may throw an exception in unexpected state.
-            // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
-            // (or if we receive help-related messages when not in help mode)
-            // In that case, we FailFast.
-            // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
-            // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
-            // MTP app process exit (which doesn't happen).
-            // So, we explicitly FailFast here.
-            string exAsString = ex.ToString();
-            Logger.LogTrace(exAsString);
-            Environment.FailFast(exAsString);
-        }
+            catch (Exception ex)
+            {
+                // BE CAREFUL:
+                // When handling some of the messages, we may throw an exception in unexpected state.
+                // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+                // (or if we receive help-related messages when not in help mode)
+                // In that case, we FailFast.
+                // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+                // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+                // MTP app process exit (which doesn't happen).
+                // So, we explicitly FailFast here.
+                string exAsString = ex.ToString();
+                Logger.LogTrace(exAsString);
+                Environment.FailFast(exAsString);
+            }
 
-        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+        }
     }
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)

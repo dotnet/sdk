@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
@@ -27,7 +28,8 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetry telemetry)
     {
-        var exeName = Path.GetFileName(result.GetValue(InternalReportInstallSuccessCommandParser.Argument));
+        var definition = (InternalReportInstallSuccessCommandDefinition)result.CommandResult.Command;
+        var exeName = Path.GetFileName(result.GetValue(definition.Argument));
 
         var filter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         foreach (var e in filter.Filter(new InstallerSuccessReport(exeName)))

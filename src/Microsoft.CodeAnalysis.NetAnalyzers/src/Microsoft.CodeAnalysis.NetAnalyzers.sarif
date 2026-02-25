@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "11.0.100",
         "language": "en-US"
       },
       "rules": {
@@ -708,7 +708,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "11.0.100",
         "language": "en-US"
       },
       "rules": {
@@ -2182,6 +2182,26 @@
             ]
           }
         },
+        "CA1517": {
+          "id": "CA1517",
+          "shortDescription": "Use 'ReadOnlySpan<T>' or 'ReadOnlyMemory<T>' instead of 'Span<T>' or 'Memory<T>'",
+          "fullDescription": "Using 'ReadOnlySpan<T>' or 'ReadOnlyMemory<T>' instead of 'Span<T>' or 'Memory<T>' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1517",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "PreferReadOnlySpanOverSpanAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1700": {
           "id": "CA1700",
           "shortDescription": "Do not name enum values 'Reserved'",
@@ -2789,7 +2809,7 @@
         "CA1830": {
           "id": "CA1830",
           "shortDescription": "Prefer strongly-typed Append and Insert method overloads on StringBuilder",
-          "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.",
+          "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830",
           "properties": {
@@ -3507,6 +3527,46 @@
             ]
           }
         },
+        "CA1876": {
+          "id": "CA1876",
+          "shortDescription": "Do not use 'AsParallel' in 'foreach'",
+          "fullDescription": "Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1876",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseAsParallelInForEachLoopAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1877": {
+          "id": "CA1877",
+          "shortDescription": "Collapse consecutive Path.Combine or Path.Join operations",
+          "fullDescription": "When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1877",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CollapseMultiplePathOperationsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -3860,6 +3920,26 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "PreferJsonElementParse",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2027": {
+          "id": "CA2027",
+          "shortDescription": "Cancel Task.Delay after Task.WhenAny completes",
+          "fullDescription": "When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseNonCancelableTaskDelayWithWhenAny",
             "languages": [
               "C#",
               "Visual Basic"
@@ -6523,7 +6603,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "11.0.100",
         "language": "en-US"
       },
       "rules": {

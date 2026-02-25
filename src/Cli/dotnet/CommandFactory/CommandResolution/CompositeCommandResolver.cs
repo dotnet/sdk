@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 

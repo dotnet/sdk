@@ -1440,6 +1440,17 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The result of parsing the following JSON was &apos;null&apos;:
+        ///
+        ///{0}.
+        /// </summary>
+        internal static string PostAction_ModifyJson_Error_NullJson {
+            get {
+                return ResourceManager.GetString("PostAction_ModifyJson_Error_NullJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parent property path &apos;{0}&apos; could not be traversed..
         /// </summary>
         internal static string PostAction_ModifyJson_Error_ParentPropertyPathInvalid {

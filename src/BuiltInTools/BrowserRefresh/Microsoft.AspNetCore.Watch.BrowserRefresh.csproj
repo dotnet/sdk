@@ -1,24 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Watch\TargetFrameworks.props"/>
+
   <PropertyGroup>
     <!--
       This assembly may be loaded .NET 6.0+ web server.
-      When updating the TFM also update minimal supported version in dotnet-watch.csproj and WebApplicationAppModel.cs.
+      When adding new TFM also update versions in dotnet-watch.csproj and WebApplicationAppModel.cs.
     -->
-    <TargetFramework>net6.0</TargetFramework>
-    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-
-    <IsPackable>true</IsPackable>
-    <PackageId>Microsoft.DotNet.HotReload.Web.Middleware</PackageId>
-    <PackageDescription>Package containing Hot Reload middleware.</PackageDescription>
+    <TargetFramework>$(MiddlewareTargetFrameworkV6)</TargetFramework>
     <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
+
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <EmbeddedResource Include="WebSocketScriptInjection.js" />
-
-    <!-- Back compat only -->
-    <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -31,4 +26,11 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
 
+  <Import Project="..\Web.Middleware\Microsoft.DotNet.HotReload.Web.Middleware.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Update="@(EmbeddedResource)">
+      <LogicalName>%(FileName)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

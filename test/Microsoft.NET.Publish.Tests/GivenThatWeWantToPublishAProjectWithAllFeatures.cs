@@ -188,7 +188,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private PublishCommand GetPublishCommand(string targetFramework, [CallerMemberName] string callingMethod = null)
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", callingMethod, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges((path, project) =>

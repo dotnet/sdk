@@ -29,17 +29,32 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
+        public void SuppressVerboseLogging()
+        {
+            // remove default --verbose and -bl args
+            DotnetWatchArgs.Clear();
+
+            // override the default used for testing ("trace"):
+            EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
+        }
+
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
-
-        public void AssertOutputDoesNotContain(string message)
-            => Assert.DoesNotContain(Process.Output, line => line.Contains(message));
 
         public void AssertOutputContains(Regex pattern)
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetPattern(descriptor, projectDisplay));
+
+        public void AssertOutputDoesNotContain(string message)
+            => AssertEx.DoesNotContainSubstring(message, Process.Output);
+
+        public void AssertOutputDoesNotContain(Regex pattern)
+            => AssertEx.DoesNotContainPattern(pattern, Process.Output);
+
+        public void AssertOutputDoesNotContain(MessageDescriptor descriptor, string projectDisplay = null)
+            => AssertOutputDoesNotContain(GetPattern(descriptor, projectDisplay));
 
         private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay = null)
             => new Regex(Regex.Replace(Regex.Escape((projectDisplay != null ? $"[{projectDisplay}] " : "") + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
@@ -167,6 +182,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
+            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
 
             // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
@@ -179,8 +195,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 commandSpec.WithEnvironmentVariable(env.Key, env.Value);
             }
 
-            Process = new AwaitableProcess(commandSpec, Logger);
-            Process.Start();
+            var processStartInfo = commandSpec.GetProcessStartInfo();
+            Process = new AwaitableProcess(Logger);
+            Process.Start(processStartInfo);
 
             TestFlags = testFlags;
         }
@@ -202,6 +219,23 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();
+        }
+
+        public void UseTestBrowser()
+        {
+            var path = GetTestBrowserPath();
+            EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", path);
+
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserExecute);
+            }
+        }
+
+        public static string GetTestBrowserPath()
+        {
+            var exeExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
+            return Path.Combine(Path.GetDirectoryName(typeof(WatchableApp).Assembly.Location!)!, "test-browser", "dotnet-watch-test-browser" + exeExtension);
         }
     }
 }

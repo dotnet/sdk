@@ -5,14 +5,4 @@ namespace Microsoft.DotNet;
 
 static class PathUtilities
 {
-    public static string CreateTempSubdirectory()
-    {
-#if NETFRAMEWORK
-        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(path);
-        return path;
-#else
-        return Directory.CreateTempSubdirectory().FullName;
-#endif
-    }
 }
