@@ -20,36 +20,31 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return null;
                 }
 
-                using var fileStream = File.OpenRead(globalJsonPath);
-
-                // Probe for UTF-16 BOM (global.json is user-generated and may not be UTF-8)
-                var bomBuffer = new byte[4];
-                int bomBytesRead = fileStream.Read(bomBuffer, 0, bomBuffer.Length);
-                fileStream.Seek(0, SeekOrigin.Begin);
-
-                bool isUtf16 = bomBytesRead >= 2 &&
-                    ((bomBuffer[0] == 0xFF && bomBuffer[1] == 0xFE) || // UTF-16 LE
-                     (bomBuffer[0] == 0xFE && bomBuffer[1] == 0xFF));  // UTF-16 BE
-
                 var readerOptions = new JsonReaderOptions
                 {
                     AllowTrailingCommas = true,
                     CommentHandling = JsonCommentHandling.Skip
                 };
 
-                if (isUtf16)
+                // Use StreamReader with BOM detection to determine the encoding
+                using var streamReader = new StreamReader(globalJsonPath, detectEncodingFromByteOrderMarks: true);
+                streamReader.Peek(); // trigger BOM detection without consuming content
+
+                if (streamReader.CurrentEncoding is UTF8Encoding)
                 {
-                    // For UTF-16 encoded files, transcode to UTF-8 in memory
-                    // (global.json files are small so this is acceptable)
-                    using var streamReader = new StreamReader(fileStream, detectEncodingFromByteOrderMarks: true);
-                    var content = streamReader.ReadToEnd();
-                    using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-                    var reader = new Utf8JsonStreamReader(memStream, readerOptions);
+                    // UTF-8 (with or without BOM): stream the underlying file directly.
+                    // Utf8JsonStreamReader handles the UTF-8 BOM itself.
+                    streamReader.BaseStream.Seek(0, SeekOrigin.Begin);
+                    var reader = new Utf8JsonStreamReader(streamReader.BaseStream, readerOptions);
                     return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
                 }
                 else
                 {
-                    var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
+                    // For other encodings (e.g. UTF-16 LE/BE), transcode to UTF-8 in memory.
+                    // global.json files are small so this is acceptable.
+                    var content = streamReader.ReadToEnd();
+                    using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                    var reader = new Utf8JsonStreamReader(memStream, readerOptions);
                     return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
                 }
             }
