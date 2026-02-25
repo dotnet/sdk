@@ -2,7 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
+#if XUNIT_V3
+using Xunit.Sdk;
+#else
 using Xunit.Abstractions;
+#endif
 
 namespace Microsoft.TemplateEngine.Mocks
 {

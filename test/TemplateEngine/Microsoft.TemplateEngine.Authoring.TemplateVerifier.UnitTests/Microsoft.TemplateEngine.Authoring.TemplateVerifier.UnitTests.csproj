@@ -1,17 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>$(NetCurrent)</TargetFramework>
-  </PropertyGroup>
+  <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.Shared.props" />
 
   <ItemGroup>
     <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
-    <PackageReference Include="FakeItEasy" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,11 @@
 
 using System.Text;
 using Microsoft.Extensions.Logging;
+#if XUNIT_V3
+using Xunit;
+#else
 using Xunit.Abstractions;
+#endif
 
 namespace Microsoft.TemplateEngine.TestHelper
 {

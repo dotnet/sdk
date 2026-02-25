@@ -1,27 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Don't set IsTestUtilityProject=true because this project is referenced by tools and would otherwise be filtered out. -->
-  <PropertyGroup>
-    <TargetFrameworks>$(NetMinimum);$(NetFrameworkMinimum)</TargetFrameworks>
-    <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
-    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+  <Import Project="Microsoft.TemplateEngine.TestHelper.Shared.props" />
 
   <ItemGroup>
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" /> 
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="xunit.extensibility.execution" />
     <PackageReference Include="xunit.abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
 </Project>

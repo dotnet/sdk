@@ -6,7 +6,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+#if !XUNIT_V3
 using Xunit.Abstractions;
+#endif
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {

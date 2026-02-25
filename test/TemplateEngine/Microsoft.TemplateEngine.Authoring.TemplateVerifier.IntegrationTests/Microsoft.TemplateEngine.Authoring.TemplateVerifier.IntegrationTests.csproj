@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>$(NetCurrent)</TargetFramework>
-  </PropertyGroup>
+  <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.Shared.props" />
 
   <ItemGroup>
     <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
@@ -15,10 +13,6 @@
     <Compile Remove="Snapshots\**\*" />
     <Content Include="Snapshots\**\*" />
     <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
