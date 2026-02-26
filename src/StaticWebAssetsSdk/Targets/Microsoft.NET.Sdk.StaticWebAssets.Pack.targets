@@ -203,7 +203,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- We need to adjust the path for files without extension (LICENSE) for example. Otherwise, when they get packed, nuget creates an
          additional folder for the file. -->
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_PackStaticWebAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true" StaticWebAssetGroupDefinitions="@(StaticWebAssetGroupDefinition)">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_PackStaticWebAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 

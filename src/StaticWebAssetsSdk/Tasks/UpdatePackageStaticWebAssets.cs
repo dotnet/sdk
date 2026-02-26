@@ -31,6 +31,9 @@ public class UpdatePackageStaticWebAssets : Task
     [Output]
     public ITaskItem[] RemappedEndpoints { get; set; }
 
+    [Output]
+    public ITaskItem[] FilteredEndpoints { get; set; }
+
     public ITaskItem[] Endpoints { get; set; }
 
     public override bool Execute()
@@ -52,6 +55,9 @@ public class UpdatePackageStaticWebAssets : Task
                     if (!IsAssetIncludedByGroups(candidate))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        // Add to originalAssets so the target removes it from @(StaticWebAsset),
+                        // but do NOT add to updatedAssets so it doesn't get re-added.
+                        originalAssets.Add(candidate);
                         continue;
                     }
 
@@ -63,6 +69,7 @@ public class UpdatePackageStaticWebAssets : Task
                     if (!IsAssetIncludedByGroups(candidate))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        originalAssets.Add(candidate);
                         continue;
                     }
 
@@ -150,68 +157,39 @@ public class UpdatePackageStaticWebAssets : Task
     private void RemapEndpoints(Dictionary<string, string> assetMapping, HashSet<string> excludedAssetFiles)
     {
         var remappedEndpoints = new List<ITaskItem>();
+        var filteredEndpoints = new List<ITaskItem>();
 
-        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.Ordinal);
         foreach (var endpoint in Endpoints)
         {
-            var identity = endpoint.ItemSpec;
-            if (!endpointsByIdentity.TryGetValue(identity, out var group))
+            var assetFile = endpoint.GetMetadata("AssetFile");
+
+            // Exclude endpoints whose asset file was filtered out by group definitions
+            if (!string.IsNullOrEmpty(assetFile) && excludedAssetFiles.Contains(assetFile))
             {
-                group = new List<ITaskItem>();
-                endpointsByIdentity[identity] = group;
-            }
-            group.Add(endpoint);
-        }
-
-        foreach (var kvp in endpointsByIdentity)
-        {
-            var identity = kvp.Key;
-            var group = kvp.Value;
-
-            var groupExcluded = false;
-            var groupNeedsRemapping = false;
-
-            foreach (var endpoint in group)
-            {
-                var assetFile = endpoint.GetMetadata("AssetFile");
-                if (!string.IsNullOrEmpty(assetFile))
-                {
-                    if (excludedAssetFiles.Contains(assetFile))
-                    {
-                        groupExcluded = true;
-                        break;
-                    }
-                    if (assetMapping.ContainsKey(assetFile))
-                    {
-                        groupNeedsRemapping = true;
-                    }
-                }
-            }
-
-            if (groupExcluded)
-            {
-                Log.LogMessage(MessageImportance.Low, "Excluding endpoints for excluded asset group identity '{0}'.", identity);
+                Log.LogMessage(MessageImportance.Low, "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
+                    endpoint.ItemSpec, assetFile);
                 continue;
             }
 
-            if (groupNeedsRemapping)
+            // Remap endpoints for materialized framework assets
+            if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
             {
-                foreach (var endpoint in group)
-                {
-                    var newEndpoint = new TaskItem(endpoint);
-                    var assetFile = endpoint.GetMetadata("AssetFile");
-                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
-                    {
-                        newEndpoint.SetMetadata("AssetFile", newAssetFile);
-                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                            identity, assetFile, newAssetFile);
-                    }
-                    remappedEndpoints.Add(newEndpoint);
-                }
+                var newEndpoint = new TaskItem(endpoint);
+                newEndpoint.SetMetadata("AssetFile", newAssetFile);
+                Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
+                    endpoint.ItemSpec, assetFile, newAssetFile);
+                remappedEndpoints.Add(newEndpoint);
+                filteredEndpoints.Add(newEndpoint);
+            }
+            else
+            {
+                // Pass through unchanged
+                filteredEndpoints.Add(endpoint);
             }
         }
 
         RemappedEndpoints = [.. remappedEndpoints];
+        FilteredEndpoints = [.. filteredEndpoints];
     }
 
     private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)

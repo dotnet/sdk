@@ -18,8 +18,6 @@ public class ComputeStaticWebAssetsTargetPaths : Task
 
     public bool AdjustPathsForPack { get; set; }
 
-    public ITaskItem[] StaticWebAssetGroupDefinitions { get; set; }
-
     [Output]
     public ITaskItem[] AssetsWithTargetPath { get; set; }
 
@@ -35,15 +33,10 @@ public class ComputeStaticWebAssetsTargetPaths : Task
                 var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
                 var result = staticWebAsset.ToTaskItem();
 
-                var effectivePrefix = PathPrefix;
-                var groupPrefix = ComputeGroupPathPrefix(Assets[i]);
-                if (!string.IsNullOrEmpty(groupPrefix))
-                {
-                    effectivePrefix = PathPrefix + Path.DirectorySeparatorChar + groupPrefix;
-                }
-
+                // The ~group token in RelativePath resolves to the directory prefix automatically
+                // via ComputeTargetPath with token resolver, so no separate group prefix is needed.
                 var targetPath = staticWebAsset.ComputeTargetPath(
-                    effectivePrefix,
+                    PathPrefix,
                     UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance);
 
                 if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
@@ -64,59 +57,4 @@ public class ComputeStaticWebAssetsTargetPaths : Task
         return !Log.HasLoggedErrors;
     }
 
-    private string ComputeGroupPathPrefix(ITaskItem asset)
-    {
-        if (StaticWebAssetGroupDefinitions == null || StaticWebAssetGroupDefinitions.Length == 0)
-        {
-            return "";
-        }
-
-        var assetGroups = asset.GetMetadata("AssetGroups") ?? "";
-        if (string.IsNullOrEmpty(assetGroups))
-        {
-            return "";
-        }
-
-        var groupEntries = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-        var groupValues = new List<(int Order, string Value)>();
-
-        foreach (var entry in groupEntries)
-        {
-            var eqIndex = entry.IndexOf('=');
-            if (eqIndex <= 0)
-            {
-                continue;
-            }
-            var groupName = entry.Substring(0, eqIndex);
-            var groupValue = entry.Substring(eqIndex + 1);
-
-            foreach (var def in StaticWebAssetGroupDefinitions)
-            {
-                var defName = def.ItemSpec;
-                var defValue = def.GetMetadata("Value");
-                var includeInPath = def.GetMetadata("IncludeGroupValueInPackagePath");
-
-                if (string.Equals(defName, groupName, StringComparison.Ordinal) &&
-                    string.Equals(defValue, groupValue, StringComparison.Ordinal) &&
-                    string.Equals(includeInPath, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    var orderStr = def.GetMetadata("Order");
-                    if (!int.TryParse(orderStr, out var order))
-                    {
-                        order = 0;
-                    }
-                    groupValues.Add((order, groupValue));
-                    break;
-                }
-            }
-        }
-
-        if (groupValues.Count == 0)
-        {
-            return "";
-        }
-
-        groupValues.Sort((a, b) => a.Order.CompareTo(b.Order));
-        return string.Join(Path.DirectorySeparatorChar.ToString(), groupValues.Select(g => g.Value));
-    }
 }

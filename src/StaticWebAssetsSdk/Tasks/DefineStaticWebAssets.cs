@@ -87,10 +87,9 @@ public partial class DefineStaticWebAssets : Task
             var outputs = assetsCache.GetComputedOutputs();
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
-
-            return !Log.HasLoggedErrors;
         }
-
+        else
+        {
         try
         {
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
@@ -318,15 +317,17 @@ public partial class DefineStaticWebAssets : Task
 
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
-
-            if (StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
-            {
-                ApplyGroupDefinitions();
-            }
         }
         catch (Exception ex)
         {
             Log.LogError(ex.ToString());
+        }
+        }
+
+        if (!Log.HasLoggedErrors && StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
+        {
+            Log.LogMessage(MessageImportance.High, "Applying group definitions. Definitions count: {0}, Assets count: {1}", StaticWebAssetGroupDefinitions.Length, Assets.Length);
+            ApplyGroupDefinitions();
         }
 
         return !Log.HasLoggedErrors;
@@ -654,7 +655,6 @@ public partial class DefineStaticWebAssets : Task
         {
             var asset = StaticWebAsset.FromTaskItem(Assets[i]);
             var currentRelativePath = asset.RelativePath;
-            var currentContentRoot = asset.ContentRoot;
             var groupEntries = new List<string>();
 
             foreach (var (name, value, order, includeMatcher, excludeMatcher, relativePathMatcher) in definitions)
@@ -698,7 +698,7 @@ public partial class DefineStaticWebAssets : Task
                 }
 
                 groupEntries.Add(name + "=" + value);
-                Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, value);
+                Log.LogMessage(MessageImportance.High, "Tagged asset '{0}' (RelativePath='{1}') with group '{2}={3}'.", asset.Identity, currentRelativePath, name, value);
 
                 if (relativePathMatcher != null)
                 {
@@ -710,14 +710,18 @@ public partial class DefineStaticWebAssets : Task
                         var strippedPrefix = pathWithoutTokens.Substring(0, pathWithoutTokens.Length - rpMatch.Stem.Length);
                         // Use the prefix length to substring the tokenized path, preserving fingerprint tokens
                         var newRelativePath = StaticWebAsset.Normalize(currentRelativePath.Substring(strippedPrefix.Length));
-                        var newContentRoot = Path.Combine(currentContentRoot, strippedPrefix.Replace('/', Path.DirectorySeparatorChar));
-                        newContentRoot = StaticWebAsset.NormalizeContentRootPath(newContentRoot);
 
-                        Log.LogMessage(MessageImportance.Low, "Group '{0}={1}' transformed RelativePath from '{2}' to '{3}', ContentRoot from '{4}' to '{5}'.",
-                            name, value, currentRelativePath, newRelativePath, currentContentRoot, newContentRoot);
+                        // Inject a file-only (~) token to encode the group membership in the RelativePath.
+                        // The embedded value is the directory prefix (strippedPrefix), so that file path resolution
+                        // maps back to the physical file. The AssetGroups metadata carries the logical group value.
+                        // Example: V4/css/site.css → #[{BootstrapVersion=V4}/]~css/site.css
+                        var tokenExpression = $"#[{{{name}={strippedPrefix.TrimEnd('/')}}}/" + "]~";
+                        newRelativePath = tokenExpression + newRelativePath;
+
+                        Log.LogMessage(MessageImportance.High, "Group '{0}={1}' transformed RelativePath from '{2}' to '{3}'.",
+                            name, value, currentRelativePath, newRelativePath);
 
                         currentRelativePath = newRelativePath;
-                        currentContentRoot = newContentRoot;
                     }
                 }
             }
@@ -726,7 +730,6 @@ public partial class DefineStaticWebAssets : Task
             {
                 asset.AssetGroups = string.Join(";", groupEntries);
                 asset.RelativePath = currentRelativePath;
-                asset.ContentRoot = currentContentRoot;
                 Assets[i] = asset.ToTaskItem();
             }
         }

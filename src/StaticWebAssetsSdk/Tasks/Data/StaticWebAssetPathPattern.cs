@@ -19,6 +19,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     private const char PatternEnd = ']';
     private const char PatternOptional = '?';
     private const char PatternPreferred = '!';
+    private const char PatternFileOnly = '~';
     private const char PatternValueSeparator = '=';
     private const char PatternParameterStart = '{';
     private const char PatternParameterEnd = '}';
@@ -111,14 +112,23 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             AddTokenSegmentParts(tokenExpression, token);
             pattern.Segments.Add(token);
 
-            // Check if the segment is optional (ends with ? or !)
+            // Check if the segment is optional (ends with ? or !) or file-only (ends with ~)
             if (tokenEnd < current.Length - 1 &&
-                (current.Span[tokenEnd + 1] == PatternOptional || current.Span[tokenEnd + 1] == PatternPreferred))
+                (current.Span[tokenEnd + 1] == PatternOptional || current.Span[tokenEnd + 1] == PatternPreferred || current.Span[tokenEnd + 1] == PatternFileOnly))
             {
-                token.IsOptional = true;
-                if (current.Span[tokenEnd + 1] == PatternPreferred)
+                if (current.Span[tokenEnd + 1] == PatternFileOnly)
                 {
+                    token.IsOptional = true;
                     token.IsPreferred = true;
+                    token.IsFileOnly = true;
+                }
+                else
+                {
+                    token.IsOptional = true;
+                    if (current.Span[tokenEnd + 1] == PatternPreferred)
+                    {
+                        token.IsPreferred = true;
+                    }
                 }
                 tokenEnd++;
             }
@@ -241,6 +251,25 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                 foreach (var tokenName in tokenNames)
                 {
                     var tokenNameString = tokenName.ToString();
+
+                    // Check if any part has an embedded value for this token (e.g., {name=value}).
+                    // Embedded values take precedence and don't require the resolver.
+                    var hasEmbeddedValue = false;
+                    foreach (var part in segment.Parts)
+                    {
+                        if (!part.IsLiteral && part.Name.Span.SequenceEqual(tokenName.Span) && !part.Value.IsEmpty)
+                        {
+                            hasEmbeddedValue = true;
+                            dictionary[tokenNameString] = part.Value.ToString();
+                            break;
+                        }
+                    }
+
+                    if (hasEmbeddedValue)
+                    {
+                        continue;
+                    }
+
                     if (!tokens.TryGetValue(staticWebAsset, tokenNameString, out var tokenValue) || string.IsNullOrEmpty(tokenValue))
                     {
                         foundAllValues = false;
@@ -322,6 +351,12 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         for (var i = 0; i < Segments.Count; i++)
         {
             var segment = Segments[i];
+            if (segment.IsFileOnly)
+            {
+                // File-only segments (~) are never included in endpoint routes.
+                // Skip them entirely — don't fork, don't add.
+                continue;
+            }
             if (IsLiteralSegment(segment) || !segment.IsOptional)
             {
                 if (expandedPatternSegments.Count == 0)
@@ -451,7 +486,11 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             if (!isLiteral)
             {
                 stringBuilder.Append(PatternEnd);
-                if (segment.IsOptional)
+                if (segment.IsFileOnly)
+                {
+                    stringBuilder.Append(PatternFileOnly);
+                }
+                else if (segment.IsOptional)
                 {
                     if (segment.IsPreferred)
                     {
