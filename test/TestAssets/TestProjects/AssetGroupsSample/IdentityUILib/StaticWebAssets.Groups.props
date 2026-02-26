@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap5</IdentityUIFrameworkVersion>
+    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">V5</IdentityUIFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <StaticWebAssetGroup Include="BootstrapVersion" Value="$(IdentityUIFrameworkVersion)" SourceId="IdentityUILib" />

@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="Bootstrap5" Order="0" IncludePattern="V5/**" RelativePathPattern="V5/**" IncludeGroupValueInPackagePath="true" />
-    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="Bootstrap4" Order="0" IncludePattern="V4/**" RelativePathPattern="V4/**" IncludeGroupValueInPackagePath="true" />
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V5" Order="0" IncludePattern="V5/**" RelativePathPattern="V5/**" IncludeGroupValueInPackagePath="true" />
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V4" Order="0" IncludePattern="V4/**" RelativePathPattern="V4/**" IncludeGroupValueInPackagePath="true" />
   </ItemGroup>
 
   <ItemGroup>

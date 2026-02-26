@@ -697,9 +697,6 @@ public partial class DefineStaticWebAssets : Task
                     continue;
                 }
 
-                groupEntries.Add(name + "=" + value);
-                Log.LogMessage(MessageImportance.High, "Tagged asset '{0}' (RelativePath='{1}') with group '{2}={3}'.", asset.Identity, currentRelativePath, name, value);
-
                 if (relativePathMatcher != null)
                 {
                     matchContext.SetPathAndReinitialize(pathWithoutTokens);
@@ -711,18 +708,27 @@ public partial class DefineStaticWebAssets : Task
                         // Use the prefix length to substring the tokenized path, preserving fingerprint tokens
                         var newRelativePath = StaticWebAsset.Normalize(currentRelativePath.Substring(strippedPrefix.Length));
 
+                        // Use the stripped prefix as the group value in AssetGroups.
+                        // The resolver resolves {name} by reading AssetGroups metadata on the asset.
+                        groupEntries.Add(name + "=" + strippedPrefix.TrimEnd('/'));
+                        Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, strippedPrefix.TrimEnd('/'));
+
                         // Inject a file-only (~) token to encode the group membership in the RelativePath.
-                        // The embedded value is the directory prefix (strippedPrefix), so that file path resolution
-                        // maps back to the physical file. The AssetGroups metadata carries the logical group value.
-                        // Example: V4/css/site.css → #[{BootstrapVersion=V4}/]~css/site.css
-                        var tokenExpression = $"#[{{{name}={strippedPrefix.TrimEnd('/')}}}/" + "]~";
+                        // Example: V4/css/site.css → #[{BootstrapVersion}/]~css/site.css
+                        var tokenExpression = "#[{" + name + "}/]~";
                         newRelativePath = tokenExpression + newRelativePath;
 
-                        Log.LogMessage(MessageImportance.High, "Group '{0}={1}' transformed RelativePath from '{2}' to '{3}'.",
-                            name, value, currentRelativePath, newRelativePath);
+                        Log.LogMessage(MessageImportance.Low, "Group '{0}' transformed RelativePath from '{1}' to '{2}'.",
+                            name, currentRelativePath, newRelativePath);
 
                         currentRelativePath = newRelativePath;
                     }
+                }
+                else
+                {
+                    // No path stripping — just tag with the group definition's Value.
+                    groupEntries.Add(name + "=" + value);
+                    Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, value);
                 }
             }
 
