@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
@@ -116,6 +117,100 @@ public class RuntimeInstallTests
 
         error.Should().NotBeNull();
         error.Should().Contain("Version is required");
+    }
+
+    #endregion
+
+    #region Manifest Checksum Tests
+
+    [Fact]
+    public void ManifestChecksum_WrittenOnCreate()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        _ = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        File.Exists(checksumPath).Should().BeTrue("checksum sidecar should be created with manifest");
+        File.ReadAllText(checksumPath).Trim().Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void ManifestChecksum_UpdatedOnWrite()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        var checksumBefore = File.ReadAllText(checksumPath).Trim();
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK));
+        }
+
+        var checksumAfter = File.ReadAllText(checksumPath).Trim();
+        checksumAfter.Should().NotBe(checksumBefore, "checksum should change after add");
+    }
+
+    [Fact]
+    public void ManifestCorrupted_WithValidChecksum_ThrowsLocalManifestCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Write valid manifest, then corrupt the content without updating the checksum.
+        // This simulates a scenario where dotnetup wrote the file but it got corrupted
+        // (e.g., disk error, partial write).
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        var originalContent = File.ReadAllText(testEnv.ManifestPath);
+        var originalChecksum = File.ReadAllText(checksumPath);
+
+        // Write corrupt JSON that still matches the stored checksum (impossible naturally,
+        // so instead: write corrupt JSON, then rewrite checksum of the corrupt content)
+        var corruptContent = "NOT VALID JSON {{{";
+        File.WriteAllText(testEnv.ManifestPath, corruptContent);
+
+        // Compute and write checksum of corrupt content to simulate dotnetup having written it
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(corruptContent));
+        File.WriteAllText(checksumPath, Convert.ToHexString(hash));
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestCorrupted,
+            "checksum matches corrupt content → product error");
+    }
+
+    [Fact]
+    public void ManifestCorrupted_WithMismatchedChecksum_ThrowsLocalManifestUserCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Manifest was written by dotnetup (checksum exists), then user edits the file
+        File.WriteAllText(testEnv.ManifestPath, "user broke this {[}");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "checksum doesn't match user-edited content → user error");
+    }
+
+    [Fact]
+    public void ManifestCorrupted_WithNoChecksum_ThrowsLocalManifestUserCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Delete checksum file and corrupt manifest — simulates user-created manifest
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        File.Delete(checksumPath);
+        File.WriteAllText(testEnv.ManifestPath, "garbage data");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "no checksum file → assume external edit → user error");
     }
 
     #endregion

@@ -51,6 +51,12 @@ public sealed class DotnetupTelemetry : IDisposable
     public bool Enabled { get; }
 
     /// <summary>
+    /// Gets the last recorded error info. Used to propagate error tags
+    /// from a command activity to the root activity.
+    /// </summary>
+    public ExceptionErrorInfo? LastErrorInfo { get; private set; }
+
+    /// <summary>
     /// Gets the current session ID.
     /// </summary>
     public string SessionId { get; }
@@ -89,13 +95,12 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ConnectionString = ConnectionString;
             });
 
-#if DEBUG
-            // Console exporter for local debugging
+            // Console exporter for local debugging / E2E test verification.
+            // Set DOTNETUP_TELEMETRY_DEBUG=1 to enable.
             if (Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1")
             {
                 builder.AddConsoleExporter();
             }
-#endif
 
             _tracerProvider = builder.Build();
         }
@@ -148,6 +153,33 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
+        LastErrorInfo = errorInfo;
+    }
+
+    /// <summary>
+    /// Applies the last recorded error info to the given activity.
+    /// Call this on the root activity after a command fails, so the root span
+    /// also carries error tags for workbook queries that look at all spans.
+    /// </summary>
+    /// <param name="activity">The activity to apply error tags to (typically the root activity).</param>
+    public void ApplyLastErrorToActivity(Activity? activity)
+    {
+        if (activity == null || LastErrorInfo == null)
+        {
+            return;
+        }
+
+        ErrorCodeMapper.ApplyErrorTags(activity, LastErrorInfo);
+    }
+
+    /// <summary>
+    /// Sets the last error info directly. Use this for non-exception error paths
+    /// (e.g., <see cref="CommandBase.RecordFailure"/>) that need to propagate
+    /// error tags to the root span.
+    /// </summary>
+    public void SetLastErrorInfo(ExceptionErrorInfo errorInfo)
+    {
+        LastErrorInfo = errorInfo;
     }
 
     /// <summary>

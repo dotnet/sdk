@@ -139,8 +139,14 @@ internal static class DotnetupTestUtilities
     /// </summary>
     /// <param name="args">Command line arguments for dotnetup</param>
     /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <param name="workingDirectory">Working directory for the process</param>
+    /// <param name="environmentVariables">Additional environment variables to set on the process</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    public static (int exitCode, string output) RunDotnetupProcess(
+        string[] args,
+        bool captureOutput = false,
+        string? workingDirectory = null,
+        Dictionary<string, string>? environmentVariables = null)
     {
         string dotnetupPath = GetDotnetupExecutablePath();
 
@@ -155,6 +161,15 @@ internal static class DotnetupTestUtilities
 
         // Suppress the .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Apply any additional environment variables
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                process.StartInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
 
         StringBuilder outputBuilder = new();
         if (captureOutput)

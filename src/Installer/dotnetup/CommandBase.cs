@@ -47,6 +47,16 @@ public abstract class CommandBase
             AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
             return 1;
         }
+        catch (Exception ex)
+        {
+            // Unexpected errors - still record telemetry so error_type is populated
+            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+#if DEBUG
+            Console.Error.WriteLine(ex.StackTrace);
+#endif
+            return 1;
+        }
         finally
         {
             _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
@@ -91,6 +101,14 @@ public abstract class CommandBase
         {
             _commandActivity?.SetTag(TelemetryTagNames.ErrorMessage, message);
         }
+
+        // Also set LastErrorInfo so the error propagates to the root span
+        // via ApplyLastErrorToActivity in Program.cs.
+        var errorCategory = string.Equals(category, "user", StringComparison.OrdinalIgnoreCase)
+            ? ErrorCategory.User
+            : ErrorCategory.Product;
+        DotnetupTelemetry.Instance.SetLastErrorInfo(
+            new ExceptionErrorInfo(reason, errorCategory, Details: message));
     }
 
     /// <summary>

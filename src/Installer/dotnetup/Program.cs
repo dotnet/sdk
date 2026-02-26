@@ -34,6 +34,14 @@ internal class DotnetupProgram
             var result = Parser.Invoke(args);
             rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
             rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+
+            // Propagate error tags from the command activity to the root span
+            // so workbook queries on either span see error.type, error.category, etc.
+            if (result != 0)
+            {
+                DotnetupTelemetry.Instance.ApplyLastErrorToActivity(rootActivity);
+            }
+
             return result;
         }
         catch (Exception ex)
@@ -51,6 +59,11 @@ internal class DotnetupProgram
         }
         finally
         {
+            // Stop the root activity before flushing so the console/Azure Monitor
+            // exporters see it.  The 'using' dispose that follows is a no-op on
+            // an already-stopped Activity.
+            rootActivity?.Stop();
+
             // Ensure telemetry is flushed before exit
             DotnetupTelemetry.Instance.Flush();
             DotnetupTelemetry.Instance.Dispose();

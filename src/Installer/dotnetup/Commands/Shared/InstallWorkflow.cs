@@ -67,6 +67,20 @@ internal class InstallWorkflow
             Console.Error.WriteLine(error);
             Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "context_resolution_failed");
             Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
+            DotnetupTelemetry.Instance.SetLastErrorInfo(
+                new ExceptionErrorInfo("context_resolution_failed", ErrorCategory.User));
+            return new InstallWorkflowResult(1, null);
+        }
+
+        // Block install paths that point to existing files (not directories)
+        if (File.Exists(context.InstallPath))
+        {
+            Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is an existing file, not a directory. " +
+                "Please specify a directory path for the installation.");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "install_path_is_file");
+            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
+            DotnetupTelemetry.Instance.SetLastErrorInfo(
+                new ExceptionErrorInfo("install_path_is_file", ErrorCategory.User));
             return new InstallWorkflowResult(1, null);
         }
 
@@ -80,6 +94,8 @@ internal class InstallWorkflow
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
             Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
+            DotnetupTelemetry.Instance.SetLastErrorInfo(
+                new ExceptionErrorInfo("admin_path_blocked", ErrorCategory.User));
             return new InstallWorkflowResult(1, null);
         }
 

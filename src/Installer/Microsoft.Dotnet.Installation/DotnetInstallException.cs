@@ -58,6 +58,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The dotnetup installation manifest is corrupted.</summary>
     LocalManifestCorrupted,
+
+    /// <summary>The dotnetup installation manifest was modified externally and is now corrupted.</summary>
+    LocalManifestUserCorrupted,
 }
 
 /// <summary>

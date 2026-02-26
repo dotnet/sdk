@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Dotnet.Installation;
@@ -222,5 +223,170 @@ public class ErrorCodeMapperTests
     private class CustomTestException : Exception
     {
         public CustomTestException(string message) : base(message) { }
+    }
+}
+
+/// <summary>
+/// Tests that error info is correctly propagated from command-level spans
+/// to root-level spans, ensuring the telemetry workbook can see error.type
+/// regardless of which span it queries.
+/// </summary>
+public class ErrorPropagationTests : IDisposable
+{
+    private readonly ActivitySource _testSource = new("Test.ErrorPropagation");
+    private readonly ActivityListener _listener;
+    private readonly List<Activity> _capturedActivities = new();
+
+    public ErrorPropagationTests()
+    {
+        _listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Test.ErrorPropagation",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => _capturedActivities.Add(activity)
+        };
+        ActivitySource.AddActivityListener(_listener);
+    }
+
+    public void Dispose()
+    {
+        _listener.Dispose();
+        _testSource.Dispose();
+    }
+
+    [Fact]
+    public void ErrorInfo_CanBePropagated_FromCommandSpanToRootSpan()
+    {
+        // Simulate the two-span architecture: root "dotnetup" + child "command/sdk/install"
+        using var rootActivity = _testSource.StartActivity("dotnetup", ActivityKind.Internal)!;
+        using var commandActivity = _testSource.StartActivity("command/sdk/install", ActivityKind.Internal)!;
+
+        // Exception occurs during command execution
+        var ex = new IOException("Disk full", unchecked((int)0x80070070));
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+
+        // Step 1: Error tags applied to command span (as CommandBase does)
+        ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
+
+        // Step 2: Same error info propagated to root span (as Program.Main now does)
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
+
+        // Both spans should now carry identical error tags
+        Assert.Equal("DiskFull", commandActivity.GetTagItem("error.type"));
+        Assert.Equal("DiskFull", rootActivity.GetTagItem("error.type"));
+
+        Assert.Equal("user", commandActivity.GetTagItem("error.category"));
+        Assert.Equal("user", rootActivity.GetTagItem("error.category"));
+
+        Assert.Equal(unchecked((int)0x80070070), commandActivity.GetTagItem("error.hresult"));
+        Assert.Equal(unchecked((int)0x80070070), rootActivity.GetTagItem("error.hresult"));
+
+        Assert.Equal("ERROR_DISK_FULL", commandActivity.GetTagItem("error.details"));
+        Assert.Equal("ERROR_DISK_FULL", rootActivity.GetTagItem("error.details"));
+    }
+
+    [Fact]
+    public void ErrorInfo_PropagatedToRootSpan_IncludesStackTrace()
+    {
+        using var rootActivity = _testSource.StartActivity("dotnetup")!;
+
+        // Create an exception with a real stack trace
+        Exception thrownEx;
+        try
+        {
+            throw new InvalidOperationException("assertion failed in mutex");
+        }
+        catch (Exception ex)
+        {
+            thrownEx = ex;
+        }
+
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(thrownEx);
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
+
+        Assert.Equal("InvalidOperation", rootActivity.GetTagItem("error.type"));
+        Assert.Equal("product", rootActivity.GetTagItem("error.category"));
+
+        var stackTrace = rootActivity.GetTagItem("error.stack_trace") as string;
+        Assert.NotNull(stackTrace);
+        Assert.Contains("ErrorInfo_PropagatedToRootSpan_IncludesStackTrace", stackTrace);
+    }
+
+    [Fact]
+    public void ErrorInfo_HttpError_PropagatedToRootSpan_IncludesStatusCode()
+    {
+        using var rootActivity = _testSource.StartActivity("dotnetup")!;
+        using var commandActivity = _testSource.StartActivity("command/sdk/install")!;
+
+        var ex = new HttpRequestException("Not found", null, HttpStatusCode.NotFound);
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+
+        ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
+
+        // Both spans carry the HTTP status
+        Assert.Equal(404, commandActivity.GetTagItem("error.http_status"));
+        Assert.Equal(404, rootActivity.GetTagItem("error.http_status"));
+
+        Assert.Equal("Http404", commandActivity.GetTagItem("error.type"));
+        Assert.Equal("Http404", rootActivity.GetTagItem("error.type"));
+    }
+
+    [Fact]
+    public void ErrorInfo_UserError_PropagatedToRootSpan_PreservesCategory()
+    {
+        using var rootActivity = _testSource.StartActivity("dotnetup")!;
+
+        var errorInfo = new ExceptionErrorInfo("InvalidVersion", ErrorCategory.User, Details: "user typed garbage");
+
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
+
+        Assert.Equal("user", rootActivity.GetTagItem("error.category"));
+        Assert.Equal("InvalidVersion", rootActivity.GetTagItem("error.type"));
+    }
+
+    [Fact]
+    public void RootSpan_WithoutPropagation_HasNoErrorTags()
+    {
+        // Verifies the problem scenario: if error is only on command span,
+        // root span has no error tags.
+        using var rootActivity = _testSource.StartActivity("dotnetup")!;
+        using var commandActivity = _testSource.StartActivity("command/sdk/install")!;
+
+        var ex = new IOException("Disk full", unchecked((int)0x80070070));
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+
+        // Only apply to command span
+        ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
+
+        // Root span should NOT have error tags
+        Assert.Null(rootActivity.GetTagItem("error.type"));
+        Assert.Null(rootActivity.GetTagItem("error.category"));
+
+        // Command span should have them
+        Assert.Equal("DiskFull", commandActivity.GetTagItem("error.type"));
+    }
+
+    [Fact]
+    public void GetErrorInfo_IsReusable_AcrossMultipleActivities()
+    {
+        // Verifies that the same ExceptionErrorInfo can be applied to multiple spans
+        using var activity1 = _testSource.StartActivity("span1")!;
+        using var activity2 = _testSource.StartActivity("span2")!;
+        using var activity3 = _testSource.StartActivity("span3")!;
+
+        var errorInfo = new ExceptionErrorInfo("TestError", ErrorCategory.Product, StatusCode: 500, Details: "server error");
+
+        ErrorCodeMapper.ApplyErrorTags(activity1, errorInfo);
+        ErrorCodeMapper.ApplyErrorTags(activity2, errorInfo);
+        ErrorCodeMapper.ApplyErrorTags(activity3, errorInfo);
+
+        // All three should have identical tags
+        foreach (var activity in new[] { activity1, activity2, activity3 })
+        {
+            Assert.Equal("TestError", activity.GetTagItem("error.type"));
+            Assert.Equal("product", activity.GetTagItem("error.category"));
+            Assert.Equal(500, activity.GetTagItem("error.http_status"));
+        }
     }
 }

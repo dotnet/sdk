@@ -43,6 +43,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product,
+            DotnetInstallErrorCode.LocalManifestUserCorrupted => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

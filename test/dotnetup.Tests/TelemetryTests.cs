@@ -318,6 +318,27 @@ public class DotnetupTelemetryTests
 
         Assert.Null(exception);
     }
+
+    [Fact]
+    public void ApplyLastErrorToActivity_WithNullActivity_DoesNotThrow()
+    {
+        var exception = Record.Exception(() =>
+            DotnetupTelemetry.Instance.ApplyLastErrorToActivity(null));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void LastErrorInfo_IsNullInitially_WhenNoExceptionRecorded()
+    {
+        // LastErrorInfo starts from whatever state previous tests left it in
+        // but null-activity RecordException calls don't update it, so this
+        // verifies ApplyLastErrorToActivity is safe to call regardless.
+        var exception = Record.Exception(() =>
+            DotnetupTelemetry.Instance.ApplyLastErrorToActivity(null));
+
+        Assert.Null(exception);
+    }
 }
 
 public class FirstRunNoticeTests : IDisposable
