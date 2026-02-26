@@ -22,6 +22,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>10.0.0-preview.26118.105</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.5.0-2.26118.105</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.5.0-2.26118.105</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion>5.5.0-2.26118.105</MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion>
     <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26118.105</MicrosoftDotNetArcadeSdkPackageVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26118.105</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26118.105</MicrosoftDotNetBuildTasksTemplatingPackageVersion>

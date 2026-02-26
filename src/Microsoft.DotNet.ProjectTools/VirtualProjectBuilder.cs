@@ -211,6 +211,23 @@ public sealed class VirtualProjectBuilder
             : CSharpDirective.IncludeOrExclude.DefaultMapping;
     }
 
+    public static ProjectInstance CreateProjectInstance(
+        string entryPointFilePath,
+        string targetFramework,
+        ProjectCollection projectCollection,
+        Action<string, int, string> errorReporter)
+    {
+        var builder = new VirtualProjectBuilder(entryPointFilePath, targetFramework);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
+            out var projectInstance,
+            out _);
+
+        return projectInstance;
+    }
+
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter reportError,

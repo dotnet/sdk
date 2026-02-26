@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Path.Combine(testAsset.Path, "Directory.Build.props"),
                 src => src.Replace("<AllowUnsafeBlocks>false</AllowUnsafeBlocks>", "<AllowUnsafeBlocks>true</AllowUnsafeBlocks>"));
 
-            await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
 
             App.Process.ClearOutput();
@@ -622,6 +622,37 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("<Updated>");
         }
 
+        [Theory]
+        [InlineData("PublishAot", "True")]
+        [InlineData("PublishTrimmed", "True")]
+        [InlineData("StartupHookSupport", "False")]
+        public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse($"<{propertyName}>{propertyValue}</{propertyName}>"));
+                });
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, ["--non-interactive"]);
+
+            await App.WaitForOutputLineContaining($"[WatchHotReloadApp ({tfm})] " + MessageDescriptor.ProjectDoesNotSupportHotReload.GetMessage($"'{propertyName}' property is '{propertyValue}'"));
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
+
+            await App.WaitForOutputLineContaining($"[auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
+            await App.WaitForOutputLineContaining("<updated>");
+        }
+
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
@@ -651,9 +682,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             [<EntryPoint>]
             let main argv =
-                while true do
-                    printfn "Waiting"
-                    Thread.Sleep(200)
+                printfn "Waiting"
+                Thread.Sleep(Timeout.Infinite)
                 0
             """;
 
@@ -661,7 +691,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             File.WriteAllText(sourcePath, source);
 
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--non-interactive"]);
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
@@ -896,7 +926,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputDoesNotContain("🕵️");
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
@@ -951,7 +981,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
 
             App.SendControlR();
 
@@ -985,7 +1015,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
             App.Process.ClearOutput();
 
             var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");
@@ -998,7 +1028,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             UpdateSourceFile(scopedCssPath, newCss);
             await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
-            await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
 
             await App.WaitUntilOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/RazorClassLibrary.bundle.scp.css"));
             App.Process.ClearOutput();
@@ -1007,7 +1037,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
 
             await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
-            await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
 
             await App.WaitUntilOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));
             App.Process.ClearOutput();
@@ -1052,7 +1082,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
             await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
-            await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
             App.Process.ClearOutput();
 
             // update scoped css:
@@ -1061,7 +1091,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
             await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
-            await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
@@ -1233,9 +1263,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
             // wait until after all DCP sessions have started:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Session started");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
             // MigrationService terminated:
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
@@ -1291,7 +1321,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
-            await App.WaitUntilOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
+            await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
+
+            // Wait for the process to start before shutting down, so we can reliably verify Exited message below.
+            // The agent startup hook might not be initialized yet (signal handlers registered),
+            // so the process might need to be forcefully killed. We could wait until the agent is initialized
+            // but it's good to test this scenario.
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, $"WatchAspire.ApiService ({tfm})");
+
             App.Process.ClearOutput();
 
             App.SendControlC();
@@ -1304,9 +1341,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #1");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #2");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Stop session #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Sending 'sessionTerminated'");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
@@ -1326,7 +1363,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
             await App.WaitUntilOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
@@ -1334,7 +1371,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
 
             // wait until after DCP sessions have been started for all projects:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
             App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
 
@@ -1344,7 +1381,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
             await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
             App.AssertOutputDoesNotContain("⚠");
 
