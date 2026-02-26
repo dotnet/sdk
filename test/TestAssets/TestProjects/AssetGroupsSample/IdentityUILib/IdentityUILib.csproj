@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <Copyright>© Microsoft</Copyright>
     <Product>Asset Groups Test</Product>
@@ -11,7 +11,7 @@
 
     <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
 
-    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageOutputPath>$(MSBuildProjectDirectory)\..\packages</PackageOutputPath>
     <PackageVersion>1.0.0</PackageVersion>
   </PropertyGroup>
 

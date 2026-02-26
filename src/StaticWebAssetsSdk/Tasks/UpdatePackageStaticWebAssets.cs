@@ -20,6 +20,8 @@ public class UpdatePackageStaticWebAssets : Task
 
     public string ProjectBasePath { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedAssets { get; set; }
 
@@ -38,6 +40,7 @@ public class UpdatePackageStaticWebAssets : Task
             var originalAssets = new List<ITaskItem>();
             var updatedAssets = new List<ITaskItem>();
             var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
+            var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
 
             for (var i = 0; i < Assets.Length; i++)
             {
@@ -46,11 +49,23 @@ public class UpdatePackageStaticWebAssets : Task
 
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
+                    if (!IsAssetIncludedByGroups(candidate))
+                    {
+                        excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        continue;
+                    }
+
                     originalAssets.Add(candidate);
                     updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
+                    if (!IsAssetIncludedByGroups(candidate))
+                    {
+                        excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        continue;
+                    }
+
                     originalAssets.Add(candidate);
                     var (transformed, oldPath) = MaterializeFrameworkAsset(candidate);
                     if (transformed != null)
@@ -64,9 +79,9 @@ public class UpdatePackageStaticWebAssets : Task
             OriginalAssets = [.. originalAssets];
             UpdatedAssets = [.. updatedAssets];
 
-            if (Endpoints != null && assetMapping.Count > 0)
+            if (Endpoints != null && (assetMapping.Count > 0 || excludedAssetFiles.Count > 0))
             {
-                RemapEndpoints(assetMapping);
+                RemapEndpoints(assetMapping, excludedAssetFiles);
             }
         }
         catch (Exception ex)
@@ -77,7 +92,62 @@ public class UpdatePackageStaticWebAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private void RemapEndpoints(Dictionary<string, string> assetMapping)
+    private bool IsAssetIncludedByGroups(ITaskItem candidate)
+    {
+        var assetGroups = candidate.GetMetadata("AssetGroups");
+        if (string.IsNullOrEmpty(assetGroups))
+        {
+            return true;
+        }
+
+        if (StaticWebAssetGroups == null || StaticWebAssetGroups.Length == 0)
+        {
+            return true;
+        }
+
+        var groupEntries = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        var assetGroupDict = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in groupEntries)
+        {
+            var eqIndex = entry.IndexOf('=');
+            if (eqIndex > 0)
+            {
+                var name = entry.Substring(0, eqIndex);
+                var value = entry.Substring(eqIndex + 1);
+                assetGroupDict[name] = value;
+            }
+        }
+
+        var sourceId = candidate.GetMetadata(nameof(StaticWebAsset.SourceId));
+
+        foreach (var group in StaticWebAssetGroups)
+        {
+            var groupName = group.ItemSpec;
+            var groupValue = group.GetMetadata("Value");
+            var groupSourceId = group.GetMetadata("SourceId");
+
+            if (!string.IsNullOrEmpty(groupSourceId) &&
+                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (assetGroupDict.TryGetValue(groupName, out var assetValue))
+            {
+                if (!string.Equals(assetValue, groupValue, StringComparison.Ordinal))
+                {
+                    Log.LogMessage(MessageImportance.Low,
+                        "Excluding asset '{0}' because group '{1}' value '{2}' does not match required '{3}'.",
+                        candidate.ItemSpec, groupName, assetValue, groupValue);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void RemapEndpoints(Dictionary<string, string> assetMapping, HashSet<string> excludedAssetFiles)
     {
         var remappedEndpoints = new List<ITaskItem>();
 
@@ -97,15 +167,31 @@ public class UpdatePackageStaticWebAssets : Task
         {
             var identity = kvp.Key;
             var group = kvp.Value;
+
+            var groupExcluded = false;
             var groupNeedsRemapping = false;
+
             foreach (var endpoint in group)
             {
                 var assetFile = endpoint.GetMetadata("AssetFile");
-                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
+                if (!string.IsNullOrEmpty(assetFile))
                 {
-                    groupNeedsRemapping = true;
-                    break;
+                    if (excludedAssetFiles.Contains(assetFile))
+                    {
+                        groupExcluded = true;
+                        break;
+                    }
+                    if (assetMapping.ContainsKey(assetFile))
+                    {
+                        groupNeedsRemapping = true;
+                    }
                 }
+            }
+
+            if (groupExcluded)
+            {
+                Log.LogMessage(MessageImportance.Low, "Excluding endpoints for excluded asset group identity '{0}'.", identity);
+                continue;
             }
 
             if (groupNeedsRemapping)

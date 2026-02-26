@@ -37,6 +37,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private string _relatedAsset;
     private string _assetTraitName;
     private string _assetTraitValue;
+    private string _assetGroups;
     private string _fingerprint;
     private string _integrity;
     private string _copyToOutputDirectory;
@@ -68,6 +69,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         _relatedAsset = asset.RelatedAsset;
         _assetTraitName = asset.AssetTraitName;
         _assetTraitValue = asset.AssetTraitValue;
+        _assetGroups = asset.AssetGroups;
         _copyToOutputDirectory = asset.CopyToOutputDirectory;
         _copyToPublishDirectory = asset.CopyToPublishDirectory;
         _originalItemSpec = asset.OriginalItemSpec;
@@ -224,6 +226,16 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             _modified = true;
             _assetTraitValue = value;
+        }
+    }
+
+    public string AssetGroups
+    {
+        get => _assetGroups ??= GetOriginalItemMetadata(nameof(AssetGroups));
+        set
+        {
+            _modified = true;
+            _assetGroups = value;
         }
     }
 
@@ -399,6 +411,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             return true;
         }
 
+        // If assets at the same path have different non-empty AssetGroups values, they are variant
+        // alternatives that will be disambiguated by group filtering on the consumer side.
+        // Allow them to coexist in the manifest.
+        if (AllAssetsHaveDistinctGroups(group))
+        {
+            reason = null;
+            return true;
+        }
+
         // Check First against Second for source ID conflict
         if (!prototypeItem.HasSourceId(group.Second.SourceId))
         {
@@ -472,6 +493,66 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
         reason = null;
         return true;
+    }
+
+    private static bool AllAssetsHaveDistinctGroups(
+        (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group)
+    {
+        // For assets with different non-empty AssetGroups to coexist, every asset in the group
+        // must have a non-empty AssetGroups value, and no two assets can share the same value.
+        var groups = new HashSet<string>(StringComparer.Ordinal);
+
+        if (string.IsNullOrEmpty(group.First.AssetGroups))
+        {
+            return false;
+        }
+        groups.Add(group.First.AssetGroups);
+
+        if (group.Second != null)
+        {
+            if (string.IsNullOrEmpty(group.Second.AssetGroups))
+            {
+                return false;
+            }
+            if (!groups.Add(group.Second.AssetGroups))
+            {
+                return false;
+            }
+        }
+
+        if (group.Others != null)
+        {
+            foreach (var item in group.Others)
+            {
+                if (string.IsNullOrEmpty(item.AssetGroups))
+                {
+                    return false;
+                }
+                if (!groups.Add(item.AssetGroups))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    internal static bool AllAssetsHaveDistinctGroups(List<StaticWebAsset> assets)
+    {
+        var groups = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var asset in assets)
+        {
+            if (string.IsNullOrEmpty(asset.AssetGroups))
+            {
+                return false;
+            }
+            if (!groups.Add(asset.AssetGroups))
+            {
+                return false;
+            }
+        }
+        return groups.Count > 0;
     }
 
     private bool HasKind(string assetKind) =>
@@ -1346,6 +1427,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         nameof(RelatedAsset),
         nameof(AssetTraitName),
         nameof(AssetTraitValue),
+        nameof(AssetGroups),
         nameof(Fingerprint),
         nameof(Integrity),
         nameof(CopyToOutputDirectory),
@@ -1399,6 +1481,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             nameof(RelatedAsset) => RelatedAsset ?? "",
             nameof(AssetTraitName) => AssetTraitName ?? "",
             nameof(AssetTraitValue) => AssetTraitValue ?? "",
+            nameof(AssetGroups) => AssetGroups ?? "",
             nameof(Fingerprint) => Fingerprint ?? "",
             nameof(Integrity) => Integrity ?? "",
             nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
@@ -1460,6 +1543,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case nameof(AssetTraitValue):
                 AssetTraitValue = metadataValue;
                 break;
+            case nameof(AssetGroups):
+                AssetGroups = metadataValue;
+                break;
             case nameof(Fingerprint):
                 Fingerprint = metadataValue;
                 break;
@@ -1508,6 +1594,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             { nameof(RelatedAsset), RelatedAsset  ?? "" },
             { nameof(AssetTraitName), AssetTraitName  ?? "" },
             { nameof(AssetTraitValue), AssetTraitValue  ?? "" },
+            { nameof(AssetGroups), AssetGroups  ?? "" },
             { nameof(Fingerprint), Fingerprint  ?? "" },
             { nameof(Integrity), Integrity  ?? "" },
             { nameof(CopyToOutputDirectory), CopyToOutputDirectory  ?? "" },
@@ -1547,6 +1634,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset ?? "");
         destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName ?? "");
         destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue ?? "");
+        destinationItem.SetMetadata(nameof(AssetGroups), AssetGroups ?? "");
         destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint ?? "");
         destinationItem.SetMetadata(nameof(Integrity), Integrity ?? "");
         destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory ?? "");

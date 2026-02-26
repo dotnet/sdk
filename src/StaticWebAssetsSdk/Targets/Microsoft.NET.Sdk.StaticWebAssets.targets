@@ -382,6 +382,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetCanonicalMetadata Include="RelatedAsset" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitName" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitValue" />
+    <_StaticWebAssetCanonicalMetadata Include="AssetGroups" />
     <_StaticWebAssetCanonicalMetadata Include="Fingerprint" />
     <_StaticWebAssetCanonicalMetadata Include="Integrity" />
     <_StaticWebAssetCanonicalMetadata Include="CopyToOutputDirectory" />
@@ -713,7 +714,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
+      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)"
+      StaticWebAssetGroupDefinitions="@(StaticWebAssetGroupDefinition)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
         <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
@@ -748,6 +750,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
       ProjectPackageId="$(PackageId)"
       ProjectBasePath="$(StaticWebAssetBasePath)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
     >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />

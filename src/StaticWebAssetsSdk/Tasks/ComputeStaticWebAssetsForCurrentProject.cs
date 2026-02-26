@@ -37,6 +37,23 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
                 var (selected, all) = kvp.Value;
                 if (all != null)
                 {
+                    // If all assets have distinct, non-empty AssetGroups, they can coexist
+                    if (StaticWebAsset.AllAssetsHaveDistinctGroups(all))
+                    {
+                        foreach (var groupedAsset in all)
+                        {
+                            if (!groupedAsset.IsForReferencedProjectsOnly())
+                            {
+                                resultAssets.Add(groupedAsset);
+                            }
+                            else
+                            {
+                                Log.LogMessage(MessageImportance.Low, "Skipping asset '{0}' because it is for referenced projects only.", groupedAsset.Identity);
+                            }
+                        }
+                        continue;
+                    }
+
                     Log.LogError("More than one compatible asset found for target path '{0}' -> {1}.",
                         targetPath,
                         Environment.NewLine + string.Join(Environment.NewLine, all.Select(a => $"({a.Identity},{a.AssetKind})")));
