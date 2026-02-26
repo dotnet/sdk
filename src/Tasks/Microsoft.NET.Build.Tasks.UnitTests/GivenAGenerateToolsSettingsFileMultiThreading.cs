@@ -19,16 +19,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 var task = new GenerateToolsSettingsFile
                 {
+                    BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     EntryPointRelativePath = "tool.dll",
                     CommandName = "mytool",
                     ToolsSettingsFilePath = "output/settings.xml",
                 };
-                task.BuildEngine = new MockBuildEngine();
-
-                // Set TaskEnvironment via reflection to avoid compile-time coupling.
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property (from IMultiThreadableTask)");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
 
                 task.Execute().Should().BeTrue();
 

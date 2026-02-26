@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -27,21 +24,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var expectedAbsPath = Path.Combine(projectDir, relativeFileName);
                 File.Copy(sourceAssembly, expectedAbsPath);
 
-                var task = new GetAssemblyAttributes();
-                task.BuildEngine = new MockBuildEngine();
+                var task = new GetAssemblyAttributes
+                {
+                    BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    PathToTemplateFile = relativeFileName,
+                };
 
-                // Use reflection to set TaskEnvironment so the test compiles even before migration.
-                // If the property doesn't exist, the test fails (unmigrated).
-                var taskEnvProp = typeof(GetAssemblyAttributes).GetProperty("TaskEnvironment",
-                    BindingFlags.Public | BindingFlags.Instance);
-                taskEnvProp.Should().NotBeNull("GetAssemblyAttributes must have a TaskEnvironment property");
-                taskEnvProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
-
-                task.PathToTemplateFile = relativeFileName;
-
-                // Execute — should resolve the relative path via TaskEnvironment (projectDir),
-                // NOT via the process CWD. If the task uses Path.GetFullPath, it would look
-                // in CWD and fail to find the file.
                 var result = task.Execute();
 
                 result.Should().BeTrue("the task should succeed when the file exists under the project directory");

@@ -28,8 +28,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 runtimeFramework.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
                 runtimeFramework.SetMetadata("Version", "8.0.0");
 
+                var mockEngine = new MockBuildEngine();
                 var task = new GenerateRuntimeConfigurationFiles
                 {
+                    BuildEngine = mockEngine,
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     TargetFramework = ".NETCoreApp,Version=v8.0",
                     TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
                     RuntimeConfigPath = configRelativePath,
@@ -37,13 +40,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     IsSelfContained = false,
                     GenerateRuntimeConfigDevFile = false,
                 };
-                var mockEngine = new MockBuildEngine();
-                task.BuildEngine = mockEngine;
-
-                // Set TaskEnvironment pointing to projectDir (different from CWD).
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property (from IMultiThreadableTask)");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
 
                 // Execute — should write runtimeconfig.json under projectDir via TaskEnvironment
                 task.Execute().Should().BeTrue(

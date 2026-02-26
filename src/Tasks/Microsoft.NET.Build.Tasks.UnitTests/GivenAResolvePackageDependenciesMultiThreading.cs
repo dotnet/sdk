@@ -50,14 +50,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     ProjectPath = projectPath,
                     ProjectLanguage = null,
                     TargetFramework = null,
+                    BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                 };
-                task.BuildEngine = new MockBuildEngine();
-
-                // Set TaskEnvironment via reflection to avoid compile-time coupling.
-                // This test fails if the task doesn't have a TaskEnvironment property.
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property (from IMultiThreadableTask)");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
 
                 task.Execute().Should().BeTrue();
 
