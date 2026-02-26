@@ -25,6 +25,8 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     public ITaskItem[] FingerprintInferenceExpressions { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedAssets { get; set; }
 
@@ -64,11 +66,131 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        UpdatedAssets = assets.Select(a => a.ToTaskItem()).ToArray();
-        UpdatedEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray();
-        AssetsWithoutEndpoints = assetsWithoutEndpoints.Select(a => a.ToTaskItem()).ToArray();
+        // Group filtering: exclude assets whose AssetGroups requirements are not satisfied
+        // by the consumer's StaticWebAssetGroup declarations.
+        var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
+        var filteredAssets = new List<StaticWebAsset>(assets.Length);
+        foreach (var asset in assets)
+        {
+            if (!IsAssetIncludedByGroups(asset))
+            {
+                excludedAssetFiles.Add(asset.Identity);
+                Log.LogMessage(MessageImportance.Low,
+                    "Excluding project-reference asset '{0}' by group filtering.", asset.Identity);
+            }
+            else
+            {
+                filteredAssets.Add(asset);
+            }
+        }
+
+        // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
+        if (excludedAssetFiles.Count > 0)
+        {
+            bool changed;
+            do
+            {
+                changed = false;
+                for (var i = filteredAssets.Count - 1; i >= 0; i--)
+                {
+                    var asset = filteredAssets[i];
+                    if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
+                    {
+                        excludedAssetFiles.Add(asset.Identity);
+                        Log.LogMessage(MessageImportance.Low,
+                            "Excluding related asset '{0}' because its primary '{1}' was excluded by group filtering.",
+                            asset.Identity, asset.RelatedAsset);
+                        filteredAssets.RemoveAt(i);
+                        changed = true;
+                    }
+                }
+            } while (changed);
+        }
+
+        UpdatedAssets = filteredAssets.Select(a => a.ToTaskItem()).ToArray();
+
+        // Filter endpoints: exclude endpoints whose asset was excluded by group filtering.
+        if (excludedAssetFiles.Count > 0)
+        {
+            var filteredEndpoints = new List<StaticWebAssetEndpoint>(endpoints.Length);
+            foreach (var ep in endpoints)
+            {
+                if (!string.IsNullOrEmpty(ep.AssetFile) && excludedAssetFiles.Contains(ep.AssetFile))
+                {
+                    Log.LogMessage(MessageImportance.Low,
+                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
+                        ep.Route, ep.AssetFile);
+                    continue;
+                }
+                filteredEndpoints.Add(ep);
+            }
+            UpdatedEndpoints = filteredEndpoints.Select(e => e.ToTaskItem()).ToArray();
+        }
+        else
+        {
+            UpdatedEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray();
+        }
+
+        AssetsWithoutEndpoints = assetsWithoutEndpoints
+            .Where(a => !excludedAssetFiles.Contains(a.Identity))
+            .Select(a => a.ToTaskItem()).ToArray();
 
         return !Log.HasLoggedErrors;
+    }
+
+    private bool IsAssetIncludedByGroups(StaticWebAsset asset)
+    {
+        if (string.IsNullOrEmpty(asset.AssetGroups))
+        {
+            return true;
+        }
+
+        var groupEntries = asset.AssetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        var assetGroupDict = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in groupEntries)
+        {
+            var eqIndex = entry.IndexOf('=');
+            if (eqIndex > 0)
+            {
+                assetGroupDict[entry.Substring(0, eqIndex)] = entry.Substring(eqIndex + 1);
+            }
+        }
+
+        var sourceId = asset.SourceId;
+
+        foreach (var kvp in assetGroupDict)
+        {
+            var entryName = kvp.Key;
+            var entryValue = kvp.Value;
+            var satisfied = false;
+
+            if (StaticWebAssetGroups != null)
+            {
+                foreach (var group in StaticWebAssetGroups)
+                {
+                    var groupSourceId = group.GetMetadata("SourceId");
+                    if (!string.IsNullOrEmpty(groupSourceId) &&
+                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(group.ItemSpec, entryName, StringComparison.Ordinal) &&
+                        string.Equals(group.GetMetadata("Value"), entryValue, StringComparison.Ordinal))
+                    {
+                        satisfied = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!satisfied)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private bool TryInferFingerprint(Regex[] fingerprintExpressions, string relativePath, out string fingerprint, out string newRelativePath)

@@ -498,47 +498,29 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private static bool AllAssetsHaveDistinctGroups(
         (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group)
     {
-        // For assets with different non-empty AssetGroups to coexist, every asset in the group
-        // must have a non-empty AssetGroups value, and no two assets can share the same value.
-        var groups = new HashSet<string>(StringComparer.Ordinal);
-
-        if (string.IsNullOrEmpty(group.First.AssetGroups))
+        // Enumerate the tuple fields without allocating a List.
+        // This overload exists to avoid an allocation on a warm path.
+        static IEnumerable<StaticWebAsset> Enumerate(
+            (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) g)
         {
-            return false;
-        }
-        groups.Add(group.First.AssetGroups);
-
-        if (group.Second != null)
-        {
-            if (string.IsNullOrEmpty(group.Second.AssetGroups))
+            yield return g.First;
+            if (g.Second != null)
             {
-                return false;
+                yield return g.Second;
             }
-            if (!groups.Add(group.Second.AssetGroups))
+            if (g.Others != null)
             {
-                return false;
-            }
-        }
-
-        if (group.Others != null)
-        {
-            foreach (var item in group.Others)
-            {
-                if (string.IsNullOrEmpty(item.AssetGroups))
+                foreach (var item in g.Others)
                 {
-                    return false;
-                }
-                if (!groups.Add(item.AssetGroups))
-                {
-                    return false;
+                    yield return item;
                 }
             }
         }
 
-        return true;
+        return AllAssetsHaveDistinctGroups(Enumerate(group));
     }
 
-    internal static bool AllAssetsHaveDistinctGroups(List<StaticWebAsset> assets)
+    internal static bool AllAssetsHaveDistinctGroups(IEnumerable<StaticWebAsset> assets)
     {
         var groups = new HashSet<string>(StringComparer.Ordinal);
         foreach (var asset in assets)

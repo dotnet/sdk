@@ -32,7 +32,7 @@ public class StaticWebAssetTokenResolver(IReadOnlyDictionary<string, string> tok
                 if (eqIndex > 0)
                 {
                     var name = entry.Substring(0, eqIndex);
-                    if (string.Equals(name, key, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(name, key, StringComparison.Ordinal))
                     {
                         value = entry.Substring(eqIndex + 1);
                         return true;

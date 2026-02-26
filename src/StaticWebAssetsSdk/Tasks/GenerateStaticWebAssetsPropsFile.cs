@@ -42,8 +42,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
     public string FrameworkPattern { get; set; }
 
-    public ITaskItem[] StaticWebAssetGroupDefinitions { get; set; }
-
     public override bool Execute()
     {
         if (!ValidateArguments())

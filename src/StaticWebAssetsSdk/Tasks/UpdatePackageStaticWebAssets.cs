@@ -83,6 +83,35 @@ public class UpdatePackageStaticWebAssets : Task
                 }
             }
 
+            // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
+            // Repeat until no new exclusions are found (for recursive chains).
+            if (excludedAssetFiles.Count > 0)
+            {
+                bool changed;
+                do
+                {
+                    changed = false;
+                    for (var i = updatedAssets.Count - 1; i >= 0; i--)
+                    {
+                        var asset = updatedAssets[i];
+                        var relatedAsset = asset.GetMetadata(nameof(StaticWebAsset.RelatedAsset));
+                        if (!string.IsNullOrEmpty(relatedAsset) && excludedAssetFiles.Contains(relatedAsset))
+                        {
+                            var assetFullPath = asset.GetMetadata("FullPath");
+                            if (!string.IsNullOrEmpty(assetFullPath))
+                            {
+                                excludedAssetFiles.Add(assetFullPath);
+                            }
+                            Log.LogMessage(MessageImportance.Low,
+                                "Excluding related asset '{0}' because its primary '{1}' was excluded by group filtering.",
+                                asset.ItemSpec, relatedAsset);
+                            updatedAssets.RemoveAt(i);
+                            changed = true;
+                        }
+                    }
+                } while (changed);
+            }
+
             OriginalAssets = [.. originalAssets];
             UpdatedAssets = [.. updatedAssets];
 
@@ -104,11 +133,7 @@ public class UpdatePackageStaticWebAssets : Task
         var assetGroups = candidate.GetMetadata("AssetGroups");
         if (string.IsNullOrEmpty(assetGroups))
         {
-            return true;
-        }
-
-        if (StaticWebAssetGroups == null || StaticWebAssetGroups.Length == 0)
-        {
+            // Assets without AssetGroups are unconditional — always included.
             return true;
         }
 
@@ -127,27 +152,41 @@ public class UpdatePackageStaticWebAssets : Task
 
         var sourceId = candidate.GetMetadata(nameof(StaticWebAsset.SourceId));
 
-        foreach (var group in StaticWebAssetGroups)
+        // AND-matching: every name=value entry on the asset must be satisfied by at least one
+        // applicable StaticWebAssetGroup declaration. If no declarations exist at all, grouped
+        // assets are excluded (no declaration can satisfy any requirement).
+        foreach (var kvp in assetGroupDict)
         {
-            var groupName = group.ItemSpec;
-            var groupValue = group.GetMetadata("Value");
-            var groupSourceId = group.GetMetadata("SourceId");
+            var entryName = kvp.Key;
+            var entryValue = kvp.Value;
+            var satisfied = false;
 
-            if (!string.IsNullOrEmpty(groupSourceId) &&
-                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            if (StaticWebAssetGroups != null)
             {
-                continue;
+                foreach (var group in StaticWebAssetGroups)
+                {
+                    var groupSourceId = group.GetMetadata("SourceId");
+                    if (!string.IsNullOrEmpty(groupSourceId) &&
+                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(group.ItemSpec, entryName, StringComparison.Ordinal) &&
+                        string.Equals(group.GetMetadata("Value"), entryValue, StringComparison.Ordinal))
+                    {
+                        satisfied = true;
+                        break;
+                    }
+                }
             }
 
-            if (assetGroupDict.TryGetValue(groupName, out var assetValue))
+            if (!satisfied)
             {
-                if (!string.Equals(assetValue, groupValue, StringComparison.Ordinal))
-                {
-                    Log.LogMessage(MessageImportance.Low,
-                        "Excluding asset '{0}' because group '{1}' value '{2}' does not match required '{3}'.",
-                        candidate.ItemSpec, groupName, assetValue, groupValue);
-                    return false;
-                }
+                Log.LogMessage(MessageImportance.Low,
+                    "Excluding asset '{0}' because group requirement '{1}={2}' has no matching StaticWebAssetGroup declaration.",
+                    candidate.ItemSpec, entryName, entryValue);
+                return false;
             }
         }
 
