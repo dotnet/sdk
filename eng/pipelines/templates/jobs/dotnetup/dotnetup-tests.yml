@@ -48,7 +48,7 @@ jobs:
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
-          & .\restore.cmd
+          & .\restore.cmd -projects dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
           & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
@@ -67,7 +67,7 @@ jobs:
         displayName: 🔍 Test Windows
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
-          ./restore.sh
+          ./restore.sh -projects $(Build.SourcesDirectory)/dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Unix)
       - script: |
           ./.dotnet/dotnet restore test/dotnetup.Tests/dotnetup.Tests.csproj

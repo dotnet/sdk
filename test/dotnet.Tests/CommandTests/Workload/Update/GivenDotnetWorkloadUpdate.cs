@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public GivenDotnetWorkloadUpdate(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             _parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             string workloadHistoryRecord = @"{
               ""TimeStarted"": ""2023-11-13T13:25:49.8011987-08:00"",
               ""TimeCompleted"": ""2023-11-13T13:25:52.8522942-08:00"",
-              ""CommandName"": ""update"",
+              ""Name"": ""update"",
               ""WorkloadArguments"": [],
               ""RollbackFileContents"": null,
               ""CommandLineArgs"": [],
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(false)]
         public void GivenWorkloadUpdateItRemovesOldPacksAfterInstall(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             // Mock updating the manifest
             workloadResolverFactory.MockResult.WorkloadResolver = CreateForTests(
-                new MockManifestProvider(new[] { Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleUpdatedManifest"), "Sample.json") }),
+                new MockManifestProvider(new[] { Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleUpdatedManifest"), "Sample.json") }),
                 dotnetRoot, userLocal, userProfileDir);
 
             // Update workload
@@ -198,10 +198,10 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(false)]
         public void GivenWorkloadUpdateAcrossFeatureBandsItUpdatesPacks(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
-            var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "BasicSample.json");
+            var manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "BasicSample.json");
             var workloadResolver = CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot, userLocal, userProfileDir);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater();
@@ -292,7 +292,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(true, false, true)]
         public void UpdateViaWorkloadSet(bool upgrade, bool? installStateUseWorkloadSet, bool? globalJsonValue)
         {
-            var testDir = _testAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
+            var testDir = TestAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
             string dotnetDir = Path.Combine(testDir.Path, "dotnet");
             string userProfileDir = Path.Combine(testDir.Path, "userProfileDir");
 
@@ -371,7 +371,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             var parseResult = Parser.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
-            var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
             WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
             WorkloadManifest macosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS");
             WorkloadManifest mauiManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui");
@@ -418,7 +418,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItCanDownloadToOfflineCache()
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
-            var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: "cachePath").Path, "mockCachePath");
+            var cachePath = Path.Combine(TestAssetsManager.CreateTestDirectory(identifier: "cachePath").Path, "mockCachePath");
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--download-to-cache", cachePath });
             (_, var command, _, _, var manifestUpdater, var packageDownloader, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
 
@@ -483,7 +483,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [Fact]
         public void GivenWorkloadUpdateWithSdkVersionItErrors()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var sdkFeatureVersion = "7.0.100";
@@ -584,7 +584,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             _reporter.Clear();
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             Directory.CreateDirectory(userProfileDir);
@@ -622,7 +622,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             string installedFeatureBand = null)
         {
             _reporter.Clear();
-            var testDirectory = _testAssetsManager.CreateTestDirectory(testName: testName, identifier).Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(testName: testName, identifier).Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var installedPacks = new PackInfo[] {
                 CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Sdk, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Sdk", "8.4.7"), "Xamarin.Android.Sdk"),

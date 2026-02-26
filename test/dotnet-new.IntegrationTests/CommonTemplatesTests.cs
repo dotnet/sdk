@@ -29,6 +29,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "globaljson", null)]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "8" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "8.0" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "10.0.0" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "10.0.99" })]
         [InlineData("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
         [InlineData("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
@@ -36,6 +40,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "global.json", null)]
         [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "8" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "8.0" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "10.0.0" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "10.0.99" })]
         [InlineData("global.json file", "global.json", new[] { "--test-runner", "VSTest" })]
         [InlineData("global.json file", "global.json", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
         [InlineData("NuGet Config", "nugetconfig", null)]
@@ -57,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public async Task AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             string itemName = expectedTemplateName.Replace(' ', '-').Replace('.', '-');
 
@@ -69,7 +77,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotPrependTemplateNameToScenarioName = true,
                 UniqueFor = expectedTemplateName.Equals("NuGet Config") ? UniqueForOption.OsPlatform : null,
             }
@@ -201,7 +209,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string finalProjectName = Path.Combine(projectDir, $"{projName}.{extension}");
 
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
@@ -214,7 +222,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 DoNotAppendTemplateArgsToScenarioName = true,
                 ScenarioName = language.Replace('#', 's').ToLower(),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(
@@ -396,7 +404,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             environmentUnderTest["CheckEolTargetFramework"] = false.ToString();
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
@@ -413,7 +421,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     + '#' + (language == null ? "cs" : language.Replace('#', 's').ToLower())
                     + (langVersion == null ? "#NoLangVer" : (langVersionUnsupported ? "#UnsuportedLangVer" : null)),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(

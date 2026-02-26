@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -13,11 +14,10 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
-internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
+internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<WorkloadSearchVersionsCommandDefinition>
 {
     private readonly ReleaseVersion _sdkVersion;
     private readonly int _numberOfWorkloadSetsToTake;
@@ -34,11 +34,12 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         IInstaller installer = null,
         INuGetPackageDownloader nugetPackageDownloader = null,
         IWorkloadResolver resolver = null,
-        ReleaseVersion sdkVersion = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
+        ReleaseVersion sdkVersion = null)
+        : base(result, reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
         workloadResolverFactory ??= new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(result.GetValue(Definition.Parent.VersionOption)))
         {
             throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
@@ -48,17 +49,17 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         _sdkVersion = sdkVersion ?? creationResult.SdkVersion;
         _resolver = resolver ?? creationResult.WorkloadResolver;
 
-        _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchVersionsCommandParser.TakeOption);
-        _workloadSetOutputFormat = result.GetValue(WorkloadSearchVersionsCommandParser.FormatOption);
+        _numberOfWorkloadSetsToTake = result.GetValue(Definition.TakeOption);
+        _workloadSetOutputFormat = result.GetValue(Definition.FormatOption);
 
         // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
         // install types, and FileBased is much easier to work with.
-        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, result.HasOption(SharedOptions.InteractiveOption));
+        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, interactive: false);
 
-        _workloadVersion = result.GetValue(WorkloadSearchVersionsCommandParser.WorkloadVersionArgument);
+        _workloadVersion = result.GetValue(Definition.WorkloadVersionArgument);
 
-        _includePreviews = result.HasOption(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) ?
-            result.GetValue(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) :
+        _includePreviews = result.HasOption(Definition.IncludePreviewsOption) ?
+            result.GetValue(Definition.IncludePreviewsOption) :
             new SdkFeatureBand(_sdkVersion).IsPrerelease;
 
     }
@@ -100,7 +101,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
                 Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => new Dictionary<string, string>()
                 {
                     { "workloadVersion", version }
-                })));
+                }), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -121,7 +122,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             }
             else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
-                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
+                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v)), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -137,7 +138,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
                 Reporter.WriteLine(JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>()
                 {
                     { "manifestVersions", set.ToDictionaryForJson() }
-                }, new JsonSerializerOptions { WriteIndented = true }));
+                }, WorkloadSearchVersionsJsonSerializerContext.Default.DictionaryStringDictionaryStringString));
             }
             else
             {
@@ -164,7 +165,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
         return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
-            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))];
+            .Select(version => featureBand.GetWorkloadSetPackageVersion(version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()
@@ -201,3 +202,8 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         }).Take(numberOfWorkloadSetsToTake);
     }
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IEnumerable<Dictionary<string, string>>))]
+[JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
+internal partial class WorkloadSearchVersionsJsonSerializerContext : JsonSerializerContext;

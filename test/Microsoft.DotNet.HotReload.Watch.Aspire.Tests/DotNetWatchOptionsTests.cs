@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class DotNetWatchOptionsTests
@@ -47,12 +49,12 @@ public class DotNetWatchOptionsTests
         // With verbose flag
         var argsVerbose = new[] { "--sdk", "sdk", "--project", "proj", "--verbose" };
         Assert.True(DotNetWatchOptions.TryParse(argsVerbose, out var optionsVerbose));
-        Assert.True(optionsVerbose.IsVerbose);
+        Assert.Equal(LogLevel.Debug, optionsVerbose.LogLevel);
         
         // Without verbose flag
         var argsNotVerbose = new[] { "--sdk", "sdk", "--project", "proj" };
         Assert.True(DotNetWatchOptions.TryParse(argsNotVerbose, out var optionsNotVerbose));
-        Assert.False(optionsNotVerbose.IsVerbose);
+        Assert.Equal(LogLevel.Information, optionsNotVerbose.LogLevel);
     }
 
     [Fact]
@@ -61,12 +63,12 @@ public class DotNetWatchOptionsTests
         // With quiet flag
         var argsQuiet = new[] { "--sdk", "sdk", "--project", "proj", "--quiet" };
         Assert.True(DotNetWatchOptions.TryParse(argsQuiet, out var optionsQuiet));
-        Assert.True(optionsQuiet.IsQuiet);
+        Assert.Equal(LogLevel.Warning, optionsQuiet.LogLevel);
         
         // Without quiet flag
         var argsNotQuiet = new[] { "--sdk", "sdk", "--project", "proj" };
         Assert.True(DotNetWatchOptions.TryParse(argsNotQuiet, out var optionsNotQuiet));
-        Assert.False(optionsNotQuiet.IsQuiet);
+        Assert.Equal(LogLevel.Information, optionsNotQuiet.LogLevel);
     }
     
     [Fact]
@@ -109,8 +111,7 @@ public class DotNetWatchOptionsTests
         Assert.True(DotNetWatchOptions.TryParse(args, out var options));
         
         Assert.Equal("myapp.csproj", options.ProjectPath);
-        Assert.True(options.IsVerbose);
-        Assert.False(options.IsQuiet);
+        Assert.Equal(LogLevel.Debug, options.LogLevel);
         Assert.True(options.NoLaunchProfile);
         AssertEx.SequenceEqual(["arg1", "arg2", "arg3"], options.ApplicationArguments);
     }

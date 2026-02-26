@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
@@ -18,6 +19,8 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -37,10 +40,13 @@ public class Program
 
         using AutomaticEncodingRestorer _ = new();
 
-        // Setting output encoding is not available on those platforms
-        if (UILanguageOverride.OperatingSystemSupportsUtf8())
+        if (Env.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1")
         {
-            Console.OutputEncoding = Encoding.UTF8;
+            // Setting output encoding is not available on those platforms
+            if (UILanguageOverride.OperatingSystemSupportsUtf8())
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+            }
         }
 
         DebugHelper.HandleDebugSwitch(ref args);
@@ -158,7 +164,7 @@ public class Program
 
             PerformanceLogEventSource.Log.TelemetryRegistrationStop();
 
-            if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
+            if (parseResult.GetValue(Parser.RootCommand.DiagOption) && parseResult.IsDotnetBuiltInCommand())
             {
                 // We found --diagnostic or -d, but we still need to determine whether the option should
                 // be attached to the dotnet command or the subcommand.
@@ -169,12 +175,12 @@ public class Program
                     Reporter.Reset();
                 }
             }
-            if (parseResult.HasOption(Parser.VersionOption) && parseResult.IsTopLevelDotnetCommand())
+            if (parseResult.HasOption(Parser.RootCommand.VersionOption) && parseResult.IsTopLevelDotnetCommand())
             {
                 CommandLineInfo.PrintVersion();
                 return 0;
             }
-            else if (parseResult.HasOption(Parser.InfoOption) && parseResult.IsTopLevelDotnetCommand())
+            else if (parseResult.HasOption(Parser.RootCommand.InfoOption) && parseResult.IsTopLevelDotnetCommand())
             {
                 CommandLineInfo.PrintInfo();
                 return 0;
@@ -196,7 +202,7 @@ public class Program
                 ReportDotnetHomeUsage(environmentProvider);
 
                 var isDotnetBeingInvokedFromNativeInstaller = false;
-                if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
+                if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
                 {
                     aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
                     firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
@@ -257,7 +263,7 @@ public class Program
             PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
             try
             {
-                string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
+                string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
                 var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
                     new DefaultCommandResolverPolicy(),
                     commandName,
@@ -306,19 +312,19 @@ public class Program
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            if (parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+                && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
                 foreach (var token in parseResult.Tokens)
                 {
-                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    if (token != unmatchedCommandOrFile)
                     {
                         otherTokens.Add(token.Value);
                     }
                 }
 
-                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;
@@ -412,10 +418,12 @@ public class Program
 
         dotnetConfigurer.Configure();
 
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
         {
             DotDefaultPathCorrector.Correct();
         }
+#endif
 
         if (isFirstTimeUse && !dotnetFirstRunConfiguration.SkipWorkloadIntegrityCheck)
         {

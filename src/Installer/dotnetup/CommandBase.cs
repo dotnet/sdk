@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -15,13 +16,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public abstract class CommandBase
 {
-    protected ParseResult ParseResult { get; }
+    protected ParseResult _parseResult;
     private Activity? _commandActivity;
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
     {
-        ParseResult = parseResult;
+        _parseResult = parseResult;
     }
 
     /// <summary>

@@ -23,6 +23,7 @@
       "src\\BuiltInTools\\Watch.Aspire\\Microsoft.DotNet.HotReload.Watch.Aspire.csproj",
       "src\\BuiltInTools\\Watch\\Microsoft.DotNet.HotReload.Watch.csproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
+      "src\\Microsoft.DotNet.ProjectTools\\Microsoft.DotNet.ProjectTools.csproj",
       "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
       "test\\Microsoft.DotNet.HotReload.Client.Tests\\Microsoft.DotNet.HotReload.Client.Tests.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",

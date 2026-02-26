@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Text;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -22,7 +25,7 @@ internal class UpdateChannel
     /// <summary>
     /// Checks if the channel string looks like an SDK version or feature band pattern rather than a runtime version.
     /// SDK versions have a third component >= 100 (e.g., "9.0.103", "9.0.304") or use "xx" patterns (e.g., "9.0.1xx").
-    /// Runtime versions have a third component &lt; 100 (e.g., "9.0.12", "9.0.0").
+    /// Runtime versions have a third component < 100 (e.g., "9.0.12", "9.0.0").
     /// </summary>
     /// <remarks>
     /// We cannot use ReleaseVersion.SdkFeatureBand here because ReleaseVersion parses any valid semantic version

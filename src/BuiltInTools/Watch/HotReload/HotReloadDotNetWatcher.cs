@@ -3,6 +3,8 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.Encodings.Web;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
@@ -31,7 +33,7 @@ namespace Microsoft.DotNet.Watch
             _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
             if (!context.Options.NonInteractive)
             {
-                var consoleInput = new ConsoleInputReader(_console, context.Options.Quiet, context.EnvironmentOptions.SuppressEmojis);
+                var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
 
                 var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
                 if (noPrompt)
@@ -113,8 +115,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
-                    compilationHandler = new CompilationHandler(_context.Logger, _context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, _context.BrowserRefreshServerFactory, _context.Options, _context.EnvironmentOptions);
+                    compilationHandler = new CompilationHandler(_context);
                     var projectLauncher = new ProjectLauncher(_context, projectMap, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
 
@@ -260,12 +261,8 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
-
-                        HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
-                        await scopedCssFileHandler.HandleFileChangesAsync(changedFiles, iterationCancellationToken);
-                        HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
@@ -399,7 +396,7 @@ namespace Microsoft.DotNet.Watch
 
                         _context.Logger.Log(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
-                        async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
+                        async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
                         {
                             var changedPaths = Interlocked.Exchange(ref changedFilesAccumulator, []);
                             if (changedPaths is [])
@@ -432,22 +429,14 @@ namespace Microsoft.DotNet.Watch
                                         new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
                                         changedPath.Kind);
                                 })
-                                .ToImmutableList();
+                                .ToList();
 
                             ReportFileChanges(changedFiles);
 
-                            // When a new file is added we need to run design-time build to find out
-                            // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
-                            // We also need to re-evaluate the project if any project files have been modified.
-                            // We don't need to rebuild and restart the application though.
-                            var fileAdded = changedFiles.Any(f => f.Kind is ChangeKind.Add);
-                            var projectChanged = !fileAdded && changedFiles.Any(f => evaluationResult.BuildFiles.Contains(f.Item.FilePath));
-                            var evaluationRequired = fileAdded || projectChanged;
+                            AnalyzeFileChanges(changedFiles, evaluationResult, out var evaluationRequired);
 
                             if (evaluationRequired)
                             {
-                                _context.Logger.Log(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
-
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(restore: true, iterationCancellationToken);
 
@@ -463,9 +452,14 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 // Update files in the change set with new evaluation info.
-                                changedFiles = [.. changedFiles
-                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
-                                ];
+                                for (var i = 0; i < changedFiles.Count; i++)
+                                {
+                                    var file = changedFiles[i];
+                                    if (evaluationResult.Files.TryGetValue(file.Item.FilePath, out var evaluatedFile))
+                                    {
+                                        changedFiles[i] = file with { Item = evaluatedFile };
+                                    }
+                                }
 
                                 _context.Logger.Log(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -478,13 +472,13 @@ namespace Microsoft.DotNet.Watch
                                 var rebuiltProjectPaths = rebuiltProjects.ToHashSet();
 
                                 var newAccumulator = ImmutableList<ChangedPath>.Empty;
-                                var newChangedFiles = ImmutableList<ChangedFile>.Empty;
+                                var newChangedFiles = new List<ChangedFile>();
 
                                 foreach (var file in changedFiles)
                                 {
                                     if (file.Item.ContainingProjectPaths.All(containingProjectPath => rebuiltProjectPaths.Contains(containingProjectPath)))
                                     {
-                                        newChangedFiles = newChangedFiles.Add(file);
+                                        newChangedFiles.Add(file);
                                     }
                                     else
                                     {
@@ -504,7 +498,7 @@ namespace Microsoft.DotNet.Watch
                                 await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                             }
 
-                            return changedFiles;
+                            return [.. changedFiles];
                         }
                     }
                 }
@@ -558,6 +552,104 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
             }
+        }
+
+        private void AnalyzeFileChanges(
+            List<ChangedFile> changedFiles,
+            EvaluationResult evaluationResult,
+            out bool evaluationRequired)
+        {
+            // If any build file changed (project, props, targets) we need to re-evaluate the projects.
+            // Currently we re-evaluate the whole project graph even if only a single project file changed.
+            if (changedFiles.Select(f => f.Item.FilePath).FirstOrDefault(path => evaluationResult.BuildFiles.Contains(path) || MatchesBuildFile(path)) is { } firstBuildFilePath)
+            {
+                _context.Logger.Log(MessageDescriptor.ProjectChangeTriggeredReEvaluation, firstBuildFilePath);
+                evaluationRequired = true;
+                return;
+            }
+
+            for (var i = 0; i < changedFiles.Count; i++)
+            {
+                var changedFile = changedFiles[i];
+                var filePath = changedFile.Item.FilePath;
+
+                if (changedFile.Kind is ChangeKind.Add)
+                {
+                    if (MatchesStaticWebAssetFilePattern(evaluationResult, filePath, out var staticWebAssetUrl))
+                    {
+                        changedFiles[i] = changedFile with
+                        {
+                            Item = changedFile.Item with { StaticWebAssetRelativeUrl = staticWebAssetUrl }
+                        };
+                    }
+                    else
+                    {
+                        // TODO: https://github.com/dotnet/sdk/issues/52390
+                        // Get patterns from evaluation that match Compile, AdditionalFile, AnalyzerConfigFile items.
+                        // Avoid re-evaluating on addition of files that don't affect the project.
+
+                        // project file or other file:
+                        _context.Logger.Log(MessageDescriptor.FileAdditionTriggeredReEvaluation, filePath);
+                        evaluationRequired = true;
+                        return;
+                    }
+                }
+            }
+
+            evaluationRequired = false;
+        }
+
+        /// <summary>
+        /// True if the file path looks like a file that might be imported by MSBuild.
+        /// </summary>
+        private static bool MatchesBuildFile(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".props", PathUtilities.OSSpecificPathComparison)
+                || extension.Equals(".targets", PathUtilities.OSSpecificPathComparison)
+                || extension.EndsWith("proj", PathUtilities.OSSpecificPathComparison)
+                || extension.Equals("projitems", PathUtilities.OSSpecificPathComparison) // shared project items
+                || string.Equals(Path.GetFileName(filePath), "global.json", PathUtilities.OSSpecificPathComparison);
+        }
+
+        /// <summary>
+        /// Determines if the given file path is a static web asset file path based on
+        /// the discovery patterns.
+        /// </summary>
+        private static bool MatchesStaticWebAssetFilePattern(EvaluationResult evaluationResult, string filePath, out string? staticWebAssetUrl)
+        {
+            staticWebAssetUrl = null;
+
+            if (StaticWebAsset.IsScopedCssFile(filePath))
+            {
+                return true;
+            }
+
+            foreach (var (_, manifest) in evaluationResult.StaticWebAssetsManifests)
+            {
+                foreach (var pattern in manifest.DiscoveryPatterns)
+                {
+                    var match = pattern.Glob.MatchInfo(filePath);
+                    if (match.IsMatch)
+                    {
+                        var dirUrl = match.WildcardDirectoryPartMatchGroup.Replace(Path.DirectorySeparatorChar, '/');
+
+                        Debug.Assert(!dirUrl.EndsWith('/'));
+                        Debug.Assert(!pattern.BaseUrl.EndsWith('/'));
+
+                        var url = UrlEncoder.Default.Encode(dirUrl + "/" + match.FilenamePartMatchGroup);
+                        if (pattern.BaseUrl != "")
+                        {
+                            url = pattern.BaseUrl + "/" + url;
+                        }
+
+                        staticWebAssetUrl = url;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void DeployProjectDependencies(ProjectGraph graph, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)

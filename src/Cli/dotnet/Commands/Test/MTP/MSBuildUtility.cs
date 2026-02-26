@@ -35,7 +35,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
         var solutionFile = SolutionFile.Parse(Path.GetFullPath(solutionFilePath));
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
@@ -87,7 +87,7 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -99,46 +99,137 @@ internal static class MSBuildUtility
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
     {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
+
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(binLogArgs);
 
-        string? resultsDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
+        string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
         {
             resultsDirectory = Path.GetFullPath(resultsDirectory);
         }
 
-        string? configFile = parseResult.GetValue(MicrosoftTestingPlatformOptions.ConfigFileOption);
+        string? configFile = parseResult.GetValue(definition.ConfigFileOption);
         if (configFile is not null)
         {
             configFile = Path.GetFullPath(configFile);
         }
 
-        string? diagnosticOutputDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        string? diagnosticOutputDirectory = parseResult.GetValue(definition.DiagnosticOutputDirectoryOption);
         if (diagnosticOutputDirectory is not null)
         {
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
+        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+
+        if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
+            testModulesFilterOptionValue is not null && positionalTestModules is not null)
+        {
+            throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
+        }
+
         PathOptions pathOptions = new(
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.SolutionOption),
+            positionalProjectOrSolution ?? parseResult.GetValue(definition.ProjectOrSolutionOption),
+            parseResult.GetValue(definition.SolutionOption),
+            positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
 
         return new BuildOptions(
             pathOptions,
-            parseResult.GetValue(CommonOptions.NoRestoreOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoBuildOption),
-            parseResult.HasOption(TestCommandDefinition.VerbosityOption) ? parseResult.GetValue(TestCommandDefinition.VerbosityOption) : null,
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
+            parseResult.GetValue(definition.NoRestoreOption),
+            parseResult.GetValue(definition.NoBuildOption),
+            parseResult.HasOption(definition.VerbosityOption) ? parseResult.GetValue(definition.VerbosityOption) : null,
+            parseResult.GetValue(definition.NoLaunchProfileOption),
+            parseResult.GetValue(definition.NoLaunchProfileArgumentsOption),
             otherArgs,
             msbuildArgs);
     }
+
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
+    {
+        string? positionalProjectOrSolution = null;
+        string? positionalTestModules = null;
+
+        // In case there is a valid case, users can opt-out.
+        // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+        // So, disabling validation is okay if the user scenario is valid.
+        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
+
+        for (int i = 0; i < otherArgs.Count; i++)
+        {
+            var token = otherArgs[i];
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+                }
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+                }
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalTestModules = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+                }
+            }
+            else if (Directory.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalTestModules = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+                }
+            }
+        }
+
+        return (positionalProjectOrSolution, positionalTestModules);
+    }
+
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
@@ -153,7 +244,13 @@ internal static class MSBuildUtility
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandDefinition.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgs,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateRequiredMSBuildTargetOption(TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
 
         int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 

@@ -768,18 +768,6 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
-    "--debug": {
-      "hidden": false,
-      "valueType": "System.Boolean",
-      "hasDefaultValue": true,
-      "defaultValue": false,
-      "arity": {
-        "minimum": 0,
-        "maximum": 0
-      },
-      "required": false,
-      "recursive": false
-    },
     "--disable-build-servers": {
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,

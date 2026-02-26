@@ -10,8 +10,6 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Package(in Microsoft.
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Version.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Version.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext
-Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Diagnostics.get -> Microsoft.DotNet.FileBasedPrograms.DiagnosticBag
-Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Diagnostics.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveKind.get -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveKind.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveText.get -> string!
@@ -19,6 +17,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveText.in
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Info.get -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Info.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ParseContext() -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ReportError.get -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ReportError.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.SourceFile.get -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.SourceFile.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
@@ -30,7 +30,7 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.Span.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.TrailingWhiteSpace.get -> Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.TrailingWhiteSpace.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project
-Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.EnsureProjectFilePath(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.EnsureProjectFilePath(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
@@ -53,20 +53,11 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Version.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Version.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.Shebang(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.AddError(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.Text.TextSpan textSpan, string! message, System.Exception? inner = null) -> void
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.AddError<T>(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.Text.TextSpan span, string! message, System.Exception? inner = null) -> T?
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.Builder.get -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder?
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.DiagnosticBag() -> void
-Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.IgnoreDiagnostics.get -> bool
+Microsoft.DotNet.FileBasedPrograms.ErrorReporter
+Microsoft.DotNet.FileBasedPrograms.ErrorReporters
 Microsoft.DotNet.FileBasedPrograms.ExternalHelpers
 Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.ExternalHelpers() -> void
 Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers
-Microsoft.DotNet.FileBasedPrograms.GracefulException
-Microsoft.DotNet.FileBasedPrograms.GracefulException.GracefulException() -> void
-Microsoft.DotNet.FileBasedPrograms.GracefulException.GracefulException(string! format, string! arg) -> void
-Microsoft.DotNet.FileBasedPrograms.GracefulException.GracefulException(string? message) -> void
-Microsoft.DotNet.FileBasedPrograms.GracefulException.GracefulException(string? message, System.Exception? innerException) -> void
 Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities
 Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.MSBuildUtilities() -> void
 Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer
@@ -104,6 +95,7 @@ Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.LineBreaks -> int
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.TotalLength -> int
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.WhiteSpaceInfo() -> void
+Microsoft.DotNet.ProjectTools.ProjectLocator
 override abstract Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ToString() -> string!
@@ -116,16 +108,14 @@ static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Parse(in Microsoft.Dot
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk?
-static Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.Collect(out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder! builder) -> Microsoft.DotNet.FileBasedPrograms.DiagnosticBag
-static Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.Ignore() -> Microsoft.DotNet.FileBasedPrograms.DiagnosticBag
-static Microsoft.DotNet.FileBasedPrograms.DiagnosticBag.ThrowOnFirst() -> Microsoft.DotNet.FileBasedPrograms.DiagnosticBag
+static Microsoft.DotNet.FileBasedPrograms.ErrorReporters.CreateCollectingReporter(out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder! builder) -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.CombineHashCodes(int value1, int value2) -> int
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.GetRelativePath(string! relativeTo, string! path) -> string!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.IsPathFullyQualified(string! path) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.CreateTokenizer(Microsoft.CodeAnalysis.Text.SourceText! text) -> Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser!
-static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.EvaluateDirectives(Microsoft.Build.Execution.ProjectInstance? project, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives, Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
-static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, bool reportAllErrors, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
-static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder) -> void
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.EvaluateDirectives(Microsoft.Build.Execution.ProjectInstance? project, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives, Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, bool reportAllErrors, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder) -> void
 static Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.ConvertStringToBool(string? parameterValue, bool defaultValue = false) -> bool
 static Microsoft.DotNet.FileBasedPrograms.Patterns.DisallowedNameCharacters.get -> System.Text.RegularExpressions.Regex!
 static Microsoft.DotNet.FileBasedPrograms.Patterns.EscapedCompilerOption.get -> System.Text.RegularExpressions.Regex!
@@ -133,6 +123,9 @@ static Microsoft.DotNet.FileBasedPrograms.Patterns.Whitespace.get -> System.Text
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.Load(string! filePath) -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator !=(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator ==(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
+static Microsoft.DotNet.ProjectTools.ProjectLocator.TryGetProjectFileFromDirectory(string! projectDirectory, out string? projectFilePath, out string? error) -> bool
+static readonly Microsoft.DotNet.FileBasedPrograms.ErrorReporters.IgnoringReporter -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 static readonly Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer.Instance -> Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer!
+virtual Microsoft.DotNet.FileBasedPrograms.ErrorReporter.Invoke(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.Text.TextSpan textSpan, string! message) -> void
 ~override Microsoft.DotNet.FileBasedPrograms.SourceFile.Equals(object obj) -> bool
 ~override Microsoft.DotNet.FileBasedPrograms.SourceFile.ToString() -> string

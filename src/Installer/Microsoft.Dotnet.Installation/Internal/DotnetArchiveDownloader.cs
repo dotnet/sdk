@@ -18,7 +18,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private readonly HttpClient _httpClient;
     private readonly bool _shouldDisposeHttpClient;
-    private readonly ReleaseManifest _releaseManifest;
+    private ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
@@ -81,7 +81,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         // Create temp file path in same directory for atomic move when complete
         string tempPath = $"{destinationPath}.download";
@@ -97,7 +97,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 long? totalBytes = null;
 
                 // Make the actual download request
-                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
                 if (response.Content.Headers.ContentLength.HasValue)
@@ -105,7 +105,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                     totalBytes = response.Content.Headers.ContentLength.Value;
                 }
 
-                using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var contentStream = await response.Content.ReadAsStreamAsync();
                 using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
                 var buffer = new byte[81920]; // 80KB buffer
@@ -114,9 +114,9 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
                 var lastProgressReport = DateTime.MinValue;
 
-                while ((read = await contentStream.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+                while ((read = await contentStream.ReadAsync(buffer)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
 
                     bytesRead += read;
 
@@ -133,7 +133,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 progress?.Report(new DownloadProgress(bytesRead, totalBytes));
 
                 // Ensure all data is written to disk
-                await fileStream.FlushAsync().ConfigureAwait(false);
+                await fileStream.FlushAsync();
                 fileStream.Close();
 
                 // Atomic move to final destination
@@ -149,7 +149,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             {
                 if (attempt < MaxRetryCount)
                 {
-                    await Task.Delay(RetryDelayMilliseconds * attempt).ConfigureAwait(false); // Linear backoff
+                    await Task.Delay(RetryDelayMilliseconds * attempt); // Linear backoff
                 }
                 else
                 {
@@ -182,7 +182,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
     }
@@ -280,6 +280,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             // Ignore errors adding to cache - it's not critical
         }
     }
+
 
     /// <summary>
     /// Computes the SHA512 hash of a file.

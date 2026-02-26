@@ -15,7 +15,7 @@ public static partial class VersionSanitizer
     /// <summary>
     /// Known safe channel keywords (sourced from ChannelVersionResolver).
     /// </summary>
-    private static readonly HashSet<string> s_safeKeywords = new(ChannelVersionResolver.KnownChannelKeywords, StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> SafeKeywords = new(ChannelVersionResolver.KnownChannelKeywords, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Known safe prerelease tokens that can appear after a hyphen in version strings.
@@ -46,7 +46,7 @@ public static partial class VersionSanitizer
         var trimmed = versionOrChannel.Trim();
 
         // Check for known safe keywords
-        if (s_safeKeywords.Contains(trimmed))
+        if (SafeKeywords.Contains(trimmed))
         {
             return trimmed.ToLowerInvariant();
         }
@@ -93,6 +93,7 @@ public static partial class VersionSanitizer
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }
 
+
         // Check for partial versions like "8" or "8.0" which ReleaseVersion may not parse
         var parts = version.Split('.');
         if (parts.Length <= 2 && parts.All(p => int.TryParse(p, out var n) && n >= 0 && n < 100))
@@ -116,6 +117,6 @@ public static partial class VersionSanitizer
         }
 
         var trimmed = versionOrChannel.Trim();
-        return s_safeKeywords.Contains(trimmed) || IsValidVersionPattern(trimmed);
+        return SafeKeywords.Contains(trimmed) || IsValidVersionPattern(trimmed);
     }
 }

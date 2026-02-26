@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -71,7 +71,7 @@ namespace Microsoft.NET.Build.Tests
             new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, hostExecutable))
                 .WithEnvironmentVariable(
                     Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
-                    Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath))
+                    Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath))
                 .Execute()
                 .Should()
                 .Pass()
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64")]
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -135,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const bool CodesignsByDefault = true;
             const string testAssetName = "HelloWorld";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp2.2")]
         public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -203,7 +203,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var targetFramework = "netcoreapp3.1";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: target)
                 .WithTargetFramework(targetFramework)
                 .WithSource();
@@ -251,7 +251,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
@@ -283,7 +283,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
             testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -329,7 +329,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AssemblyVersion", version);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.1";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -391,7 +391,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["UseAppHost"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -414,7 +414,7 @@ namespace Microsoft.NET.Build.Tests
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

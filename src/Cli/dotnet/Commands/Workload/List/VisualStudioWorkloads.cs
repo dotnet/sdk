@@ -1,14 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Com;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
@@ -21,8 +22,6 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 internal static class VisualStudioWorkloads
 {
     private static readonly object s_guard = new();
-
-    private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
 
     /// <summary>
     /// Visual Studio product ID filters. We dont' want to query SKUs such as Server, TeamExplorer, TestAgent
@@ -69,8 +68,9 @@ internal static class VisualStudioWorkloads
         foreach (var workload in workloadResolver.GetAvailableWorkloads())
         {
             string workloadId = workload.Id.ToString();
+
             // Old style VS components simply replaced '-' with '.' in the workload ID.
-            string componentId = workload.Id.ToString().Replace('-', '.');
+            string componentId = workloadId.Replace('-', '.');
 
             visualStudioComponentWorkloads.Add(componentId, workloadId);
 
@@ -84,7 +84,7 @@ internal static class VisualStudioWorkloads
                 }
             }
 
-            componentId = s_visualStudioComponentPrefix + "." + componentId;
+            componentId = $"{s_visualStudioComponentPrefix}.{componentId}";
             visualStudioComponentWorkloads.Add(componentId, workloadId);
         }
 
@@ -92,16 +92,47 @@ internal static class VisualStudioWorkloads
     }
 
     /// <summary>
-    /// Finds all workloads installed by all Visual Studio instances given that the
-    /// SDK installed by an instance matches the feature band of the currently executing SDK.
+    ///  Finds all workloads installed by all Visual Studio instances given that the
+    ///  SDK installed by an instance matches the feature band of the currently executing SDK.
     /// </summary>
     /// <param name="workloadResolver">The workload resolver used to obtain available workloads.</param>
     /// <param name="installedWorkloads">The collection of installed workloads to update.</param>
-    /// <param name="sdkFeatureBand">The feature band of the executing SDK.
-    /// If null, then workloads from all feature bands in VS will be returned.
+    /// <param name="sdkFeatureBand">
+    ///  The feature band of the executing SDK.
+    ///  If <see langword="null"/>, then workloads from all feature bands in VS will be returned.
     /// </param>
-    internal static void GetInstalledWorkloads(IWorkloadResolver workloadResolver,
-        InstalledWorkloadsCollection installedWorkloads, SdkFeatureBand? sdkFeatureBand = null)
+    internal static unsafe void GetInstalledWorkloads(
+        IWorkloadResolver workloadResolver,
+        InstalledWorkloadsCollection installedWorkloads,
+        SdkFeatureBand? sdkFeatureBand = null)
+    {
+        if (!ComClassFactory.TryCreate(CLSID.SetupConfiguration, out ComClassFactory? factory, out HRESULT result))
+        {
+            // Query API not registered, good indication there are no VS installations of 15.0 or later.
+            // If we hit any other errors here, assert so we can investigate.
+            Debug.Assert(result == HRESULT.REGDB_E_CLASSNOTREG);
+            return;
+        }
+
+        using (factory)
+        {
+            using var setupConfiguration = factory.TryCreateInstance<ISetupConfiguration2>(out result);
+
+            GetInstalledWorkloads(
+                workloadResolver,
+                installedWorkloads,
+                setupConfiguration,
+                sdkFeatureBand);
+        }
+    }
+
+    /// <inheritdoc cref="GetInstalledWorkloads(IWorkloadResolver, InstalledWorkloadsCollection, SdkFeatureBand?)"/>
+    /// <param name="setupConfiguration">The Visual Studio setup interface.</param>
+    internal static unsafe void GetInstalledWorkloads(
+        IWorkloadResolver workloadResolver,
+        InstalledWorkloadsCollection installedWorkloads,
+        ISetupConfiguration2* setupConfiguration,
+        SdkFeatureBand? sdkFeatureBand = null)
     {
         Dictionary<string, string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
         HashSet<string> installedWorkloadComponents = [];
@@ -109,47 +140,99 @@ internal static class VisualStudioWorkloads
         // Visual Studio instances contain a large set of packages and we have to perform a linear
         // search to determine whether a matching SDK was installed and look for each installable
         // workload from the SDK. The search is optimized to only scan each set of packages once.
-        foreach (ISetupInstance2 instance in GetVisualStudioInstances())
+
+        using ComScope<IEnumSetupInstances> enumInstances = default;
+        setupConfiguration->EnumInstances(enumInstances).ThrowOnFailure();
+
+        using ComScope<ISetupInstance> setupInstance = default;
+        uint fetched;
+
+        HRESULT result;
+
+        // Enumerate all Visual Studio instances.
+        while ((result = enumInstances.Pointer->Next(1, setupInstance, &fetched)) == HRESULT.S_OK)
         {
-            ISetupPackageReference[] packages = instance.GetPackages();
-            bool hasMatchingSdk = false;
+            using ComScope<ISetupInstance2> setupInstance2 = setupInstance.QueryInterface<ISetupInstance2>();
+            setupInstance.Dispose();
+
+            using BSTR versionString = default;
+            setupInstance2.Pointer->GetInstallationVersion(&versionString);
+            if (!Version.TryParse(versionString, out Version? version) || version.Major < 17)
+            {
+                continue;
+            }
+
+            // Check to see if we have a Visual Studio product we care about.
+            // (Notably Community, Professional, Enterprise).
+            using ComScope<ISetupPackageReference> product = default;
+            setupInstance2.Pointer->GetProduct(product).ThrowOnFailure();
+            using BSTR productId = default;
+            product.Pointer->GetId(&productId).ThrowOnFailure();
+
+            bool found = false;
+            for (int i = 0; i < s_visualStudioProducts.Length; i++)
+            {
+                if (productId.AsSpan().SequenceEqual(s_visualStudioProducts[i]))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                // Not a Visual Studio product we care about.
+                continue;
+            }
+
+            // Now walk through all packages to find installed workloads and see if the SDK is installed.
+
             installedWorkloadComponents.Clear();
+
+            using ComSafeArrayScope<ISetupPackageReference> packages = default;
+            setupInstance2.Pointer->GetPackages(packages).ThrowOnFailure();
+
+            bool hasMatchingSdk = false;
 
             for (int i = 0; i < packages.Length; i++)
             {
-                string packageId = packages[i].GetId();
+                using ComScope<ISetupPackageReference> package = packages[i];
+                using BSTR packageId = default;
+                package.Pointer->GetId(&packageId).ThrowOnFailure();
 
-                if (string.IsNullOrWhiteSpace(packageId))
+                if (packageId.IsNull || packageId.Length == 0)
                 {
                     // Visual Studio already verifies the setup catalog at build time. If the package ID is empty
                     // the catalog is likely corrupted.
                     continue;
                 }
 
-                if (packageId.StartsWith(s_visualStudioSdkPackageIdPrefix)) // Check if the package owning SDK is installed via VS. Note: if a user checks to add a workload in VS but does not install the SDK, this will cause those workloads to be ignored.
+                // Check if the package owning SDK is installed via VS. Note: if a user checks to add a workload in VS
+                // but does not install the SDK, this will cause those workloads to be ignored.
+                ReadOnlySpan<char> packageIdSpan = packageId.AsSpan();
+                if (packageIdSpan.StartsWith(s_visualStudioSdkPackageIdPrefix))
                 {
                     // After trimming the package prefix we should be left with a valid semantic version. If we can't
                     // parse the version we'll skip this instance.
-                    if (!ReleaseVersion.TryParse(packageId.Substring(s_visualStudioSdkPackageIdPrefix.Length),
-                        out ReleaseVersion visualStudioSdkVersion))
+                    ReadOnlySpan<char> versionSpan = packageIdSpan[s_visualStudioSdkPackageIdPrefix.Length..];
+                    if (versionSpan.IsEmpty
+                        || !ReleaseVersion.TryParse(versionSpan.ToString(), out ReleaseVersion visualStudioSdkVersion))
                     {
                         break;
                     }
 
-                    SdkFeatureBand visualStudioSdkFeatureBand = new(visualStudioSdkVersion);
-
                     // The feature band of the SDK in VS must match that of the SDK on which we're running.
-                    if (sdkFeatureBand != null && !visualStudioSdkFeatureBand.Equals(sdkFeatureBand))
+                    if (sdkFeatureBand is not null && !sdkFeatureBand.Equals(new SdkFeatureBand(visualStudioSdkVersion)))
                     {
                         break;
                     }
 
                     hasMatchingSdk = true;
-
                     continue;
                 }
 
-                if (visualStudioWorkloadIds.TryGetValue(packageId, out string workloadId))
+                if (visualStudioWorkloadIds.TryGetAlternateLookup<ReadOnlySpan<char>>(out var altLookup)
+                    && altLookup.TryGetValue(packageId, out string? workloadId))
                 {
                     installedWorkloadComponents.Add(workloadId);
                 }
@@ -159,7 +242,7 @@ internal static class VisualStudioWorkloads
             {
                 foreach (string id in installedWorkloadComponents)
                 {
-                    installedWorkloads.Add(id, $"VS {instance.GetInstallationVersion()}");
+                    installedWorkloads.Add(id, $"VS {versionString}");
                 }
             }
         }
@@ -175,7 +258,7 @@ internal static class VisualStudioWorkloads
         IEnumerable<WorkloadId> workloadsWithExistingInstallRecords, IReporter reporter)
     {
         // Do this check to avoid adding an unused & unnecessary method to FileBasedInstallers
-        if (OperatingSystem.IsWindows() && workloadInstaller is NetSdkMsiInstallerClient)
+        if (OperatingSystem.IsWindows() && workloadInstaller is NetSdkMsiInstallerClient client)
         {
             InstalledWorkloadsCollection vsWorkloads = new();
             GetInstalledWorkloads(workloadResolver, vsWorkloads);
@@ -191,65 +274,12 @@ internal static class VisualStudioWorkloads
                     string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
                 );
 
-                ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
+                client.WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
 
                 return [.. workloadsWithExistingInstallRecords, .. workloadsToWriteRecordsFor];
             }
         }
 
         return workloadsWithExistingInstallRecords;
-
-    }
-
-    /// <summary>
-    /// Gets a list of all Visual Studio instances.
-    /// </summary>
-    /// <returns>A list of Visual Studio instances.</returns>
-    private static List<ISetupInstance> GetVisualStudioInstances()
-    {
-        // The underlying COM API has a bug where-by it's not safe for concurrent calls. Until their
-        // bug fix is rolled out use a lock to ensure we don't concurrently access this API.
-        // https://dev.azure.com/devdiv/DevDiv/_workitems/edit/2241752/
-        lock (s_guard)
-        {
-            List<ISetupInstance> vsInstances = [];
-
-            try
-            {
-                SetupConfiguration setupConfiguration = new();
-                ISetupConfiguration2 setupConfiguration2 = setupConfiguration;
-                IEnumSetupInstances setupInstances = setupConfiguration2.EnumInstances();
-                ISetupInstance[] instances = new ISetupInstance[1];
-                int fetched = 0;
-
-                do
-                {
-                    setupInstances.Next(1, instances, out fetched);
-
-                    if (fetched > 0)
-                    {
-                        ISetupInstance2 instance = (ISetupInstance2)instances[0];
-
-                        // .NET Workloads only shipped in 17.0 and later and we should only look at IDE based SKUs
-                        // such as community, professional, and enterprise.
-                        if (Version.TryParse(instance.GetInstallationVersion(), out Version version) &&
-                            version.Major >= 17 &&
-                            s_visualStudioProducts.Contains(instance.GetProduct().GetId()))
-                        {
-                            vsInstances.Add(instances[0]);
-                        }
-                    }
-                }
-                while (fetched > 0);
-
-            }
-            catch (COMException e) when (e.ErrorCode == REGDB_E_CLASSNOTREG)
-            {
-                // Query API not registered, good indication there are no VS installations of 15.0 or later.
-                // Other exceptions are passed through since that likely points to a real error.
-            }
-
-            return vsInstances;
-        }
     }
 }

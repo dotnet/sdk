@@ -19,12 +19,14 @@ public static class RestoreCommand
 
     public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
+        var definition = (RestoreCommandDefinition)result.CommandResult.Command;
+
         result.HandleDebugSwitch();
         result.ShowHelpOrErrorIfAppropriate();
 
         return CommandFactory.CreateVirtualOrPhysicalCommand(
-            RestoreCommandParser.GetCommand(),
-            RestoreCommandParser.SlnOrProjectOrFileArgument,
+            definition,
+            definition.SlnOrProjectOrFileArgument,
             static (msbuildArgs, appFilePath) =>
             {
                 return new VirtualProjectBuildingCommand(
@@ -40,7 +42,14 @@ public static class RestoreCommand
             {
                 return CreateForwarding(msbuildArgs, msbuildPath);
             },
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption, RestoreCommandParser.VerbosityOption, RestoreCommandParser.NoLogoOption],
+            optionsToUseWhenParsingMSBuildFlags:
+            [
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
+                RestoreCommandDefinition.CreateTargetOption(),
+                CommonOptions.CreateVerbosityOption(),
+                CommonOptions.CreateNoLogoOption()
+            ],
             result,
             msbuildPath
         );
