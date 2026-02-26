@@ -10,13 +10,24 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class GenerateShims : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class GenerateShims : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         /// <summary>
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>
         [Required]
-        public ITaskItem[] ApphostsForShimRuntimeIdentifiers { get; private set; }
+        public ITaskItem[] ApphostsForShimRuntimeIdentifiers { get; set; }
 
         [Required]
         public string IntermediateAssembly { get; set; }
@@ -75,13 +86,19 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+            if (ShimRuntimeIdentifiers == null || ShimRuntimeIdentifiers.Length == 0)
+            {
+                EmbeddedApphostPaths = Array.Empty<ITaskItem>();
+                return;
+            }
+
             var embeddedApphostPaths = new List<ITaskItem>();
             foreach (var runtimeIdentifier in ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
             {
-                var resolvedApphostAssetPath = GetApphostAsset(ApphostsForShimRuntimeIdentifiers, runtimeIdentifier);
+                var resolvedApphostAssetPath = (string)TaskEnvironment.GetAbsolutePath(GetApphostAsset(ApphostsForShimRuntimeIdentifiers, runtimeIdentifier));
 
                 var packagedShimOutputDirectoryAndRid = Path.Combine(
-                        PackagedShimOutputDirectory,
+                        (string)TaskEnvironment.GetAbsolutePath(PackagedShimOutputDirectory),
                         runtimeIdentifier);
 
                 var appHostDestinationFilePath = Path.Combine(
@@ -115,7 +132,7 @@ namespace Microsoft.NET.Build.Tasks
                                                  appHostDestinationFilePath: appHostDestinationFilePath,
                                                  appBinaryFilePath: appBinaryFilePath,
                                                  windowsGraphicalUserInterface: windowsGraphicalUserInterface,
-                                                 assemblyToCopyResourcesFrom: IntermediateAssembly);
+                                                 assemblyToCopyResourcesFrom: (string)TaskEnvironment.GetAbsolutePath(IntermediateAssembly));
                     }
                     else
                     {
