@@ -12,8 +12,19 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GetPackagesToPrune : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetPackagesToPrune : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         // Minimum .NET Core version that supports package pruning
         private const int FrameworkReferenceMinVersion = 3;
         
@@ -134,7 +145,10 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log, AllowMissingPrunePackageData);
+            PackagesToPrune = LoadPackagesToPrune(key,
+                TargetingPackRoots.Select(r => TaskEnvironment.GetAbsolutePath(r).Value).ToArray(),
+                TaskEnvironment.GetAbsolutePath(PrunePackageDataRoot).Value,
+                Log, AllowMissingPrunePackageData);
 
             BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }

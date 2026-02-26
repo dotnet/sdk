@@ -12,8 +12,20 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Parses the target manifest files into MSBuild Items.
     /// </summary>
-    public sealed class ParseTargetManifests : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ParseTargetManifests : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public string TargetManifestFiles { get; set; }
 
         [Output]
@@ -28,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
                 var runtimeStorePackages = new Dictionary<PackageIdentity, StringBuilder>();
                 foreach (var manifestFile in targetManifestFileList)
                 {
-                    var packagesSpecified = StoreArtifactParser.Parse(manifestFile);
+                    var packagesSpecified = StoreArtifactParser.Parse(TaskEnvironment.GetAbsolutePath(manifestFile));
                     var targetManifestFileName = Path.GetFileName(manifestFile);
 
                     foreach (var pkg in packagesSpecified)
