@@ -1,122 +1,83 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.CommandLine;
 
-namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
+namespace Microsoft.DotNet.Cli.Commands.Tool;
 
-internal class ToolAppliedOption
+internal static class ToolAppliedOption
 {
-    private const string GlobalOptionName = "--global";
-    private const string LocalOptionName = "--local";
-    private const string ToolPathName = "--tool-path";
-    private const string ToolManifestName = "--tool-manifest";
-
-    public static Option<bool> GlobalOption(string description) => new(GlobalOptionName, "-g")
+    public static Option<bool> CreateGlobalOption(string description) => new("--global", "-g")
     {
         Arity = ArgumentArity.Zero,
         Description = description
     };
 
-    public static Option<bool> LocalOption(string description) => new(LocalOptionName)
+    public static Option<bool> CreateLocalOption(string description) => new("--local")
     {
         Arity = ArgumentArity.Zero,
         Description = description,
     };
 
-    public static Option<bool> UpdateAllOption = new("--all")
+    public static Option<bool> CreateUpdateAllOption() => new("--all")
     {
         Description = CliCommandStrings.UpdateAllOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string> VersionOption
-        = ToolInstallCommandParser.VersionOption
-          ?? new("--version"); // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
+    public static Option<string> CreateVersionOption() => new("--version")
+    {
+        Description = CliCommandStrings.ToolInstallVersionOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallVersionOptionName
+    };
 
-    public static Option<string> ToolPathOption(string description) => new(ToolPathName)
+    public static Option<string> CreateToolPathOption(string description) => new("--tool-path")
     {
         HelpName = CliCommandStrings.ToolInstallToolPathOptionName,
         Description = description,
     };
 
-    public static Option<string> ToolManifestOption(string description) => new(ToolManifestName)
+    public static Option<string> CreateToolManifestOption(string description) => new("--tool-manifest")
     {
         HelpName = CliCommandStrings.ToolInstallManifestPathOptionName,
         Arity = ArgumentArity.ZeroOrOne,
         Description = description,
     };
 
-    internal static void EnsureNoConflictGlobalLocalToolPathOption(
-        ParseResult parseResult,
-        string message)
+    public static Option<bool> CreatePrereleaseOption() => new("--prerelease")
     {
-        List<string> options = [];
-        if (parseResult.HasOption(GlobalOptionName))
-        {
-            options.Add(GlobalOptionName);
-        }
+        Description = CliCommandStrings.ToolSearchPrereleaseDescription,
+        Arity = ArgumentArity.Zero
+    };
 
-        if (parseResult.HasOption(LocalOptionName))
-        {
-            options.Add(LocalOptionName);
-        }
-
-        if (parseResult.HasOption(ToolPathName))
-        {
-            options.Add(ToolPathName);
-        }
-
-        if (options.Count > 1)
-        {
-            throw new GracefulException(
-                string.Format(
-                    message,
-                    string.Join(" ", options)));
-        }
-    }
-
-    internal static void EnsureNoConflictUpdateAllVersionOption(
-        ParseResult parseResult,
-        string message)
+    public static Option<bool> CreateRollForwardOption() => new("--allow-roll-forward")
     {
-        List<string> options = [];
-        if (parseResult.HasOption(UpdateAllOption))
-        {
-            options.Add(UpdateAllOption.Name);
-        }
+        Description = CliCommandStrings.RollForwardOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
 
-        if (parseResult.HasOption(VersionOption))
-        {
-            options.Add(VersionOption.Name);
-        }
-
-        if (options.Count > 1)
-        {
-            throw new GracefulException(
-                string.Format(
-                    message,
-                    string.Join(" ", options)));
-        }
-    }
-
-    internal static void EnsureToolManifestAndOnlyLocalFlagCombination(ParseResult parseResult)
+    public static Option<string> CreateConfigOption() => new("--configfile")
     {
-        if (GlobalOrToolPath(parseResult) &&
-            parseResult.HasOption(ToolManifestName))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
-        }
-    }
+        Description = CliCommandStrings.ToolInstallConfigFileOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallConfigFileOptionName
+    };
 
-    private static bool GlobalOrToolPath(ParseResult parseResult)
-        => parseResult.HasOption(GlobalOptionName)
-        || parseResult.HasOption(ToolPathName);
+    public static Option<string[]> CreateSourceOption() => new Option<string[]>("--source")
+    {
+        Description = CliCommandStrings.ToolInstallSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallSourceOptionName
+    }.AllowSingleArgPerToken();
+
+    public static Option<string[]> CreateAddSourceOption() => new Option<string[]>("--add-source")
+    {
+        Description = CliCommandStrings.ToolInstallAddSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallAddSourceOptionName
+    }.AllowSingleArgPerToken();
+
+    public static Option<bool> CreateAllowPackageDowngradeOption() => new("--allow-downgrade")
+    {
+        Description = CliCommandStrings.AllowPackageDowngradeOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
 }

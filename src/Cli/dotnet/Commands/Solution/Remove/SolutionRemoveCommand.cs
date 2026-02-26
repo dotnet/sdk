@@ -11,16 +11,16 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
-internal class SolutionRemoveCommand : CommandBase
+internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandDefinition>
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _projects;
 
-    public SolutionRemoveCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionRemoveCommand(ParseResult parseResult)
+        : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
-
-        _projects = (parseResult.GetValue(SolutionRemoveCommandParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument);
+        _projects = [.. parseResult.GetValue(Definition.ProjectPathArgument) ?? []];
 
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
@@ -40,7 +40,7 @@ internal class SolutionRemoveCommand : CommandBase
                 .Select(p => Path.GetRelativePath(
                     Path.GetDirectoryName(solutionFileFullPath),
                     Directory.Exists(p)
-                        ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
+                        ? MsbuildProject.GetProjectFileFromDirectory(p)
                         : p));
 
             RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();

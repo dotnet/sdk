@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {

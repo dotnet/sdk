@@ -201,15 +201,6 @@
   <data name="RequiredCommandNotPassed" xml:space="preserve">
     <value>Required command was not provided.</value>
   </data>
-  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
-    <value>Could not find any project in `{0}`.</value>
-  </data>
-  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
-    <value>Could not find project or directory `{0}`.</value>
-  </data>
-  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
-    <value>Found more than one project in `{0}`. Specify which one to use.</value>
-  </data>
   <data name="FoundInvalidProject" xml:space="preserve">
     <value>Found a project `{0}` but it is invalid.</value>
   </data>

@@ -53,12 +53,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static IReadOnlyDictionary<FilterOptionDefinition, OptionResult> ParseFilters(IFilterableCommand filterableCommand, ParseResult parseResult)
         {
             Dictionary<FilterOptionDefinition, OptionResult> filterValues = new();
-            foreach (var filter in filterableCommand.Filters)
+            foreach (var option in filterableCommand.FilterOptions)
             {
-                OptionResult? value = parseResult.GetResult(filter.Value);
+                OptionResult? value = parseResult.GetResult(option);
                 if (value != null)
                 {
-                    filterValues[filter.Key] = value;
+                    filterValues[FilterOptionDefinition.AllDefinitions[option.Name]] = value;
                 }
             }
             return filterValues;
