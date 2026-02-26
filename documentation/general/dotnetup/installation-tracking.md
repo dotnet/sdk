@@ -136,6 +136,16 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 Users may use dotnetup to install SDKs or runtimes into a folder that already has other versions installed, which were not installed by dotnetup.  This means that the dotnetup manifest won't contain any entries for that dotnet root.  If we don't do any special handling of the existing items in the root, then garbage collection would immediately delete them all.
 
-When dotnetup encounters this situation, it should examine the dotnet root for existing .NET SDK and runtime installation folders, and create install specs in the manifest for those.  That way all existing components will stay until they are explicitly uninstalled.
+There are multiple ways we can handle this:
 
-We may also eventually want to have an experience where channels can be assigned to the specific versions installed when this happens, so that they can be updated instead of pinned at the specific version.
+- We can error out and tell the user it's not supported to install into existing non-dotnetup-managed dotnet roots.
+- We can examine the dotnet root for existing components and record an install spec, installation, and subcomponents of the installation to cover all the existing files in the folder.  That way they won't be garbage collected for future operations.  Later the user could choose to uninstall all of the previous versions as a single entity if they have fully migrated to dotnetup installations.
+- We could try to detect what components are installed and re-create installations for them.  This would likely require downloading the original archives for those components so we can map what subcomponents belong to each one.
+
+We will start with the first option (or possibly the second if it's trivial enough to implement), and adjust based on user feedback.
+
+NOTE: If the manifest is corrupted, it may be necessary to delete it and start from scratch, which may mean reinstalling all components.
+
+### Concurrency / locking
+
+We'll use the ScopedMutex over `MutexNames.ModifyInstallationStates` to prevent multiple processes from accessing the manifest or executing install operations at the same time.
