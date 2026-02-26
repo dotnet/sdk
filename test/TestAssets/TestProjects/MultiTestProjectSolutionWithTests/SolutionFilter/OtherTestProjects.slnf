@@ -1,8 +1,8 @@
 {
   "solution": {
-    "path": "../MultiTestProjectSolutionWithTests.sln",
+    "path": "..\\MultiTestProjectSolutionWithTests.sln",
     "projects": [
-      "TestProject/TestProject.csproj"
+      "TestProject\\TestProject.csproj"
     ]
   }
 }

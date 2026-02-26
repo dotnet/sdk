@@ -1,12 +1,6 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-  </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
-  <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
@@ -16,7 +10,41 @@
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOTNET_BUILDSOURCEONLY</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net472'">
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- Exclude Framework folder from non .NET Framework builds -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/Framework/**/*</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <!-- Include the Framework specific items as none so we can see them easily in the Solution Explorer. -->
+    <None Include="**/Framework/**/*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <Compile Remove="Windows\**" />
+    <Compile Remove="DangerousFileDetector.cs" />
+    <Compile Remove="WindowsRegistryEnvironmentPathEditor.cs" />
+    <Compile Remove="Extensions\ProcessExtensions.cs" />
+    <Compile Remove="DotDefaultPathCorrector.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <None Include="**/*_SourceBuild.cs" />
+    <Compile Remove="**/*_SourceBuild.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
@@ -28,9 +56,7 @@
   </ItemGroup>
 
   <Target Name="VerifyMSBuildDependency" BeforeTargets="ResolveAssemblyReferences" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'">
-    <!-- We explicitly reference an older version of MSBuild here to support VS
-    for Mac and other VS scenarios. During source-build, we only have access to
-    the latest version, which targets NetCurrent. -->
+    <!-- We explicitly reference an older version of MSBuild here to support VS scenarios. During source-build, we only have access to the latest version, which targets NetCurrent. -->
     <PropertyGroup>
       <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net10.0\MSBuild.dll</MSBuildPathInPackage>
       <MSBuildPathInPackage Condition="'$(DotNetBuildSourceOnly)' == 'true' and !Exists($(MSBuildPathInPackage))">$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(NetCurrent)\MSBuild.dll</MSBuildPathInPackage>
@@ -42,10 +68,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Runtime"
-        ExcludeAssets="all"
-        Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'"
-        GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Runtime" ExcludeAssets="all" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
@@ -55,11 +78,38 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Hashing" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+  </ItemGroup>
+
+  <!--
+    PolySharp related (source generated polyfills for .NET Framework)
+  -->
+  <PropertyGroup>
+    <PolySharpUsePublicAccessibilityForGeneratedTypes>false</PolySharpUsePublicAccessibilityForGeneratedTypes>
+    <!--
+      CsWin32 also polyfills some types because were making the PolySharp polyfill internal.
+    -->
+    <PolySharpExcludeGeneratedTypes>
+      System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute;
+      System.Diagnostics.CodeAnalysis.UnscopedRefAttribute
+    </PolySharpExcludeGeneratedTypes>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="PolySharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             };
 
             _toolPackageDownloader = new ToolPackageDownloaderMock2(_store,
-                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                 currentWorkingDirectory: null,
                 fileSystem: _fileSystem);
 
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
             var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
-            toolUpdateCommand._toolInstallGlobalOrToolPathCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -452,7 +452,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                packageId is null ? _packageId : new PackageId(packageId) ,
                 (location, forwardArguments, currentWorkingDirectory) => (_store, _store, _toolPackageDownloader, new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _environmentPathInstructionMock,

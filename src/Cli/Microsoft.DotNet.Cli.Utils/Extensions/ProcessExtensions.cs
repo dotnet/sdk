@@ -5,8 +5,9 @@
 using System.Runtime.Versioning;
 #endif
 
-using System.Diagnostics;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32.System.Threading;
+using Windows.Wdk.System.Threading;
 
 namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -39,10 +40,15 @@ public static class ProcessExtensions
     public static unsafe int GetParentProcessId(this Process process)
     {
         SafeProcessHandle handle = process.SafeHandle;
-        NativeMethods.Windows.PROCESS_BASIC_INFORMATION info;
+        PROCESS_BASIC_INFORMATION info;
+        uint returnLength = 0;
 
-        if (NativeMethods.Windows.NtQueryInformationProcess(handle, NativeMethods.Windows.ProcessBasicInformation,
-            &info, (uint)sizeof(NativeMethods.Windows.PROCESS_BASIC_INFORMATION), out _) != 0)
+        if (WDK.PInvoke.NtQueryInformationProcess(
+            (HANDLE)handle.DangerousGetHandle(),
+            PROCESSINFOCLASS.ProcessBasicInformation,
+            &info,
+            (uint)sizeof(PROCESS_BASIC_INFORMATION),
+            ref returnLength) != 0)
         {
             return -1;
         }

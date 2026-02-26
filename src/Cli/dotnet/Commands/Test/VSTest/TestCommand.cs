@@ -78,6 +78,8 @@ public class TestCommand(
 
     private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         // Workaround for https://github.com/Microsoft/vstest/issues/1503
         const string NodeWindowEnvironmentName = "MSBUILDENSURESTDOUTFORTASKPROCESSES";
         string? previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
@@ -126,7 +128,7 @@ public class TestCommand(
             int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
             return exitCode;
         }
@@ -148,6 +150,8 @@ public class TestCommand(
 
     private static int ForwardToVSTestConsole(ParseResult parseResult, string[] args, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         List<string> convertedArgs = new VSTestArgumentConverter().Convert(args, out List<string> ignoredArgs);
         if (ignoredArgs.Any())
         {
@@ -168,7 +172,7 @@ public class TestCommand(
         int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
         return exitCode;
     }
@@ -189,6 +193,8 @@ public class TestCommand(
 
     private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string? msbuildPath = null)
     {
+        var definition = (TestCommandDefinition.VSTest)result.CommandResult.Command;
+
         result.ShowHelpOrErrorIfAppropriate();
 
         // Extra msbuild properties won't be parsed and so end up in the UnmatchedTokens list. In addition to those
@@ -200,7 +206,7 @@ public class TestCommand(
             : result.UnmatchedTokens;
 
         var parsedArgs =
-            result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()) // all msbuild-recognized tokens
+            result.OptionValuesToBeForwarded(definition.Options) // all msbuild-recognized tokens
                 .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
@@ -216,7 +222,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string? verbosityArg = result.ForwardedOptionValues(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues(definition, "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -233,15 +239,15 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandDefinition.NoRestoreOption) || result.GetValue(TestCommandDefinition.NoBuildOption);
+        bool noRestore = result.GetValue(definition.NoRestoreOption) || result.GetValue(definition.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
-            TestCommandDefinition.VsTestTargetOption,
-            TestCommandDefinition.VerbosityOption,
-            CommonOptions.NoLogoOption())
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateRequiredMSBuildTargetOption("VSTest"),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption())
             .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
@@ -250,7 +256,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(CommonOptions.TestEnvOption) is { } environmentVariables)
+        if (result.GetValue(definition.TestEnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {
@@ -269,7 +275,7 @@ public class TestCommand(
         return testCommand;
     }
 
-    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag disableFeatureFlag)
+    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, string? diag, FeatureFlag disableFeatureFlag)
     {
         if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
         {
@@ -288,9 +294,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandDefinition.DiagOption) is not null)
+        if (diag != null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandDefinition.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{diag}");
         }
 
         try

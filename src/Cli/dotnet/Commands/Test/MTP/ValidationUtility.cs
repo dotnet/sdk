@@ -11,39 +11,41 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class ValidationUtility
 {
-    public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult)
+    public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult, PathOptions pathOptions)
     {
-        ValidatePathOptions(parseResult);
-        ValidateOptionsIrrelevantToModulesFilter(parseResult);
+        ValidatePathOptions(pathOptions);
+        ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        static void ValidatePathOptions(ParseResult parseResult)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
+            if (pathOptions.TestModules is not null)
                 count++;
 
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.SolutionOption))
+            if (pathOptions.SolutionPath is not null)
                 count++;
 
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption))
+            if (pathOptions.ProjectOrSolutionPath is not null)
                 count++;
 
             if (count > 1)
                 throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
 
-        static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
+        static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult, string? testModules)
         {
-            if (!parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
+            if (testModules is null)
             {
                 return;
             }
 
-            if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-                parseResult.HasOption(MicrosoftTestingPlatformOptions.ConfigurationOption) ||
-                parseResult.HasOption(MicrosoftTestingPlatformOptions.FrameworkOption) ||
-                parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-                parseResult.HasOption(CommonOptions.RuntimeOptionName))
+            var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
+            if (parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
+                parseResult.HasOption(definition.ConfigurationOption) ||
+                parseResult.HasOption(definition.FrameworkOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
@@ -93,47 +95,6 @@ internal static class ValidationUtility
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Validates that arguments requiring specific command-line switches are used correctly for Microsoft.Testing.Platform.
-    /// Provides helpful error messages when users provide file/directory arguments without proper switches.
-    /// </summary>
-    public static void ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(ParseResult parseResult)
-    {
-        if (Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is "true" or "1")
-        {
-            // In case there is a valid case, users can opt-out.
-            // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
-            // So, disabling validation is okay if the user scenario is valid.
-            return;
-        }
-
-        foreach (string token in parseResult.UnmatchedTokens)
-        {
-            // Check for .sln files
-            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
-                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
-            }
-            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseProject);
-            }
-            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
-                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
-                     File.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
-            }
-            else if (Directory.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
-            }
-        }
     }
 
     private static bool ValidateSolutionPath(string solutionFileOrDirectory, [NotNullWhen(true)] out string? solutionFile)

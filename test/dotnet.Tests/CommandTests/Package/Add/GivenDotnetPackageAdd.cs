@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands;
+using Xunit.Runners;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -16,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedBeforeVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -90,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -112,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenPrereleaseAndVersionOptionIsPassedFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -151,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             WhenValidProjectAndPackageWithPackageDirectoryContainingSpaceArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -178,7 +179,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedAfterVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -199,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedWithFrameworkItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -221,7 +222,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedMSBuildDoesNotPrintVersionHeader()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -240,7 +241,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenMultiplePackagesArePassedCommandFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -255,7 +256,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenNoPackageisPassedCommandFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -271,13 +272,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void VersionRange(bool asArgument)
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
 
-            var packageName = "Humanizer";
-            var packageVersion = "2.*";
+            var packageName = "Newtonsoft.Json";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion().Split('.')[0] + ".*";
             string[] args = asArgument
                 ? ["add", "package", $"{packageName}@{packageVersion}"]
                 : ["add", "package", packageName, "--version", packageVersion];
@@ -290,7 +291,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        private string[]? GetFileBasedAppArgs(bool legacyForm, bool? versionOption, bool fileOption, bool noRestore, string packageName = "Humanizer")
+        private string[]? GetFileBasedAppArgs(bool legacyForm, bool? versionOption, bool fileOption, bool noRestore, string packageName = "Newtonsoft.Json", string? packageVersion = null)
         {
             if (!legacyForm && !fileOption)
             {
@@ -302,14 +303,16 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 ? ("add", "package")
                 : ("package", "add");
 
+            packageVersion ??= ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+
             return [
                 commandArgs.Item1,
                 .. (ReadOnlySpan<string>)(fileOption ? [] : ["Program.cs"]),
                 commandArgs.Item2,
                 .. (ReadOnlySpan<string>)(versionOption switch
                 {
-                    true => [packageName, "--version", "2.14.1"],
-                    false => [$"{packageName}@2.14.1"],
+                    true => [packageName, "--version", packageVersion],
+                    false => [$"{packageName}@{packageVersion}"],
                     null => [packageName],
                 }),
                 .. (ReadOnlySpan<string>)(fileOption ? ["--file", "Program.cs"] : []),
@@ -322,7 +325,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -333,8 +336,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Execute()
                 .Should().Pass();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Humanizer@2.14.1
+            File.ReadAllText(file).Should().Be($"""
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
 
                 Console.WriteLine();
                 """);
@@ -342,15 +345,15 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
         [Theory, CombinatorialData]
         public void FileBasedApp_ReplaceExisting(
-            [CombinatorialValues("Humanizer", "humanizer")] string sourceFilePackageId,
+            [CombinatorialValues("Newtonsoft.Json", "newtonsoft.json")] string sourceFilePackageId,
             bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
-                #:package {sourceFilePackageId}@2.9.9
+                #:package {sourceFilePackageId}@13.0.1
                 Console.WriteLine();
                 """);
 
@@ -360,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Humanizer@2.14.1
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
                 Console.WriteLine();
                 """);
         }
@@ -368,7 +371,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, MemberData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion(string[] inputVersions, string? expectedVersion, string _)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             var packages = inputVersions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
@@ -405,7 +408,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, MemberData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion_Prerelease(string[] inputVersions, string? _, string expectedVersion)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             var packages = inputVersions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
@@ -435,7 +438,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -447,7 +450,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be("""
-                #:package Humanizer@*
+                #:package Newtonsoft.Json@*
 
                 Console.WriteLine();
                 """);
@@ -458,7 +461,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -479,7 +482,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -499,7 +502,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -522,7 +525,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -544,18 +547,18 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Humanizer
+                #:package Newtonsoft.Json
 
                 {source}
                 """);
 
-            File.ReadAllText(directoryPackagesProps).Should().Be("""
+            File.ReadAllText(directoryPackagesProps).Should().Be($"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.14.1" />
+                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -564,9 +567,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_ReplaceExisting(bool wasInFile, bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            const string OlderVersion = "13.0.1";
+
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -575,7 +580,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             if (wasInFile)
             {
                 source = $"""
-                    #:package Humanizer@2.9.9
+                    #:package Newtonsoft.Json@{OlderVersion}
 
                     {source}
                     """;
@@ -584,13 +589,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             File.WriteAllText(file, source);
 
             var directoryPackagesProps = Path.Join(testInstance.Path, "Directory.Packages.props");
-            File.WriteAllText(directoryPackagesProps, """
+            File.WriteAllText(directoryPackagesProps, $"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.9.9" />
+                    <PackageVersion Include="Newtonsoft.Json" Version="{OlderVersion}" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -601,18 +606,18 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be("""
-                #:package Humanizer
+                #:package Newtonsoft.Json
 
                 Console.WriteLine();
                 """);
 
-            File.ReadAllText(directoryPackagesProps).Should().Be("""
+            File.ReadAllText(directoryPackagesProps).Should().Be($"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.14.1" />
+                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -623,7 +628,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "A") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
             var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
@@ -671,12 +676,19 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
-            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore) is not { } args) return;
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: "A") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+
+            string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
+            var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
+
+            var restoreSources = string.Join(";", packages.Select(package => Path.GetDirectoryName(package)));
+
             var file = Path.Join(testInstance.Path, "Program.cs");
-            var source = """
-                #:package Humanizer
+            var source = $"""
+                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:package A
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -688,7 +700,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.9.9" />
+                    <PackageVersion Include="A" Version="0.0.5" />
                   </ItemGroup>
                 </Project>
                 """;
@@ -718,7 +730,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         private string GetPackagePath(string targetFramework, string packageName, string version, [CallerMemberName] string callingMethod = "", string? identifier = null)
         {
             var project = GetProject(targetFramework, packageName, version);
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
 
             packCommand
                 .Execute()

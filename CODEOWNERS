@@ -2,119 +2,19 @@
 # Each line is a file pattern followed by one or more owners.
 # Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
-# These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @dotnet/dotnet-cli  will be requested for
-# review when someone opens a pull request.
-# Issue/PR labels to use are listed before each section
+# Simplified CODEOWNERS for the release/dnup branch.
+# Full area-specific ownership rules live on the main branch.
+# This file is kept minimal to avoid noisy review requests on
+# automated merge PRs (main -> release/dnup). All changes flowing
+# here were already reviewed on their source branch.
+#
+# To prevent main's CODEOWNERS from overwriting this file during
+# automated merges, CODEOWNERS is listed in ResetToTargetPaths in
+# github-merge-flow.jsonc on the main branch.
 
-# Area-WebSDK
-/src/WebSdk/ @vijayrkn
-/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
-
-# Area-AspNetCore
-/src/BlazorWasmSdk/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
-/src/RazorSdk/ @dotnet/razor-compiler
-/test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
-/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
-/test/TestAssets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-compiler
-
-# Area-Wasm
-/src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
-
-# Area-Format
-/src/Cli/dotnet/Commands/Format @phil-allen-msft
-/test/dotnet-format.UnitTests @phil-allen-msft
-
-# Area-NuGet
-/src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
-/src/Cli/dotnet/Commands/Pack @dotnet/nuget-team
-/src/Cli/dotnet/Commands/Package @dotnet/nuget-team
-/src/Cli/dotnet/Commands/Restore @dotnet/nuget-team
-/test/Microsoft.NET.Restore.Tests @dotnet/nuget-team
-/test/Microsoft.NET.Pack.Tests @dotnet/nuget-team
-/test/dotnet.Tests/CommandTests/NuGet @dotnet/nuget-team
-/test/dotnet.Tests/CommandTests/Pack @dotnet/nuget-team
-/test/dotnet.Tests/CommandTests/Package @dotnet/nuget-team
-/test/dotnet.Tests/CommandTests/Restore @dotnet/nuget-team
-
-# Area-FSharp
-/src/Cli/dotnet/Commands/Fsi @dotnet/fsharp
-/test/dotnet-fsi.Tests @dotnet/fsharp
-
-# Area-DotNet Test
-/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing-admin
-/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/Test @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
-
-# Area-Templates
-/src/Cli/dotnet/Commands/New @dotnet/templating-engine-maintainers
-/src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
-/test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
-/test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
-/template_feed @dotnet/templating-engine-maintainers
-
-# ILLink and ReadyToRun targets and tasks owned by runtime team
-# Area-ILLink Area-ReadyToRun
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
-# Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
-# Area-ClickOnce
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
-
-# Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
-/test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
-
-# Compatibility tools owned by runtime team
-/src/Compatibility/ @dotnet/area-infrastructure-libraries
-
-# Area-ApiCompat
-/test/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
-/test/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
-/test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
-
-# Area-ApiDiff
-/test/Microsoft.DotNet.ApiDiff.Tests/ @dotnet/area-infrastructure-libraries
-
-# Area-GenAPI
-/src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries
-/src/Compatibility/Microsoft.DotNet.ApiSymbolExtensions/ @dotnet/area-infrastructure-libraries
-/test/Microsoft.DotNet.GenAPI/ @dotnet/area-infrastructure-libraries
-/test/Microsoft.DotNet.ApiSymbolExtensions.Tests/ @dotnet/area-infrastructure-libraries
-
-# Area-Containers
-/src/Cli/Containers @dotnet/sdk-container-builds-maintainers
-/test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
-/test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
-/test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
-
-# Area-Format
-/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.UnitTests @dotnet/roslyn-ide
-
-# Area-Microsoft.CodeAnalysis.NetAnalyzers
-/src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
-
-# Area-Infrastructure
-.vsts-ci.yml @MiYanni
-.vsts-pr.yml @MiYanni
-/eng/pipelines @MiYanni
+# Area-dotnetup
+/src/Installer/dotnetup/ @dotnet/dotnet-cli
+/test/dotnet-dotnetup.Tests/ @dotnet/dotnet-cli
+/.vsts-dnup-ci.yml @dotnet/dotnet-cli
+/.vsts-dnup-pr.yml @dotnet/dotnet-cli
+/eng/pipelines/templates/jobs/dotnetup/ @dotnet/dotnet-cli

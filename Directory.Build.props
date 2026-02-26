@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
     <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
@@ -20,6 +19,7 @@
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
 
     <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
@@ -43,16 +43,10 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net10.0</SdkTargetFramework>
-    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
-    <NetCurrent>net10.0</NetCurrent>
-    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
-    <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
-    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
+    <!-- TFMs -->
+    <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
+    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
@@ -76,13 +70,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51465 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Global usings -->
@@ -99,12 +101,7 @@
     <MicrosoftNETCoreAppHostPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
-    <!-- These are set based on the runtime shared framework and internal versions. This is because windowsdesktop is not built in
-         all VMR builds, but its version numbers are used to generate various bits of information. The VMR always aligns the version
-         numbers of the shared frameworks. -->
-    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <MicrosoftWindowsDesktopAppInternalPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftWindowsDesktopAppInternalPackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>

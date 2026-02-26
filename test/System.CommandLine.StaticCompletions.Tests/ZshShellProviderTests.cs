@@ -7,8 +7,6 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions.Shells;
-using Xunit;
-using Xunit.Abstractions;
 
 public class ZshShellProviderTests(ITestOutputHelper log)
 {

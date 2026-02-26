@@ -37,7 +37,7 @@ namespace Microsoft.NET.TestFramework
             string? overrideTfm = null,
             string? identifier = null)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -61,7 +61,7 @@ namespace Microsoft.NET.TestFramework
                     }
                 });
 
-            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
+            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(TestAssetsManager.TestAssetsRoot, "WasmOverride")))
                 File.Copy(assetPath, Path.Combine(projectDirectory.Path, Path.GetFileName(assetPath)));
 
             return projectDirectory;
@@ -74,7 +74,7 @@ namespace Microsoft.NET.TestFramework
             string? overrideTfm = null,
             string? identifier = null)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_does_not_publish_a_PackageReference_with_PrivateAssets_All(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishExcludePackage", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_does_not_publish_a_PackageReference_with_Publish_false(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishPackagePublishFalse", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_publishes_a_PackageReference_with_PrivateAssets_All_and_Publish_true(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishPrivateAssets", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -195,7 +195,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.ReferencedProjects.Add(testLibraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -224,7 +224,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.ReferencedProjects.Add(testLibraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -249,7 +249,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json.Schema", "3.0.13"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyModel", "3.1.6", privateAssets: "all"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute().Should().Pass();

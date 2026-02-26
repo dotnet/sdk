@@ -9,16 +9,22 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
-internal class ToolRunCommand(
-    ParseResult result,
-    LocalToolsCommandResolver? localToolsCommandResolver = null,
-    ToolManifestFinder? toolManifest = null) : CommandBase(result)
+internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
 {
-    private readonly string? _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-    private readonly IEnumerable<string>? _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
+    private readonly string? _toolCommandName;
+    private readonly IEnumerable<string>? _forwardArgument;
 
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver(toolManifest);
-    public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver;
+    public bool _allowRollForward;
+
+    public ToolRunCommand(ParseResult result, LocalToolsCommandResolver? localToolsCommandResolver = null, ToolManifestFinder? toolManifest = null)
+        : base(result)
+    {
+        _toolCommandName = result.GetValue(Definition.CommandNameArgument);
+        _forwardArgument = result.GetValue(Definition.CommandArgument);
+        _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver(toolManifest);
+        _allowRollForward = result.GetValue(Definition.RollForwardOption);
+    }
 
     public override int Execute()
     {

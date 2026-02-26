@@ -11,8 +11,7 @@ internal static class DotNetWatchLauncher
     {
         var globalOptions = new GlobalOptions()
         {
-            Quiet = options.IsQuiet,
-            Verbose = options.IsVerbose,
+            LogLevel = options.LogLevel,
             NoHotReload = false,
             NonInteractive = true,
         };
@@ -41,11 +40,14 @@ internal static class DotNetWatchLauncher
 
         var muxerPath = Path.GetFullPath(Path.Combine(options.SdkDirectory, "..", "..", "dotnet" + PathUtilities.ExecutableExtension));
 
+        // msbuild tasks depend on host path variable:
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, muxerPath);
+
         var console = new PhysicalConsole(TestFlags.None);
-        var reporter = new ConsoleReporter(console, globalOptions.Verbose, globalOptions.Quiet, suppressEmojis: false);
+        var reporter = new ConsoleReporter(console, suppressEmojis: false);
         var environmentOptions = EnvironmentOptions.FromEnvironment(muxerPath);
         var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
-        var loggerFactory = new LoggerFactory(reporter);
+        var loggerFactory = new LoggerFactory(reporter, globalOptions.LogLevel);
         var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
 
         using var context = new DotNetWatchContext()

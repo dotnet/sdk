@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -69,9 +69,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
+
+            App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/52680")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -109,7 +111,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Theory]
         [CombinatorialData]
         public async Task ProjectChange_Update(bool isDirectoryProps)
         {
@@ -307,7 +309,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task ProjectChange_GlobalUsings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -344,7 +346,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task BinaryLogs()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -357,7 +359,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(Directory.Exists(logDir));
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -397,7 +399,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
@@ -498,7 +500,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.RestartingApplication, $"WatchHotReloadApp ({tfm})");
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -539,7 +541,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -665,7 +667,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
@@ -751,8 +753,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!verbose)
             {
-                // remove default --verbose arg
-                App.DotnetWatchArgs.Clear();
+                App.SuppressVerboseLogging();
             }
 
             App.Start(testAsset, []);
@@ -776,7 +777,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task GracefulTermination_Windows()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -809,7 +810,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.AnyUnix, Skip = "https://github.com/dotnet/sdk/issues/51491")]
+        [PlatformSpecificFact(TestPlatforms.AnyUnix)]
         public async Task GracefulTermination_Unix()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -892,15 +893,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddMethodToExistingType Baseline.");
             }
             else
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -922,7 +923,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -963,13 +964,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project specifies capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType AddExplicitInterfaceImplementation.");
 
             // server capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -996,8 +997,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(scopedCssPath, newCss);
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("RazorApp.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfScopedCssSucceeded);
+            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/RazorClassLibrary.bundle.scp.css"));
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
 
@@ -1006,9 +1007,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            // "wwwroot" directory is required for MAUI. Web sites work with or without it.
             App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
         }
@@ -1017,7 +1017,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
@@ -1056,10 +1056,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Updates applied: 1 out of 1.");
             App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
             App.AssertOutputContains("No C# changes to apply.");
+            App.Process.ClearOutput();
+
+            // update scoped css:
+            var scopedCssPath = Path.Combine(testAsset.Path, "Components", "Pages", "Counter.razor.css");
+            UpdateSourceFile(scopedCssPath, content => content.Replace("background-color: green", "background-color: red"));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+            App.AssertOutputContains("No C# changes to apply.");
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [CoreMSBuildOnlyFact]
         public async Task HandleMissingAssemblyFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
@@ -1095,7 +1105,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Theory]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
@@ -1147,7 +1157,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Theory]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
@@ -1205,7 +1215,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1306,7 +1316,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;

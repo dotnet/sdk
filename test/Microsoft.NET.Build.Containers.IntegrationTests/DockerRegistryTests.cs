@@ -17,7 +17,7 @@ public class DockerRegistryTests
         _loggerFactory = new TestLoggerFactory(testOutput);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task GetFromRegistry()
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);

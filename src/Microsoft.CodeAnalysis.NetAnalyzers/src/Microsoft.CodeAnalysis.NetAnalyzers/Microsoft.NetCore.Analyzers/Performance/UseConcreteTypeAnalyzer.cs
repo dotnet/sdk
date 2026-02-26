@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Immutable;
@@ -268,12 +269,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                // if any of the methods that are invoked on toType are explicit implementations of interface methods, then we don't want
-                // to recommend upgrading the type otherwise it would break those call sites
                 if (targets != null)
                 {
                     foreach (var t in targets)
                     {
+                        // if any of the methods that are invoked on fromType are default implementations of interface methods,
+                        // then we don't want to recommend upgrading the type because it would break those call sites.
+                        if (!t.IsAbstract && fromType.TypeKind is TypeKind.Interface)
+                        {
+                            return;
+                        }
+
+                        // if any of the methods that are invoked on toType are explicit implementations of interface methods,
+                        // then we don't want to recommend upgrading the type because it would break those call sites.
                         var check = toType;
                         while (check != null)
                         {

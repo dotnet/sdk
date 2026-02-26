@@ -6,7 +6,6 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -105,7 +104,7 @@ public static class ParseResultExtensions
     {
         return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
             parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
+            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
     }
 
     public static int HandleMissingCommand(this ParseResult parseResult)
@@ -135,7 +134,7 @@ public static class ParseResultExtensions
         return
         [
             .. subargs
-                .SkipWhile(arg => Parser.DiagOption.Name.Equals(arg) || Parser.DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg) || Parser.RootCommand.DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
                 .Skip(1), // remove top level command (ex build or publish)
             .. runArgs
         ];
@@ -154,7 +153,7 @@ public static class ParseResultExtensions
             {
                 return false;
             }
-            else if (Parser.DiagOption.Name.Equals(args) || Parser.DiagOption.Aliases.Contains(args[i]))
+            else if (Parser.RootCommand.DiagOption.Name.Equals(args) || Parser.RootCommand.DiagOption.Aliases.Contains(args[i]))
             {
                 return true;
             }
@@ -167,30 +166,8 @@ public static class ParseResultExtensions
     {
         CommandResult commandResult => commandResult.Command.Name,
         ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
-        _ => parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>()
+        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
-
-    public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
-        (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-        parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
-        parseResult.HasOption(CommonOptions.OperatingSystemOption);
-
-    public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
-    {
-        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
-        {
-            var projVals = parseResult.GetRunCommandShorthandProjectValues();
-            if (projVals?.Any() is true)
-            {
-                if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
-                {
-                    throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {

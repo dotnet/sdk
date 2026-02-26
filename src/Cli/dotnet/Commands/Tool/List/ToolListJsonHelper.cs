@@ -15,7 +15,7 @@ internal sealed class VersionedDataContract<TContract>
         /// </summary>
     [JsonPropertyName("version")]
     public int Version { get; init; } = 1;
-    
+
     [JsonPropertyName("data")]
     public required TContract Data { get; init; }
 }
@@ -24,10 +24,10 @@ internal class ToolListJsonContract
 {
     [JsonPropertyName("packageId")]
     public required string PackageId { get; init; }
-    
+
     [JsonPropertyName("version")]
     public required string Version { get; init; }
-    
+
     [JsonPropertyName("commands")]
     public required string[] Commands { get; init; }
 }
@@ -38,16 +38,14 @@ internal sealed class LocalToolListJsonContract : ToolListJsonContract
     public required string Manifest { get; init; }
 }
 
-internal enum ToolListOutputFormat
-{
-    table = 0,
-    json = 1
-}
-
 internal static class JsonHelper
 {
-    public static readonly JsonSerializerOptions NoEscapeSerializerOptions = new()
+    public static readonly ToolListJsonSerializerContext JsonContext = new(new JsonSerializerOptions()
     {
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
+    });
 }
+
+[JsonSerializable(typeof(VersionedDataContract<ToolListJsonContract[]>))]
+[JsonSerializable(typeof(VersionedDataContract<LocalToolListJsonContract[]>))]
+internal partial class ToolListJsonSerializerContext : JsonSerializerContext;

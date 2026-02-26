@@ -29,7 +29,7 @@ namespace Microsoft.NET.Restore.Tests
             };
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
+            var toolProjectInstance = TestAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
 
             var packCommand = new PackCommand(Log, Path.Combine(toolProjectInstance.TestRoot, toolProject.Name));
             packCommand.Execute().Should().Pass();
@@ -48,10 +48,10 @@ namespace Microsoft.NET.Restore.Tests
                              version: ProjectToolVersion,
                              nupkgPath: null));
 
-            TestAsset toolReferenceProjectInstance = _testAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
+            TestAsset toolReferenceProjectInstance = TestAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
 
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
             NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, nupkgPath);
 
             RestoreCommand restoreCommand =
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Restore.Tests
             var restoreResult = restoreCommand
                 .Execute("/v:n");
 
-            var assetsJsonPath = Path.Combine(TestContext.Current.NuGetCachePath,
+            var assetsJsonPath = Path.Combine(SdkTestContext.Current.NuGetCachePath,
                                              ".tools",
                                              toolProject.Name.ToLowerInvariant(),
                                              ProjectToolVersion,

@@ -14,7 +14,7 @@ namespace ManifestReaderTests
 
         public ManifestTests(ITestOutputHelper log) : base(log)
         {
-            SampleProjectPath = _testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest");
+            SampleProjectPath = TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest");
             ManifestPath = GetSampleManifestPath("Sample.json");
         }
 
@@ -91,7 +91,7 @@ namespace ManifestReaderTests
 
         void TestMultiplePackRoots(bool defaultExists, bool additionalExists)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: defaultExists.ToString() + "_" + additionalExists.ToString()).Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: defaultExists.ToString() + "_" + additionalExists.ToString()).Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             Directory.CreateDirectory(dotnetRoot);
             var additionalRoot = Path.Combine(testDirectory, "additionalPackRoot");
@@ -123,7 +123,7 @@ namespace ManifestReaderTests
         [Fact]
         public void GivenNonExistentPackRoot_ItIgnoresIt()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             Directory.CreateDirectory(dotnetRoot);
             var additionalRoot = Path.Combine(testDirectory, "additionalPackRoot");

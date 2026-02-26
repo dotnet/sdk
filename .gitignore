@@ -54,3 +54,6 @@ eng/dotnetup/
 
 # Live Unit Testing
 *.lutconfig
+
+# Claude code config files
+.claude/settings.local.json

@@ -1,36 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">net8.0</TargetFrameworks>
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Microsoft.DotNet.SDK.Build.Helix</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
     <PackageReference Include="NuGet.ProjectModel" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
-  </ItemGroup>
-
-  <!-- Global usings removal -->
-  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
-  <ItemGroup>
-    <Using Remove="AwesomeAssertions" />
-    <Using Remove="Microsoft.NET.TestFramework" />
-    <Using Remove="Microsoft.NET.TestFramework.Assertions" />
-    <Using Remove="Microsoft.NET.TestFramework.Commands" />
-    <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Remove="Microsoft.NET.TestFramework.Utilities" />
-    <Using Remove="Xunit" />
-    <Using Remove="Xunit.Abstractions" />
   </ItemGroup>
 
 </Project>

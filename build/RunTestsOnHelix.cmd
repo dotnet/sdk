@@ -7,7 +7,6 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
-set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
 
 REM Ensure Visual Studio instances allow preview SDKs
@@ -33,10 +32,7 @@ set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
 REM call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-REM We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
-dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
 if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
 dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
