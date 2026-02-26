@@ -302,7 +302,7 @@ namespace Microsoft.NET.Build.Tasks
                 string appHostPackPath = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
-                    string absoluteTargetingPackRoot = TaskEnvironment.GetAbsolutePath(TargetingPackRoot);
+                    AbsolutePath absoluteTargetingPackRoot = TaskEnvironment.GetAbsolutePath(TargetingPackRoot);
                     appHostPackPath = Path.Combine(absoluteTargetingPackRoot, hostPackName, appHostPackVersion);
                 }
                 if (appHostPackPath != null && Directory.Exists(appHostPackPath))
