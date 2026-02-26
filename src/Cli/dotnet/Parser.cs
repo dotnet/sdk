@@ -213,7 +213,7 @@ public static class Parser
     public static int Invoke(string[] args) => Invoke(Parse(args));
     public static Task<int> InvokeAsync(string[] args, CancellationToken cancellationToken = default) => InvokeAsync(Parse(args), cancellationToken);
 
-    internal static int ExceptionHandler(Exception exception, ParseResult parseResult)
+    internal static int ExceptionHandler(Exception? exception, ParseResult parseResult)
     {
         if (exception is TargetInvocationException)
         {
@@ -327,7 +327,7 @@ public static class Parser
             }
             else if (command is FormatCommandDefinition format)
             {
-                var arguments = context.ParseResult.GetValue(format.Arguments);
+                var arguments = context.ParseResult.GetValue(format.Arguments) ?? [];
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command is FsiCommandDefinition)

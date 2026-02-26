@@ -261,22 +261,22 @@ public class Program
         }
     }
 
-    private static string GetCommandName(ParseResult r)
+    private static string GetCommandName(ParseResult parseResult)
     {
-        if (r.Action is Parser.PrintVersionAction)
+        if (parseResult.HasOption(Parser.RootCommand.VersionOption) && parseResult.IsTopLevelDotnetCommand())
         {
             // If the action is PrintVersionAction, we return the command name as "dotnet --version"
             return "dotnet --version";
         }
-        else if (r.Action is Parser.PrintInfoAction)
+        else if (parseResult.HasOption(Parser.RootCommand.InfoOption) && parseResult.IsTopLevelDotnetCommand())
         {
             // If the action is PrintHelpAction, we return the command name as "dotnet --help"
             return "dotnet --info";
         }
 
         // Walk the parent command tree to find the top-level command name and get the full command name for this parseresult.
-        List<string> parentNames = [r.CommandResult.Command.Name];
-        var current = r.CommandResult.Parent;
+        List<string> parentNames = [parseResult.CommandResult.Command.Name];
+        var current = parseResult.CommandResult.Parent;
         while (current is CommandResult parentCommandResult)
         {
             parentNames.Add(parentCommandResult.Command.Name);
@@ -331,7 +331,7 @@ public class Program
     private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
     {
         var lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command");
-        string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
+        string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
             new DefaultCommandResolverPolicy(),
             commandName,
@@ -375,18 +375,19 @@ public class Program
         // If we didn't match any built-in commands, and a C# file path is the first argument,
         // parse as `dotnet run file.cs ..rest_of_args` instead.
         if (parseResult.CommandResult.Command is RootCommand
-            && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-            && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            && parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
         {
             List<string> otherTokens = new(parseResult.Tokens.Count - 1);
             foreach (var token in parseResult.Tokens)
             {
-                if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                if (token.Type != TokenType.Argument || token != unmatchedCommandOrFile)
                 {
                     otherTokens.Add(token.Value);
                 }
             }
-            parseResult = Parser.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+
+            parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
 
             InvokeBuiltInCommand(parseResult, out var exitCode);
             return exitCode;
@@ -447,7 +448,7 @@ public class Program
         ReportDotnetHomeUsage(environmentProvider);
 
         var isDotnetBeingInvokedFromNativeInstaller = false;
-        if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
+        if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
         {
             aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
             firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();

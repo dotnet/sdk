@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
 
-            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
         [Fact]
         public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
@@ -53,10 +53,10 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
 
-            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
             var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
 
-            Guid.TryParse((string)secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string?)secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
             secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
 
-            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
 
         [Fact]
@@ -217,7 +217,6 @@ namespace Microsoft.DotNet.Tests
             commonProperties.Should().ContainKey("SessionId");
             commonProperties["SessionId"].Should().Be(sessionId);
         }
-
 
         public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
         {

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 internal class TelemetryCommonProperties(
     Func<string>? getCurrentDirectory = null,
     Func<string, string>? hasher = null,
-    Func<string>? getMACAddress = null,
+    Func<string?>? getMACAddress = null,
     Func<string>? getDeviceId = null,
     IDockerContainerDetector? dockerContainerDetector = null,
     IUserLevelCacheWriter? userLevelCacheWriter = null,
@@ -26,7 +26,7 @@ internal class TelemetryCommonProperties(
     private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry();
     private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
     private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
-    private readonly Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+    private readonly Func<string?> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
     private readonly Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
     private readonly IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
 
@@ -54,7 +54,7 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public FrozenDictionary<string, object?> GetTelemetryCommonProperties(string currentSessionId) => new Dictionary<string, object?>
+    public FrozenDictionary<string, object?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, object?>
     {
         { OSVersion,        RuntimeEnvironment.OperatingSystemVersion },
         { OSPlatform,       RuntimeEnvironment.OperatingSystemPlatform.ToString() },

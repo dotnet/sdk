@@ -4,13 +4,43 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using NuGet.Packaging;
+using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Cli.Telemetry
 {
     internal class TelemetryDiskLogger
     {
         private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };
+
+        private static readonly TelemetryDiskLoggerJsonSerializerContext s_jsonContext = new(s_jsonOptions);
+
+        public record EventModel(
+            string name,
+            DateTimeOffset timestamp,
+            Dictionary<string, object?> tags);
+
+        public record SourceModel(
+            string name,
+            string? version,
+            Dictionary<string, object?>? tags);
+
+        public record IdentifiersModel(
+            string? id,
+            string traceId,
+            string spanId,
+            string parentSpanId,
+            string? parentId,
+            string? rootId);
+
+        public record ActivityModel(
+            string operationName,
+            string displayName,
+            TimeSpan duration,
+            IdentifiersModel identifiers,
+            SourceModel source,
+            Dictionary<string, string?> tags,
+            EventModel[] events);
 
         public static void WriteLog(string logPath, IEnumerable<Activity> activies)
         {
@@ -19,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 var jsonText = !File.Exists(logPath) ? """{"activities":[]}""" : File.ReadAllText(logPath);
                 var root = JsonNode.Parse(jsonText)!;
                 var activitiesArray = root["activities"]!.AsArray();
-                activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(r), s_jsonOptions))));
+                activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(r), s_jsonContext.ActivityModel))));
                 root["activities"] = activitiesArray;
                 File.WriteAllText(logPath, root.ToJsonString(s_jsonOptions));
             }
@@ -29,33 +59,32 @@ namespace Microsoft.DotNet.Cli.Telemetry
             }
         }
 
-        private static object CreateActivityJsonModel(Activity activity) => new
-        {
-            operationName = activity.OperationName,
-            displayName = activity.DisplayName,
-            duration = activity.Duration,
-            identifiers = new
-            {
-                id = activity.Id,
-                traceId = activity.TraceId.ToString(),
-                spanId = activity.SpanId.ToString(),
-                parentSpanId = activity.ParentSpanId.ToString(),
-                parentId = activity.ParentId,
-                rootId = activity.RootId
-            },
-            source = new
-            {
-                name = activity.Source.Name,
-                version = activity.Source.Version,
-                tags = activity.Source.Tags?.ToDictionary()
-            },
-            tags = activity.Tags.ToDictionary(),
-            events = activity.Events.Select(e => new
-            {
-                name = e.Name,
-                timestamp = e.Timestamp,
-                tags = e.Tags.ToDictionary()
-            }),
-        };
+        private static ActivityModel CreateActivityJsonModel(Activity activity) => new(
+            operationName: activity.OperationName,
+            displayName: activity.DisplayName,
+            duration: activity.Duration,
+            identifiers: new(
+                id: activity.Id,
+                traceId: activity.TraceId.ToString(),
+                spanId: activity.SpanId.ToString(),
+                parentSpanId: activity.ParentSpanId.ToString(),
+                parentId: activity.ParentId,
+                rootId: activity.RootId
+            ),
+            source: new(
+                name: activity.Source.Name,
+                version: activity.Source.Version,
+                tags: activity.Source.Tags?.ToDictionary()
+            ),
+            tags: activity.Tags.ToDictionary(),
+            events: [.. activity.Events.Select(e => new EventModel(
+                name: e.Name,
+                timestamp: e.Timestamp,
+                tags: e.Tags.ToDictionary()
+            ))]
+        );
     }
 }
+
+[JsonSerializable(typeof(TelemetryDiskLogger.ActivityModel))]
+internal partial class TelemetryDiskLoggerJsonSerializerContext : JsonSerializerContext;

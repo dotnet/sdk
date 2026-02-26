@@ -1,18 +1,15 @@
-﻿﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly IFirstTimeUseNoticeSentinel _sentinel =
-        new FirstTimeUseNoticeSentinel();
     private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
