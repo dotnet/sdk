@@ -58,7 +58,7 @@ Template options:
                                                          Default: false
   -f, --framework <net11.0|net6.0|net7.0|net8.0|net9.0>  The target framework for the project.
                                                          Type: choice
-                                                           net11.0  Target net11.0
+                                                           net11.0  
                                                            net9.0   Target net9.0
                                                            net8.0   Target net8.0
                                                            net7.0   Target net7.0

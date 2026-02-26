@@ -17,6 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETCoreSdkBundledVersionsProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledVersions.props</NETCoreSdkBundledVersionsProps>
   </PropertyGroup>
 
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(NetCoreSdkRoot)' == '' and Exists('$(NETCoreSdkBundledVersionsProps)')" /> 
+  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(NetCoreSdkRoot)' == '' and Exists('$(NETCoreSdkBundledVersionsProps)')" />
 
 </Project>

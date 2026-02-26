@@ -195,7 +195,9 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     static InstallerBase()
     {
         CurrentProcess = Process.GetCurrentProcess();
+#if !DOT_NET_BUILD_FROM_SOURCE
         ParentProcess = CurrentProcess.GetParentProcess();
+#endif
         ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
     }
 }

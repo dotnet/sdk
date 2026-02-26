@@ -46,12 +46,6 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <!-- Optionally override arcade's test target with one which will run the tests as tools.
-       Conditionally overriding a target requires a conditional import of another (.targets)
-       file. -->
-  <Import Project="OverrideTest.targets"
-          Condition="'$(RunTestsAsTool)' == 'true' And '$(CanRunTestAsTool)' == 'true'"/>
-
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
   <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
