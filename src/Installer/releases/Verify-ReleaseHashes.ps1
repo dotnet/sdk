@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Downloads and verifies SHA-512 hashes for .NET release archives (.zip and .tar.gz).
+    Downloads and verifies SHA-512 hashes for .NET release installers (.exe and .pkg).
 .DESCRIPTION
     Fetches the releases.json manifest for a given .NET channel version,
-    downloads all .zip and .tar.gz files, computes their SHA-512 hashes,
+    downloads all .exe and .pkg files, computes their SHA-512 hashes,
     and compares against the manifest. Valid files are deleted; mismatched
     files are kept for inspection.
 
@@ -83,7 +83,7 @@ function Add-ComponentFiles {
         foreach ($file in $component.files) {
             $name = $file.name
             if (-not $name) { continue }
-            if ($name -notmatch '\.(zip|tar\.gz)$') { continue }
+            if ($name -notmatch '\.(exe|pkg)$') { continue }
             if (-not $file.url -or -not $file.hash) { continue }
             
             $fileList.Add(@{
@@ -122,7 +122,7 @@ foreach ($release in $manifestJson.releases) {
 }
 
 $totalFiles = $filesToVerify.Count
-Write-Host "Found $totalFiles .zip/.tar.gz files to verify across $ChannelVersion releases." -ForegroundColor Green
+Write-Host "Found $totalFiles .exe/.pkg files to verify across $ChannelVersion releases." -ForegroundColor Green
 Write-Host "Components: $($componentFilter -join ', ')" -ForegroundColor Green
 if ($ReleaseVersion) { Write-Host "Filtered to release: $ReleaseVersion" -ForegroundColor Green }
 
