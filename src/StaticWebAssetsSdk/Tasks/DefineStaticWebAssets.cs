@@ -65,6 +65,8 @@ public partial class DefineStaticWebAssets : Task
 
     public string CacheManifestPath { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroupDefinitions { get; set; }
+
     [Output]
     public ITaskItem[] Assets { get; set; }
 
@@ -291,6 +293,14 @@ public partial class DefineStaticWebAssets : Task
                     fileLength,
                     lastWriteTimeUtc);
 
+                // Preserve AssetGroups from the candidate if it already has one (e.g., compressed alternative
+                // inheriting from its primary asset)
+                var existingGroups = candidate.GetMetadata(nameof(StaticWebAsset.AssetGroups));
+                if (!string.IsNullOrEmpty(existingGroups))
+                {
+                    asset.AssetGroups = existingGroups;
+                }
+
                 var item = asset.ToTaskItem();
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -308,6 +318,11 @@ public partial class DefineStaticWebAssets : Task
 
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
+
+            if (StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
+            {
+                ApplyGroupDefinitions();
+            }
         }
         catch (Exception ex)
         {
@@ -584,5 +599,136 @@ public partial class DefineStaticWebAssets : Task
         }
 
         return computedPath;
+    }
+
+    private void ApplyGroupDefinitions()
+    {
+        var definitions = new List<(string Name, string Value, int Order, StaticWebAssetGlobMatcher IncludeMatcher, StaticWebAssetGlobMatcher ExcludeMatcher, StaticWebAssetGlobMatcher RelativePathMatcher)>();
+
+        foreach (var def in StaticWebAssetGroupDefinitions)
+        {
+            var name = def.ItemSpec;
+            var value = def.GetMetadata("Value");
+            var orderStr = def.GetMetadata("Order");
+            if (!int.TryParse(orderStr, out var order))
+            {
+                order = 0;
+            }
+
+            var includePattern = def.GetMetadata("IncludePattern");
+            var excludePattern = def.GetMetadata("ExcludePattern");
+            var relativePathPattern = def.GetMetadata("RelativePathPattern");
+
+            StaticWebAssetGlobMatcher includeMatcher = null;
+            if (!string.IsNullOrEmpty(includePattern))
+            {
+                includeMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(includePattern.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Build();
+            }
+
+            StaticWebAssetGlobMatcher excludeMatcher = null;
+            if (!string.IsNullOrEmpty(excludePattern))
+            {
+                excludeMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(excludePattern.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Build();
+            }
+
+            StaticWebAssetGlobMatcher relativePathMatcher = null;
+            if (!string.IsNullOrEmpty(relativePathPattern))
+            {
+                relativePathMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(relativePathPattern)
+                    .Build();
+            }
+
+            definitions.Add((name, value, order, includeMatcher, excludeMatcher, relativePathMatcher));
+        }
+
+        definitions.Sort((a, b) => a.Order.CompareTo(b.Order));
+
+        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+
+        for (var i = 0; i < Assets.Length; i++)
+        {
+            var asset = StaticWebAsset.FromTaskItem(Assets[i]);
+            var currentRelativePath = asset.RelativePath;
+            var currentContentRoot = asset.ContentRoot;
+            var groupEntries = new List<string>();
+
+            foreach (var (name, value, order, includeMatcher, excludeMatcher, relativePathMatcher) in definitions)
+            {
+                if (includeMatcher == null)
+                {
+                    continue;
+                }
+
+                var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
+                matchContext.SetPathAndReinitialize(pathWithoutTokens);
+                var includeMatch = includeMatcher.Match(matchContext);
+
+                if (!includeMatch.IsMatch)
+                {
+                    continue;
+                }
+
+                if (excludeMatcher != null)
+                {
+                    matchContext.SetPathAndReinitialize(pathWithoutTokens);
+                    var excludeMatch = excludeMatcher.Match(matchContext);
+                    if (excludeMatch.IsMatch)
+                    {
+                        Log.LogMessage(MessageImportance.Low, "Asset '{0}' excluded from group '{1}={2}' by ExcludePattern.", asset.Identity, name, value);
+                        continue;
+                    }
+                }
+
+                var existingEntry = groupEntries.Find(e => e.StartsWith(name + "=", StringComparison.Ordinal));
+                if (existingEntry != null)
+                {
+                    var existingValue = existingEntry.Substring(name.Length + 1);
+                    if (!string.Equals(existingValue, value, StringComparison.Ordinal))
+                    {
+                        Log.LogError("Asset '{0}' matched group definitions for '{1}' with conflicting values '{2}' and '{3}'. Glob patterns must be non-overlapping for the same group name with different values.",
+                            asset.Identity, name, existingValue, value);
+                        return;
+                    }
+                    continue;
+                }
+
+                groupEntries.Add(name + "=" + value);
+                Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, value);
+
+                if (relativePathMatcher != null)
+                {
+                    matchContext.SetPathAndReinitialize(pathWithoutTokens);
+                    var rpMatch = relativePathMatcher.Match(matchContext);
+                    if (rpMatch.IsMatch)
+                    {
+                        // Compute stripped prefix using the token-free path to get the correct length
+                        var strippedPrefix = pathWithoutTokens.Substring(0, pathWithoutTokens.Length - rpMatch.Stem.Length);
+                        // Use the prefix length to substring the tokenized path, preserving fingerprint tokens
+                        var newRelativePath = StaticWebAsset.Normalize(currentRelativePath.Substring(strippedPrefix.Length));
+                        var newContentRoot = Path.Combine(currentContentRoot, strippedPrefix.Replace('/', Path.DirectorySeparatorChar));
+                        newContentRoot = StaticWebAsset.NormalizeContentRootPath(newContentRoot);
+
+                        Log.LogMessage(MessageImportance.Low, "Group '{0}={1}' transformed RelativePath from '{2}' to '{3}', ContentRoot from '{4}' to '{5}'.",
+                            name, value, currentRelativePath, newRelativePath, currentContentRoot, newContentRoot);
+
+                        currentRelativePath = newRelativePath;
+                        currentContentRoot = newContentRoot;
+                    }
+                }
+            }
+
+            if (groupEntries.Count > 0)
+            {
+                asset.AssetGroups = string.Join(";", groupEntries);
+                asset.RelativePath = currentRelativePath;
+                asset.ContentRoot = currentContentRoot;
+                Assets[i] = asset.ToTaskItem();
+            }
+        }
     }
 }

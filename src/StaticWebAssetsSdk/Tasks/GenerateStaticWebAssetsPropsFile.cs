@@ -42,6 +42,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
     public string FrameworkPattern { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroupDefinitions { get; set; }
+
     public override bool Execute()
     {
         if (!ValidateArguments())
@@ -82,9 +84,15 @@ public class GenerateStaticWebAssetsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
             var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+
+            var groupPrefix = ComputeGroupPathPrefix(element);
+            var effectivePackagePathPrefix = string.IsNullOrEmpty(groupPrefix)
+                ? PackagePathPrefix
+                : PackagePathPrefix + "\\" + groupPrefix;
+            var packagePath = asset.ComputeTargetPath(effectivePackagePathPrefix, '\\', tokenResolver);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
+            var contentRootExpression = @$"$(MSBuildThisFileDirectory)..\{Normalize(effectivePackagePathPrefix)}\";
 
             var emittedSourceType = "Package";
             if (hasFrameworkMatcher)
@@ -102,11 +110,13 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 }
             }
 
+            var assetGroupsValue = element.GetMetadata("AssetGroups") ?? "";
+
             itemGroup.Add(new XElement("StaticWebAsset",
                 new XAttribute("Include", fullPathExpression),
                 new XElement(SourceType, emittedSourceType),
                 new XElement(SourceId, element.GetMetadata(SourceId)),
-                new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
+                new XElement(ContentRoot, contentRootExpression),
                 new XElement(BasePath, element.GetMetadata(BasePath)),
                 new XElement(RelativePath, relativePath),
                 new XElement(AssetKind, element.GetMetadata(AssetKind)),
@@ -115,6 +125,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
                 new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                 new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
+                new XElement("AssetGroups", assetGroupsValue),
                 new XElement(Fingerprint, element.GetMetadata(Fingerprint)),
                 new XElement(Integrity, element.GetMetadata(Integrity)),
                 new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
@@ -151,6 +162,62 @@ public class GenerateStaticWebAssetsPropsFile : Task
         return !Log.HasLoggedErrors;
 
         static string Normalize(string relativePath) => relativePath.Replace("/", "\\").TrimStart('\\');
+    }
+
+    private string ComputeGroupPathPrefix(ITaskItem asset)
+    {
+        if (StaticWebAssetGroupDefinitions == null || StaticWebAssetGroupDefinitions.Length == 0)
+        {
+            return "";
+        }
+
+        var assetGroups = asset.GetMetadata("AssetGroups") ?? "";
+        if (string.IsNullOrEmpty(assetGroups))
+        {
+            return "";
+        }
+
+        var groupEntries = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        var groupValues = new List<(int Order, string Value)>();
+
+        foreach (var entry in groupEntries)
+        {
+            var eqIndex = entry.IndexOf('=');
+            if (eqIndex <= 0)
+            {
+                continue;
+            }
+            var groupName = entry.Substring(0, eqIndex);
+            var groupValue = entry.Substring(eqIndex + 1);
+
+            foreach (var def in StaticWebAssetGroupDefinitions)
+            {
+                var defName = def.ItemSpec;
+                var defValue = def.GetMetadata("Value");
+                var includeInPath = def.GetMetadata("IncludeGroupValueInPackagePath");
+
+                if (string.Equals(defName, groupName, StringComparison.Ordinal) &&
+                    string.Equals(defValue, groupValue, StringComparison.Ordinal) &&
+                    string.Equals(includeInPath, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    var orderStr = def.GetMetadata("Order");
+                    if (!int.TryParse(orderStr, out var order))
+                    {
+                        order = 0;
+                    }
+                    groupValues.Add((order, groupValue));
+                    break;
+                }
+            }
+        }
+
+        if (groupValues.Count == 0)
+        {
+            return "";
+        }
+
+        groupValues.Sort((a, b) => a.Order.CompareTo(b.Order));
+        return string.Join("\\", groupValues.Select(g => g.Value));
     }
 
     private void WriteFile(byte[] data)

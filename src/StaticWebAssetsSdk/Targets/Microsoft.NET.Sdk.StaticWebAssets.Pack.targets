@@ -113,6 +113,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackStaticWebAssetCandidates Include="@(StaticWebAsset)" Exclude="@(_StaticWebAssetExcludedFromPack)" />
     </ItemGroup>
 
+    <!-- Detect the convention file for asset group definitions -->
+    <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props')">
+      <_StaticWebAssetGroupsConventionFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props" />
+      <StaticWebAssetPackageFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props">
+        <PackagePath>build\StaticWebAssets.Groups.props</PackagePath>
+      </StaticWebAssetPackageFile>
+    </ItemGroup>
+
     <!-- The logic for computing the static web assets to pack, is the same logic that we use to determine what assets we need
       to provide when a referencing project asks for a list of static web assets on our current project. For example, this
       avoids us including things like the transitive bundles for scoped css in the package.
@@ -160,7 +168,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateStaticWebAssetsPropsFile
       StaticWebAssets="@(_PackStaticWebAssets)"
       TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)"
-      FrameworkPattern="$(StaticWebAssetFrameworkPattern)" />
+      FrameworkPattern="$(StaticWebAssetFrameworkPattern)"
+      StaticWebAssetGroupDefinitions="@(StaticWebAssetGroupDefinition)" />
 
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props
         that describes the static web asset endpoints associated with the assets in the package.
@@ -176,7 +185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetsGeneratePackagePropsFile
       PropsFileImport="$(_StaticWebAssetsPropsFileImportPath)"
       BuildTargetPath="$(_GeneratedBuildPropsFile)"
-      AdditionalImports="$(_StaticWebAssetEndpointsPropsFileImportPath)" />
+      AdditionalImports="$(_StaticWebAssetEndpointsPropsFileImportPath);@(_StaticWebAssetGroupsConventionFile->'StaticWebAssets.Groups.props')" />
 
     <!-- Generates a props file the goes in buildMultiTargeting\$(PackageId).props and that simply imports
          build\$(PackageId).props
@@ -194,7 +203,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- We need to adjust the path for files without extension (LICENSE) for example. Otherwise, when they get packed, nuget creates an
          additional folder for the file. -->
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_PackStaticWebAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_PackStaticWebAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true" StaticWebAssetGroupDefinitions="@(StaticWebAssetGroupDefinition)">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
