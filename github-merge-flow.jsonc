@@ -47,7 +47,7 @@
         "main":{
             "MergeToBranch": "release/dnup",
             "ExtraSwitches": "-QuietComments",
-            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*;CODEOWNERS"
         },
         // Automate opening PRs to merge sdk repos from dnup to release/dnup
         "dnup":{
