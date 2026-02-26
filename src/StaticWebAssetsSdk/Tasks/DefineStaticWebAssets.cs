@@ -90,8 +90,8 @@ public partial class DefineStaticWebAssets : Task
         }
         else
         {
-        try
-        {
+            try
+            {
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
                 null;
@@ -317,16 +317,16 @@ public partial class DefineStaticWebAssets : Task
 
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
-        }
-        catch (Exception ex)
-        {
-            Log.LogError(ex.ToString());
-        }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(ex.ToString());
+            }
         }
 
         if (!Log.HasLoggedErrors && StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
         {
-            Log.LogMessage(MessageImportance.High, "Applying group definitions. Definitions count: {0}, Assets count: {1}", StaticWebAssetGroupDefinitions.Length, Assets.Length);
+            Log.LogMessage(MessageImportance.Low, "Applying group definitions. Definitions count: {0}, Assets count: {1}", StaticWebAssetGroupDefinitions.Length, Assets.Length);
             ApplyGroupDefinitions();
         }
 
@@ -604,12 +604,13 @@ public partial class DefineStaticWebAssets : Task
 
     private void ApplyGroupDefinitions()
     {
-        var definitions = new List<(string Name, string Value, int Order, StaticWebAssetGlobMatcher IncludeMatcher, StaticWebAssetGlobMatcher ExcludeMatcher, StaticWebAssetGlobMatcher RelativePathMatcher)>();
+        var definitions = new List<(string Name, string Value, string SourceId, int Order, StaticWebAssetGlobMatcher IncludeMatcher, StaticWebAssetGlobMatcher ExcludeMatcher, StaticWebAssetGlobMatcher RelativePathMatcher)>();
 
         foreach (var def in StaticWebAssetGroupDefinitions)
         {
             var name = def.ItemSpec;
             var value = def.GetMetadata("Value");
+            var sourceId = def.GetMetadata("SourceId");
             var orderStr = def.GetMetadata("Order");
             if (!int.TryParse(orderStr, out var order))
             {
@@ -644,7 +645,25 @@ public partial class DefineStaticWebAssets : Task
                     .Build();
             }
 
-            definitions.Add((name, value, order, includeMatcher, excludeMatcher, relativePathMatcher));
+            definitions.Add((name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher));
+        }
+
+        // Validate that no two definitions share the same (Order, SourceId) — the spec requires this
+        // to ensure deterministic evaluation order within a given source.
+        for (var i = 0; i < definitions.Count; i++)
+        {
+            for (var j = i + 1; j < definitions.Count; j++)
+            {
+                if (definitions[i].Order == definitions[j].Order &&
+                    string.Equals(definitions[i].SourceId, definitions[j].SourceId, StringComparison.Ordinal))
+                {
+                    Log.LogError(
+                        "Group definitions '{0}' and '{1}' have the same Order ({2}) and SourceId ('{3}'). " +
+                        "Each definition from the same source must have a unique Order to ensure deterministic evaluation.",
+                        definitions[i].Name, definitions[j].Name, definitions[i].Order, definitions[i].SourceId);
+                    return;
+                }
+            }
         }
 
         definitions.Sort((a, b) => a.Order.CompareTo(b.Order));
@@ -657,7 +676,7 @@ public partial class DefineStaticWebAssets : Task
             var currentRelativePath = asset.RelativePath;
             var groupEntries = new List<string>();
 
-            foreach (var (name, value, order, includeMatcher, excludeMatcher, relativePathMatcher) in definitions)
+            foreach (var (name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher) in definitions)
             {
                 if (includeMatcher == null)
                 {

@@ -54,7 +54,10 @@ public class ComputeReferenceStaticWebAssetItems : Task
                         {
                             if (ShouldIncludeAssetAsReference(groupedAsset, out var groupReason))
                             {
-                                groupedAsset.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : groupedAsset.SourceType;
+                                if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(groupedAsset.SourceType))
+                                {
+                                    groupedAsset.SourceType = StaticWebAsset.SourceTypes.Project;
+                                }
                                 if (MakeReferencedAssetOriginalItemSpecAbsolute)
                                 {
                                     groupedAsset.OriginalItemSpec = Path.GetFullPath(groupedAsset.OriginalItemSpec);
@@ -74,7 +77,10 @@ public class ComputeReferenceStaticWebAssetItems : Task
 
                 if (ShouldIncludeAssetAsReference(selected, out var reason))
                 {
-                    selected.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : selected.SourceType;
+                    if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(selected.SourceType))
+                    {
+                        selected.SourceType = StaticWebAsset.SourceTypes.Project;
+                    }
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
                         selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
