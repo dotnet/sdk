@@ -83,6 +83,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     ];
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
+    public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
 
     public bool NoRestore { get; init; }
 
@@ -151,7 +152,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFrameworkVersion, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()
@@ -1175,8 +1176,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public static readonly ErrorReporter ThrowingReporter =
-        static (sourceFile, textSpan, message, innerException) => throw new GracefulException(
-            $"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
+        static (text, path, textSpan, message, innerException) =>
+            throw new GracefulException(
+            $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
 }
 

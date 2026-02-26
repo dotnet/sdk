@@ -43,7 +43,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
 
-        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFrameworkVersion);
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -276,7 +276,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         IEnumerable<(string name, string value)> GetDefaultProperties()
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion))
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
                 if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))

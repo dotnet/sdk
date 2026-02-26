@@ -87,16 +87,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var projectOptions = new ProjectOptions()
         {
-            IsRootProject = false,
-            ProjectPath = projectPath,
+            IsMainProject = false,
+            Representation = new ProjectRepresentation(projectPath, entryPointFilePath: null),
             WorkingDirectory = workingDirectory,
-            BuildArguments = [],
             Command = "run",
             CommandArguments = ["--project", projectPath],
             LaunchEnvironmentVariables = [],
-            LaunchProfileName = null,
-            NoLaunchProfile = true,
-            TargetFramework = null,
+            LaunchProfileName = default,
         };
 
         RestartOperation? startOp = null;
@@ -111,7 +108,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             Assert.NotNull(result);
 
-            await result.WaitForProcessRunningAsync(cancellationToken);
+            await result.Clients.WaitForConnectionEstablishedAsync(cancellationToken);
 
             return result;
         });
@@ -521,7 +518,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
-        var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
+        var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_AutoVerbose);
 
         w.Start();
 
@@ -538,7 +535,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         // Terminate the process:
         Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
-        await runningProject.TerminateAsync();
+        await runningProject.Process.TerminateAsync();
 
         // rude edit in A (changing assembly level attribute):
         UpdateSourceFile(serviceSourceA2, """
@@ -617,7 +614,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
-        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
+        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoManagedCodeChangesToApply);
 
         w.Start();
 
