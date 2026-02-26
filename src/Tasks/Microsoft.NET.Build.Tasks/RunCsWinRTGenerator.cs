@@ -15,8 +15,19 @@ namespace Microsoft.NET.Build.Tasks;
 /// <summary>
 /// The custom MSBuild task that invokes the 'cswinrtgen' tool.
 /// </summary>
-public sealed class RunCsWinRTGenerator : ToolTask
+[MSBuildMultiThreadableTask]
+public sealed class RunCsWinRTGenerator : ToolTask, IMultiThreadableTask
 {
+#if NETFRAMEWORK
+    private TaskEnvironment _taskEnvironment;
+    public TaskEnvironment TaskEnvironment
+    {
+        get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+        set => _taskEnvironment = value;
+    }
+#else
+    public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
     /// <summary>
     /// Gets or sets the paths to assembly files that are reference assemblies, representing
     /// the entire surface area for compilation. These assemblies are the full set of assemblies
@@ -133,21 +144,21 @@ public sealed class RunCsWinRTGenerator : ToolTask
             return false;
         }
 
-        if (InteropAssemblyDirectory is null || !Directory.Exists(InteropAssemblyDirectory))
+        if (InteropAssemblyDirectory is null || !Directory.Exists(TaskEnvironment.GetAbsolutePath(InteropAssemblyDirectory)))
         {
             Log.LogWarning("Generated assembly directory '{0}' is invalid or does not exist.", InteropAssemblyDirectory);
 
             return false;
         }
 
-        if (DebugReproDirectory is not null && !Directory.Exists(DebugReproDirectory))
+        if (DebugReproDirectory is not null && !Directory.Exists(TaskEnvironment.GetAbsolutePath(DebugReproDirectory)))
         {
             Log.LogWarning("Debug repro directory '{0}' is invalid or does not exist.", DebugReproDirectory);
 
             return false;
         }
 
-        if (CsWinRTToolsDirectory is null || !Directory.Exists(CsWinRTToolsDirectory))
+        if (CsWinRTToolsDirectory is null || !Directory.Exists(TaskEnvironment.GetAbsolutePath(CsWinRTToolsDirectory)))
         {
             Log.LogWarning("Tools directory '{0}' is invalid or does not exist.", CsWinRTToolsDirectory);
 
@@ -189,7 +200,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
         // This makes it easy to run the task against a local build of 'cswinrtgen'.
         if (effectiveArchitecture?.Equals("AnyCPU", StringComparison.OrdinalIgnoreCase) is true)
         {
-            return Path.Combine(CsWinRTToolsDirectory!, ToolName);
+            return TaskEnvironment.GetAbsolutePath(Path.Combine(CsWinRTToolsDirectory!, ToolName));
         }
 
         // If the architecture is not specified, determine it based on the current process architecture
@@ -203,7 +214,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
         // The tool is inside an architecture-specific subfolder, as it's a native binary
         string architectureDirectory = $"win-{effectiveArchitecture}";
 
-        return Path.Combine(CsWinRTToolsDirectory!, architectureDirectory, ToolName);
+        return TaskEnvironment.GetAbsolutePath(Path.Combine(CsWinRTToolsDirectory!, architectureDirectory, ToolName));
     }
 
     /// <inheritdoc/>
@@ -211,13 +222,13 @@ public sealed class RunCsWinRTGenerator : ToolTask
     {
         StringBuilder args = new();
 
-        IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(static path => path.ItemSpec);
+        IEnumerable<string> referenceAssemblyPaths = ReferenceAssemblyPaths!.Select(path => (string)TaskEnvironment.GetAbsolutePath(path.ItemSpec));
         string referenceAssemblyPathsArg = string.Join(",", referenceAssemblyPaths);
 
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
-        AppendResponseFileCommand(args, "--output-assembly-path", EffectiveOutputAssemblyItemSpec);
-        AppendResponseFileCommand(args, "--generated-assembly-directory", InteropAssemblyDirectory!);
-        AppendResponseFileOptionalCommand(args, "--debug-repro-directory", DebugReproDirectory);
+        AppendResponseFileCommand(args, "--output-assembly-path", TaskEnvironment.GetAbsolutePath(EffectiveOutputAssemblyItemSpec));
+        AppendResponseFileCommand(args, "--generated-assembly-directory", TaskEnvironment.GetAbsolutePath(InteropAssemblyDirectory!));
+        AppendResponseFileOptionalCommand(args, "--debug-repro-directory", DebugReproDirectory is not null ? TaskEnvironment.GetAbsolutePath(DebugReproDirectory) : null);
         AppendResponseFileCommand(args, "--use-windows-ui-xaml-projections", UseWindowsUIXamlProjections.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-assembly-version", ValidateWinRTRuntimeAssemblyVersion.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-dll-version-2-references", ValidateWinRTRuntimeDllVersion2References.ToString());

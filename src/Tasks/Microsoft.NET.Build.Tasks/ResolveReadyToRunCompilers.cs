@@ -9,8 +9,19 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveReadyToRunCompilers : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveReadyToRunCompilers : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         public bool EmitSymbols { get; set; }
         public bool ReadyToRunUseCrossgen2 { get; set; }
         public string PerfmapFormatVersion { get; set; }
@@ -392,7 +403,7 @@ namespace Microsoft.NET.Build.Tasks
                 return false;
             }
 
-            return File.Exists(_crossgenTool.ToolPath) && File.Exists(_crossgenTool.ClrJitPath);
+            return File.Exists(TaskEnvironment.GetAbsolutePath(_crossgenTool.ToolPath)) && File.Exists(TaskEnvironment.GetAbsolutePath(_crossgenTool.ClrJitPath));
         }
 
         private bool GetCrossgen2ComponentsPaths(bool version5)
@@ -420,14 +431,14 @@ namespace Microsoft.NET.Build.Tasks
             {
                 string clrJitFileName = string.Format(v5_clrJitFileNamePattern, GetTargetSpecForVersion5());
                 _crossgen2Tool.ClrJitPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", clrJitFileName);
-                if (!File.Exists(_crossgen2Tool.ClrJitPath))
+                if (!File.Exists(TaskEnvironment.GetAbsolutePath(_crossgen2Tool.ClrJitPath)))
                 {
                     return false;
                 }
             }
 
             _crossgen2Tool.ToolPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", toolFileName);
-            return File.Exists(_crossgen2Tool.ToolPath);
+            return File.Exists(TaskEnvironment.GetAbsolutePath(_crossgen2Tool.ToolPath));
         }
 
         // Keep in sync with JitConfigProvider.GetTargetSpec in .NET 5

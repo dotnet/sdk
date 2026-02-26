@@ -8,8 +8,19 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class RunReadyToRunCompiler : ToolTask
+    [MSBuildMultiThreadableTask]
+    public class RunReadyToRunCompiler : ToolTask, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         public ITaskItem CrossgenTool { get; set; }
         public ITaskItem Crossgen2Tool { get; set; }
 
@@ -67,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        protected override string GenerateFullPathToTool() => ToolName;
+        protected override string GenerateFullPathToTool() => TaskEnvironment.GetAbsolutePath(ToolName);
 
         private string DiaSymReader => CrossgenTool.GetMetadata(MetadataKeys.DiaSymReader);
 
@@ -100,13 +111,13 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogError(Strings.Crossgen2ToolMissingWhenUseCrossgen2IsSet);
                     return false;
                 }
-                if (!File.Exists(Crossgen2Tool.ItemSpec))
+                if (!File.Exists(TaskEnvironment.GetAbsolutePath(Crossgen2Tool.ItemSpec)))
                 {
                     Log.LogError(Strings.Crossgen2ToolExecutableNotFound, Crossgen2Tool.ItemSpec);
                     return false;
                 }
                 string hostPath = DotNetHostPath;
-                if (!string.IsNullOrEmpty(hostPath) && !File.Exists(hostPath))
+                if (!string.IsNullOrEmpty(hostPath) && !File.Exists(TaskEnvironment.GetAbsolutePath(hostPath)))
                 {
                     Log.LogError(Strings.DotNetHostExecutableNotFound, hostPath);
                     return false;
@@ -114,7 +125,7 @@ namespace Microsoft.NET.Build.Tasks
                 string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
                 if (!string.IsNullOrEmpty(jitPath))
                 {
-                    if (!File.Exists(jitPath))
+                    if (!File.Exists(TaskEnvironment.GetAbsolutePath(jitPath)))
                     {
                         Log.LogError(Strings.JitLibraryNotFound, jitPath);
                         return false;
@@ -148,12 +159,12 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogError(Strings.CrossgenToolMissingWhenUseCrossgen2IsNotSet);
                     return false;
                 }
-                if (!File.Exists(CrossgenTool.ItemSpec))
+                if (!File.Exists(TaskEnvironment.GetAbsolutePath(CrossgenTool.ItemSpec)))
                 {
                     Log.LogError(Strings.CrossgenToolExecutableNotFound, CrossgenTool.ItemSpec);
                     return false;
                 }
-                if (!File.Exists(CrossgenTool.GetMetadata(MetadataKeys.JitPath)))
+                if (!File.Exists(TaskEnvironment.GetAbsolutePath(CrossgenTool.GetMetadata(MetadataKeys.JitPath))))
                 {
                     Log.LogError(Strings.JitLibraryNotFound, MetadataKeys.JitPath);
                     return false;
@@ -166,7 +177,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 _outputR2RImage = CompilationEntry.ItemSpec;
 
-                if (!string.IsNullOrEmpty(DiaSymReader) && !File.Exists(DiaSymReader))
+                if (!string.IsNullOrEmpty(DiaSymReader) && !File.Exists(TaskEnvironment.GetAbsolutePath(DiaSymReader)))
                 {
                     Log.LogError(Strings.DiaSymReaderLibraryNotFound, DiaSymReader);
                     return false;
@@ -178,7 +189,7 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogError(Strings.MissingOutputPDBImagePath);
                 }
 
-                if (!File.Exists(_outputR2RImage))
+                if (!File.Exists(TaskEnvironment.GetAbsolutePath(_outputR2RImage)))
                 {
                     Log.LogError(Strings.PDBGeneratorInputExecutableNotFound, _outputR2RImage);
                     return false;
@@ -191,7 +202,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!_createCompositeImage)
                 {
                     _inputAssembly = CompilationEntry.ItemSpec;
-                    if (!File.Exists(_inputAssembly))
+                    if (!File.Exists(TaskEnvironment.GetAbsolutePath(_inputAssembly)))
                     {
                         Log.LogError(Strings.InputAssemblyNotFound, _inputAssembly);
                         return false;
@@ -231,13 +242,14 @@ namespace Microsoft.NET.Build.Tasks
                     if (IsPdbCompilation && string.Equals(Path.GetFileName(reference.ItemSpec), Path.GetFileName(_outputR2RImage), StringComparison.OrdinalIgnoreCase))
                         continue;
 
+                    string absoluteRef = TaskEnvironment.GetAbsolutePath(reference.ItemSpec);
                     if (UseCrossgen2 && !IsPdbCompilation)
                     {
-                        result.AppendLine($"-r:\"{reference.ItemSpec}\"");
+                        result.AppendLine($"-r:\"{absoluteRef}\"");
                     }
                     else
                     {
-                        result.AppendLine($"-r \"{reference.ItemSpec}\"");
+                        result.AppendLine($"-r \"{absoluteRef}\"");
                     }
                 }
             }
@@ -249,7 +261,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (ActuallyUseCrossgen2 && !string.IsNullOrEmpty(DotNetHostPath))
             {
-                return $"\"{Crossgen2Tool.ItemSpec}\"";
+                return $"\"{TaskEnvironment.GetAbsolutePath(Crossgen2Tool.ItemSpec)}\"";
             }
             return null;
         }
@@ -279,19 +291,19 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(DiaSymReader))
                 {
-                    result.AppendLine($"/DiasymreaderPath \"{DiaSymReader}\"");
+                    result.AppendLine($"/DiasymreaderPath \"{TaskEnvironment.GetAbsolutePath(DiaSymReader)}\"");
                 }
 
                 result.AppendLine(_createPDBCommand);
-                result.AppendLine($"\"{_outputR2RImage}\"");
+                result.AppendLine($"\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
             }
             else
             {
                 result.AppendLine("/MissingDependenciesOK");
-                result.AppendLine($"/JITPath \"{CrossgenTool.GetMetadata(MetadataKeys.JitPath)}\"");
+                result.AppendLine($"/JITPath \"{TaskEnvironment.GetAbsolutePath(CrossgenTool.GetMetadata(MetadataKeys.JitPath))}\"");
                 result.Append(GetAssemblyReferencesCommands());
-                result.AppendLine($"/out \"{_outputR2RImage}\"");
-                result.AppendLine($"\"{_inputAssembly}\"");
+                result.AppendLine($"/out \"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
+                result.AppendLine($"\"{TaskEnvironment.GetAbsolutePath(_inputAssembly)}\"");
             }
 
             return result.ToString();
@@ -304,7 +316,7 @@ namespace Microsoft.NET.Build.Tasks
             string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
             if (!string.IsNullOrEmpty(jitPath))
             {
-                result.AppendLine($"--jitpath:\"{jitPath}\"");
+                result.AppendLine($"--jitpath:\"{TaskEnvironment.GetAbsolutePath(jitPath)}\"");
             }
             else
             {
@@ -320,12 +332,12 @@ namespace Microsoft.NET.Build.Tasks
                 if (Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS) == "windows")
                 {
                     result.AppendLine("--pdb");
-                    result.AppendLine($"--pdb-path:{Path.GetDirectoryName(_outputPDBImage)}");
+                    result.AppendLine($"--pdb-path:{TaskEnvironment.GetAbsolutePath(Path.GetDirectoryName(_outputPDBImage))}");
                 }
                 else
                 {
                     result.AppendLine("--perfmap");
-                    result.AppendLine($"--perfmap-path:{Path.GetDirectoryName(_outputPDBImage)}");
+                    result.AppendLine($"--perfmap-path:{TaskEnvironment.GetAbsolutePath(Path.GetDirectoryName(_outputPDBImage))}");
 
                     string perfmapFormatVersion = Crossgen2Tool.GetMetadata(MetadataKeys.PerfmapFormatVersion);
                     if (!string.IsNullOrEmpty(perfmapFormatVersion))
@@ -339,7 +351,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 foreach (var mibc in Crossgen2PgoFiles)
                 {
-                    result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
+                    result.AppendLine($"-m:\"{TaskEnvironment.GetAbsolutePath(mibc.ItemSpec)}\"");
                 }
             }
 
@@ -364,7 +376,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (Crossgen2IsVersion5)
                     result.AppendLine("--inputbubble");
 
-                result.AppendLine($"--out:\"{_outputR2RImage}\"");
+                result.AppendLine($"--out:\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
 
                 result.Append(GetAssemblyReferencesCommands());
 
@@ -372,25 +384,25 @@ namespace Microsoft.NET.Build.Tasks
                 // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
                 foreach (var reference in ReadyToRunCompositeBuildInput)
                 {
-                    result.AppendLine(reference.ItemSpec);
+                    result.AppendLine(TaskEnvironment.GetAbsolutePath(reference.ItemSpec));
                 }
 
                 if (ReadyToRunCompositeUnrootedBuildInput != null)
                 {
                     foreach (var unrooted in ReadyToRunCompositeUnrootedBuildInput)
                     {
-                        result.AppendLine($"-u:\"{unrooted.ItemSpec}\"");
+                        result.AppendLine($"-u:\"{TaskEnvironment.GetAbsolutePath(unrooted.ItemSpec)}\"");
                     }
                 }
             }
             else
             {
                 result.Append(GetAssemblyReferencesCommands());
-                result.AppendLine($"--out:\"{_outputR2RImage}\"");
+                result.AppendLine($"--out:\"{TaskEnvironment.GetAbsolutePath(_outputR2RImage)}\"");
 
                 // Note: do not add double quotes around the input assembly, even if the file path contains spaces. The command line
                 // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
-                result.AppendLine($"{_inputAssembly}");
+                result.AppendLine($"{TaskEnvironment.GetAbsolutePath(_inputAssembly)}");
             }
 
             return result.ToString();
@@ -400,7 +412,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             // Ensure output sub-directories exists - Crossgen does not create directories for output files. Any relative path used with the
             // '/out' parameter has to have an existing directory.
-            Directory.CreateDirectory(Path.GetDirectoryName(_outputR2RImage));
+            Directory.CreateDirectory(Path.GetDirectoryName(TaskEnvironment.GetAbsolutePath(_outputR2RImage)));
 
             WarningsDetected = false;
 
