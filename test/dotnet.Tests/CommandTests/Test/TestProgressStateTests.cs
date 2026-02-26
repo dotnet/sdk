@@ -8,7 +8,6 @@ using System.IO;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
-using Xunit;
 
 namespace dotnet.Tests.CommandTests.Test;
 

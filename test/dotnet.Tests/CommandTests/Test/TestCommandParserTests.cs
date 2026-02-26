@@ -9,13 +9,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class TestCommandDefinitionTests
     {
-        [Fact]
-        public void SurroundWithDoubleQuotesWithNullThrows()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                TestCommandDefinition.SurroundWithDoubleQuotes(null!));
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("\"a\"")]
@@ -23,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void SurroundWithDoubleQuotesWhenAlreadySurroundedDoesNothing(string input)
         {
             var escapedInput = "\"" + input + "\"";
-            var result = TestCommandDefinition.SurroundWithDoubleQuotes(escapedInput);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(escapedInput);
             result.Should().Be(escapedInput);
         }
 
@@ -35,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("a\"")]
         public void SurroundWithDoubleQuotesWhenNotSurroundedSurrounds(string input)
         {
-            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -46,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyEvenCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -57,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyOddCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
         }
 
@@ -70,8 +63,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var propertyOption = command.Options.FirstOrDefault(o => 
                 o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
             
-            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.PropertiesOption to support /p Property=Value syntax");
-            propertyOption.Aliases.Should().Contain("/p", "PropertiesOption should include /p alias for MSBuild compatibility");
+            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
+            propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
         }
 
         [Fact]

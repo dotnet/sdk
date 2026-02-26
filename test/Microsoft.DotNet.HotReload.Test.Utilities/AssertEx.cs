@@ -7,6 +7,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watch.UnitTests

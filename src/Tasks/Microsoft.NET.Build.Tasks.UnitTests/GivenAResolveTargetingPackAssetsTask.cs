@@ -129,7 +129,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private ResolveTargetingPackAssets InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory,
             [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask))
         {
-            mockPackageDirectory = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
+            mockPackageDirectory = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             string dataDir = Path.Combine(mockPackageDirectory, "data");
             Directory.CreateDirectory(dataDir);

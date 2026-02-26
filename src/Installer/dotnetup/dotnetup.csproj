@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
@@ -30,10 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.CoreUtils\EnvironmentVariableParser.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ILLMEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Env.cs" LinkBase="Shared" />

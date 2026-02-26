@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             string telemetryTestLogger = $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}";
 
-            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource()
+            var testAsset = TestAssetsManager.CopyTestAsset("HelloWorld").WithSource()
             .WithProjectChanges(projectFile =>
                 projectFile.Root!.Descendants()
                             .First(e => e.Name.LocalName == "PropertyGroup")

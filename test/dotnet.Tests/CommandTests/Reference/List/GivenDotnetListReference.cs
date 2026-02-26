@@ -16,7 +16,7 @@ Usage:
   dotnet list [<PROJECT>] reference [options]
 
 Arguments:
-  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.";
@@ -28,7 +28,7 @@ Usage:
   dotnet list [<PROJECT | SOLUTION>] [command] [options]
 
 Arguments:
-  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.
@@ -150,7 +150,7 @@ Commands:
         [Fact]
         public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError()
         {
-            var lib = NewLib(_testAssetsManager.CreateTestDirectory().Path);
+            var lib = NewLib(TestAssetsManager.CreateTestDirectory().Path);
 
             var cmd = new ListReferenceCommand(Log)
                 .WithProject(lib.CsProjPath)
@@ -167,7 +167,7 @@ Commands:
 {new string('-', OutputText.Length)}
 ..\ref\ref.csproj";
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             var lib = NewLib(testDirectory, "lib");
             string ref1 = NewLib(testDirectory, "ref").CsProjPath;
@@ -190,7 +190,7 @@ Commands:
 ..\ref2\ref2.csproj
 ..\ref3\ref3.csproj";
 
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             var lib = NewLib(testDir, "lib");
             string ref1 = NewLib(testDir, "ref1").CsProjPath;
@@ -211,7 +211,7 @@ Commands:
         [Fact]
         public void ItPrintsReferenceWithMSBuildPropertyInPath()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var lib = NewLib(testDir, "lib");
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
             OutputText += $@"
@@ -231,7 +231,7 @@ Commands:
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
-                _testAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod, identifier: identifier, testAssetSubdirectory: TestSetup.TestGroup)
+                TestAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod, identifier: identifier, testAssetSubdirectory: TestSetup.TestGroup)
                     .WithSource()
                     .Path);
         }

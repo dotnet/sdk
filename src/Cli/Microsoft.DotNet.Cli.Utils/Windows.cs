@@ -37,6 +37,13 @@ public static class Windows
     /// Returns the commandline of the currently executing process.
     /// </summary>
     /// <returns>The commandline of the current process.</returns>
-    public static string? GetProcessCommandLine() =>
-        Marshal.PtrToStringAuto(NativeMethods.Windows.GetCommandLine());
+    public static string? GetProcessCommandLine()
+    {
+#if !DOTNET_BUILDSOURCEONLY
+        // Windows manages the lifetime of the returned PWSTR, so we don't need to free it.
+        return PInvoke.GetCommandLine().ToString();
+#else
+        return null;
+#endif
+    }
 }

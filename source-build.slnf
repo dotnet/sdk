@@ -8,6 +8,7 @@
       "src\\BuiltInTools\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
       "src\\BuiltInTools\\DotNetWatchTasks\\DotNetWatchTasks.csproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
+      "src\\BuiltInTools\\HotReloadAgent.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
@@ -48,7 +49,7 @@
       "src\\WebSdk\\Web\\Tasks\\Microsoft.NET.Sdk.Web.Tasks.csproj",
       "src\\WebSdk\\Worker\\Tasks\\Microsoft.NET.Sdk.Worker.Tasks.csproj",
       "template_feed\\Microsoft.DotNet.Common.ItemTemplates\\Microsoft.DotNet.Common.ItemTemplates.csproj",
-      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.10.0\\Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj"
+      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.11.0\\Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj"
     ]
   }
 }

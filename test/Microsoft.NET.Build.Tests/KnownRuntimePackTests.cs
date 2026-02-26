@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
 
@@ -47,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
             knownRuntimePack.Attribute("RuntimePackLabels").Value = "";
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
 
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["RuntimeIdentifiers"] = "android-arm;android-arm64;android-x86;android-x64";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var knownFrameworkReferenceUpdate = new XElement("KnownFrameworkReference",
                 new XAttribute("Update", "Microsoft.AspNetCore.App"),

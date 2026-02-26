@@ -120,9 +120,10 @@ internal static class DotnetupTestUtilities
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
+        string tfm = Path.GetFileName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
         string dotnetupPath = Path.Combine(
             repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, "net10.0", executableName);
+            "artifacts", "bin", "dotnetup", configuration, tfm, executableName);
 
         // Ensure path is normalized and exists
         dotnetupPath = Path.GetFullPath(dotnetupPath);

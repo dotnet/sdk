@@ -43,8 +43,17 @@
     <Artifact Remove="@(MsiPackages)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(PublishingWorkloadMsiInternal)' == 'true'">
+  <!-- In 2xx+ bands, MSI packages are downloaded from the 1xx build rather than built locally.
+       Mark them as Internal to avoid republishing. -->
+  <ItemGroup Condition="'$(DownloadWorkloadMsis)' == 'true'">
     <Artifact Update="$(ArtifactsShippingPackagesDir)*.Msi.*.nupkg" Visibility="Internal" />
+  </ItemGroup>
+
+  <!-- In 2xx+ bands, don't publish workload manifest packages since these are versioned the same as the 1xx
+       band and would cause conflicts. -->
+  <ItemGroup Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">
+    <Artifact Update="$(ArtifactsShippingPackagesDir)Microsoft.NET.Workload.*.Manifest-*.nupkg" Visibility="Internal" />
+    <Artifact Update="$(ArtifactsNonShippingPackagesDir)Microsoft.NET.Workload.*.Manifest-*.nupkg" Visibility="Internal" />
   </ItemGroup>
 
   <Target Name="GetNonStableProductVersion">

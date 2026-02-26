@@ -1623,7 +1623,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         public void Pack_Incremental_DoesNotRegenerateCacheAndPropsFiles()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
                 .WithSource();
 

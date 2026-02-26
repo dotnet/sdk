@@ -17,7 +17,7 @@ public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
             ProjectSdk = "Microsoft.NET.Sdk.Web"
         };
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
         buildCommand
@@ -42,7 +42,7 @@ public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
 
         testProject.AdditionalProperties["IncludeOpenAPIAnalyzers"] = "false";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
         buildCommand
@@ -68,7 +68,7 @@ public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
 
         testProject.AdditionalProperties["IncludeOpenAPIAnalyzers"] = "true";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
         var buildCommand = new BuildCommand(testAsset);
         buildCommand

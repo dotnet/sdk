@@ -162,9 +162,9 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var pipeName = Path.GetRandomFileName();
 
-            var pidDirectory = _testAssetsManager.CreateTestDirectory(identifier: "pidDirectory").Path;
+            var pidDirectory = TestAssetsManager.CreateTestDirectory(identifier: "pidDirectory").Path;
 
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset("TestRazorApp")
                 .WithSource();
 

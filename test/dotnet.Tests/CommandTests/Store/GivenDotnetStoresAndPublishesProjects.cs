@@ -19,14 +19,14 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var testAppName = "NewtonSoftDependentProject";
             var profileProjectName = "NewtonsoftProfile";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
             var rid = EnvironmentInfo.GetCompatibleRid();
             var localAssemblyCache = Path.Combine(testProjectDirectory, "localAssemblyCache");
             var intermediateWorkingDirectory = Path.Combine(testProjectDirectory, "workingDirectory");
-            var profileProjectPath = _testAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
+            var profileProjectPath = TestAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
             var profileProject = Path.Combine(profileProjectPath, $"{profileProjectName}.xml");
 
             new RestoreCommand(testInstance)
@@ -70,11 +70,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var profileProjectName = "NuGetConfigProfile";
             var targetManifestFileName = "NuGetConfigFilterProfile.xml";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var profileProjectPath = _testAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
+            var profileProjectPath = TestAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
             var profileFilter = Path.Combine(profileProjectPath, targetManifestFileName);
 
             new DotnetRestoreCommand(Log)
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var profileProjectName = "NewtonsoftProfile";
             var profileProjectName1 = "FluentProfile";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -115,11 +115,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var localAssemblyCache = Path.Combine(testProjectDirectory, "lAC");
             var intermediateWorkingDirectory = Path.Combine(testProjectDirectory, "workingDirectory");
 
-            var profileProjectPath = _testAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
+            var profileProjectPath = TestAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
             var profileProject = Path.Combine(profileProjectPath, $"{profileProjectName}.xml");
             var profileFilter = Path.Combine(profileProjectPath, "NewtonsoftFilterProfile.xml");
 
-            var profileProjectPath1 = _testAssetsManager.CopyTestAsset(profileProjectName1).WithSource().Path;
+            var profileProjectPath1 = TestAssetsManager.CopyTestAsset(profileProjectName1).WithSource().Path;
             var profileProject1 = Path.Combine(profileProjectPath1, $"{profileProjectName1}.xml");
             var profileFilter1 = Path.Combine(profileProjectPath1, "FluentFilterProfile.xml");
 
