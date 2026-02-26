@@ -6,11 +6,9 @@ Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
 - User-visible changes to behavior should be considered carefully before committing. They should always be flagged.
-- When generating code, run `dotnet format` to ensure uniform formatting.
+- Only edit the files that are necessary to address the specific issue. Do not run `dotnet format` or make formatting changes to additional files.
 - Prefer using file-based namespaces for new code.
 - Do not allow unused `using` directives to be committed.
-- Commit your changes, and then format them.
-- Add the format commit SHA to the .git-blame-ignore-revs file so that the commit doesn't dirty git blame in the future
 - Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
 Testing:
