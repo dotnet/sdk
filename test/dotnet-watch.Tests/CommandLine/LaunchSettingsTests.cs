@@ -131,6 +131,26 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineEquals("Environment: Development");
         }
 
+        [Fact]
+        public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingFileOption()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+                .WithSource();
+
+            File.Move(Path.Combine(testAsset.Path, "Properties", "launchSettings.json"), Path.Combine(testAsset.Path, "Program.run.json"));
+            File.Delete(Path.Combine(testAsset.Path, "WatchAppWithLaunchSettings.csproj"));
+
+            var directoryInfo = new DirectoryInfo(testAsset.Path);
+
+            // Configure the working directory to be one level above the test app directory.
+            App.Start(
+                testAsset,
+                ["--file", Path.Combine(testAsset.Path, "Program.cs")],
+                workingDirectory: Path.GetFullPath(directoryInfo.Parent.FullName));
+
+            await App.AssertOutputLineEquals("Environment: Development");
+        }
+
         [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/29047")]
         public async Task Run_WithHotReloadEnabled_DoesNotReadConsoleIn_InNonInteractiveMode()
         {

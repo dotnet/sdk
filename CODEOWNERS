@@ -30,8 +30,9 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @phil-allen-msft
-/test/dotnet-format.UnitTests @phil-allen-msft
+/src/Cli/dotnet/commands/Format @dotnet/roslyn-ide
+/test/dotnet-format.UnitTests @dotnet/roslyn-ide
+/src/Dotnet.Format @dotnet/roslyn-ide
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -79,9 +80,9 @@
 /test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
 /test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
@@ -106,8 +107,5 @@
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
 
-# dotnet-format
-/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.UnitTests @dotnet/roslyn-ide
 
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers

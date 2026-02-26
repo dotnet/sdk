@@ -7,17 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
 internal static class InternalReportInstallSuccessCommandParser
 {
-    private static readonly InternalReportInstallSuccessCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(InternalReportInstallSuccessCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static InternalReportInstallSuccessCommandDefinition CreateCommand()
-    {
-        var command = new InternalReportInstallSuccessCommandDefinition();
         command.SetAction(InternalReportInstallSuccessCommand.Run);
-        return command;
     }
 }
