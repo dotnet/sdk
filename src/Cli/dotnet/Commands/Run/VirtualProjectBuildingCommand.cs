@@ -1180,6 +1180,24 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             throw new GracefulException(
             $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
+
+    public static SourceFile RemoveDirectivesFromFile(SourceFile sourceFile)
+    {
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
+
+        while (editor.Directives is [{ } directive, ..])
+        {
+            editor.Remove(directive);
+        }
+
+        return editor.SourceFile;
+    }
+
+    public static void RemoveDirectivesFromFile(SourceFile sourceFile, string targetFilePath)
+    {
+        var modifiedFile = RemoveDirectivesFromFile(sourceFile);
+        (modifiedFile with { Path = targetFilePath }).Save();
+    }
 }
 
 internal sealed class RunFileBuildCacheEntry

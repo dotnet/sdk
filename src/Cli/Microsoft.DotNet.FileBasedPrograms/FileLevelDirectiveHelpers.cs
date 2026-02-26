@@ -77,7 +77,6 @@ internal static class FileLevelDirectiveHelpers
             }
         }
 
-        // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
     }
 
@@ -112,7 +111,7 @@ internal static class FileLevelDirectiveHelpers
             {
                 TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
 
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index, span);
                 var info = new CSharpDirective.ParseInfo
                 {
                     SourceFile = sourceFile,
@@ -134,7 +133,7 @@ internal static class FileLevelDirectiveHelpers
                 var value = parts.Length > 1 ? parts[1] : "";
                 Debug.Assert(!(parts.Length > 2));
 
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index, span);
                 var context = new CSharpDirective.ParseContext
                 {
                     Info = new()
@@ -183,35 +182,42 @@ internal static class FileLevelDirectiveHelpers
             return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
         }
 
-        static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index)
+        static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index, TextSpan excludeSpan)
         {
             (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) result = default;
 
             for (int i = index - 1; i >= 0; i--)
             {
-                if (!Fill(ref result.Leading, triviaList, i)) break;
+                if (!Fill(ref result.Leading, triviaList, i, excludeSpan)) break;
             }
 
             for (int i = index + 1; i < triviaList.Count; i++)
             {
-                if (!Fill(ref result.Trailing, triviaList, i)) break;
+                if (!Fill(ref result.Trailing, triviaList, i, excludeSpan)) break;
             }
 
             return result;
 
-            static bool Fill(ref WhiteSpaceInfo info, in SyntaxTriviaList triviaList, int index)
+            static bool Fill(ref WhiteSpaceInfo info, in SyntaxTriviaList triviaList, int index, TextSpan excludeSpan)
             {
                 var trivia = triviaList[index];
+
+                var length = trivia.FullSpan.Length - (trivia.FullSpan.Intersection(excludeSpan)?.Length ?? 0);
+
                 if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
-                    info.LineBreaks += 1;
-                    info.TotalLength += trivia.FullSpan.Length;
+                    if (length != 0)
+                    {
+                        info.BlankLineLength += info.RestLength + length;
+                        info.RestLength = 0;
+                    }
+
                     return true;
                 }
 
                 if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
                 {
-                    info.TotalLength += trivia.FullSpan.Length;
+                    info.RestLength += length;
                     return true;
                 }
 
@@ -256,8 +262,15 @@ internal static partial class Patterns
 
 internal struct WhiteSpaceInfo
 {
-    public int LineBreaks;
-    public int TotalLength;
+    /// <summary>
+    /// Size of whitespace that consists of only blank lines (i.e., lines that contain only whitespace).
+    /// </summary>
+    public int BlankLineLength;
+
+    /// <summary>
+    /// Size of the remaining whitespace on a not-entirely-blank line.
+    /// </summary>
+    public int RestLength;
 }
 
 /// <summary>
@@ -271,11 +284,20 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     public readonly struct ParseInfo
     {
         public required SourceFile SourceFile { get; init; }
+
         /// <summary>
         /// Span of the full line including the trailing line break.
         /// </summary>
         public required TextSpan Span { get; init; }
+
+        /// <summary>
+        /// Additional leading whitespace not included in <see cref="Span"/>.
+        /// </summary>
         public required WhiteSpaceInfo LeadingWhiteSpace { get; init; }
+
+        /// <summary>
+        /// Additional trailing whitespace not included in <see cref="Span"/>.
+        /// </summary>
         public required WhiteSpaceInfo TrailingWhiteSpace { get; init; }
     }
 

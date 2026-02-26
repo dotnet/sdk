@@ -114,8 +114,8 @@ Microsoft.DotNet.FileBasedPrograms.SourceFile.SourceFile(string! Path, Microsoft
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Text.get -> Microsoft.CodeAnalysis.Text.SourceText!
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Text.init -> void
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo
-Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.LineBreaks -> int
-Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.TotalLength -> int
+Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.BlankLineLength -> int
+Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.RestLength -> int
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.WhiteSpaceInfo() -> void
 Microsoft.DotNet.ProjectTools.ProjectLocator
 override abstract Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ToString() -> string!
