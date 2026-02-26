@@ -84,15 +84,15 @@ public class GenerateStaticWebAssetsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = StaticWebAsset.FromTaskItem(element);
-            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
 
-            var groupPrefix = ComputeGroupPathPrefix(element);
-            var effectivePackagePathPrefix = string.IsNullOrEmpty(groupPrefix)
-                ? PackagePathPrefix
-                : PackagePathPrefix + "\\" + groupPrefix;
-            var packagePath = asset.ComputeTargetPath(effectivePackagePathPrefix, '\\', tokenResolver);
+            // Emit the raw RelativePath (preserving token expressions like ~group and ?fingerprint).
+            // The consumer parses and processes tokens through the standard token infrastructure.
+            var relativePath = asset.RelativePath;
+
+            // For the package path and Identity, resolve tokens to get the physical file location.
+            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
-            var contentRootExpression = @$"$(MSBuildThisFileDirectory)..\{Normalize(effectivePackagePathPrefix)}\";
+            var contentRootExpression = @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\";
 
             var emittedSourceType = "Package";
             if (hasFrameworkMatcher)
@@ -162,62 +162,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
         return !Log.HasLoggedErrors;
 
         static string Normalize(string relativePath) => relativePath.Replace("/", "\\").TrimStart('\\');
-    }
-
-    private string ComputeGroupPathPrefix(ITaskItem asset)
-    {
-        if (StaticWebAssetGroupDefinitions == null || StaticWebAssetGroupDefinitions.Length == 0)
-        {
-            return "";
-        }
-
-        var assetGroups = asset.GetMetadata("AssetGroups") ?? "";
-        if (string.IsNullOrEmpty(assetGroups))
-        {
-            return "";
-        }
-
-        var groupEntries = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-        var groupValues = new List<(int Order, string Value)>();
-
-        foreach (var entry in groupEntries)
-        {
-            var eqIndex = entry.IndexOf('=');
-            if (eqIndex <= 0)
-            {
-                continue;
-            }
-            var groupName = entry.Substring(0, eqIndex);
-            var groupValue = entry.Substring(eqIndex + 1);
-
-            foreach (var def in StaticWebAssetGroupDefinitions)
-            {
-                var defName = def.ItemSpec;
-                var defValue = def.GetMetadata("Value");
-                var includeInPath = def.GetMetadata("IncludeGroupValueInPackagePath");
-
-                if (string.Equals(defName, groupName, StringComparison.Ordinal) &&
-                    string.Equals(defValue, groupValue, StringComparison.Ordinal) &&
-                    string.Equals(includeInPath, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    var orderStr = def.GetMetadata("Order");
-                    if (!int.TryParse(orderStr, out var order))
-                    {
-                        order = 0;
-                    }
-                    groupValues.Add((order, groupValue));
-                    break;
-                }
-            }
-        }
-
-        if (groupValues.Count == 0)
-        {
-            return "";
-        }
-
-        groupValues.Sort((a, b) => a.Order.CompareTo(b.Order));
-        return string.Join("\\", groupValues.Select(g => g.Value));
     }
 
     private void WriteFile(byte[] data)
