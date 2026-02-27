@@ -14,12 +14,24 @@ namespace Microsoft.NET.Build.Tasks
     /// other filtering on content assets, including whether they match the active 
     /// project language.
     /// </summary>
-    public sealed class ProduceContentAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ProduceContentAssets : TaskBase, IMultiThreadableTask
     {
         private readonly List<ITaskItem> _contentItems = new();
         private readonly List<ITaskItem> _fileWrites = new();
         private readonly List<ITaskItem> _copyLocalItems = new();
         private IContentAssetPreprocessor _assetPreprocessor;
+
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         #region Output Items
 
@@ -141,7 +153,7 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogWarning(Strings.DuplicatePreprocessorToken, duplicatedPreprocessorKey, preprocessorValues[duplicatedPreprocessorKey]);
                 }
 
-                AssetPreprocessor.ConfigurePreprocessor(ContentPreprocessorOutputDirectory, preprocessorValues);
+                AssetPreprocessor.ConfigurePreprocessor(TaskEnvironment.GetAbsolutePath(ContentPreprocessorOutputDirectory), preprocessorValues);
             }
 
             var contentFileDeps = ContentFileDependencies ?? Enumerable.Empty<ITaskItem>();
@@ -193,7 +205,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private void ProduceContentAsset(ITaskItem contentFile)
         {
-            string resolvedPath = contentFile.ItemSpec;
+            string resolvedPath = TaskEnvironment.GetAbsolutePath(contentFile.ItemSpec);
             string pathToFinalAsset = resolvedPath;
             string ppOutputPath = contentFile.GetMetadata(MetadataKeys.PPOutputPath);
             string packageName = contentFile.GetMetadata(MetadataKeys.NuGetPackageId);
