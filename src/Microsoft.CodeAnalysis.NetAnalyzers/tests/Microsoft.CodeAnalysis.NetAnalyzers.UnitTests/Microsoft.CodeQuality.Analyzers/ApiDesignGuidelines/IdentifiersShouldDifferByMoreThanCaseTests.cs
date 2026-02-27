@@ -420,6 +420,35 @@ namespace N
             GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
         }
 
+        [Fact]
+        public async Task TestMultipleExtensionBlocks()
+        {
+            string code = @"
+public static class StringExtensions
+{
+    private const string ExtensionString = ""Extension"";
+
+    // Static class extensions
+    extension(string)
+    {
+        public static string CreateExtension() => ExtensionString;
+    }
+
+    // Instance extensions
+    extension(string s)
+    {
+        public bool IsExtensionString() => s == ExtensionString;
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+            }.RunAsync();
+        }
+
         #endregion
 
         #region Helper Methods
