@@ -6,12 +6,9 @@
 
   <PropertyGroup>
     <UseRazorBuildServer>false</UseRazorBuildServer>
+    <!-- Override the default framework version (V5) from the IdentityUILib package to select V4 -->
+    <IdentityUIFrameworkVersion>V4</IdentityUIFrameworkVersion>
   </PropertyGroup>
-
-  <!-- Consumer explicitly selects Bootstrap V4 from IdentityUILib -->
-  <ItemGroup>
-    <StaticWebAssetGroup Include="BootstrapVersion" Value="V4" SourceId="IdentityUILib" />
-  </ItemGroup>
 
   <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
     <ItemGroup>

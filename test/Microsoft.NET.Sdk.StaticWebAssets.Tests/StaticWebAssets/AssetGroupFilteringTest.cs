@@ -29,6 +29,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages = new List<string>();
         _logMessages = new List<string>();
         _buildEngine = new Mock<IBuildEngine>();
+        _buildEngine.Setup(e => e.ProjectFileOfTaskNode).Returns(Path.Combine(_tempDir, "test.csproj"));
         _buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
         _buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
@@ -422,7 +423,7 @@ public class AssetGroupFilteringTest : IDisposable
         var task = new ComputeReferenceStaticWebAssetItems
         {
             BuildEngine = buildEngine.Object,
-            Source = "ConsumerApp",
+            Source = "FrameworkLib",
             Assets = new[] { asset1, asset2 },
             Patterns = Array.Empty<ITaskItem>(),
             AssetKind = "Build",
@@ -456,7 +457,7 @@ public class AssetGroupFilteringTest : IDisposable
         var task = new ComputeReferenceStaticWebAssetItems
         {
             BuildEngine = buildEngine.Object,
-            Source = "ConsumerApp",
+            Source = "FrameworkLib",
             Assets = new[] { asset },
             Patterns = Array.Empty<ITaskItem>(),
             AssetKind = "Build",

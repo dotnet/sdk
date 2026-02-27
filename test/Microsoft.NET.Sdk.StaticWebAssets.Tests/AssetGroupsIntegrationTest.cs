@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         public void Pack_NupkgContains_GroupedStaticWebAssets()
         {
             var testAsset = "AssetGroupsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: "Pack_Nupkg");
 
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             var result = ExecuteCommand(pack);
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         public void Pack_PropsFile_ContainsAssetGroups_Metadata()
         {
             var testAsset = "AssetGroupsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: "Pack_Props");
 
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             ExecuteCommand(pack).Should().Pass();
@@ -81,13 +81,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         public void Build_ConsumerDefault_ExcludesGroupedAssets()
         {
             var testAsset = "AssetGroupsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: "Build_Default");
 
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             ExecuteCommand(pack).Should().Pass();
 
-            // Restore and build the default consumer (no group declarations)
+            // Restore and build the default consumer (no explicit group override)
             var restore = CreateRestoreCommand(ProjectDirectory, "IdentityUIConsumer");
             ExecuteCommand(restore).Should().Pass();
 
@@ -103,24 +103,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
             manifest.Should().NotBeNull();
 
-            // Without any StaticWebAssetGroup declarations, all grouped assets should be excluded
+            // The library's StaticWebAssets.Groups.props defaults IdentityUIFrameworkVersion=V5,
+            // so V5 is selected automatically and V4 is excluded.
             var v4Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V4"))
+                .Where(a => (a.AssetGroups ?? "").Contains("V4"))
                 .ToList();
 
-            var v5Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V5"))
+            var v5PrimaryAssets = manifest.Assets
+                .Where(a => (a.AssetGroups ?? "").Contains("V5") && a.AssetRole == "Primary")
                 .ToList();
 
-            v4Assets.Should().BeEmpty("V4 grouped assets should be excluded when no group is declared by consumer");
-            v5Assets.Should().BeEmpty("V5 grouped assets should be excluded when no group is declared by consumer");
+            v4Assets.Should().BeEmpty("V4 grouped assets should be excluded when the default selects V5");
+            v5PrimaryAssets.Should().NotBeEmpty("V5 should be the default group selected by the library's Groups.props");
         }
 
         [Fact]
         public void Build_ConsumerV4_IncludesOnlyV4Assets()
         {
             var testAsset = "AssetGroupsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: "Build_V4");
 
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
@@ -141,23 +142,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
             manifest.Should().NotBeNull();
 
-            // V4 assets should be included since the consumer declared BootstrapVersion=V4
+            // V4 assets should be included since the consumer set IdentityUIFrameworkVersion=V4
             var v4Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V4"))
+                .Where(a => (a.AssetGroups ?? "").Contains("V4") && a.AssetRole == "Primary")
                 .ToList();
 
-            v4Assets.Should().NotBeEmpty("V4 assets should be included when consumer declares BootstrapVersion=V4");
+            v4Assets.Should().NotBeEmpty("V4 assets should be included when consumer sets IdentityUIFrameworkVersion=V4");
 
             // V5 assets should be excluded (consumer only selected V4)
             var v5Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V5"))
+                .Where(a => (a.AssetGroups ?? "").Contains("V5"))
                 .ToList();
 
-            v5Assets.Should().BeEmpty("V5 assets should be excluded when consumer only declares BootstrapVersion=V4");
+            v5Assets.Should().BeEmpty("V5 assets should be excluded when consumer only selects V4");
 
-            // V4 endpoints should exist
+            // Endpoints should exist for the included V4 assets.
+            // The group token is file-only (~), so V4/ does NOT appear in endpoint routes.
+            var v4AssetFiles = new HashSet<string>(v4Assets.Select(a => a.Identity));
             var v4Endpoints = manifest.Endpoints
-                ?.Where(e => e.Route.Contains("V4"))
+                ?.Where(e => v4AssetFiles.Contains(e.AssetFile))
                 .ToList();
 
             v4Endpoints.Should().NotBeNull().And.NotBeEmpty(
@@ -168,7 +171,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         public void Build_ConsumerV5_IncludesOnlyV5Assets()
         {
             var testAsset = "AssetGroupsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: "Build_V5");
 
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
@@ -189,23 +192,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
             manifest.Should().NotBeNull();
 
-            // V5 assets should be included since the consumer declared BootstrapVersion=V5
+            // V5 assets should be included since the consumer set IdentityUIFrameworkVersion=V5
             var v5Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V5"))
+                .Where(a => (a.AssetGroups ?? "").Contains("V5") && a.AssetRole == "Primary")
                 .ToList();
 
-            v5Assets.Should().NotBeEmpty("V5 assets should be included when consumer declares BootstrapVersion=V5");
+            v5Assets.Should().NotBeEmpty("V5 assets should be included when consumer sets IdentityUIFrameworkVersion=V5");
 
             // V4 assets should be excluded (consumer only selected V5)
             var v4Assets = manifest.Assets
-                .Where(a => a.RelativePath.Contains("V4"))
+                .Where(a => (a.AssetGroups ?? "").Contains("V4"))
                 .ToList();
 
-            v4Assets.Should().BeEmpty("V4 assets should be excluded when consumer only declares BootstrapVersion=V5");
+            v4Assets.Should().BeEmpty("V4 assets should be excluded when consumer only selects V5");
 
-            // V5 endpoints should exist
+            // Endpoints should exist for the included V5 assets.
+            // The group token is file-only (~), so V5/ does NOT appear in endpoint routes.
+            var v5AssetFiles = new HashSet<string>(v5Assets.Select(a => a.Identity));
             var v5Endpoints = manifest.Endpoints
-                ?.Where(e => e.Route.Contains("V5"))
+                ?.Where(e => v5AssetFiles.Contains(e.AssetFile))
                 .ToList();
 
             v5Endpoints.Should().NotBeNull().And.NotBeEmpty(

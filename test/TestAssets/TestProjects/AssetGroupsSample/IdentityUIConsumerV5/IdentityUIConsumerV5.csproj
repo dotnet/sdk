@@ -6,12 +6,9 @@
 
   <PropertyGroup>
     <UseRazorBuildServer>false</UseRazorBuildServer>
+    <!-- Explicitly select V5 (which is also the default from the IdentityUILib package) -->
+    <IdentityUIFrameworkVersion>V5</IdentityUIFrameworkVersion>
   </PropertyGroup>
-
-  <!-- Consumer explicitly selects Bootstrap V5 from IdentityUILib -->
-  <ItemGroup>
-    <StaticWebAssetGroup Include="BootstrapVersion" Value="V5" SourceId="IdentityUILib" />
-  </ItemGroup>
 
   <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
     <ItemGroup>

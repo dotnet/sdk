@@ -333,16 +333,20 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         // - other#[.{fingerprint}].js produces a single pattern asset#[.{fingerprint}].js
         // - last#[.{fingerprint}]?.txt produces two patterns last#[.{fingerprint}]?.txt and last.txt
         var hasOptionalSegments = false;
+        var hasFileOnlySegments = false;
         foreach (var segment in Segments)
         {
             if (segment.IsOptional)
             {
                 hasOptionalSegments = true;
-                break;
+            }
+            if (segment.IsFileOnly)
+            {
+                hasFileOnlySegments = true;
             }
         }
 
-        if (!hasOptionalSegments)
+        if (!hasOptionalSegments && !hasFileOnlySegments)
         {
             return [this];
         }
