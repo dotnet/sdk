@@ -1338,6 +1338,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="new">The output directory to place built packages in.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdOutputFileNamesWithoutVersionDescription">
+        <source>Do not include the version in the output file name.</source>
+        <target state="new">Do not include the version in the output file name.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
         <target state="new">VERSION</target>

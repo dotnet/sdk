@@ -109,6 +109,7 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
+            OutputFileNamesWithoutVersion = parseResult.GetValue(definition.OutputFileNamesWithoutVersionOption),
             Arguments = [nuspecPath]
         };
 

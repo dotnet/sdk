@@ -431,5 +431,45 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Fail();            
         }
+
+        [Fact]
+        public void DotnetPack_OutputFileNamesWithoutVersion_MSBuild()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+                .WithSource();
+
+            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "bin2"));
+
+            new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-o", outputDir.FullName, "--OutputFileNamesWithoutVersion")
+                .Should().Pass();
+
+            outputDir.Should().Exist()
+                .And.HaveFile("TestLibraryWithConfiguration.nupkg");
+        }
+
+        [Fact]
+        public void DotnetPack_OutputFileNamesWithoutVersion_Nuspec()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--OutputFileNamesWithoutVersion");
+
+            result.Should().Pass();
+
+            var outputDir = new DirectoryInfo(testInstance.Path);
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.nupkg");
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.nupkg");
+            File.Exists(nupkgPath).Should().BeTrue("The package should be created without version in the file name.");
+        }
     }
 }
