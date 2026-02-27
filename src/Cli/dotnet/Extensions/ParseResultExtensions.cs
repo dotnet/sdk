@@ -27,12 +27,14 @@ public static class ParseResultExtensions
     /// </remarks>
     public static void ShowHelp(this ParseResult parseResult)
     {
-        // take from the start of the list until we hit an option/--/unparsed token
-        // since commands can have arguments, we must take those as well in order to get accurate help
-        Parser.Parse([
-            ..parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value),
-            "-h"
-        ]).Invoke();
+        // Take from the start of the list until we hit an option/--/unparsed token.
+        // Since commands can have arguments, we must take those as well in order to get accurate help.
+        var filteredTokenValues = parseResult.Tokens.TakeWhile(token =>
+            token.Type == TokenType.Argument
+                || token.Type == TokenType.Command
+                || token.Type == TokenType.Directive)
+            .Select(t => t.Value);
+        Parser.Parse([..filteredTokenValues, "-h"]).Invoke();
     }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -45,12 +47,12 @@ public static class ParseResultExtensions
                 var rawResourcePartsForThisLocale = DistinctFormatStringParts(CliStrings.UnrecognizedCommandOrArgument);
                 return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
             });
-            if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
-                parseResult.Errors.Except(unrecognizedTokenErrors).Any())
+
+            if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors
+                || parseResult.Errors.Except(unrecognizedTokenErrors).Any())
             {
                 throw new CommandParsingException(
-                    message: string.Join(Environment.NewLine,
-                                         parseResult.Errors.Select(e => e.Message)),
+                    message: string.Join(Environment.NewLine, parseResult.Errors.Select(e => e.Message)),
                     parseResult: parseResult);
             }
         }
@@ -58,10 +60,9 @@ public static class ParseResultExtensions
         /// <summary>
         /// Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking.
         /// </summary>
-        static string[] DistinctFormatStringParts(string formatString)
-        {
-            return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
-        }
+        static string[] DistinctFormatStringParts(string formatString) =>
+            // Match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'.
+            Regex.Split(formatString, @"{[0-9]+}");
 
         /// <summary>
         /// Given a string and a series of parts, ensures that all parts are present in the string in sequential order.
@@ -76,42 +77,29 @@ public static class ParseResultExtensions
                     error = error.Slice(foundIndex + part.Length);
                     continue;
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             }
+
             return true;
         }
     }
 
-    public static string RootSubCommandResult(this ParseResult parseResult)
-    {
-        CommandResult commandResult = parseResult.CommandResult;
-        while (commandResult.Parent is CommandResult parentCommand && parentCommand != parseResult.RootCommandResult)
-        {
-            commandResult = parentCommand;
-        }
-        return commandResult.Command.Name;
-    }
+    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
+        .Select(child => GetSymbolResultValue(parseResult, child))
+        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
 
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
-    {
-        return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-            Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-    }
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
+        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
+        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
-    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
-    {
-        return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
-    }
+    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
 
-    public static bool CanBeInvoked(this ParseResult parseResult)
-    {
-        return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-            parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
-    }
+    public static bool CanBeInvoked(this ParseResult parseResult) =>
+        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
+        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
+        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
@@ -120,12 +108,8 @@ public static class ParseResultExtensions
         return 1;
     }
 
-    public static string[] GetArguments(this ParseResult parseResult)
-    {
-        return parseResult.Tokens.Select(t => t.Value)
-            .ToArray()
-            .GetSubArguments();
-    }
+    public static string[] GetArguments(this ParseResult parseResult) =>
+        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
 
     public static string[] GetSubArguments(this string[] args)
     {
@@ -137,13 +121,14 @@ public static class ParseResultExtensions
         var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
         subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
 
-        return
-        [
-            .. subargs
-                .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg) || Parser.RootCommand.DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
-                .Skip(1), // remove top level command (ex build or publish)
-            .. runArgs
-        ];
+        // Remove top level command (ex build or publish).
+        var subargsFiltered = subargs
+            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
+                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
+                || arg.Equals("dotnet"))
+            .Skip(1);
+
+        return [..subargsFiltered, ..runArgs];
     }
 
     public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
@@ -167,6 +152,13 @@ public static class ParseResultExtensions
 
         return false;
     }
+
+    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    {
+        CommandResult commandResult => commandResult.Command.Name,
+        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
+        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
+    };
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {
