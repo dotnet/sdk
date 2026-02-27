@@ -58,6 +58,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ReadPackageAssetsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
@@ -303,6 +308,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCoreStaticWebAssetsDependsOn>
       UpdateExistingPackageStaticWebAssets;
+      ReadPackageStaticWebAssetManifests;
       ResolveProjectStaticWebAssets;
       ResolveEmbeddedProjectsStaticWebAssets;
       ResolveReferencedProjectsStaticWebAssets;
@@ -462,6 +468,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_StaticWebAssetEndpointsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_StaticWebAssetEndpointsPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildPropsFileImportPath>..\build\$(PackageId).props</_StaticWebAssetsGeneratedBuildPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>..\buildMultiTargeting\$(PackageId).props</_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>
+
+      <!-- JSON manifest packaging paths (.NET 11+ .targets-based packaging) -->
+      <_GeneratedPackageAssetsManifestFile>$(_StaticWebAssetsIntermediateOutputPath)$(PackageId).PackageAssets.json</_GeneratedPackageAssetsManifestFile>
+      <_GeneratedStaticWebAssetsTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssets.targets</_GeneratedStaticWebAssetsTargetsFile>
+      <_GeneratedBuildTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.build.$(PackageId).targets</_GeneratedBuildTargetsFile>
+      <_GeneratedBuildMultitargetingTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildMultiTargeting.$(PackageId).targets</_GeneratedBuildMultitargetingTargetsFile>
+      <_GeneratedBuildTransitiveTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildTransitive.$(PackageId).targets</_GeneratedBuildTransitiveTargetsFile>
+
+      <!-- .targets-based import paths -->
+      <_StaticWebAssetsTargetsFileImportPath>Microsoft.AspNetCore.StaticWebAssets.targets</_StaticWebAssetsTargetsFileImportPath>
+      <_StaticWebAssetsGeneratedBuildTargetsFileImportPath>..\build\$(PackageId).targets</_StaticWebAssetsGeneratedBuildTargetsFileImportPath>
+      <_StaticWebAssetsGeneratedBuildMultiTargetingTargetsFileImportPath>..\buildMultiTargeting\$(PackageId).targets</_StaticWebAssetsGeneratedBuildMultiTargetingTargetsFileImportPath>
+
+      <!-- Opt-in flag: use JSON manifest + .targets packaging when targeting net11.0+ -->
+      <_UseJsonManifestPackaging Condition="'$(_UseJsonManifestPackaging)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">true</_UseJsonManifestPackaging>
+      <_UseJsonManifestPackaging Condition="'$(_UseJsonManifestPackaging)' == ''">false</_UseJsonManifestPackaging>
 
       <!-- Design -->
       <StaticWebAssetUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.upToDateCheck.txt</StaticWebAssetUpToDateCheckManifestPath>
@@ -741,6 +763,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="ReadPackageStaticWebAssetManifests"
+          DependsOnTargets="UpdateExistingPackageStaticWebAssets"
+          Condition="'@(StaticWebAssetPackageManifest)' != ''">
+    <ReadPackageAssetsManifest
+      PackageManifests="@(StaticWebAssetPackageManifest)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
+      IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+      ProjectPackageId="$(PackageId)"
+      ProjectBasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </ReadPackageAssetsManifest>
   </Target>
 
   <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">

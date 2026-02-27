@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
-  <!-- During research: use project reference to validate baseline behavior -->
-  <!-- Switch to PackageReference for JSON manifest validation -->
+  <!-- Using PackageReference to test JSON manifest consumption -->
   <ItemGroup>
-    <ProjectReference Include="..\MyLib\MyLib.csproj" />
+    <PackageReference Include="MyLib" Version="11.0.100-dev" />
   </ItemGroup>
 
 </Project>

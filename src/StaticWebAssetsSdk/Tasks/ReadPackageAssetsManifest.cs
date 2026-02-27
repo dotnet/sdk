@@ -1,0 +1,247 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using System.Text.Json;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+/// <summary>
+/// Reads StaticWebAssetPackageManifest items, deserializes the JSON manifests,
+/// applies group filtering, and emits matching assets and endpoints as MSBuild items.
+/// This replaces the eager import of XML .props files with a task-based read-and-filter approach.
+/// </summary>
+public class ReadPackageAssetsManifest : Task
+{
+    [Required]
+    public ITaskItem[] PackageManifests { get; set; }
+
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
+    public string IntermediateOutputPath { get; set; }
+
+    public string ProjectPackageId { get; set; }
+
+    public string ProjectBasePath { get; set; }
+
+    [Output]
+    public ITaskItem[] Assets { get; set; }
+
+    [Output]
+    public ITaskItem[] Endpoints { get; set; }
+
+    public override bool Execute()
+    {
+        var allAssets = new List<ITaskItem>();
+        var allEndpoints = new List<ITaskItem>();
+
+        foreach (var manifestItem in PackageManifests)
+        {
+            var manifestPath = manifestItem.ItemSpec;
+            var sourceId = manifestItem.GetMetadata("SourceId");
+            var contentRoot = manifestItem.GetMetadata("ContentRoot");
+            var packageRoot = manifestItem.GetMetadata("PackageRoot");
+
+            if (!File.Exists(manifestPath))
+            {
+                Log.LogWarning("Package manifest file '{0}' not found.", manifestPath);
+                continue;
+            }
+
+            StaticWebAssetPackageManifest manifest;
+            try
+            {
+                var json = File.ReadAllBytes(manifestPath);
+                manifest = JsonSerializer.Deserialize(json,
+                    StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+            }
+            catch (Exception ex)
+            {
+                Log.LogError("Failed to read package manifest '{0}': {1}", manifestPath, ex.Message);
+                return false;
+            }
+
+            if (manifest.Version != 1)
+            {
+                Log.LogError("Unsupported package manifest version {0} in '{1}'. Expected version 1.", manifest.Version, manifestPath);
+                return false;
+            }
+
+            // Phase 1: Group filtering on assets
+            var includedAssets = new List<PackageManifestAsset>();
+            var excludedAssetPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var asset in manifest.Assets)
+            {
+                if (IsAssetIncludedByGroups(asset, sourceId))
+                {
+                    includedAssets.Add(asset);
+                }
+                else
+                {
+                    // Track the package-relative path that we would have resolved for this asset
+                    var resolvedPath = ResolveAssetPath(asset, packageRoot);
+                    excludedAssetPaths.Add(resolvedPath);
+                }
+            }
+
+            // Phase 2: Cascading exclusion of related assets
+            bool changed;
+            do
+            {
+                changed = false;
+                for (int i = includedAssets.Count - 1; i >= 0; i--)
+                {
+                    var asset = includedAssets[i];
+                    if (!string.IsNullOrEmpty(asset.RelatedAsset))
+                    {
+                        var resolvedRelated = ResolvePath(packageRoot, asset.RelatedAsset);
+                        if (excludedAssetPaths.Contains(resolvedRelated))
+                        {
+                            var resolvedPath = ResolveAssetPath(asset, packageRoot);
+                            excludedAssetPaths.Add(resolvedPath);
+                            includedAssets.RemoveAt(i);
+                            changed = true;
+                        }
+                    }
+                }
+            } while (changed);
+
+            // Phase 3: Emit MSBuild items for included assets
+            foreach (var asset in includedAssets)
+            {
+                var resolvedIdentity = ResolveAssetPath(asset, packageRoot);
+                var taskItem = new TaskItem(resolvedIdentity);
+                taskItem.SetMetadata("SourceType", asset.SourceType);
+                taskItem.SetMetadata("SourceId", sourceId);
+                taskItem.SetMetadata("ContentRoot", contentRoot);
+                taskItem.SetMetadata("BasePath", asset.BasePath);
+                taskItem.SetMetadata("RelativePath", asset.RelativePath);
+                taskItem.SetMetadata("AssetKind", asset.AssetKind);
+                taskItem.SetMetadata("AssetMode", asset.AssetMode);
+                taskItem.SetMetadata("AssetRole", asset.AssetRole);
+                taskItem.SetMetadata("AssetTraitName", asset.AssetTraitName);
+                taskItem.SetMetadata("AssetTraitValue", asset.AssetTraitValue);
+                taskItem.SetMetadata("AssetGroups", asset.AssetGroups);
+                taskItem.SetMetadata("Fingerprint", asset.Fingerprint);
+                taskItem.SetMetadata("Integrity", asset.Integrity);
+                taskItem.SetMetadata("CopyToOutputDirectory", asset.CopyToOutputDirectory);
+                taskItem.SetMetadata("CopyToPublishDirectory", asset.CopyToPublishDirectory);
+                taskItem.SetMetadata("FileLength", asset.FileLength);
+                taskItem.SetMetadata("LastWriteTime", asset.LastWriteTime);
+                taskItem.SetMetadata("OriginalItemSpec", resolvedIdentity);
+
+                // Remap RelatedAsset to resolved absolute path
+                if (!string.IsNullOrEmpty(asset.RelatedAsset))
+                {
+                    taskItem.SetMetadata("RelatedAsset", ResolvePath(packageRoot, asset.RelatedAsset));
+                }
+                else
+                {
+                    taskItem.SetMetadata("RelatedAsset", "");
+                }
+
+                allAssets.Add(taskItem);
+            }
+
+            // Phase 4: Emit endpoints, filtering out those for excluded assets
+            foreach (var endpoint in manifest.Endpoints)
+            {
+                var resolvedAssetFile = ResolvePath(packageRoot, endpoint.AssetFile);
+                if (excludedAssetPaths.Contains(resolvedAssetFile))
+                {
+                    continue;
+                }
+
+                var taskItem = new TaskItem(endpoint.Route);
+                taskItem.SetMetadata("AssetFile", resolvedAssetFile);
+
+                // Serialize selectors, properties, headers as JSON strings for MSBuild metadata
+                taskItem.SetMetadata("Selectors",
+                    JsonSerializer.Serialize(endpoint.Selectors, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointSelectorArray));
+                taskItem.SetMetadata("EndpointProperties",
+                    JsonSerializer.Serialize(endpoint.EndpointProperties, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointPropertyArray));
+                taskItem.SetMetadata("ResponseHeaders",
+                    JsonSerializer.Serialize(endpoint.ResponseHeaders, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointResponseHeaderArray));
+
+                allEndpoints.Add(taskItem);
+            }
+        }
+
+        Assets = allAssets.ToArray();
+        Endpoints = allEndpoints.ToArray();
+
+        return !Log.HasLoggedErrors;
+    }
+
+    private bool IsAssetIncludedByGroups(PackageManifestAsset asset, string sourceId)
+    {
+        if (string.IsNullOrEmpty(asset.AssetGroups))
+        {
+            return true; // Ungrouped assets are always included
+        }
+
+        if (StaticWebAssetGroups == null || StaticWebAssetGroups.Length == 0)
+        {
+            return false; // Grouped assets require declarations; none present → excluded
+        }
+
+        // Parse AssetGroups: "name1=value1;name2=value2"
+        var requirements = asset.AssetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var requirement in requirements)
+        {
+            var eqIdx = requirement.IndexOf('=');
+            if (eqIdx < 0)
+            {
+                continue;
+            }
+
+            var reqName = requirement.Substring(0, eqIdx);
+            var reqValue = requirement.Substring(eqIdx + 1);
+
+            var satisfied = false;
+            foreach (var group in StaticWebAssetGroups)
+            {
+                var groupName = group.ItemSpec;
+                var groupValue = group.GetMetadata("Value");
+                var groupSourceId = group.GetMetadata("SourceId");
+
+                // SourceId-scoped groups only match assets from that source
+                if (!string.IsNullOrEmpty(groupSourceId) &&
+                    !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (string.Equals(groupName, reqName, StringComparison.Ordinal) &&
+                    string.Equals(groupValue, reqValue, StringComparison.Ordinal))
+                {
+                    satisfied = true;
+                    break;
+                }
+            }
+
+            if (!satisfied)
+            {
+                return false; // AND-matching: all requirements must be satisfied
+            }
+        }
+
+        return true;
+    }
+
+    private static string ResolveAssetPath(PackageManifestAsset asset, string packageRoot)
+    {
+        // PackagePath is the pre-computed resolved package-relative path (e.g. "staticwebassets/css/site.css").
+        // Resolve it against PackageRoot to get the absolute Identity path.
+        return ResolvePath(packageRoot, asset.PackagePath);
+    }
+
+    private static string ResolvePath(string packageRoot, string relativePath)
+    {
+        return Path.GetFullPath(Path.Combine(packageRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+    }
+}
