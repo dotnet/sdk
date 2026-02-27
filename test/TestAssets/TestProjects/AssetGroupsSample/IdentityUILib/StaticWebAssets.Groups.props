@@ -2,7 +2,10 @@
   <PropertyGroup>
     <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">V5</IdentityUIFrameworkVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <StaticWebAssetGroup Include="BootstrapVersion" Value="$(IdentityUIFrameworkVersion)" SourceId="IdentityUILib" />
-  </ItemGroup>
+  <Target Name="_ResolveIdentityUILibStaticWebAssetGroups"
+          BeforeTargets="ResolveStaticWebAssetsConfiguration">
+    <ItemGroup>
+      <StaticWebAssetGroup Include="BootstrapVersion" Value="$(IdentityUIFrameworkVersion)" SourceId="IdentityUILib" />
+    </ItemGroup>
+  </Target>
 </Project>
