@@ -32,36 +32,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.DotNetAppHostExecutableNameWithoutExtension = "apphost";
                 task.DefaultImplicitPackages = "Microsoft.NETCore.App";
 
-                var assetsJson = @"{
-  ""version"": 3,
-  ""targets"": {
-    ""net8.0"": {}
-  },
-  ""libraries"": {},
-  ""projectFileDependencyGroups"": {
-    ""net8.0"": []
-  },
-  ""packageFolders"": {},
-  ""project"": {
-    ""version"": ""1.0.0"",
-    ""restore"": {
-      ""projectUniqueName"": ""test"",
-      ""projectName"": ""test"",
-      ""projectPath"": """ + Path.Combine(projectDir, "test.csproj").Replace("\\", "\\\\") + @""",
-      ""packagesPath"": """ + Path.Combine(projectDir, "packages").Replace("\\", "\\\\") + @""",
-      ""outputPath"": """ + objDir.Replace("\\", "\\\\") + @""",
-      ""projectStyle"": ""PackageReference"",
-      ""frameworks"": {
-        ""net8.0"": {
-          ""targetAlias"": ""net8.0""
-        }
-      }
-    },
-    ""frameworks"": {
-      ""net8.0"": {}
-    }
-  }
-}";
+                var assetsJson = CreateAssetsJson(
+                    Path.Combine(projectDir, "test.csproj"),
+                    Path.Combine(projectDir, "packages"),
+                    objDir);
                 File.WriteAllText(Path.Combine(objDir, "project.assets.json"), assetsJson);
 
                 // Enable disk cache so that the code path using ProjectAssetsCacheFile is exercised
@@ -94,36 +68,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var packagesDir = Path.Combine(projectDir, "packages");
                 Directory.CreateDirectory(packagesDir);
 
-                var assetsJson = @"{
-  ""version"": 3,
-  ""targets"": {
-    ""net8.0"": {}
-  },
-  ""libraries"": {},
-  ""projectFileDependencyGroups"": {
-    ""net8.0"": []
-  },
-  ""packageFolders"": {},
-  ""project"": {
-    ""version"": ""1.0.0"",
-    ""restore"": {
-      ""projectUniqueName"": ""test"",
-      ""projectName"": ""test"",
-      ""projectPath"": """ + Path.Combine(projectDir, "test.csproj").Replace("\\", "\\\\") + @""",
-      ""packagesPath"": """ + packagesDir.Replace("\\", "\\\\") + @""",
-      ""outputPath"": """ + objDir.Replace("\\", "\\\\") + @""",
-      ""projectStyle"": ""PackageReference"",
-      ""frameworks"": {
-        ""net8.0"": {
-          ""targetAlias"": ""net8.0""
-        }
-      }
-    },
-    ""frameworks"": {
-      ""net8.0"": {}
-    }
-  }
-}";
+                var assetsJson = CreateAssetsJson(
+                    Path.Combine(projectDir, "test.csproj"),
+                    packagesDir,
+                    objDir);
                 File.WriteAllText(Path.Combine(objDir, "project.assets.json"), assetsJson);
 
                 // --- Run 1: Single-process mode (TaskEnvironment from CWD == projectDir) ---
@@ -216,59 +164,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     Path.Combine(libDir, "Newtonsoft.Json.dll"),
                     string.Empty);
 
-                var assetsJson = @"{
-  ""version"": 3,
-  ""targets"": {
-    ""net8.0"": {
-      ""Newtonsoft.Json/13.0.1"": {
-        ""type"": ""package"",
-        ""compile"": {
-          ""lib/net8.0/Newtonsoft.Json.dll"": {}
-        },
-        ""runtime"": {
-          ""lib/net8.0/Newtonsoft.Json.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""Newtonsoft.Json/13.0.1"": {
-      ""sha512"": ""abc123"",
-      ""type"": ""package"",
-      ""path"": ""newtonsoft.json/13.0.1"",
-      ""files"": [
-        ""lib/net8.0/Newtonsoft.Json.dll"",
-        ""newtonsoft.json.13.0.1.nupkg.sha512"",
-        ""newtonsoft.json.nuspec""
-      ]
-    }
-  },
-  ""projectFileDependencyGroups"": {
-    ""net8.0"": [""Newtonsoft.Json >= 13.0.1""]
-  },
-  ""packageFolders"": {
-    """ + packagesDir.Replace("\\", "\\\\") + @""": {}
-  },
-  ""project"": {
-    ""version"": ""1.0.0"",
-    ""restore"": {
-      ""projectUniqueName"": ""test"",
-      ""projectName"": ""test"",
-      ""projectPath"": """ + Path.Combine(projectDir, "test.csproj").Replace("\\", "\\\\") + @""",
-      ""packagesPath"": """ + packagesDir.Replace("\\", "\\\\") + @""",
-      ""outputPath"": """ + objDir.Replace("\\", "\\\\") + @""",
-      ""projectStyle"": ""PackageReference"",
-      ""frameworks"": {
-        ""net8.0"": {
-          ""targetAlias"": ""net8.0""
-        }
-      }
-    },
-    ""frameworks"": {
-      ""net8.0"": {}
-    }
-  }
-}";
+                var assetsJson = CreateAssetsJsonWithPackage(
+                    Path.Combine(projectDir, "test.csproj"),
+                    packagesDir,
+                    objDir);
                 File.WriteAllText(Path.Combine(objDir, "project.assets.json"), assetsJson);
 
                 // Set up the task with absolute paths for I/O, but TaskEnvironment pointing elsewhere
@@ -333,6 +232,89 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 DotNetAppHostExecutableNameWithoutExtension = "apphost",
                 DefaultImplicitPackages = "Microsoft.NETCore.App"
             };
+        }
+
+        private static string JsonEscape(string value) => value.Replace(@"\", @"\\");
+
+        private static string CreateAssetsJson(string projectPath, string packagesPath, string outputPath)
+        {
+            var jp = JsonEscape(projectPath);
+            var pp = JsonEscape(packagesPath);
+            var op = JsonEscape(outputPath);
+            return $$"""
+                {
+                  "version": 3,
+                  "targets": { "net8.0": {} },
+                  "libraries": {},
+                  "projectFileDependencyGroups": { "net8.0": [] },
+                  "packageFolders": {},
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {
+                      "projectUniqueName": "test",
+                      "projectName": "test",
+                      "projectPath": "{{jp}}",
+                      "packagesPath": "{{pp}}",
+                      "outputPath": "{{op}}",
+                      "projectStyle": "PackageReference",
+                      "frameworks": {
+                        "net8.0": { "targetAlias": "net8.0" }
+                      }
+                    },
+                    "frameworks": { "net8.0": {} }
+                  }
+                }
+                """;
+        }
+
+        private static string CreateAssetsJsonWithPackage(string projectPath, string packagesPath, string outputPath)
+        {
+            var jp = JsonEscape(projectPath);
+            var pp = JsonEscape(packagesPath);
+            var op = JsonEscape(outputPath);
+            return $$"""
+                {
+                  "version": 3,
+                  "targets": {
+                    "net8.0": {
+                      "Newtonsoft.Json/13.0.1": {
+                        "type": "package",
+                        "compile": { "lib/net8.0/Newtonsoft.Json.dll": {} },
+                        "runtime": { "lib/net8.0/Newtonsoft.Json.dll": {} }
+                      }
+                    }
+                  },
+                  "libraries": {
+                    "Newtonsoft.Json/13.0.1": {
+                      "sha512": "abc123",
+                      "type": "package",
+                      "path": "newtonsoft.json/13.0.1",
+                      "files": [
+                        "lib/net8.0/Newtonsoft.Json.dll",
+                        "newtonsoft.json.13.0.1.nupkg.sha512",
+                        "newtonsoft.json.nuspec"
+                      ]
+                    }
+                  },
+                  "projectFileDependencyGroups": { "net8.0": ["Newtonsoft.Json >= 13.0.1"] },
+                  "packageFolders": { "{{pp}}": {} },
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {
+                      "projectUniqueName": "test",
+                      "projectName": "test",
+                      "projectPath": "{{jp}}",
+                      "packagesPath": "{{pp}}",
+                      "outputPath": "{{op}}",
+                      "projectStyle": "PackageReference",
+                      "frameworks": {
+                        "net8.0": { "targetAlias": "net8.0" }
+                      }
+                    },
+                    "frameworks": { "net8.0": {} }
+                  }
+                }
+                """;
         }
     }
 }
