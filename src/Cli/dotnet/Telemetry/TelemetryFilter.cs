@@ -1,25 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Build;
-using Microsoft.DotNet.Cli.Commands.Clean;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
-using Microsoft.DotNet.Cli.Commands.Pack;
-using Microsoft.DotNet.Cli.Commands.Publish;
-using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
+internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
 {
     private const string ExceptionEventName = "mainCatchException/exception";
     private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
@@ -27,7 +19,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
     {
         var result = new List<ApplicationInsightsEntryFormat>();
-        Dictionary<string, double> measurements = null;
+        Dictionary<string, double>? measurements = null;
         string globalJsonState = string.Empty;
         if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
         {
@@ -48,7 +40,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
             var topLevelCommandName = parseResult.RootSubCommandResult();
             if (topLevelCommandName != null)
             {
-                Dictionary<string, string> properties = new()
+                Dictionary<string, string?> properties = new()
                 {
                     ["verb"] = topLevelCommandName
                 };
@@ -76,14 +68,14 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 "install/reportsuccess",
-                new Dictionary<string, string> { { "exeName", installerSuccessReport.ExeName } }
+                new Dictionary<string, string?> { { "exeName", installerSuccessReport.ExeName } }
             ));
         }
         else if (objectToFilter is Exception exception)
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 ExceptionEventName,
-                new Dictionary<string, string>
+                new Dictionary<string, string?>
                 {
                     {"exceptionType", exception.GetType().ToString()},
                     {"detail", ExceptionToStringWithoutMessage(exception) }
@@ -140,7 +132,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         ICollection<ApplicationInsightsEntryFormat> result,
         ParseResult parseResult,
         string topLevelCommandName,
-        Dictionary<string, double> measurements = null)
+        Dictionary<string, double>? measurements = null)
     {
         if (topLevelCommandName == "package" && parseResult.CommandResult.Command != null && parseResult.CommandResult.Command.Name == "update")
         {
@@ -148,7 +140,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
 
             result.Add(new ApplicationInsightsEntryFormat(
                 "sublevelparser/command",
-                new Dictionary<string, string>()
+                new Dictionary<string, string?>()
                 {
                     { "verb", "package update" },
                     { "vulnerable", hasVulnerableOption.ToString()}
@@ -161,14 +153,14 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         ICollection<ApplicationInsightsEntryFormat> result,
         ParseResult parseResult,
         string topLevelCommandName,
-        Dictionary<string, double> measurements = null)
+        Dictionary<string, double>? measurements = null)
     {
         if (parseResult.IsDotnetBuiltInCommand() &&
             parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 "sublevelparser/command",
-                new Dictionary<string, string>()
+                new Dictionary<string, string?>()
                 {
                     { "verb", topLevelCommandName},
                     { "verbosity", Enum.GetName(verbosity)}
@@ -229,7 +221,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         return s;
     }
 
-    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double>? RemoveZeroTimes(Dictionary<string, double>? measurements)
     {
         if (measurements != null)
         {

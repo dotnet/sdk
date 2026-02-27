@@ -11,33 +11,20 @@ internal class ToolCommandSpecCreator
 {
     public static CommandSpec CreateToolCommandSpec(string toolName, string toolExecutable, string toolRunner, bool allowRollForward, IEnumerable<string> commandArguments)
     {
-        var env = ActivityContext.MakeActivityContextEnvironment();
-        if (toolRunner == "dotnet")
+        var environment = ActivityContext.MakeActivityContextEnvironment();
+        switch (toolRunner)
         {
-            if (allowRollForward)
-            {
-                commandArguments = ["--allow-roll-forward", .. commandArguments];
-            }
-
-            return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                toolExecutable,
-                commandArguments,
-                env);
-        }
-        else if (toolRunner == "executable")
-        {
-            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                commandArguments);
-
-            return new CommandSpec(
-                toolExecutable,
-                escapedArgs,
-                env);
-        }
-        else
-        {
-            throw new GracefulException(string.Format(CliStrings.ToolSettingsUnsupportedRunner,
-                toolName, toolRunner));
+            case "dotnet":
+                if (allowRollForward)
+                {
+                    commandArguments = ["--allow-roll-forward", .. commandArguments];
+                }
+                return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(toolExecutable, commandArguments, environment);
+            case "executable":
+                var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
+                return new CommandSpec(toolExecutable, escapedArgs, environment);
+            default:
+                throw new GracefulException(string.Format(CliStrings.ToolSettingsUnsupportedRunner, toolName, toolRunner));
         }
     }
 }

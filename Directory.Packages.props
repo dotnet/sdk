@@ -152,6 +152,7 @@
     <PackageVersion Include="xunit.assert" Version="$(XUnitVersion)" Condition="'$(IsTestProject)' != 'true'" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
   </ItemGroup>
+
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
        .NET Framework (VS) or only in the .NET SDK.
 

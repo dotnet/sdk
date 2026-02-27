@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Cli.Utils;
 
 public static class TelemetryEventEntry
@@ -101,9 +99,9 @@ public class ApplicationInsightsEntryFormat(
     public IDictionary<string, string?>? Properties { get; } = properties;
     public IDictionary<string, double>? Measurements { get; } = measurements;
 
-    public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
+    public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
     {
-        var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
+        var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value ?? string.Empty));
         return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
     }
 }

@@ -10,7 +10,7 @@ internal static class MuxerCommandSpecMaker
     internal static CommandSpec CreatePackageCommandSpecUsingMuxer(
         string commandPath,
         IEnumerable<string>? commandArguments,
-        IDictionary<string, string>? env = null)
+        IDictionary<string, string>? environment = null)
     {
         var arguments = new List<string>();
 
@@ -44,16 +44,15 @@ internal static class MuxerCommandSpecMaker
                 arguments.AddRange(commandArguments);
             }
         }
-        return CreateCommandSpec(host, arguments, env);
+        return CreateCommandSpec(host, arguments, environment);
     }
 
     private static CommandSpec CreateCommandSpec(
         string commandPath,
         IEnumerable<string>? commandArguments,
-        IDictionary<string, string>? env = null)
+        IDictionary<string, string>? environment = null)
     {
         var escapedArgs = commandArguments is not null ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments) : null;
-
-        return new CommandSpec(commandPath, escapedArgs, env);
+        return new CommandSpec(commandPath, escapedArgs, environment);
     }
 }

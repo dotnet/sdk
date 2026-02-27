@@ -10,7 +10,6 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-// TODO: Determine if this makes sense to be instanced. Hopefully, most (if not all) these properties only should be calculated once.
 internal class TelemetryCommonProperties(
     Func<string>? getCurrentDirectory = null,
     Func<string, string>? hasher = null,

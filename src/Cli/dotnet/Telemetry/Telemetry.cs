@@ -10,13 +10,13 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class Telemetry : ITelemetry
 {
-    internal static string? s_currentSessionId = null;
-    internal static bool s_disabledForTests = false;
+    private static bool s_disabledForTests = false;
     private static FrozenDictionary<string, object?> s_commonProperties = null!;
     private Task? _trackEventTask;
 
     public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     public static string DefaultStorageDirectory { get; } = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
+    public static string? CurrentSessionId { get; private set; } = null;
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
@@ -36,15 +36,15 @@ public class Telemetry : ITelemetry
         }
 
         // Store the session ID in a static field so that it can be reused
-        s_currentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
+        CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
 
-        s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(s_currentSessionId);
+        s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
 
     internal static void DisableForTests()
     {
         s_disabledForTests = true;
-        s_currentSessionId = null;
+        CurrentSessionId = null;
     }
 
     internal static void EnableForTests()
@@ -89,11 +89,10 @@ public class Telemetry : ITelemetry
     {
         try
         {
-            var eventId = Guid.NewGuid().ToString();
             properties ??= new Dictionary<string, string?>();
-            properties.Add("event id", eventId);
+            properties.Add("event id", Guid.NewGuid().ToString());
             measurements ??= new Dictionary<string, double>();
-            var @event = CreateActivityEvent(PrependProducerNamespace(eventName), properties, measurements);
+            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties, measurements));
             Activity.Current?.AddEvent(@event);
         }
         catch (Exception e)
@@ -102,22 +101,15 @@ public class Telemetry : ITelemetry
         }
     }
 
-    private static string PrependProducerNamespace(string eventName) => $"dotnet/cli/{eventName}";
-
-    private static ActivityEvent CreateActivityEvent(string eventName, IDictionary<string, string?> properties, IDictionary<string, double> measurements) =>
-        new (eventName, tags: MakeTags(properties, measurements));
-
     private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties, IDictionary<string, double> eventMeasurements)
     {
-        var tags = new Dictionary<string, object?>(s_commonProperties);
-        foreach (var property in eventProperties.Where(p => p.Value is not null))
-        {
-            tags.TryAdd(property.Key, property.Value);
-        }
-        foreach (var measurement in eventMeasurements)
-        {
-            tags.TryAdd(measurement.Key, measurement.Value);
-        }
-        return [.. tags.OrderBy(p => p.Key)];
+        var properties = eventProperties
+            .Where(p => p.Value is not null)
+            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
+            .OrderBy(p => p.Key);
+        var measurements = eventMeasurements
+            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
+            .OrderBy(p => p.Key);
+        return [.. s_commonProperties, .. properties, .. measurements];
     }
 }

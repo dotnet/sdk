@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -22,7 +20,7 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(string[] args, ITelemetry telemetry)
     {
-        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", ..args]);
+        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", .. args]);
         ProcessInputAndSendTelemetry(result, telemetry);
     }
 

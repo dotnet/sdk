@@ -13,32 +13,35 @@ public static class ActivityContext
     public static Dictionary<string, string>? MakeActivityContextEnvironment()
     {
         var currentActivity = Activity.Current;
-        var currentBaggage = Baggage.Current;
-        if (currentActivity == null)
+        if (currentActivity is null)
         {
             return null;
         }
-        var contextToInject = currentActivity.Context;
-        if (contextToInject.TraceId == default && contextToInject.SpanId == default && contextToInject.TraceState is null)
+        var activityContext = currentActivity.Context;
+        if (activityContext.TraceState is null && activityContext.TraceId == default && activityContext.SpanId == default)
         {
             return null;
         }
-        var propagationContext = new PropagationContext(contextToInject, currentBaggage);
-        var envDict = new Dictionary<string, string>(capacity: 2);
-        Propagators.DefaultTextMapPropagator.Inject(propagationContext, envDict, WriteTraceStateIntoEnv);
-        return envDict;
+        var propagationContext = new PropagationContext(activityContext, Baggage.Current);
+        var environment = new Dictionary<string, string>(capacity: 2);
+        Propagators.DefaultTextMapPropagator.Inject(propagationContext, environment, WriteTraceStateIntoEnvironment);
+        return environment;
     }
 
-    private static void WriteTraceStateIntoEnv(Dictionary<string, string> dictionary, string key, string value)
+    private static void WriteTraceStateIntoEnvironment(Dictionary<string, string> environment, string key, string value)
     {
-        switch (key)
+        var environmentKey = key switch
         {
-            case "traceparent":
-                dictionary[Activities.TRACEPARENT] = value;
-                break;
-            case "tracestate":
-                dictionary[Activities.TRACESTATE] = value;
-                break;
+            "traceparent" => Activities.TRACEPARENT,
+            "tracestate" => Activities.TRACESTATE,
+            _ => null
+        };
+
+        if (environmentKey == null)
+        {
+            return;
         }
+
+        environment[environmentKey] = value;
     }
 }

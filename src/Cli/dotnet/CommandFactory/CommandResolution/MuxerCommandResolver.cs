@@ -15,8 +15,8 @@ public class MuxerCommandResolver : ICommandResolver
             var muxer = new Muxer();
             var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
                 commandResolverArguments.CommandArguments.OrEmptyIfNull());
-            var env = ActivityContext.MakeActivityContextEnvironment();
-            return new CommandSpec(muxer.MuxerPath, escapedArgs, env);
+            var environment = ActivityContext.MakeActivityContextEnvironment();
+            return new CommandSpec(muxer.MuxerPath, escapedArgs, environment);
         }
         return null;
     }
