@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="IncludeOrExcludeDirectiveUnknownFileType">
         <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
-        <target state="new">Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</target>
+        <target state="translated">Nerozpoznaná přípona souboru v direktivě {0}. V současné době jsou rozpoznávány pouze tyto přípony: {1}</target>
         <note>{0} is the directive - '#:include' or '#:exclude'. {1} is a comma-separated list of file extensions, like: '.cs', '.resx'</note>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="InvalidIncludeExcludeMappingItemType">
         <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</source>
-        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</target>
+        <target state="translated">Každá položka ve vlastnosti MSBuild FileBasedProgramsItemMapping musí být mapována na neprázdný typ položky. Typ položky {0} v položce {1} je neplatný.</target>
         <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
