@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Cannot_specify_both_0_and_1_options">
         <source>Cannot specify both '{0}' and '{1}' options.</source>
-        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <target state="translated">Nie można określić jednocześnie opcji „{0}” i „{1}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_msbuild_project_file_in_0">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <target state="translated">Nie można znaleźć pliku projektu MSBuild w elemencie „{0}”. Określ projekt do użycia za pomocą opcji --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">W elemencie „{0}” znaleziono wiele plików projektów MSBuild. Określ projekt do użycia za pomocą opcji --project.</target>
+        <target state="translated">W elemencie „{0}” znaleziono wiele plików projektów MSBuild. Określ projekt do użycia za pomocą opcji --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -144,7 +144,7 @@ Przykłady:
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
-        <target state="new">The specified path '{0}' is invalid: {1}</target>
+        <target state="translated">Określona ścieżka „{0}” jest nieprawidłowa: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">

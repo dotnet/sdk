@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Cannot_specify_both_0_and_1_options">
         <source>Cannot specify both '{0}' and '{1}' options.</source>
-        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <target state="translated">Nedá se zadat současně možnost {0} i možnost {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_msbuild_project_file_in_0">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <target state="translated">V {0} se nepovedlo najít soubor projektu MSBuild. Pomocí parametru --project zadejte, který projekt chcete použít.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">{0} obsahuje více souborů projektů MSBuild. Pomocí parametru --project zadejte, který soubor chcete použít.</target>
+        <target state="translated">{0} obsahuje více souborů projektů MSBuild. Pomocí parametru --project zadejte, který soubor chcete použít.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -71,12 +71,12 @@ Proměnné prostředí:
   dotnet-watch nastaví tuto proměnnou na hodnotu 1 u všech spuštěných podřízených procesů.
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch nastaví tuto proměnnou na hodnotu 1 a pokaždé ji zvýší o jedna pokaždé,
+  dotnet-watch nastaví tuto proměnnou na hodnotu 1 a pokaždé ji zvýší o jedna,
   když je soubor změněn a příkaz je restartován. 
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
   Pokud je nastavená hodnota 1 nebo true, dotnet-watch nebude zobrazovat emoji ve 
-  výstupu konzoly.
+  výstupu konzole.
 
 Poznámky:
   Speciální možnost -- se používá k ohraničení konce možností a
@@ -88,7 +88,7 @@ Poznámky:
   označuje, že --verbose by mělo být považováno za argument pro
   dotnet-run.
 
-Příklady:
+Examples:
   dotnet watch run
   dotnet watch test
 
@@ -120,7 +120,7 @@ Příklady:
     </source>
         <target state="translated">
       Spustí dotnet-watch v neinteraktivním režimu. Tato možnost je podporována pouze při spuštění s povoleným opětovným načítáním za provozu.
-      Tuto možnost použijte, pokud chcete zabránit zachycení vstupu konzoly.
+      Tuto možnost použijte, pokud chcete zabránit zachycení vstupu konzole.
     </target>
         <note />
       </trans-unit>
@@ -138,13 +138,13 @@ Příklady:
       Show verbose output
     </source>
         <target state="translated">
-      Zobrazit podrobní výstup
+      Zobrazit podrobný výstup
     </target>
         <note />
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
-        <target state="new">The specified path '{0}' is invalid: {1}</target>
+        <target state="translated">Zadaná cesta {0} je neplatná: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
