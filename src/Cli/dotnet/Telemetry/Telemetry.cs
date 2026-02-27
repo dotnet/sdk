@@ -5,7 +5,6 @@ using System.Collections.Frozen;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
@@ -14,20 +13,15 @@ public class Telemetry : ITelemetry
     internal static string? s_currentSessionId = null;
     internal static bool s_disabledForTests = false;
     private static FrozenDictionary<string, object?> s_commonProperties = null!;
-    private static ILogger? s_logger;
     private Task? _trackEventTask;
 
-    //public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-    // TODO: Remove.
-    //public static string ConnectionString { get; } = "InstrumentationKey=2c4b2aec-276e-4421-95d9-3da4046d428d";
-    // TODO: Remove.
-    public static string ConnectionString { get; } = "InstrumentationKey=c176eac8-d596-4455-91b4-2eac2694e54d";
+    public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     public static string DefaultStorageDirectory { get; } = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
 
-    public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null, ILogger? logger = null)
+    public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
         if (s_disabledForTests)
         {
@@ -45,7 +39,6 @@ public class Telemetry : ITelemetry
         s_currentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
 
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(s_currentSessionId);
-        s_logger = logger;
     }
 
     internal static void DisableForTests()
@@ -100,15 +93,8 @@ public class Telemetry : ITelemetry
             properties ??= new Dictionary<string, string?>();
             properties.Add("event id", eventId);
             measurements ??= new Dictionary<string, double>();
-            var eventNameFull = PrependProducerNamespace(eventName);
-            var @event = CreateActivityEvent(eventNameFull, properties, measurements);
+            var @event = CreateActivityEvent(PrependProducerNamespace(eventName), properties, measurements);
             Activity.Current?.AddEvent(@event);
-
-            // https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/monitor/Azure.Monitor.OpenTelemetry.Exporter#customevents
-            var propertyKeys = string.Join(" ", @event.Tags.Select(kv => $"{{{kv.Key}}}"));
-            var logMessage = $"{{microsoft.custom_event.name}} {propertyKeys}";
-            object?[] logValues = [eventNameFull, .. @event.Tags.Select(kv => kv.Value)];
-            s_logger?.LogInformation(logMessage, logValues);
         }
         catch (Exception e)
         {

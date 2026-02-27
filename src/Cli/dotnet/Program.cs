@@ -4,13 +4,11 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -21,11 +19,9 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -82,33 +78,15 @@ public class Program
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
-            //.AddAzureMonitorTraceExporter(o =>
-            //{
-            //    o.ConnectionString = Telemetry.Telemetry.ConnectionString;
-            //    o.EnableLiveMetrics = false;
-            //    o.StorageDirectory = telemetryStoragePath;
-            //})
+            .AddAzureMonitorTraceExporter(o =>
+            {
+                o.ConnectionString = Telemetry.Telemetry.ConnectionString;
+                o.EnableLiveMetrics = false;
+                o.StorageDirectory = telemetryStoragePath;
+            })
             .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
             .Build();
-
-        var loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.AddOpenTelemetry(logging =>
-            {
-                logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("dotnet-cli", serviceVersion: Product.Version));
-                logging.AddOtlpExporter();
-                logging.AddAzureMonitorLogExporter(options =>
-                {
-                    options.ConnectionString = Telemetry.Telemetry.ConnectionString;
-                    options.EnableLiveMetrics = false;
-                    options.StorageDirectory = telemetryStoragePath;
-                });
-                //logging.AddInMemoryExporter(s_activities)
-            });
-        });
-        // TODO: What is the category name?
-        var logger = loggerFactory.CreateLogger("dotnet-cli");
 
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
         s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
@@ -116,7 +94,7 @@ public class Program
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
         s_mainActivity?.AddTag("process.executable.name", "dotnet");
-        TelemetryClient = InitializeTelemetry(logger);
+        TelemetryClient = InitializeTelemetry();
         TrackHostStartup(TelemetryClient, s_mainTimeStamp);
         SetupMSBuildEnvironmentInvariants();
     }
@@ -396,9 +374,9 @@ public class Program
         return null;
     }
 
-    private static ITelemetry InitializeTelemetry(ILogger logger)
+    private static ITelemetry InitializeTelemetry()
     {
-        var telemetryClient = new Telemetry.Telemetry(null, logger: logger);
+        var telemetryClient = new Telemetry.Telemetry();
         TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
