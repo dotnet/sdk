@@ -1904,6 +1904,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Restore_NonExistentPackage()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:package Microsoft.ThisPackageDoesNotExist@1.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
+    }
+
+    [Fact]
     public void NoRestore_01()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -5520,6 +5537,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5579,7 +5597,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5609,6 +5627,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var bPath = Path.Join(testInstance.Path, "B.cs");
         File.WriteAllText(bPath, "");
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5667,7 +5686,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5681,6 +5700,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property LangVersion=preview
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5734,7 +5754,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
@@ -5752,6 +5772,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5805,7 +5826,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
@@ -5840,7 +5861,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
-        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
+        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.cs.exe" : "/artifacts/bin/debug/Program.cs";
         new DotnetCommand(Log, "run-api")
             // The command outputs only _custom_ environment variables (not inherited ones),
             // so make sure we don't pass DOTNET_ROOT_* so we can assert that it is set by the run command.
