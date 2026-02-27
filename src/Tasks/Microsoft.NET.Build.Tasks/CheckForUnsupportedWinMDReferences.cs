@@ -11,7 +11,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  This task is used for projects targeting .NET 5 and higher and generates errors if there are any
     //  unsupported WinMD references.
-    [MSBuildMultiThreadableTask]
     public class CheckForUnsupportedWinMDReferences : TaskBase
     {
         public string TargetFrameworkMoniker { get; set; }
