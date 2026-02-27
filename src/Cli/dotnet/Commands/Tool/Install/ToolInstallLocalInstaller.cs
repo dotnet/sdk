@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 internal sealed class ToolInstallLocalInstaller(
     string? configFilePath,
     string[]? sources,
+    string[]? sourceFeedOverrides,
     VerbosityOptions verbosity,
     IToolPackageDownloader? toolPackageDownloader = null,
     string? runtimeJsonPathForTests = null,
@@ -49,6 +50,7 @@ internal sealed class ToolInstallLocalInstaller(
             IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackage(
                     new PackageLocation(
                         nugetConfig: configFile,
+                        sourceFeedOverrides: sourceFeedOverrides,
                         additionalFeeds: sources,
                         rootConfigDirectory: rootConfigDirectory),
                     packageId,
