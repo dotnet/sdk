@@ -1,26 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
-internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
+internal class WorkloadElevateCommand(ParseResult parseResult)
+    : WorkloadCommandBase<WorkloadElevateCommandDefinition>(parseResult)
 {
-    private NetSdkMsiInstallerServer _server;
-
     public override int Execute()
     {
         if (OperatingSystem.IsWindows())
         {
+            NetSdkMsiInstallerServer? server = null;
+
             try
             {
-                _server = NetSdkMsiInstallerServer.Create(VerifySignatures);
-                _server.Run();
+                server = NetSdkMsiInstallerServer.Create(VerifySignatures);
+                server.Run();
             }
             catch (Exception e)
             {
@@ -28,7 +27,7 @@ internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommand
             }
             finally
             {
-                _server?.Shutdown();
+                server?.Shutdown();
             }
         }
         else

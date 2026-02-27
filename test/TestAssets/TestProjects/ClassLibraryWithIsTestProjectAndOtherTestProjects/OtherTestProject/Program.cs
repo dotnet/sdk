@@ -1,6 +1,4 @@
-﻿//See https://aka.ms/new-console-template for more information
-
-//Opt -out telemetry
+﻿//Opt -out telemetry
 
 using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Capabilities.TestFramework;
@@ -86,7 +84,9 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 		{
 			Uid = "Test5",
 			DisplayName = "Test5",
+#pragma warning disable CS0618 // Type or member is obsolete
 			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "not OK")),
+#pragma warning restore CS0618 // Type or member is obsolete
 		}));
 
 		await context.MessageBus.PublishAsync(this, new FileArtifact(new FileInfo("file.txt"), "file", "file description"));

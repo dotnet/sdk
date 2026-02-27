@@ -94,13 +94,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-            App.AssertOutputContains("DOTNET_WATCH_ITERATION = 1");
+            await App.WaitUntilOutputContains("DOTNET_WATCH_ITERATION = 1");
             App.Process.ClearOutput();
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-            App.AssertOutputContains("DOTNET_WATCH_ITERATION = 2");
+            await App.WaitUntilOutputContains("DOTNET_WATCH_ITERATION = 2");
         }
 
         [Fact]
