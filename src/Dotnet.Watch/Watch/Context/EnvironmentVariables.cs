@@ -59,8 +59,19 @@ internal static class EnvironmentVariables
     public static TestFlags TestFlags => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None;
     public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";
 
-    public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
-    public static int? AutoReloadWSPort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
+    public static string? BrowserWebSocketHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+
+    /// <summary>
+    /// Port used for browser WebSocket communication. Defaults to 0 (auto-assign) if not specified.
+    /// </summary>
+    public static int BrowserWebSocketPort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WS_PORT") ?? 0;
+
+    /// <summary>
+    /// Secure (HTTPS/WSS) port used for browser WebSocket communication. Defaults to 0 (auto-assign) if not specified.
+    /// Only used if TLS is supported and enabled.
+    /// </summary>
+    public static int BrowserWebSocketSecurePort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WSS_PORT") ?? 0;
+
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     /// <summary>

@@ -26,26 +26,69 @@ namespace Microsoft.DotNet.HotReload;
 /// Sealed WebSocket server using Kestrel.
 /// Uses a request handler delegate for all WebSocket handling.
 /// </summary>
-internal sealed class KestrelWebSocketServer : IDisposable
+internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls) : IDisposable
 {
-    private readonly RequestDelegate _requestHandler;
-    private readonly ILogger _logger;
-
-    private IHost? _host;
-    public ImmutableArray<string> ServerUrls { get; private set; } = [];
-
-    public KestrelWebSocketServer(ILogger logger, RequestDelegate requestHandler)
-    {
-        _logger = logger;
-        _requestHandler = requestHandler;
-    }
+    private static bool? s_lazyTlsSupported;
 
     public void Dispose()
+        => host.Dispose();
+
+    public ImmutableArray<string> ServerUrls
+        => serverUrls;
+
+    /// <summary>
+    /// Starts the Kestrel WebSocket server.
+    /// </summary>
+    /// <param name="hostName">Host name to bind to</param>
+    /// <param name="port">HTTP port to bind to (0 for auto-assign)</param>
+    /// <param name="securePort">HTTPS port to bind to in addition to HTTP port. Null to skip HTTPS.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    public static async ValueTask<KestrelWebSocketServer> StartServerAsync(WebSocketConfig config, RequestDelegate requestHandler, CancellationToken cancellationToken)
     {
-        _host?.Dispose();
+        var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+            {
+                builder.UseKestrel();
+                builder.UseUrls([.. config.GetHttpUrls()]);
+
+                builder.Configure(app =>
+                {
+                    app.UseWebSockets();
+                    app.Run(requestHandler);
+                });
+            })
+            .Build();
+
+        await host.StartAsync(cancellationToken);
+
+        // URLs are only available after the server has started.
+        var addresses = host.Services
+            .GetRequiredService<IServer>()
+            .Features
+            .Get<IServerAddressesFeature>()?
+            .Addresses ?? [];
+
+        return new KestrelWebSocketServer(host, serverUrls: [.. addresses.Select(GetWebSocketUrl)]);
     }
 
-    private static bool? s_lazyTlsSupported;
+    /// <summary>
+    /// Converts an HTTP(S) URL to a WebSocket URL and replaces 127.0.0.1 with localhost.
+    /// </summary>
+    internal static string GetWebSocketUrl(string httpUrl)
+    {
+        var uri = new Uri(httpUrl, UriKind.Absolute);
+        var builder = new UriBuilder(uri)
+        {
+            Scheme = uri.Scheme == "https" ? "wss" : "ws"
+        };
+
+        if (builder.Host == "127.0.0.1")
+        {
+            builder.Host = "localhost";
+        }
+
+        return builder.Uri.ToString().TrimEnd('/');
+    }
 
     /// <summary>
     /// Checks whether TLS is supported by running <c>dotnet dev-certs https --check --quiet</c>.
@@ -74,77 +117,6 @@ internal sealed class KestrelWebSocketServer : IDisposable
 
         s_lazyTlsSupported = result;
         return result.Value;
-    }
-
-    /// <summary>
-    /// Starts the Kestrel WebSocket server.
-    /// </summary>
-    /// <param name="hostName">Host name to bind to</param>
-    /// <param name="port">HTTP port to bind to (0 for auto-assign)</param>
-    /// <param name="securePort">HTTPS port to bind to in addition to HTTP port. Null to skip HTTPS.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    public async ValueTask StartServerAsync(string hostName, int port, int? securePort, CancellationToken cancellationToken)
-    {
-        if (_host != null)
-        {
-            throw new InvalidOperationException("Server already started");
-        }
-
-        _host = new HostBuilder()
-            .ConfigureWebHost(builder =>
-            {
-                builder.UseKestrel();
-
-                if (securePort.HasValue)
-                {
-                    builder.UseUrls($"http://{hostName}:{port}", $"https://{hostName}:{securePort.Value}");
-                }
-                else
-                {
-                    builder.UseUrls($"http://{hostName}:{port}");
-                }
-
-                builder.Configure(app =>
-                {
-                    app.UseWebSockets();
-                    app.Run(_requestHandler);
-                });
-            })
-            .Build();
-
-        await _host.StartAsync(cancellationToken);
-
-        // URLs are only available after the server has started.
-        var addresses = _host.Services
-            .GetRequiredService<IServer>()
-            .Features
-            .Get<IServerAddressesFeature>()?
-            .Addresses;
-
-        if (addresses != null)
-        {
-            ServerUrls = [.. addresses];
-        }
-
-        _logger.LogDebug("WebSocket server started at: {Urls}", string.Join(", ", ServerUrls.Select(url => GetWebSocketUrl(url))));
-    }
-
-    /// <summary>
-    /// Converts an HTTP(S) URL to a WebSocket URL.
-    /// When <paramref name="hostName"/> is not specified, also replaces 127.0.0.1 with localhost.
-    /// </summary>
-    internal static string GetWebSocketUrl(string httpUrl, string? hostName = null)
-    {
-        if (hostName is null)
-        {
-            return httpUrl
-                .Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
-                .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal);
-        }
-
-        return httpUrl
-            .Replace("https://", "wss://", StringComparison.Ordinal)
-            .Replace("http://", "ws://", StringComparison.Ordinal);
     }
 }
 

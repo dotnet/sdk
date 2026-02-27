@@ -26,8 +26,7 @@ internal sealed class BrowserRefreshServer(
     ILoggerFactory loggerFactory,
     string middlewareAssemblyPath,
     string dotnetPath,
-    string? autoReloadWebSocketHostName,
-    int? autoReloadWebSocketPort,
+    WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
@@ -36,21 +35,16 @@ internal sealed class BrowserRefreshServer(
 
     protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
-        var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
-        var port = autoReloadWebSocketPort ?? 0;
         var supportsTls = await KestrelWebSocketServer.IsTlsSupportedAsync(dotnetPath, suppressTimeouts, cancellationToken);
+        if (!supportsTls)
+        {
+            webSocketConfig = webSocketConfig.WithSecurePort(null);
+        }
 
-        var server = new KestrelWebSocketServer(Logger, WebSocketRequestAsync);
-        await server.StartServerAsync(hostName, port, supportsTls ? 0 : null, cancellationToken);
+        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, WebSocketRequestAsync, cancellationToken);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(server, GetServerUrls(server.ServerUrls), virtualDirectory: "/");
-    }
-
-    private ImmutableArray<string> GetServerUrls(ImmutableArray<string> serverUrls)
-    {
-        Debug.Assert(serverUrls.Length > 0);
-        return [.. serverUrls.Select(s => KestrelWebSocketServer.GetWebSocketUrl(s, autoReloadWebSocketHostName))];
+        return new WebServerHost(server, server.ServerUrls, virtualDirectory: "/");
     }
 
     private async Task WebSocketRequestAsync(HttpContext context)

@@ -20,8 +20,7 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
         if (IsManagedAgentSupported(project, clientLogger))
         {
             var transport = await WebSocketClientTransport.CreateAsync(
-                context.EnvironmentOptions.AgentWebSocketPort,
-                context.EnvironmentOptions.AgentWebSocketSecurePort,
+                context.EnvironmentOptions.AgentWebSocketConfig,
                 clientLogger,
                 cancellationToken);
 
