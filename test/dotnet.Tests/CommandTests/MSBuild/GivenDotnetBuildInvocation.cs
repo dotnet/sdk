@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tests;
+using Microsoft.DotNet.Tests.TelemetryTests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Theory]
-        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType =typeof(TelemetryCommonPropertiesTests))]
+        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType = typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
