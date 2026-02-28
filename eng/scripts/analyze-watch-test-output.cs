@@ -1,17 +1,47 @@
-// Usage: dotnet run analyze-watch-test-output.cs <input-log-file> [output-html-file]
+// Usage: dotnet run analyze-watch-test-output.cs <input-log-file-or-url> [output-html-file]
 // Parses xUnit test output from dotnet watch, groups interleaved lines by test name,
 // and generates an HTML page with collapsible test output sections.
+// The first argument can be a local file path or a URL. If a URL is provided,
+// the file is downloaded to a temp directory before processing.
 
 using System.Text;
 using System.Text.RegularExpressions;
 
 if (args.Length < 1)
 {
-    Console.Error.WriteLine("Usage: dotnet run analyze-watch-test-output.cs <input-log-file> [output-html-file]");
+    Console.Error.WriteLine("Usage: dotnet run analyze-watch-test-output.cs <input-log-file-or-url> [output-html-file]");
     return 1;
 }
 
-var inputFile = args[0];
+string inputFile;
+string? tempFile = null;
+
+if (Uri.TryCreate(args[0], UriKind.Absolute, out var uri) && (uri.Scheme == "http" || uri.Scheme == "https"))
+{
+    try
+    {
+        using var httpClient = new HttpClient();
+        Console.Error.WriteLine($"Downloading {args[0]}...");
+        var bytes = httpClient.GetByteArrayAsync(uri).GetAwaiter().GetResult();
+        var fileName = Path.GetFileName(uri.LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            fileName = "downloaded-log.txt";
+        tempFile = Path.Combine(Path.GetTempPath(), fileName);
+        File.WriteAllBytes(tempFile, bytes);
+        inputFile = tempFile;
+        Console.Error.WriteLine($"Downloaded to {tempFile}");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Error: Failed to download {args[0]}: {ex.Message}");
+        return 1;
+    }
+}
+else
+{
+    inputFile = args[0];
+}
+
 if (!File.Exists(inputFile))
 {
     Console.Error.WriteLine($"Error: File not found: {inputFile}");
@@ -20,12 +50,20 @@ if (!File.Exists(inputFile))
 
 var outputFile = args.Length > 1 ? args[1] : Path.ChangeExtension(inputFile, ".html");
 
-var lines = File.ReadAllLines(inputFile);
-var tests = ParseTestOutput(lines);
-var html = GenerateHtml(tests, inputFile);
-File.WriteAllText(outputFile, html, Encoding.UTF8);
-Console.WriteLine($"Wrote {outputFile} ({tests.Count} tests, {lines.Length} input lines)");
-return 0;
+try
+{
+    var lines = File.ReadAllLines(inputFile);
+    var tests = ParseTestOutput(lines);
+    var html = GenerateHtml(tests, inputFile);
+    File.WriteAllText(outputFile, html, Encoding.UTF8);
+    Console.WriteLine($"Wrote {outputFile} ({tests.Count} tests, {lines.Length} input lines)");
+    return 0;
+}
+finally
+{
+    if (tempFile != null && File.Exists(tempFile))
+        File.Delete(tempFile);
+}
 
 // --- Parsing ---
 
