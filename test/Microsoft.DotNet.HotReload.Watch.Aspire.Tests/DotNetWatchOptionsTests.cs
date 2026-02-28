@@ -8,19 +8,19 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class DotNetWatchOptionsTests
 {
     [Fact]
-    public void TryParse_RequiredProjectOption()
+    public void TryParse_RequiredSdkOption()
     {
-        // Project option is missing
-        var args = new[] { "--verbose", "a", "b" };
+        // --sdk option is missing
+        var args = new[] { "--project", "proj", "a", "b" };
         Assert.False(DotNetWatchOptions.TryParse(args, out var options));
         Assert.Null(options);
     }
 
     [Fact]
-    public void TryParse_RequiredSdkOption()
+    public void TryParse_RequiredProjectOrFileOption()
     {
-        // Project option is missing
-        var args = new[] { "--project", "proj", "a", "b" };
+        // --project and --file options are missing
+        var args = new[] { "--verbose", "a", "b" };
         Assert.False(DotNetWatchOptions.TryParse(args, out var options));
         Assert.Null(options);
     }
@@ -31,8 +31,26 @@ public class DotNetWatchOptionsTests
         var args = new[] { "--sdk", "sdk", "--project", "myproject.csproj" };
         Assert.True(DotNetWatchOptions.TryParse(args, out var options));
         Assert.Equal("sdk", options.SdkDirectory);
-        Assert.Equal("myproject.csproj", options.ProjectPath);
+        Assert.Equal("myproject.csproj", options.Project.PhysicalPath);
         Assert.Empty(options.ApplicationArguments);
+    }
+
+    [Fact]
+    public void TryParse_FilePath()
+    {
+        var args = new[] { "--sdk", "sdk", "--file", "file.cs" };
+        Assert.True(DotNetWatchOptions.TryParse(args, out var options));
+        Assert.Equal("sdk", options.SdkDirectory);
+        Assert.Equal("file.cs", options.Project.EntryPointFilePath);
+        Assert.Empty(options.ApplicationArguments);
+    }
+
+    [Fact]
+    public void TryParse_ProjectAndFilePaths()
+    {
+        var args = new[] { "--sdk", "sdk", "--project", "myproject.csproj", "--file", "file.cs" };
+        Assert.False(DotNetWatchOptions.TryParse(args, out var options));
+        Assert.Null(options);
     }
 
     [Fact]
@@ -95,22 +113,32 @@ public class DotNetWatchOptionsTests
     }
     
     [Fact]
-    public void TryParse_MultipleOptionValues()
+    public void TryParse_Project_MultipleValues()
     {
         // Project option should only accept one value
         var args = new[] { "--sdk", "sdk", "--project", "proj1", "proj2" };
         Assert.True(DotNetWatchOptions.TryParse(args, out var options));
-        Assert.Equal("proj1", options.ProjectPath);
+        Assert.Equal("proj1", options.Project.PhysicalPath);
         AssertEx.SequenceEqual(["proj2"], options.ApplicationArguments);
     }
-    
+
+    [Fact]
+    public void TryParse_File_MultipleValues()
+    {
+        // Project option should only accept one value
+        var args = new[] { "--sdk", "sdk", "--file", "file1.cs", "file2.cs" };
+        Assert.True(DotNetWatchOptions.TryParse(args, out var options));
+        Assert.Equal("file1.cs", options.Project.EntryPointFilePath);
+        AssertEx.SequenceEqual(["file2.cs"], options.ApplicationArguments);
+    }
+
     [Fact]
     public void TryParse_AllOptionsSet()
     {
         var args = new[] { "--sdk", "sdk", "--project", "myapp.csproj", "--verbose", "--no-launch-profile", "arg1", "arg2", "arg3" };
         Assert.True(DotNetWatchOptions.TryParse(args, out var options));
         
-        Assert.Equal("myapp.csproj", options.ProjectPath);
+        Assert.Equal("myapp.csproj", options.Project.PhysicalPath);
         Assert.Equal(LogLevel.Debug, options.LogLevel);
         Assert.True(options.NoLaunchProfile);
         AssertEx.SequenceEqual(["arg1", "arg2", "arg3"], options.ApplicationArguments);

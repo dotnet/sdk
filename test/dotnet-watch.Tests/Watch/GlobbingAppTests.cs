@@ -1,13 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        private async Task ValidateOperation(Action<string> operation, int expectedTypesAfterOperation)
+        private async Task ValidateOperation(
+            Action<string> operation,
+            int expectedTypesAfterOperation,
+            [CallerMemberName] string callingMethod = "",
+            [CallerFilePath] string? callerFilePath = null,
+            string? identifier = "")
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp", callingMethod, callerFilePath, identifier)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
