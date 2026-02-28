@@ -107,7 +107,15 @@ public class Program
             {
                 // If telemetry object has not been initialized yet. It cannot be collected
                 TelemetryEventEntry.SendFiltered(e);
-                Reporter.Error.WriteLine(e.ToString().Red().Bold());
+
+                var str = e.ToString();
+                if (str.Contains("Internal CLR error"))
+                {
+                    Reporter.Error.WriteLine("!!!".Red().Bold());
+                    Debugger.Break();
+                }
+
+                Reporter.Error.WriteLine(str.Red().Bold());
 
                 return 1;
             }
