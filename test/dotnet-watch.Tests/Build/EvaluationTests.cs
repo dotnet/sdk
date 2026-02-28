@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 },
             };
 
-            var testAsset = _testAssets.CreateTestProject(project, identifier: enableStaticWebAssets.ToString());
+            var testAsset = _testAssets.CreateTestProject(project, identifier: $"{isWeb}_{enableStaticWebAssets}");
 
             await VerifyEvaluation(testAsset,
                 isWeb && enableStaticWebAssets != false ?

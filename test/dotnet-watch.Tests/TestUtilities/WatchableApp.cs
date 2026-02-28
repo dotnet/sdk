@@ -212,6 +212,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
 
+            // Set up automatic dump collection on uncaught exception for launched processes
+            // See https://learn.microsoft.com/en-us/dotnet/core/diagnostics/collect-dumps-crash
+            commandSpec.WithEnvironmentVariable("DOTNET_DbgEnableMiniDump", "1");
+            commandSpec.WithEnvironmentVariable("DOTNET_DbgMiniDumpType", "2"); // heap dump
+            commandSpec.WithEnvironmentVariable("DOTNET_DbgMiniDumpName", Path.Combine(testOutputPath, "%e.%p.%t.dmp")); // <executable>.<pid>.<timestamp>.dmp
+            commandSpec.WithEnvironmentVariable("DOTNET_EnableCrashReport", "1");
+
             foreach (var env in EnvironmentVariables)
             {
                 commandSpec.WithEnvironmentVariable(env.Key, env.Value);
