@@ -9,7 +9,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
-        var testAsset = CopyTestAsset("WatchAppMultiProc", trigger);
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [trigger]);
 
         var tfm = ToolsetInfo.CurrentTargetFramework;
 
@@ -170,7 +170,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
-        var testAsset = CopyTestAsset("WatchAppMultiProc", sharedOutput);
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [sharedOutput]);
         var tfm = ToolsetInfo.CurrentTargetFramework;
 
         if (sharedOutput)
@@ -271,7 +271,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
-        var testAsset = CopyTestAsset("WatchAppMultiProc", updateLocation);
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [updateLocation]);
         var tfm = ToolsetInfo.CurrentTargetFramework;
 
         var workingDirectory = testAsset.Path;

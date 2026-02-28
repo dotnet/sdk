@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.HotReload
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogError("Failed to read response: {Message}", e.Message);
+                    Logger.LogError("Failed to read response: {Exception}", e.ToString());
                 }
             }
         }

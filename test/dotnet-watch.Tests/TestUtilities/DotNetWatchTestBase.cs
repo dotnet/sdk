@@ -31,8 +31,12 @@ public abstract partial class DotNetWatchTestBase : IDisposable
 
     public DebugTestOutputLogger Logger => App.Logger;
 
-    internal TestAsset CopyTestAsset(string assetName, params object[] testParameters)
-        => TestAssets.CopyTestAsset(assetName, identifier: string.Join(";", testParameters)).WithSource();
+    internal TestAsset CopyTestAsset(
+        string assetName,
+        object[]? testParameters = null,
+        [CallerMemberName] string callingMethod = "",
+        [CallerFilePath] string? callerFilePath = null)
+        => TestAssets.CopyTestAsset(assetName, callingMethod, callerFilePath, identifier: string.Join(";", testParameters ?? [])).WithSource();
 
     public void Log(string message, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         => App.Logger.Log(message, testPath, testLine);
