@@ -131,28 +131,6 @@ public static class ParseResultExtensions
         return [..subargsFiltered, ..runArgs];
     }
 
-    public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
-    {
-        if (string.IsNullOrEmpty(subCommand))
-        {
-            return true;
-        }
-
-        for (var i = 0; i < args.Length; i++)
-        {
-            if (args[i].Equals(subCommand))
-            {
-                return false;
-            }
-            else if (Parser.RootCommand.DiagOption.Name.Equals(args) || Parser.RootCommand.DiagOption.Aliases.Contains(args[i]))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
         CommandResult commandResult => commandResult.Command.Name,

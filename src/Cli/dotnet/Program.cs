@@ -241,17 +241,6 @@ public class Program
 
     private static string GetCommandName(ParseResult parseResult)
     {
-        if (parseResult.HasOption(Parser.RootCommand.VersionOption) && parseResult.IsTopLevelDotnetCommand())
-        {
-            // If the action is PrintVersionAction, we return the command name as "dotnet --version"
-            return "dotnet --version";
-        }
-        else if (parseResult.HasOption(Parser.RootCommand.InfoOption) && parseResult.IsTopLevelDotnetCommand())
-        {
-            // If the action is PrintHelpAction, we return the command name as "dotnet --help"
-            return "dotnet --info";
-        }
-
         // Walk the parent command tree to find the top-level command name and get the full command name for this parseresult.
         List<string> parentNames = [parseResult.CommandResult.Command.Name];
         var current = parseResult.CommandResult.Parent;
@@ -261,6 +250,14 @@ public class Program
             current = parentCommandResult.Parent;
         }
         parentNames.Reverse();
+
+        // Options that perform actions are considered part of the command name as they are essentially subcommands themselves.
+        // Example: dotnet --version
+        if (parseResult.Action is InvocableOptionAction optionAction)
+        {
+            parentNames.Add(optionAction.Option.Name);
+        }
+
         return string.Join(' ', parentNames);
     }
 
@@ -539,8 +536,8 @@ public class Program
 
     private static void InitializeProcess()
     {
-        // by default, .NET Core doesn't have all code pages needed for Console apps.
-        // see the .NET Core Notes in https://docs.microsoft.com/dotnet/api/system.diagnostics.process#-notes
+        // By default, .NET Core doesn't have all code pages needed for Console apps.
+        // See the .NET Core Notes: https://docs.microsoft.com/dotnet/api/system.diagnostics.process#-notes
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         UILanguageOverride.Setup();

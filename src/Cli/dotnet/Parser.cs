@@ -76,7 +76,6 @@ public static class Parser
         }
 
         // Augment the definition of each subcommand with command-specific actions and completions.
-
         AddCommandParser.ConfigureCommand(rootCommand.AddCommand);
         BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
         BuildServerCommandParser.ConfigureCommand(rootCommand.BuildServerCommand);
@@ -120,7 +119,10 @@ public static class Parser
         WorkloadCommandParser.ConfigureCommand(rootCommand.WorkloadCommand);
         CompletionsCommandParser.ConfigureCommand(rootCommand.CompletionsCommand);
 
-        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
+        rootCommand.DiagOption.Action = new HandleDiagnosticAction(rootCommand.DiagOption);
+        rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
+        rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
+        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction(rootCommand.CliSchemaOption);
 
         // TODO: https://github.com/dotnet/sdk/issues/52661
         // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGetCommands.cs
@@ -131,13 +133,13 @@ public static class Parser
         {
             if (parseResult.GetValue(rootCommand.DiagOption) && parseResult.Tokens.Count == 1)
             {
-                // when user does not specify any args except of diagnostics ("dotnet -d"), we do nothing
-                // as Program.ProcessArgs already enabled the diagnostic output
+                // When user does not specify any args except of diagnostics ("dotnet -d"),
+                // we do nothing as HandleDiagnosticAction already enabled the diagnostic output.
                 return 0;
             }
             else
             {
-                // when user does not specify any args (just "dotnet"), a usage needs to be printed
+                // When user does not specify any args (just "dotnet"), a usage needs to be printed.
                 parseResult.InvocationConfiguration.Output.WriteLine(CliUsage.HelpText);
                 return 0;
             }
@@ -376,17 +378,6 @@ public static class Parser
 
                 base.Write(context);
             }
-        }
-    }
-
-    private class PrintCliSchemaAction : SynchronousCommandLineAction
-    {
-        public override bool Terminating => true;
-
-        public override int Invoke(ParseResult parseResult)
-        {
-            CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
-            return 0;
         }
     }
 }

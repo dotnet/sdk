@@ -110,6 +110,6 @@ public class Telemetry : ITelemetry
         var measurements = eventMeasurements
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
             .OrderBy(p => p.Key);
-        return [.. s_commonProperties, .. properties, .. measurements];
+        return [..s_commonProperties, ..properties, ..measurements];
     }
 }
