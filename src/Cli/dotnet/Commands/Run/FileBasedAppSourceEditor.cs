@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -33,7 +34,7 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (field.IsDefault)
             {
-                field = VirtualProjectBuildingCommand.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+                field = FileLevelDirectiveHelpers.FindDirectives(SourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -125,7 +126,7 @@ internal sealed class FileBasedAppSourceEditor
         // Otherwise, we will add the directive to the top of the file.
         int start = 0;
 
-        var tokenizer = VirtualProjectBuildingCommand.CreateTokenizer(SourceFile.Text);
+        var tokenizer = FileLevelDirectiveHelpers.CreateTokenizer(SourceFile.Text);
         var result = tokenizer.ParseNextToken();
         var leadingTrivia = result.Token.LeadingTrivia;
 

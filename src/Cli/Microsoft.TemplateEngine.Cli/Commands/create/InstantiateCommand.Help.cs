@@ -216,7 +216,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(
                 Example
                     .For<NewCommand>(args.ParseResult)
-                    .WithArgument(NewCommand.ShortNameArgument, templateGroup.ShortNames[0])
+                    .WithArgument(CommandDefinition.New.ShortNameArgument, templateGroup.ShortNames[0])
                     .WithHelpOption()
                     .WithOption(SharedOptionsFactory.CreateLanguageOption(), supportedLanguages.First())
                     .ToString().Indent());
@@ -251,7 +251,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(HelpStrings.Hint_HelpForOtherTypes, string.Join(", ", supportedTypes));
             writer.WriteLine(Example
                 .For<NewCommand>(args.ParseResult)
-                .WithArgument(NewCommand.ShortNameArgument, templateGroup.ShortNames[0])
+                .WithArgument(CommandDefinition.New.ShortNameArgument, templateGroup.ShortNames[0])
                 .WithHelpOption()
                 .WithOption(SharedOptionsFactory.CreateTypeOption(), supportedTypes.First())
                 .ToString().Indent());

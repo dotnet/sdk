@@ -169,7 +169,7 @@
                             CreateNupkgWithPreviewFromSource">
     <ItemGroup>
       <TestAssetFiles Include="$(BaseOutputPath)\TestAsset\**\*.*" />
-      <TestAssetLocalNugetFeed Include="$(BaseOutputPath)\$(Configuration)\TestAssetLocalNugetFeed\**\*.*" />
+      <TestAssetLocalNugetFeed Include="$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\TestAssetLocalNugetFeed\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(TestAssetFiles)" DestinationFiles="@(TestAssetFiles->'$(PublishDir)\TestAsset\%(RecursiveDir)%(Filename)%(Extension)')" />
