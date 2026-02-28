@@ -1,211 +1,208 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
-namespace Microsoft.DotNet.Tests
+namespace Microsoft.DotNet.Tests.TelemetryTests;
+
+/// <summary>
+/// Only adding the performance data tests for now as the TelemetryCommandTests cover most other scenarios already
+/// </summary>
+public class TelemetryFilterTests : SdkTest
 {
-    /// <summary>
-    /// Only adding the performance data tests for now as the TelemetryCommandTests cover most other scenarios already
-    /// </summary>
-    public class TelemetryFilterTests : SdkTest
+    private readonly FakeRecordEventNameTelemetry _fakeTelemetry;
+
+    public string? EventName { get; set; }
+
+    public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+
+    public TelemetryFilterTests(ITestOutputHelper log) : base(log)
     {
-        private readonly FakeRecordEventNameTelemetry _fakeTelemetry;
+        _fakeTelemetry = new FakeRecordEventNameTelemetry();
+        TelemetryEventEntry.Subscribe(_fakeTelemetry.TrackEvent);
+        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+    }
 
-        public string EventName { get; set; }
+    [Fact]
+    public void TopLevelCommandNameShouldBeSentToTelemetryWithoutPerformanceData()
+    {
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                e.Measurement == null);
+    }
 
-        public IDictionary<string, string> Properties { get; set; }
+    [Fact]
+    public void TopLevelCommandNameShouldBeSentToTelemetryWithPerformanceData()
+    {
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 12345 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                e.Measurement.ContainsKey("Startup Time") &&
+                e.Measurement["Startup Time"] == 12345);
+    }
 
-        public TelemetryFilterTests(ITestOutputHelper log) : base(log)
-        {
-            _fakeTelemetry = new FakeRecordEventNameTelemetry();
-            TelemetryEventEntry.Subscribe(_fakeTelemetry.TrackEvent);
-            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-        }
+    [Fact]
+    public void TopLevelCommandNameShouldBeSentToTelemetryWithGlobalJsonState()
+    {
+        string globalJsonState = "invalid_data";
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>(), globalJsonState));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                e.Measurement == null &&
+                e.Properties.ContainsKey("globalJson") &&
+                e.Properties["globalJson"] == Sha256Hasher.HashWithNormalizedCasing(globalJsonState));
+    }
 
-        [Fact]
-        public void TopLevelCommandNameShouldBeSentToTelemetryWithoutPerformanceData()
-        {
-            var parseResult = Parser.Parse(["build"]);
-            TelemetryEventEntry.SendFiltered(parseResult);
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
-                  e.Properties.ContainsKey("verb") &&
-                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
-                  e.Measurement == null);
-        }
+    [Fact]
+    public void TopLevelCommandNameShouldBeSentToTelemetryWithZeroPerformanceData()
+    {
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                e.Measurement == null);
+    }
 
-        [Fact]
-        public void TopLevelCommandNameShouldBeSentToTelemetryWithPerformanceData()
-        {
-            var parseResult = Parser.Parse(["build"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 12345 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
-                  e.Properties.ContainsKey("verb") &&
-                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
-                  e.Measurement.ContainsKey("Startup Time") &&
-                  e.Measurement["Startup Time"] == 12345);
-        }
+    [Fact]
+    public void TopLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
+    {
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                !e.Measurement.ContainsKey("Startup Time") &&
+                e.Measurement.ContainsKey("Parse Time") &&
+                e.Measurement["Parse Time"] == 23456);
+    }
 
-        [Fact]
-        public void TopLevelCommandNameShouldBeSentToTelemetryWithGlobalJsonState()
-        {
-            string globalJsonState = "invalid_data";
-            var parseResult = Parser.Parse(["build"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>(), globalJsonState));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
-                  e.Properties.ContainsKey("verb") &&
-                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
-                  e.Measurement == null &&
-                  e.Properties.ContainsKey("globalJson") &&
-                  e.Properties["globalJson"] == Sha256Hasher.HashWithNormalizedCasing(globalJsonState));
-        }
+    [Fact]
+    public void SubLevelCommandNameShouldBeSentToTelemetryWithoutPerformanceData()
+    {
+        var parseResult = Parser.Parse(["new", "console"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry
+            .LogEntries.Should()
+            .Contain(e => e.EventName == "sublevelparser/command" &&
+                e.Properties.ContainsKey("argument") &&
+                e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
+                e.Measurement == null);
+    }
 
-        [Fact]
-        public void TopLevelCommandNameShouldBeSentToTelemetryWithZeroPerformanceData()
-        {
-            var parseResult = Parser.Parse(["build"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
-                  e.Properties.ContainsKey("verb") &&
-                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
-                  e.Measurement == null);
-        }
+    [Fact]
+    public void SubLevelCommandNameShouldBeSentToTelemetryWithPerformanceData()
+    {
+        var parseResult = Parser.Parse(["new", "console"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 34567 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                e.Properties.ContainsKey("argument") &&
+                e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
+                e.Measurement.ContainsKey("Startup Time") &&
+                e.Measurement["Startup Time"] == 34567);
+    }
 
-        [Fact]
-        public void TopLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
-        {
-            var parseResult = Parser.Parse(["build"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
-                  e.Properties.ContainsKey("verb") &&
-                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
-                  !e.Measurement.ContainsKey("Startup Time") &&
-                  e.Measurement.ContainsKey("Parse Time") &&
-                  e.Measurement["Parse Time"] == 23456);
-        }
+    [Fact]
+    public void SubLevelCommandNameShouldBeSentToTelemetryWithZeroPerformanceData()
+    {
+        var parseResult = Parser.Parse(["new", "console"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                e.Properties.ContainsKey("argument") &&
+                e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
+                e.Measurement == null);
+    }
 
-        [Fact]
-        public void SubLevelCommandNameShouldBeSentToTelemetryWithoutPerformanceData()
-        {
-            var parseResult = Parser.Parse(["new", "console"]);
-            TelemetryEventEntry.SendFiltered(parseResult);
-            _fakeTelemetry
-                .LogEntries.Should()
-                .Contain(e => e.EventName == "sublevelparser/command" &&
-                    e.Properties.ContainsKey("argument") &&
-                    e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
-                    e.Properties.ContainsKey("verb") &&
-                    e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
-                    e.Measurement == null);
-        }
+    [Fact]
+    public void SubLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
+    {
+        var parseResult = Parser.Parse(["new", "console"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 45678 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                e.Properties.ContainsKey("argument") &&
+                e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
+                !e.Measurement.ContainsKey("Startup Time") &&
+                e.Measurement.ContainsKey("Parse Time") &&
+                e.Measurement["Parse Time"] == 45678);
+    }
 
-        [Fact]
-        public void SubLevelCommandNameShouldBeSentToTelemetryWithPerformanceData()
-        {
-            var parseResult = Parser.Parse(["new", "console"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 34567 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                    e.Properties.ContainsKey("argument") &&
-                    e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
-                    e.Properties.ContainsKey("verb") &&
-                    e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
-                    e.Measurement.ContainsKey("Startup Time") &&
-                    e.Measurement["Startup Time"] == 34567);
-        }
+    [Fact]
+    public void WorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
+    {
+        var parseResult =
+            Parser.Parse(["workload", "install", "microsoft-ios-sdk-full"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
+            new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                                                        e.Properties.ContainsKey("verb") &&
+                                                        e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
+                                                        e.Properties["subcommand"] ==
+                                                        Sha256Hasher.Hash("INSTALL") &&
+                                                        e.Properties["argument"] ==
+                                                        Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
+    }
 
-        [Fact]
-        public void SubLevelCommandNameShouldBeSentToTelemetryWithZeroPerformanceData()
-        {
-            var parseResult = Parser.Parse(["new", "console"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                    e.Properties.ContainsKey("argument") &&
-                    e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
-                    e.Properties.ContainsKey("verb") &&
-                    e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
-                    e.Measurement == null);
-        }
+    [Fact]
+    public void ToolsSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
+    {
+        var parseResult =
+            Parser.Parse(["tool", "install", "dotnet-format"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
+            new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                                                        e.Properties.ContainsKey("verb") &&
+                                                        e.Properties["verb"] == Sha256Hasher.Hash("TOOL") &&
+                                                        e.Properties["subcommand"] ==
+                                                        Sha256Hasher.Hash("INSTALL") &&
+                                                        e.Properties["argument"] ==
+                                                        Sha256Hasher.Hash("DOTNET-FORMAT"));
+    }
 
-        [Fact]
-        public void SubLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
-        {
-            var parseResult = Parser.Parse(["new", "console"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 45678 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                    e.Properties.ContainsKey("argument") &&
-                    e.Properties["argument"] == Sha256Hasher.Hash("CONSOLE") &&
-                    e.Properties.ContainsKey("verb") &&
-                    e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
-                    !e.Measurement.ContainsKey("Startup Time") &&
-                    e.Measurement.ContainsKey("Parse Time") &&
-                    e.Measurement["Parse Time"] == 45678);
-        }
+    [Fact]
+    public void WhenCalledWithDiagnosticWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
+    {
+        var parseResult =
+            Parser.Parse(["-d", "workload", "install", "microsoft-ios-sdk-full"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
+            new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                                                        e.Properties.ContainsKey("verb") &&
+                                                        e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
+                                                        e.Properties["subcommand"] ==
+                                                        Sha256Hasher.Hash("INSTALL") &&
+                                                        e.Properties["argument"] ==
+                                                        Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
+    }
 
-        [Fact]
-        public void WorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
-        {
-            var parseResult =
-                Parser.Parse(["workload", "install", "microsoft-ios-sdk-full"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                                                            e.Properties.ContainsKey("verb") &&
-                                                            e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
-                                                            e.Properties["subcommand"] ==
-                                                            Sha256Hasher.Hash("INSTALL") &&
-                                                            e.Properties["argument"] ==
-                                                            Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
-        }
-
-        [Fact]
-        public void ToolsSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
-        {
-            var parseResult =
-                Parser.Parse(["tool", "install", "dotnet-format"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                                                            e.Properties.ContainsKey("verb") &&
-                                                            e.Properties["verb"] == Sha256Hasher.Hash("TOOL") &&
-                                                            e.Properties["subcommand"] ==
-                                                            Sha256Hasher.Hash("INSTALL") &&
-                                                            e.Properties["argument"] ==
-                                                            Sha256Hasher.Hash("DOTNET-FORMAT"));
-        }
-
-        [Fact]
-        public void WhenCalledWithDiagnosticWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
-        {
-            var parseResult =
-                Parser.Parse(["-d", "workload", "install", "microsoft-ios-sdk-full"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                                                            e.Properties.ContainsKey("verb") &&
-                                                            e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
-                                                            e.Properties["subcommand"] ==
-                                                            Sha256Hasher.Hash("INSTALL") &&
-                                                            e.Properties["argument"] ==
-                                                            Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
-        }
-
-        [Fact]
-        public void WhenCalledWithMissingArgumentWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
-        {
-            var parseResult =
-                Parser.Parse(["-d", "workload", "install"]);
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
-            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
-                                                            e.Properties.ContainsKey("verb") &&
-                                                            e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
-                                                            e.Properties["subcommand"] ==
-                                                            Sha256Hasher.Hash("INSTALL"));
-        }
+    [Fact]
+    public void WhenCalledWithMissingArgumentWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
+    {
+        var parseResult =
+            Parser.Parse(["-d", "workload", "install"]);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
+            new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
+                                                        e.Properties.ContainsKey("verb") &&
+                                                        e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
+                                                        e.Properties["subcommand"] ==
+                                                        Sha256Hasher.Hash("INSTALL"));
     }
 }

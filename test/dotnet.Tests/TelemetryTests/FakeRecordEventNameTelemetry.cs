@@ -1,47 +1,43 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.Telemetry;
 
-namespace Microsoft.DotNet.Tests
+namespace Microsoft.DotNet.Tests.TelemetryTests;
+
+public class FakeRecordEventNameTelemetry : ITelemetry
 {
-    public class FakeRecordEventNameTelemetry : ITelemetry
+    public bool Enabled { get; set; }
+
+    public string? EventName { get; set; }
+
+    public void TrackEvent(string eventName,
+        IDictionary<string, string?>? properties,
+        IDictionary<string, double>? measurements)
     {
-        public bool Enabled { get; set; }
-
-        public string EventName { get; set; }
-
-        public void TrackEvent(string eventName,
-            IDictionary<string, string> properties,
-            IDictionary<string, double> measurements)
+        LogEntries.Add(new LogEntry
         {
-            LogEntries.Add(
-                new LogEntry
-                {
-                    EventName = eventName,
-                    Measurement = measurements,
-                    Properties = properties
-                });
-        }
+            EventName = eventName,
+            Measurement = measurements ?? new Dictionary<string, double>(),
+            Properties = properties ?? new Dictionary<string, string?>()
+        });
+    }
 
-        public void Flush()
-        {
-        }
+    public void Flush()
+    {
+    }
 
-        public void Dispose()
-        {
-        }
+    public void Dispose()
+    {
+    }
 
-        public ConcurrentBag<LogEntry> LogEntries { get; set; } = new ConcurrentBag<LogEntry>();
+    public ConcurrentBag<LogEntry> LogEntries { get; set; } = [];
 
-        public class LogEntry
-        {
-            public string EventName { get; set; }
-            public IDictionary<string, string> Properties { get; set; }
-            public IDictionary<string, double> Measurement { get; set; }
-        }
+    public class LogEntry
+    {
+        public string? EventName { get; set; }
+        public IDictionary<string, string?> Properties { get; set; } = new Dictionary<string, string?>();
+        public IDictionary<string, double> Measurement { get; set; } = new Dictionary<string, double>();
     }
 }

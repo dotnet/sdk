@@ -4,173 +4,199 @@
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Tests
+namespace Microsoft.DotNet.Tests.TelemetryTests;
+
+public class TelemetryCommonPropertiesTests : SdkTest
 {
-    public class TelemetryCommonPropertiesTests : SdkTest
+    public TelemetryCommonPropertiesTests(ITestOutputHelper log) : base(log)
     {
-        public TelemetryCommonPropertiesTests(ITestOutputHelper log) : base(log)
-        {
-        }
+    }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldContainIfItIsInDockerOrNot()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("Docker Container");
-        }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldContainIfItIsInDockerOrNot()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("Docker Container");
+    }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnHashedPath()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(() => "ADirectory", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Current Path Hash"].Should().NotBe("ADirectory");
-        }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnHashedPath()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(() => "ADirectory", userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Current Path Hash"].Should().NotBe("ADirectory");
+    }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnHashedMachineId()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"].Should().NotBe("plaintext");
-        }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnHashedMachineId()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"].Should().NotBe("plaintext");
+    }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"].Should().Be("plaintext");
-        }
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"].Should().Be("plaintext");
+    }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
+
+        Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+    }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+        var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
+
+        Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+        var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
+
+        Guid.TryParse((string?)secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
+        secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"].Should().NotBe("plaintext");
+    }
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
+
+        Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnIsOutputRedirected()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Output Redirected"].Should().BeOneOf("True", "False");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnIsCIDetection()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Continuous Integration"].Should().BeOneOf("True", "False");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldContainKernelVersion()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Kernel Version"].Should().Be(RuntimeInformation.OSDescription);
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldContainArchitectureInformation()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
+    }
+    [WindowsOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeNull();
+    }
+    [UnixOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeNull();
+    }
+    [WindowsOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainWindowsProductType()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeNull();
+    }
+    [UnixOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeNull();
+    }
+    [WindowsOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
+    }
+    [MacOsOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
+    }
+    [LinuxOnlyFact]
+    public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
+    {
+        if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().NotBeNull();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().NotBeNull();
+        }
+    }
 
-            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
-        }
-        [Fact]
-        public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
+    }
 
-            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
-            var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
-
-            Guid.TryParse((string?)secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
-            secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
-        }
-
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
+    [Theory]
+    [MemberData(nameof(CITelemetryTestCases))]
+    public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
+    {
+        try
         {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"].Should().NotBe("plaintext");
-        }
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
-
-            Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
-        }
-
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnIsOutputRedirected()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Output Redirected"].Should().BeOneOf("True", "False");
-        }
-
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnIsCIDetection()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Continuous Integration"].Should().BeOneOf("True", "False");
-        }
-
-        [Fact]
-        public void TelemetryCommonPropertiesShouldContainKernelVersion()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Kernel Version"].Should().Be(RuntimeInformation.OSDescription);
-        }
-
-        [Fact]
-        public void TelemetryCommonPropertiesShouldContainArchitectureInformation()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
-        }
-        [WindowsOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeNull();
-        }
-        [UnixOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeNull();
-        }
-        [WindowsOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainWindowsProductType()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeNull();
-        }
-        [UnixOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeNull();
-        }
-        [WindowsOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
-        }
-        [MacOsOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
-        {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
-        }
-        [LinuxOnlyFact]
-        public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
-        {
-            if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
+            foreach (var (key, value) in envVars)
             {
-                var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-                unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().NotBeNull();
-                unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().NotBeNull();
+                Environment.SetEnvironmentVariable(key, value);
+            }
+            new CIEnvironmentDetectorForTelemetry().IsCIEnvironment().Should().Be(expected);
+        }
+        finally
+        {
+            foreach (var (key, value) in envVars)
+            {
+                Environment.SetEnvironmentVariable(key, null);
             }
         }
+    }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
+    [Theory]
+    [MemberData(nameof(LLMTelemetryTestCases))]
+    public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
+    {
+        try
         {
-            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
-        }
-
-        [Theory]
-        [MemberData(nameof(CITelemetryTestCases))]
-        public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
-        {
-            try
+            if (envVars is not null)
             {
                 foreach (var (key, value) in envVars)
                 {
                     Environment.SetEnvironmentVariable(key, value);
                 }
-                new CIEnvironmentDetectorForTelemetry().IsCIEnvironment().Should().Be(expected);
             }
-            finally
+            new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
+        }
+        finally
+        {
+            if (envVars is not null)
             {
                 foreach (var (key, value) in envVars)
                 {
@@ -178,122 +204,95 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(LLMTelemetryTestCases))]
-        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
+    [Theory]
+    [InlineData("dummySessionId")]
+    [InlineData(null)]
+    public void TelemetryCommonPropertiesShouldContainSessionId(string? sessionId)
+    {
+        var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+        var commonProperties = unitUnderTest.GetTelemetryCommonProperties(sessionId);
+
+        commonProperties.Should().ContainKey("SessionId");
+        commonProperties["SessionId"].Should().Be(sessionId);
+    }
+
+    public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
+    {
+        { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
+        { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
+        { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+        { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
+        { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
+        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
+        { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
+        { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
+        { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
+        { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
+        { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
+        { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
+        { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
+        { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
+        { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
+        { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
+        { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
+        { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
+        { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
+        { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
+        { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
+        { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
+        { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
+        { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
+        // Test combinations of older tools
+        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
+        { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
+        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
+        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+        // Test combinations of newer tools
+        { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
+        { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
+        { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
+        { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
+        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
+        { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
+        { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
+        { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
+        { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
+        { new Dictionary<string, string>(), null },
+    };
+
+    public static TheoryData<Dictionary<string, string>, bool> CITelemetryTestCases => new()
+    {
+        { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
+        { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
+        { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
+        { new Dictionary<string, string> { { "CI", "true"} }, true },
+        { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
+        { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
+        { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
+        { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
+        { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
+        { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+        { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
+        { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+        { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
+        { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
+        { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
+        { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
+        { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+    };
+
+    private class NothingCache : IUserLevelCacheWriter
+    {
+        public string RunWithCache(string cacheKey, Func<string> getValueToCache)
         {
-            try
-            {
-                if (envVars is not null)
-                {
-                    foreach (var (key, value) in envVars)
-                    {
-                        Environment.SetEnvironmentVariable(key, value);
-                    }
-                }
-                new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
-            }
-            finally
-            {
-                if (envVars is not null)
-                {
-                    foreach (var (key, value) in envVars)
-                    {
-                        Environment.SetEnvironmentVariable(key, null);
-                    }
-                }
-            }
+            return getValueToCache();
         }
 
-        [Theory]
-        [InlineData("dummySessionId")]
-        [InlineData(null)]
-        public void TelemetryCommonPropertiesShouldContainSessionId(string? sessionId)
+        public string RunWithCacheInFilePath(string cacheFilepath, Func<string> getValueToCache)
         {
-            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            var commonProperties = unitUnderTest.GetTelemetryCommonProperties(sessionId);
-
-            commonProperties.Should().ContainKey("SessionId");
-            commonProperties["SessionId"].Should().Be(sessionId);
-        }
-
-        public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
-        {
-            { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
-            { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
-            { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
-            { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
-            { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
-            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
-            { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
-            { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
-            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
-            { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
-            { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
-            { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
-            { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
-            { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
-            { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
-            { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
-            { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
-            { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
-            { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
-            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
-            { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
-            { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
-            { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
-            { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
-            // Test combinations of older tools
-            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
-            { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
-            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
-            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
-            // Test combinations of newer tools
-            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
-            { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
-            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
-            { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
-            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
-            { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
-            { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
-            { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
-            { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
-            { new Dictionary<string, string>(), null },
-        };
-
-        public static TheoryData<Dictionary<string, string>, bool> CITelemetryTestCases => new()
-        {
-            { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
-            { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
-            { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
-            { new Dictionary<string, string> { { "CI", "true"} }, true },
-            { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
-            { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
-            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
-            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
-            { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
-            { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-            { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
-            { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
-            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
-            { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
-            { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
-            { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
-        };
-
-        private class NothingCache : IUserLevelCacheWriter
-        {
-            public string RunWithCache(string cacheKey, Func<string> getValueToCache)
-            {
-                return getValueToCache();
-            }
-
-            public string RunWithCacheInFilePath(string cacheFilepath, Func<string> getValueToCache)
-            {
-                return getValueToCache();
-            }
+            return getValueToCache();
         }
     }
 }
