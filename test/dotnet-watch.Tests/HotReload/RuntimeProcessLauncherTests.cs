@@ -6,148 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[Collection(nameof(InProcBuildTestCollection))]
 public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    public enum TriggerEvent
-    {
-        HotReloadSessionStarting,
-        HotReloadSessionStarted,
-        WaitingForChanges,
-    }
-
-    private record class TestWatcher(
-        RuntimeProcessLauncherTests Test,
-        HotReloadDotNetWatcher Watcher,
-        DotNetWatchContext Context,
-        TestReporter Reporter,
-        TestConsole Console,
-        StrongBox<TestRuntimeProcessLauncher?> ServiceHolder,
-        CancellationTokenSource ShutdownSource) : IAsyncDisposable
-    {
-        public TestRuntimeProcessLauncher? Service => ServiceHolder.Value;
-        private Task? _lazyTask;
-
-        public void Start()
-        {
-            Assert.Null(_lazyTask);
-
-            _lazyTask = Task.Run(async () =>
-            {
-                Test.Log("Starting watch");
-
-                try
-                {
-                    await Watcher.WatchAsync(ShutdownSource.Token);
-                }
-                catch (Exception e) when (e is not OperationCanceledException)
-                {
-                    ShutdownSource.Cancel();
-                    Test.Logger.WriteLine($"Unexpected exception {e}");
-                    throw;
-                }
-                finally
-                {
-                    Context.Dispose();
-                }
-            }, ShutdownSource.Token);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            Assert.NotNull(_lazyTask);
-
-            if (!ShutdownSource.IsCancellationRequested)
-            {
-                Test.Log("Shutting down");
-                ShutdownSource.Cancel();
-            }
-
-            try
-            {
-                await _lazyTask;
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
-
-        public TaskCompletionSource CreateCompletionSource()
-        {
-            var source = new TaskCompletionSource();
-            ShutdownSource.Token.Register(() => source.TrySetCanceled(ShutdownSource.Token));
-            return source;
-        }
-    }
-
-    private TestAsset CopyTestAsset(string assetName, params object[] testParameters)
-        => TestAssets.CopyTestAsset(assetName, identifier: string.Join(";", testParameters)).WithSource();
-
-    private static async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, CancellationToken cancellationToken)
-    {
-        var projectOptions = new ProjectOptions()
-        {
-            IsMainProject = false,
-            Representation = new ProjectRepresentation(projectPath, entryPointFilePath: null),
-            WorkingDirectory = workingDirectory,
-            Command = "run",
-            CommandArguments = ["--project", projectPath],
-            LaunchEnvironmentVariables = [],
-            LaunchProfileName = default,
-        };
-
-        RestartOperation? startOp = null;
-        startOp = new RestartOperation(async cancellationToken =>
-        {
-            var result = await service.ProjectLauncher.TryLaunchProcessAsync(
-                projectOptions,
-                onOutput: null,
-                onExit: null,
-                restartOperation: startOp!,
-                cancellationToken);
-
-            Assert.NotNull(result);
-
-            await result.Clients.WaitForConnectionEstablishedAsync(cancellationToken);
-
-            return result;
-        });
-
-        return await startOp(cancellationToken);
-    }
-
-    private TestWatcher CreateWatcher(TestAsset testAsset, string[] args, string? workingDirectory = null)
-    {
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
-        var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
-        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
-        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
-
-        var program = Program.TryCreate(
-           TestOptions.GetCommandLineOptions(["--verbose", ..args]),
-           console,
-           environmentOptions,
-           loggerFactory,
-           reporter,
-           out var errorCode);
-
-        Assert.Equal(0, errorCode);
-        Assert.NotNull(program);
-
-        var serviceHolder = new StrongBox<TestRuntimeProcessLauncher?>();
-        var factory = new TestRuntimeProcessLauncher.Factory(s =>
-        {
-            serviceHolder.Value = s;
-        });
-
-        var context = program.CreateContext(processRunner);
-        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory);
-        var shutdownSource = new CancellationTokenSource();
-
-        return new TestWatcher(this, watcher, context, reporter, console, serviceHolder, shutdownSource);
-    }
-
     [Theory]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
@@ -169,7 +29,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var launchCompletionA = w.CreateCompletionSource();
         var launchCompletionB = w.CreateCompletionSource();
@@ -191,10 +51,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             // service should have been created before Hot Reload session started:
             Assert.NotNull(w.Service);
 
-            Launch(serviceProjectA, w.Service, workingDirectory, w.ShutdownSource.Token).Wait();
+            w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token).Wait();
             launchCompletionA.TrySetResult();
 
-            Launch(serviceProjectB, w.Service, workingDirectory, w.ShutdownSource.Token).Wait();
+            w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token).Wait();
             launchCompletionB.TrySetResult();
         });
 
@@ -332,7 +192,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -368,7 +228,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         // service should have been created before Hot Reload session started:
         Assert.NotNull(w.Service);
 
-        await Launch(serviceProjectA, w.Service, workingDirectory, w.ShutdownSource.Token);
+        await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
 
         UpdateSourceFile(libSource,
             """
@@ -393,7 +253,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for updates applied 2/2 ...");
         await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
-        await Launch(serviceProjectB, w.Service, workingDirectory, w.ShutdownSource.Token);
+        await w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token);
 
         // ServiceB received updates:
         Log("Waiting for updates applied ...");
@@ -424,7 +284,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
-        await using var w = CreateWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -512,7 +372,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
         var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
 
-        await using var w = CreateWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
@@ -529,7 +389,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         // service should have been created before Hot Reload session started:
         Assert.NotNull(w.Service);
 
-        var runningProject = await Launch(serviceProjectA, w.Service, workingDirectory, w.ShutdownSource.Token);
+        var runningProject = await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
         Log("Waiting for session started ...");
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
@@ -606,7 +466,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         }
 
-        await using var w = CreateWatcher(testAsset, ["--no-exit"], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, ["--no-exit"], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
@@ -663,7 +523,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
             .WithSource();
 
-        await using var w = CreateWatcher(testAsset, []);
+        await using var w = CreateInProcWatcher(testAsset, []);
 
         var buildCounter = 0;
 
@@ -712,7 +572,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             System.Console.WriteLine("<Started>");
             """);
 
-        await using var w = CreateWatcher(testAsset, []);
+        await using var w = CreateInProcWatcher(testAsset, []);
 
         w.Reporter.RegisterAction(MessageDescriptor.WaitingForFileChangeBeforeRestarting, () =>
         {
@@ -748,7 +608,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
         var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
-        await using var w = CreateWatcher(testAsset, [], workingDirectory);
+        await using var w = CreateInProcWatcher(testAsset, [], workingDirectory);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -805,7 +665,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         UpdateSourceFile(appFile, code => code.Replace("Lib.Print();", "// Lib.Print();"));
 
-        await using var w = CreateWatcher(testAsset, [], appProjDir);
+        await using var w = CreateInProcWatcher(testAsset, [], appProjDir);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -865,7 +725,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
         var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
 
-        await using var w = CreateWatcher(testAsset, []);
+        await using var w = CreateInProcWatcher(testAsset, []);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
