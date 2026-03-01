@@ -2295,6 +2295,53 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Run_MultiTarget_PropertyReferenceInTargetFrameworks()
+    {
+        // Regression test: TargetFrameworks with property references like $(MyTfm) should be evaluated
+        // correctly for interactive TFM selection, not passed as raw unexpanded strings.
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property MyTfm=netstandard2.0
+            #:property TargetFrameworks=$(MyTfm);{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello MultiTFM");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // Running without --framework should fail with the "specify framework" error,
+        // and should list the evaluated framework names (not the unexpanded $(MyTfm)).
+        var result = new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
+            .And.HaveStdErrContaining("netstandard2.0")
+            .And.NotHaveStdErrContaining("$(MyTfm)");
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello MultiTFM");
+    }
+
+    [Fact]
     public void Build_AppContainerExe()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
