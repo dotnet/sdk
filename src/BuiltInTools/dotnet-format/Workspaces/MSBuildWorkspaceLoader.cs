@@ -18,7 +18,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? targetFramework = null)
         {
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -27,6 +28,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 // AppDomains will likely not work due to https://github.com/Microsoft/MSBuildLocator/issues/16.
                 { "AlwaysCompileMarkupFilesInSeparateDomain", bool.FalseString },
             };
+
+            if (targetFramework is not null)
+            {
+                properties["TargetFramework"] = targetFramework;
+            }
 
             var workspace = MSBuildWorkspace.Create(properties);
 

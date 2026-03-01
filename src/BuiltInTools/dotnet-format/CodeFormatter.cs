@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken, formatOptions.TargetFramework).ConfigureAwait(false);
 
             if (workspace is null)
             {
@@ -126,16 +126,17 @@ namespace Microsoft.CodeAnalysis.Tools
             string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? targetFramework = null)
         {
             if (requiresSemantics &&
                 !noRestore &&
-                await DotNetHelper.PerformRestoreAsync(solutionOrProjectPath, logger) != 0)
+                await DotNetHelper.PerformRestoreAsync(solutionOrProjectPath, logger, targetFramework) != 0)
             {
                 throw new Exception("Restore operation failed.");
             }
 
-            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
+            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken, targetFramework);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(
