@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -321,27 +321,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public void DotNetHelper_BuildRestoreArguments_WithoutFramework_OmitsProperty()
+        public void DotNetHelper_BuildRestoreArguments_ProducesRestoreCommand()
         {
-            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj", targetFramework: null);
+            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj");
 
             Assert.Equal("restore \"my.csproj\"", args);
         }
 
         [Fact]
-        public void DotNetHelper_BuildRestoreArguments_WithFramework_UsesMSBuildProperty()
+        public void DotNetHelper_BuildRestoreArguments_DoesNotPassFrameworkToRestore()
         {
-            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj", targetFramework: "net8.0");
+            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj");
 
-            Assert.Equal("restore \"my.csproj\" -p:TargetFramework=net8.0", args);
-        }
-
-        [Fact]
-        public void DotNetHelper_BuildRestoreArguments_WithFramework_DoesNotUseDashDashFramework()
-        {
-            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj", targetFramework: "net8.0");
-
-            Assert.DoesNotContain("--framework", args);
+            Assert.DoesNotContain("framework", args, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
