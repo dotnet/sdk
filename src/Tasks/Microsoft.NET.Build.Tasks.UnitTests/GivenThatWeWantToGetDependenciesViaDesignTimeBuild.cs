@@ -667,6 +667,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
 
             task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testRoot);
 
             CreateFolders(testRoot);
 
