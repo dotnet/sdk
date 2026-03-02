@@ -134,24 +134,25 @@ namespace Microsoft.DotNet.ApiCompat.Task
         {
             SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine, NoWarn);
             ValidateAssemblies.Run(logFactory,
-                GenerateSuppressionFile,
-                PreserveUnnecessarySuppressions,
-                PermitUnnecessarySuppressions,
-                SuppressionFiles,
-                SuppressionOutputFile,
-                NoWarn,
-                RespectInternals,
-                EnableRuleAttributesMustMatch,
-                ExcludeAttributesFiles,
-                EnableRuleCannotChangeParameterName,
-                LeftAssemblies!,
-                RightAssemblies!,
-                EnableStrictMode,
-                ParseAssembliesReferences(LeftAssembliesReferences),
-                ParseAssembliesReferences(RightAssembliesReferences),
-                CreateWorkItemPerAssembly,
-                ParseTransformationPattern(LeftAssembliesTransformationPattern),
-                ParseTransformationPattern(RightAssembliesTransformationPattern));
+                new ValidateAssembliesOptions(LeftAssemblies!, RightAssemblies!)
+                {
+                    GenerateSuppressionFile = GenerateSuppressionFile,
+                    PreserveUnnecessarySuppressions = PreserveUnnecessarySuppressions,
+                    PermitUnnecessarySuppressions = PermitUnnecessarySuppressions,
+                    SuppressionFiles = SuppressionFiles,
+                    SuppressionOutputFile = SuppressionOutputFile,
+                    NoWarn = NoWarn,
+                    RespectInternals = RespectInternals,
+                    EnableRuleAttributesMustMatch = EnableRuleAttributesMustMatch,
+                    ExcludeAttributesFiles = ExcludeAttributesFiles,
+                    EnableRuleCannotChangeParameterName = EnableRuleCannotChangeParameterName,
+                    EnableStrictMode = EnableStrictMode,
+                    LeftAssembliesReferences = ParseAssembliesReferences(LeftAssembliesReferences),
+                    RightAssembliesReferences = ParseAssembliesReferences(RightAssembliesReferences),
+                    CreateWorkItemPerAssembly = CreateWorkItemPerAssembly,
+                    LeftAssembliesTransformationPatterns = ParseTransformationPattern(LeftAssembliesTransformationPattern),
+                    RightAssembliesTransformationPatterns = ParseTransformationPattern(RightAssembliesTransformationPattern),
+                });
 
             if (SemaphoreFile != null)
             {
