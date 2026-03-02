@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_framework">
         <source>Cannot specify the '--folder' option with '--framework'.</source>
-        <target state="translated">Невозможно указать параметр "--folder" с "--framework".</target>
+        <target state="new">Cannot specify the '--folder' option with '--framework'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="The_target_framework_to_use_when_loading_the_workspace">
         <source>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</source>
-        <target state="translated">Целевая платформа (TFM), используемая при загрузке рабочей области. Ограничивает восстановление и анализ только указанной платформой.</target>
+        <target state="new">The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">

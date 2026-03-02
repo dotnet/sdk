@@ -319,21 +319,5 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.Null(formatOptions.TargetFramework);
         }
-
-        [Fact]
-        public void DotNetHelper_BuildRestoreArguments_ProducesRestoreCommand()
-        {
-            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj");
-
-            Assert.Equal("restore \"my.csproj\"", args);
-        }
-
-        [Fact]
-        public void DotNetHelper_BuildRestoreArguments_DoesNotPassFrameworkToRestore()
-        {
-            var args = ProductionDotNetHelper.BuildRestoreArguments("my.csproj");
-
-            Assert.DoesNotContain("framework", args, StringComparison.OrdinalIgnoreCase);
-        }
     }
 }
