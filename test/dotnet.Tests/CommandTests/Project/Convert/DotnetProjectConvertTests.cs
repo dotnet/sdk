@@ -2274,4 +2274,45 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Helper.cs")).Should().BeTrue();
         File.Exists(Path.Join(testInstance.Path, "Program", "config.json")).Should().BeTrue();
     }
+
+    [Fact]
+    public void DeleteSource_WithIncludeDirective_Transitive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with #:include directive
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:include Util.cs
+            Console.WriteLine("Test");
+            """);
+
+        // Create included file that itself has #:include directive (transitive)
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:include Helper.cs
+            class Util { }
+            """);
+
+        // Create transitively included file
+        File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), "class Helper { }");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Only entry point file should be deleted
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+
+        // Directly and transitively included files should NOT be deleted
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeTrue();
+
+        // All files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Helper.cs")).Should().BeTrue();
+    }
 }
