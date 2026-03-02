@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Cannot_specify_both_0_and_1_options">
         <source>Cannot specify both '{0}' and '{1}' options.</source>
-        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <target state="translated">Nous n’avons pas pu spécifier « {0} » et « {1} » ensemble.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_msbuild_project_file_in_0">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <target state="translated">Fichier projet MSBuild introuvable dans '{0}'. Spécifiez le projet à utiliser avec l'option --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">Plusieurs fichiers projet MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'option --project.</target>
+        <target state="translated">Plusieurs fichiers projet MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'option --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -144,7 +144,7 @@ Exemples :
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
-        <target state="new">The specified path '{0}' is invalid: {1}</target>
+        <target state="translated">Le chemin d’accès spécifié « {0} » n’est pas valide : {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
