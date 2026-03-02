@@ -28,7 +28,7 @@ public static class DiffGeneratorFactory
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>
     /// <returns>A new instance of <see cref="IDiffGenerator"/> that writes the diff to disk.</returns>
-    /// <returns></returns>
+
     public static IDiffGenerator Create(ILog log,
                                         DiffConfiguration diffConfig,
                                         bool writeToDisk,

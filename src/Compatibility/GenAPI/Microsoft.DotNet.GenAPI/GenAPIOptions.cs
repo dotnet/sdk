@@ -35,8 +35,8 @@ public sealed class GenAPIOptions
     public string? HeaderFile { get; set; }
 
     /// <summary>
-    /// Method bodies should throw PlatformNotSupportedException.
-    /// </summary>
+    /// When set, method bodies will consist of <c>throw new PlatformNotSupportedException(ExceptionMessage);</c>.
+    /// When <see cref="ExceptionMessage"/> is <see langword="null"/>, method bodies will instead be emitted as <c>throw null;</c>.
     public string? ExceptionMessage { get; set; }
 
     /// <summary>

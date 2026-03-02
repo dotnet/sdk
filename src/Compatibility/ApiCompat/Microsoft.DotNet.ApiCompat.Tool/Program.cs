@@ -379,7 +379,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
         private static (string CaptureGroupPattern, string ReplacementString)[]? ParseTransformationPattern(ArgumentResult argumentResult)
         {
-            var patterns = new (string CaptureGroupPattern, string ReplacementPattern)[argumentResult.Tokens.Count];
+            var patterns = new (string CaptureGroupPattern, string ReplacementString)[argumentResult.Tokens.Count];
             for (int i = 0; i < argumentResult.Tokens.Count; i++)
             {
                 string[] parts = argumentResult.Tokens[i].Value.Split(';');
