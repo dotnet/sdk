@@ -11,9 +11,9 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ItHasDeduplicatedAssemblies()
     {
-        // TODO: Windows is not supported yet - blocked on signing support (https://github.com/dotnet/sdk/issues/52182).
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            Log.WriteLine("SKIPPED: Windows deduplication not yet supported (https://github.com/dotnet/sdk/issues/52182)");
             return;
         }
 
@@ -34,7 +34,7 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
 
         Log.WriteLine($"Extracting archive to: {extractPath}");
 
-        SymbolicLinkHelpers.ExtractTarGz(archivePath, extractPath, Log);
+        SymbolicLinkHelpers.ExtractTar(archivePath, extractPath, Log);
 
         return extractPath;
     }
