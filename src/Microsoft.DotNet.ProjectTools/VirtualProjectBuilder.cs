@@ -465,6 +465,7 @@ public sealed class VirtualProjectBuilder
         if (isVirtualProject)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+            Debug.Assert(entryPointFilePath is not null);
 
             // Note that ArtifactsPath needs to be specified before Sdk.props
             // (usually it's recommended to specify it in Directory.Build.props
@@ -481,6 +482,7 @@ public sealed class VirtualProjectBuilder
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                    <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
                 """);
 
             // Only set these to false when using the default SDK with no additional SDKs

@@ -5557,6 +5557,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <AssemblyName>Program</AssemblyName>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
@@ -5647,6 +5648,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -5720,6 +5722,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -5792,6 +5795,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -5861,7 +5865,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
-        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.cs.exe" : "/artifacts/bin/debug/Program.cs";
+        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
         new DotnetCommand(Log, "run-api")
             // The command outputs only _custom_ environment variables (not inherited ones),
             // so make sure we don't pass DOTNET_ROOT_* so we can assert that it is set by the run command.
