@@ -28,6 +28,12 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
 
     public override int Invoke(ParseResult parseResult)
     {
+        // Only set verbose output on built-in commands.
+        if (!parseResult.IsDotnetBuiltInCommand())
+        {
+            return 0;
+        }
+
         // Determine whether the diagnostic option should be attached to the dotnet command or the subcommand.
         if (DiagOptionPrecedesSubcommand(parseResult.Tokens.Select(t => t.Value), parseResult.RootSubCommandResult()))
         {
@@ -35,6 +41,7 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
         }
+
         return 0;
     }
 
@@ -69,7 +76,14 @@ internal class PrintVersionAction(Option option) : InvocableOptionAction(option)
 
     public override int Invoke(ParseResult parseResult)
     {
+        // Only print for top-level commands.
+        if (!parseResult.IsTopLevelDotnetCommand())
+        {
+            return 0;
+        }
+
         Reporter.Output.WriteLine(Product.Version);
+
         return 0;
     }
 }
@@ -80,6 +94,12 @@ internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
 
     public override int Invoke(ParseResult parseResult)
     {
+        // Only print for top-level commands.
+        if (!parseResult.IsTopLevelDotnetCommand())
+        {
+            return 0;
+        }
+
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
         var commitSha = versionFile.CommitSha ?? "N/A";
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
@@ -97,6 +117,7 @@ internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
+
         return 0;
     }
 
@@ -117,6 +138,7 @@ internal class PrintCliSchemaAction(Option option) : InvocableOptionAction(optio
     public override int Invoke(ParseResult parseResult)
     {
         CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
+
         return 0;
     }
 }
