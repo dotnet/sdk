@@ -339,6 +339,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         cache.CurrentEntry.Run = LastRunProperties;
 
                         CacheCscArguments(cache, buildResult);
+                        WriteCscRsp(cache);
                         CollectAdditionalSources(cache, buildRequest.ProjectInstance);
 
                         MarkBuildSuccess(cache);
@@ -487,6 +488,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     cache.CurrentEntry.AdditionalSources.Add(file);
                 }
             }
+        }
+
+        void WriteCscRsp(CacheInfo cache)
+        {
+            if (cache.CurrentEntry.CscArguments.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            string rspPath = Path.Join(Builder.ArtifactsPath, "csc.rsp");
+            File.WriteAllLines(rspPath, cache.CurrentEntry.CscArguments);
+            Reporter.Verbose.WriteLine($"Written '{rspPath}'.");
         }
 
         bool CanSaveCache(ProjectInstance projectInstance)
