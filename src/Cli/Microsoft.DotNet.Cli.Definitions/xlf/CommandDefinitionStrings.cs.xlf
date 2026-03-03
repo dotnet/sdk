@@ -1550,8 +1550,8 @@ If command is specified without the argument, it lists all the template packages
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSource">
-        <source>Delete the source file after conversion</source>
-        <target state="new">Delete the source file after conversion</target>
+        <source>Delete all source files after conversion</source>
+        <target state="new">Delete all source files after conversion</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">

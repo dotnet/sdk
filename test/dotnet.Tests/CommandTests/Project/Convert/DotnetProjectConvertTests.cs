@@ -2107,15 +2107,15 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void DeleteSource_WithDefaultFiles()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        
+
         // Create entry point file with default items enabled
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultNoneItems=true
             #:property EnableDefaultCompileItems=true
             Console.WriteLine("Test");
             """);
-        
-        // Create additional default files that should be copied but not deleted
+
+        // Create additional default files
         File.WriteAllText(Path.Join(testInstance.Path, "appsettings.json"), "{}");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
 
@@ -2124,13 +2124,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // Source file should be deleted
+        // ALL Compile (source) files should be deleted
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
-        
-        // Other files should NOT be deleted (only the entry point file is deleted)
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+
+        // Non-Compile files should be preserved
         File.Exists(Path.Join(testInstance.Path, "appsettings.json")).Should().BeTrue();
-        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
-        
+
         // All files should be copied to the output directory
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
@@ -2192,11 +2192,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // Only entry point file should be deleted
+        // ALL source files should be deleted (entry point AND included files)
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
-
-        // Included file should NOT be deleted (only entry point is deleted)
-        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
 
         // Both files should be copied to the output directory
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
@@ -2259,12 +2257,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // Only entry point file should be deleted
+        // ALL Compile (source) files should be deleted
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeFalse();
 
-        // All included files should NOT be deleted
-        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
-        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeTrue();
+        // Non-Compile files should be preserved
         File.Exists(Path.Join(testInstance.Path, "config.json")).Should().BeTrue();
 
         // All files should be copied to the output directory
@@ -2302,12 +2300,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // Only entry point file should be deleted
+        // ALL Compile (source) files should be deleted (entry point, direct, and transitive)
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
-
-        // Directly and transitively included files should NOT be deleted
-        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
-        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeFalse();
 
         // All files should be copied to the output directory
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();

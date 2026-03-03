@@ -850,8 +850,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file full path.</comment>
   </data>
   <data name="ProjectConvertAskDeleteSource" xml:space="preserve">
-    <value>Delete the source file '{0}' after conversion?</value>
-    <comment>{0} is the source file path.</comment>
+    <value>Delete all source files after conversion?</value>
+    <comment>Asking whether to delete the entry point file and all included files (e.g., via #:include directives).</comment>
   </data>
   <data name="ProjectConvertDeletedSourceFile" xml:space="preserve">
     <value>Deleted source file: {0}</value>
@@ -862,10 +862,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the source file path.</comment>
   </data>
   <data name="ProjectConvertDeleteSourceChoiceYes" xml:space="preserve">
-    <value>Yes - delete the source file</value>
+    <value>Yes - delete all source files</value>
   </data>
   <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
-    <value>No - keep the source file</value>
+    <value>No - keep all source files</value>
   </data>
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>

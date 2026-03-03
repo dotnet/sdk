@@ -1238,9 +1238,9 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskDeleteSource">
-        <source>Delete the source file '{0}' after conversion?</source>
-        <target state="new">Delete the source file '{0}' after conversion?</target>
-        <note>{0} is the source file path.</note>
+        <source>Delete all source files after conversion?</source>
+        <target state="new">Delete all source files after conversion?</target>
+        <note>Asking whether to delete the entry point file and all included files (e.g., via #:include directives).</note>
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
@@ -1248,13 +1248,13 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
-        <source>No - keep the source file</source>
-        <target state="new">No - keep the source file</target>
+        <source>No - keep all source files</source>
+        <target state="new">No - keep all source files</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
-        <source>Yes - delete the source file</source>
-        <target state="new">Yes - delete the source file</target>
+        <source>Yes - delete all source files</source>
+        <target state="new">Yes - delete all source files</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDeletedSourceFile">

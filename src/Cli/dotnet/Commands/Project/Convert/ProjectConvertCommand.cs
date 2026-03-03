@@ -126,11 +126,18 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        // Handle deletion of source file if requested.
+        // Handle deletion of source files if requested.
         bool shouldDelete = _deleteSource || TryAskForDeleteSource(file);
         if (shouldDelete)
         {
+            // Delete the entry point file
             DeleteFile(file);
+
+            // Delete all Compile items that were included (e.g., via #:include directives)
+            foreach (var item in includeItems.Where(i => i.ItemType == "Compile"))
+            {
+                DeleteFile(item.FullPath);
+            }
         }
 
         return 0;
@@ -378,7 +385,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         {
             var choice = Spectre.Console.AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"[cyan]{Markup.Escape(string.Format(CliCommandStrings.ProjectConvertAskDeleteSource, Path.GetFileName(sourceFile)))}[/]")
+                    .Title($"[cyan]{Markup.Escape(CliCommandStrings.ProjectConvertAskDeleteSource)}[/]")
                     .AddChoices([CliCommandStrings.ProjectConvertDeleteSourceChoiceYes, CliCommandStrings.ProjectConvertDeleteSourceChoiceNo])
             );
 
