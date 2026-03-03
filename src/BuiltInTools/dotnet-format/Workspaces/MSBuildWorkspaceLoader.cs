@@ -18,8 +18,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken,
-            string? targetFramework = null)
+            string? targetFramework,
+            CancellationToken cancellationToken)
         {
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
             {

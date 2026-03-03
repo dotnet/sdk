@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
                 // Load the analyzer_project into a MSBuildWorkspace.
                 var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_analyzerProjectFilePath);
-                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
+                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, null, CancellationToken.None);
 
                 TestOutputHelper.WriteLine(logger.GetLog());
 

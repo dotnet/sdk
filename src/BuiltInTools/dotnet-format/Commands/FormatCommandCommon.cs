@@ -111,8 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                 formatOptions,
                 logger,
-                cancellationToken,
-                binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
             return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 
