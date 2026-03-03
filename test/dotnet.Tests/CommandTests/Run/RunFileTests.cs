@@ -2135,17 +2135,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property OutputType=Library
             #:property PublishAot=false
             #:property LangVersion=preview
+            #:property TargetFramework=
             #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
             class C;
-            """);
-
-        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <TargetFramework></TargetFramework>
-              </PropertyGroup>
-            </Project>
             """);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
@@ -2260,17 +2252,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property OutputType=Exe
             #:property PublishAot=false
             #:property LangVersion=preview
+            #:property TargetFramework=
             #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
             Console.WriteLine("Hello Exe");
-            """);
-
-        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <TargetFramework></TargetFramework>
-              </PropertyGroup>
-            </Project>
             """);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
