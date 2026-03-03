@@ -39,6 +39,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
         var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"].Should().Be("plaintext");
     }
+
     [Fact]
     public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
     {
@@ -47,6 +48,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
 
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
     }
+
     [Fact]
     public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
     {
@@ -66,6 +68,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"].Should().NotBe("plaintext");
     }
+
     [Fact]
     public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
     {
@@ -102,52 +105,59 @@ public class TelemetryCommonPropertiesTests : SdkTest
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
     }
+
     [WindowsOnlyFact]
     public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeEmpty();
     }
+
     [UnixOnlyFact]
     public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeEmpty();
     }
+
     [WindowsOnlyFact]
     public void TelemetryCommonPropertiesShouldContainWindowsProductType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeEmpty();
     }
+
     [UnixOnlyFact]
     public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeEmpty();
     }
+
     [WindowsOnlyFact]
     public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeEmpty();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
     }
+
     [MacOsOnlyFact]
     public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeNull();
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeNull();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeEmpty();
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
     }
+
     [LinuxOnlyFact]
     public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
     {
         if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().NotBeNull();
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().NotBeNull();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().NotBeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().NotBeEmpty();
         }
     }
 

@@ -53,7 +53,7 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public FrozenDictionary<string, object?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, object?>
+    public FrozenDictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
     {
         { OSVersion,        RuntimeEnvironment.OperatingSystemVersion },
         { OSPlatform,       RuntimeEnvironment.OperatingSystemPlatform.ToString() },

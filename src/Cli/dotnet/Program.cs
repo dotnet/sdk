@@ -251,9 +251,9 @@ public class Program
         }
         parentNames.Reverse();
 
-        // Options that perform actions are considered part of the command name as they are essentially subcommands themselves.
+        // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
         // Example: dotnet --version
-        if (parseResult.Action is InvocableOptionAction optionAction)
+        if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
         {
             parentNames.Add(optionAction.Option.Name);
         }
