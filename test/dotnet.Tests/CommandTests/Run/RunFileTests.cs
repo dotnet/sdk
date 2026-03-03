@@ -4096,7 +4096,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 if (!referenceSpreadInserted)
                 {
                     code.AppendLine("""
-                                    ..GetFrameworkReferenceArguments(),
+                                    .. GetFrameworkReferenceArguments(),
                         """);
                     referenceSpreadInserted = true;
                 }
