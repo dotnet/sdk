@@ -16,7 +16,7 @@ internal sealed class WatchStatusWriter : IAsyncDisposable
     private readonly Channel<WatchStatusEvent> _eventChannel = Channel.CreateUnbounded<WatchStatusEvent>(new()
     {
         SingleReader = true,
-        SingleWriter = true
+        SingleWriter = false
     });
 
     private readonly string? _pipeName;
@@ -42,7 +42,6 @@ internal sealed class WatchStatusWriter : IAsyncDisposable
     {
         _logger.LogDebug("Disposing status pipe.");
 
-        // drain the channel to ensure all events are written before disposing the pipe
         _disposalCancellationSource.Cancel();
         await _channelReader;
 

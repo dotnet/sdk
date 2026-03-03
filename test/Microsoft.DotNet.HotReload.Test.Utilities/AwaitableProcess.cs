@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly Channel<string> _outputChannel = Channel.CreateUnbounded<string>(new()
         {
             SingleReader = true,
-            SingleWriter = true
+            SingleWriter = false
         });
 
         public int Id { get; }

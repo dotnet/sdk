@@ -165,31 +165,15 @@ internal sealed class ProcessLauncherFactory(
             {
                 var projectOptions = GetProjectOptions(request);
 
-                while (true)
-                {
-                    // Set up a relaunch signal for crash recovery.
-                    _relaunchSignal = new TaskCompletionSource();
+                await StartProjectAsync(projectOptions, pipe, currentProject, isRestart: currentProject.Value is not null, connectionToken);
+                Debug.Assert(currentProject.Value != null);
 
-                    await StartProjectAsync(projectOptions, pipe, currentProject, isRestart: currentProject.Value is not null, connectionToken);
-                    Debug.Assert(currentProject.Value != null);
+                var projectLogger = currentProject.Value.ClientLogger;
+                projectLogger.LogDebug("Waiting for resource to disconnect or relaunch.");
 
-                    var projectLogger = currentProject.Value.ClientLogger;
-                    projectLogger.LogDebug("Waiting for resource to disconnect or relaunch.");
+                await WaitForPipeDisconnectAsync(pipe, connectionToken);
 
-                    // Wait for either:
-                    // - pipe disconnects (DCP Stop) or
-                    // - relaunch signal (crash recovery)
-                    var pipeDisconnectTask = WaitForPipeDisconnectAsync(pipe, connectionToken);
-                    var completedTask = await Task.WhenAny(pipeDisconnectTask, _relaunchSignal.Task);
-
-                    if (completedTask == pipeDisconnectTask)
-                    {
-                        projectLogger.LogDebug("Resource pipe disconnected.");
-                        break;
-                    }
-
-                    projectLogger.LogDebug("Resouce relaunched.");
-                }
+                projectLogger.LogDebug("Resource pipe disconnected.");
             }
             catch (OperationCanceledException)
             {

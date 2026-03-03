@@ -18,7 +18,7 @@ internal sealed class StatusReportingLoggerFactory(WatchStatusWriter writer, Log
         => new Logger(writer, underlyingFactory.CreateLogger(categoryName));
 
     public void AddProvider(ILoggerProvider provider)
-        => throw new NotImplementedException();
+        => underlyingFactory.AddProvider(provider);
 
     private sealed class Logger(WatchStatusWriter writer, ILogger underlyingLogger) : ILogger
     {
