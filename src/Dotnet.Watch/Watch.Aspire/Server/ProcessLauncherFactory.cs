@@ -42,7 +42,6 @@ internal sealed class ProcessLauncherFactory(
 
         private CancellationTokenSource? _disposalCancellationSource;
         private ImmutableHashSet<Task> _pendingRequestCompletions = [];
-        private TaskCompletionSource? _relaunchSignal;
         private volatile ProjectLauncher _projectLauncher;
 
         public Launcher(
