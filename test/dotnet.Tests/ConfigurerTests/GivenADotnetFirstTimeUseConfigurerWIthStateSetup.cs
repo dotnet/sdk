@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
         private void ResetObjectState()
         {
-            Telemetry.EnableForTests();
+            Telemetry.DisabledForTests = false;
             _firstTimeUseNoticeSentinelMock = new MockBasicSentinel();
             _aspNetCertificateSentinelMock = new MockBasicSentinel();
             _aspNetCoreCertificateGeneratorMock = new Mock<IAspNetCoreCertificateGenerator>(MockBehavior.Strict);

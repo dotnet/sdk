@@ -21,9 +21,6 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli;
@@ -33,21 +30,12 @@ public class Program
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
     public static readonly ITelemetry TelemetryClient;
-
-    // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
-    // It is important to keep the TracerProvider instance active throughout the process lifetime.
-    private static readonly TracerProvider s_tracerProvider;
-
-    // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
-    // It is important to keep the MetricsProvider instance active throughout the process lifetime.
-    private static readonly MeterProvider s_metricsProvider;
-
     private static readonly Activity? s_mainActivity;
     private static readonly DateTime s_mainTimeStamp;
     private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
     private static readonly PosixSignalRegistration s_sigTermRegistration;
-    private static readonly List<Activity> s_activities = [];
+
     // TODO: This is not used anymore, but required for the TelemetryFilter to parse the data including the globalJsonState.
     // To fix, the code and the tests for Filter in TelemetryFilter would need to be updated.
     private static readonly Dictionary<string, double> s_performanceData = [];
@@ -59,40 +47,14 @@ public class Program
         s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
-        s_metricsProvider = Sdk.CreateMeterProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
-            .AddMeter(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddOtlpExporter()
-            .Build();
-
-        var telemetryStoragePath = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_STORAGE_PATH");
-        if (string.IsNullOrWhiteSpace(telemetryStoragePath))
-        {
-            telemetryStoragePath = Telemetry.Telemetry.DefaultStorageDirectory;
-        }
-        s_tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
-            .AddSource(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
-            .AddOtlpExporter()
-            .AddAzureMonitorTraceExporter(o =>
-            {
-                o.ConnectionString = Telemetry.Telemetry.ConnectionString;
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = telemetryStoragePath;
-            })
-            .AddInMemoryExporter(s_activities)
-            .SetSampler(new AlwaysOnSampler())
-            .Build();
 
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
         s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
-        s_mainActivity?.Start();
-        s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
-        s_mainActivity?.AddTag("process.executable.name", "dotnet");
+        s_mainActivity
+            ?.Start()
+            ?.SetStartTime(Process.GetCurrentProcess().StartTime)
+            ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
+            ?.AddTag("process.executable.name", "dotnet");
         TelemetryClient = InitializeTelemetry();
         TrackHostStartup(TelemetryClient, s_mainTimeStamp);
         SetupMSBuildEnvironmentInvariants();
@@ -123,8 +85,7 @@ public class Program
         try
         {
             exitCode = ProcessArgs(args);
-            s_mainActivity?.AddTag("process.exit.code", exitCode);
-            s_mainActivity?.SetStatus(ActivityStatusCode.Ok);
+            s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
         }
         catch (Exception e) when (e.ShouldBeDisplayedAsError())
@@ -137,8 +98,7 @@ public class Program
             {
                 commandParsingException.ParseResult.ShowHelp();
             }
-            s_mainActivity?.AddTag("process.exit.code", exitCode);
-            s_mainActivity?.SetStatus(ActivityStatusCode.Error);
+            s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Error);
             return exitCode;
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
@@ -146,8 +106,7 @@ public class Program
             // If telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
-            s_mainActivity?.AddTag("process.exit.code", exitCode);
-            s_mainActivity?.SetStatus(ActivityStatusCode.Error);
+            s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Error);
             return exitCode;
         }
         finally
@@ -156,11 +115,7 @@ public class Program
 
             Shutdown(default!);
 
-            var diskLogPath = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH");
-            if (!string.IsNullOrWhiteSpace(diskLogPath))
-            {
-                TelemetryDiskLogger.WriteLog(diskLogPath, s_activities);
-            }
+            Telemetry.Telemetry.WriteLogIfNecessary();
         }
     }
 
@@ -170,9 +125,7 @@ public class Program
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
         s_mainActivity?.Stop();
-        var flushTimeoutMs = 200;
-        s_tracerProvider?.ForceFlush(flushTimeoutMs);
-        s_metricsProvider?.ForceFlush(flushTimeoutMs);
+        Telemetry.Telemetry.FlushProviders();
         Activities.Source.Dispose();
     }
 
@@ -222,9 +175,9 @@ public class Program
             s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
             hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
         }
-        hostStartupActivity?.SetEndTime(mainTimeStamp);
-        hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
-        hostStartupActivity?.Dispose();
+        hostStartupActivity?.SetEndTime(mainTimeStamp)
+            ?.SetStatus(ActivityStatusCode.Ok)
+            ?.Dispose();
     }
 
     /// <summary>

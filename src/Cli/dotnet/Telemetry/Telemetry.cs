@@ -3,27 +3,78 @@
 
 using System.Collections.Frozen;
 using System.Diagnostics;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using OpenTelemetry;
+//using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class Telemetry : ITelemetry
 {
-    private static bool s_disabledForTests = false;
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
-    public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-    public static string DefaultStorageDirectory { get; } = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
+    // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
+    // It is important to keep the MetricsProvider instance active throughout the process lifetime.
+    private static readonly MeterProvider? s_metricsProvider = Sdk.CreateMeterProviderBuilder()
+        .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
+        .AddMeter(Activities.Source.Name)
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddOtlpExporter()
+        .Build();
+
+    // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
+    // It is important to keep the TracerProvider instance active throughout the process lifetime.
+    private static readonly TracerProvider? s_tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
+        .AddSource(Activities.Source.Name)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter()
+        .AddAzureMonitorTraceExporter(o =>
+        {
+            o.ConnectionString = s_connectionString;
+            o.EnableLiveMetrics = false;
+            o.StorageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
+        })
+        .AddInMemoryExporter(s_activities!)
+        .SetSampler(new AlwaysOnSampler())
+        .Build();
+
+    private static readonly List<Activity> s_activities = [];
+    private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+    private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
+    // TODO: Telemetry takes in an environment provider. These fields don't use that currently.
+    private static readonly string? s_environmentStoragePath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
+    private static readonly string? s_diskLogPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
+    private static readonly int s_flushTimeoutMs = 200;
+
     public static string? CurrentSessionId { get; private set; } = null;
+    public static bool DisabledForTests
+    {
+        get => field;
+        set
+        {
+            field = value;
+            if (field)
+            {
+                CurrentSessionId = null;
+            }
+        }
+    } = false;
+
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
 
     public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
-        if (s_disabledForTests)
+        if (DisabledForTests)
         {
             return;
         }
@@ -35,21 +86,22 @@ public class Telemetry : ITelemetry
             return;
         }
 
-        // Store the session ID in a static field so that it can be reused
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
-
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
 
-    internal static void DisableForTests()
+    public static void FlushProviders()
     {
-        s_disabledForTests = true;
-        CurrentSessionId = null;
+        s_tracerProvider?.ForceFlush(s_flushTimeoutMs);
+        s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
     }
 
-    internal static void EnableForTests()
+    public static void WriteLogIfNecessary()
     {
-        s_disabledForTests = false;
+        if (!string.IsNullOrWhiteSpace(s_diskLogPath))
+        {
+            TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
+        }
     }
 
     public void TrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
@@ -63,16 +115,6 @@ public class Telemetry : ITelemetry
         _trackEventTask = _trackEventTask == null
             ? Task.Run(() => TrackEventTask(eventName, properties, measurements))
             : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, measurements));
-    }
-
-    public void Flush()
-    {
-        if (!Enabled || _trackEventTask == null)
-        {
-            return;
-        }
-
-        _trackEventTask.Wait();
     }
 
     public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)

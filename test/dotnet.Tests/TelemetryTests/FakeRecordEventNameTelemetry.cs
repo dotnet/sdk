@@ -24,14 +24,6 @@ public class FakeRecordEventNameTelemetry : ITelemetry
         });
     }
 
-    public void Flush()
-    {
-    }
-
-    public void Dispose()
-    {
-    }
-
     public ConcurrentBag<LogEntry> LogEntries { get; set; } = [];
 
     public class LogEntry

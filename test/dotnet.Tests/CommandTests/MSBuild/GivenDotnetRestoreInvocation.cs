@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                Telemetry.Telemetry.DisableForTests();
+                Telemetry.Telemetry.DisabledForTests = true;
 
                 expectedAdditionalArgs = expectedAdditionalArgs
                     .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
