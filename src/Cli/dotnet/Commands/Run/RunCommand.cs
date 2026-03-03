@@ -335,7 +335,8 @@ public class RunCommand
 
     /// <summary>
     /// Checks if target framework selection is needed for file-based projects.
-    /// Parses directives from the source file to detect multi-targeting.
+    /// Evaluates the virtual project using MSBuild to correctly detect multi-targeting,
+    /// including property references like <c>$(MyTfm)</c> and directives in <c>#:include</c>d files.
     /// </summary>
     /// <returns>True if we can continue, false if we should exit</returns>
     private bool TrySelectTargetFrameworkForFileBasedProject()
@@ -343,19 +344,39 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If a framework is already specified via --framework, no need to check
         if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
             return true;
         }
 
-        // Get frameworks from source file directives
-        var frameworks = GetTargetFrameworksFromSourceFile(EntryPointFileFullPath);
-        if (frameworks is null || frameworks.Length == 0)
+        // Use MSBuild evaluation to get TargetFrameworks, correctly handling property references
+        // and directives from #:include'd files.
+        var projectBuilder = CreateProjectBuilder();
+        ProjectInstance projectInstance;
+        try
+        {
+            using var projectCollection = new ProjectCollection(
+                globalProperties: globalProperties,
+                loggers: null,
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            projectInstance = projectBuilder.CreateProjectInstance(projectCollection);
+        }
+        catch (Exception)
+        {
+            // If MSBuild evaluation fails for any reason, fall through to the build
+            // which will surface proper errors.
+            return true;
+        }
+
+        var targetFrameworks = projectInstance.GetPropertyValue("TargetFrameworks");
+        if (string.IsNullOrWhiteSpace(targetFrameworks))
         {
             return true; // Not multi-targeted
         }
+
+        var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // Use RunCommandSelector to handle multi-target selection (or single framework selection)
         if (RunCommandSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
@@ -365,54 +386,6 @@ public class RunCommand
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Parses a source file to extract target frameworks from directives.
-    /// Uses MSBuild evaluation to correctly expand property references like <c>$(MyTfm)</c>.
-    /// </summary>
-    /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
-    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
-    {
-        var sourceFile = SourceFile.Load(sourceFilePath);
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
-
-        // Fast path: if there's no TargetFrameworks directive, return null without MSBuild evaluation.
-        if (!directives.OfType<CSharpDirective.Property>()
-            .Any(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase)))
-        {
-            return null;
-        }
-
-        // Use MSBuild evaluation to properly expand property references like $(MyTfm).
-        using var projectCollection = new ProjectCollection(
-            globalProperties: null,
-            loggers: null,
-            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-        ProjectInstance projectInstance;
-        try
-        {
-            projectInstance = VirtualProjectBuilder.CreateProjectInstance(
-                sourceFilePath,
-                VirtualProjectBuildingCommand.TargetFramework,
-                projectCollection,
-                static (path, line, message) => { });
-        }
-        catch (Exception)
-        {
-            // If MSBuild evaluation fails for any reason, fall through to the build
-            // which will surface proper errors.
-            return null;
-        }
-
-        var targetFrameworks = projectInstance.GetPropertyValue("TargetFrameworks");
-        if (string.IsNullOrWhiteSpace(targetFrameworks))
-        {
-            return null;
-        }
-
-        return targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     /// <summary>
