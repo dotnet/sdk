@@ -2310,15 +2310,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine("Hello MultiTFM");
             """);
 
-        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <TargetFramework></TargetFramework>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 

@@ -7,7 +7,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -24,7 +23,7 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-public partial class RunCommand
+public class RunCommand
 {
     public bool NoBuild { get; }
 
@@ -370,6 +369,7 @@ public partial class RunCommand
 
     /// <summary>
     /// Parses a source file to extract target frameworks from directives.
+    /// Uses MSBuild evaluation to correctly expand property references like <c>$(MyTfm)</c>.
     /// </summary>
     /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
     private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
@@ -377,59 +377,42 @@ public partial class RunCommand
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
 
-        var propertyDirectives = directives.OfType<CSharpDirective.Property>().ToArray();
-
-        var targetFrameworksDirective = propertyDirectives
-            .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
-
-        if (targetFrameworksDirective is null)
+        // Fast path: if there's no TargetFrameworks directive, return null without MSBuild evaluation.
+        if (!directives.OfType<CSharpDirective.Property>()
+            .Any(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase)))
         {
             return null;
         }
 
-        // Build a property dictionary to evaluate MSBuild property references like $(MyProperty).
-        // Last definition wins (matching MSBuild semantics).
-        var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var prop in propertyDirectives)
+        // Use MSBuild evaluation to properly expand property references like $(MyTfm).
+        using var projectCollection = new ProjectCollection(
+            globalProperties: null,
+            loggers: null,
+            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+        ProjectInstance projectInstance;
+        try
         {
-            properties[prop.Name] = prop.Value;
+            projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+                sourceFilePath,
+                VirtualProjectBuildingCommand.TargetFramework,
+                projectCollection,
+                static (path, line, message) => { });
+        }
+        catch (Exception)
+        {
+            // If MSBuild evaluation fails for any reason, fall through to the build
+            // which will surface proper errors.
+            return null;
         }
 
-        var evaluatedValue = ExpandMSBuildProperties(targetFrameworksDirective.Value, properties);
-
-        return evaluatedValue.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    }
-
-    [GeneratedRegex(@"\$\(([^)]+)\)")]
-    private static partial Regex MSBuildPropertyReferenceRegex();
-
-    /// <summary>
-    /// Expands MSBuild property references of the form <c>$(PropertyName)</c> using the provided property dictionary.
-    /// Circular references are broken by returning an empty string.
-    /// </summary>
-    private static string ExpandMSBuildProperties(string value, Dictionary<string, string> properties, HashSet<string>? expanding = null)
-    {
-        return MSBuildPropertyReferenceRegex().Replace(value, match =>
+        var targetFrameworks = projectInstance.GetPropertyValue("TargetFrameworks");
+        if (string.IsNullOrWhiteSpace(targetFrameworks))
         {
-            var propertyName = match.Groups[1].Value;
+            return null;
+        }
 
-            // Detect and break circular references.
-            if (expanding?.Contains(propertyName) == true)
-            {
-                return string.Empty;
-            }
-
-            if (properties.TryGetValue(propertyName, out var propertyValue))
-            {
-                expanding ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                expanding.Add(propertyName);
-                var expanded = ExpandMSBuildProperties(propertyValue, properties, expanding);
-                expanding.Remove(propertyName);
-                return expanded;
-            }
-
-            return string.Empty;
-        });
+        return targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     /// <summary>
