@@ -39,12 +39,12 @@
       </trans-unit>
       <trans-unit id="InvalidIncludeExcludeMappingEntry">
         <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must have two parts separated by '='. The entry '{0}' is invalid.</source>
-        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must have two parts separated by '='. The entry '{0}' is invalid.</target>
+        <target state="translated">Каждая запись в свойстве MSBuild "FileBasedProgramsItemMapping" должна содержать две части, разделенные '='. Запись "{0}" недопустима.</target>
         <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="'='"}</note>
       </trans-unit>
       <trans-unit id="InvalidIncludeExcludeMappingExtension">
         <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map from a non-empty file extension starting with '.'. The extension '{0}' in entry '{1}' is invalid.</source>
-        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map from a non-empty file extension starting with '.'. The extension '{0}' in entry '{1}' is invalid.</target>
+        <target state="translated">Каждая запись в свойстве MSBuild "FileBasedProgramsItemMapping" должна сопоставляться с непустым расширением файла, начинающимся с '.'. Расширение "{0}" в записи "{1}" недопустимо.</target>
         <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="'.'"}</note>
       </trans-unit>
       <trans-unit id="InvalidIncludeExcludeMappingItemType">
