@@ -73,7 +73,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated($"[yellow]No install spec found for SDK channel '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
+                AnsiConsole.MarkupLineInterpolated($"[yellow]No install spec found for '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
             }
             return 1;
         }
