@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.CSharp;
@@ -476,6 +475,42 @@ internal sealed partial class CSharpCompilerCommand
             }
 
             yield return $"/reference:{Path.Join(packRoot, filePath)}";
+        }
+    }
+
+    /// <summary>
+    /// Reads the <c>FrameworkList.xml</c> from the current targeting pack and yields one
+    /// <c>/analyzer:</c> argument per C# analyzer assembly listed there.
+    /// </summary>
+    private IEnumerable<string> GetFrameworkAnalyzerArguments()
+    {
+        var packRoot = Path.Join(DotNetRootPath, "packs", "Microsoft.NETCore.App.Ref", RuntimeVersion);
+        var frameworkListPath = Path.Join(packRoot, "data", "FrameworkList.xml");
+        if (!File.Exists(frameworkListPath))
+        {
+            throw new InvalidOperationException($"FrameworkList.xml not found at '{frameworkListPath}'. The SDK installation may be corrupted.");
+        }
+
+        var frameworkList = XDocument.Load(frameworkListPath);
+        foreach (var file in frameworkList.Root?.Elements("File") ?? [])
+        {
+            if (file.Attribute("Type")?.Value.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) != true)
+            {
+                continue;
+            }
+
+            if (file.Attribute("Language")?.Value.Equals("cs", StringComparison.OrdinalIgnoreCase) != true)
+            {
+                continue;
+            }
+
+            var filePath = file.Attribute("Path")?.Value;
+            if (string.IsNullOrEmpty(filePath))
+            {
+                continue;
+            }
+
+            yield return $"/analyzer:{Path.Join(packRoot, filePath)}";
         }
     }
 }
