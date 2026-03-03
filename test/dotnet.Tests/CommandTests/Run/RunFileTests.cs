@@ -169,14 +169,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             psi.ArgumentList.Add("WarmUp.cs");
 
             using var process = Process.Start(psi)!;
-            process.StandardOutput.ReadToEndAsync();
-            process.StandardError.ReadToEndAsync();
-            process.WaitForExit((int)TimeSpan.FromMinutes(2).TotalMilliseconds);
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit((int)TimeSpan.FromMinutes(2).TotalMilliseconds))
+            {
+                try { process.Kill(); } catch { }
+                throw new TimeoutException(
+                    $"NuGet cache warm-up timed out after 2 minutes.{Environment.NewLine}" +
+                    $"stdout: {stdoutTask.Result}{Environment.NewLine}" +
+                    $"stderr: {stderrTask.Result}");
+            }
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"NuGet cache warm-up failed with exit code {process.ExitCode}.{Environment.NewLine}" +
+                    $"stdout: {stdoutTask.Result}{Environment.NewLine}" +
+                    $"stderr: {stderrTask.Result}");
+            }
         }
         finally
         {
             try { Directory.Delete(warmUpDir, true); } catch { }
             try { Directory.Delete(VirtualProjectBuilder.GetArtifactsPath(warmUpFile), true); } catch { }
+        }
+
+        // Verify that the ILLink analyzer DLLs are now in the NuGet cache.
+        // Without these, GetBuildLevel() falls back to BuildLevel.All (full MSBuild)
+        // instead of BuildLevel.Csc, causing tests that assert CSC-only behavior to fail.
+        foreach (var path in CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache())
+        {
+            if (!File.Exists(path))
+            {
+                throw new InvalidOperationException(
+                    $"NuGet cache warm-up succeeded but required file not found: {path}");
+            }
         }
     }
 
