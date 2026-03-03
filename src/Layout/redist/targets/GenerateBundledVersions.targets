@@ -269,6 +269,10 @@
       <Net110AppHostRids Include="
         @(Net100AppHostRids);
         haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
         " />
 
       <Net110RuntimePackRids Include="
@@ -282,6 +286,10 @@
         maccatalyst-x64;
         maccatalyst-arm64;
         haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
         browser-wasm;
         " />
 
@@ -407,9 +415,18 @@
         @(Net90Crossgen2SupportedRids);
         " />
 
-      <Crossgen2SupportedRids Include="@(Net100Crossgen2SupportedRids);" />
+      <Net110Crossgen2SupportedRids Include="
+        @(Net100Crossgen2SupportedRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
 
-      <Net100Crossgen2SupportedPortableRids Include="@(Net100Crossgen2SupportedRids)" />
+      <Crossgen2SupportedRids Include="@(Net110Crossgen2SupportedRids);" />
+
+      <Net100Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedRids)" />
 
       <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
 
@@ -449,13 +466,22 @@
         linux-musl-riscv64;
         " />
 
+      <Net110ILCompilerSupportedRids Include="
+        @(Net100ILCompilerSupportedRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
+
       <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <ILCompilerSupportedRids Include="
-        @(Net100ILCompilerSupportedRids);
+        @(Net110ILCompilerSupportedRids);
         " />
 
-      <Net100ILCompilerSupportedPortableRids Include="@(Net100ILCompilerSupportedRids)" />
+      <Net100ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedRids)" />
 
       <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
 
@@ -506,8 +532,17 @@
         android-x64;
         " />
 
-      <NativeAOTRuntimePackRids Include="
+      <Net110NativeAOTRuntimePackRids Include="
         @(Net100NativeAOTRuntimePackRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
+
+      <NativeAOTRuntimePackRids Include="
+        @(Net110NativeAOTRuntimePackRids);
         "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
@@ -518,6 +553,7 @@
       <AspNetCore80RuntimePackRids Remove="win-arm" />
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;" />
       <AspNetCore100RuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
+      <AspNetCore110RuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
@@ -525,7 +561,7 @@
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
-      <_KnownRuntimeIdentifierPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
+      <_KnownRuntimeIdentifierPlatforms Include="any;aot;freebsd;openbsd;illumos;solaris;haiku;unix" />
       <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
       <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
       <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
@@ -766,7 +802,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET100RuntimePackVersion)"
                         Crossgen2PortableRuntimeIdentifiers="@(Net100Crossgen2SupportedPortableRids, '%3B')"
-                        Crossgen2RuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
+                        Crossgen2RuntimeIdentifiers="@(Net110Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
@@ -775,7 +811,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(_NET100RuntimePackVersion)"
                          ILCompilerPortableRuntimeIdentifiers="@(Net100ILCompilerSupportedPortableRids, '%3B')"
-                         ILCompilerRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
+                         ILCompilerRuntimeIdentifiers="@(Net110ILCompilerSupportedRids, '%3B')"
                          />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
@@ -783,7 +819,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(_NET100RuntimePackVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(Net100NativeAOTRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(Net110NativeAOTRuntimePackRids, '%3B')"
                       RuntimePackLabels="NativeAOT"
                       />
 
