@@ -189,13 +189,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.312</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.313</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineEdgePackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>9.0.312-servicing.26110.10</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>9.0.313-servicing.26153.4</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
