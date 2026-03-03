@@ -11,7 +11,7 @@ internal abstract class AspireCommandDefinition : Command
     public readonly Option<bool> QuietOption = new("--quiet") { Arity = ArgumentArity.Zero };
     public readonly Option<bool> VerboseOption = new("--verbose") { Arity = ArgumentArity.Zero };
 
-    public AspireCommandDefinition(string name, string description)
+    protected AspireCommandDefinition(string name, string description)
         : base(name, description)
     {
         Options.Add(VerboseOption);

@@ -9,23 +9,11 @@ namespace Microsoft.DotNet.Watch;
 /// <summary>
 /// Project can be reprented by project file or by entry point file (for single-file apps).
 /// </summary>
-internal readonly struct ProjectRepresentation(string projectGraphPath, string? projectPath, string? entryPointFilePath) : IEquatable<ProjectRepresentation>
+/// <param name="ProjectGraphPath">Path used in Project Graph (may be virtual).</param>
+/// <param name="PhysicalPath">Path to an physical (non-virtual) project, if available.</param>
+/// <param name="EntryPointFilePath">Path to an entry point file, if available.</param>
+internal readonly record struct ProjectRepresentation(string ProjectGraphPath, string? PhysicalPath, string? EntryPointFilePath)
 {
-    /// <summary>
-    /// Path used in Project Graph (may be virtual).
-    /// </summary>
-    public readonly string ProjectGraphPath = projectGraphPath;
-
-    /// <summary>
-    /// Path to an physical (non-virtual) project, if available.
-    /// </summary>
-    public readonly string? PhysicalPath = projectPath;
-
-    /// <summary>
-    /// Path to an entry point file, if available.
-    /// </summary>
-    public readonly string? EntryPointFilePath = entryPointFilePath;
-
     public ProjectRepresentation(string? projectPath, string? entryPointFilePath)
         : this(projectPath ?? VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath!), projectPath, entryPointFilePath)
     {
@@ -37,7 +25,7 @@ internal readonly struct ProjectRepresentation(string projectGraphPath, string? 
         => PhysicalPath != null;
 
     public string ProjectOrEntryPointFilePath
-        => PhysicalPath ?? EntryPointFilePath!;
+        => IsProjectFile ? PhysicalPath : EntryPointFilePath;
 
     public string GetContainingDirectory()
         => Path.GetDirectoryName(ProjectOrEntryPointFilePath)!;
@@ -53,15 +41,6 @@ internal readonly struct ProjectRepresentation(string projectGraphPath, string? 
     public bool Equals(ProjectRepresentation other)
         => PathUtilities.OSSpecificPathComparer.Equals(ProjectGraphPath, other.ProjectGraphPath);
 
-    public override bool Equals(object? obj)
-        => obj is ProjectRepresentation representation && Equals(representation);
-
     public override int GetHashCode()
         => PathUtilities.OSSpecificPathComparer.GetHashCode(ProjectGraphPath);
-
-    public static bool operator ==(ProjectRepresentation left, ProjectRepresentation right)
-        => left.Equals(right);
-
-    public static bool operator !=(ProjectRepresentation left, ProjectRepresentation right)
-        => !(left == right);
 }

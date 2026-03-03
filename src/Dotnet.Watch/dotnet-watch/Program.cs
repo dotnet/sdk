@@ -38,9 +38,9 @@ namespace Microsoft.DotNet.Watch
                     sdkRootDirectory = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..");
                 }
 
-                var environmentOptions = EnvironmentOptions.FromEnvironment(sdkRootDirectory, LogMessagePrefix);
-
                 MSBuildLocator.RegisterMSBuildPath(sdkRootDirectory);
+
+                var environmentOptions = EnvironmentOptions.FromEnvironment(sdkRootDirectory, LogMessagePrefix);
 
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);

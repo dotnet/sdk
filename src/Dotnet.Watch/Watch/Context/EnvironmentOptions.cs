@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Watch
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
-         public static EnvironmentOptions FromEnvironment(string? sdkDirectory, string logMessagePrefix) => new
+        public static EnvironmentOptions FromEnvironment(string? sdkDirectory, string logMessagePrefix) => new
         (
             WorkingDirectory: Directory.GetCurrentDirectory(),
             SdkDirectory: sdkDirectory,

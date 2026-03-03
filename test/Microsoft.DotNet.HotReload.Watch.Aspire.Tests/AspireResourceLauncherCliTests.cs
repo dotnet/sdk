@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -171,5 +172,103 @@ public class AspireResourceLauncherCliTests
         Assert.Equal(2, launcher.EnvironmentVariables.Count);
         Assert.Equal("V1", launcher.EnvironmentVariables["K1"]);
         Assert.Equal("V2", launcher.EnvironmentVariables["K2"]);
+    }
+
+    [Fact]
+    public void EnvironmentOption_Duplicates()
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", "A=1", "-e", "A=2"]);
+
+        result.GetValue(command.EnvironmentOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = "2" });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EnvironmentOption_Duplicates_CasingDifference()
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", "A=1", "-e", "a=2"]);
+
+        var expected = new Dictionary<string, string>();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            expected.Add("A", "2");
+        }
+        else
+        {
+            expected.Add("A", "1");
+            expected.Add("a", "2");
+        }
+
+        result.GetValue(command.EnvironmentOption)
+            .Should()
+            .BeEquivalentTo(expected);
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EnvironmentOption_MultiplePerToken()
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", "A=1;B=2,C=3 D=4", "-e", "B==Y=", "-e", "C;=;"]);
+
+        result.GetValue(command.EnvironmentOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string>
+            {
+                ["A"] = "1;B=2,C=3 D=4",
+                ["B"] = "=Y=",
+                ["C;"] = ";"
+            });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EnvironmentOption_NoValue()
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", "A"]);
+
+        result.GetValue(command.EnvironmentOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = "" });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EnvironmentOption_WhitespaceTrimming()
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", " A \t\n\r\u2002 = X Y \t\n\r\u2002"]);
+
+        result.GetValue(command.EnvironmentOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = " X Y \t\n\r\u2002" });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("=")]
+    [InlineData("= X")]
+    [InlineData("  \u2002 = X")]
+    public void EnvironmentOption_Errors(string token)
+    {
+        var command = new AspireResourceCommandDefinition();
+        var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", token]);
+
+        AssertEx.SequenceEqual(
+        [
+            $"Incorrectly formatted environment variables '{token}'"
+        ], result.Errors.Select(e => e.Message));
     }
 }

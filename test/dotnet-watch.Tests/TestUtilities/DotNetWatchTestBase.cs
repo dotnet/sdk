@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 /// <summary>
 /// Base class for all tests that create dotnet watch process.
 /// </summary>
-public abstract partial class DotNetWatchTestBase : IDisposable // TODO: make IAsyncDisposable once xUnit is updated to V3
+public abstract partial class DotNetWatchTestBase : IAsyncLifetime
 {
     internal TestAssetsManager TestAssets { get; }
     internal WatchableApp App { get; }
@@ -20,13 +20,17 @@ public abstract partial class DotNetWatchTestBase : IDisposable // TODO: make IA
         TestAssets = new TestAssetsManager(App.Logger);
     }
 
-    public void Dispose()
+    public Task InitializeAsync()
+        => Task.CompletedTask;
+
+    public async Task DisposeAsync()
     {
         Log("Disposing test");
-        App.DisposeAsync().GetAwaiter().GetResult();
+        await App.DisposeAsync();
     }
 
-    public DebugTestOutputLogger Logger => App.Logger;
+    public DebugTestOutputLogger Logger
+        => App.Logger;
 
     internal TestAsset CopyTestAsset(
         string assetName,

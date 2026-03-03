@@ -13,9 +13,19 @@ internal sealed class AspireResourceCommandDefinition : AspireCommandDefinition
     /// <summary>
     /// Server pipe name.
     /// </summary>
-    public readonly Option<string> ServerOption = new("--server") { Arity = ArgumentArity.ExactlyOne, Required = true, AllowMultipleArgumentsPerToken = false };
+    public readonly Option<string> ServerOption = new("--server")
+    {
+        Arity = ArgumentArity.ExactlyOne,
+        Required = true,
+        AllowMultipleArgumentsPerToken = false
+    };
 
-    public readonly Option<string> EntryPointOption = new("--entrypoint") { Arity = ArgumentArity.ExactlyOne, Required = true, AllowMultipleArgumentsPerToken = false };
+    public readonly Option<string> EntryPointOption = new("--entrypoint")
+    {
+        Arity = ArgumentArity.ExactlyOne,
+        Required = true,
+        AllowMultipleArgumentsPerToken = false
+    };
 
     public readonly Option<IReadOnlyDictionary<string, string>> EnvironmentOption = new("--environment", "-e")
     {
@@ -41,8 +51,7 @@ internal sealed class AspireResourceCommandDefinition : AspireCommandDefinition
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {
-        var result = new Dictionary<string, string>(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var result = new Dictionary<string, string>(PathUtilities.OSSpecificPathComparer);
 
         List<Token>? invalid = null;
 

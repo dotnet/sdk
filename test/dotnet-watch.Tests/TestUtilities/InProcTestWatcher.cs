@@ -21,6 +21,7 @@ internal record class InProcTestWatcher(
     public void Start([CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
         Assert.Null(_lazyTask);
+        Observer.Freeze();
 
         _lazyTask = Task.Run(async () =>
         {

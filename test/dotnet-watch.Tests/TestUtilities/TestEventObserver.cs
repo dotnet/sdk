@@ -5,12 +5,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+/// <summary>
+/// Used to observe events logged by the watcher.
+///
+/// Usage pattern: register all actions and semaphores first, then start the watcher.
+/// </summary>
 internal class TestEventObserver
 {
     private readonly Dictionary<EventId, Action> _actions = [];
+    private bool _frozen;
+
+    public void Freeze()
+        => _frozen = true;
+
+    private void RequireNotFrozen()
+    {
+        if (_frozen)
+        {
+            throw new InvalidOperationException("Cannot register actions after the observer is frozen.");
+        }
+    }
 
     public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
     {
+        RequireNotFrozen();
+
         var semaphore = new SemaphoreSlim(initialCount: 0);
         RegisterAction(descriptor, () => semaphore.Release());
         return semaphore;
@@ -21,6 +40,8 @@ internal class TestEventObserver
 
     public void RegisterAction(EventId eventId, Action action)
     {
+        RequireNotFrozen();
+
         if (_actions.TryGetValue(eventId, out var existing))
         {
             existing += action;
