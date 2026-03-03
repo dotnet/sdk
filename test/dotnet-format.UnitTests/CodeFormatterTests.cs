@@ -696,7 +696,8 @@ Greeter.Greeter() -> void";
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: includeGenerated,
-                BinaryLogPath: null);
+                BinaryLogPath: null,
+                TargetFramework: null);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
             Environment.CurrentDirectory = currentDirectory;
 
