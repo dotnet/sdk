@@ -7,7 +7,6 @@ using System.Diagnostics;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
@@ -171,8 +170,9 @@ public class Program
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
         s_mainActivity?.Stop();
-        s_tracerProvider?.ForceFlush();
-        s_metricsProvider?.ForceFlush();
+        var flushTimeoutMs = 200;
+        s_tracerProvider?.ForceFlush(flushTimeoutMs);
+        s_metricsProvider?.ForceFlush(flushTimeoutMs);
         Activities.Source.Dispose();
     }
 

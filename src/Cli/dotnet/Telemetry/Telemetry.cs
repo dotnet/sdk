@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 public class Telemetry : ITelemetry
 {
     private static bool s_disabledForTests = false;
-    private static FrozenDictionary<string, object?> s_commonProperties = null!;
+    private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
     public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
@@ -103,6 +103,8 @@ public class Telemetry : ITelemetry
 
     private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties, IDictionary<string, double> eventMeasurements)
     {
+        var common = s_commonProperties
+            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
         var properties = eventProperties
             .Where(p => p.Value is not null)
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
@@ -110,6 +112,6 @@ public class Telemetry : ITelemetry
         var measurements = eventMeasurements
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
             .OrderBy(p => p.Key);
-        return [..s_commonProperties, ..properties, ..measurements];
+        return [.. common, .. properties, .. measurements];
     }
 }
