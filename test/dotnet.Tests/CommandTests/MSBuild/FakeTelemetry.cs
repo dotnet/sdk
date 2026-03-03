@@ -5,7 +5,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests;
 
-public class FakeTelemetry : ITelemetry
+public class FakeTelemetry : ITelemetryClient
 {
     public bool Enabled { get; set; } = true;
 

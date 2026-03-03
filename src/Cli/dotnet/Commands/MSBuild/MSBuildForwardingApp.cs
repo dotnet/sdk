@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -20,7 +21,7 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
-        if (Telemetry.Telemetry.CurrentSessionId != null)
+        if (TelemetryClient.CurrentSessionId != null)
         {
             try
             {
@@ -79,7 +80,7 @@ public class MSBuildForwardingApp : CommandBase
 
     private void InitializeRequiredEnvironmentVariables()
     {
-        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.Telemetry.CurrentSessionId);
+        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, TelemetryClient.CurrentSessionId);
     }
 
     /// <summary>

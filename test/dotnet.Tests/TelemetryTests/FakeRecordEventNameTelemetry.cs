@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
-public class FakeRecordEventNameTelemetry : ITelemetry
+public class FakeRecordEventNameTelemetry : ITelemetryClient
 {
     public bool Enabled { get; set; }
 

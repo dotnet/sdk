@@ -14,7 +14,7 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-public class Telemetry : ITelemetry
+public class TelemetryClient : ITelemetryClient
 {
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
@@ -49,7 +49,7 @@ public class Telemetry : ITelemetry
     private static readonly List<Activity> s_activities = [];
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
-    // TODO: Telemetry takes in an environment provider. These fields don't use that currently.
+    // TODO: TelemetryInstance takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
     private static readonly string? s_diskLogPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly int s_flushTimeoutMs = 200;
@@ -70,9 +70,9 @@ public class Telemetry : ITelemetry
 
     public bool Enabled { get; }
 
-    public Telemetry() : this(null) { }
+    public TelemetryClient() : this(null) { }
 
-    public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null)
+    public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
         if (DisabledForTests)
         {

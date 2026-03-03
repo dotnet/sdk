@@ -137,7 +137,7 @@ internal class PrintCliSchemaAction(Option option) : InvocableOptionAction(optio
 
     public override int Invoke(ParseResult parseResult)
     {
-        CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
+        CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryInstance);
 
         return 0;
     }

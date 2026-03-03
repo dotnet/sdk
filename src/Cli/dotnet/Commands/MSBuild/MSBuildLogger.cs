@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly ITelemetry? _telemetry;
+    private readonly ITelemetryClient? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -67,7 +67,7 @@ public sealed class MSBuildLogger : INodeLogger
 
             if (sessionId != null)
             {
-                _telemetry = new Telemetry.Telemetry(sessionId);
+                _telemetry = new TelemetryClient(sessionId);
             }
         }
         catch (Exception)
@@ -79,7 +79,7 @@ public sealed class MSBuildLogger : INodeLogger
     /// <summary>
     /// Constructor for testing purposes.
     /// </summary>
-    internal MSBuildLogger(ITelemetry telemetry)
+    internal MSBuildLogger(ITelemetryClient telemetry)
     {
         _telemetry = telemetry;
     }
@@ -121,7 +121,7 @@ public sealed class MSBuildLogger : INodeLogger
         SendAggregatedEventsOnBuildFinished(_telemetry);
     }
 
-    internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
+    internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
     {
         if (telemetry is null) return;
         if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
@@ -177,7 +177,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    internal static void FormatAndSend(ITelemetry? telemetry, TelemetryEventArgs args)
+    internal static void FormatAndSend(ITelemetryClient? telemetry, TelemetryEventArgs args)
     {
         switch (args.EventName)
         {
@@ -227,7 +227,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null, string[]? toBeMeasured = null)
+    private static void TrackEvent(ITelemetryClient? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null, string[]? toBeMeasured = null)
     {
         if (telemetry == null || !telemetry.Enabled)
         {

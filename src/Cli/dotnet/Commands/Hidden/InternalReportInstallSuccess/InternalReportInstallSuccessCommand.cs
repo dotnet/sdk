@@ -18,13 +18,13 @@ public class InternalReportInstallSuccessCommand
         return 0;
     }
 
-    public static void ProcessInputAndSendTelemetry(string[] args, ITelemetry telemetry)
+    public static void ProcessInputAndSendTelemetry(string[] args, ITelemetryClient telemetry)
     {
         var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", .. args]);
         ProcessInputAndSendTelemetry(result, telemetry);
     }
 
-    public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetry telemetry)
+    public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetryClient telemetry)
     {
         var definition = (InternalReportInstallSuccessCommandDefinition)result.CommandResult.Command;
         var exeName = Path.GetFileName(result.GetValue(definition.Argument));
@@ -36,14 +36,14 @@ public class InternalReportInstallSuccessCommand
         }
     }
 
-    internal class ThreadBlockingTelemetry : ITelemetry
+    internal class ThreadBlockingTelemetry : ITelemetryClient
     {
-        private readonly Telemetry.Telemetry _telemetry;
+        private readonly TelemetryClient _telemetry;
 
         internal ThreadBlockingTelemetry()
         {
             var sessionId = Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
-            _telemetry = new Telemetry.Telemetry(sessionId);
+            _telemetry = new TelemetryClient(sessionId);
         }
 
         public bool Enabled => _telemetry.Enabled;

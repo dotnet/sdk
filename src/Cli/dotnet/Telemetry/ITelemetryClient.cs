@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-public interface ITelemetry
+public interface ITelemetryClient
 {
     bool Enabled { get; }
 

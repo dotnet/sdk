@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -27,19 +26,19 @@ namespace Microsoft.DotNet.Cli;
 
 public class Program
 {
+    // TODO: This is not used anymore, but required for the TelemetryFilter to parse the data including the globalJsonState.
+    // To fix, the code and the tests for Filter in TelemetryFilter would need to be updated.
+    private static readonly Dictionary<string, double> s_performanceData = [];
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
-    public static readonly ITelemetry TelemetryClient;
     private static readonly Activity? s_mainActivity;
     private static readonly DateTime s_mainTimeStamp;
     private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
     private static readonly PosixSignalRegistration s_sigTermRegistration;
-
-    // TODO: This is not used anymore, but required for the TelemetryFilter to parse the data including the globalJsonState.
-    // To fix, the code and the tests for Filter in TelemetryFilter would need to be updated.
-    private static readonly Dictionary<string, double> s_performanceData = [];
     private static string? s_globalJsonState;
+
+    public static ITelemetryClient TelemetryInstance { get; private set; }
 
     static Program()
     {
@@ -55,8 +54,8 @@ public class Program
             ?.SetStartTime(Process.GetCurrentProcess().StartTime)
             ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
             ?.AddTag("process.executable.name", "dotnet");
-        TelemetryClient = InitializeTelemetry();
-        TrackHostStartup(TelemetryClient, s_mainTimeStamp);
+        TelemetryInstance = InitializeTelemetry();
+        TrackHostStartup(TelemetryInstance, s_mainTimeStamp);
         SetupMSBuildEnvironmentInvariants();
     }
 
@@ -111,11 +110,11 @@ public class Program
         }
         finally
         {
-            TelemetryClient.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } }, null);
+            TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } }, null);
 
             Shutdown(default!);
 
-            Telemetry.Telemetry.WriteLogIfNecessary();
+            TelemetryClient.WriteLogIfNecessary();
         }
     }
 
@@ -125,7 +124,7 @@ public class Program
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
         s_mainActivity?.Stop();
-        Telemetry.Telemetry.FlushProviders();
+        TelemetryClient.FlushProviders();
         Activities.Source.Dispose();
     }
 
@@ -165,7 +164,7 @@ public class Program
         }
     }
 
-    private static void TrackHostStartup(ITelemetry telemetryClient, DateTime mainTimeStamp)
+    private static void TrackHostStartup(ITelemetryClient telemetryClient, DateTime mainTimeStamp)
     {
         var hostStartupActivity = Activities.Source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
@@ -324,9 +323,9 @@ public class Program
         return null;
     }
 
-    private static ITelemetry InitializeTelemetry()
+    private static ITelemetryClient InitializeTelemetry()
     {
-        var telemetryClient = new Telemetry.Telemetry();
+        var telemetryClient = new TelemetryClient();
         TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 

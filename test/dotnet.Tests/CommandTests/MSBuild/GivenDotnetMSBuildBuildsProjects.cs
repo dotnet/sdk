@@ -3,7 +3,7 @@
 
 
 
-// There are tests which modify static Telemetry.CurrentSessionId and they cannot run in parallel
+// There are tests which modify static TelemetryInstance.CurrentSessionId and they cannot run in parallel
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests

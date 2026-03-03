@@ -76,7 +76,7 @@ internal static class CliSchema
         Dictionary<string, CommandDetails>? subcommands
     ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
 
-    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetry? telemetryClient)
+    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
     {
         var command = commandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
