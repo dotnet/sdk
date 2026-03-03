@@ -220,6 +220,32 @@
   "defaultName": "TestProject1",
   "postActions": [
     {
+      "condition": "(CoverageTool == \"coverlet\")",
+      "description": "Add package reference: coverlet.collector",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to coverlet.collector to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "coverlet.collector",
+        "version": "6.0.4",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
+      "condition": "(!UseMSTestSdk)",
+      "description": "Add package reference: MSTest",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to MSTest to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "MSTest",
+        "version": "4.0.2",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [{ "text": "Run 'dotnet restore'" }],

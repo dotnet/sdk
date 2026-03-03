@@ -67,6 +67,54 @@
   "defaultName": "TestProject1",
   "postActions": [
     {
+      "description": "Add package reference: coverlet.collector",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to coverlet.collector to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "coverlet.collector",
+        "version": "6.0.4",
+        "projectFileExtensions": ".fsproj"
+      }
+    },
+    {
+      "description": "Add package reference: Microsoft.NET.Test.Sdk",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to Microsoft.NET.Test.Sdk to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "Microsoft.NET.Test.Sdk",
+        "version": "17.14.1",
+        "projectFileExtensions": ".fsproj"
+      }
+    },
+    {
+      "description": "Add package reference: xunit",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to xunit to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "xunit",
+        "version": "2.9.3",
+        "projectFileExtensions": ".fsproj"
+      }
+    },
+    {
+      "description": "Add package reference: xunit.runner.visualstudio",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to xunit.runner.visualstudio to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "xunit.runner.visualstudio",
+        "version": "3.1.4",
+        "projectFileExtensions": ".fsproj"
+      }
+    },
+    {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [{ "text": "Run 'dotnet restore'" }],

@@ -12,12 +12,6 @@
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
-<!--#if (CoverageTool == "coverlet")-->
-
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-  </ItemGroup>
-<!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
   </PropertyGroup>
@@ -39,14 +33,6 @@
     <OutputType>Exe</OutputType>
 <!--#endif-->
   </PropertyGroup>
-
-  <ItemGroup>
-<!--#if (CoverageTool == "coverlet")-->
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-<!--#endif-->
-    <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0" />
-    <PackageReference Include="MSTest" Version="4.0.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.Playwright.MSTest" />

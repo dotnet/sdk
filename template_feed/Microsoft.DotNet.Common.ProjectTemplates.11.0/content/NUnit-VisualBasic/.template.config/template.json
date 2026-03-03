@@ -75,6 +75,66 @@
   ],
   "postActions": [
     {
+      "description": "Add package reference: coverlet.collector",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to coverlet.collector to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "coverlet.collector",
+        "version": "6.0.4",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
+      "description": "Add package reference: Microsoft.NET.Test.Sdk",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to Microsoft.NET.Test.Sdk to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "Microsoft.NET.Test.Sdk",
+        "version": "17.14.0",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
+      "description": "Add package reference: NUnit",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to NUnit to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "NUnit",
+        "version": "4.3.2",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
+      "description": "Add package reference: NUnit.Analyzers",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to NUnit.Analyzers to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "NUnit.Analyzers",
+        "version": "4.7.0",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
+      "description": "Add package reference: NUnit3TestAdapter",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "manualInstructions": [{ "text": "Manually add a reference to NUnit3TestAdapter to your project file." }],
+      "args": {
+        "referenceType": "package",
+        "reference": "NUnit3TestAdapter",
+        "version": "5.0.0",
+        "projectFileExtensions": ".vbproj"
+      }
+    },
+    {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [{ "text": "Run 'dotnet restore'" }],
