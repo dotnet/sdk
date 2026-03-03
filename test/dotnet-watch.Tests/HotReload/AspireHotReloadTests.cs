@@ -112,8 +112,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Sending 'sessionTerminated'");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
+
+            // Note: do not check that 'sessionTerminated' notification is received.
+            // It might get cancelled and not delivered on shutdown.
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114

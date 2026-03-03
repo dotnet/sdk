@@ -64,13 +64,13 @@ public class FileExclusionTests(ITestOutputHelper logger) : DotNetWatchTestBase(
 
         await using var w = CreateInProcWatcher(testAsset, ["--no-exit"], workingDirectory);
 
-        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
-        var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
-        var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
-        var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
-        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
-        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoManagedCodeChangesToApply);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var changeHandled = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var ignoringChangeInHiddenDirectory = w.Observer.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
+        var ignoringChangeInExcludedFile = w.Observer.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
+        var fileAdditionTriggeredReEvaluation = w.Observer.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
+        var reEvaluationCompleted = w.Observer.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
+        var noHotReloadChangesToApply = w.Observer.RegisterSemaphore(MessageDescriptor.NoManagedCodeChangesToApply);
 
         w.Start();
 

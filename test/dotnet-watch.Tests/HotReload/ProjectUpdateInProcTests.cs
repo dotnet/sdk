@@ -19,9 +19,9 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
 
-        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var changeHandled = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
@@ -76,11 +76,11 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
 
-        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
-        var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
-        var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
-        var managedCodeChangesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var projectChangeTriggeredReEvaluation = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        var projectsRebuilt = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+        var projectDependenciesDeployed = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
+        var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
@@ -136,11 +136,11 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
 
-        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
-        var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
-        var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
-        var managedCodeChangesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var projectChangeTriggeredReEvaluation = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        var projectsRebuilt = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+        var projectDependenciesDeployed = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
+        var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>

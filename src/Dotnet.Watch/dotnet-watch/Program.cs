@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Watch
         }
 
         // internal for testing
-        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, LoggerFactory loggerFactory, IProcessOutputReporter processOutputReporter, out int errorCode)
+        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, ILoggerFactory loggerFactory, IProcessOutputReporter processOutputReporter, out int errorCode)
         {
             var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
 

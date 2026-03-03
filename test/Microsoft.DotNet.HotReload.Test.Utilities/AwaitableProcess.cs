@@ -1,38 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
-using System.Threading.Tasks.Dataflow;
+using System.Threading.Channels;
 using Microsoft.NET.TestFramework.Utilities;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class AwaitableProcess(DebugTestOutputLogger logger) : IDisposable
+    internal sealed class AwaitableProcess : IAsyncDisposable
     {
         // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
             ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 
-        private readonly Lock _testOutputLock = new();
-
         private readonly List<string> _lines = [];
-        private readonly BufferBlock<string> _source = new();
 
-        public IEnumerable<string> Output => _lines;
+        private CancellationTokenSource? _disposalCompletionSource = new();
+        private readonly CancellationTokenSource _outputCompletionSource = new();
 
-        public int Id { get; private set; }
-        public Process Process { get; private set; }
-        private bool _disposed;
-
-        public void Start(ProcessStartInfo processStartInfo)
+        private readonly Channel<string> _outputChannel = Channel.CreateUnbounded<string>(new()
         {
-            if (Process != null)
-            {
-                throw new InvalidOperationException("Already started");
-            }
+            SingleReader = true,
+            SingleWriter = true
+        });
+
+        public int Id { get; }
+        public Process Process { get; }
+        public DebugTestOutputLogger Logger { get; }
+
+        private readonly Task _processExitAwaiter;
+
+        public AwaitableProcess(ProcessStartInfo processStartInfo, DebugTestOutputLogger logger)
+        {
+            Logger = logger;
 
             if (!processStartInfo.UseShellExecute && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -57,9 +58,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.OutputDataReceived += OnData;
             Process.ErrorDataReceived += OnData;
-            Process.Exited += OnExit;
 
             Process.Start();
+
+            Process.BeginErrorReadLine();
+            Process.BeginOutputReadLine();
 
             try
             {
@@ -69,74 +72,109 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
-            Process.BeginErrorReadLine();
-            Process.BeginOutputReadLine();
+            _processExitAwaiter = WaitForProcessExitAsync();
         }
+
+        public IEnumerable<string> Output
+            => _lines;
 
         public void ClearOutput()
             => _lines.Clear();
 
-        public async Task<string> GetOutputLineAsync(Predicate<string> success, Predicate<string> failure)
+        public async Task WaitForProcessExitAsync()
         {
-            using var cancellationOnFailure = new CancellationTokenSource();
-
-            if (!Debugger.IsAttached)
-            {
-                cancellationOnFailure.CancelAfter(s_timeout);
-            }
-
-            var failedLineCount = 0;
-            while (!_source.Completion.IsCompleted && failedLineCount == 0)
+            while (true)
             {
                 try
                 {
-                    while (await _source.OutputAvailableAsync(cancellationOnFailure.Token))
+                    if (Process.HasExited)
                     {
-                        var line = await _source.ReceiveAsync(cancellationOnFailure.Token);
-                        _lines.Add(line);
-                        if (success(line))
-                        {
-                            return line;
-                        }
-
-                        if (failure(line))
-                        {
-                            if (failedLineCount == 0)
-                            {
-                                // Limit the time to collect remaining output after a failure to avoid hangs:
-                                cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(1));
-                            }
-
-                            if (failedLineCount > 100)
-                            {
-                                break;
-                            }
-
-                            failedLineCount++;
-                        }
+                        break;
                     }
                 }
-                catch (OperationCanceledException) when (failedLineCount > 0)
+                catch
                 {
                     break;
+                }
+
+                using var iterationCancellationSource = new CancellationTokenSource();
+                iterationCancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
+
+                try
+                {
+                    await Process.WaitForExitAsync(iterationCancellationSource.Token);
+                    break;
+                }
+                catch 
+                {
+                }
+            }
+
+            Logger.Log($"Process {Id} exited");
+            _outputCompletionSource.Cancel();
+        }
+
+        public async Task<string> GetRequiredOutputLineAsync(Predicate<string> selector)
+        {
+            var line = await GetOutputLineAsync(selector);
+
+            // process terminated without producing required output
+            Assert.NotNull(line);
+
+            return line;
+        }
+
+        public async Task<string?> GetOutputLineAsync(Predicate<string> selector)
+        {
+            var disposalCompletionSource = _disposalCompletionSource;
+            ObjectDisposedException.ThrowIf(disposalCompletionSource == null, this);
+
+            using var timeoutCancellation = new CancellationTokenSource();
+            if (!Debugger.IsAttached)
+            {
+                timeoutCancellation.CancelAfter(s_timeout);
+            }
+
+            using var outputReadCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                _outputCompletionSource.Token,
+                disposalCompletionSource.Token,
+                timeoutCancellation.Token);
+
+            if (!Debugger.IsAttached)
+            {
+                outputReadCancellation.CancelAfter(s_timeout);
+            }
+
+            try
+            {
+                while (!outputReadCancellation.IsCancellationRequested)
+                {
+                    var line = await _outputChannel.Reader.ReadAsync(outputReadCancellation.Token);
+                    _lines.Add(line);
+                    if (selector(line))
+                    {
+                        return line;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (timeoutCancellation.Token.IsCancellationRequested)
+                {
+                    Assert.Fail($"Output not found within {s_timeout}");
+                }
+
+                if (disposalCompletionSource.Token.IsCancellationRequested)
+                {
+                    Assert.Fail($"Test disposed while waiting for output");
                 }
             }
 
             return null;
         }
 
-        public async Task<IList<string>> GetAllOutputLinesAsync(CancellationToken cancellationToken)
-        {
-            var lines = new List<string>();
-            while (!_source.Completion.IsCompleted)
-            {
-                while (await _source.OutputAvailableAsync(cancellationToken))
-                {
-                    lines.Add(await _source.ReceiveAsync(cancellationToken));
-                }
-            }
-            return lines;
-        }
+        public Task WaitUntilOutputCompleted()
+            => GetOutputLineAsync(_ => false);
 
         private void OnData(object sender, DataReceivedEventArgs args)
         {
@@ -147,43 +185,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 line = line.StripTerminalLoggerProgressIndicators();
             }
 
-            WriteTestOutput(line);
-            _source.Post(line);
+            Logger.WriteLine(line);
+
+            Assert.True(_outputChannel.Writer.TryWrite(line));
         }
 
-        private void WriteTestOutput(string text)
+        public async ValueTask DisposeAsync()
         {
-            lock (_testOutputLock)
-            {
-                if (!_disposed)
-                {
-                    logger.WriteLine(text);
-                }
-            }
-        }
-
-        private void OnExit(object sender, EventArgs args)
-        {
-            // Wait to ensure the process has exited and all output consumed
-            Process.WaitForExit();
-
-            // Signal test methods waiting on all process output to be completed:
-            _source.Complete();
-        }
-
-        public void Dispose()
-        {
-            _source.Complete();
-
-            lock (_testOutputLock)
-            {
-                _disposed = true;
-            }
-
-            if (Process == null)
-            {
-                return;
-            }
+            var disposalCompletionSource = Interlocked.Exchange(ref _disposalCompletionSource, null);
+            ObjectDisposedException.ThrowIf(disposalCompletionSource == null, this);
+            disposalCompletionSource.Cancel();
 
             Process.ErrorDataReceived -= OnData;
             Process.OutputDataReceived -= OnData;
@@ -212,8 +223,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
+            // ensure process has exited
+            await _processExitAwaiter;
+
             Process.Dispose();
-            Process = null;
+
+            _outputCompletionSource.Dispose();
         }
     }
 }

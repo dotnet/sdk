@@ -17,16 +17,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var console = new TestConsole(Logger);
             var reporter = new TestReporter(Logger);
+            var eventObserver = new TestEventObserver();
             var loggerFactory = new LoggerFactory(reporter, LogLevel.Debug);
+            var observableLoggerFactory = new TestObservableLoggerFactory(eventObserver, loggerFactory);
 
-            var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
-            var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
+            var watching = eventObserver.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
+            var shutdownRequested = eventObserver.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
 
             var program = Program.TryCreate(
                 TestOptions.GetCommandLineOptions(["--verbose"]),
                 console,
                 TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, testAsset),
-                loggerFactory,
+                observableLoggerFactory,
                 reporter,
                 out var errorCode);
 
@@ -78,8 +80,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SuppressVerboseLogging();
             App.Start(testAsset, ["--list"]);
-            var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
+            await App.Process.WaitUntilOutputCompleted();
+
+            var files = App.Process.Output.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
 
             AssertEx.EqualFileList(
                 testAsset.Path,

@@ -556,7 +556,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 // Needs to be executed in dotnet-watch process in order for msbuild to load from the correct location.
 
-                using var watchableApp = WatchableApp.CreateDotnetWatchApp(output);
+                await using var watchableApp = WatchableApp.CreateDotnetWatchApp(output);
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
 
                 if (suppressStaticWebAssets)

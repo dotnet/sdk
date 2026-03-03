@@ -17,7 +17,16 @@ public class DebugTestOutputLogger(ITestOutputHelper logger) : ITestOutputHelper
     public void WriteLine(string message)
     {
         Debug.WriteLine(message);
-        logger.WriteLine(message);
+
+        try
+        {
+            logger.WriteLine(message);
+        }
+        catch (InvalidOperationException)
+        {
+            // test output might have been disposed
+        }
+
         OnMessage?.Invoke(message);
     }
 

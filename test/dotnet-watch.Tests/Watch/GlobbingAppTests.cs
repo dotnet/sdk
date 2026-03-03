@@ -103,8 +103,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SuppressVerboseLogging();
             App.Start(testAsset, ["--list"]);
-            var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
+            await App.Process.WaitUntilOutputCompleted();
+            var files = App.Process.Output.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
 
             AssertEx.EqualFileList(
                 testAsset.Path,

@@ -15,7 +15,7 @@ public class CtrlRTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 
         var buildCounter = 0;
 
-        w.Reporter.RegisterAction(MessageDescriptor.Building, () =>
+        w.Observer.RegisterAction(MessageDescriptor.Building, () =>
         {
             if (Interlocked.Increment(ref buildCounter) == 1)
             {
@@ -23,7 +23,7 @@ public class CtrlRTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
             }
         });
 
-        var restarting = w.Reporter.RegisterSemaphore(MessageDescriptor.Restarting);
+        var restarting = w.Observer.RegisterSemaphore(MessageDescriptor.Restarting);
 
         // Iteration #1 build should be canceled, iteration #2 should build and launch the app.
         var hasExpectedOutput = w.CreateCompletionSource();
@@ -62,13 +62,13 @@ public class CtrlRTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 
         await using var w = CreateInProcWatcher(testAsset, []);
 
-        w.Reporter.RegisterAction(MessageDescriptor.WaitingForFileChangeBeforeRestarting, () =>
+        w.Observer.RegisterAction(MessageDescriptor.WaitingForFileChangeBeforeRestarting, () =>
         {
             w.Console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
         });
 
         var buildCounter = 0;
-        w.Reporter.RegisterAction(MessageDescriptor.Building, () => Interlocked.Increment(ref buildCounter));
+        w.Observer.RegisterAction(MessageDescriptor.Building, () => Interlocked.Increment(ref buildCounter));
 
         var counter = 0;
         var hasExpectedOutput = w.CreateCompletionSource();

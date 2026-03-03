@@ -42,7 +42,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         var projectDir = Path.Combine(testAsset.Path, "AppWithDeps");
         var projectPath = Path.Combine(projectDir, "App.WithDeps.csproj");
 
-        using var host = CreateHostApp();
+        await using var host = CreateHostApp();
         host.Start(testAsset, ["--entrypoint", projectPath]);
 
         await host.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
@@ -67,9 +67,9 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         var statusPipeName = $"STATUS_{pipeId:N}";
         var controlPipeName = $"CONTROL_{pipeId:N}";
 
-        using var server = CreateServerApp(serverPipe);
-        using var serviceA = CreateResourceApp(serverPipe);
-        using var serviceB = CreateResourceApp(serverPipe);
+        await using var server = CreateServerApp(serverPipe);
+        await using var serviceA = CreateResourceApp(serverPipe);
+        await using var serviceB = CreateResourceApp(serverPipe);
 
         // resource can be started before the server, they will wait for the server to start:
         serviceA.Start(testAsset, ["--entrypoint", serviceProjectA]);

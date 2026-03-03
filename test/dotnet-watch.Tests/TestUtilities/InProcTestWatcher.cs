@@ -6,9 +6,10 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal record class InProcTestWatcher(
-    DebugTestOutputLogger Logger,
+    DebugTestOutputLogger TestOutput,
     HotReloadDotNetWatcher Watcher,
     DotNetWatchContext Context,
+    TestEventObserver Observer,
     TestReporter Reporter,
     TestConsole Console,
     StrongBox<TestRuntimeProcessLauncher?> ServiceHolder,
@@ -17,13 +18,13 @@ internal record class InProcTestWatcher(
     public TestRuntimeProcessLauncher? Service => ServiceHolder.Value;
     private Task? _lazyTask;
 
-    public void Start()
+    public void Start([CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
         Assert.Null(_lazyTask);
 
         _lazyTask = Task.Run(async () =>
         {
-            Logger.Log("Starting watch");
+            TestOutput.Log("Starting watch", testPath, testLine);
 
             try
             {
@@ -32,7 +33,7 @@ internal record class InProcTestWatcher(
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 ShutdownSource.Cancel();
-                Logger.WriteLine($"Unexpected exception {e}");
+                TestOutput.WriteLine($"Unexpected exception {e}");
                 throw;
             }
             finally
@@ -48,7 +49,7 @@ internal record class InProcTestWatcher(
 
         if (!ShutdownSource.IsCancellationRequested)
         {
-            Logger.Log("Shutting down");
+            TestOutput.Log("Shutting down");
             ShutdownSource.Cancel();
         }
 
