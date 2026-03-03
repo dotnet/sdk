@@ -1240,7 +1240,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       <trans-unit id="ProjectConvertAskDeleteSource">
         <source>Delete all source files after conversion?</source>
         <target state="new">Delete all source files after conversion?</target>
-        <note>Asking whether to delete the entry point file and all included files (e.g., via #:include directives).</note>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>

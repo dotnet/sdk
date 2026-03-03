@@ -133,8 +133,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             // Delete the entry point file
             DeleteFile(file);
 
-            // Delete all Compile items that were included (e.g., via #:include directives)
-            foreach (var item in includeItems.Where(i => i.ItemType == "Compile"))
+            // Delete all included items (e.g., via #:include directives and default items)
+            foreach (var item in includeItems)
             {
                 DeleteFile(item.FullPath);
             }

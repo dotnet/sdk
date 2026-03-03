@@ -2124,12 +2124,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // ALL Compile (source) files should be deleted
+        // ALL included files should be deleted (both Compile and None items)
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
         File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
-
-        // Non-Compile files should be preserved
-        File.Exists(Path.Join(testInstance.Path, "appsettings.json")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "appsettings.json")).Should().BeFalse();
 
         // All files should be copied to the output directory
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
@@ -2257,13 +2255,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        // ALL Compile (source) files should be deleted
+        // ALL included files should be deleted (Compile and non-Compile)
         File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
         File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
         File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeFalse();
-
-        // Non-Compile files should be preserved
-        File.Exists(Path.Join(testInstance.Path, "config.json")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "config.json")).Should().BeFalse();
 
         // All files should be copied to the output directory
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
@@ -2281,13 +2277,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         // Create entry point file with #:include directive
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:property ExperimentalFileBasedProgramEnableTransitiveDirectives=true
             #:include Util.cs
             Console.WriteLine("Test");
             """);
 
         // Create included file that itself has #:include directive (transitive)
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
-            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
             #:include Helper.cs
             class Util { }
             """);
