@@ -18,7 +18,7 @@
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))openbsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOSName>
