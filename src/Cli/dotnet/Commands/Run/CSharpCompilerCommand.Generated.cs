@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 partial class CSharpCompilerCommand
 {
     private IEnumerable<string> GetCscArguments(
+        string fileName,
         string fileNameWithoutExtension,
         string objDir,
         string binDir)
@@ -202,7 +203,7 @@ partial class CSharpCompilerCommand
             "/deterministic+",
             "/langversion:14.0",
             "/features:FileBasedProgram",
-            $"/analyzerconfig:{objDir}/{fileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig",
+            $"/analyzerconfig:{objDir}/{fileName}.GeneratedMSBuildEditorConfig.editorconfig",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll",
@@ -215,9 +216,9 @@ partial class CSharpCompilerCommand
             $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/cs/System.Text.Json.SourceGeneration.dll",
             $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/cs/System.Text.RegularExpressions.Generator.dll",
             $"{EntryPointFileFullPath}",
-            $"{objDir}/{fileNameWithoutExtension}.GlobalUsings.g.cs",
+            $"{objDir}/{fileName}.GlobalUsings.g.cs",
             $"{objDir}/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
-            $"{objDir}/{fileNameWithoutExtension}.AssemblyInfo.cs",
+            $"{objDir}/{fileName}.AssemblyInfo.cs",
             "/warnaserror+:NU1605,SYSLIB0011",
         ];
     }

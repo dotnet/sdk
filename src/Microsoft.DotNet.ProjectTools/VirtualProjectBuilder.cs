@@ -476,13 +476,14 @@ public sealed class VirtualProjectBuilder
                   <PropertyGroup>
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
-                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                    <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                    <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
+                    <RootNamespace>$(AssemblyName)</RootNamespace>
+                    <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                    <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                    <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
                 """);
 
             // Only set these to false when using the default SDK with no additional SDKs

@@ -210,6 +210,7 @@ internal sealed partial class CSharpCompilerCommand
         }
 
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
+        string fileName = Path.GetFileName(EntryPointFileFullPath);
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
         // Note that Release builds won't go through this optimized code path because `-c Release` translates to global property `Configuration=Release`
@@ -231,7 +232,7 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
-        string globalUsings = Path.Join(objDir, $"{fileNameWithoutExtension}.GlobalUsings.g.cs");
+        string globalUsings = Path.Join(objDir, $"{fileName}.GlobalUsings.g.cs");
         if (ShouldEmit(globalUsings))
         {
             File.WriteAllText(globalUsings, /* lang=C#-test */ """
@@ -247,7 +248,7 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
-        string assemblyInfo = Path.Join(objDir, $"{fileNameWithoutExtension}.AssemblyInfo.cs");
+        string assemblyInfo = Path.Join(objDir, $"{fileName}.AssemblyInfo.cs");
         if (ShouldEmit(assemblyInfo))
         {
             File.WriteAllText(assemblyInfo, /* lang=C#-test */ $"""
@@ -277,7 +278,7 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
-        string editorconfig = Path.Join(objDir, $"{fileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig");
+        string editorconfig = Path.Join(objDir, $"{fileName}.GeneratedMSBuildEditorConfig.editorconfig");
         if (ShouldEmit(editorconfig))
         {
             File.WriteAllText(editorconfig, $"""
@@ -366,6 +367,7 @@ internal sealed partial class CSharpCompilerCommand
         if (ShouldEmit(rspPath))
         {
             IEnumerable<string> args = GetCscArguments(
+                fileName: fileName,
                 fileNameWithoutExtension: fileNameWithoutExtension,
                 objDir: objDir,
                 binDir: binDir);

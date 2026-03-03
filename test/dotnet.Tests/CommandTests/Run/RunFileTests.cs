@@ -2138,7 +2138,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2184,7 +2184,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2213,7 +2213,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Module"));
     }
@@ -2334,7 +2334,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "AppContainerExe"));
     }
@@ -3997,6 +3997,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             partial class CSharpCompilerCommand
             {
                 private IEnumerable<string> GetCscArguments(
+                    string fileName,
                     string fileNameWithoutExtension,
                     string objDir,
                     string binDir)
@@ -4079,10 +4080,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 needsInterpolation = true;
             }
 
-            // Use variable file name.
+            // Use variable file path.
             if (rewritten.Contains(entryPointPathNormalized, StringComparison.OrdinalIgnoreCase))
             {
                 rewritten = rewritten.Replace(entryPointPathNormalized, "{" + nameof(CSharpCompilerCommand.EntryPointFileFullPath) + "}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
+            // Use variable file name.
+            if (rewritten.Contains(fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(fileName, "{fileName}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -5551,13 +5559,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <AssemblyName>Program</AssemblyName>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
@@ -5642,13 +5651,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>A</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -5716,13 +5726,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -5789,13 +5800,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <AssemblyName>Program</AssemblyName>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
@@ -6090,7 +6102,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var projectBasedFiles = ReadFiles();
 
         fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
-        fileBasedResult.StdErr.Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.StdErr?.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
         fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
         fileBasedFiles.Should().Equal(projectBasedFiles);
 
