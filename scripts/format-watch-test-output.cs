@@ -71,7 +71,7 @@ List<TestInfo> ParseTestOutput(string[] allLines)
 {
     // [xUnit.net HH:MM:SS.ss]     TestName [TAG] content
     var testLineRegex = new Regex(
-        @"^\[xUnit\.net\s+([^\]]+)\]\s{4,}(.+?)\s+\[(\w+)\]\s?(.*)?$");
+        @"^\[xUnit\.net\s+([^\]]+)\]\s{4,}(.+?)\s+\[(PASS|FAIL|SKIP|OUTPUT)\]\s?(.*)?$");
 
     // [xUnit.net HH:MM:SS.ss]       continuation (6+ spaces, no tag — e.g. skip reason)
     var continuationRegex = new Regex(
@@ -102,8 +102,21 @@ List<TestInfo> ParseTestOutput(string[] allLines)
     {
         var line = allLines[i];
 
-        // 1. Test-specific xUnit line with tag
-        var m = testLineRegex.Match(line);
+        // 1. Continuation line (6+ spaces) — check before test-specific to avoid
+        //    capturing indented content (e.g. "[OUTPUT] ...") as a bogus test name.
+        var m = continuationRegex.Match(line);
+        if (m.Success)
+        {
+            if (lastTestName != null)
+            {
+                var info = GetOrCreate(lastTestName);
+                info.Lines.Add(m.Groups[2].Value);
+            }
+            continue;
+        }
+
+        // 2. Test-specific xUnit line with tag
+        m = testLineRegex.Match(line);
         if (m.Success)
         {
             var timestamp = m.Groups[1].Value;
@@ -137,16 +150,7 @@ List<TestInfo> ParseTestOutput(string[] allLines)
             continue;
         }
 
-        // 2. Continuation line (e.g. skip reason)
-        m = continuationRegex.Match(line);
-        if (m.Success && lastTestName != null)
-        {
-            var info = GetOrCreate(lastTestName);
-            info.Lines.Add(m.Groups[2].Value);
-            continue;
-        }
-
-        // 3. Long Running Test line — skip entirely
+        // 3. Long Running Test line — skip
         if (longRunningRegex.IsMatch(line))
             continue;
 
