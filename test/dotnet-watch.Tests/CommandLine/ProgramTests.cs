@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ListsFiles()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")

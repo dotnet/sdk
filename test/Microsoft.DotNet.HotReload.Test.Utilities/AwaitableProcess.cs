@@ -170,6 +170,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
             }
 
+            // Read the remaining output that may have been written to
+            // the channel but not read yet when the process exited.
+            while (_outputChannel.Reader.TryRead(out var line))
+            {
+                _lines.Add(line);
+                if (selector(line))
+                {
+                    return line;
+                }
+            }
+
             return null;
         }
 
