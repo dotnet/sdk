@@ -497,8 +497,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return;
             }
 
-            CSharpCompilerCommand.WriteCscRspFile(Builder.ArtifactsPath, cache.CurrentEntry.CscArguments);
-            Reporter.Verbose.WriteLine($"Written '{CSharpCompilerCommand.GetCscRspPath(Builder.ArtifactsPath)}'.");
+            string rspPath = CSharpCompilerCommand.WriteCscRspFile(Builder.ArtifactsPath, cache.CurrentEntry.CscArguments);
+            Reporter.Verbose.WriteLine($"Written '{rspPath}'.");
         }
 
         bool CanSaveCache(ProjectInstance projectInstance)

@@ -199,22 +199,24 @@ internal sealed partial class CSharpCompilerCommand
         }
     }
 
-    internal static string GetCscRspPath(string artifactsPath) => Path.Join(artifactsPath, "csc.rsp");
-
-    internal static void WriteCscRspFile(string artifactsPath, ImmutableArray<string> cscArguments)
+    internal static string WriteCscRspFile(string artifactsPath, ImmutableArray<string> cscArguments)
     {
-        File.WriteAllLines(GetCscRspPath(artifactsPath), cscArguments);
+        string rspPath = GetCscRspPath(artifactsPath);
+        File.WriteAllLines(rspPath, cscArguments);
+        return rspPath;
     }
+
+    private static string GetCscRspPath(string artifactsPath) => Path.Join(artifactsPath, "csc.rsp");
 
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        rspPath = GetCscRspPath(ArtifactsPath);
-
         if (!CscArguments.IsDefaultOrEmpty)
         {
-            WriteCscRspFile(ArtifactsPath, CscArguments);
+            rspPath = WriteCscRspFile(ArtifactsPath, CscArguments);
             return;
         }
+
+        rspPath = GetCscRspPath(ArtifactsPath);
 
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
