@@ -3,15 +3,19 @@
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class TestLogger(ITestOutputHelper? output = null) : ILogger
 {
-    public readonly Lock Guard = new();
+    public readonly object Guard = new();
     private readonly List<string> _messages = [];
 
     public Func<LogLevel, bool> IsEnabledImpl = _ => true;
+
+    public bool HasError { get; private set; }
+    public bool HasWarning { get; private set; }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
@@ -19,6 +23,9 @@ internal class TestLogger(ITestOutputHelper? output = null) : ILogger
 
         lock (Guard)
         {
+            HasError |= logLevel is LogLevel.Error or LogLevel.Critical;
+            HasWarning |= logLevel is LogLevel.Warning;
+
             _messages.Add(message);
             output?.WriteLine(message);
         }

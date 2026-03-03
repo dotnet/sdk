@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
         private readonly TimeSpan NegativeTimeout = TimeSpan.FromSeconds(5);
-        private readonly TestAssetsManager _testAssetManager = new TestAssetsManager(output);
+        private readonly TestAssetsManager _testAssetManager = new(output);
 
         private async Task TestOperation(
             string dir,
@@ -26,7 +26,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
             using var watcher = DirectoryWatcher.Create(dir, watchedFileNames ?? [], usePolling, includeSubdirectories: watchSubdirectories);
             if (watcher is EventBasedDirectoryWatcher dotnetWatcher)
             {
-                dotnetWatcher.Logger = m => output.WriteLine(m);
+                dotnetWatcher.Logger = m =>
+                {
+                    try
+                    {
+                        output.WriteLine(m);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // the test output might have been closed already
+                    }
+                };
             }
 
             var operationCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

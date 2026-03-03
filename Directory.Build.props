@@ -25,6 +25,9 @@
     <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+
+    <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
+    <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup>

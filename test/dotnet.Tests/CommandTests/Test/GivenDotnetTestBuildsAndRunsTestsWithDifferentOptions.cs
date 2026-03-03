@@ -479,7 +479,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Output looks similar to the following
             /*
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
-                Get projects properties with MSBuild didn't execute properly with exit code: 1.
+                Build failed with exit code: 1.
             */
             if (!TestContext.IsLocalized())
             {
