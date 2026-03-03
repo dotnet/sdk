@@ -426,7 +426,7 @@
 
       <Crossgen2SupportedRids Include="@(Net110Crossgen2SupportedRids);" />
 
-      <Net100Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedRids)" />
+      <Net100Crossgen2SupportedPortableRids Include="@(Net100Crossgen2SupportedRids)" />
 
       <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
 
@@ -481,7 +481,7 @@
         @(Net110ILCompilerSupportedRids);
         " />
 
-      <Net100ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedRids)" />
+      <Net100ILCompilerSupportedPortableRids Include="@(Net100ILCompilerSupportedRids)" />
 
       <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
 
