@@ -2305,7 +2305,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property OutputType=Exe
             #:property PublishAot=false
             #:property LangVersion=preview
-            #:property MyTfm=netstandard2.0
+            #:property MyTfm=net9.0
             #:property TargetFrameworks=$(MyTfm);{ToolsetInfo.CurrentTargetFramework}
             Console.WriteLine("Hello MultiTFM");
             """);
@@ -2322,7 +2322,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         result.Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
-            .And.HaveStdErrContaining("netstandard2.0")
+            .And.HaveStdErrContaining("net9.0")
             .And.NotHaveStdErrContaining("$(MyTfm)");
 
         new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
