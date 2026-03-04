@@ -315,17 +315,17 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="translated">'{0}'을(를) 예로 입력하거나 '{1}'을(를) 아니요로 입력하세요.</target>
+        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="translated">n</target>
+        <target state="new">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="translated">y</target>
+        <target state="new">y</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -1775,23 +1775,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">.NET 환경을 확장하는 도구를 설치하거나 관리합니다.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">도구 패키지 다운로드가 취소됨</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">도구 패키지 {0}@{1}이(가) 원본 {2}에서 다운로드됩니다.
-계속하시겠습니까?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">도구 패키지 다운로드를 확인해야 합니다. 대화형 모드에서 실행하거나 "--yes" 명령줄 옵션을 사용하여 확인하세요.</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}

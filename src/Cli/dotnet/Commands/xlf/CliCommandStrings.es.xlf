@@ -315,17 +315,17 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="translated">Escriba "{0}" para sí o "{1}" para no.</target>
+        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="translated">n</target>
+        <target state="new">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="translated">s</target>
+        <target state="new">y</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -1775,23 +1775,6 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">Instala o administra herramientas que mejoran la experiencia de .NET.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">Descarga del paquete de herramientas cancelada</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">El paquete de herramientas {0}@{1} se descargará desde el origen {2}.
-¿Quiere continuar?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">La descarga del paquete de herramientas necesita confirmación. Ejecute en modo interactivo o use la opción de línea de comandos "--yes" para confirmar.</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}
