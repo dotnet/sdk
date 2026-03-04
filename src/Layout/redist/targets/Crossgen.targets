@@ -88,8 +88,8 @@
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
 
-      <!-- Don't CrossGen bundled DotnetTools -->
-      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <!-- Don't CrossGen .NET Framework components of DotnetTools -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\BuildHost-net472\**\*" />
 
       <!-- Don't crossgen satellite assemblies -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
