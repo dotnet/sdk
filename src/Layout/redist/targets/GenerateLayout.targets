@@ -184,10 +184,10 @@
 
     <ItemGroup>
       <PerfSensitiveCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/analyzers/dotnet/cs/**/*.dll" />
-      <PerfSensitiveBuildFiles Include="$(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/build/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.props;
-                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/build/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.targets;
-                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/build/PerformanceSensitiveAttribute.cs;
-                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/build/PerformanceSensitiveAttribute.vb" />
+      <PerfSensitiveBuildFiles Include="$(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.props;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.targets;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/PerformanceSensitiveAttribute.cs;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/PerformanceSensitiveAttribute.vb" />
     </ItemGroup>
 
     <Error Condition="'@(PerfSensitiveCSharpAssemblies)' == ''" Text="Something moved around in PerformanceSensitiveAnalyzers package, could not find assemblies. Adjust code here accordingly." />
