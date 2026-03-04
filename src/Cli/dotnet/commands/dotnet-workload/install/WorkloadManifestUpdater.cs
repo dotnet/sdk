@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -19,7 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     {
-        readonly string WorkloadSetManifestId = "Microsoft.NET.Workloads";
+        public static readonly string WorkloadSetManifestId = "Microsoft.NET.Workloads";
 
         private readonly IReporter _reporter;
         private readonly IWorkloadResolver _workloadResolver;
@@ -91,11 +92,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
+        public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
         {
             try
             {
-                var manifestUpdater = WorkloadManifestUpdater.GetInstance(userProfileDir);
+                var manifestUpdater = GetInstance(userProfileDir);
                 await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             }
             catch (Exception)
@@ -167,7 +168,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             try
             {
                 var backgroundUpdatesDisabled = bool.TryParse(Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;
-                SdkFeatureBand featureBand = new SdkFeatureBand(Product.Version);
+                SdkFeatureBand featureBand = new(Product.Version);
                 var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
                 if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
                 {
@@ -242,10 +243,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder = null)
         {
             var currentManifestIds = GetInstalledManifestIds();
             var manifestRollbacks = ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
+
+            if (recorder is not null)
+            {
+                recorder.HistoryRecord.RollbackFileContents = manifestRollbacks.ToDictionary(kvp => kvp.Id.ToString(), kvp => kvp.ManifestWithBand.Version + "/" + kvp.ManifestWithBand.Band);
+            }
 
             var unrecognizedManifestIds = manifestRollbacks.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Id));
             if (unrecognizedManifestIds.Any())
@@ -257,7 +263,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return CalculateManifestRollbacks(manifestRollbacks);
         }
 
-        private IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(IEnumerable<(ManifestId Id, ManifestVersionWithBand ManifestWithBand)> versionUpdates)
+        private static IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(IEnumerable<(ManifestId Id, ManifestVersionWithBand ManifestWithBand)> versionUpdates)
         {
             return versionUpdates.Select(manifest =>
             {
@@ -494,22 +500,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             if (Uri.TryCreate(rollbackDefinitionFilePath, UriKind.Absolute, out var rollbackUri) && !rollbackUri.IsFile)
             {
-                fileContent = (new HttpClient()).GetStringAsync(rollbackDefinitionFilePath).Result;
+                using HttpClient httpClient = new();
+                fileContent = httpClient.GetStringAsync(rollbackDefinitionFilePath).Result;
+            }
+            else if (File.Exists(rollbackDefinitionFilePath))
+            {
+                fileContent = File.ReadAllText(rollbackDefinitionFilePath);
             }
             else
             {
-                if (File.Exists(rollbackDefinitionFilePath))
-                {
-                    fileContent = File.ReadAllText(rollbackDefinitionFilePath);
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(LocalizableStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
-                }
+                throw new ArgumentException(string.Format(LocalizableStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
             }
 
             var versions = WorkloadSet.FromJson(fileContent, featureBand).ManifestVersions;
             return versions.Select(kvp => (kvp.Key, new ManifestVersionWithBand(kvp.Value.Version, kvp.Value.FeatureBand)));
+        }
+
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state)
+        {
+            return state.ManifestVersions.Select(
+                m => new ManifestVersionUpdate(
+                    new ManifestId(m.Key),
+                    new ManifestVersion(m.Value.Split('/')[0]),
+                    m.Value.Split('/')[1]));
         }
 
         private bool BackgroundUpdatesAreDisabled() => bool.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;

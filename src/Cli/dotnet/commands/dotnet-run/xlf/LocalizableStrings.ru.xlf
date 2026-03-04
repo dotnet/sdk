@@ -47,9 +47,9 @@ Make the profile names distinct.</source>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
-        <source>Only one project can be specified at a time using the `-p` option.</source>
-        <target state="translated">С помощью параметра "-p" можно указать только один проект за раз.</target>
-        <note />
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="translated">С помощью параметра -p можно указать только один проект за раз.</target>
+        <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
@@ -60,6 +60,11 @@ Make the profile names distinct.</source>
         <source>Building...</source>
         <target state="translated">Сборка…</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
+        <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
+        <target state="translated">Не удалось запустить цель {0} для обнаружения команд выполнения для этого проекта. Исправьте ошибки и предупреждения и повторите попытку.</target>
+        <note>{0} is the name of an MSBuild target</note>
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -74,7 +79,7 @@ Make the profile names distinct.</source>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
         <target state="translated">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
-        <note />
+        <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -134,6 +139,11 @@ The current {1} is '{2}'.</source>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Предупреждение NETSDK1174: сокращение "-p" для "--project" не рекомендуется. Используйте "--project".</target>
+        <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
+        <source>'{0}' is not a valid project file.</source>
+        <target state="translated">"{0}" не является допустимым файлом проекта.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
@@ -173,11 +183,6 @@ The current {1} is '{2}'.</source>
 {0}</source>
         <target state="translated">При чтении launchSettings.json обнаружена ошибка.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandSpecifiecFileIsNotAValidProject">
-        <source>'{0}' is not a valid project file.</source>
-        <target state="translated">"{0}" не является допустимым файлом проекта.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">

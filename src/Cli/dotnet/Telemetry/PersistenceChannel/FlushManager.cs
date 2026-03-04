@@ -43,8 +43,8 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
         {
             if (telemetryItem != null)
             {
-                byte[] data = JsonSerializer.Serialize(new[] {telemetryItem});
-                Transmission transmission = new Transmission(
+                byte[] data = JsonSerializer.Serialize(new[] { telemetryItem });
+                Transmission transmission = new(
                     EndpointAddress,
                     data,
                     "application/x-json-stream",

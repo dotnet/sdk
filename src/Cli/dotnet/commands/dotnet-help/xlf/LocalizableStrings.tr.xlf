@@ -12,6 +12,11 @@
         <target state="translated">Şu framework sürümüne ileri sarın: (LatestPatch, İkincil, LatestMinor, Ana, LatestMajor, Devre dışı).</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKOptionsHelpDefinition">
+        <source>Show command line help.</source>
+        <target state="translated">Komut satırı yardımını gösterir.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SdkDefinition">
         <source>Manage .NET SDK installation.</source>
         <target state="translated">.NET SDK yüklemesini yönetin.</target>
@@ -48,8 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
-        <source>Show command line help.</source>
-        <target state="translated">Komut satırı yardımını gösterir.</target>
+        <source>Opens the reference page in a browser for the specified command.</source>
+        <target state="translated">Başvuru sayfasını belirtilen komut için bir tarayıcıda açar.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -163,8 +168,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ListDefinition">
-        <source>List project references of a .NET project.</source>
-        <target state="translated">Bir .NET projesinin proje başvurularını listeler.</target>
+        <source>List packages or references of a .NET project.</source>
+        <target state="translated">Bir .NET projesinin paketlerini veya başvurularını listeleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

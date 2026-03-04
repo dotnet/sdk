@@ -307,7 +307,7 @@
   </data>
   <data name="TemplatePackageCoordinator_VulnerabilitySeverity_Moderate" xml:space="preserve">
     <value>Moderate</value>
-    <comment>represents nuget api severity of level 1.</comment>   
+    <comment>represents nuget api severity of level 1.</comment>
   </data>
   <data name="TemplatePackageCoordinator_VulnerabilitySeverity_High" xml:space="preserve">
     <value>High</value>
@@ -859,67 +859,64 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="Generic_CommandHints_List" xml:space="preserve">
     <value>To list installed templates, run:</value>
   </data>
-  <data name="DetailsCommand_Argument_PackageIdentifier">
+  <data name="DetailsCommand_Argument_PackageIdentifier" xml:space="preserve">
     <value>Package identifier</value>
   </data>
-  <data name="DetailsCommand_Option_Version">
+  <data name="DetailsCommand_Option_Version" xml:space="preserve">
     <value>Specifies a concrete version for displaying details. If not specified the last is taken.</value>
   </data>
-  <data name="DetailsCommand_Property_Authors">
+  <data name="DetailsCommand_Property_Authors" xml:space="preserve">
     <value>Authors</value>
   </data>
-  <data name="DetailsCommand_Property_Description">
+  <data name="DetailsCommand_Property_Description" xml:space="preserve">
     <value>Details</value>
   </data>
-  <data name="DetailsCommand_Property_SourceFeed">
+  <data name="DetailsCommand_Property_SourceFeed" xml:space="preserve">
     <value>Source Feed</value>
   </data>
-  <data name="DetailsCommand_Property_Version">
+  <data name="DetailsCommand_Property_Version" xml:space="preserve">
     <value>Package version</value>
   </data>
-  <data name="DetailsCommand_Property_PrefixReserved">
+  <data name="DetailsCommand_Property_PrefixReserved" xml:space="preserve">
     <value>Reserved</value>
   </data>
-  <data name="DetailsCommand_Property_Languages">
+  <data name="DetailsCommand_Property_Languages" xml:space="preserve">
     <value>Languages</value>
-    <comment></comment>
   </data>
-  <data name="DetailsCommand_Property_LicenseMetadata">
+  <data name="DetailsCommand_Property_LicenseMetadata" xml:space="preserve">
     <value>License Metadata</value>
   </data>
-  <data name="DetailsCommand_Property_LicenseExpression">
+  <data name="DetailsCommand_Property_LicenseExpression" xml:space="preserve">
     <value>License Expression</value>
   </data>
-  <data name="DetailsCommand_Property_License">
+  <data name="DetailsCommand_Property_License" xml:space="preserve">
     <value>License</value>
   </data>
-  <data name="DetailsCommand_Property_LicenseUrl">
+  <data name="DetailsCommand_Property_LicenseUrl" xml:space="preserve">
     <value>License Url</value>
   </data>
-  <data name="DetailsCommand_Property_Owners">
+  <data name="DetailsCommand_Property_Owners" xml:space="preserve">
     <value>Owners</value>
   </data>
-  <data name="DetailsCommand_Property_RepoUrl">
+  <data name="DetailsCommand_Property_RepoUrl" xml:space="preserve">
     <value>Repository Url</value>
   </data>
-  <data name="DetailsCommand_Property_ShortNames">
+  <data name="DetailsCommand_Property_ShortNames" xml:space="preserve">
     <value>Short Names</value>
-    <comment></comment>
   </data>
-  <data name="DetailsCommand_Property_Tags">
+  <data name="DetailsCommand_Property_Tags" xml:space="preserve">
     <value>Tags</value>
-    <comment></comment>
   </data>
-  <data name="DetailsCommand_Property_Templates">
+  <data name="DetailsCommand_Property_Templates" xml:space="preserve">
     <value>Templates</value>
   </data>
-  <data name="DetailsCommand_NoNuGetSources">
+  <data name="DetailsCommand_NoNuGetSources" xml:space="preserve">
     <value>No NuGet sources are defined or enabled</value>
   </data>
-  <data name="DetailsCommand_UnableToLoadResorces">
+  <data name="DetailsCommand_UnableToLoadResources" xml:space="preserve">
     <value>Failed to load NuGet sources configured for the folder {0}</value>
   </data>
-  <data name="DetailsCommand_UnableToLoadResorce">
+  <data name="DetailsCommand_UnableToLoadResource" xml:space="preserve">
     <value>Could not parse NuGet source '{0}', so it was discarded</value>
   </data>
   <data name="OperationCancelled" xml:space="preserve">
@@ -946,5 +943,11 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="ColumnNameTrusted" xml:space="preserve">
     <value>Trusted</value>
     <comment>information about NuGet package origin; if a package has PrefixReserved indicator </comment>
+  </data>
+  <data name="PostAction_ModifyJson_Error_ArgumentNotBoolean" xml:space="preserve">
+    <value>Post action argument '{0}' is not a valid boolean value.</value>
+  </data>
+  <data name="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile" xml:space="preserve">
+    <value>Attempting to find json file '{0}' in '{1}'</value>
   </data>
 </root>

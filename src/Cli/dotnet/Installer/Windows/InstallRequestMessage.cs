@@ -129,6 +129,14 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
+        /// The path to a global.json file that specified a workload set version
+        /// </summary>
+        public string GlobalJsonPath
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// The workload set version
         /// </summary>
         public string WorkloadSetVersion

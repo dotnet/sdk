@@ -44,7 +44,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- User-facing configuration-specific defaults -->
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
     <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
@@ -94,6 +93,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <DebugType Condition="'$(DebugSymbols)' == 'false'">None</DebugType>
     <DebugType Condition=" '$(DebugType)' == '' ">portable</DebugType>
 
     <!-- This will turn off the base UWP-specific 'ResolveNuGetPackages' target -->
@@ -113,6 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AllowUnsafeBlocks Condition="'$(AllowUnsafeBlocks)'==''">false</AllowUnsafeBlocks>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)'==''">false</TreatWarningsAsErrors>
     <Prefer32Bit Condition="'$(Prefer32Bit)'==''">false</Prefer32Bit>
+    <PreferNativeArm64 Condition="'$(PreferNativeArm64)'==''">false</PreferNativeArm64>
     <SignAssembly Condition="'$(SignAssembly)'==''">false</SignAssembly>
     <DelaySign Condition="'$(DelaySign)'==''">false</DelaySign>
     <GeneratePackageOnBuild Condition="'$(GeneratePackageOnBuild)'==''">false</GeneratePackageOnBuild>
@@ -141,7 +142,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        putting an EnableWorkloadResolver.sentinel file beside the MSBuild SDK resolver DLL -->
   <PropertyGroup Condition="'$(MSBuildEnableWorkloadResolver)' == ''">
     <__DisableWorkloadResolverSentinelPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildBinPath)\DisableWorkloadResolver.sentinel</__DisableWorkloadResolverSentinelPath>
-    <__DisableWorkloadResolverSentinelPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildBinPath)\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\DisableWorkloadResolver.sentinel</__DisableWorkloadResolverSentinelPath>
+    <__DisableWorkloadResolverSentinelPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildToolsPath32)\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\DisableWorkloadResolver.sentinel</__DisableWorkloadResolverSentinelPath>
     <MSBuildEnableWorkloadResolver Condition="!Exists('$(__DisableWorkloadResolverSentinelPath)')">true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
 

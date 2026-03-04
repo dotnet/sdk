@@ -10,8 +10,8 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -35,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             object[] resolvedNuGetFiles)
         {
             LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
-            LockFileLookup lockFileLookup = new LockFileLookup(lockFile);
+            LockFileLookup lockFileLookup = new(lockFile);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
                 "/usr/Path",
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
                 .WithDirectReferences(directReferences)
                 .WithCompilationOptions(compilationOptions)
-                .WithResolvedNuGetFiles((ResolvedFile[]) resolvedNuGetFiles)
+                .WithResolvedNuGetFiles((ResolvedFile[])resolvedNuGetFiles)
                 .Build();
 
             JObject result = Save(dependencyContext);
@@ -83,10 +83,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 // write the result file out on failure for easy comparison
 
-                using (JsonTextWriter writer = new JsonTextWriter(File.CreateText($"result-{baselineFileName}.deps.json")))
+                using (JsonTextWriter writer = new(File.CreateText($"result-{baselineFileName}.deps.json")))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new()
+                    {
+                        Formatting = Formatting.Indented
+                    };
                     serializer.Serialize(writer, result);
                 }
 
@@ -148,7 +150,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private static JObject ReadJson(string path)
         {
-            using (JsonTextReader jsonReader = new JsonTextReader(File.OpenText(path)))
+            using (JsonTextReader jsonReader = new(File.OpenText(path)))
             {
                 return JObject.Load(jsonReader);
             }
@@ -256,7 +258,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 runtimeFrameworks: null,
                 isSelfContained: false);
 
-            CompilationOptions compilationOptions = 
+            CompilationOptions compilationOptions =
                 useCompilationOptions ? CreateCompilationOptions() :
                 null;
 
@@ -309,7 +311,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 isSelfContained: true);
 
             var runtimeGraph = new RuntimeGraph(
-                new RuntimeDescription []
+                new RuntimeDescription[]
                 {
                     new RuntimeDescription("os-arch", new string [] { "os", "base" }),
                     new RuntimeDescription("new_os-arch", new string [] { "os-arch", "os", "base" }),

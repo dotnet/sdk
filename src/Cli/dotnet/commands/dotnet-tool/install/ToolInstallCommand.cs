@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
-        private readonly bool _local;
         private readonly string _framework;
 
         public ToolInstallCommand(
@@ -23,16 +22,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             ToolInstallLocalCommand toolInstallLocalCommand = null)
             : base(parseResult)
         {
-            _toolInstallLocalCommand =
-                toolInstallLocalCommand
-                ?? new ToolInstallLocalCommand(_parseResult);
+            _toolInstallLocalCommand = toolInstallLocalCommand;
 
-            _toolInstallGlobalOrToolPathCommand =
-                toolInstallGlobalOrToolPathCommand
-                ?? new ToolInstallGlobalOrToolPathCommand(_parseResult);
+            _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
 
             _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-            _local = parseResult.GetValue(ToolAppliedOption.LocalOption);
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
         }
@@ -48,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
-                return _toolInstallGlobalOrToolPathCommand.Execute();
+                return (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult)).Execute();
             }
             else
             {
@@ -59,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption));
                 }
 
-                return _toolInstallLocalCommand.Execute();
+                return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();
             }
         }
     }

@@ -230,7 +230,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             foreach (var result in results)
             {
-                var errorCount = result.CSharpDocument.Diagnostics.Count;
+                var errorCount = result.CSharpDocument.Diagnostics.Length;
                 for (var i = 0; i < errorCount; i++)
                 {
                     var error = result.CSharpDocument.Diagnostics[i];
@@ -325,9 +325,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             for (var i = 0; i < items.Length; i++)
             {
                 var fileKind = fileKinds.Count > 0 ? fileKinds[i] : "mvc";
-                if (Microsoft.AspNetCore.Razor.Language.FileKinds.IsComponent(fileKind))
+                if (AspNetCore.Razor.Language.FileKinds.IsComponent(fileKind))
                 {
-                    fileKind = Microsoft.AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
+                    fileKind = AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
                 }
 
                 var cssScopeValue = cssScopeAssociations.TryGetValue(sources[i], out var cssScopeIndex)

@@ -3,15 +3,18 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.IInstaller;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -22,12 +25,18 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Track messages that should never be reported more than once.
         /// </summary>
-        private HashSet<string> _reportedMessages = new HashSet<string>();
+        private HashSet<string> _reportedMessages = new();
 
         /// <summary>
         /// Backing field for the install location of .NET
         /// </summary>
         private string _dotNetHome;
+
+        private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Full path to the root directory for storing workload data.
@@ -255,6 +264,57 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                workloadSetsFile.RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+                SecurityUtils.SecureFile(workloadSetsFile.Path);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendRecordWorkloadSetInGlobalJsonRequest(sdkFeatureBand, globalJsonPath, workloadSetVersion);
+                ExitOnFailure(response, "Failed to record workload set version in GC Roots file.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                var versions = workloadSetsFile.GetGlobalJsonWorkloadSetVersions();
+
+                //  GetGlobalJsonWorkloadSetVersions will not create the file if it doesn't exist, so don't try to secure a non-existant file
+                if (File.Exists(workloadSetsFile.Path))
+                {
+                    SecurityUtils.SecureFile(workloadSetsFile.Path);
+                }
+                return versions;
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendGetGlobalJsonWorkloadSetVersionsRequest(sdkFeatureBand);
+                ExitOnFailure(response, "Failed to get global.json GC roots");
+                return response.GlobalJsonWorkloadSetVersions;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
         /// <summary>
         /// Installs the specified MSI.
         /// </summary>
@@ -322,6 +382,19 @@ namespace Microsoft.DotNet.Installer.Windows
             }
 
             throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+        }
+
+        internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dotnet", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureBand.ToString(), "history");
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            Directory.CreateDirectory(historyDirectory);
+            File.WriteAllText(logFile, (JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true })));
         }
 
         /// <summary>
@@ -438,7 +511,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="dependent">The dependent to add or remove.</param>
         protected void UpdateDependent(InstallRequestType requestType, string providerKeyName, string dependent)
         {
-            DependencyProvider provider = new DependencyProvider(providerKeyName, allUsers: true);
+            DependencyProvider provider = new(providerKeyName, allUsers: true);
 
             if (provider.Dependents.Contains(dependent) && requestType == InstallRequestType.AddDependent)
             {

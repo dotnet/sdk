@@ -52,6 +52,11 @@
         <target state="translated">正在解除安裝工作負載套件 {0} 版本 {1}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">正在刪除工作負載版本 {0}。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">目錄</target>

@@ -17,8 +17,14 @@ namespace Microsoft.DotNet.Cli
 
         public static CliOption<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
         {
-            Description = LocalizableStrings.CmdNoCacheOptionDescription
+            Description = LocalizableStrings.CmdNoCacheOptionDescription,
+            Hidden = true
         }.ForwardAs("--no-cache");
+
+        public static CliOption<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
+        {
+            Description = LocalizableStrings.CmdNoCacheOptionDescription
+        }.ForwardAs("--no-http-cache");
 
         public static CliOption<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
         {

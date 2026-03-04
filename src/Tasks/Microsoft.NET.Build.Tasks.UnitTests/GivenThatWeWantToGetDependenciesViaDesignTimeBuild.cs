@@ -37,10 +37,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             Assert.Equal(2, task.PackageDependenciesDesignTime.Count());
 
-            // Verify only 
+            // Verify only
             // top.package1 is type 'package'
             // top.package2 is type 'unresolved'
-            // 
+            //
             // top.package3 is type 'unknown'. Should not appear in the list
             var item1 = task.PackageDependenciesDesignTime[0];
             Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
@@ -372,14 +372,38 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var item1 = task.PackageDependenciesDesignTime[0];
             Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
+            Assert.Equal("Error", item1.GetMetadata("DiagnosticLevel"));
 
             var item2 = task.PackageDependenciesDesignTime[1];
             Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
+            Assert.Equal(string.Empty, item2.GetMetadata("DiagnosticLevel"));
 
             var item3 = task.PackageDependenciesDesignTime[2];
             Assert.Equal("top.package3/1.0.0", item3.ItemSpec);
+            Assert.Equal("Warning", item3.GetMetadata("DiagnosticLevel"));
         }
 
+        /// <summary>
+        /// Create a NuGet assets file for a project with 3 direct references, and 3 transitive references.
+        /// </summary>
+        /// <param name="testRoot">Path to the NuGet global packages folder that the assets file will refer to.</param>
+        /// <param name="package2Type">Whether "top.package2" is a "package" (default) or "project" reference.</param>
+        /// <param name="package3Type">Whether "top.package2" is a "package" (default) or "project" reference.</param>
+        /// <returns>The JSON string representing the project.</returns>
+        /// <remarks>
+        /// The reference structure is as follows: <br/>
+        /// <c>proj<br/>
+        /// + top.package1<br/>
+        /// | + dependent.package1<br/>
+        /// | | + dependent.package3<br/>
+        /// | + dependent.package2<br/>
+        /// + top.package2<br/>
+        /// + top.package2<br/>
+        /// - + dependent.package1<br/>
+        /// - - + dependent.package3<br/>
+        /// </c>
+        /// dependent.package2 has an error message, and dependent.package3 has a warning.
+        /// </remarks>
         private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package")
         {
             var json =
@@ -587,7 +611,29 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
               }
           }
       }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1001",
+      "level": "Error",
+      "warningLevel": 2,
+      "message": "some warning message",
+      "libraryId": "dependent.package2",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1002",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "some warning message",
+      "libraryId": "dependent.package3",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }
 """;
             return json.Replace("PACKAGE2_TYPE", package2Type)

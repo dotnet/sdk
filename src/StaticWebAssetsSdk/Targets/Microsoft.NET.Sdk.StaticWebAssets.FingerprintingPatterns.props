@@ -1,0 +1,18 @@
+<Project>
+  <!-- Fingerprinting patterns for content. By default (most common case), we check for a single extension, like .js or .css.
+       In that situation we apply the fingerprint expression directly to the file name, like app.js -> app#[.{fingerprint}].js.
+       If we detect more than one extension, for example, Rcl.lib.module.js or Rcl.Razor.js, we retrieve the last extension and
+       check for a mapping in the list below. If we find a match, we apply the fingerprint expression to the file name, like
+       Rcl.lib.module.js -> Rcl#[.{fingerprint}].lib.module.js. If we don't find a match, we add the extension to the name and
+       continue matching against the next segment, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
+       If we don't find a match, we apply the fingerprint before the first extension, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
+  -->
+  <ItemGroup>
+    <StaticWebAssetFingerprintPattern Include="Initializer" Pattern="*.lib.module.js" Expression="#[.{fingerprint}]!" />
+    <StaticWebAssetFingerprintPattern Include="MvcJsModule" Pattern="*.cshtml.js" />
+    <StaticWebAssetFingerprintPattern Include="ComponentsJsModule" Pattern="*.razor.js" />
+    <StaticWebAssetFingerprintPattern Include="MvcScopedCss" Pattern="*.cshtml.css" />
+    <StaticWebAssetFingerprintPattern Include="ComponentsScopedCss" Pattern="*.razor.css" />
+    <StaticWebAssetFingerprintPattern Include="JsModuleManifest" Pattern="*.modules.json" />
+  </ItemGroup>
+</Project>

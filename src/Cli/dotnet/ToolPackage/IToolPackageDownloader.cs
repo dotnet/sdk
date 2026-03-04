@@ -10,13 +10,22 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal interface IToolPackageDownloader
     {
-        IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        IToolPackage InstallPackage(PackageLocation packageLocation,
+            PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
             RestoreActionConfig restoreActionConfig = null
+        );
+
+        NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false
         );
     }
 }

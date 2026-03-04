@@ -10,14 +10,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class LaunchSettingsProfile
     {
+        private static readonly JsonSerializerOptions s_serializerOptions = new(JsonSerializerDefaults.Web)
+        {
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+        };
+
         [JsonIgnore]
         public string? LaunchProfileName { get; set; }
         public string? ApplicationUrl { get; init; }
         public string? CommandName { get; init; }
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
-        public string? CommandLineArgs { get; init; }
-        public IReadOnlyDictionary<string, string>? EnvironmentVariables { get; init; }
 
         internal static LaunchSettingsProfile? ReadLaunchProfile(string projectDirectory, string? launchProfileName, IReporter reporter)
         {
@@ -32,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 launchSettings = JsonSerializer.Deserialize<LaunchSettingsJson>(
                     File.ReadAllText(launchSettingsPath),
-                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                    s_serializerOptions);
             }
             catch (Exception ex)
             {

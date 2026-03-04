@@ -17,6 +17,11 @@
         <target state="translated">Atualizar todas as cargas de trabalho instaladas.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="translated">Atualizar cargas de trabalho para uma versão anterior especificada pelo argumento. Use o 'histórico de carga de trabalho dotnet' para ver os registros de histórico de carga de trabalho disponíveis.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
         <source>Include workloads installed with earlier SDK versions in update.</source>
         <target state="translated">Inclua cargas de trabalho instaladas com versões anteriores do SDK na atualização.</target>
@@ -25,6 +30,16 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Atualizar cargas de trabalho com base no arquivo de definição de reversão especificado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="translated">Atualize para as versões de carga de trabalho especificadas no histórico sem alterar quais cargas de trabalho estão instaladas. As cargas de trabalho instaladas no momento serão atualizadas para corresponder à versão do histórico especificada.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadHistoryRecords">
+        <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
+        <target state="translated">Os registros de histórico de carga de trabalho são criados ao executar uma operação que modifica cargas de trabalho como atualização ou instalação. Não é possível atualizar do histórico até que existam registros de histórico de carga de trabalho.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -65,6 +80,16 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Falha ao baixar pacotes de atualização de carga de trabalho para o cache: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
+        <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
+        <target state="translated">A ID de um registro de histórico de carga de trabalho deve estar entre 1 e o número de registros de histórico de carga de trabalho, inclusive.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="translated">Argumento "{0}" inválido para o argumento --mode para atualização de carga de trabalho dotnet. Os únicos modos com suporte são "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

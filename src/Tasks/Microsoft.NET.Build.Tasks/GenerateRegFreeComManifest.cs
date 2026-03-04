@@ -6,7 +6,7 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateRegFreeComManifest : TaskWithAssemblyResolveHooks
+    public class GenerateRegFreeComManifest : TaskBase
     {
         [Required]
         public string IntermediateAssembly { get; set; }

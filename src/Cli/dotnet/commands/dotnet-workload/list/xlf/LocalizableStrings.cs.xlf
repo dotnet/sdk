@@ -32,6 +32,11 @@
         <target state="translated">Aktualizace jsou k dispozici pro následující úlohy: {0}. Pokud chcete získat nejnovější verzi, spusťte aktualizaci úlohy dotnet (`dotnet workload update`).</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(nenainstalováno)</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

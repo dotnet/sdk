@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                 return null;
             }
-            
+
             var tools = project.GetTools();
 
             return ResolveCommandSpecFromAllToolLibraries(
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.CommandFactory
                 ProjectToolsCommandResolverName,
                 string.Join(Environment.NewLine, possiblePackageRoots.Select((p) => $"- {p}"))));
 
-            List<NuGetFramework> toolFrameworksToCheck = new List<NuGetFramework>();
+            List<NuGetFramework> toolFrameworksToCheck = new();
             toolFrameworksToCheck.Add(project.DotnetCliToolTargetFramework);
 
             //  NuGet restore in Visual Studio may restore for netcoreapp1.0.  So if that happens, fall back to
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.CommandFactory
                 toolFrameworksToCheck.Add(NuGetFramework.Parse("netcoreapp1.0"));
             }
 
-            
+
             LockFile toolLockFile = null;
             NuGetFramework toolTargetFramework = null; ;
 
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.CommandFactory
         private static async Task<bool> FileExistsWithLock(string path)
         {
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                path, 
+                path,
                 lockedToken => Task.FromResult(File.Exists(path)),
                 CancellationToken.None);
         }
@@ -443,7 +443,7 @@ namespace Microsoft.DotNet.CommandFactory
                 Reporter.Verbose.WriteLine(string.Format(
                     LocalizableStrings.UnableToGenerateDepsJson,
                     e.Message));
-                
+
                 try
                 {
                     File.Delete(tempDepsFile);

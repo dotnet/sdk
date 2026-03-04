@@ -6,6 +6,8 @@ using System.CommandLine.Completions;
 using System.Text.Json;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Add.PackageReference;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -15,13 +17,34 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliArgument<string> CmdPackageArgument = new CliArgument<string>(LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.CmdPackageDescription
-        }.AddCompletions((context) => QueryNuGet(context.WordToComplete).Select(match => new CompletionItem(match)));
+        }.AddCompletions((context) =>
+        {
+            // we should take --prerelease flags into account for version completion
+            var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
+            return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
+        });
 
         public static readonly CliOption<string> VersionOption = new ForwardedOption<string>("--version", "-v")
         {
             Description = LocalizableStrings.CmdVersionDescription,
             HelpName = LocalizableStrings.CmdVersion
-        }.ForwardAsSingle(o => $"--version {o}");
+        }.ForwardAsSingle(o => $"--version {o}")
+            .AddCompletions((context) =>
+            {
+                // we can only do version completion if we have a package id
+                if (context.ParseResult.GetValue(CmdPackageArgument) is string packageId)
+                {
+                    // we should take --prerelease flags into account for version completion
+                    var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
+                    return QueryVersionsForPackage(packageId, context.WordToComplete, allowPrerelease, CancellationToken.None)
+                        .Result
+                        .Select(version => new CompletionItem(version.ToNormalizedString()));
+                }
+                else
+                {
+                    return Enumerable.Empty<CompletionItem>();
+                }
+            });
 
         public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
         {
@@ -81,44 +104,31 @@ namespace Microsoft.DotNet.Cli
             return command;
         }
 
-        public static IEnumerable<string> QueryNuGet(string match)
+        public static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient();
-
-            Stream result;
-
             try
             {
-                using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var response = httpClient.GetAsync($"https://api-v2v3search-0.nuget.org/autocomplete?q={match}&skip=0&take=100", cancellation.Token)
-                                         .Result;
-
-                result = response.Content.ReadAsStreamAsync().Result;
+                var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
+                var versions = await downloader.GetPackageIdsAsync(packageStem, allowPrerelease, cancellationToken: cancellationToken);
+                return versions;
             }
             catch (Exception)
             {
-                yield break;
-            }
-
-            foreach (var packageId in EnumerablePackageIdFromQueryResponse(result))
-            {
-                yield return packageId;
+                return Enumerable.Empty<string>();
             }
         }
 
-        internal static IEnumerable<string> EnumerablePackageIdFromQueryResponse(Stream result)
+        internal static async Task<IEnumerable<NuGetVersion>> QueryVersionsForPackage(string packageId, string versionFragment, bool allowPrerelease, CancellationToken cancellationToken)
         {
-            using (JsonDocument doc = JsonDocument.Parse(result))
+            try
             {
-                JsonElement root = doc.RootElement;
-
-                if (root.TryGetProperty("data", out var data))
-                {
-                    foreach (JsonElement packageIdElement in data.EnumerateArray())
-                    {
-                        yield return packageIdElement.GetString();
-                    }
-                }
+                var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
+                var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
+                return versions;
+            }
+            catch (Exception)
+            {
+                return Enumerable.Empty<NuGetVersion>();
             }
         }
     }

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-workload-install" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-workload-install" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet workload install
 .PP
@@ -29,8 +29,8 @@ dotnet-workload-install - Installs optional workloads.
 dotnet workload install <WORKLOAD_ID>...
     [--configfile <FILE>] [--disable-parallel]
     [--ignore-failed-sources] [--include-previews] [--interactive]
-    [--no-cache] [--skip-manifest-update]
-    [--source <SOURCE>] [--temp-dir <PATH>] [-v|--verbosity <LEVEL>]
+    [--no-cache] [--skip-manifest-update] [--source <SOURCE>]
+    [--temp-dir <PATH>] [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet workload install -?|-h|--help
 \f[R]
@@ -39,6 +39,16 @@ dotnet workload install -?|-h|--help
 .PP
 The \f[V]dotnet workload install\f[R] command installs one or more \f[I]optional workloads\f[R].
 Optional workloads can be installed on top of the .NET SDK to provide support for various application types, such as .NET MAUI and Blazor WebAssembly AOT (https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-preview-4/#blazor-webassembly-ahead-of-time-aot-compilation).
+.PP
+When the command is in \f[V]workload-set\f[R] update mode, workload versions installed:
+.IP \[bu] 2
+Are from the latest workload set or a workload set version specified in a global.json or \f[V]--version\f[R] option.
+.IP \[bu] 2
+Might not be the latest version available of each individual workload.
+For example, the \f[V]install\f[R] command won\[cq]t install a newer workload set if you previously used the \f[V]--version\f[R] flag.
+.PP
+For more information, see .NET SDK workload sets.
+\f[V]workload-set\f[R] update mode is available since 8.0.400 SDK.
 .PP
 Use dotnet workload search to learn what workloads are available to install.
 .SS When to run elevated
@@ -53,7 +63,7 @@ Suppose you have both .NET 6.0.100 SDK and .NET 6.0.200 SDK installed.
 The \f[V]dotnet workload\f[R] commands will give different results depending on which SDK version you select.
 This behavior applies to major and minor version and feature band differences, not to patch version differences.
 For example, .NET SDK 6.0.101 and 6.0.102 give the same results, whereas 6.0.100 and 6.0.200 give different results.
-You can specify the SDK version by using the \f[I]global.json\f[R] file or the \f[V]--sdk-version\f[R] option of the \f[V]dotnet workload\f[R] commands.
+You can specify the SDK version by using the \f[I]global.json\f[R] file.
 .SS Advertising manifests
 .PP
 The names and versions of the assets that a workload installation requires are maintained in \f[I]manifests\f[R].
@@ -174,6 +184,16 @@ Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 If you specify \f[V]detailed\f[R] or \f[V]diagnostic\f[R] verbosity, the command displays information about the Nuget packages that it downloads.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--version\f[B]\f[R]
+.RS 2
+.PP
+The workload set version to install or update to.
+If you specify the workload-set version in global.json, you can\[cq]t use the \f[V]--version\f[R] option to specify the workload-set version.
+To make it possible to use the \f[V]--version\f[R] option in that case, run the command outside of the path containing the global.json file.
+Available since 8.0.400 SDK.
+For more information, see .NET SDK workload sets.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

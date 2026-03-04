@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -18,9 +17,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ParseResult _parseResult;
         public string TargetFrameworkToInstall { get; private set; }
 
-        private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string[] _sources;
         private readonly VerbosityOptions _verbosity;
@@ -29,10 +26,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
             IToolPackageDownloader toolPackageDownloader = null,
+            string runtimeJsonPathForTests = null,
             RestoreActionConfig restoreActionConfig = null)
         {
             _parseResult = parseResult;
-            _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
@@ -41,11 +38,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                     = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
-            _toolPackageStore = toolPackageStoresAndDownloader.store;
-            _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.downloader;
+                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()), runtimeJsonPathForTests: runtimeJsonPathForTests);
+            _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
             _restoreActionConfig = restoreActionConfig;
-            
+
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
@@ -86,7 +82,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 throw new GracefulException(
-                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, (PackageId)packageId),
+                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
                     verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }

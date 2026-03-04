@@ -29,11 +29,11 @@ public static class ContainerHelpers
     internal const string PullHostObjectPass = "DOTNET_CONTAINER_PULL_REGISTRY_PWORD";
 
     internal const string DockerRegistryAlias = "docker.io";
-    
+
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
-    private static Regex envVarRegex = new Regex(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
+    private static Regex envVarRegex = new(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
 
     /// <summary>
     /// The enum contains possible error reasons during port parsing using <see cref="TryParsePort(string, out Port?, out ParsePortError?)"/> or <see cref="TryParsePort(string?, string?, out Port?, out ParsePortError?)"/>.
@@ -59,7 +59,7 @@ public static class ContainerHelpers
     {
         var portNo = 0;
         error = null;
-        if (String.IsNullOrEmpty(portNumber))
+        if (string.IsNullOrEmpty(portNumber))
         {
             error = ParsePortError.MissingPortNumber;
         }
@@ -271,7 +271,7 @@ public static class ContainerHelpers
             if (!IsAlpha(firstChar) && !IsNumeric(firstChar))
             {
                 // The name did not start with an alphanumeric character, so we can't normalize it.
-                var error = (nameof(Strings.InvalidImageName_NonAlphanumericStartCharacter), new []{ containerRepository });
+                var error = (nameof(Strings.InvalidImageName_NonAlphanumericStartCharacter), new[] { containerRepository });
                 return (null, null, error);
             }
 
@@ -313,7 +313,7 @@ public static class ContainerHelpers
             // check for warning/notification that we did indeed perform normalization
             if (normalizationOccurred)
             {
-                var warning = (nameof(Strings.NormalizedContainerName), new string[]{ containerRepository, normalizedImageName });
+                var warning = (nameof(Strings.NormalizedContainerName), new string[] { containerRepository, normalizedImageName });
                 return (normalizedImageName, warning, null);
             }
 

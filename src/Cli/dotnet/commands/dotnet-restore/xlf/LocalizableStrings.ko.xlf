@@ -27,6 +27,11 @@
         <target state="translated">현재 런타임을 대상 런타임으로 사용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoHttpCacheOptionDescription">
+        <source>Disable Http Caching for packages.</source>
+        <target state="translated">패키지에 대해 HTTP 캐싱을 사용하지 않도록 설정합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
         <target state="translated">SOURCE</target>

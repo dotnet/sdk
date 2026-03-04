@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using Microsoft.DotNet.Cli.Utils;
+
 namespace Microsoft.DotNet.Cli
 {
     public class FsiForwardingApp : ForwardingApp
@@ -8,7 +11,19 @@ namespace Microsoft.DotNet.Cli
         private const string FsiDllName = @"FSharp/fsi.dll";
         private const string FsiExeName = @"FSharp/fsi.exe";
 
-        public FsiForwardingApp(string[] arguments) : base(GetFsiAppPath(), arguments)
+        static string[] processArguments(string[] args)
+        {
+            var lang = UILanguageOverride.GetOverriddenUILanguage();
+            if (lang == null)
+            {
+                return args;
+            }
+            else
+            {
+                return args.Append($"--preferreduilang:{lang.Name}").ToArray();
+            }
+        }
+        public FsiForwardingApp(string[] arguments) : base(GetFsiAppPath(), processArguments(arguments))
         {
         }
 
@@ -22,7 +37,7 @@ namespace Microsoft.DotNet.Cli
             {
                 return false;
             }
-            
+
         }
 
         /*

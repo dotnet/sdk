@@ -1,0 +1,118 @@
+parameters:
+- name: oneESCompat
+  type: object
+  default:
+    publishTaskPrefix: ''
+
+- name: TestArguments
+  type: object
+  default:
+  - Name: Roslyn
+    _repo: "https://github.com/dotnet/roslyn"
+    _repoName: "dotnet/roslyn"
+    _targetSolution: "Compilers.slnf"
+    _branchName: "main"
+    _sha: "a3bb37003aeccad012a6e7dd220977599e8b8e65"
+    _useParentSdk: 0
+  - Name: sdk
+    _repo: "https://github.com/dotnet/sdk"
+    _repoName: "dotnet/sdk"
+    _targetSolution: "sdk.sln"
+    _branchName: "main"
+    _sha: "be25db95c376bffd508a023399ddd34392fe6458"
+    _useParentSdk: 0
+  - Name: project_system
+    _repo: "https://github.com/dotnet/project-system"
+    _repoName: "dotnet/project-system"
+    _targetSolution: "ProjectSystem.sln"
+    _branchName: "main"
+    _sha: "e660d54d6b3198751bd0502fe270e1657f32a913"
+    _useParentSdk: 1
+  - Name: msbuild
+    _repo: "https://github.com/dotnet/msbuild"
+    _repoName: "dotnet/msbuild"
+    _targetSolution: "MSBuild.sln"
+    _branchName: "main"
+    _sha: "f4fa6bde775a3f7cbb2bb90a349ee5fc759114f3"
+    _useParentSdk: 0
+  - Name: aspnetcore
+    _repo: "https://github.com/dotnet/aspnetcore"
+    _repoName: "dotnet/aspnetcore"
+    _targetSolution: "AspNetCore.sln"
+    _branchName: "main"
+    _sha: "d765d7ba4871a8c2cb38d4134553d3be9a7370d7"
+    _useParentSdk: 0
+  - Name: efcore
+    _repo: "https://github.com/dotnet/efcore"
+    _repoName: "dotnet/efcore"
+    _targetSolution: "All.sln"
+    _branchName: "main"
+    _sha: "1b2ff365399ab6736a9ea4c98ab1b60acda5d917"
+    _useParentSdk: 0
+  - Name: razor_tooling
+    _repo: "https://github.com/dotnet/razor"
+    _repoName: "dotnet/razor"
+    _targetSolution: "Razor.sln"
+    _branchName: "main"
+    _sha: "ecb4b595e3322a18c240f50a763868540f51eaaa"
+    _useParentSdk: 0
+
+- name: timeoutInMinutes
+  type: number
+  default: 90
+- name: runtimeSourceProperties
+  type: string
+  default: ''
+
+jobs:
+- job: Formatting_Check
+  displayName: Run Formatting Check
+  pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: $(DncEngPublicBuildPool)
+      demands: ImageOverride -equals 1es-windows-2022-open
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-windows-2022
+      os: windows
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  steps:
+  - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+  - template: /eng/common/templates/steps/enable-internal-sources.yml
+  - script: .\restore.cmd ${{ parameters.runtimeSourceProperties }}
+    displayName: Restore dependencies
+  - script: |
+      .\artifacts\sdk-build-env.bat
+        dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release  -- @eng\dotnet-format\validate.rsp
+    displayName: Run dotnet-format
+  - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
+    displayName: Publish Logs
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: dotnet-format formatting Check
+    continueOnError: true
+    condition: not(succeeded())
+
+- ${{ each testArgs in parameters.TestArguments }}:
+  - job: dotnet_format_integration_tests_${{ testArgs.Name }}
+    displayName: 'Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals 1es-windows-2022-open
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    steps:
+    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+    - template: /eng/common/templates/steps/enable-internal-sources.yml
+    - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare' -runtimeSourceProperties '${{ parameters.runtimeSourceProperties }}'
+      displayName: Prepare ${{ testArgs._repoName }} for formatting
+
+    - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
+      displayName: Run dotnet-format on ${{ testArgs._repoName }} ${{ testArgs._targetSolution }}
+
+    - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
+      displayName: Run dotnet-format on ${{ testArgs._repoName }} repo folder

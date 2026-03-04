@@ -1,0 +1,105 @@
+<Project>
+
+  <!-- This project must not use any prebuilts -->
+
+  <PropertyGroup>
+    <SkipArcadeSdkImport>true</SkipArcadeSdkImport>
+    <!-- Fake, to satisfy the SDK. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <ExternalTarballsDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'archive'))</ExternalTarballsDir>
+  </PropertyGroup>
+
+  <Target Name="Build"
+          DependsOnTargets="
+      UnpackTarballs;
+      BuildMSBuildSdkResolver;
+      ExtractToolsetPackages" />
+
+  <!-- Unpacks the Private.SourceBuilt.Artifacts archive -->
+  <Target Name="UnpackSourceBuiltArtifactsArchive"
+          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''"
+          Inputs="$(ExternalTarballsDir)"
+          Outputs="$(PrebuiltSourceBuiltPackagesPath)">
+    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" />
+    <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)"
+          WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)" />
+  </Target>
+
+  <!-- Check for a prebuilt dependency tarball and extract if exists. If there isn't one, we expect
+       the build to be working without prebuilts. -->
+  <Target Name="UnpackSourceBuiltPrebuiltsArchive"
+          Inputs="$(ExternalTarballsDir)"
+          Outputs="$(PrebuiltPackagesPath)">
+    <ItemGroup>
+      <SourceBuiltPrebuiltsTarballFile Include="$(ExternalTarballsDir)$(SourceBuiltPrebuiltsTarballName).*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <Exec Command="tar -xzf %(SourceBuiltPrebuiltsTarballFile.FullPath)"
+          WorkingDirectory="$(PrebuiltPackagesPath)"
+          Condition="'@(SourceBuiltPrebuiltsTarballFile)' != ''" />
+  </Target>
+
+  <!-- Copy SBRP packages to reference packages location. -->
+  <Target Name="CopySourceBuiltReferencePackages"
+          DependsOnTargets="UnpackSourceBuiltArtifactsArchive"
+          Inputs="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages"
+          Outputs="$(ReferencePackagesDir)">
+    <ItemGroup>
+      <UnpackedSourceBuildReferencePackage Include="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages/*" />
+    </ItemGroup>
+
+    <!-- Either move or copy the unpacked SBRP packages.
+         Don't move when the packages directory is externally provided. -->
+    <Move SourceFiles="@(UnpackedSourceBuildReferencePackage)"
+          DestinationFolder="$(ReferencePackagesDir)"
+          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
+    <Copy SourceFiles="@(UnpackedSourceBuildReferencePackage)"
+          DestinationFolder="$(ReferencePackagesDir)"
+          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''" />
+  </Target>
+
+  <Target Name="UnpackTarballs"
+          DependsOnTargets="UnpackSourceBuiltArtifactsArchive;
+                            UnpackSourceBuiltPrebuiltsArchive;
+                            CopySourceBuiltReferencePackages" />
+
+  <!-- Build the custom msbuild sdk resolver. -->
+  <Target Name="BuildMSBuildSdkResolver"
+          DependsOnTargets="UnpackTarballs"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)BuildMSBuildSdkResolver.complete">
+    <MSBuild Projects="$(TasksDir)Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver.csproj"
+             Targets="Restore"
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+
+    <MSBuild Projects="$(TasksDir)Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver.csproj"
+             Targets="Build" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)BuildMSBuildSdkResolver.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <!-- Extract toolset packages into the bootstrap folder -->
+  <Target Name="ExtractToolsetPackages" DependsOnTargets="UnpackTarballs">
+    <ItemGroup>
+      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PrebuiltSourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.NoTargets" SourceFolder="$(ReferencePackagesDir)" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(ReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
+    </ItemGroup>
+
+    <Unzip SourceFiles="%(ToolsetPackage.SourceFolder)%(ToolsetPackage.Identity).%(ToolsetPackage.Version).nupkg"
+           DestinationFolder="$(BootstrapPackagesDir)$([System.String]::Copy('%(ToolsetPackage.Identity)').ToLowerInvariant())/%(ToolsetPackage.Version)"
+           SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

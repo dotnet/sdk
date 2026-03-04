@@ -93,6 +93,16 @@ Pokud jste chtěli vytvořit manifest, použijte příznak --create-manifest-if-
         <target state="translated">Povolí nástroji .NET přejít na novější verze modulu .NET runtime, pokud není nainstalován modul runtime, na který cílí.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Nahradit všechny zdroje balíčků NuGet, které se mají použít při instalaci, těmito zdroji.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">ZDROJ</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Verze balíčku nástroje, který se má nainstalovat</target>
@@ -183,8 +193,8 @@ Další příčiny, včetně vynucování formátu názvů balíčků, najdete t
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

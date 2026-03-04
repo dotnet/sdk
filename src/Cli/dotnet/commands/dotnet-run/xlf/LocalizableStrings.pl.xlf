@@ -47,9 +47,9 @@ Rozróżnij nazwy profilów.</target>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
-        <source>Only one project can be specified at a time using the `-p` option.</source>
-        <target state="translated">Jednocześnie można określić tylko jeden projekt przy użyciu opcji „-p”.</target>
-        <note />
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="translated">Jednocześnie można określić tylko jeden projekt przy użyciu opcji -p.</target>
+        <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
@@ -60,6 +60,11 @@ Rozróżnij nazwy profilów.</target>
         <source>Building...</source>
         <target state="translated">Trwa kompilowanie...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
+        <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
+        <target state="translated">Uruchomienie obiektu docelowego {0} w celu odnalezienia poleceń przebiegu dla tego projektu nie powiodło się. Usuń błędy i ostrzeżenia, a następnie uruchom ponownie.</target>
+        <note>{0} is the name of an MSBuild target</note>
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -74,7 +79,7 @@ Rozróżnij nazwy profilów.</target>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
         <target state="translated">Nie kompiluj tego projektu przed uruchomieniem. Powoduje przyjęcie, że podano parametr --no-restore.</target>
-        <note />
+        <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -134,6 +139,11 @@ Bieżący element {1}: „{2}”.</target>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Ostrzeżenie NETSDK1174: Skrót -p dla polecenia --project jest przestarzały. Użyj polecenia --project.</target>
+        <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
+        <source>'{0}' is not a valid project file.</source>
+        <target state="translated">„{0}” nie jest prawidłowym plikiem projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
@@ -173,11 +183,6 @@ Bieżący element {1}: „{2}”.</target>
 {0}</source>
         <target state="translated">Wystąpił błąd podczas odczytywania pliku launchSettings.json.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandSpecifiecFileIsNotAValidProject">
-        <source>'{0}' is not a valid project file.</source>
-        <target state="translated">„{0}” nie jest prawidłowym plikiem projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">

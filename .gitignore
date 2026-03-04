@@ -42,3 +42,7 @@ cmake/
 
 # MSBuild Logs
 **/MSBuild_Logs/MSBuild_pid-*.failure.txt
+
+# Test results
+**/*.trx
+/TestResults

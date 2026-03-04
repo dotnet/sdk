@@ -25,8 +25,13 @@ partial class CreateImageIndex
     /// The base image tag.
     /// Ex: 6.0
     /// </summary>
-    [Required]
     public string BaseImageTag { get; set; }
+
+    /// <summary>
+    /// The base image digest.
+    /// Ex: sha256:12345...
+    /// </summary>
+    public string BaseImageDigest { get; set; }
 
     /// <summary>
     /// Manifests to include in the image index.
@@ -78,6 +83,7 @@ partial class CreateImageIndex
         BaseRegistry = string.Empty;
         BaseImageName = string.Empty;
         BaseImageTag = string.Empty;
+        BaseImageDigest = string.Empty;
         GeneratedContainers = Array.Empty<ITaskItem>();
         OutputRegistry = string.Empty;
         ArchiveOutputPath = string.Empty;
