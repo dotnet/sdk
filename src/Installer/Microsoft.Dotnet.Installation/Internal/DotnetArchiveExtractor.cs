@@ -7,8 +7,6 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-using Microsoft.Dotnet.Installation;
-
 internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
@@ -19,7 +17,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
-    private readonly HashSet<string> _extractedSubcomponents = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _extractedSubcomponents = [with(StringComparer.Ordinal)];
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -185,11 +183,11 @@ internal class DotnetArchiveExtractor : IDisposable
         // Extract everything, redirecting muxer to temp path
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler);
+            ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent);
         }
         else
         {
-            ExtractZipArchive(archivePath, targetDir, installTask, MuxerHandler);
+            ExtractZipArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent);
         }
 
         // After extraction, decide whether to keep or discard the temp muxer
@@ -230,14 +228,14 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
         try
         {
             InitializeExtractionProgress(installTask, CountTarEntries(decompressedPath));
-            ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler);
+            ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted);
         }
         finally
         {
@@ -289,7 +287,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// Extracts the contents of a tar file to the target directory.
     /// Exposed as internal static for testing.
     /// </summary>
-    internal void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -315,7 +313,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 }
             }
 
-            TrackSubcomponent(entry.Name);
+            onEntryExtracted?.Invoke(entry.Name);
             installTask?.Value += 1;
         }
     }
@@ -323,7 +321,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a zip archive to the target directory.
     /// </summary>
-    private void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
         InitializeExtractionProgress(installTask, zip.Entries.Count);
@@ -342,10 +340,10 @@ internal class DotnetArchiveExtractor : IDisposable
                 entry.ExtractToFile(destPath, overwrite: true);
             }
 
-            TrackSubcomponent(entry.FullName);
+            onEntryExtracted?.Invoke(entry.FullName);
             installTask?.Value += 1;
         }
-
+    }
 
     private void TrackSubcomponent(string relativeEntryPath)
     {

@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -17,12 +13,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal class GarbageCollector
 {
     private readonly DotnetupSharedManifest _manifest;
-    private readonly ChannelVersionResolver _channelVersionResolver;
 
-    public GarbageCollector(DotnetupSharedManifest manifest, ChannelVersionResolver? channelVersionResolver = null)
+    public GarbageCollector(DotnetupSharedManifest manifest)
     {
         _manifest = manifest;
-        _channelVersionResolver = channelVersionResolver ?? new ChannelVersionResolver();
     }
 
     /// <summary>
@@ -112,7 +106,7 @@ internal class GarbageCollector
     /// <summary>
     /// Finds the latest installation record that matches an install spec.
     /// </summary>
-    private Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
+    private static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
     {
         var matchingInstallations = installations
             .Where(i => i.Component == spec.Component && VersionMatchesSpec(i.Version, spec.VersionOrChannel))

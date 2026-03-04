@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
@@ -14,9 +15,11 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(SdkUninstallCommandParser.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(SdkUninstallCommandParser.InstallPathOption);
 
-    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
+    private readonly DotnetInstallManager _dotnetInstaller = new();
 
-    public override int Execute()
+    protected override string GetCommandName() => "sdk/uninstall";
+
+    protected override int ExecuteCore()
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -43,7 +46,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
         var allowedSources = ParseSourceFilter(_sourceFilter);
         if (allowedSources is null)
         {
-            AnsiConsole.MarkupLineInterpolated($"[red]Invalid --source value '{_sourceFilter}'. Valid values: explicit, previous, globaljson, all.[/]");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Invalid --source value '{_sourceFilter}'. Valid values: explicit, previous, globaljson, all.[/]");
             return 1;
         }
 
@@ -64,16 +67,16 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
             var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
             if (otherSourceSpecs.Count > 0)
             {
-                AnsiConsole.MarkupLineInterpolated($"[yellow]No [bold]explicit[/] install spec found for SDK channel '{_versionOrChannel}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No [bold]explicit[/] install spec found for SDK channel '{_versionOrChannel}', but matching specs exist with other sources:[/]");
                 foreach (var spec in otherSourceSpecs)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
                 }
                 AnsiConsole.MarkupLine("[dim]Use --source previous, --source globaljson, or --source all to target these specs.[/]");
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated($"[yellow]No install spec found for '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No install spec found for '{_versionOrChannel}' at {resolvedInstallPath}.[/]");
             }
             return 1;
         }
@@ -82,7 +85,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
         foreach (var spec in matchingSpecs)
         {
             manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated($"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
         }
 
         // Run garbage collection
@@ -94,7 +97,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
         {
             foreach (var d in deleted)
             {
-                AnsiConsole.MarkupLineInterpolated($"  Removed [dim]{d}[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
             }
         }
         else
@@ -114,7 +117,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
                 AnsiConsole.MarkupLine("[dim]The installation was not removed because it is still referenced by other install specs:[/]");
                 foreach (var spec in remainingSpecs)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} ({spec.InstallSource})[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} ({spec.InstallSource})[/]");
                 }
             }
         }

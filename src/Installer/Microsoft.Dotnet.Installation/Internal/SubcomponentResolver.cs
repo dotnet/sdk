@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
@@ -13,7 +10,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 internal static class SubcomponentResolver
 {
     // The number of path segments that identify a subcomponent for each known top-level folder.
-    private static readonly Dictionary<string, int> SubcomponentDepthByFolder = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, int> s_subcomponentDepthByFolder = new(StringComparer.OrdinalIgnoreCase)
     {
         ["sdk"] = 2,             // sdk/10.0.101
         ["shared"] = 3,          // shared/Microsoft.NETCore.App/10.0.1
@@ -47,7 +44,7 @@ internal static class SubcomponentResolver
         }
 
         var topLevelFolder = segments[0];
-        if (!SubcomponentDepthByFolder.TryGetValue(topLevelFolder, out int requiredDepth))
+        if (!s_subcomponentDepthByFolder.TryGetValue(topLevelFolder, out int requiredDepth))
         {
             // Unknown top-level folder — not a recognized subcomponent
             return null;
@@ -68,6 +65,6 @@ internal static class SubcomponentResolver
     /// </summary>
     public static bool TryGetDepth(string topLevelFolderName, out int depth)
     {
-        return SubcomponentDepthByFolder.TryGetValue(topLevelFolderName, out depth);
+        return s_subcomponentDepthByFolder.TryGetValue(topLevelFolderName, out depth);
     }
 }

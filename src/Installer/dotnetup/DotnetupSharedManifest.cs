@@ -65,7 +65,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         catch (FileNotFoundException)
         {
             // Manifest doesn't exist yet - return empty list
-            return [];
+            return new();
         }
         catch (IOException ex)
         {
@@ -269,7 +269,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
         if (validator is not null)
         {
-            var validInstalls = installs.Where(i => validator.Validate(i)).ToList();
+            var validInstalls = installs.Where(validator.Validate).ToList();
             if (validInstalls.Count != installs.Count)
             {
                 // Remove invalid installations from the manifest

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Deployment.DotNet.Releases;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
@@ -15,10 +15,11 @@ internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(SdkUpdateCommandParser.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(SdkUpdateCommandParser.InstallPathOption);
 
-    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new();
 
-    public override int Execute()
+    protected override string GetCommandName() => "sdk/update";
+
+    protected override int ExecuteCore()
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -64,7 +65,7 @@ internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
                 var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
                 if (latestVersion is null)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[yellow]Could not resolve latest version for channel '{spec.VersionOrChannel}'.[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for channel '{spec.VersionOrChannel}'.[/]");
                     continue;
                 }
 
@@ -74,11 +75,11 @@ internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
 
                 if (alreadyInstalled)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"{spec.Component.GetDisplayName()} [blue]{latestVersion}[/] is already up to date.");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{spec.Component.GetDisplayName()} [blue]{latestVersion}[/] is already up to date.");
                     continue;
                 }
 
-                AnsiConsole.MarkupLineInterpolated($"Updating {spec.Component.GetDisplayName()} to [blue]{latestVersion}[/]...");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {spec.Component.GetDisplayName()} to [blue]{latestVersion}[/]...");
 
                 // Install the new version (this releases and reacquires the mutex internally)
                 var installRequest = new DotnetInstallRequest(
@@ -96,12 +97,12 @@ internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
 
                 if (result is not null)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[green]Updated {spec.Component.GetDisplayName()} to {latestVersion}.[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {spec.Component.GetDisplayName()} to {latestVersion}.[/]");
                     anyUpdated = true;
                 }
                 else
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]Failed to update {spec.Component.GetDisplayName()} to {latestVersion}.[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {spec.Component.GetDisplayName()} to {latestVersion}.[/]");
                 }
             }
 
@@ -115,7 +116,7 @@ internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
                 {
                     foreach (var d in deleted)
                     {
-                        AnsiConsole.MarkupLineInterpolated($"  Removed [dim]{d}[/]");
+                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
                     }
                 }
             }

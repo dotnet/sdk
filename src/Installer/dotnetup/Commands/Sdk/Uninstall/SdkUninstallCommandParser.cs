@@ -34,18 +34,18 @@ internal static class SdkUninstallCommandParser
 
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
-    private static readonly Command SdkUninstallCommand = ConstructCommand();
+    private static readonly Command s_sdkUninstallCommand = ConstructCommand();
 
     public static Command GetSdkUninstallCommand()
     {
-        return SdkUninstallCommand;
+        return s_sdkUninstallCommand;
     }
 
-    private static readonly Command RootUninstallCommand = ConstructCommand();
+    private static readonly Command s_rootUninstallCommand = ConstructCommand();
 
     public static Command GetRootUninstallCommand()
     {
-        return RootUninstallCommand;
+        return s_rootUninstallCommand;
     }
 
     private static Command ConstructCommand()
