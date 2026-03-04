@@ -33,6 +33,10 @@
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.ResxSourceGenerator" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
     <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
