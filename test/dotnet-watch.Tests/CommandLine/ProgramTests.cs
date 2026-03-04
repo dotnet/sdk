@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.WaitUntilOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X")}'.");
+            await App.WaitUntilOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'.");
             await App.WaitUntilOutputContains(@"dotnet watch 🔨 Failed to load project graph.");
             await App.WaitUntilOutputContains("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
         }

@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Xml;
 using Microsoft.Build.Construction;
@@ -84,8 +85,25 @@ public sealed class VirtualProjectBuilder
         return GetTempSubpath(directoryName);
     }
 
+    private const string CsprojExtension = ".csproj";
+
     public static string GetVirtualProjectPath(string entryPointFilePath)
-        => entryPointFilePath + ".csproj";
+        => entryPointFilePath + CsprojExtension;
+
+    public static bool TryGetEntryPointFilePathFromVirtualProjectPath(string projectPath, [NotNullWhen(returnValue: true)] out string? entryPointFilePath)
+    {
+        if (projectPath.EndsWith(CsprojExtension, StringComparison.OrdinalIgnoreCase))
+        {
+            entryPointFilePath = projectPath[..^CsprojExtension.Length];
+            if (IsValidEntryPointPath(entryPointFilePath))
+            {
+                return true;
+            }
+        }
+
+        entryPointFilePath = null;
+        return false;
+    }
 
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
