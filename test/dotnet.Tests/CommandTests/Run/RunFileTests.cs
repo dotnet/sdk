@@ -2354,7 +2354,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(includedFile, $"""
             #:property PublishAot=false
             #:property LangVersion=preview
-            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            #:property TargetFrameworks=net9.0;{ToolsetInfo.CurrentTargetFramework}
             """);
 
         File.WriteAllText(programFile, $"""
@@ -2374,7 +2374,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute("--no-interactive")
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
-            .And.HaveStdErrContaining("netstandard2.0");
+            .And.HaveStdErrContaining("net9.0");
 
         new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
             .WithWorkingDirectory(testInstance.Path)
