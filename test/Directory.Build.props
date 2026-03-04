@@ -18,7 +18,7 @@
          throughout the codebase is a separate follow-up task (https://github.com/dotnet/sdk/issues/52914) -->
     <NoWarn>$(NoWarn);NU5125;NU5123;xUnit1051</NoWarn>
 
-    <!-- XUnit.V3 migration is incremental. Eenabling MTP will come in a later phase.  -->
+    <!-- XUnit.V3 migration is incremental. Enabling MTP will come in a later phase (https://github.com/dotnet/sdk/issues/52914).  -->
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
 
     <DebugType>embedded</DebugType>

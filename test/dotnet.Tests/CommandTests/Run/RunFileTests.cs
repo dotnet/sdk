@@ -19,8 +19,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
     // Ensure OutOfTreeBaseDirectory (and its NuGet cache warm-up) runs before any test.
-    // xUnit v3 uses hash-based test ordering which may run CSC-only tests first,
-    // before the NuGet cache has been populated with SDK dependencies like ILLink analyzers.
     static RunFileTests() => _ = OutOfTreeBaseDirectory;
 
     private static readonly string s_program = /* lang=C#-Test */ """
@@ -133,11 +131,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
-        // Warm up the NuGet cache by building a simple file-based app via MSBuild.
-        // This ensures SDK dependency packages (e.g., microsoft.net.illink.tasks analyzers)
-        // are restored to the global packages folder. Without this, the first file-based app
-        // test may fall back from CSC-only mode to MSBuild mode because the ILLink analyzer
-        // DLLs are not yet present, causing tests that assert CSC-only behavior to fail.
         WarmUpNuGetCache(outOfTreeBaseDirectory);
 
         // Check there are no implicit build files that would prevent testing optimizations.
@@ -154,7 +147,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// Without this, <see cref="VirtualProjectBuildingCommand.GetBuildLevel"/> falls back to
     /// <see cref="BuildLevel.All"/> because the NuGet-provided DLLs checked by
     /// <see cref="CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache"/> are missing,
-    /// causing tests that assert CSC-only behavior to fail.
+    /// causing tests that assert CSC-only behavior to fail depending on the order they run in.
     /// </summary>
     private static void WarmUpNuGetCache(string outOfTreeBaseDirectory)
     {
