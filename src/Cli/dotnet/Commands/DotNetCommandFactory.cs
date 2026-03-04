@@ -1,25 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
 
-public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null) : ICommandFactory
+public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? currentWorkingDirectory = null) : ICommandFactory
 {
     private readonly bool _alwaysRunOutOfProc = alwaysRunOutOfProc;
-    private readonly string _currentWorkingDirectory = currentWorkingDirectory;
+    private readonly string? _currentWorkingDirectory = currentWorkingDirectory;
 
     public ICommand Create(
         string commandName,
         IEnumerable<string> args,
-        NuGetFramework framework = null,
+        NuGetFramework? framework = null,
         string configuration = Constants.DefaultConfiguration)
     {
         if (!_alwaysRunOutOfProc && TryGetBuiltInCommand(commandName, out var builtInCommand))
@@ -41,7 +43,42 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string curren
             commandFunc = (args) => Parser.Invoke([commandName, ..args]);
             return true;
         }
-        commandFunc = null;
+        // Dummy delegate for failure case.
+        commandFunc = (args) => 1;
         return false;
+    }
+
+    internal static CommandBase CreateVirtualOrPhysicalCommand(
+        System.CommandLine.Command commandDefinition,
+        Argument<string[]> catchAllUserInputArgument,
+        Func<MSBuildArgs, string, VirtualProjectBuildingCommand> createVirtualCommand,
+        Func<MSBuildArgs, string?, CommandBase> createPhysicalCommand,
+        IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
+        ParseResult parseResult,
+        string? msbuildPath = null,
+        Func<MSBuildArgs, MSBuildArgs>? transformer = null)
+    {
+        var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
+        var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
+        {
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
+            [
+                .. optionsToUseWhenParsingMSBuildFlags,
+                CommonOptions.CreateGetPropertyOption(),
+                CommonOptions.CreateGetItemOption(),
+                CommonOptions.CreateGetTargetResultOption(),
+                CommonOptions.CreateGetResultOutputFileOption(),
+            ]);
+            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+            return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+        }
+        else
+        {
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
+            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+            return createPhysicalCommand(msbuildArgs, msbuildPath);
+        }
     }
 }
