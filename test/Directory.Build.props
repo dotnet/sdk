@@ -18,9 +18,7 @@
          throughout the codebase is a separate follow-up task (https://github.com/dotnet/sdk/issues/52914) -->
     <NoWarn>$(NoWarn);NU5125;NU5123;xUnit1051</NoWarn>
 
-    <!-- Disable MTP runner for test/ projects. Helix runs these via vstest.console which
-         requires testhost.dll. With MTP enabled, testhost.dll is not included and the
-         test host process crashes. -->
+    <!-- XUnit.V3 migration is incremental. Eenabling MTP will come in a later phase.  -->
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
 
     <DebugType>embedded</DebugType>

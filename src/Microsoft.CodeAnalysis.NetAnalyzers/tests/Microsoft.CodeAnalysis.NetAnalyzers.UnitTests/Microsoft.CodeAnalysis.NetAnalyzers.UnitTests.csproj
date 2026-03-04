@@ -8,6 +8,8 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <!-- RS1024: Compare symbols correctly https://github.com/dotnet/roslyn-analyzers/issues/6381 -->
     <NoWarn>$(NoWarn);RS1024</NoWarn>
+    <!-- XUnit.V3 migration is incremental. Eenabling MTP will come in a later phase.  -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
