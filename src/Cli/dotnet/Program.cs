@@ -54,9 +54,32 @@ public class Program
             ?.SetStartTime(Process.GetCurrentProcess().StartTime)
             ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
             ?.AddTag("process.executable.name", "dotnet");
-        TelemetryInstance = InitializeTelemetry();
-        TrackHostStartup(TelemetryInstance, s_mainTimeStamp);
+
+        TelemetryInstance = new TelemetryClient();
+        TelemetryEventEntry.Subscribe(TelemetryInstance.TrackEvent);
+        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+        if (CommandLoggingContext.IsVerbose)
+        {
+            Console.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
+        }
+
+        TrackHostStartup();
         SetupMSBuildEnvironmentInvariants();
+
+        static void TrackHostStartup()
+        {
+            var hostStartupActivity = Activities.Source.StartActivity("host-startup")
+                ?.SetStartTime(Process.GetCurrentProcess().StartTime);
+            if (TelemetryInstance.Enabled && hostStartupActivity is not null)
+            {
+                // Get the global.json state to report in telemetry along with this command invocation.
+                s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+                hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
+            }
+            hostStartupActivity?.SetEndTime(s_mainTimeStamp)
+                ?.SetStatus(ActivityStatusCode.Ok)
+                ?.Dispose();
+        }
     }
 
     public static int Main(string[] args)
@@ -162,21 +185,6 @@ public class Program
         {
             return carrier.TryGetValue(key, out var value) ? value : null;
         }
-    }
-
-    private static void TrackHostStartup(ITelemetryClient telemetryClient, DateTime mainTimeStamp)
-    {
-        var hostStartupActivity = Activities.Source.StartActivity("host-startup");
-        hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        if (telemetryClient.Enabled && hostStartupActivity is not null)
-        {
-            // Get the global.json state to report in telemetry along with this command invocation.
-            s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
-            hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
-        }
-        hostStartupActivity?.SetEndTime(mainTimeStamp)
-            ?.SetStatus(ActivityStatusCode.Ok)
-            ?.Dispose();
     }
 
     /// <summary>
@@ -321,20 +329,6 @@ public class Program
         }
 
         return null;
-    }
-
-    private static ITelemetryClient InitializeTelemetry()
-    {
-        var telemetryClient = new TelemetryClient();
-        TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
-        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-
-        if (CommandLoggingContext.IsVerbose)
-        {
-            Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
-        }
-
-        return telemetryClient;
     }
 
     private static ParseResult ParseArgs(string[] args)
