@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -25,8 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken,
-            string? binaryLogPath = null)
+            CancellationToken cancellationToken)
         {
             var logWorkspaceWarnings = formatOptions.LogLevel == LogLevel.Trace;
 
@@ -38,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
             {
@@ -126,6 +125,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
+            string? targetFramework,
             CancellationToken cancellationToken)
         {
             if (requiresSemantics &&
@@ -135,7 +135,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 throw new Exception("Restore operation failed.");
             }
 
-            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
+            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, targetFramework, cancellationToken);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(
