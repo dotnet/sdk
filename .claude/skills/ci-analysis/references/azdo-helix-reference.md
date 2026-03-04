@@ -17,17 +17,9 @@ Use `-Repository` to specify the target:
 ./scripts/Get-CIStatus.ps1 -PRNumber 12345 -Repository "dotnet/aspnetcore"
 ```
 
-## Build Definition IDs (Example: dotnet/runtime)
+## Build Definition IDs
 
-Each repository has its own build definition IDs. Here are common ones for dotnet/runtime:
-
-| Definition ID | Name | Description |
-|---------------|------|-------------|
-| `129` | runtime | Main PR validation build |
-| `133` | runtime-dev-innerloop | Fast innerloop validation |
-| `139` | dotnet-linker-tests | ILLinker/trimming tests |
-
-**Note:** The script auto-discovers builds for a PR, so you rarely need to know definition IDs.
+Each repository has its own build definition IDs. The script auto-discovers builds for a PR, so you rarely need to know definition IDs.
 
 ## Azure DevOps Organizations
 
@@ -44,15 +36,11 @@ Override with:
 ./scripts/Get-CIStatus.ps1 -BuildId 1276327 -Organization "dnceng" -Project "internal-project-guid"
 ```
 
-## Common Pipeline Names (Example: dotnet/runtime)
+## Common Pipeline Names (dotnet/sdk)
 
 | Pipeline | Description |
 |----------|-------------|
-| `runtime` | Main PR validation build |
-| `runtime-dev-innerloop` | Fast innerloop validation |
-| `dotnet-linker-tests` | ILLinker/trimming tests |
-| `runtime-wasm-perf` | WASM performance tests |
-| `runtime-libraries enterprise-linux` | Enterprise Linux compatibility |
+| `dotnet-sdk-public` | Main PR validation build (mix of local and Helix tests) |
 
 Other repos have different pipelines - the script discovers them automatically from the PR.
 
@@ -64,8 +52,10 @@ Other repos have different pipelines - the script discovers them automatically f
 - [dnceng-public AzDO](https://dev.azure.com/dnceng-public/public/_build): Public builds for all dotnet repos
 
 ### Repository-specific docs:
-- [runtime: Triaging Failures](https://github.com/dotnet/runtime/blob/main/docs/workflow/ci/triaging-failures.md)
-- [runtime: Area Owners](https://github.com/dotnet/runtime/blob/main/docs/area-owners.md)
+
+- [SDK: Contributing](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/contributing.md)
+- [SDK: Repro Helix Failures Locally](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/repro-helix-failure.md)
+- [SDK: Guide to snapshot-based testing](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/snapshot-based-testing.md)
 
 ## Test Execution Types
 

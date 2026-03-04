@@ -20,7 +20,7 @@
     The Helix work item name to query (requires -HelixJob).
 
 .PARAMETER Repository
-    The GitHub repository (owner/repo format). Default: dotnet/runtime
+    The GitHub repository (owner/repo format). Default: dotnet/sdk
 
 .PARAMETER Organization
     The Azure DevOps organization. Default: dnceng-public
@@ -104,7 +104,7 @@ param(
     [Parameter(ParameterSetName = 'ClearCache', Mandatory = $true)]
     [switch]$ClearCache,
 
-    [string]$Repository = "dotnet/runtime",
+    [string]$Repository = "dotnet/sdk",
     [string]$Organization = "dnceng-public",
     [string]$Project = "cbb18261-c48f-4abb-8651-8cdcb5474649",
     [switch]$ShowLogs,
@@ -918,7 +918,7 @@ function Search-MihuBotIssues {
     param(
         [string[]]$SearchTerms,
         [string]$ExtraContext = "",
-        [string]$Repository = "dotnet/runtime",
+        [string]$Repository = "dotnet/sdk",
         [bool]$IncludeOpen = $true,
         [bool]$IncludeClosed = $true,
         [int]$TimeoutSec = 30
@@ -1000,7 +1000,7 @@ function Search-KnownIssues {
     param(
         [string]$TestName,
         [string]$ErrorMessage,
-        [string]$Repository = "dotnet/runtime"
+        [string]$Repository = "dotnet/sdk"
     )
 
     # Search for known issues using the "Known Build Error" label

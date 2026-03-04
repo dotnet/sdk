@@ -34,18 +34,18 @@ However, the analysis patterns in this skill (interpreting failures, correlating
 ## Quick Start
 
 ```powershell
-# Analyze PR failures (most common) - defaults to dotnet/runtime
-./scripts/Get-CIStatus.ps1 -PRNumber 123445 -ShowLogs
+# Analyze PR failures (most common) - defaults to dotnet/sdk
+./scripts/Get-CIStatus.ps1 -PRNumber 53247 -ShowLogs
 
 # Analyze by build ID
 ./scripts/Get-CIStatus.ps1 -BuildId 1276327 -ShowLogs
 
 # Query specific Helix work item
-./scripts/Get-CIStatus.ps1 -HelixJob "4b24b2c2-..." -WorkItem "System.Net.Http.Tests"
+./scripts/Get-CIStatus.ps1 -HelixJob "4b24b2c2-..." -WorkItem "Microsoft.NET.Sdk.Tests.dll.1"
 
 # Other dotnet repositories
 ./scripts/Get-CIStatus.ps1 -PRNumber 12345 -Repository "dotnet/aspnetcore"
-./scripts/Get-CIStatus.ps1 -PRNumber 67890 -Repository "dotnet/sdk"
+./scripts/Get-CIStatus.ps1 -PRNumber 67890 -Repository "dotnet/runtime"
 ./scripts/Get-CIStatus.ps1 -PRNumber 11111 -Repository "dotnet/roslyn"
 ```
 
@@ -56,7 +56,7 @@ However, the analysis patterns in this skill (interpreting failures, correlating
 | `-PRNumber` | GitHub PR number to analyze |
 | `-BuildId` | Azure DevOps build ID |
 | `-ShowLogs` | Fetch and display Helix console logs |
-| `-Repository` | Target repo (default: dotnet/runtime) |
+| `-Repository` | Target repo (default: dotnet/sdk) |
 | `-MaxJobs` | Max failed jobs to show (default: 5) |
 | `-SearchMihuBot` | Search MihuBot for related issues |
 
