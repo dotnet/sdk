@@ -315,9 +315,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // Then do a build.
             if (exitCode == 0 && !NoBuild && !evalOnly)
             {
+                var effectiveTargets = Builder.RequestedTargets is { Length: > 0 } requestedTargets
+                    ? requestedTargets
+                    : [Constants.Build, Constants.CoreCompile];
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.ComputeRunArguments, Constants.CoreCompile]);
+                    targetsToBuild: effectiveTargets);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
