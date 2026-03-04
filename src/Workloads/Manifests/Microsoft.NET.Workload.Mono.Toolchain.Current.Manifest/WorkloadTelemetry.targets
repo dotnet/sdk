@@ -8,6 +8,8 @@
     <ItemGroup>
       <WorkloadPublishProperties Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)" />
       <WorkloadPublishProperties Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+      <WorkloadPublishProperties Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
+      <WorkloadPublishProperties Include="PublishReadyToRun" Value="$(PublishReadyToRun)" />
       <WorkloadPublishProperties Include="BlazorWasm" Value="$(_WorkloadUsesBlazorWasm)" />
       <WorkloadPublishProperties Include="WasmSDK" Value="$(_WorkloadUsesWasmSDK)" />
       <WorkloadPublishProperties Include="UsesMaui" Value="$(UseMaui)" />
@@ -22,6 +24,26 @@
     </ItemGroup>
 
     <AllowEmptyTelemetry EventName="WorkloadPublishProperties" EventData="@(WorkloadPublishProperties)" />
+  </Target>
+
+  <Target Name="_WorkloadBuildTelemetry"
+          Condition="'$(_MonoWorkloadTargetsMobile)' == 'true' and '$(TargetsCurrent)' == 'true'"
+          AfterTargets="Build"
+          DependsOnTargets="_WorkloadGatherTelemetryData">
+
+    <ItemGroup>
+      <WorkloadBuildProperties Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)" />
+      <WorkloadBuildProperties Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+      <WorkloadBuildProperties Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
+      <WorkloadBuildProperties Include="PublishReadyToRun" Value="$(PublishReadyToRun)" />
+      <WorkloadBuildProperties Include="UsesMaui" Value="$(UseMaui)" />
+      <WorkloadBuildProperties Include="MonoAOT" Value="$(_WorkloadUsesMonoAOT)" />
+      <WorkloadBuildProperties Include="NativeAOT" Value="$(_WorkloadUsesNativeAOT)" />
+      <WorkloadBuildProperties Include="Interp" Value="$(_WorkloadUsesInterpreter)" />
+      <WorkloadBuildProperties Include="ResolvedRuntimePack" Value="$(_MonoWorkloadRuntimePackPackageVersion)" />
+    </ItemGroup>
+
+    <AllowEmptyTelemetry EventName="WorkloadBuildProperties" EventData="@(WorkloadBuildProperties)" />
   </Target>
 
   <Target Name="_WorkloadGatherTelemetryData">

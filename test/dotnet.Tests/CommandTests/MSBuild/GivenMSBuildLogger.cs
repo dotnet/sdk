@@ -96,6 +96,36 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
         }
 
+        [Fact]
+        public void ItPassesThroughWorkloadBuildPropertiesTelemetry()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.WorkloadBuildPropertiesTelemetryEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "TargetPlatformIdentifier", "ios"},
+                    { "RuntimeIdentifier", "ios-arm64"},
+                    { "UseMonoRuntime", "false"},
+                    { "PublishReadyToRun", "true"},
+                    { "UsesMaui", "true"},
+                    { "MonoAOT", "null"},
+                    { "NativeAOT", "null"},
+                    { "Interp", "null"},
+                    { "ResolvedRuntimePack", "10.0.0"}
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be(MSBuildLogger.WorkloadBuildPropertiesTelemetryEventName);
+            fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(9);
+            fakeTelemetry.LogEntry.Properties["UseMonoRuntime"].Should().Be("false");
+            fakeTelemetry.LogEntry.Properties["TargetPlatformIdentifier"].Should().Be("ios");
+        }
+
         // Reproduce https://github.com/dotnet/sdk/issues/3868
         [Fact]
         public void ItCanSendProperties()
