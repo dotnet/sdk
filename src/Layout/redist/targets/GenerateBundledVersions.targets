@@ -802,7 +802,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET100RuntimePackVersion)"
                         Crossgen2PortableRuntimeIdentifiers="@(Net100Crossgen2SupportedPortableRids, '%3B')"
-                        Crossgen2RuntimeIdentifiers="@(Net110Crossgen2SupportedRids, '%3B')"
+                        Crossgen2RuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
@@ -811,7 +811,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(_NET100RuntimePackVersion)"
                          ILCompilerPortableRuntimeIdentifiers="@(Net100ILCompilerSupportedPortableRids, '%3B')"
-                         ILCompilerRuntimeIdentifiers="@(Net110ILCompilerSupportedRids, '%3B')"
+                         ILCompilerRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
                          />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
@@ -819,7 +819,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(_NET100RuntimePackVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(Net110NativeAOTRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(Net100NativeAOTRuntimePackRids, '%3B')"
                       RuntimePackLabels="NativeAOT"
                       />
 
