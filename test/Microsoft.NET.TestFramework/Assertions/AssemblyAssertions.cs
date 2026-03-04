@@ -3,7 +3,7 @@
 
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using FluentAssertions.Execution;
+using FluentAssertions;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {
@@ -22,9 +22,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             var types = GetDeclaredTypeNames();
 
-            Execute.Assertion
-                .ForCondition(types.Contains(expectedType))
-                .FailWith($"Expected type {expectedType} to be in assembly, but it is not.");
+            types.Should().Contain(expectedType, $"Expected type {expectedType} to be in assembly, but it is not.");
             return new AndConstraint<AssemblyAssertions>(this);
         }
 
@@ -32,9 +30,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             var types = GetDeclaredTypeNames();
 
-            Execute.Assertion
-                .ForCondition(!types.Contains(expectedType))
-                .FailWith($"Expected type {expectedType} to not be in assembly, but it is.");
+            types.Should().NotContain(expectedType, $"Expected type {expectedType} to not be in assembly, but it is.");
             return new AndConstraint<AssemblyAssertions>(this);
         }
 
@@ -42,9 +38,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             var attributes = GetAssemblyAttributes();
 
-            Execute.Assertion
-                .ForCondition(attributes.Contains(expectedAttribute))
-                .FailWith($"Expected attribute {expectedAttribute} to be in assembly, but it is not.");
+            attributes.Should().Contain(expectedAttribute, $"Expected attribute {expectedAttribute} to be in assembly, but it is not.");
             return new AndConstraint<AssemblyAssertions>(this);
         }
 

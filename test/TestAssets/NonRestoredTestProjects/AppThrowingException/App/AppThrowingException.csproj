@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dotnet-throwingtool</AssemblyName>
     <PackageId>$(AssemblyName)</PackageId>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
 </Project>

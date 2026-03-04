@@ -1,28 +1,30 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class RootedCommandResolver : ICommandResolver
 {
-    public class RootedCommandResolver : ICommandResolver
+    public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
-        public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
+        if (commandResolverArguments.CommandName == null)
         {
-            if (commandResolverArguments.CommandName == null)
-            {
-                return null;
-            }
-
-            if (Path.IsPathRooted(commandResolverArguments.CommandName))
-            {
-                var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    commandResolverArguments.CommandArguments.OrEmptyIfNull());
-
-                return new CommandSpec(commandResolverArguments.CommandName, escapedArgs);
-            }
-
             return null;
         }
+
+        if (Path.IsPathRooted(commandResolverArguments.CommandName))
+        {
+            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                commandResolverArguments.CommandArguments.OrEmptyIfNull());
+
+            return new CommandSpec(commandResolverArguments.CommandName, escapedArgs);
+        }
+
+        return null;
     }
 }

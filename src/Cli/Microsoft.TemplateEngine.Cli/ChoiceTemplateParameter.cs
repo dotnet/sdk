@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.Help;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli
@@ -68,11 +68,11 @@ namespace Microsoft.TemplateEngine.Cli
             };
         }
 
-        protected override CliOption GetBaseOption(IReadOnlySet<string> aliases)
+        protected override Option GetBaseOption(IReadOnlySet<string> aliases)
         {
             string name = GetName(aliases);
 
-            CliOption<string> option = new(name)
+            Option<string> option = new(name)
             {
                 CustomParser = result => GetParseChoiceArgument(this)(result),
                 Arity = new ArgumentArity(DefaultIfOptionWithoutValue == null ? 1 : 0, AllowMultipleValues ? _choices.Count : 1),

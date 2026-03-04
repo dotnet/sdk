@@ -7,27 +7,27 @@ namespace Microsoft.NET.TestFramework
 {
     public class TestCommandLine
     {
-        public List<string> RemainingArgs { get; private set; }
+        public List<string>? RemainingArgs { get; private set; }
 
         public bool UseFullFrameworkMSBuild { get; private set; }
 
-        public string FullFrameworkMSBuildPath { get; private set; }
+        public string? FullFrameworkMSBuildPath { get; private set; }
 
-        public string DotnetHostPath { get; private set; }
+        public string? DotnetHostPath { get; private set; }
 
-        public string SDKRepoPath { get; private set; }
+        public string? SDKRepoPath { get; private set; }
 
-        public string SDKRepoConfiguration { get; private set; }
+        public string? SDKRepoConfiguration { get; private set; }
 
         public bool NoRepoInference { get; private set; }
 
         public bool ShouldShowHelp { get; private set; }
 
-        public string SdkVersion { get; private set; }
+        public string? SdkVersion { get; private set; }
 
-        public string TestExecutionDirectory { get; set; }
+        public string? TestExecutionDirectory { get; set; }
 
-        public string MsbuildAdditionalSdkResolverFolder { get; set; }
+        public string? MsbuildAdditionalSdkResolverFolder { get; set; }
 
         public List<(string name, string value)> EnvironmentVariables { get; set; } = [];
 
@@ -121,7 +121,7 @@ namespace Microsoft.NET.TestFramework
             if (string.IsNullOrEmpty(ret.FullFrameworkMSBuildPath))
             {
                 //  Run tests on full framework MSBuild if environment variable is set pointing to it
-                string msbuildPath = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILD_PATH");
+                string? msbuildPath = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILD_PATH");
                 if (!string.IsNullOrEmpty(msbuildPath))
                 {
                     ret.FullFrameworkMSBuildPath = msbuildPath;
@@ -151,29 +151,32 @@ namespace Microsoft.NET.TestFramework
             foreach (var testConfigFile in TestConfigFiles)
             {
                 var testConfig = XDocument.Load(testConfigFile);
-                foreach (var item in testConfig.Root.Elements())
+                if (testConfig.Root is not null)
                 {
-                    if (item.Name.LocalName.Equals("TestList", StringComparison.OrdinalIgnoreCase))
+                    foreach (var item in testConfig.Root.Elements())
                     {
-                        testLists.Add(TestList.Parse(item));
-                    }
-                    else if (item.Name.LocalName.Equals("SkippedTests", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var skippedGroup = TestList.Parse(item);
-                        testsToSkip.AddRange(skippedGroup.TestSpecifiers);
-                    }
-                    else
-                    {
-                        if (bool.TryParse(item.Attribute("Skip")?.Value ?? string.Empty, out bool shouldSkip) &&
-                            shouldSkip)
+                        if (item.Name.LocalName.Equals("TestList", StringComparison.OrdinalIgnoreCase))
                         {
-                            testsToSkip.Add(TestSpecifier.Parse(item));
+                            testLists.Add(TestList.Parse(item));
+                        }
+                        else if (item.Name.LocalName.Equals("SkippedTests", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var skippedGroup = TestList.Parse(item);
+                            testsToSkip.AddRange(skippedGroup.TestSpecifiers);
+                        }
+                        else
+                        {
+                            if (bool.TryParse(item.Attribute("Skip")?.Value ?? string.Empty, out bool shouldSkip) &&
+                                shouldSkip)
+                            {
+                                testsToSkip.Add(TestSpecifier.Parse(item));
+                            }
                         }
                     }
                 }
             }
 
-            foreach (var testList in testLists.Where(g => TestListsToRun.Contains(g.Name)))
+            foreach (var testList in testLists.Where(g => TestListsToRun.Contains(g.Name ?? string.Empty)))
             {
                 foreach (var testSpec in testList.TestSpecifiers)
                 {
@@ -193,7 +196,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         throw new ArgumentException("Unrecognized test specifier type: " + testSpec.Type);
                     }
-                    ret.Add(testSpec.Specifier);
+                    ret.Add(testSpec.Specifier ?? string.Empty);
                 }
             }
 
@@ -215,7 +218,7 @@ namespace Microsoft.NET.TestFramework
                 {
                     throw new ArgumentException("Unrecognized test specifier type: " + testSpec.Type);
                 }
-                ret.Add(testSpec.Specifier);
+                ret.Add(testSpec.Specifier ?? string.Empty);
             }
 
             return ret;
@@ -223,7 +226,7 @@ namespace Microsoft.NET.TestFramework
 
         private class TestList
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
             public List<TestSpecifier> TestSpecifiers { get; set; } = new List<TestSpecifier>();
 
@@ -253,7 +256,7 @@ namespace Microsoft.NET.TestFramework
             }
 
             public TestSpecifierType Type { get; set; }
-            public string Specifier { get; set; }
+            public string? Specifier { get; set; }
 
             public static TestSpecifier Parse(XElement element)
             {
@@ -273,7 +276,7 @@ namespace Microsoft.NET.TestFramework
                         throw new XmlException("Unrecognized node: " + element.Name);
                 }
 
-                spec.Specifier = element.Attribute("Name").Value;
+                spec.Specifier = element.Attribute("Name")?.Value;
 
                 return spec;
             }
