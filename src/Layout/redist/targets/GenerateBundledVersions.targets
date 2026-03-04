@@ -554,7 +554,7 @@
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;" />
       <AspNetCore100RuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
       <AspNetCore110RuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore110RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />

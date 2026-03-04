@@ -44,6 +44,7 @@
       (
        $(TargetRid.StartsWith('freebsd')) or
        $(TargetRid.StartsWith('openbsd')) or
+       $(TargetRid.StartsWith('solaris')) or
        $(TargetRid.StartsWith('illumos')) or
        $(TargetRid.StartsWith('haiku')) or
        $(TargetRid.StartsWith('linux-musl'))
