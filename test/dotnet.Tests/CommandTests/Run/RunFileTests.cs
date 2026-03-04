@@ -148,6 +148,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         return outOfTreeBaseDirectory;
     }
 
+    /// <summary>
+    /// Runs a full MSBuild build of a trivial file-based app to pull CSC dependencies
+    /// (e.g., ILLink analyzer DLLs from microsoft.net.illink.tasks) into the NuGet cache.
+    /// Without this, <see cref="VirtualProjectBuildingCommand.GetBuildLevel"/> falls back to
+    /// <see cref="BuildLevel.All"/> because the NuGet-provided DLLs checked by
+    /// <see cref="CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache"/> are missing,
+    /// causing tests that assert CSC-only behavior to fail.
+    /// </summary>
     private static void WarmUpNuGetCache(string outOfTreeBaseDirectory)
     {
         var warmUpDir = Path.Join(outOfTreeBaseDirectory, ".warmup");
@@ -158,35 +166,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         {
             File.WriteAllText(warmUpFile, """System.Console.Write("ok");""");
 
-            var psi = new ProcessStartInfo(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
-            {
-                WorkingDirectory = warmUpDir,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-            psi.ArgumentList.Add("build");
-            psi.ArgumentList.Add("WarmUp.cs");
+            var result = new DotnetCommand(NullOutputHelper.Instance, "build", "WarmUp.cs")
+                .WithWorkingDirectory(warmUpDir)
+                .Execute();
 
-            using var process = Process.Start(psi)!;
-            var stdoutTask = process.StandardOutput.ReadToEndAsync();
-            var stderrTask = process.StandardError.ReadToEndAsync();
-
-            if (!process.WaitForExit((int)TimeSpan.FromMinutes(2).TotalMilliseconds))
-            {
-                try { process.Kill(); } catch { }
-                throw new TimeoutException(
-                    $"NuGet cache warm-up timed out after 2 minutes.{Environment.NewLine}" +
-                    $"stdout: {stdoutTask.Result}{Environment.NewLine}" +
-                    $"stderr: {stderrTask.Result}");
-            }
-
-            if (process.ExitCode != 0)
+            if (result.ExitCode != 0)
             {
                 throw new InvalidOperationException(
-                    $"NuGet cache warm-up failed with exit code {process.ExitCode}.{Environment.NewLine}" +
-                    $"stdout: {stdoutTask.Result}{Environment.NewLine}" +
-                    $"stderr: {stderrTask.Result}");
+                    $"NuGet cache warm-up failed with exit code {result.ExitCode}.{Environment.NewLine}" +
+                    $"stdout: {result.StdOut}{Environment.NewLine}" +
+                    $"stderr: {result.StdErr}");
             }
         }
         finally
@@ -5197,5 +5186,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
             return result;
         }
+    }
+
+    /// <summary>
+    /// No-op <see cref="ITestOutputHelper"/> for use in static contexts where no test logger is available.
+    /// </summary>
+    private sealed class NullOutputHelper : ITestOutputHelper
+    {
+        public static readonly NullOutputHelper Instance = new();
+        public string Output => string.Empty;
+        public void Write(string message) { }
+        public void Write(string format, params object[] args) { }
+        public void WriteLine(string message) { }
+        public void WriteLine(string format, params object[] args) { }
     }
 }
