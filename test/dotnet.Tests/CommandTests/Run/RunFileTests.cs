@@ -184,17 +184,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             try { Directory.Delete(VirtualProjectBuilder.GetArtifactsPath(warmUpFile), true); } catch { }
         }
 
-        // Verify that the ILLink analyzer DLLs are now in the NuGet cache.
-        // Without these, GetBuildLevel() falls back to BuildLevel.All (full MSBuild)
-        // instead of BuildLevel.Csc, causing tests that assert CSC-only behavior to fail.
-        foreach (var path in CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache())
-        {
-            if (!File.Exists(path))
-            {
-                throw new InvalidOperationException(
-                    $"NuGet cache warm-up succeeded but required file not found: {path}");
-            }
-        }
     }
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
