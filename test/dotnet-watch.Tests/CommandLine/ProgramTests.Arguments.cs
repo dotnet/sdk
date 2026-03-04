@@ -27,11 +27,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.SuppressVerboseLogging();
             App.Start(testAsset, arguments);
 
-            Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
+            await App.WaitUntilOutputContains($"Arguments = {expectedApplicationArgs}");
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Fact]
         public async Task RunArguments_NoHotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -53,20 +52,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 "-v",         
             ]);
 
-            Assert.Equal("-v", await App.AssertOutputLineStartsWith("Arguments = "));
-            Assert.Equal("WatchHotReloadAppMultiTfm, Version=1.2.3.4, Culture=neutral, PublicKeyToken=null", await App.AssertOutputLineStartsWith("AssemblyName = "));
-            Assert.Equal("' | A=B'\tC | '", await App.AssertOutputLineStartsWith("AssemblyTitle = "));
-            Assert.Equal(".NETCoreApp,Version=v6.0", await App.AssertOutputLineStartsWith("TFM = "));
+            await App.WaitUntilOutputContains("Arguments = -v");
+            await App.WaitUntilOutputContains("AssemblyName = WatchHotReloadAppMultiTfm, Version=1.2.3.4, Culture=neutral, PublicKeyToken=null");
+            await App.WaitUntilOutputContains("AssemblyTitle = ' | A=B'\tC | '");
+            await App.WaitUntilOutputContains("TFM = .NETCoreApp,Version=v6.0");
 
             // expected output from build (-v minimal):
-            Assert.Contains(App.Process.Output, l => l.Contains("Determining projects to restore..."));
+            await App.WaitUntilOutputContains("Determining projects to restore...");
 
             // not expected to find verbose output of dotnet watch
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Fact]
         public async Task RunArguments_HotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -87,14 +85,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 "minimal"
             ]);
 
-            Assert.Equal("WatchHotReloadAppMultiTfm, Version=1.2.3.4, Culture=neutral, PublicKeyToken=null", await App.AssertOutputLineStartsWith("AssemblyName = "));
-            Assert.Equal("' | A=B'\tC | '", await App.AssertOutputLineStartsWith("AssemblyTitle = "));
-            Assert.Equal(".NETCoreApp,Version=v6.0", await App.AssertOutputLineStartsWith("TFM = "));
+            await App.WaitUntilOutputContains("AssemblyName = WatchHotReloadAppMultiTfm, Version=1.2.3.4, Culture=neutral, PublicKeyToken=null");
+            await App.WaitUntilOutputContains("AssemblyTitle = ' | A=B'\tC | '");
+            await App.WaitUntilOutputContains("TFM = .NETCoreApp,Version=v6.0");
+            await App.WaitUntilOutputContains("Hot reload enabled.");
 
             // not expected to find verbose output of dotnet watch
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
-
-            Assert.Contains(App.Process.Output, l => l.Contains("Hot reload enabled."));
         }
 
         [Theory]
@@ -113,10 +110,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 profileName
             });
 
-            Assert.Equal(expectedArgs, await App.AssertOutputLineStartsWith("Arguments: "));
-
-            Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
-            Assert.Contains(App.Process.Output, l => l.Contains("Hot Reload disabled by command line switch."));
+            await App.WaitUntilOutputContains($"Arguments: {expectedArgs}");
+            await App.WaitUntilOutputContains($"Found named launch profile '{profileName}'.");
+            await App.WaitUntilOutputContains("Hot Reload disabled by command line switch.");
         }
 
         [Theory]
@@ -134,9 +130,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 profileName
             });
 
-            Assert.Equal(expectedArgs, await App.AssertOutputLineStartsWith("Arguments: "));
-
-            Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
+            await App.WaitUntilOutputContains($"Arguments: {expectedArgs}");
+            await App.WaitUntilOutputContains($"Found named launch profile '{profileName}'.");
         }
     }
 }
