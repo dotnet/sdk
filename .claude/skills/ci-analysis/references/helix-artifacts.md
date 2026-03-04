@@ -75,7 +75,7 @@ Binlogs are **only present for tests that invoke MSBuild** (build/publish tests,
 
 **Download and view locally:**
 ```bash
-curl -o build.binlog "https://helix.dot.net/api/jobs/{jobId}/workitems/{workItem}/files/build.msbuild.binlog?api-version=2019-06-17"
+curl -o build.binlog "https://helix.dot.net/api/2019-06-17/jobs/{jobId}/workitems/{workItem}/files/build.msbuild.binlog"
 # Open with MSBuild Structured Log Viewer
 ```
 
