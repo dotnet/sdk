@@ -317,7 +317,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
+                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.ComputeRunArguments, Constants.CoreCompile]);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
