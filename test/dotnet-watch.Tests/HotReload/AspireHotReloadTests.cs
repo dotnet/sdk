@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+        [Fact]
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // It might get cancelled and not delivered on shutdown.
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+        [Fact]
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
