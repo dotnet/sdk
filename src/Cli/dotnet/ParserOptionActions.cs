@@ -6,6 +6,7 @@ using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli;
@@ -40,6 +41,13 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
             Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
+
+            var home = Env.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
+            if (!string.IsNullOrEmpty(home))
+            {
+                // Output DOTNET_CLI_HOME usage when verbosity is enabled.
+                Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.DotnetCliHomeUsed, home, CliFolderPathCalculator.DotnetHomeVariableName));
+            }
         }
 
         return 0;

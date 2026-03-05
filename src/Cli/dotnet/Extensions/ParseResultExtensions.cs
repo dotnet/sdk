@@ -86,7 +86,7 @@ public static class ParseResultExtensions
     }
 
     public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
-        .Select(child => GetSymbolResultValue(parseResult, child))
+        .Select(child => parseResult.GetSymbolResultValue(child))
         .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
 
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
@@ -131,23 +131,20 @@ public static class ParseResultExtensions
         return [..subargsFiltered, ..runArgs];
     }
 
-    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
         CommandResult commandResult => commandResult.Command.Name,
         ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
         _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
-    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
-    {
-        var properties = GetRunPropertyOptions(parseResult, true);
-        return properties?.Where(property => !property.Contains("="));
-    }
+    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
+        parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));
 
     public static IEnumerable<string> GetRunCommandPropertyValues(this ParseResult parseResult)
     {
-        var shorthandProperties = GetRunPropertyOptions(parseResult, true)?.Where(property => property.Contains("="));
-        var longhandProperties = GetRunPropertyOptions(parseResult, false);
+        var shorthandProperties = parseResult.GetRunPropertyOptions(true)?.Where(property => property.Contains("="));
+        var longhandProperties = parseResult.GetRunPropertyOptions(false);
         return (shorthandProperties, longhandProperties) switch
         {
             (null, null) => Enumerable.Empty<string>(),
@@ -157,7 +154,7 @@ public static class ParseResultExtensions
         };
     }
 
-    private static IEnumerable<string>? GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
+    private static IEnumerable<string>? GetRunPropertyOptions(this ParseResult parseResult, bool shorthand)
     {
         var optionString = shorthand ? "-p" : "--property";
         var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
@@ -182,5 +179,27 @@ public static class ParseResultExtensions
         {
             DebugHelper.WaitForDebugger();
         }
+    }
+
+    public static string GetCommandName(this ParseResult parseResult)
+    {
+        // Walk the parent command tree to find the top-level command name and get the full command name for this ParseResult.
+        List<string> parentNames = [parseResult.CommandResult.Command.Name];
+        var current = parseResult.CommandResult.Parent;
+        while (current is CommandResult parentCommandResult)
+        {
+            parentNames.Add(parentCommandResult.Command.Name);
+            current = parentCommandResult.Parent;
+        }
+        parentNames.Reverse();
+
+        // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
+        // Example: dotnet --version
+        if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
+        {
+            parentNames.Add(optionAction.Option.Name);
+        }
+
+        return string.Join(' ', parentNames);
     }
 }

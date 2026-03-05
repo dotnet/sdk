@@ -22,6 +22,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly MeterProvider s_metricsProvider;
     private static readonly TracerProvider s_tracerProvider;
     private static readonly List<Activity> s_activities = [];
+
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     // TODO: TelemetryInstance takes in an environment provider. These fields don't use that currently.
@@ -36,6 +37,7 @@ public class TelemetryClient : ITelemetryClient
         set
         {
             field = value;
+            // When disabled, clear the session ID.
             if (field)
             {
                 CurrentSessionId = null;
@@ -59,6 +61,7 @@ public class TelemetryClient : ITelemetryClient
             .AddOtlpExporter()
             .Build();
 
+        var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
         // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
         // It is important to keep the TracerProvider instance active throughout the process lifetime.
         s_tracerProvider = Sdk.CreateTracerProviderBuilder()
@@ -70,15 +73,15 @@ public class TelemetryClient : ITelemetryClient
             {
                 o.ConnectionString = s_connectionString;
                 o.EnableLiveMetrics = false;
-                o.StorageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
+                o.StorageDirectory = storageDirectory;
             })
             .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
             .Build();
 
         var parentActivityContext = GetParentActivityContext();
-        ParentActivityContext = parentActivityContext ?? default;
         ActivityKind = GetActivityKind(parentActivityContext);
+        ParentActivityContext = parentActivityContext ?? default;
     }
 
     public TelemetryClient() : this(null) { }
@@ -112,19 +115,17 @@ public class TelemetryClient : ITelemetryClient
             return null;
         }
 
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
+        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
         if (!string.IsNullOrEmpty(traceState))
         {
             carrierMap.Add("tracestate", [traceState]);
         }
 
-        // Use the propegator to extract the parent activity context and kind. For some reason, this isn't set by the OTel SDK like docs say it should be.
+        // Use the propegator to extract the parent activity context and kind.
+        // For some reason, this isn't set by the OTel SDK like docs say it should be.
         Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([new TraceContextPropagator(), new BaggagePropagator()]));
-        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
-        var kind = parentActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
-
-        return parentActivityContext;
+        return Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
 
         static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key) =>
             carrier.TryGetValue(key, out var value) ? value : null;

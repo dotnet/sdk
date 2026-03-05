@@ -148,43 +148,6 @@ public class Program
         Activities.Source.Dispose();
     }
 
-    private static string GetCommandName(ParseResult parseResult)
-    {
-        // Walk the parent command tree to find the top-level command name and get the full command name for this parseresult.
-        List<string> parentNames = [parseResult.CommandResult.Command.Name];
-        var current = parseResult.CommandResult.Parent;
-        while (current is CommandResult parentCommandResult)
-        {
-            parentNames.Add(parentCommandResult.Command.Name);
-            current = parentCommandResult.Parent;
-        }
-        parentNames.Reverse();
-
-        // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
-        // Example: dotnet --version
-        if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
-        {
-            parentNames.Add(optionAction.Option.Name);
-        }
-
-        return string.Join(' ', parentNames);
-    }
-
-    private static void SetDisplayName(Activity? activity, ParseResult parseResult)
-    {
-        if (activity == null)
-        {
-            return;
-        }
-        var name = GetCommandName(parseResult);
-
-        // Set the display name to the full command name
-        activity.DisplayName = name;
-
-        // Set the command name as an attribute for better filtering in telemetry
-        activity.SetTag("command.name", name);
-    }
-
     internal static int ProcessArgs(string[] args)
     {
         ParseResult parseResult = ParseArgs(args);
@@ -298,7 +261,7 @@ public class Program
             SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
         }
 
-        SetDisplayName(s_mainActivity, parseResult);
+        s_mainActivity.SetDisplayName(parseResult);
 
         return parseResult;
     }
@@ -319,8 +282,6 @@ public class Program
         bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
             // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
             defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
-
-        ReportDotnetHomeUsage(environmentProvider);
 
         var isDotnetBeingInvokedFromNativeInstaller = false;
         if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
@@ -374,17 +335,6 @@ public class Program
         }
 
         return exitCode;
-    }
-
-    private static void ReportDotnetHomeUsage(IEnvironmentProvider provider)
-    {
-        var home = provider.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
-        if (string.IsNullOrEmpty(home))
-        {
-            return;
-        }
-
-        Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.DotnetCliHomeUsed, home, CliFolderPathCalculator.DotnetHomeVariableName));
     }
 
     private static void ConfigureDotNetForFirstTimeUse(
