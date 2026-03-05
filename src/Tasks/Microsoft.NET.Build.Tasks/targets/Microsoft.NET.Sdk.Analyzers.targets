@@ -99,10 +99,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">false</EnforceCodeStyleInBuild>
 
     <!-- Opt-in Roslyn analyzer properties. These are always opt-in regardless of AnalysisLevel. -->
-    <EnableBannedApiAnalysis Condition="'$(EnableBannedApiAnalysis)' == ''">false</EnableBannedApiAnalysis>
-    <EnablePublicApiAnalysis Condition="'$(EnablePublicApiAnalysis)' == ''">false</EnablePublicApiAnalysis>
-    <EnableResxSourceGeneration Condition="'$(EnableResxSourceGeneration)' == ''">false</EnableResxSourceGeneration>
-    <EnablePerformanceSensitiveAnalysis Condition="'$(EnablePerformanceSensitiveAnalysis)' == ''">false</EnablePerformanceSensitiveAnalysis>
+    <EnableBannedApiAnalyzer Condition="'$(EnableBannedApiAnalyzer)' == ''">false</EnableBannedApiAnalyzer>
+    <EnablePublicApiAnalyzer Condition="'$(EnablePublicApiAnalyzer)' == ''">false</EnablePublicApiAnalyzer>
+    <EnableResxSourceGenerator Condition="'$(EnableResxSourceGenerator)' == ''">false</EnableResxSourceGenerator>
+    <EnablePerformanceSensitiveAnalyzer Condition="'$(EnablePerformanceSensitiveAnalyzer)' == ''">false</EnablePerformanceSensitiveAnalyzer>
   </PropertyGroup>
 
   <!-- Establish good defaults for scenarios where no EffectiveAnalysisLevel was set (e.g. .NETFramework) -->
@@ -112,10 +112,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableTrimAnalyzer Condition="'$(EnableTrimAnalyzer)' == ''">false</EnableTrimAnalyzer>
     <EnableAotAnalyzer Condition="'$(EnableAotAnalyzer)' == ''">false</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer Condition="'$(EnableSingleFileAnalyzer)' == ''">false</EnableSingleFileAnalyzer>
-    <EnableBannedApiAnalysis Condition="'$(EnableBannedApiAnalysis)' == ''">false</EnableBannedApiAnalysis>
-    <EnablePublicApiAnalysis Condition="'$(EnablePublicApiAnalysis)' == ''">false</EnablePublicApiAnalysis>
-    <EnableResxSourceGeneration Condition="'$(EnableResxSourceGeneration)' == ''">false</EnableResxSourceGeneration>
-    <EnablePerformanceSensitiveAnalysis Condition="'$(EnablePerformanceSensitiveAnalysis)' == ''">false</EnablePerformanceSensitiveAnalysis>
+    <EnableBannedApiAnalyzer Condition="'$(EnableBannedApiAnalyzer)' == ''">false</EnableBannedApiAnalyzer>
+    <EnablePublicApiAnalyzer Condition="'$(EnablePublicApiAnalyzer)' == ''">false</EnablePublicApiAnalyzer>
+    <EnableResxSourceGenerator Condition="'$(EnableResxSourceGenerator)' == ''">false</EnableResxSourceGenerator>
+    <EnablePerformanceSensitiveAnalyzer Condition="'$(EnablePerformanceSensitiveAnalyzer)' == ''">false</EnablePerformanceSensitiveAnalyzer>
   </PropertyGroup>
 
   <!-- Unconditionally import 'Microsoft.CodeAnalysis.NetAnalyzers.props' for all C# and VB projects for supporting https://github.com/dotnet/roslyn-analyzers/issues/3977 -->
@@ -131,21 +131,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- BannedApiAnalyzers build targets -->
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\build\Microsoft.CodeAnalysis.BannedApiAnalyzers.props"
-          Condition="$(EnableBannedApiAnalysis)" />
+          Condition="$(EnableBannedApiAnalyzer)" />
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\build\Microsoft.CodeAnalysis.BannedApiAnalyzers.targets"
-          Condition="$(EnableBannedApiAnalysis)" />
+          Condition="$(EnableBannedApiAnalyzer)" />
 
   <!-- PublicApiAnalyzers build targets -->
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\build\Microsoft.CodeAnalysis.PublicApiAnalyzers.props"
-          Condition="$(EnablePublicApiAnalysis)" />
+          Condition="$(EnablePublicApiAnalyzer)" />
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\build\Microsoft.CodeAnalysis.PublicApiAnalyzers.targets"
-          Condition="$(EnablePublicApiAnalysis)" />
+          Condition="$(EnablePublicApiAnalyzer)" />
 
   <!-- PerformanceSensitiveAnalyzers build targets -->
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\build\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.props"
-          Condition="$(EnablePerformanceSensitiveAnalysis)" />
+          Condition="$(EnablePerformanceSensitiveAnalyzer)" />
   <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\build\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.targets"
-          Condition="$(EnablePerformanceSensitiveAnalysis)" />
+          Condition="$(EnablePerformanceSensitiveAnalyzer)" />
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
@@ -208,7 +208,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- BannedApi Analyzers -->
-  <ItemGroup Condition="$(EnableBannedApiAnalysis)">
+  <ItemGroup Condition="$(EnableBannedApiAnalyzer)">
     <Analyzer
       Condition="'$(Language)' == 'C#'"
       Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\cs\Microsoft.CodeAnalysis.BannedApiAnalyzers.dll"
@@ -228,7 +228,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- PublicApi Analyzers (language-neutral) -->
-  <ItemGroup Condition="$(EnablePublicApiAnalysis)">
+  <ItemGroup Condition="$(EnablePublicApiAnalyzer)">
     <Analyzer
       Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\Microsoft.CodeAnalysis.PublicApiAnalyzers.dll"
       IsImplicitlyDefined="true" />
@@ -238,7 +238,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- PerformanceSensitive Analyzers (C# only) -->
-  <ItemGroup Condition="$(EnablePerformanceSensitiveAnalysis) And '$(Language)' == 'C#'">
+  <ItemGroup Condition="$(EnablePerformanceSensitiveAnalyzer) And '$(Language)' == 'C#'">
     <Analyzer
       Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\cs\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.dll"
       IsImplicitlyDefined="true" />
@@ -251,7 +251,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- ResxSourceGenerator -->
-  <ItemGroup Condition="$(EnableResxSourceGeneration)">
+  <ItemGroup Condition="$(EnableResxSourceGenerator)">
     <Analyzer
       Condition="'$(Language)' == 'C#'"
       Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\resxsourcegen\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.dll"
@@ -277,8 +277,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_ResolveSdkAnalyzerConflicts"
           AfterTargets="ResolveLockFileAnalyzers"
-          Condition="$(EnableBannedApiAnalysis) Or $(EnablePublicApiAnalysis) Or
-                     $(EnablePerformanceSensitiveAnalysis) Or $(EnableResxSourceGeneration)">
+          Condition="$(EnableBannedApiAnalyzer) Or $(EnablePublicApiAnalyzer) Or
+                     $(EnablePerformanceSensitiveAnalyzer) Or $(EnableResxSourceGenerator)">
 
     <ItemGroup>
       <!-- Remove SDK-bundled BannedApiAnalyzers when the NuGet package is also referenced -->
