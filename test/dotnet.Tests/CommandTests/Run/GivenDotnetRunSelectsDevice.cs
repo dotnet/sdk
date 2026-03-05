@@ -380,7 +380,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItPassesEnvironmentVariablesToTargets()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -444,7 +444,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItDoesNotPassEnvironmentVariablesToTargetsWithoutOptIn()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
             .WithSource();
 
         string deviceId = "test-device-1";

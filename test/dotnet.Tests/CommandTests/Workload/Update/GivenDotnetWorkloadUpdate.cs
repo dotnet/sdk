@@ -667,7 +667,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenMissingManifestsInWorkloadSetModeUpdateReinstallsManifests(bool userLocal)
         {
             var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
-                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, userLocal, out string sdkFeatureVersion);
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(TestAssetsManager, userLocal, out string sdkFeatureVersion);
 
             mockInstaller.InstalledManifests.Should().HaveCount(0);
 

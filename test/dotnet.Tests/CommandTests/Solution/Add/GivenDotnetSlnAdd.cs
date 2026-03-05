@@ -1360,7 +1360,7 @@ Options:
         [InlineData("solution")]
         public void WhenAddingProjectToSlnfItAddsOnlyIfInParentSolution(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-Slnf-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1384,7 +1384,7 @@ Options:
         [InlineData("solution")]
         public void WhenRemovingProjectFromSlnfItRemovesSuccessfully(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfRemove-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1408,7 +1408,7 @@ Options:
         [InlineData("solution")]
         public void WhenAddingProjectToSlnfWithInRootOptionItErrors(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfInRoot-{solutionCommand}")
                 .WithSource()
                 .Path;
