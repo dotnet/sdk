@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
@@ -30,11 +32,11 @@ public class ListCommandTests
     public void InstallationLister_GetInstallations_ShouldReturnList()
     {
         // Act
-        var installations = InstallationLister.GetInstallations(verify: false);
+        var listData = InstallationLister.GetListData(verify: false);
 
         // Assert
-        installations.Should().NotBeNull();
-        installations.Should().BeOfType<List<InstallationInfo>>();
+        listData.Installations.Should().NotBeNull();
+        listData.Installations.Should().BeOfType<List<InstallationInfo>>();
     }
 
     [Fact]
@@ -65,8 +67,8 @@ public class ListCommandTests
             {
                 Installations = new List<InstallationInfo>
                 {
-                    new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
-                    new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 },
+                    new() { Component = InstallComponent.Runtime, Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
                 }
             };
             using var sw = new StringWriter();
@@ -117,7 +119,7 @@ public class ListCommandTests
             {
                 Installations = new List<InstallationInfo>
                 {
-                    new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
                 }
             };
             using var sw = new StringWriter();

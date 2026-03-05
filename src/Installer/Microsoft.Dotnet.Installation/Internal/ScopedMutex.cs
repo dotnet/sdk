@@ -5,7 +5,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 public class ScopedMutex : IDisposable
 {
-    private readonly Mutex? _mutex;
+    private readonly Mutex _mutex;
     private readonly bool _isReentrant;
 
     // Track recursive holds on a per-thread basis, keyed by mutex name.
@@ -33,8 +33,7 @@ public class ScopedMutex : IDisposable
             // Re-entrant: this thread already holds this mutex
             state.HoldCount++;
             _isReentrant = true;
-            _mutex = null;
-            HasHandle = true;
+            _mutex = null!;
             return;
         }
 
@@ -51,24 +50,23 @@ public class ScopedMutex : IDisposable
         _mutex = new Mutex(false, mutexName);
 
         // First try immediate acquisition to see if we need to wait
-        HasHandle = _mutex.WaitOne(0, false);
-        if (!HasHandle)
+        if (!_mutex.WaitOne(0, false))
         {
             // Another process holds the mutex - notify caller before blocking
             OnWaitingForMutex?.Invoke();
 
             // Now wait for the full timeout
-            HasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false);
+            if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+            {
+                _mutex.Dispose();
+                throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+            }
         }
 
-        if (HasHandle)
-        {
-            held[name] = new MutexState { Mutex = _mutex, HoldCount = 1 };
-        }
+        held[name] = new MutexState { Mutex = _mutex, HoldCount = 1 };
     }
 
     public string Name { get; }
-    public bool HasHandle { get; }
     public static bool CurrentThreadHoldsMutex => s_heldMutexes.Value!.Count > 0;
 
     public void Dispose()
@@ -92,19 +90,16 @@ public class ScopedMutex : IDisposable
             return;
         }
 
-        if (HasHandle && _mutex is not null)
+        try
         {
-            try
-            {
-                _mutex.ReleaseMutex();
-            }
-            finally
-            {
-                s_heldMutexes.Value!.Remove(Name);
-            }
+            _mutex.ReleaseMutex();
+        }
+        finally
+        {
+            s_heldMutexes.Value!.Remove(Name);
         }
 
-        _mutex?.Dispose();
+        _mutex.Dispose();
     }
 
     private class MutexState

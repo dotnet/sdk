@@ -171,13 +171,19 @@ internal class InstallWorkflow
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
     {
+        var installSource = context.GlobalJson?.GlobalJsonPath is not null
+            ? InstallRequestSource.GlobalJson
+            : InstallRequestSource.Explicit;
+
         return InstallExecutor.CreateAndResolveRequest(
             context.InstallPath,
             context.Channel,
             context.Options.Component,
             context.Options.ManifestPath,
             _channelVersionResolver,
-            context.Options.RequireMuxerUpdate);
+            context.Options.RequireMuxerUpdate,
+            installSource,
+            context.GlobalJson?.GlobalJsonPath);
     }
 
     private static InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
@@ -195,7 +201,7 @@ internal class InstallWorkflow
             context.Options.ComponentDescription,
             context.Options.NoProgress);
 
-        if (!installResult.Success)
+        if (installResult is null)
         {
             return null;
         }

@@ -9,42 +9,18 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Update;
 
 internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
 {
-    private readonly string? _componentSpec = result.GetValue(RuntimeUpdateCommandParser.ComponentSpecArgument);
-    private readonly bool _noProgress = result.GetValue(RuntimeUpdateCommandParser.NoProgressOption);
-    private readonly string? _manifestPath = result.GetValue(RuntimeUpdateCommandParser.ManifestPathOption);
-    private readonly string? _installPath = result.GetValue(RuntimeUpdateCommandParser.InstallPathOption);
+    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
+    private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
     protected override string GetCommandName() => "runtime/update";
 
     protected override int ExecuteCore()
     {
-        // Parse the optional component spec to determine which runtime(s) to update
-        InstallComponent? componentFilter = null;
-
-        if (!string.IsNullOrWhiteSpace(_componentSpec))
-        {
-            var (component, _, errorMessage) = Runtime.Install.RuntimeInstallCommand.ParseComponentSpec(_componentSpec);
-
-            if (errorMessage != null)
-            {
-                Console.Error.WriteLine(errorMessage);
-                RecordFailure("invalid_component_spec", category: "user");
-                return 1;
-            }
-
-            componentFilter = component;
-        }
-
-        // If no specific runtime type is specified, update all runtime-type components
+        // Update all runtime-type components
         // (but not SDKs — those are updated via `dotnetup sdk update`)
         var workflow = new UpdateWorkflow(new ChannelVersionResolver());
 
-        if (componentFilter is not null)
-        {
-            return workflow.Execute(_manifestPath, _installPath, componentFilter, _noProgress);
-        }
-
-        // Update all runtime components
         int exitCode = 0;
         foreach (var component in new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop })
         {

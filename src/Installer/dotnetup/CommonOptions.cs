@@ -61,6 +61,12 @@ internal class CommonOptions
         Description = "Custom path to the manifest file for tracking .NET installations",
     };
 
+    public static Option<InstallSource> SourceOption = new("--source")
+    {
+        Description = "Filter by install source (explicit, globaljson, all).",
+        DefaultValueFactory = _ => InstallSource.Explicit
+    };
+
     public static Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
     {
         Description = "Fail if the dotnet executable cannot be updated. By default, a warning is displayed but installation continues.",

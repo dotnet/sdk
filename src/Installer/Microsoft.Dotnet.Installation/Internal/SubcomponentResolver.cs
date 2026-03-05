@@ -16,7 +16,7 @@ internal enum SubcomponentResolveResult
     UnknownFolder,
     /// <summary>Known folder but path is not deep enough to identify a subcomponent.</summary>
     TooShallow,
-    /// <summary>Known non-subcomponent folder (e.g., swidtag, .metadata) — expected to be ignored.</summary>
+    /// <summary>Known non-subcomponent folder (e.g., swidtag, metadata) — expected to be ignored.</summary>
     IgnoredFolder,
 }
 
@@ -42,7 +42,7 @@ internal static class SubcomponentResolver
     private static readonly HashSet<string> s_ignoredFolders =
     [
 with(StringComparer.OrdinalIgnoreCase),
-        ".metadata",
+        "metadata",
         "swidtag",
     ];
 

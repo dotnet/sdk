@@ -40,7 +40,7 @@ internal class UninstallWorkflow
 
         if (root is null)
         {
-            AnsiConsole.MarkupLine($"[yellow]No managed installations found at {resolvedInstallPath}.[/]");
+            AnsiConsole.MarkupLine($"[yellow]No tracked installations found at {resolvedInstallPath}.[/]");
             return 1;
         }
 
@@ -64,7 +64,7 @@ internal class UninstallWorkflow
             if (otherSourceSpecs.Count > 0)
             {
                 string sourceDesc = sourceFilter == InstallSource.All ? "" : $"[bold]{sourceFilter}[/] ";
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {sourceDesc}install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {sourceDesc}{componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
                 foreach (var spec in otherSourceSpecs)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
@@ -76,7 +76,7 @@ internal class UninstallWorkflow
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
             }
             return 1;
         }

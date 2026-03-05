@@ -123,14 +123,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         );
 
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
-        if (installResult.Install == null)
-        {
-            throw new InvalidOperationException($"Failed to install .NET SDK {channel.Name}");
-        }
-        else
-        {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
-        }
+        Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
     }
 
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();

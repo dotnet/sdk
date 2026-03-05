@@ -14,13 +14,6 @@ internal static class SdkInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
-    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
-    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-    public static readonly Option<bool> RequireMuxerUpdateOption = CommonOptions.RequireMuxerUpdateOption;
-
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
         Description = "Update the sdk version in applicable global.json files to the installed SDK version",
@@ -51,14 +44,14 @@ internal static class SdkInstallCommandParser
 
         command.Arguments.Add(ChannelArgument);
 
-        command.Options.Add(InstallPathOption);
-        command.Options.Add(SetDefaultInstallOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(UpdateGlobalJsonOption);
-        command.Options.Add(ManifestPathOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
 
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoProgressOption);
-        command.Options.Add(RequireMuxerUpdateOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

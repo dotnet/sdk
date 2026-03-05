@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Result of an installation operation.
 /// </summary>
-/// <param name="Install">The DotnetInstall, or null if installation failed.</param>
+/// <param name="Install">The DotnetInstall for the completed installation.</param>
 /// <param name="WasAlreadyInstalled">True if the SDK was already installed and no work was done.</param>
-internal sealed record InstallResult(DotnetInstall? Install, bool WasAlreadyInstalled);
+internal sealed record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled);
 
 internal class InstallerOrchestratorSingleton
 {
@@ -25,7 +23,7 @@ internal class InstallerOrchestratorSingleton
 
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
-    // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
+    // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
@@ -66,32 +64,23 @@ internal class InstallerOrchestratorSingleton
         // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (!finalizeLock.HasHandle)
-            {
-                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
-                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "pre_check");
-                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
-            }
             if (InstallAlreadyExists(install, customManifestPath))
             {
                 Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
-            // Also check if the component files already exist on disk (e.g., runtime files from SDK install)
-            // If so, just add to manifest without downloading
-            if (ArchiveInstallationValidator.ComponentFilesExist(install))
+            // Guard: error if the target directory contains .NET artifacts but isn't tracked in the manifest.
+            // This prevents silently mixing managed and unmanaged installations.
+            if (!IsRootInManifest(installRequest.InstallRoot, customManifestPath)
+                && HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
-                Console.WriteLine($"\n{componentDescription} {versionToInstall} files already exist, adding to manifest.");
-                DotnetupSharedManifest manifestManager = new(customManifestPath);
-                manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
-                {
-                    Component = install.Component,
-                    Version = install.Version.ToString()
-                });
-                return new InstallResult(install, WasAlreadyInstalled: true);
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.Unknown,
+                    $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                    "To avoid conflicts, use a different install path or remove the existing installation first.",
+                    version: versionToInstall.ToString(),
+                    component: installRequest.Component.ToString());
             }
 
             // Fail fast: if the muxer must be updated and it is currently locked,
@@ -111,14 +100,6 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (!finalizeLock.HasHandle)
-            {
-                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
-                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "commit");
-                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
-            }
             if (InstallAlreadyExists(install, customManifestPath))
             {
                 return new InstallResult(install, WasAlreadyInstalled: true);
@@ -136,7 +117,11 @@ internal class InstallerOrchestratorSingleton
                 {
                     Component = installRequest.Component,
                     VersionOrChannel = installRequest.Channel.Name,
-                    InstallSource = Enum.TryParse<InstallSource>(installRequest.Options.InstallSourceName, true, out var src) ? src : InstallSource.Explicit,
+                    InstallSource = installRequest.Options.InstallSource switch
+                    {
+                        InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                        _ => InstallSource.Explicit,
+                    },
                     GlobalJsonPath = installRequest.Options.GlobalJsonPath
                 });
 
@@ -150,8 +135,11 @@ internal class InstallerOrchestratorSingleton
             }
             else
             {
-                Console.Error.WriteLine($"Installation validation failed: {validationFailure}");
-                return new InstallResult(null, WasAlreadyInstalled: false);
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.Unknown,
+                    $"Installation validation failed: {validationFailure}",
+                    version: versionToInstall.ToString(),
+                    component: installRequest.Component.ToString());
             }
         }
 
@@ -171,5 +159,27 @@ internal class InstallerOrchestratorSingleton
         return existingInstalls.Any(existing =>
             existing.Version == install.Version.ToString() &&
             existing.Component == install.Component);
+    }
+
+    private static bool IsRootInManifest(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    {
+        var manifestManager = new DotnetupSharedManifest(customManifestPath);
+        var manifestData = manifestManager.ReadManifest();
+        return manifestData.DotnetRoots.Any(root =>
+            string.Equals(root.Path, installRoot.Path, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasDotnetArtifacts(string? path)
+    {
+        if (path is null || !Directory.Exists(path))
+        {
+            return false;
+        }
+
+        // Check for common .NET installation markers
+        string dotnetExe = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
+        return File.Exists(Path.Combine(path, dotnetExe))
+            || Directory.Exists(Path.Combine(path, "sdk"))
+            || Directory.Exists(Path.Combine(path, "shared"));
     }
 }

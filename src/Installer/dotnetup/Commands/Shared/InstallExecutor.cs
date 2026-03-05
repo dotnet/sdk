@@ -14,12 +14,8 @@ internal class InstallExecutor
 {
     /// <summary>
     /// Result of an installation execution.
-    /// Success is computed from whether Install is non-null to avoid sync issues.
     /// </summary>
-    public record InstallResult(DotnetInstall? Install, bool WasAlreadyInstalled = false)
-    {
-        public bool Success => Install is not null;
-    }
+    public record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled = false);
 
     /// <summary>
     /// Result of creating and resolving an install request.
@@ -35,6 +31,8 @@ internal class InstallExecutor
     /// <param name="manifestPath">Optional manifest path for tracking installations.</param>
     /// <param name="channelVersionResolver">The resolver to use for version resolution.</param>
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
+    /// <param name="installSource">The source of this install request.</param>
+    /// <param name="globalJsonPath">The path to the global.json that triggered this install.</param>
     /// <returns>The resolved install request with version information.</returns>
     public static ResolvedInstallRequest CreateAndResolveRequest(
         string installPath,
@@ -42,7 +40,9 @@ internal class InstallExecutor
         InstallComponent component,
         string? manifestPath,
         ChannelVersionResolver channelVersionResolver,
-        bool requireMuxerUpdate = false)
+        bool requireMuxerUpdate = false,
+        InstallRequestSource installSource = InstallRequestSource.Explicit,
+        string? globalJsonPath = null)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -53,7 +53,9 @@ internal class InstallExecutor
             new InstallRequestOptions
             {
                 ManifestPath = manifestPath,
-                RequireMuxerUpdate = requireMuxerUpdate
+                RequireMuxerUpdate = requireMuxerUpdate,
+                InstallSource = installSource,
+                GlobalJsonPath = globalJsonPath
             });
 
         var resolvedVersion = channelVersionResolver.Resolve(request);
@@ -68,8 +70,8 @@ internal class InstallExecutor
     /// <param name="resolvedVersion">The resolved version string for display purposes.</param>
     /// <param name="componentDescription">Description of the component (e.g., ".NET SDK", ".NET Runtime").</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
-    /// <returns>The installation result.</returns>
-    public static InstallResult ExecuteInstall(
+    /// <returns>The installation result, or null if installation failed.</returns>
+    public static InstallResult? ExecuteInstall(
         DotnetInstallRequest installRequest,
         string? resolvedVersion,
         string componentDescription,
@@ -79,23 +81,27 @@ internal class InstallExecutor
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
 #pragma warning restore CA1305
 
-        var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-        if (installResult.Install == null)
+        Microsoft.DotNet.Tools.Bootstrapper.InstallResult orchestratorResult;
+        try
         {
-            SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}[/]");
-            return new InstallResult(null);
+            orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+        }
+        catch (DotnetInstallException ex)
+        {
+            SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}: {ex.Message}[/]");
+            return null;
         }
 
-        if (installResult.WasAlreadyInstalled)
+        if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLine($"[green]{componentDescription} {installResult.Install.Version} is already installed at {installResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLine($"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
         }
 
-        return new InstallResult(installResult.Install, installResult.WasAlreadyInstalled);
+        return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
     }
 
     /// <summary>
@@ -132,15 +138,15 @@ internal class InstallExecutor
                     RequireMuxerUpdate = requireMuxerUpdate
                 });
 
-            var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-            if (additionalResult.Install == null)
+            try
+            {
+                var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
+                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
+            }
+            catch (DotnetInstallException)
             {
                 SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
                 allSucceeded = false;
-            }
-            else
-            {
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
             }
         }
 

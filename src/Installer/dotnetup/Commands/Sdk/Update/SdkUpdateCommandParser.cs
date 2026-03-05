@@ -20,13 +20,6 @@ internal static class SdkUpdateCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
-
-    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
-
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-
     private static readonly Command s_sdkUpdateCommand = ConstructCommand();
 
     public static Command GetSdkUpdateCommand()
@@ -36,7 +29,7 @@ internal static class SdkUpdateCommandParser
 
     //  Trying to use the same command object for both "dotnetup update" and "dotnetup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
-    private static readonly Command s_rootUpdateCommand = ConstructCommand();
+    private static readonly Command s_rootUpdateCommand = ConstructRootCommand();
 
     public static Command GetRootUpdateCommand()
     {
@@ -49,13 +42,29 @@ internal static class SdkUpdateCommandParser
 
         command.Options.Add(UpdateAllOption);
         command.Options.Add(UpdateGlobalJsonOption);
-        command.Options.Add(ManifestPathOption);
-        command.Options.Add(InstallPathOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
 
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoProgressOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
 
         command.SetAction(parseResult => new SdkUpdateCommand(parseResult).Execute());
+
+        return command;
+    }
+
+    private static Command ConstructRootCommand()
+    {
+        Command command = new("update", "Updates all tracked .NET installations to the latest versions");
+
+        command.Options.Add(UpdateGlobalJsonOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
+
+        command.SetAction(parseResult => new SdkUpdateCommand(parseResult, updateAllOverride: true).Execute());
 
         return command;
     }

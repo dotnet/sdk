@@ -10,13 +10,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 {
     private readonly string? _versionOrChannel = result.GetValue(SdkInstallCommandParser.ChannelArgument);
-    private readonly string? _installPath = result.GetValue(SdkInstallCommandParser.InstallPathOption);
-    private readonly bool? _setDefaultInstall = result.GetValue(SdkInstallCommandParser.SetDefaultInstallOption);
+    private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
+    private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
-    private readonly string? _manifestPath = result.GetValue(SdkInstallCommandParser.ManifestPathOption);
-    private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
-    private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
-    private readonly bool _requireMuxerUpdate = result.GetValue(SdkInstallCommandParser.RequireMuxerUpdateOption);
+    private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
+    private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
+    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new();
@@ -37,22 +37,10 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             InstallComponent.SDK,
             ".NET SDK",
             _updateGlobalJson,
-            ResolveChannelFromGlobalJson,
+            GlobalJsonChannelResolver.ResolveChannel,
             _requireMuxerUpdate);
 
         var result = workflow.Execute(options);
         return result.ExitCode;
-    }
-
-    private string? ResolveChannelFromGlobalJson(string globalJsonPath)
-    {
-        // Allow test hook override
-        var testHook = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
-        if (testHook is not null)
-        {
-            return testHook;
-        }
-
-        return GlobalJsonChannelResolver.ResolveChannel(globalJsonPath);
     }
 }

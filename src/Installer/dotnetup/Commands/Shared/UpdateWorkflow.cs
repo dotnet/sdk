@@ -46,7 +46,7 @@ internal class UpdateWorkflow
         var rootsList = rootsToUpdate.ToList();
         if (rootsList.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No managed dotnet installations found to update.[/]");
+            AnsiConsole.MarkupLine("[yellow]No tracked dotnet installations found to update.[/]");
             return 0;
         }
 
@@ -72,17 +72,16 @@ internal class UpdateWorkflow
                 }
 
                 var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
+                string displayName = spec.Component.GetDisplayName();
                 if (latestVersion is null)
                 {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for '{spec.VersionOrChannel}'.[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
                     continue;
                 }
 
                 // Check if this version is already installed
                 var alreadyInstalled = root.Installations.Any(i =>
                     i.Component == spec.Component && i.Version == latestVersion.ToString());
-
-                string displayName = spec.Component.GetDisplayName();
 
                 if (alreadyInstalled)
                 {
@@ -102,14 +101,13 @@ internal class UpdateWorkflow
                     ResolvedVersion = latestVersion
                 };
 
-                var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-
-                if (result is not null)
+                try
                 {
+                    var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
                     anyUpdated = true;
                 }
-                else
+                catch (DotnetInstallException)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
                 }

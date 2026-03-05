@@ -7,12 +7,12 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
-internal class SdkUpdateCommand(ParseResult result) : CommandBase(result)
+internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = false) : CommandBase(result)
 {
-    private readonly bool _updateAll = result.GetValue(SdkUpdateCommandParser.UpdateAllOption);
-    private readonly bool _noProgress = result.GetValue(SdkUpdateCommandParser.NoProgressOption);
-    private readonly string? _manifestPath = result.GetValue(SdkUpdateCommandParser.ManifestPathOption);
-    private readonly string? _installPath = result.GetValue(SdkUpdateCommandParser.InstallPathOption);
+    private readonly bool _updateAll = updateAllOverride || result.GetValue(SdkUpdateCommandParser.UpdateAllOption);
+    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
+    private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
     protected override string GetCommandName() => "sdk/update";
 

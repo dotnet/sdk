@@ -22,20 +22,6 @@ internal static class RuntimeUninstallCommandParser
             + "Valid component types: " + string.Join(", ", Install.RuntimeInstallCommand.GetValidRuntimeTypes()),
     };
 
-    internal static readonly Option<InstallSource> s_sourceOption = new("--source")
-    {
-        Description = "Filter by install source (explicit, globaljson, all).",
-        DefaultValueFactory = _ => InstallSource.Explicit
-    };
-
-    public static Option<InstallSource> SourceOption => s_sourceOption;
-
-    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
-
-    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
-
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-
     private static readonly Command s_runtimeUninstallCommand = ConstructCommand();
 
     public static Command GetRuntimeUninstallCommand()
@@ -55,10 +41,10 @@ internal static class RuntimeUninstallCommandParser
         Command command = new("uninstall", "Removes a .NET Runtime install spec and cleans up unused installations");
 
         command.Arguments.Add(ComponentSpecArgument);
-        command.Options.Add(SourceOption);
-        command.Options.Add(ManifestPathOption);
-        command.Options.Add(InstallPathOption);
-        command.Options.Add(NoProgressOption);
+        command.Options.Add(CommonOptions.SourceOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
 
         command.SetAction(parseResult => new RuntimeUninstallCommand(parseResult).Execute());
 

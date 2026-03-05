@@ -43,13 +43,22 @@ internal record InstallRequestOptions()
     public bool RequireMuxerUpdate { get; init; }
 
     /// <summary>
-    /// The source of this install request (e.g., "explicit", "globaljson").
+    /// The source of this install request.
     /// Used when recording install specs in the manifest.
     /// </summary>
-    public string? InstallSourceName { get; init; }
+    public InstallRequestSource InstallSource { get; init; } = InstallRequestSource.Explicit;
 
     /// <summary>
     /// The path to the global.json file that triggered this install, if applicable.
     /// </summary>
     public string? GlobalJsonPath { get; init; }
+}
+
+/// <summary>
+/// The source that triggered an install request.
+/// </summary>
+internal enum InstallRequestSource
+{
+    Explicit,
+    GlobalJson,
 }
