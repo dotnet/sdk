@@ -315,17 +315,17 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
+        <target state="translated">Escriba "{0}" para sí o "{1}" para no.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="new">n</target>
+        <target state="translated">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="new">y</target>
+        <target state="translated">s</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
