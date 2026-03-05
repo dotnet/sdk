@@ -1230,6 +1230,105 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_Ref()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+
+        // Create the referenced file-based app.
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            Console.WriteLine("lib");
+            """);
+
+        var slash = Path.DirectorySeparatorChar;
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            filePath: Path.Join(appDir, "Program.cs"),
+            evaluateDirectives: true,
+            inputCSharp: """
+                #:ref ../lib.cs
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="..{slash}lib.cs" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [Fact]
+    public void Directives_Ref_MissingFile_Error()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            evaluateDirectives: true,
+            inputCSharp: """
+                #:ref nonexistent.cs
+                """,
+            expectedCSharp: "",
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.InvalidRefDirective,
+                    string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory,
+                        Path.Join(testInstance.Path, "nonexistent.cs")))),
+            ]);
+    }
+
+    [Theory] // https://github.com/dotnet/sdk/issues/52399
+    [InlineData("File", "File", "lib.cs", "../lib.cs", "File/Project", "..{/}..{/}lib{/}lib.csproj")]
+    [InlineData(".", ".", "lib.cs", "./lib.cs", "Project", "..{/}lib{/}lib.csproj")]
+    [InlineData("File", "File", "lib.cs", "../$(LibAppName).cs", "File/Project", "..{/}..{/}lib{/}lib.csproj")]
+    public void RefDirective_RelativePaths(string workingDir, string fileDir, string refFile, string reference, string outputDir, string convertedReference)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create the referenced file-based app.
+        File.WriteAllText(Path.Join(testInstance.Path, refFile), """
+            Console.WriteLine("Hello from lib");
+            """);
+
+        var fileDirFullPath = Path.Join(testInstance.Path, fileDir);
+        Directory.CreateDirectory(fileDirFullPath);
+        var fileFullPath = Path.Join(fileDirFullPath, "app.cs");
+        File.WriteAllText(fileFullPath, $"""
+            #:ref {reference}
+            #:property LibAppName=lib
+            """);
+
+        var workingDirFullPath = Path.Join(testInstance.Path, workingDir);
+        var fileRelativePath = Path.GetRelativePath(relativeTo: workingDirFullPath, path: fileFullPath);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, outputDir);
+        new DotnetCommand(Log, "project", "convert", fileRelativePath, "-o", outputDirFullPath)
+            .WithWorkingDirectory(workingDirFullPath)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
+            .Should().Contain($"""
+                <ProjectReference Include="{convertedReference.Replace("{/}", Path.DirectorySeparatorChar.ToString())}" />
+                """);
+    }
+
+    [Fact]
     public void Directives_IncludeExclude()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

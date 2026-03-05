@@ -323,6 +323,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "property": return Property.Parse(context);
             case "package": return Package.Parse(context);
             case "project": return Project.Parse(context);
+            case "ref": return Ref.Parse(context);
             case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
                 context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
@@ -585,6 +586,74 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         public override string ToString() => $"#:project {Name}";
+    }
+
+    /// <summary>
+    /// <c>#:ref</c> directive. References another file-based app.
+    /// </summary>
+    public sealed class Ref : Named
+    {
+        [SetsRequiredMembers]
+        public Ref(in ParseInfo info, string name) : base(info)
+        {
+            Name = name;
+            OriginalName = name;
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
+        /// </summary>
+        public string OriginalName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
+        /// </summary>
+        public string? ExpandedName { get; init; }
+
+        public static new Ref? Parse(in ParseContext context)
+        {
+            var directiveText = context.DirectiveText;
+            if (directiveText.IsWhiteSpace())
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+                return null;
+            }
+
+            return new Ref(context.Info, directiveText);
+        }
+
+        public Ref WithName(string name, bool isExpanded)
+        {
+            return new Ref(Info, name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = isExpanded ? name : ExpandedName,
+            };
+        }
+
+        /// <summary>
+        /// Validates that the referenced file exists.
+        /// </summary>
+        public Ref EnsureFilePath(ErrorReporter errorReporter)
+        {
+            var resolvedName = Name;
+            var sourcePath = Info.SourceFile.Path;
+            var sourceDirectory = Path.GetDirectoryName(sourcePath)
+                ?? throw new InvalidOperationException($"Source file path '{sourcePath}' does not have a containing directory.");
+
+            var resolvedFilePath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
+            if (!File.Exists(resolvedFilePath))
+            {
+                errorReporter(Info.SourceFile.Text, sourcePath, Info.Span,
+                    string.Format(FileBasedProgramsResources.InvalidRefDirective,
+                        string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedFilePath)));
+            }
+
+            return this;
+        }
+
+        public override string ToString() => $"#:ref {Name}";
     }
 
     public enum IncludeOrExcludeKind

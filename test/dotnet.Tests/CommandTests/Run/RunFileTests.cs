@@ -3044,6 +3044,28 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory]
     [InlineData(null)]
     [InlineData("app")]
+    public void RefDirective_Errors(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        File.WriteAllText(filePath, """
+            #:ref nonexistent.cs
+            """);
+
+        // File does not exist.
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidRefDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "nonexistent.cs"))));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
     public void ProjectReference_Duplicate(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

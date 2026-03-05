@@ -268,6 +268,29 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
+                // Convert #:ref directives to #:project directives pointing to the converted project file.
+                if (directive is CSharpDirective.Ref refDirective)
+                {
+                    Debug.Assert(refDirective.ExpandedName != null);
+
+                    // Get the absolute path of the referenced .cs file using the expanded name.
+                    var absoluteRefPath = Path.GetFullPath(
+                        path: refDirective.ExpandedName,
+                        basePath: sourceDirectory);
+
+                    // The converted project for this .cs file will be in a directory with the same name (without extension).
+                    var refConversionDir = Path.ChangeExtension(absoluteRefPath, null);
+                    var refProjectFileName = Path.GetFileNameWithoutExtension(absoluteRefPath) + ".csproj";
+                    var refProjectFile = Path.Join(refConversionDir, refProjectFileName);
+
+                    // Compute relative path from targetDirectory to the converted project file.
+                    var relativePath = Path.GetRelativePath(relativeTo: targetDirectory, path: refProjectFile);
+
+                    // Create a Project directive pointing to the converted project file.
+                    result.Add(new CSharpDirective.Project(refDirective.Info, relativePath));
+                    continue;
+                }
+
                 result.Add(directive);
             }
 

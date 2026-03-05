@@ -57,6 +57,11 @@
         <target state="translated">'#:p roject' 지시문이 잘못되었습니다. {0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
+      <trans-unit id="InvalidRefDirective">
+        <source>The '#:ref' directive is invalid: {0}</source>
+        <target state="new">The '#:ref' directive is invalid: {0}</target>
+        <note>{0} is the inner error message. {Locked="#:ref"}</note>
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
         <target state="translated">'{0}' 이름이 없습니다.</target>

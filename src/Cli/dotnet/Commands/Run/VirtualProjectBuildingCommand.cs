@@ -497,7 +497,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return false;
             }
 
-            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Project))
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Project or CSharpDirective.Ref))
             {
                 Reporter.Verbose.WriteLine("Not saving cache because there is a project directive.");
                 return false;
@@ -733,7 +733,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private CacheInfo? ComputeCacheEntry()
     {
-        if (Directives.Any(static d => d is CSharpDirective.Project))
+        if (Directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.Ref))
         {
             Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
             return null;

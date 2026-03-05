@@ -157,7 +157,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.Ref or CSharpDirective.IncludeOrExclude))
         {
             return directives;
         }
@@ -175,6 +175,13 @@ public sealed class VirtualProjectBuilder
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
+                    break;
+
+                case CSharpDirective.Ref refDirective:
+                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), isExpanded: true);
+                    refDirective = refDirective.EnsureFilePath(reportError);
+
+                    builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
@@ -444,6 +451,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var refDirectives = directives.OfType<CSharpDirective.Ref>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -697,6 +705,27 @@ public sealed class VirtualProjectBuilder
             {
                 writer.WriteLine($"""
                         <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
+                    """);
+
+                processedDirectives++;
+            }
+
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
+        }
+
+        if (refDirectives.Any())
+        {
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
+
+            foreach (var refDirective in refDirectives)
+            {
+                writer.WriteLine($"""
+                        <ProjectReference Include="{EscapeValue(refDirective.Name)}" />
                     """);
 
                 processedDirectives++;

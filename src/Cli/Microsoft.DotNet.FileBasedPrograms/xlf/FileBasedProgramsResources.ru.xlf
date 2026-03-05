@@ -57,6 +57,11 @@
         <target state="translated">Недопустимая директива "#:project": {0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
+      <trans-unit id="InvalidRefDirective">
+        <source>The '#:ref' directive is invalid: {0}</source>
+        <target state="new">The '#:ref' directive is invalid: {0}</target>
+        <note>{0} is the inner error message. {Locked="#:ref"}</note>
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
         <target state="translated">Отсутствует имя "{0}".</target>
