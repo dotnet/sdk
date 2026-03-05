@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
         public async Task RunArguments_HotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
