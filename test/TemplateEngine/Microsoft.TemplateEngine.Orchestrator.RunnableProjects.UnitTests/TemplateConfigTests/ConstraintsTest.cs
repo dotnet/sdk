@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject(), loggerProvider.CreateLogger("test"));
             Assert.Empty(model.Constraints);
             Assert.Single(loggedMessages);
-            Assert.Equal($"Constraint definition '{JsonNode.Parse(JsonSerializer.Serialize(new { args = "arg" }))}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
+            Assert.Equal($"Constraint definition '{JsonNode.Parse(JsonSerializer.Serialize(new { args = "arg" }))!.ToJsonString()}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
         }
 
         [Fact]

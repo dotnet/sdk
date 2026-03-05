@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
 
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
-            Assert.Equal("True", variables[variableName]);
+            Assert.Equal("true", variables[variableName]);
         }
 
         [Fact]

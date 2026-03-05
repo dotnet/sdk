@@ -53,20 +53,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string expectedValue = "this one";
             string switchCases = @"[
                 {
-                    'condition': '(3 > 10)',
-                    'value': 'three greater than ten'
+                    ""condition"": ""(3 > 10)"",
+                    ""value"": ""three greater than ten""
                 },
                 {
-                    'condition': '(false)',
-                    'value': 'false value'
+                    ""condition"": ""(false)"",
+                    ""value"": ""false value""
                 },
                 {
-                    'condition': '(10 > 0)',
-                    'value': '" + expectedValue + @"'
+                    ""condition"": ""(10 > 0)"",
+                    ""value"": """ + expectedValue + @"""
                 },
                 {
-                    'condition': '(5 > 4)',
-                    'value': 'not this one'
+                    ""condition"": ""(5 > 4)"",
+                    ""value"": ""not this one""
                 }
             ]";
 
@@ -136,10 +136,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             string switchCases = /*lang=json*/ @"[
                 {
-                    'condition': '(3 > 10)',
+                    ""condition"": ""(3 > 10)""
                 },
                 {
-                    'value': 'default'
+                    ""value"": ""default""
                 }
             ]";
 
@@ -160,11 +160,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             string switchCases = /*lang=json*/ @"[
                 {
-                    'condition': '(3 > 10)',
-                    'value': 'v'
+                    ""condition"": ""(3 > 10)"",
+                    ""value"": ""v""
                 },
                 {
-                    'value': 'default'
+                    ""value"": ""default""
                 }
             ]";
 
