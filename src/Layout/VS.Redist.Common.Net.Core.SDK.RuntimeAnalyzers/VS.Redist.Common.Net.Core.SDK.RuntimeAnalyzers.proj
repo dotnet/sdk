@@ -29,6 +29,7 @@
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\roslynanalyzers\**\*.*" DeploymentSubpath="RoslynAnalyzers" />
     </ItemGroup>
 
     <Error Condition="'@(RedistRuntimeAnalyzersContent)' == ''" Text="The 'RedistRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
@@ -36,7 +37,7 @@
     <!-- The custom task cannot access %(RecursiveDir) without this. -->
     <ItemGroup>
       <RedistRuntimeAnalyzersContent Update="@(RedistRuntimeAnalyzersContent)">
-        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>      
+        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>
       </RedistRuntimeAnalyzersContent>
     </ItemGroup>
 
