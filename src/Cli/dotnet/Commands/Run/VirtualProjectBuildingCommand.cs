@@ -320,7 +320,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     : [Constants.Build, Constants.CoreCompile];
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: effectiveTargets);
+                    targetsToBuild: effectiveTargets,
+                    hostServices: null,
+                    // SkipNonexistentTargets: CoreCompile doesn't exist in the outer build of multi-target projects.
+                    BuildRequestDataFlags.SkipNonexistentTargets);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
