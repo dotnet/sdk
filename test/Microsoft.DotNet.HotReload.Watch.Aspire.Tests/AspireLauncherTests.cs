@@ -29,7 +29,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             commandName: "resource",
             commandArguments: ["--server", serverPipe]);
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [Fact]
     public async Task Host()
     {
         var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
@@ -44,7 +44,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         await host.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [Fact]
     public async Task ServerAndResources()
     {
         var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMultiProc")
