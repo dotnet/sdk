@@ -527,7 +527,7 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0-preview.3.26118.109">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0-preview.3.26152.106">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>4c0aa722933ea491006247bbc0a484fa3c28cd14</Sha>
     </Dependency>
