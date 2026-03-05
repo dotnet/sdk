@@ -8,7 +8,7 @@ using OpenTelemetry.Context.Propagation;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public static class ActivityContext
+public static class ActivityContextFactory
 {
     public static Dictionary<string, string>? MakeActivityContextEnvironment()
     {

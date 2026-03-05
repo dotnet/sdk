@@ -27,6 +27,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
     public static readonly string DOTNET_CLI_TELEMETRY_STORAGE_PATH = nameof(DOTNET_CLI_TELEMETRY_STORAGE_PATH);
     public static readonly string DOTNET_CLI_TELEMETRY_LOG_PATH = nameof(DOTNET_CLI_TELEMETRY_LOG_PATH);
+    public static readonly string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
 
 #if NET7_0_OR_GREATER
     private static readonly Version s_version6_0 = new(6, 0);

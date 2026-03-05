@@ -18,8 +18,6 @@ using Microsoft.DotNet.ProjectTools;
 using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
-using OpenTelemetry;
-using OpenTelemetry.Context.Propagation;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli;
@@ -32,23 +30,21 @@ public class Program
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
     private static readonly Activity? s_mainActivity;
-    private static readonly DateTime s_mainTimeStamp;
     private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
     private static readonly PosixSignalRegistration s_sigTermRegistration;
-    private static string? s_globalJsonState;
+    private static readonly string? s_globalJsonState;
 
     public static ITelemetryClient TelemetryInstance { get; private set; }
 
     static Program()
     {
-        s_mainTimeStamp = DateTime.Now;
+        var mainTimeStamp = DateTime.Now;
         s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
 
-        (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
-        s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
+        s_mainActivity = Activities.Source.CreateActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
         s_mainActivity
             ?.Start()
             ?.SetStartTime(Process.GetCurrentProcess().StartTime)
@@ -63,22 +59,24 @@ public class Program
             Console.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
         }
 
-        TrackHostStartup();
-        SetupMSBuildEnvironmentInvariants();
-
-        static void TrackHostStartup()
-        {
-            var hostStartupActivity = Activities.Source.StartActivity("host-startup")
+        // Creates a host-startup activity which includes the global.json state.
+        var hostStartupActivity = Activities.Source.StartActivity("host-startup")
                 ?.SetStartTime(Process.GetCurrentProcess().StartTime);
-            if (TelemetryInstance.Enabled && hostStartupActivity is not null)
-            {
-                // Get the global.json state to report in telemetry along with this command invocation.
-                s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
-                hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
-            }
-            hostStartupActivity?.SetEndTime(s_mainTimeStamp)
-                ?.SetStatus(ActivityStatusCode.Ok)
-                ?.Dispose();
+        if (TelemetryInstance.Enabled && hostStartupActivity is not null)
+        {
+            // Get the global.json state to report in telemetry along with this command invocation.
+            s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+            hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
+        }
+        hostStartupActivity?.SetEndTime(mainTimeStamp)
+            ?.SetStatus(ActivityStatusCode.Ok)
+            ?.Dispose();
+
+        // We have some behaviors in MSBuild that we want to enforce (either when using MSBuild API or by shelling out to it),
+        // so we set those ASAP as globally as possible.
+        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
+        {
+            Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
         }
     }
 
@@ -90,18 +88,18 @@ public class Program
 
         using AutomaticEncodingRestorer _ = new();
 
-        if (Env.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1")
-        {
+        if (Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1"
             // Setting output encoding is not available on those platforms
-            if (UILanguageOverride.OperatingSystemSupportsUtf8())
-            {
-                Console.OutputEncoding = Encoding.UTF8;
-            }
+            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        {
+            Console.OutputEncoding = Encoding.UTF8;
         }
 
         DebugHelper.HandleDebugSwitch(ref args);
-
-        InitializeProcess();
+        // By default, .NET Core doesn't have all code pages needed for Console apps.
+        // See the .NET Core Notes: https://docs.microsoft.com/dotnet/api/system.diagnostics.process#-notes
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        UILanguageOverride.Setup();
 
         var exitCode = 1;
         try
@@ -116,16 +114,15 @@ public class Program
                 ? e.ToString().Red().Bold()
                 : e.Message.Red().Bold());
 
-            if (e is CommandParsingException commandParsingException && commandParsingException.ParseResult != null)
+            if (e is CommandParsingException { ParseResult: {} exceptionParseResult } )
             {
-                commandParsingException.ParseResult.ShowHelp();
+                exceptionParseResult.ShowHelp();
             }
             s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Error);
             return exitCode;
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
         {
-            // If telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
             s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Error);
@@ -149,54 +146,6 @@ public class Program
         s_mainActivity?.Stop();
         TelemetryClient.FlushProviders();
         Activities.Source.Dispose();
-    }
-
-    /// <summary>
-    /// Uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
-    /// from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
-    /// </summary>
-    private static (System.Diagnostics.ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
-    {
-        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
-
-        if (string.IsNullOrEmpty(traceParent))
-        {
-            return (default, ActivityKind.Internal);
-        }
-
-        var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-        if (!string.IsNullOrEmpty(traceState))
-        {
-            carrierMap.Add("tracestate", [traceState]);
-        }
-
-        // Use the OpenTelemetry Propagator to extract the parent activity context and kind. For some reason this isn't set by the OTel SDK like docs say it should be.
-        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([
-            new TraceContextPropagator(),
-            new BaggagePropagator()
-        ]));
-        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier);
-        var kind = parentActivityContext.ActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
-
-        return (parentActivityContext.ActivityContext, kind);
-
-        static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key)
-        {
-            return carrier.TryGetValue(key, out var value) ? value : null;
-        }
-    }
-
-    /// <summary>
-    /// We have some behaviors in MSBuild that we want to enforce (either when using MSBuild API or by shelling out to it),
-    /// so we set those ASAP as globally as possible.
-    /// </summary>
-    private static void SetupMSBuildEnvironmentInvariants()
-    {
-        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
-        {
-            Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
-        }
     }
 
     private static string GetCommandName(ParseResult parseResult)
@@ -239,7 +188,12 @@ public class Program
     internal static int ProcessArgs(string[] args)
     {
         ParseResult parseResult = ParseArgs(args);
-        SetupDotnetFirstRun(parseResult);
+        // Options that perform terminating actions are considered to essentially be subcommands. These are special as they should not run the first-run setup.
+        // Example: dotnet --version
+        if (!(parseResult.Action is InvocableOptionAction { Terminating: true }))
+        {
+            SetupDotnetFirstRun(parseResult);
+        }
 
         TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, s_performanceData, s_globalJsonState));
 
@@ -296,7 +250,7 @@ public class Program
         using var _invocationActivity = Activities.Source.StartActivity("invocation");
         try
         {
-            exitCode = parseResult.Invoke();
+            exitCode = Parser.Invoke(parseResult);
             exitCode = AdjustExitCode(parseResult, exitCode);
         }
         catch (Exception exception)
@@ -478,14 +432,5 @@ public class Program
                 reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());
             }
         }
-    }
-
-    private static void InitializeProcess()
-    {
-        // By default, .NET Core doesn't have all code pages needed for Console apps.
-        // See the .NET Core Notes: https://docs.microsoft.com/dotnet/api/system.diagnostics.process#-notes
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        UILanguageOverride.Setup();
     }
 }

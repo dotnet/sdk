@@ -7,7 +7,7 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using OpenTelemetry;
-//using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -25,8 +25,8 @@ public class TelemetryClient : ITelemetryClient
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     // TODO: TelemetryInstance takes in an environment provider. These fields don't use that currently.
-    private static readonly string? s_environmentStoragePath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
-    private static readonly string? s_diskLogPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
+    private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
+    private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly int s_flushTimeoutMs = 200;
 
     public static string? CurrentSessionId { get; private set; } = null;
@@ -42,6 +42,8 @@ public class TelemetryClient : ITelemetryClient
             }
         }
     } = false;
+    public static ActivityContext ParentActivityContext { get; private set; }
+    public static ActivityKind ActivityKind { get; private set; }
 
     public bool Enabled { get; }
 
@@ -73,6 +75,10 @@ public class TelemetryClient : ITelemetryClient
             .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
             .Build();
+
+        var parentActivityContext = GetParentActivityContext();
+        ParentActivityContext = parentActivityContext ?? default;
+        ActivityKind = GetActivityKind(parentActivityContext);
     }
 
     public TelemetryClient() : this(null) { }
@@ -94,6 +100,38 @@ public class TelemetryClient : ITelemetryClient
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
+
+    /// <summary>
+    /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// </summary>
+    private static ActivityContext? GetParentActivityContext()
+    {
+        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            return null;
+        }
+
+        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+        var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
+        if (!string.IsNullOrEmpty(traceState))
+        {
+            carrierMap.Add("tracestate", [traceState]);
+        }
+
+        // Use the propegator to extract the parent activity context and kind. For some reason, this isn't set by the OTel SDK like docs say it should be.
+        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([new TraceContextPropagator(), new BaggagePropagator()]));
+        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
+        var kind = parentActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
+
+        return parentActivityContext;
+
+        static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key) =>
+            carrier.TryGetValue(key, out var value) ? value : null;
+    }
+
+    private static ActivityKind GetActivityKind(ActivityContext? parentActivityContext) =>
+        parentActivityContext is ActivityContext { IsRemote: true } ? ActivityKind.Server : ActivityKind.Internal;
 
     public static void FlushProviders()
     {
