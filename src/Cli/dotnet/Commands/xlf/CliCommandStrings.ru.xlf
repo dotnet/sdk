@@ -3779,6 +3779,11 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">Рабочие нагрузки "{0}" уже установлены.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Удаляет компоненты рабочей нагрузки, которые могли остаться после предыдущих обновлений и удалений.</target>

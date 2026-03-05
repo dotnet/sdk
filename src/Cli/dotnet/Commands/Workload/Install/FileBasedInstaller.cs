@@ -558,6 +558,7 @@ internal class FileBasedInstaller : IInstaller
         if (cleanAllPacks)
         {
             DeleteAllWorkloadInstallationRecords();
+            DeleteAllWorkloadSetsAndManifests();
         }
 
     }
@@ -620,6 +621,96 @@ internal class FileBasedInstaller : IInstaller
                 workloadRecordRepository.DeleteWorkloadInstallationRecord(workloadInstallationRecordId, potentialBandToClean);
             }
         }
+    }
+
+    /// <summary>
+    /// Deletes all workload sets, manifests, and install state files across all feature bands.
+    /// This is used by 'dotnet workload clean --all' to completely reset workloads to a clean state.
+    /// </summary>
+    private void DeleteAllWorkloadSetsAndManifests()
+    {
+        Reporter.Verbose.WriteLine("Removing all workload sets and manifests...");
+        
+        // Delete all workload sets and manifests from sdk-manifests directory
+        string sdkManifestsRoot = Path.Combine(_workloadRootDir, "sdk-manifests");
+        if (Directory.Exists(sdkManifestsRoot))
+        {
+            // Iterate through all feature band directories
+            foreach (var featureBandDir in Directory.GetDirectories(sdkManifestsRoot))
+            {
+                string featureBand = Path.GetFileName(featureBandDir);
+                
+                // Delete workload sets directory for this feature band
+                string workloadSetsDir = Path.Combine(featureBandDir, SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName);
+                if (Directory.Exists(workloadSetsDir))
+                {
+                    Reporter.Verbose.WriteLine($"Deleting workload sets directory: {workloadSetsDir}");
+                    Directory.Delete(workloadSetsDir, true);
+                }
+                
+                // Delete all manifest directories for this feature band (except workloadsets folder)
+                foreach (var manifestDir in Directory.GetDirectories(featureBandDir))
+                {
+                    string dirName = Path.GetFileName(manifestDir);
+                    if (!string.Equals(dirName, SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Reporter.Verbose.WriteLine($"Deleting manifest directory: {manifestDir}");
+                        Directory.Delete(manifestDir, true);
+                    }
+                }
+                
+                // Delete the feature band directory if it's now empty
+                if (Directory.Exists(featureBandDir) && !Directory.GetFileSystemEntries(featureBandDir).Any())
+                {
+                    Directory.Delete(featureBandDir);
+                }
+            }
+        }
+        
+        // Delete all install state files
+        string metadataWorkloadsRoot = Path.Combine(_workloadRootDir, "metadata", "workloads");
+        if (Directory.Exists(metadataWorkloadsRoot))
+        {
+            foreach (var archDir in Directory.GetDirectories(metadataWorkloadsRoot))
+            {
+                foreach (var featureBandDir in Directory.GetDirectories(archDir))
+                {
+                    string installStateDir = Path.Combine(featureBandDir, "InstallState");
+                    if (Directory.Exists(installStateDir))
+                    {
+                        string defaultJsonPath = Path.Combine(installStateDir, "default.json");
+                        if (File.Exists(defaultJsonPath))
+                        {
+                            Reporter.Verbose.WriteLine($"Deleting install state file: {defaultJsonPath}");
+                            File.Delete(defaultJsonPath);
+                        }
+                        
+                        // Delete InstallState directory if it's now empty
+                        if (Directory.Exists(installStateDir) && !Directory.GetFileSystemEntries(installStateDir).Any())
+                        {
+                            Directory.Delete(installStateDir);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Also delete installation records for workload sets and manifests
+        string installedWorkloadSetsDir = Path.Combine(_workloadMetadataDir, InstalledWorkloadSetsDir);
+        if (Directory.Exists(installedWorkloadSetsDir))
+        {
+            Reporter.Verbose.WriteLine($"Deleting workload sets installation records: {installedWorkloadSetsDir}");
+            Directory.Delete(installedWorkloadSetsDir, true);
+        }
+        
+        string installedManifestsDir = Path.Combine(_workloadMetadataDir, InstalledManifestsDir);
+        if (Directory.Exists(installedManifestsDir))
+        {
+            Reporter.Verbose.WriteLine($"Deleting manifest installation records: {installedManifestsDir}");
+            Directory.Delete(installedManifestsDir, true);
+        }
+        
+        _reporter.WriteLine(CliCommandStrings.WorkloadCleanAllComplete);
     }
 
     string GetWorkloadHistoryDirectory()
