@@ -11,7 +11,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public string? FileName { get; set; }
         public List<string> Arguments { get; set; } = new List<string>();
 
-        public Dictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string?> Environment { get; set; } = new();
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 

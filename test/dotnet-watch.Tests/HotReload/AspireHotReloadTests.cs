@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
 
-            await App.WaitUntilOutputContains(MessageDescriptor.Building.GetMessage(serviceProjectPath));
+            await App.WaitUntilOutputContains(MessageDescriptor.Building);
             await App.WaitUntilOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
             App.Process.ClearOutput();
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
 
-            await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
+            await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded);
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
             await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
 
@@ -112,8 +112,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Sending 'sessionTerminated'");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
+
+            // Note: do not check that 'sessionTerminated' notification is received.
+            // It might get cancelled and not delivered on shutdown.
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114

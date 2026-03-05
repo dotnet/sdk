@@ -21,6 +21,12 @@ internal sealed class ProjectBuildManager(ProjectCollection collection, BuildRep
     public readonly BuildReporter BuildReporter = reporter;
 
     /// <summary>
+    /// Used by tests to ensure no more than one build is running at a time, which is required by MSBuild.
+    /// </summary>
+    internal static SemaphoreSlim Test_BuildSemaphore
+        => s_buildSemaphore;
+
+    /// <summary>
     /// Executes the specified build requests.
     /// </summary>
     /// <param name="onFailure">Invoked for each project that fails to build. Returns true to continue build or false to cancel.</param>

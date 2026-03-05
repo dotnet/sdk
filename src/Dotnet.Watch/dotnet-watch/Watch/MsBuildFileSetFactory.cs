@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = environmentOptions.MuxerPath,
+                    Executable = environmentOptions.GetMuxerPath(),
                     WorkingDirectory = projectDir,
                     IsUserApplication = false,
                     Arguments = arguments,
