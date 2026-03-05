@@ -3953,6 +3953,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string entryPointPathNormalized = NormalizePath(entryPointPath);
         var msbuildArgsToVerify = new List<string>();
         var nuGetPackageFilePaths = new List<string>();
+        bool referenceSpreadInserted = false;
+        bool analyzerSpreadInserted = false;
+        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -4073,6 +4076,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 continue;
             }
 
+            // Use GetFrameworkReferenceArguments() for framework references instead of hard-coding them.
+            if (arg.StartsWith("/reference:", StringComparison.Ordinal))
+            {
+                if (!referenceSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkReferenceArguments(),
+                        """);
+                    referenceSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
+                continue;
+            }
+
+            // Use GetFrameworkAnalyzerArguments() for targeting-pack analyzers instead of hard-coding them.
+            if (arg.StartsWith("/analyzer:", StringComparison.Ordinal)
+                && rewritten.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!analyzerSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkAnalyzerArguments(),
+                        """);
+                    analyzerSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
+                continue;
+            }
+
             string prefix = needsInterpolation ? "$" : string.Empty;
 
             code.AppendLine($"""
@@ -4160,12 +4194,30 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Check that csc args between MSBuild run and CSC-only run are equivalent.
         var normalizedCscOnlyArgs = cscOnlyCallArgs
-            .Select(static a => NormalizePathArg(RemoveQuotes(a)));
+            .Select(static a => NormalizePathArg(RemoveQuotes(a)))
+            .ToList();
         Log.WriteLine("CSC-only args:");
         Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
         Log.WriteLine("MSBuild args:");
         Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
-        normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify,
+
+        // References and targeting-pack analyzers may be in a different order (FrameworkList.xml vs. MSBuild),
+        // so compare them as sets. All other args must be in the same order.
+        var cscOnlyRefArgs = normalizedCscOnlyArgs.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var cscOnlyAnalyzerArgs = normalizedCscOnlyArgs.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var cscOnlyOtherArgs = normalizedCscOnlyArgs.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        var msbuildRefArgs = msbuildArgsToVerify.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var msbuildAnalyzerArgs = msbuildArgsToVerify.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var msbuildOtherArgs = msbuildArgsToVerify.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        cscOnlyRefArgs.Should().NotBeEmpty(
+            "framework references should be resolved from FrameworkList.xml");
+        cscOnlyRefArgs.Should().BeEquivalentTo(msbuildRefArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyAnalyzerArgs.Should().NotBeEmpty(
+            "framework analyzers should be resolved from FrameworkList.xml");
+        cscOnlyAnalyzerArgs.Should().BeEquivalentTo(msbuildAnalyzerArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyOtherArgs.Should().Equal(msbuildOtherArgs,
             "the generated file might be outdated, run this test locally to regenerate it");
 
         static CompilerCall FindCompilerCall(string binaryLogPath)
