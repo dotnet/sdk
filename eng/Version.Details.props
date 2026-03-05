@@ -142,6 +142,8 @@ This file should be imported by eng/Versions.props
     <SystemWindowsExtensionsPackageVersion>11.0.0-preview.3.26152.106</SystemWindowsExtensionsPackageVersion>
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <!-- _git/dotnet-dotnet dependencies -->
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>11.0.0-preview.3.26152.106</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>2.2.0-preview.26154.1</MicrosoftTestingPlatformPackageVersion>
     <MSTestPackageVersion>4.2.0-preview.26154.1</MSTestPackageVersion>
@@ -285,6 +287,8 @@ This file should be imported by eng/Versions.props
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
+    <!-- _git/dotnet-dotnet dependencies -->
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>

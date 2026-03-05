@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Watch
                 from path in filePaths
                 group path by PathUtilities.EnsureTrailingSlash(PathUtilities.NormalizeDirectorySeparators(Path.GetDirectoryName(path)!))
                 into g
-                select (g.Key, containingDirectories ? [] : g.Select(path => Path.GetFileName(path)).ToImmutableHashSet(PathUtilities.OSSpecificPathComparer));
+                select (g.Key, containingDirectories ? [] : g.Select(Path.GetFileName).ToImmutableHashSet(PathUtilities.OSSpecificPathComparer));
 
             foreach (var (directory, fileNames) in filesByDirectory)
             {

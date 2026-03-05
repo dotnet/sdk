@@ -436,7 +436,7 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            Assert.Throws<FileNotFoundException>(() => GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList());
+            Assert.Throws<InvalidOperationException>(() => GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList());
         }
 
         [Fact]
@@ -710,9 +710,9 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            var ex = Assert.Throws<FileNotFoundException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
+            var ex = Assert.Throws<InvalidOperationException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
 
-            ex.Message.Should().Be(string.Format(Strings.ManifestFromWorkloadSetNotFound, "ios: 11.0.2/8.0.100", "8.0.201"));
+            ex.Message.Should().Be(string.Format(Strings.WorkloadSetHasMissingManifests, "8.0.201"));
         }
 
         [Fact]

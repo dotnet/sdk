@@ -1,0 +1,7 @@
+{
+  "author": "Microsoft",
+  "name": "Solution Filter File",
+  "description": "Create a solution filter file that references a parent solution",
+  "symbols/ParentSolution/displayName": "Parent solution file",
+  "symbols/ParentSolution/description": "The parent solution file (sln or slnx) that this filter references (default: same name with .slnx extension)."
+}

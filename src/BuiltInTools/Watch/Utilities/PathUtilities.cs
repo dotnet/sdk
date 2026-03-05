@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal static class PathUtilities
 {
-    public static readonly IEqualityComparer<string> OSSpecificPathComparer = Path.DirectorySeparatorChar == '\\' ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    public static readonly IEqualityComparer<string?> OSSpecificPathComparer = Path.DirectorySeparatorChar == '\\' ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     public static readonly StringComparison OSSpecificPathComparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     public static string ExecutableExtension
