@@ -185,8 +185,8 @@ internal static class RunTelemetry
             return 0;
         }
 
-        // File-based: count project directives
-        return directives.OfType<CSharpDirective.Project>().Count();
+        // File-based: count project directives (both #:project and #:ref)
+        return directives.OfType<CSharpDirective.Project>().Count() + directives.OfType<CSharpDirective.Ref>().Count();
     }
 
     /// <summary>
