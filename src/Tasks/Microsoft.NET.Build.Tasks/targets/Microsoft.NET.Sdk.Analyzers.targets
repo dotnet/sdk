@@ -112,6 +112,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableTrimAnalyzer Condition="'$(EnableTrimAnalyzer)' == ''">false</EnableTrimAnalyzer>
     <EnableAotAnalyzer Condition="'$(EnableAotAnalyzer)' == ''">false</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer Condition="'$(EnableSingleFileAnalyzer)' == ''">false</EnableSingleFileAnalyzer>
+    <EnableBannedApiAnalysis Condition="'$(EnableBannedApiAnalysis)' == ''">false</EnableBannedApiAnalysis>
+    <EnablePublicApiAnalysis Condition="'$(EnablePublicApiAnalysis)' == ''">false</EnablePublicApiAnalysis>
+    <EnableResxSourceGeneration Condition="'$(EnableResxSourceGeneration)' == ''">false</EnableResxSourceGeneration>
+    <EnablePerformanceSensitiveAnalysis Condition="'$(EnablePerformanceSensitiveAnalysis)' == ''">false</EnablePerformanceSensitiveAnalysis>
   </PropertyGroup>
 
   <!-- Unconditionally import 'Microsoft.CodeAnalysis.NetAnalyzers.props' for all C# and VB projects for supporting https://github.com/dotnet/roslyn-analyzers/issues/3977 -->
