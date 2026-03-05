@@ -46,6 +46,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
-        return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
+        // Allow test hook override
+        var testHook = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
+        if (testHook is not null)
+        {
+            return testHook;
+        }
+
+        return GlobalJsonChannelResolver.ResolveChannel(globalJsonPath);
     }
 }

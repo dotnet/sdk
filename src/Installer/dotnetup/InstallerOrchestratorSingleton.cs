@@ -42,7 +42,8 @@ internal class InstallerOrchestratorSingleton
 
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
-        ReleaseVersion? versionToInstall = new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
+        ReleaseVersion? versionToInstall = installRequest.ResolvedVersion
+            ?? new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
 
         if (versionToInstall == null)
         {
@@ -85,7 +86,11 @@ internal class InstallerOrchestratorSingleton
             {
                 Console.WriteLine($"\n{componentDescription} {versionToInstall} files already exist, adding to manifest.");
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
-                manifestManager.AddInstalledVersion(install);
+                manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
+                {
+                    Component = install.Component,
+                    Version = install.Version.ToString()
+                });
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
@@ -126,17 +131,13 @@ internal class InstallerOrchestratorSingleton
             {
                 DotnetupSharedManifest manifestManager = new(customManifestPath);
 
-                // Detect pre-existing installations before first tracked install
-                PreexistingRootDetector.EnsureRootIsTracked(manifestManager, installRequest.InstallRoot);
-
-                manifestManager.AddInstalledVersion(install);
-
-                // Record the install spec for the channel that was requested
+                // Record the install specfor the channel that was requested
                 manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                 {
                     Component = installRequest.Component,
                     VersionOrChannel = installRequest.Channel.Name,
-                    InstallSource = InstallSource.Explicit
+                    InstallSource = Enum.TryParse<InstallSource>(installRequest.Options.InstallSourceName, true, out var src) ? src : InstallSource.Explicit,
+                    GlobalJsonPath = installRequest.Options.GlobalJsonPath
                 });
 
                 // Record the installation with its resolved version
@@ -158,26 +159,17 @@ internal class InstallerOrchestratorSingleton
     }
 #pragma warning restore CA1822
 
-    /// <summary>
-    /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
-    /// </summary>
-    private static IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    private static IEnumerable<Installation> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
     {
         var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        // Use the overload that filters by muxer directory
-        return manifestManager.GetInstalledVersions(installRoot);
+        return manifestManager.GetInstallations(installRoot);
     }
 
-    /// <summary>
-    /// Checks if the installation already exists. Must hold a mutex over the directory.
-    /// </summary>
     private static bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
     {
         var existingInstalls = GetExistingInstalls(install.InstallRoot, customManifestPath);
-
-        // Check if there's any existing installation that matches the version we're trying to install
         return existingInstalls.Any(existing =>
-            existing.Version.Equals(install.Version) &&
+            existing.Version == install.Version.ToString() &&
             existing.Component == install.Component);
     }
 }

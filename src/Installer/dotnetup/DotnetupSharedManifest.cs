@@ -86,71 +86,30 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
         catch (JsonException)
         {
-            // May be old format — try migration
-        }
+            // Check if it's a legacy format (JSON array of DotnetInstall objects)
+            if (json.TrimStart().StartsWith('['))
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.LocalManifestCorrupted,
+                    $"The dotnetup manifest at {ManifestPath} uses a legacy format that is no longer supported. " +
+                    "Delete the manifest file and reinstall any SDKs/runtimes that were in this dotnet root.");
+            }
 
-        try
-        {
-            var legacyInstalls = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-            var migrated = MigrateFromLegacy(legacyInstalls ?? []);
-            WriteManifest(migrated);
-            return migrated;
-        }
-        catch (JsonException ex)
-        {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.LocalManifestCorrupted,
-                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.",
-                ex);
+                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.");
         }
+
+        // Deserialization returned null — treat as empty manifest
+        return new();
     }
 
-    private void WriteManifest(DotnetupManifestData manifest)
+    internal void WriteManifest(DotnetupManifestData manifest)
     {
         AssertHasFinalizationMutex();
         Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
         var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
         File.WriteAllText(ManifestPath, json);
-    }
-
-    /// <summary>
-    /// Writes the manifest data back to disk. Used by GarbageCollector after in-place mutation.
-    /// </summary>
-    internal void WriteManifestData(DotnetupManifestData manifest)
-    {
-        WriteManifest(manifest);
-    }
-
-    /// <summary>
-    /// Migrates a legacy flat list of DotnetInstall records to the new manifest format.
-    /// Each legacy install becomes both an install spec (pinned to exact version) and an installation record.
-    /// </summary>
-    private static DotnetupManifestData MigrateFromLegacy(List<DotnetInstall> legacyInstalls)
-    {
-        var manifest = new DotnetupManifestData();
-
-        foreach (var install in legacyInstalls)
-        {
-            var root = GetOrAddDotnetRoot(manifest, install.InstallRoot.Path, install.InstallRoot.Architecture);
-
-            root.InstallSpecs.Add(new InstallSpec
-            {
-                Component = install.Component,
-                VersionOrChannel = install.Version.ToString(),
-                InstallSource = InstallSource.Previous
-            });
-
-            if (!root.Installations.Any(i => i.Component == install.Component && i.Version == install.Version.ToString()))
-            {
-                root.Installations.Add(new Installation
-                {
-                    Component = install.Component,
-                    Version = install.Version.ToString()
-                });
-            }
-        }
-
-        return manifest;
     }
 
     private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
@@ -161,6 +120,17 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         if (existing is not null)
         {
             return existing;
+        }
+
+        // Check for conflict: same path but different architecture
+        var conflicting = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture != architecture);
+        if (conflicting is not null)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestError,
+                $"The dotnet root at '{path}' is already tracked with architecture '{conflicting.Architecture}'. " +
+                $"Cannot add it again with architecture '{architecture}'.");
         }
 
         var newRoot = new DotnetRootEntry
@@ -184,6 +154,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
+        if (spec.InstallSource == InstallSource.All)
+        {
+            throw new ArgumentException("InstallSource.All cannot be used in manifest data. It is only valid as a filter.", nameof(spec));
+        }
+
         var manifest = ReadManifest();
         var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
 
@@ -260,91 +235,4 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         WriteManifest(manifest);
     }
 
-    // --- Backward-compatible DotnetInstall operations ---
-
-    public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)
-    {
-        var manifest = ReadManifest();
-        var installs = ManifestToLegacyInstalls(manifest);
-
-        if (validator is not null)
-        {
-            var validInstalls = installs.Where(validator.Validate).ToList();
-            if (validInstalls.Count != installs.Count)
-            {
-                // Remove invalid installations from the manifest
-                foreach (var invalid in installs.Except(validInstalls))
-                {
-                    var root = manifest.DotnetRoots.FirstOrDefault(r =>
-                        DotnetupUtilities.PathsEqual(r.Path, invalid.InstallRoot.Path) && r.Architecture == invalid.InstallRoot.Architecture);
-                    root?.Installations.RemoveAll(i => i.Component == invalid.Component && i.Version == invalid.Version.ToString());
-                }
-                WriteManifest(manifest);
-                return validInstalls;
-            }
-        }
-
-        return installs;
-    }
-
-    public IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null)
-    {
-        var installedVersions = GetInstalledVersions(validator);
-        var expectedInstallRootPath = Path.GetFullPath(installRoot.Path);
-        return installedVersions
-            .Where(install => DotnetupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
-    }
-
-    public void AddInstalledVersion(DotnetInstall version)
-    {
-        var manifest = ReadManifest();
-        var root = GetOrAddDotnetRoot(manifest, version.InstallRoot.Path, version.InstallRoot.Architecture);
-
-        if (!root.Installations.Any(i => i.Component == version.Component && i.Version == version.Version.ToString()))
-        {
-            root.Installations.Add(new Installation
-            {
-                Component = version.Component,
-                Version = version.Version.ToString()
-            });
-        }
-
-        WriteManifest(manifest);
-    }
-
-    public void RemoveInstalledVersion(DotnetInstall version)
-    {
-        var manifest = ReadManifest();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, version.InstallRoot.Path) && r.Architecture == version.InstallRoot.Architecture);
-
-        if (root is null)
-        {
-            return;
-        }
-
-        root.Installations.RemoveAll(i => i.Component == version.Component && i.Version == version.Version.ToString());
-
-        WriteManifest(manifest);
-    }
-
-    /// <summary>
-    /// Converts the new manifest model to legacy DotnetInstall records for backward compatibility.
-    /// </summary>
-    private static List<DotnetInstall> ManifestToLegacyInstalls(DotnetupManifestData manifest)
-    {
-        var installs = new List<DotnetInstall>();
-        foreach (var root in manifest.DotnetRoots)
-        {
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
-            foreach (var installation in root.Installations)
-            {
-                installs.Add(new DotnetInstall(
-                    installRoot,
-                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
-                    installation.Component));
-            }
-        }
-        return installs;
-    }
 }

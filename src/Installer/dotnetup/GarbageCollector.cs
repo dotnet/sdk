@@ -41,19 +41,19 @@ internal class GarbageCollector
         RefreshGlobalJsonSpecs(root);
 
         // Step 2: For each install spec, resolve the latest matching installation and mark it to keep
-        var installationsToKeep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var installationsToKeep = new HashSet<(InstallComponent Component, string Version)>();
         foreach (var spec in root.InstallSpecs)
         {
             var matchingInstallation = ResolveLatestMatchingInstallation(spec, root.Installations);
             if (matchingInstallation is not null)
             {
-                installationsToKeep.Add(InstallationKey(matchingInstallation));
+                installationsToKeep.Add((matchingInstallation.Component, matchingInstallation.Version));
             }
         }
 
         // Step 3: Remove unmarked installation records from the manifest
         var installationsToRemove = root.Installations
-            .Where(i => !installationsToKeep.Contains(InstallationKey(i)))
+            .Where(i => !installationsToKeep.Contains((i.Component, i.Version)))
             .ToList();
 
         foreach (var installation in installationsToRemove)
@@ -75,14 +75,14 @@ internal class GarbageCollector
         deletedPaths = DeleteOrphanedSubcomponents(installRoot.Path, referencedSubcomponents);
 
         // Step 6: Write the updated manifest
-        _manifest.WriteManifestData(manifest);
+        _manifest.WriteManifest(manifest);
 
         return deletedPaths;
     }
 
     /// <summary>
     /// Refreshes global.json install specs. Removes specs whose global.json file no longer
-    /// exists or no longer specifies a version.
+    /// exists or no longer specifies a version. Updates the channel if the version changed.
     /// </summary>
     private static void RefreshGlobalJsonSpecs(DotnetRootEntry root)
     {
@@ -98,8 +98,19 @@ internal class GarbageCollector
                 continue;
             }
 
-            // TODO: Read the global.json file and update the spec's version if it has changed.
-            // For now, we keep the spec as-is if the file still exists.
+            var resolvedChannel = GlobalJsonChannelResolver.ResolveChannel(spec.GlobalJsonPath);
+            if (resolvedChannel is null)
+            {
+                // global.json no longer specifies an SDK version
+                root.InstallSpecs.Remove(spec);
+                continue;
+            }
+
+            // Update the channel if it changed
+            if (!string.Equals(spec.VersionOrChannel, resolvedChannel, StringComparison.OrdinalIgnoreCase))
+            {
+                spec.VersionOrChannel = resolvedChannel;
+            }
         }
     }
 
@@ -109,7 +120,7 @@ internal class GarbageCollector
     private static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
     {
         var matchingInstallations = installations
-            .Where(i => i.Component == spec.Component && VersionMatchesSpec(i.Version, spec.VersionOrChannel))
+            .Where(i => i.Component == spec.Component && ReleaseVersion.TryParse(i.Version, out var v) && new UpdateChannel(spec.VersionOrChannel).Matches(v))
             .ToList();
 
         if (matchingInstallations.Count == 0)
@@ -121,67 +132,6 @@ internal class GarbageCollector
         return matchingInstallations
             .OrderByDescending(i => ReleaseVersion.TryParse(i.Version, out var v) ? v : null)
             .First();
-    }
-
-    /// <summary>
-    /// Checks if an installed version matches an install spec's channel/version pattern.
-    /// </summary>
-    private static bool VersionMatchesSpec(string installedVersion, string versionOrChannel)
-    {
-        if (string.IsNullOrEmpty(versionOrChannel))
-        {
-            return false;
-        }
-
-        // Exact version match
-        if (string.Equals(installedVersion, versionOrChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (!ReleaseVersion.TryParse(installedVersion, out var installed))
-        {
-            return false;
-        }
-
-        // Named channels (latest, lts, sts, preview) — match any version of the same component
-        if (versionOrChannel.Equals("latest", StringComparison.OrdinalIgnoreCase) ||
-            versionOrChannel.Equals("lts", StringComparison.OrdinalIgnoreCase) ||
-            versionOrChannel.Equals("sts", StringComparison.OrdinalIgnoreCase) ||
-            versionOrChannel.Equals("preview", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        // Major version match (e.g., "10" matches "10.0.103")
-        if (int.TryParse(versionOrChannel, out var major))
-        {
-            return installed.Major == major;
-        }
-
-        var parts = versionOrChannel.Split('.');
-
-        // Major.Minor match (e.g., "10.0" matches "10.0.103")
-        if (parts.Length == 2 && int.TryParse(parts[0], out var specMajor) && int.TryParse(parts[1], out var specMinor))
-        {
-            return installed.Major == specMajor && installed.Minor == specMinor;
-        }
-
-        // Feature band match (e.g., "10.0.1xx" matches "10.0.103")
-        if (parts.Length == 3 && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
-        {
-            if (int.TryParse(parts[0], out var fbMajor) && int.TryParse(parts[1], out var fbMinor))
-            {
-                var bandPrefix = parts[2].Substring(0, parts[2].Length - 2);
-                if (int.TryParse(bandPrefix, out var band))
-                {
-                    return installed.Major == fbMajor && installed.Minor == fbMinor &&
-                           installed.Patch / 100 == band;
-                }
-            }
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -198,7 +148,11 @@ internal class GarbageCollector
             // Get the subcomponent depth for this folder
             if (!SubcomponentResolver.TryGetDepth(topLevelName, out int depth))
             {
-                continue; // Unknown folder, skip
+                if (!SubcomponentResolver.IsIgnoredFolder(topLevelName))
+                {
+                    Console.Error.WriteLine($"Note: Unknown folder '{topLevelName}' found in dotnet root, skipping.");
+                }
+                continue;
             }
 
             // Enumerate subcomponent-level directories
@@ -213,9 +167,9 @@ internal class GarbageCollector
                         Directory.Delete(subDir, recursive: true);
                         deleted.Add(relativePath);
                     }
-                    catch (IOException)
+                    catch (IOException ex)
                     {
-                        // Best effort — files may be locked
+                        Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                     }
                 }
             }
@@ -243,7 +197,4 @@ internal class GarbageCollector
         return Directory.GetDirectories(startDir)
             .SelectMany(d => GetDirectoriesAtDepth(d, remainingDepth - 1));
     }
-
-    private static string InstallationKey(Installation installation) =>
-        $"{installation.Component}|{installation.Version}";
 }

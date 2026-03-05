@@ -41,11 +41,11 @@ public class ListCommandTests
     public void InstallationLister_WriteHumanReadable_ShouldOutputHeader()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteHumanReadable(sw, installations);
+        InstallationLister.WriteHumanReadable(sw, listData);
         var output = sw.ToString();
 
         // Assert
@@ -61,15 +61,18 @@ public class ListCommandTests
         try
         {
             var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
-            var installations = new List<InstallationInfo>
+            var listData = new ListData
             {
-                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
-                new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
+                    new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
+                }
             };
             using var sw = new StringWriter();
 
             // Act
-            InstallationLister.WriteHumanReadable(sw, installations);
+            InstallationLister.WriteHumanReadable(sw, listData);
             var output = sw.ToString();
 
             // Assert - should use shorter, punchier display names per @baronfel's suggestion
@@ -90,11 +93,11 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_ShouldOutputValidJson()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteJson(sw, installations);
+        InstallationLister.WriteJson(sw, listData);
         var output = sw.ToString();
 
         // Assert
@@ -110,14 +113,17 @@ public class ListCommandTests
         try
         {
             var testInstallRoot = tempDir.FullName;
-            var installations = new List<InstallationInfo>
+            var listData = new ListData
             {
-                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
+                }
             };
             using var sw = new StringWriter();
 
             // Act
-            InstallationLister.WriteJson(sw, installations);
+            InstallationLister.WriteJson(sw, listData);
             var output = sw.ToString();
 
             // Assert
@@ -143,11 +149,11 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteJson(sw, installations);
+        InstallationLister.WriteJson(sw, listData);
         var output = sw.ToString();
 
         // Assert

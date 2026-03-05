@@ -21,7 +21,15 @@ internal record DotnetInstallRequest(
     DotnetInstallRoot InstallRoot,
     UpdateChannel Channel,
     InstallComponent Component,
-    InstallRequestOptions Options);
+    InstallRequestOptions Options)
+{
+    /// <summary>
+    /// Optional pre-resolved version. When set, the orchestrator uses this directly
+    /// instead of resolving the channel again. The Channel is still needed for
+    /// recording the install spec in the manifest.
+    /// </summary>
+    public ReleaseVersion? ResolvedVersion { get; init; }
+}
 
 internal record InstallRequestOptions()
 {
@@ -33,4 +41,15 @@ internal record InstallRequestOptions()
     /// If false (default), a warning is displayed but installation continues.
     /// </summary>
     public bool RequireMuxerUpdate { get; init; }
+
+    /// <summary>
+    /// The source of this install request (e.g., "explicit", "globaljson").
+    /// Used when recording install specs in the manifest.
+    /// </summary>
+    public string? InstallSourceName { get; init; }
+
+    /// <summary>
+    /// The path to the global.json file that triggered this install, if applicable.
+    /// </summary>
+    public string? GlobalJsonPath { get; init; }
 }

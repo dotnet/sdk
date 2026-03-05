@@ -5,9 +5,13 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 public class ScopedMutex : IDisposable
 {
-    private readonly Mutex _mutex;
-    // Track recursive holds on a per-thread basis so we can assert manifest access without re-acquiring.
-    private static readonly ThreadLocal<int> s_holdCount = new(() => 0);
+    private readonly Mutex? _mutex;
+    private readonly bool _isReentrant;
+
+    // Track recursive holds on a per-thread basis, keyed by mutex name.
+#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
+    private static readonly ThreadLocal<Dictionary<string, MutexState>> s_heldMutexes = new(() => new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase));
+#pragma warning restore IDE0028
 
     /// <summary>
     /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
@@ -21,6 +25,22 @@ public class ScopedMutex : IDisposable
 
     public ScopedMutex(string name)
     {
+        Name = name;
+        var held = s_heldMutexes.Value!;
+
+        if (held.TryGetValue(name, out var state))
+        {
+            // Re-entrant: this thread already holds this mutex
+            state.HoldCount++;
+            _isReentrant = true;
+            _mutex = null;
+            HasHandle = true;
+            return;
+        }
+
+        // First acquisition: create and acquire the OS mutex
+        _isReentrant = false;
+
         // On Linux and Mac, "Global\" prefix doesn't work - strip it if present
         string mutexName = name;
         if (Environment.OSVersion.Platform != PlatformID.Win32NT && mutexName.StartsWith("Global\\"))
@@ -43,22 +63,36 @@ public class ScopedMutex : IDisposable
 
         if (HasHandle)
         {
-            s_holdCount.Value = s_holdCount.Value + 1;
+            held[name] = new MutexState { Mutex = _mutex, HoldCount = 1 };
         }
-        // Note: If HasHandle is false, caller should check HasHandle property.
-        // We don't throw here because:
-        // 1. The mutex may be acquired multiple times in a single process flow
-        // 2. The caller may want to handle the failure gracefully
-        // Telemetry for lock contention is recorded by the caller when HasHandle is false.
     }
 
+    public string Name { get; }
     public bool HasHandle { get; }
-    public static bool CurrentThreadHoldsMutex => s_holdCount.Value > 0;
+    public static bool CurrentThreadHoldsMutex => s_heldMutexes.Value!.Count > 0;
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        if (HasHandle)
+
+        if (_isReentrant)
+        {
+            // Re-entrant: just decrement the hold count
+            var held = s_heldMutexes.Value!;
+            if (held.TryGetValue(Name, out var state))
+            {
+                state.HoldCount--;
+                if (state.HoldCount <= 0)
+                {
+                    // This shouldn't normally happen (it means too many Disposes),
+                    // but clean up anyway
+                    held.Remove(Name);
+                }
+            }
+            return;
+        }
+
+        if (HasHandle && _mutex is not null)
         {
             try
             {
@@ -66,13 +100,16 @@ public class ScopedMutex : IDisposable
             }
             finally
             {
-                // Decrement hold count even if release throws.
-                if (s_holdCount.Value > 0)
-                {
-                    s_holdCount.Value = s_holdCount.Value - 1;
-                }
+                s_heldMutexes.Value!.Remove(Name);
             }
         }
-        _mutex.Dispose();
+
+        _mutex?.Dispose();
+    }
+
+    private class MutexState
+    {
+        public Mutex Mutex { get; init; } = null!;
+        public int HoldCount { get; set; }
     }
 }

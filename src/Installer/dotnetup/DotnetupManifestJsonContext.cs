@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization;
-using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -13,7 +12,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 [JsonSerializable(typeof(InstallSpec))]
 [JsonSerializable(typeof(Installation))]
 [JsonSerializable(typeof(InstallSource))]
-[JsonSerializable(typeof(List<DotnetInstall>))]
 [JsonSerializable(typeof(InstallComponent))]
 [JsonSerializable(typeof(InstallArchitecture))]
 [JsonSerializable(typeof(InstallType))]

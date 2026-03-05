@@ -51,5 +51,5 @@ internal enum InstallSource
 {
     Explicit,
     GlobalJson,
-    Previous
+    All,
 }

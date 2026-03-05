@@ -20,17 +20,9 @@ internal static class SdkUpdateCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
-    {
-        HelpName = "MANIFEST_PATH",
-        Description = "Custom path to the manifest file for tracking .NET SDK installations",
-    };
+    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
 
-    public static readonly Option<string> InstallPathOption = new("--install-path")
-    {
-        HelpName = "INSTALL_PATH",
-        Description = "The dotnet root to update",
-    };
+    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;

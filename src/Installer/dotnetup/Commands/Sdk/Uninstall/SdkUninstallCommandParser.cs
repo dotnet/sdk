@@ -13,24 +13,17 @@ internal static class SdkUninstallCommandParser
         Description = "The channel or version of the install spec to remove (e.g., 10, 9.0, 9.0.103).",
     };
 
-    public static readonly Option<string> SourceOption = new("--source")
+    internal static readonly Option<InstallSource> s_sourceOption = new("--source")
     {
-        HelpName = "SOURCE",
-        Description = "The install source to target: explicit (default), previous, globaljson, or all.",
-        DefaultValueFactory = _ => "explicit"
+        Description = "Filter by install source (explicit, globaljson, all).",
+        DefaultValueFactory = _ => InstallSource.Explicit
     };
 
-    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
-    {
-        HelpName = "MANIFEST_PATH",
-        Description = "Custom path to the manifest file for tracking .NET SDK installations",
-    };
+    public static Option<InstallSource> SourceOption => s_sourceOption;
 
-    public static readonly Option<string> InstallPathOption = new("--install-path")
-    {
-        HelpName = "INSTALL_PATH",
-        Description = "The dotnet root to uninstall from",
-    };
+    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
+
+    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
 
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 

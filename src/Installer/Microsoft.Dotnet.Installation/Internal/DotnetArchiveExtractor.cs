@@ -347,10 +347,21 @@ internal class DotnetArchiveExtractor : IDisposable
 
     private void TrackSubcomponent(string relativeEntryPath)
     {
-        var subcomponent = SubcomponentResolver.Resolve(relativeEntryPath);
+        var subcomponent = SubcomponentResolver.Resolve(relativeEntryPath, out var resolveResult);
         if (subcomponent is not null)
         {
             _extractedSubcomponents.Add(subcomponent);
+            return;
+        }
+
+        switch (resolveResult)
+        {
+            case SubcomponentResolveResult.UnknownFolder:
+                Console.Error.WriteLine($"Warning: Unrecognized subcomponent path '{relativeEntryPath}' in archive. This file will not be tracked by dotnetup.");
+                break;
+            case SubcomponentResolveResult.TooShallow:
+                Console.Error.WriteLine($"Warning: File '{relativeEntryPath}' is in a known folder but not deep enough to be tracked as a subcomponent.");
+                break;
         }
     }
 

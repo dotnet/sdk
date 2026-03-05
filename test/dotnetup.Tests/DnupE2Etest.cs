@@ -81,12 +81,12 @@ public class InstallEndToEndTests
         {
             if (!updateChannel.IsFullySpecifiedVersion())
             {
-                install.Version.ToString().Should().Be(expectedVersion!.ToString(),
+                install.Version.Should().Be(expectedVersion!.ToString(),
                     $"Installed version should match resolved version for channel {channel}");
             }
             else
             {
-                install.Version.ToString().Should().Be(channel);
+                install.Version.Should().Be(channel);
             }
         });
 
@@ -355,24 +355,27 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         dotnetRootValue.Should().Be(installPath, $"DOTNET_ROOT should be set to the install path for {shell}");
     }
 
-    private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<DotnetInstall>? additionalAssertions = null)
+    private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<Installation>? additionalAssertions = null)
     {
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
-        List<DotnetInstall> installs;
+        List<Installation> installs;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            installs = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
 
         installs.Should().NotBeEmpty();
-        var matchingInstalls = installs.Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
-        matchingInstalls.Should().ContainSingle();
-        matchingInstalls[0].Component.Should().Be(expectedComponent);
+        installs.Should().ContainSingle(i => i.Component == expectedComponent);
+        var matchingInstall = installs.First(i => i.Component == expectedComponent);
 
-        additionalAssertions?.Invoke(matchingInstalls[0]);
+        additionalAssertions?.Invoke(matchingInstall);
     }
 
     /// <summary>
@@ -432,16 +435,20 @@ public class ConcurrentInstallationTests
         results[1].exitCode.Should().Be(0,
             $"Second concurrent install failed with exit code {results[1].exitCode}. Output:\n{results[1].output}");
 
-        var finalInstalls = new List<DotnetInstall>();
+        var finalInstalls = new List<Installation>();
 
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            finalInstalls = manifest.GetInstalledVersions().Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
+            var manifestData = manifest.ReadManifest();
+            finalInstalls = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
 
         finalInstalls.Should().ContainSingle();
-        finalInstalls[0].Version.ToString().Should().Be(channel);
+        finalInstalls[0].Version.Should().Be(channel);
     }
 }
 
@@ -542,11 +549,14 @@ public class ReuseAndErrorTests
         exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
 
         // Verify SDK is in manifest
-        List<DotnetInstall> installsAfterSdk;
+        List<Installation> installsAfterSdk;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            installsAfterSdk = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            installsAfterSdk = manifestData.DotnetRoots
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
         installsAfterSdk.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
         // Verify target runtime is NOT in manifest yet
@@ -559,11 +569,14 @@ public class ReuseAndErrorTests
         exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
 
         // Step 3: Verify both SDK and Runtime are in manifest
-        List<DotnetInstall> finalInstalls;
+        List<Installation> finalInstalls;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            finalInstalls = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            finalInstalls = manifestData.DotnetRoots
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
         finalInstalls.Should().HaveCount(2, $"both SDK and {expectedComponent} should be tracked");
         finalInstalls.Should().Contain(i => i.Component == InstallComponent.SDK);

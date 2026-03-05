@@ -51,21 +51,21 @@ internal class InfoCommand : CommandBase
     protected override int ExecuteCore()
     {
         var info = GetDotnetupInfo();
-        List<InstallationInfo>? installations = null;
+        ListData? listData = null;
 
         if (!_noList)
         {
             // --info verifies by default
-            installations = InstallationLister.GetInstallations(verify: true);
+            listData = InstallationLister.GetListData(verify: true);
         }
 
         if (_format == OutputFormat.Json)
         {
-            PrintJsonInfo(_output, info, installations);
+            PrintJsonInfo(_output, info, listData);
         }
         else
         {
-            PrintHumanReadableInfo(_output, info, installations);
+            PrintHumanReadableInfo(_output, info, listData);
         }
 
         return 0;
@@ -82,7 +82,7 @@ internal class InfoCommand : CommandBase
         };
     }
 
-    private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
+    private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, ListData? listData)
     {
         output.WriteLine(Strings.InfoHeader);
 
@@ -103,13 +103,13 @@ internal class InfoCommand : CommandBase
 
         console.Write(grid);
 
-        if (installations is not null)
+        if (listData is not null)
         {
-            InstallationLister.WriteHumanReadable(output, installations);
+            InstallationLister.WriteHumanReadable(output, listData);
         }
     }
 
-    private static void PrintJsonInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
+    private static void PrintJsonInfo(TextWriter output, DotnetupInfo info, ListData? listData)
     {
         var fullInfo = new DotnetupFullInfo
         {
@@ -117,7 +117,7 @@ internal class InfoCommand : CommandBase
             Commit = info.Commit,
             Architecture = info.Architecture,
             Rid = info.Rid,
-            Installations = installations
+            Installations = listData?.Installations
         };
         output.WriteLine(JsonSerializer.Serialize(fullInfo, DotnetupInfoJsonContext.Default.DotnetupFullInfo));
     }

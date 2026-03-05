@@ -132,15 +132,15 @@ public class RuntimeInstallTests
         // Add SDK, Runtime, ASPNETCore
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.0"), InstallComponent.Runtime));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.0"), InstallComponent.ASPNETCore));
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" });
         }
 
-        IEnumerable<DotnetInstall> installs;
+        IEnumerable<Installation> installs;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            installs = manifest.GetInstalledVersions().ToList();
+            installs = manifest.GetInstallations(installRoot).ToList();
         }
 
         installs.Should().HaveCount(3);
@@ -158,14 +158,14 @@ public class RuntimeInstallTests
 
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.0"), InstallComponent.Runtime));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.0"), InstallComponent.ASPNETCore));
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" });
         }
 
-        IEnumerable<DotnetInstall> installs;
+        IEnumerable<Installation> installs;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            installs = manifest.GetInstalledVersions().ToList();
+            installs = manifest.GetInstallations(installRoot).ToList();
         }
 
         installs.Should().HaveCount(2);
