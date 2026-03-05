@@ -74,10 +74,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
         }
 
-        private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
+        public static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput, string currentWorkingDirectory = null)
         {
             var args = new[] { "verify", "--all", nupkgToVerify.Value };
-            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
+            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true, currentWorkingDirectory)
                 .Create("nuget", args);
 
             var commandResult = command.CaptureStdOut().Execute();

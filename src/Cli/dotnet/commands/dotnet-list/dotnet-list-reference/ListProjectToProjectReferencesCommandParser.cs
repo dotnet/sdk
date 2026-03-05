@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.List.ProjectToProjectReferences;
-using LocalizableStrings = Microsoft.DotNet.Tools.List.ProjectToProjectReferences.LocalizableStrings;
+using Microsoft.DotNet.Tools.Reference.List;
+using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {

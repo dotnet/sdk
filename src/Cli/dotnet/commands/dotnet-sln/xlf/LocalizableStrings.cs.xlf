@@ -27,6 +27,11 @@
         <target state="translated">Přidá do souboru řešení jeden nebo více projektů.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Only .sln files can be migrated to .slnx format.</source>
+        <target state="translated">Do formátu .slnx lze migrovat pouze .sln soubory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Umístěte projekt do kořene řešení, není potřeba vytvářet složku řešení.</target>
@@ -35,6 +40,11 @@
       <trans-unit id="ListSolutionFoldersArgumentDescription">
         <source>Display solution folder paths.</source>
         <target state="translated">Zobrazí cesty ke složkám řešení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="translated">Vygeneruje soubor .slnx ze souboru .sln.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -55,6 +65,16 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Vypíše seznam všech projektů v řešení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="translated">Nepovedlo se přečíst {0} souboru řešení. Podporované soubory jsou .sln a platná řešení .slnx.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SlnxGenerated">
+        <source>.slnx file {0} generated.</source>
+        <target state="translated">Soubor .slnx {0} vygenerován.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

@@ -33,7 +33,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("Total tests: 1")
                     .And.Contain("Passed: 1")
                     .And.Contain("Passed TestForwardDotnetRootEnvironmentVariables")
-                    .And.Contain("VSTEST_WINAPPHOST_");
+                    .And.Contain("VSTEST_DOTNET_ROOT_PATH")
+                    .And.Contain("VSTEST_DOTNET_ROOT_ARCHITECTURE");
             }
 
             result.ExitCode.Should().Be(0);

@@ -12,6 +12,7 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
 using Microsoft.TemplateEngine.Edge.Constraints;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -36,6 +37,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                     ["8.0.201.1-preview", "8.0.200", "8.201.1-preview"],
                     ["8.0.201.1-preview.2", "8.0.200", "8.201.1-preview.2"],
 
+                    //  Versions with "rtm" in them are special-cased to not use a preview feature band
+                    ["9.0.100-rtm.23015", "9.0.100", "9.100.0-rtm.23015"],
+                    ["9.0.100-testingrtms.23015", "9.0.100", "9.100.0-testingrtms.23015"],
+
                     //  This apparently works accidentally, since "servicing" contains "ci", which is what the SdkFeatureBand constructor check to see if it should ignore the prerelease specifier
                     ["8.0.201-servicing.23015", "8.0.200", "8.201.0-servicing.23015"],
                     ["9.0.100-preview-servicing.1.23015", "9.0.100", "9.100.0-preview-servicing.1.23015"],
@@ -48,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [MemberData(nameof(WorkloadVersionsData))]
         public void TestWorkloadSetVersionParsing(string workloadSetVersion, string expectedFeatureBand, string expectedPackageVersion)
         {
-            string packageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand featureBand);
+            string packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand featureBand);
 
             packageVersion.Should().Be(expectedPackageVersion);
             featureBand.Should().Be(new SdkFeatureBand(expectedFeatureBand));
@@ -58,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [MemberData(nameof(WorkloadVersionsData))]
         public void TestWorkloadSetPackageVersionParsing(string expectedWorkloadSetVersion, string packageFeatureBand, string packageVersion)
         {
-            string workloadSetVersion = WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(new SdkFeatureBand(packageFeatureBand), packageVersion);
+            string workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(new SdkFeatureBand(packageFeatureBand), packageVersion);
 
             workloadSetVersion.Should().Be(expectedWorkloadSetVersion);
         }
