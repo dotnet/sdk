@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     {
         // Note: Only ParameterSymbol has a Description property, this it's the only one that gets localization
         // TODO: change how localization gets merged in, don't do it here.
-        internal static BaseSymbol? GetModelForObject(string name, JObject jObject, ILogger? logger, string? defaultOverride)
+        internal static BaseSymbol? GetModelForObject(string name, JsonObject jObject, ILogger? logger, string? defaultOverride)
         {
             try
             {

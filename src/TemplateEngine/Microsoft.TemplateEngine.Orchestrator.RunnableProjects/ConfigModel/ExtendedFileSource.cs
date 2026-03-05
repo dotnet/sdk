@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public IReadOnlyList<SourceModifier> Modifiers { get; internal init; } = [];
 
-        internal static ExtendedFileSource FromJObject(JObject jObject)
+        internal static ExtendedFileSource FromJObject(JsonObject jObject)
         {
             List<SourceModifier> modifiers = new List<SourceModifier>();
             ExtendedFileSource src = new ExtendedFileSource()
@@ -63,13 +63,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 Exclude = jObject.ToStringReadOnlyList(nameof(Exclude)),
                 Include = jObject.ToStringReadOnlyList(nameof(Include)),
                 Condition = jObject.ToString(nameof(Condition)),
-                Rename = jObject.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
+                Rename = jObject.Get<JsonObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
                 Modifiers = modifiers,
                 Source = jObject.ToString(nameof(Source)) ?? "./",
                 Target = jObject.ToString(nameof(Target)) ?? "./"
             };
 
-            foreach (JObject entry in jObject.Items<JObject>(nameof(src.Modifiers)))
+            foreach (JsonObject entry in jObject.Items<JsonObject>(nameof(src.Modifiers)))
             {
                 SourceModifier modifier = new SourceModifier
                 {
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     CopyOnly = entry.ToStringReadOnlyList(nameof(CopyOnly)),
                     Exclude = entry.ToStringReadOnlyList(nameof(Exclude)),
                     Include = entry.ToStringReadOnlyList(nameof(Include)),
-                    Rename = entry.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
+                    Rename = entry.Get<JsonObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
                 };
                 modifiers.Add(modifier);
             }

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         internal bool OnByDefault { get; set; }
 
-        internal static ConditionalOperationOptions FromJObject(JObject rawConfiguration)
+        internal static ConditionalOperationOptions FromJObject(JsonObject rawConfiguration)
         {
             ConditionalOperationOptions options = new ConditionalOperationOptions();
 

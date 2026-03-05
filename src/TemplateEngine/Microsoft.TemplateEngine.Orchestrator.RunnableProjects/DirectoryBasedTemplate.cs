@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -9,7 +10,6 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Additional files must be in the same folder as the template file.
         /// </summary>
         /// <exception cref="TemplateAuthoringException">when additional files configuration is invalid.</exception>
-        private static JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
+        private static JsonObject MergeAdditionalConfiguration(JsonObject primarySource, IFileSystemInfo primarySourceConfig)
         {
             IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
 
@@ -166,7 +166,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return primarySource;
             }
 
-            JObject combinedSource = (JObject)primarySource.DeepClone();
+            JsonObject combinedSource = primarySource.DeepCloneObject();
 
             foreach (string partialConfigFileName in otherFiles)
             {
@@ -181,7 +181,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             LocalizableStrings.SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound,
                             partialConfigFileName),
                         partialConfigFileName);
-                JObject partialConfigJson = partialConfigFile.ReadJObjectFromIFile();
+                JsonObject partialConfigJson = partialConfigFile.ReadJObjectFromIFile();
                 combinedSource.Merge(partialConfigJson);
             }
 

@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Parameters = parameters;
         }
 
-        internal GeneratedSymbol(string name, JObject jObject) : base(jObject, name)
+        internal GeneratedSymbol(string name, JsonObject jObject) : base(jObject, name)
         {
             string? generator = jObject.ToString(nameof(Generator));
             if (string.IsNullOrWhiteSpace(generator))
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             Generator = generator!;
             DataType = jObject.ToString(nameof(DataType));
-            Parameters = jObject.ToJTokenStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(Parameters));
+            Parameters = jObject.ToJsonNodeStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(Parameters));
         }
 
         /// <inheritdoc/>

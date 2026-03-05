@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -45,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Symbols = [];
         }
 
-        private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null)
+        private TemplateConfigModel(JsonObject source, ILogger? logger, string? baselineName = null)
         {
             ILogger? logger1 = logger;
 
@@ -78,7 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             var sources = new List<ExtendedFileSource>();
             Sources = sources;
-            foreach (JObject item in source.Items<JObject>(nameof(Sources)))
+            foreach (JsonObject item in source.Items<JsonObject>(nameof(Sources)))
             {
                 ExtendedFileSource src = ExtendedFileSource.FromJObject(item);
                 sources.Add(src);
@@ -107,13 +106,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Key, tagInfo.Value);
                 }
             }
-            foreach (JProperty prop in source.PropertiesOf(nameof(Symbols)))
+            foreach (var prop in source.PropertiesOf(nameof(Symbols)))
             {
-                if (prop.Value is not JObject obj)
+                if (prop.Value is not JsonObject obj)
                 {
                     continue;
                 }
-                if (string.IsNullOrWhiteSpace(prop.Name))
+                if (string.IsNullOrWhiteSpace(prop.Key))
                 {
                     continue;
                 }
@@ -121,26 +120,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 string? defaultOverride = null;
                 if (baseline?.DefaultOverrides != null)
                 {
-                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
+                    baseline.DefaultOverrides.TryGetValue(prop.Key, out defaultOverride);
                 }
 
-                BaseSymbol? modelForSymbol = SymbolModelConverter.GetModelForObject(prop.Name, obj, logger, defaultOverride);
+                BaseSymbol? modelForSymbol = SymbolModelConverter.GetModelForObject(prop.Key, obj, logger, defaultOverride);
 
                 if (modelForSymbol != null)
                 {
                     // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
-                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
-                            && symbols.TryGetValue(prop.Name, out BaseSymbol existingSymbol)
+                    if (string.Equals(prop.Key, NameSymbolName, StringComparison.Ordinal)
+                            && symbols.TryGetValue(prop.Key, out BaseSymbol existingSymbol)
                             && existingSymbol is ParameterSymbol existingParameterSymbol
                             && modelForSymbol is ParameterSymbol modelForParameterSymbol)
                     {
                         // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
-                        symbols[prop.Name] = new ParameterSymbol(modelForParameterSymbol, existingParameterSymbol.Forms);
+                        symbols[prop.Key] = new ParameterSymbol(modelForParameterSymbol, existingParameterSymbol.Forms);
                     }
                     else
                     {
                         // last in wins (in the odd case where a template.json defined a symbol multiple times)
-                        symbols[prop.Name] = modelForSymbol;
+                        symbols[prop.Key] = modelForSymbol;
                     }
                 }
             }
@@ -152,35 +151,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 }
             }
             _symbols = symbols;
-            _postActions = PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _validationEntries);
-            PrimaryOutputs = PrimaryOutputModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
+            _postActions = PostActionModel.LoadListFromJArray(source.Get<JsonArray>("PostActions"), _validationEntries);
+            PrimaryOutputs = PrimaryOutputModel.ListFromJArray(source.Get<JsonArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
-            JToken? globalCustomConfigData = source[nameof(GlobalCustomOperations)];
+            JsonNode? globalCustomConfigData = JExtensions.GetPropertyCaseInsensitive(source, nameof(GlobalCustomOperations));
             if (globalCustomConfigData != null)
             {
-                GlobalCustomOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
+                GlobalCustomOperations = CustomFileGlobModel.FromJObject((JsonObject)globalCustomConfigData, string.Empty);
             }
 
             // Custom operations for specials
-            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(SpecialCustomOperations));
+            IReadOnlyDictionary<string, JsonNode> allSpecialOpsConfig = source.ToJsonNodeDictionary(StringComparer.OrdinalIgnoreCase, nameof(SpecialCustomOperations));
             List<CustomFileGlobModel> specialCustomSetup = new();
 
-            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
+            foreach (KeyValuePair<string, JsonNode> globConfigKeyValue in allSpecialOpsConfig)
             {
                 string globName = globConfigKeyValue.Key;
-                JToken globData = globConfigKeyValue.Value;
+                JsonNode globData = globConfigKeyValue.Value;
 
-                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
+                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JsonObject)globData, globName);
                 specialCustomSetup.Add(globModel);
             }
 
             SpecialCustomOperations = specialCustomSetup;
 
             List<TemplateConstraintInfo> constraints = new();
-            foreach (JProperty prop in source.PropertiesOf(nameof(Constraints)))
+            foreach (var prop in source.PropertiesOf(nameof(Constraints)))
             {
-                if (prop.Value is not JObject obj)
+                if (prop.Value is not JsonObject obj)
                 {
                     logger1?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_InvalidSyntax, nameof(Constraints).ToLowerInvariant());
                     continue;
@@ -189,11 +188,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 string? type = obj.ToString(nameof(TemplateConstraintInfo.Type));
                 if (string.IsNullOrWhiteSpace(type))
                 {
-                    logger1?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_MissingType, obj.ToString(), nameof(TemplateConstraintInfo.Type).ToLowerInvariant());
+                    logger1?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_MissingType, obj.ToJsonString(), nameof(TemplateConstraintInfo.Type).ToLowerInvariant());
                     continue;
                 }
-                obj.TryGetValue(nameof(TemplateConstraintInfo.Args), StringComparison.OrdinalIgnoreCase, out JToken? args);
-                constraints.Add(new TemplateConstraintInfo(type!, args?.ToString(Formatting.None)));
+                obj.TryGetValue(nameof(TemplateConstraintInfo.Args), out JsonNode? args);
+                constraints.Add(new TemplateConstraintInfo(type!, args?.ToJsonString()));
             }
             Constraints = constraints;
         }
@@ -431,11 +430,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         internal static TemplateConfigModel FromTextReader(TextReader content, ILogger? logger = null)
         {
-            using JsonReader r = new JsonTextReader(content);
-            return new TemplateConfigModel(JObject.Load(r), logger, null);
+            string json = content.ReadToEnd();
+            JsonObject source = JExtensions.ParseJsonObject(json);
+            return new TemplateConfigModel(source, logger, null);
         }
 
-        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null)
+        internal static TemplateConfigModel FromJObject(JsonObject source, ILogger? logger = null, string? baselineName = null)
         {
             return new TemplateConfigModel(source, logger, baselineName);
         }
@@ -520,7 +520,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             };
         }
 
-        private static Dictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject? source = null)
+        private static Dictionary<string, IValueForm> SetupValueFormMapForTemplate(JsonObject? source = null)
         {
             Dictionary<string, IValueForm> formMap = new(StringComparer.Ordinal);
 
@@ -539,11 +539,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             // setup the forms defined by the template configuration.
             // if any have the same name as a default, the default is overridden.
-            IReadOnlyDictionary<string, JToken> templateDefinedForms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+            IReadOnlyDictionary<string, JsonNode> templateDefinedForms = source.ToJsonNodeDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
 
-            foreach (KeyValuePair<string, JToken> form in templateDefinedForms)
+            foreach (KeyValuePair<string, JsonNode> form in templateDefinedForms)
             {
-                if (form.Value is JObject o)
+                if (form.Value is JsonObject o)
                 {
                     formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
                 }
@@ -551,20 +551,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             return formMap;
         }
 
-        private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<JProperty> baselineJProperties)
+        private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<KeyValuePair<string, JsonNode?>> baselineProperties)
         {
             Dictionary<string, IBaselineInfo> allBaselines = new();
 
-            foreach (JProperty property in baselineJProperties)
+            foreach (var property in baselineProperties)
             {
-                if (property.Value is not JObject obj)
+                if (property.Value is not JsonObject obj)
                 {
                     continue;
                 }
 
-                IReadOnlyDictionary<string, string>? defaultOverrides = obj.Get<JObject>(nameof(Utils.BaselineInfo.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>();
+                IReadOnlyDictionary<string, string>? defaultOverrides = obj.Get<JsonObject>(nameof(Utils.BaselineInfo.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>();
                 BaselineInfo baseline = new(defaultOverrides, obj.ToString(nameof(baseline.Description)));
-                allBaselines[property.Name] = baseline;
+                allBaselines[property.Key] = baseline;
             }
 
             return allBaselines;

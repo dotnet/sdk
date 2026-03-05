@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -18,21 +19,21 @@ namespace Microsoft.TemplateSearch.Common
             AdditionalData = additionalData;
         }
 
-        [JsonProperty]
+        [JsonInclude]
         internal string Version { get; }
 
-        [JsonProperty]
+        [JsonInclude]
         internal IReadOnlyList<ITemplateInfo> TemplateCache { get; }
 
-        [JsonProperty]
+        [JsonInclude]
         internal IReadOnlyDictionary<string, PackToTemplateEntry> PackToTemplateMap { get; }
 
-        [JsonProperty]
+        [JsonInclude]
         internal IReadOnlyDictionary<string, object> AdditionalData { get; }
 
-        internal JObject ToJObject()
+        internal JsonObject ToJObject()
         {
-            return JObject.FromObject(this);
+            return JExtensions.FromObject(this);
         }
     }
 }

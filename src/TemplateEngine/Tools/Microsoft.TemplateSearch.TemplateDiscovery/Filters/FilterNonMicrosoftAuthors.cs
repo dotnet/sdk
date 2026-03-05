@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters;
 
@@ -35,9 +34,8 @@ internal class FilterNonMicrosoftAuthors
                         try
                         {
                             using var streamReader = new StreamReader(templateJson.OpenRead());
-                            using var jsonReader = new JsonTextReader(streamReader);
-                            var jObject = JObject.Load(jsonReader);
-                            var author = jObject["author"]?.Value<string>();
+                            var jObject = JExtensions.ParseJsonObject(streamReader.ReadToEnd());
+                            var author = jObject.ToString("author");
                             if (author?.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ?? false)
                             {
                                 return new PreFilterResult(FilterId, isFiltered: true, $"{templateJson.FullPath} has Author=Microsoft and package id is {packInfo.Name}");

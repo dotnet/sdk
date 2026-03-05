@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -26,10 +26,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             _ = file ?? throw new ArgumentNullException(nameof(file));
 
-            JObject srcObject = file.ReadJObjectFromIFile();
+            System.Text.Json.Nodes.JsonObject srcObject = file.ReadJObjectFromIFile();
 
-            List<(string Key, string Value)> localizedStrings = srcObject.Properties()
-                .Select(p => p.Value.Type == JTokenType.String ? (p.Name, p.Value.ToString()) : throw new Exception(LocalizableStrings.Authoring_InvalidJsonElementInLocalizationFile))
+            List<(string Key, string Value)> localizedStrings = srcObject
+                .Select(p => p.Value?.GetValueKind() == JsonValueKind.String ? (p.Key, p.Value.GetValue<string>()) : throw new Exception(LocalizableStrings.Authoring_InvalidJsonElementInLocalizationFile))
                 .ToList();
 
             var symbols = LoadSymbolModels(localizedStrings);

@@ -2,15 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     public class SymbolConfigTests
     {
-        private static JObject ArrayConfigForSymbolWithFormsButNotIdentity
+        private static JsonObject ArrayConfigForSymbolWithFormsButNotIdentity
         {
             get
             {
@@ -35,11 +36,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ArrayConfigWithNameSymbolAndValueFormsButNotIdentity
+        private static JsonObject ArrayConfigWithNameSymbolAndValueFormsButNotIdentity
         {
             get
             {
@@ -64,11 +65,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ArrayConfigWithNameSymbolAndValueFormsWithIdentity
+        private static JsonObject ArrayConfigWithNameSymbolAndValueFormsWithIdentity
         {
             get
             {
@@ -93,11 +94,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse
+        private static JsonObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse
         {
             get
             {
@@ -125,11 +126,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue
+        private static JsonObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue
         {
             get
             {
@@ -157,11 +158,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ConfigWithObjectValueFormDefinitionAddIdentityFalse
+        private static JsonObject ConfigWithObjectValueFormDefinitionAddIdentityFalse
         {
             get
             {
@@ -189,11 +190,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityTrue
+        private static JsonObject NameConfigWithObjectValueFormDefinitionAddIdentityTrue
         {
             get
             {
@@ -221,11 +222,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityFalse
+        private static JsonObject NameConfigWithObjectValueFormDefinitionAddIdentityFalse
         {
             get
             {
@@ -253,11 +254,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
+        private static JsonObject NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
         {
             get
             {
@@ -284,11 +285,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
+        private static JsonObject NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
         {
             get
             {
@@ -315,11 +316,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ConfigForSymbolWithoutValueForms
+        private static JsonObject ConfigForSymbolWithoutValueForms
         {
             get
             {
@@ -341,11 +342,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ArrayConfigForSymbolWithValueFormsIncludingIdentity
+        private static JsonObject ArrayConfigForSymbolWithValueFormsIncludingIdentity
         {
             get
             {
@@ -370,11 +371,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ConfigWithObjectValueFormDefinitionAddIdentityTrue
+        private static JsonObject ConfigWithObjectValueFormDefinitionAddIdentityTrue
         {
             get
             {
@@ -402,11 +403,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse
+        private static JsonObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse
         {
             get
             {
@@ -434,11 +435,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue
+        private static JsonObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue
         {
             get
             {
@@ -466,11 +467,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
+        private static JsonObject ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
         {
             get
             {
@@ -497,11 +498,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
+        private static JsonObject ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
         {
             get
             {
@@ -528,7 +529,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   }
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
@@ -889,7 +890,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     },
                 }
             };
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             Assert.Single(configModel.Symbols, s => s.Name == "other");
@@ -919,7 +920,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     },
                 }
             };
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             Assert.Equal(2, configModel.Symbols.Count());
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             Assert.Single(configModel.Symbols, s => s.Name == "OS");

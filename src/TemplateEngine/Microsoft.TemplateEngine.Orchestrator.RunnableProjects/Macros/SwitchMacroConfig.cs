@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
@@ -30,11 +30,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(evaluator, DefaultEvaluator));
             }
             List<(string? Condition, string Value)> cases = new();
-            JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, CasesPropertyName);
+            JsonArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, CasesPropertyName);
 
-            foreach (JToken entry in jArray)
+            foreach (JsonNode? entry in jArray)
             {
-                if (entry is not JObject jObj)
+                if (entry is not JsonObject jObj)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, CasesPropertyName), generatedSymbolConfig.VariableName);
                 }

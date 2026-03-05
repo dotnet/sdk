@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; internal init; } = new List<ManualInstructionModel>();
 
-        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray? jArray, List<IValidationEntry> validationEntries)
+        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JsonArray? jArray, List<IValidationEntry> validationEntries)
         {
             List<PostActionModel> localizedPostActions = new();
             if (jArray == null)
@@ -87,10 +87,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             HashSet<string> postActionIds = new();
             for (int postActionIndex = 0; postActionIndex < jArray.Count; postActionIndex++)
             {
-                JToken action = jArray[postActionIndex];
+                JsonNode? action = jArray[postActionIndex];
                 string? postActionId = action.ToString(nameof(Id));
                 string? description = action.ToString(nameof(Description));
-                Guid actionId = action.ToGuid(nameof(ActionId));
+                Guid actionId = action!.ToGuid(nameof(ActionId));
                 bool continueOnError = action.ToBool(nameof(ContinueOnError));
                 string? postActionCondition = action.ToString(nameof(Condition));
                 bool applyFileRenamesToManualInstructions = action.ToBool(nameof(ApplyFileRenamesToManualInstructions));
@@ -118,9 +118,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 }
 
                 Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (JProperty argInfo in action.PropertiesOf("Args"))
+                foreach (var argInfo in action.PropertiesOf("Args"))
                 {
-                    args.Add(argInfo.Name, argInfo.Value.ToString());
+                    args.Add(argInfo.Key, argInfo.Value?.ToString() ?? string.Empty);
                 }
 
                 List<string> verifiedApplyFileRenamesToArgs = new();
@@ -141,7 +141,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     }
                 }
 
-                IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JArray>("ManualInstructions"), validationEntries);
+                IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JsonArray>("ManualInstructions"), validationEntries);
 
                 PostActionModel model = new(args, manualInstructions)
                 {
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
         }
 
-        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, List<IValidationEntry> validationEntries)
+        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JsonArray? jArray, List<IValidationEntry> validationEntries)
         {
             var results = new List<ManualInstructionModel>();
             if (jArray == null)
@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             HashSet<string> manualInstructionIds = new HashSet<string>();
             for (int i = 0; i < jArray.Count; i++)
             {
-                JToken jToken = jArray[i];
+                JsonNode? jToken = jArray[i];
                 string? id = jToken.ToString("id");
                 string text = jToken.ToString("text") ?? string.Empty;
                 string? condition = jToken.ToString("condition");

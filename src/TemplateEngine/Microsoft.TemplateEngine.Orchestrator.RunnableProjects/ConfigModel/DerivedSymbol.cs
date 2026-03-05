@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             ValueSource = valueSource;
         }
 
-        internal DerivedSymbol(string name, JObject jObject, string? defaultOverride)
+        internal DerivedSymbol(string name, JsonObject jObject, string? defaultOverride)
             : base(name, jObject, defaultOverride)
         {
             string? valueTransform = jObject.ToString(nameof(ValueTransform));

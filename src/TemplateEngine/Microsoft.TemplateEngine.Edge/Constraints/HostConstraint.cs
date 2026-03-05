@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             {
                 List<HostInformation> hostInformation = new List<HostInformation>();
 
-                foreach (JObject jObj in args.ParseArrayOfConstraintJObjects())
+                foreach (JsonObject jObj in args.ParseArrayOfConstraintJObjects())
                 {
                     string? hostName = jObj.ToString("hostname");
                     string? version = jObj.ToString("version");

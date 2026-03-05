@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal static IReadOnlyDictionary<string, IValueFormFactory> FormLookup => AllForms.ToDictionary(ff => ff.Identifier, ff => ff, StringComparer.OrdinalIgnoreCase);
 
-        internal static IValueForm GetForm(string name, JObject? obj)
+        internal static IValueForm GetForm(string name, JsonObject? obj)
         {
             string? identifier = obj.ToString("identifier");
 

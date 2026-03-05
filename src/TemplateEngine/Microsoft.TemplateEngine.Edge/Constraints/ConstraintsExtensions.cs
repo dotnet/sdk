@@ -1,8 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
@@ -16,23 +17,29 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
         /// <exception cref="ConfigurationException">Thrown on unexpected input - not a valid json string or array of string or an empty array.</exception>
         public static IEnumerable<string> ParseArrayOfConstraintStrings(this string? args)
         {
-            JToken token = ParseConstraintJToken(args);
+            JsonNode token = ParseConstraintJsonNode(args);
 
-            if (token.Type == JTokenType.String)
+            if (token.GetValueKind() == JsonValueKind.String)
             {
-                return new[] { token.Value<string>() ?? throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args)) };
+                return new[] { token.GetValue<string>() ?? throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args)) };
             }
 
-            JArray array = token.ToConstraintsJArray(args, true);
+            JsonArray array = token.ToConstraintsJsonArray(args, true);
 
-            return array.Values<string>().Select(value =>
+            return array.Select(value =>
             {
-                if (string.IsNullOrEmpty(value))
+                if (value == null || value.GetValueKind() != JsonValueKind.String)
                 {
                     throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args));
                 }
 
-                return value!;
+                string? strValue = value.GetValue<string>();
+                if (string.IsNullOrEmpty(strValue))
+                {
+                    throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args));
+                }
+
+                return strValue!;
             });
         }
 
@@ -42,14 +49,14 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
         /// <param name="args">Input configuration string.</param>
         /// <returns>Enumeration of parsed JObject tokens.</returns>
         /// <exception cref="ConfigurationException">Thrown on unexpected input - not a valid json array or an empty array.</exception>
-        public static IEnumerable<JObject> ParseArrayOfConstraintJObjects(this string? args)
+        public static IEnumerable<JsonObject> ParseArrayOfConstraintJObjects(this string? args)
         {
-            JToken token = ParseConstraintJToken(args);
-            JArray array = token.ToConstraintsJArray(args, false);
+            JsonNode token = ParseConstraintJsonNode(args);
+            JsonArray array = token.ToConstraintsJsonArray(args, false);
 
             return array.Select(value =>
             {
-                if (value is not JObject jObj)
+                if (value is not JsonObject jObj)
                 {
                     throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_InvalidJsonArray_Objects, args));
                 }
@@ -103,29 +110,29 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             return versionInstance;
         }
 
-        private static JToken ParseConstraintJToken(this string? args)
+        private static JsonNode ParseConstraintJsonNode(this string? args)
         {
             if (string.IsNullOrWhiteSpace(args))
             {
                 throw new ConfigurationException(LocalizableStrings.Constraint_Error_ArgumentsNotSpecified);
             }
 
-            JToken? token;
+            JsonNode? token;
             try
             {
-                token = JToken.Parse(args!);
+                token = JsonNode.Parse(args!);
             }
             catch (Exception e)
             {
                 throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_InvalidJson, args), e);
             }
 
-            return token;
+            return token ?? throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_InvalidJson, args));
         }
 
-        private static JArray ToConstraintsJArray(this JToken token, string? args, bool isStringTypeAllowed)
+        private static JsonArray ToConstraintsJsonArray(this JsonNode token, string? args, bool isStringTypeAllowed)
         {
-            if (token is not JArray array)
+            if (token is not JsonArray array)
             {
                 throw new ConfigurationException(string.Format(
                     isStringTypeAllowed

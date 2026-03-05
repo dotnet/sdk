@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
 #if XUNIT_V3
 using Xunit.Sdk;
 #else
@@ -246,26 +246,26 @@ namespace Microsoft.TemplateEngine.Mocks
             Description = info.GetValue<string>("template_description");
             Author = info.GetValue<string>("template_author");
 #if XUNIT_V3
-            _tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(info.GetValue<string>("template_tags")!)
+            _tags = JsonSerializer.Deserialize<Dictionary<string, string>>(info.GetValue<string>("template_tags")!)
                 ?? throw new Exception("Deserialiation failed");
-            _parameters = JsonConvert.DeserializeObject<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params")!)
+            _parameters = JsonSerializer.Deserialize<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params")!)
                          ?? throw new Exception("Deserialiation failed");
-            _baselineInfo = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_baseline")!)
+            _baselineInfo = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_baseline")!)
                          ?? throw new Exception("Deserialiation failed");
-            _classifications = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_classifications")!)
+            _classifications = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_classifications")!)
                          ?? throw new Exception("Deserialiation failed");
-            _shortNameList = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_shortname")!)
+            _shortNameList = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_shortname")!)
                          ?? throw new Exception("Deserialiation failed");
 #else
-            _tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(info.GetValue<string>("template_tags"))
+            _tags = JsonSerializer.Deserialize<Dictionary<string, string>>(info.GetValue<string>("template_tags"))
                 ?? throw new Exception("Deserialiation failed");
-            _parameters = JsonConvert.DeserializeObject<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params"))
+            _parameters = JsonSerializer.Deserialize<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params"))
                          ?? throw new Exception("Deserialiation failed");
-            _baselineInfo = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_baseline"))
+            _baselineInfo = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_baseline"))
                          ?? throw new Exception("Deserialiation failed");
-            _classifications = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_classifications"))
+            _classifications = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_classifications"))
                          ?? throw new Exception("Deserialiation failed");
-            _shortNameList = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_shortname"))
+            _shortNameList = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_shortname"))
                          ?? throw new Exception("Deserialiation failed");
 #endif
         }
@@ -273,17 +273,17 @@ namespace Microsoft.TemplateEngine.Mocks
         public void Serialize(IXunitSerializationInfo info)
         {
             info.AddValue("template_name", Name, typeof(string));
-            info.AddValue("template_shortname", JsonConvert.SerializeObject(_shortNameList), typeof(string));
+            info.AddValue("template_shortname", JsonSerializer.Serialize(_shortNameList), typeof(string));
             info.AddValue("template_precedence", Precedence, typeof(int));
             info.AddValue("template_identity", Identity, typeof(string));
             info.AddValue("template_group", GroupIdentity, typeof(string));
             info.AddValue("template_description", Description, typeof(string));
             info.AddValue("template_author", Author, typeof(string));
 
-            info.AddValue("template_tags", JsonConvert.SerializeObject(_tags), typeof(string));
-            info.AddValue("template_params", JsonConvert.SerializeObject(_parameters), typeof(string));
-            info.AddValue("template_baseline", JsonConvert.SerializeObject(_baselineInfo), typeof(string));
-            info.AddValue("template_classifications", JsonConvert.SerializeObject(_classifications), typeof(string));
+            info.AddValue("template_tags", JsonSerializer.Serialize(_tags), typeof(string));
+            info.AddValue("template_params", JsonSerializer.Serialize(_parameters), typeof(string));
+            info.AddValue("template_baseline", JsonSerializer.Serialize(_baselineInfo), typeof(string));
+            info.AddValue("template_classifications", JsonSerializer.Serialize(_classifications), typeof(string));
         }
 
         public override string ToString()

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     {
         protected DependentValueFormFactory(string identifier) : base(identifier) { }
 
-        public override IValueForm FromJObject(string name, JObject? configuration)
+        public override IValueForm FromJObject(string name, JsonObject? configuration)
         {
             if (configuration != null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             };
         }
 
-        protected abstract T ReadConfiguration(JObject jObject);
+        protected abstract T ReadConfiguration(JsonObject jObject);
 
         protected abstract string Process(string value, T? configuration, IReadOnlyDictionary<string, IValueForm> otherForms);
 

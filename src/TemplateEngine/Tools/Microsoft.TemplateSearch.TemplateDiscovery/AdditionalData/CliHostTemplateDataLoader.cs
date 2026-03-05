@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 {
                     if (!string.IsNullOrWhiteSpace(hostData))
                     {
-                        JObject jObject = JObject.Parse(hostData);
+                        JsonObject jObject = JExtensions.ParseJsonObject(hostData);
                         return new CliHostTemplateData(jObject);
                     }
                 }
@@ -52,8 +52,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                     {
                         using Stream stream = file.OpenRead();
                         using TextReader textReader = new StreamReader(stream, true);
-                        using JsonReader jsonReader = new JsonTextReader(textReader);
-                        var jsonData = JObject.Load(jsonReader);
+                        string jsonContent = textReader.ReadToEnd();
+                        var jsonData = JExtensions.ParseJsonObject(jsonContent);
 
                         return new CliHostTemplateData(jsonData);
                     }

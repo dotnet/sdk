@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
@@ -74,26 +74,26 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string deLocFile = Path.Combine(expectedExportDirectory, "templatestrings.de.json");
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
-            var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
-            var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
+            var engJsonContent = JsonNode.Parse(File.ReadAllText(enLocFile))!.AsObject();
+            var deJsonContent = JsonNode.Parse(File.ReadAllText(deLocFile))!.AsObject();
+            Assert.Equal("Test Asset", engJsonContent["author"]?.ToString());
+            Assert.Equal("Test Asset", deJsonContent["author"]?.ToString());
 
             //modify author property
             string baseConfig = Path.Combine(testTemplate, ".template.config", "template.json");
-            var templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
-            Assert.NotNull(templateJsonContent.Property("author"));
-            templateJsonContent.Property("author")!.Value = "New Author";
-            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+            var templateJsonContent = JsonNode.Parse(File.ReadAllText(baseConfig))!.AsObject();
+            Assert.NotNull(templateJsonContent["author"]);
+            templateJsonContent["author"] = "New Author";
+            File.WriteAllText(baseConfig, templateJsonContent.ToJsonString());
 
             runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
-            engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
-            deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("New Author", engJsonContent.Property("author")?.Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
+            engJsonContent = JsonNode.Parse(File.ReadAllText(enLocFile))!.AsObject();
+            deJsonContent = JsonNode.Parse(File.ReadAllText(deLocFile))!.AsObject();
+            Assert.Equal("New Author", engJsonContent["author"]?.ToString());
+            Assert.Equal("Test Asset", deJsonContent["author"]?.ToString());
         }
 
         [Fact]
@@ -101,9 +101,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         {
             string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
             string baseConfig = Path.Combine(testTemplate, ".template.config", "template.json");
-            var templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
-            templateJsonContent.AddFirst(new JProperty("authoringLanguage", "de"));
-            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+            var templateJsonContent = JsonNode.Parse(File.ReadAllText(baseConfig))!.AsObject();
+            templateJsonContent.Insert(0, "authoringLanguage", "de");
+            File.WriteAllText(baseConfig, templateJsonContent.ToJsonString());
 
             int runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
@@ -112,25 +112,25 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string deLocFile = Path.Combine(expectedExportDirectory, "templatestrings.de.json");
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
-            var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
-            var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
+            var engJsonContent = JsonNode.Parse(File.ReadAllText(enLocFile))!.AsObject();
+            var deJsonContent = JsonNode.Parse(File.ReadAllText(deLocFile))!.AsObject();
+            Assert.Equal("Test Asset", engJsonContent["author"]?.ToString());
+            Assert.Equal("Test Asset", deJsonContent["author"]?.ToString());
 
             //modify author property
-            templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
-            Assert.NotNull(templateJsonContent.Property("author"));
-            templateJsonContent.Property("author")!.Value = "New Author";
-            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+            templateJsonContent = JsonNode.Parse(File.ReadAllText(baseConfig))!.AsObject();
+            Assert.NotNull(templateJsonContent["author"]);
+            templateJsonContent["author"] = "New Author";
+            File.WriteAllText(baseConfig, templateJsonContent.ToJsonString());
 
             runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
-            engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
-            deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("New Author", deJsonContent.Property("author")?.Value.ToString());
-            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
+            engJsonContent = JsonNode.Parse(File.ReadAllText(enLocFile))!.AsObject();
+            deJsonContent = JsonNode.Parse(File.ReadAllText(deLocFile))!.AsObject();
+            Assert.Equal("New Author", deJsonContent["author"]?.ToString());
+            Assert.Equal("Test Asset", engJsonContent["author"]?.ToString());
         }
 
         [Fact]

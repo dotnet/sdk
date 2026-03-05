@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -13,8 +15,6 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -330,7 +330,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     }
                 """;
 
-            string hostFileFormatted = JObject.Parse(hostfile).ToString(Formatting.None);
+            string hostFileFormatted = JsonNode.Parse(hostfile)!.ToJsonString();
             const string hostFileLocation = ".template.config/dotnetcli.host.json";
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
@@ -390,21 +390,18 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             return managedTemplatePackage;
         }
 
-        private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
+        private static JsonObject ReadObject(IPhysicalFileSystem fileSystem, string path)
         {
             using var fileStream = fileSystem.OpenRead(path);
             using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            using var jsonReader = new JsonTextReader(textReader);
-            return JObject.Load(jsonReader);
+            string content = textReader.ReadToEnd();
+            return JsonNode.Parse(content)!.AsObject();
         }
 
         private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
         {
             using var fileStream = fileSystem.CreateFile(path);
-            using var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
-            using var jsonWriter = new JsonTextWriter(textWriter);
-            var serializer = new JsonSerializer();
-            serializer.Serialize(jsonWriter, obj);
+            JsonSerializer.Serialize(fileStream, obj);
         }
     }
 }

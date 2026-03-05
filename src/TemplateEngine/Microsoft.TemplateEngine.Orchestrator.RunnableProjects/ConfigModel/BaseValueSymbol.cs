@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -14,12 +15,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <param name="jObject"></param>
         /// <param name="defaultOverride"></param>
         /// <param name="symbolConditionsSupported"></param>
-        private protected BaseValueSymbol(string name, JObject jObject, string? defaultOverride, bool symbolConditionsSupported = false) : base(jObject, name)
+        private protected BaseValueSymbol(string name, JsonObject jObject, string? defaultOverride, bool symbolConditionsSupported = false) : base(jObject, name)
         {
             DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue));
             IsRequired = ParseIsRequiredField(jObject, !symbolConditionsSupported);
             DataType = jObject.ToString(nameof(DataType));
-            if (!jObject.TryGetValue(nameof(Forms), StringComparison.OrdinalIgnoreCase, out JToken? formsToken) || formsToken is not JObject formsObject)
+            if (!jObject.TryGetValue(nameof(Forms), out JsonNode? formsToken) || formsToken is not JsonObject formsObject)
             {
                 // no value forms explicitly defined, use the default ("identity")
                 Forms = SymbolValueFormsModel.Default;
@@ -68,17 +69,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? DataType { get; internal init; }
 
-        private protected bool TryGetIsRequiredField(JToken token, out bool result)
+        private protected bool TryGetIsRequiredField(JsonNode token, out bool result)
         {
             result = false;
-            return (token.Type == JTokenType.Boolean || token.Type == JTokenType.String)
+            var kind = token.GetValueKind();
+            return (kind is JsonValueKind.True or JsonValueKind.False || kind == JsonValueKind.String)
                    &&
                    bool.TryParse(token.ToString(), out result);
         }
 
-        private bool ParseIsRequiredField(JToken token, bool throwOnError)
+        private bool ParseIsRequiredField(JsonNode token, bool throwOnError)
         {
-            if (!token.TryGetValue(nameof(IsRequired), out JToken? isRequiredToken))
+            if (!token.TryGetValue(nameof(IsRequired), out JsonNode? isRequiredToken))
             {
                 return false;
             }

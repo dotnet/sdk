@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -12,7 +12,7 @@ namespace Microsoft.TemplateSearch.Common
         private static readonly string[] SupportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
 
         internal static TemplateSearchCache FromJObject(
-            JObject cacheObject,
+            JsonObject cacheObject,
             ILogger logger,
             IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
@@ -46,14 +46,14 @@ namespace Microsoft.TemplateSearch.Common
 
             }
 
-            JArray? data = cacheObject.Get<JArray>(nameof(TemplatePackages))
+            JsonArray? data = cacheObject.Get<JsonArray>(nameof(TemplatePackages))
                 ?? throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
             List<TemplatePackageSearchData> templatePackages = new();
-            foreach (JToken templatePackage in data)
+            foreach (JsonNode? templatePackage in data)
             {
                 try
                 {
-                    if (templatePackage is not JObject templatePackageObj)
+                    if (templatePackage is not JsonObject templatePackageObj)
                     {
                         throw new Exception($"Unexpected data in template search cache data, property: {nameof(TemplatePackages)}, value: {templatePackage}");
                     }
@@ -68,15 +68,15 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         internal static IDictionary<string, object> ReadAdditionalData(
-            JObject cacheObject,
+            JsonObject cacheObject,
             IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders,
             ILogger logger)
         {
             Dictionary<string, object> additionalData = new(StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
             {
-                if (!cacheObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
-                    || dataToken is not JObject dataObject)
+                JsonNode? dataNode = JExtensions.GetPropertyCaseInsensitive(cacheObject, dataReadInfo.Key);
+                if (dataNode is not JsonObject dataObject)
                 {
                     // this piece of data wasn't found, or wasn't valid. Ignore it.
                     continue;
@@ -96,12 +96,12 @@ namespace Microsoft.TemplateSearch.Common
             return additionalData;
         }
 
-        internal JObject ToJObject()
+        internal JsonObject ToJObject()
         {
-            return JObject.FromObject(this);
+            return JExtensions.FromObject(this);
         }
 
-        private static bool TryReadVersion(ILogger logger, JObject cacheObject, out string? version)
+        private static bool TryReadVersion(ILogger logger, JsonObject cacheObject, out string? version)
         {
             logger.LogDebug($"Reading template search cache version");
             version = cacheObject.ToString(nameof(Version));
