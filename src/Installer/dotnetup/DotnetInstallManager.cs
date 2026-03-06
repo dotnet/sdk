@@ -158,12 +158,19 @@ public class DotnetInstallManager : IDotnetInstallManager
         int depth = 0;
         bool inSdkObject = false;
         bool foundVersionProperty = false;
+        bool nextValueIsSdk = false;
 
         while (reader.Read())
         {
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartObject:
+                    if (nextValueIsSdk)
+                    {
+                        inSdkObject = true;
+                        nextValueIsSdk = false;
+                    }
+                    foundVersionProperty = false;
                     depth++;
                     break;
 
@@ -172,13 +179,14 @@ public class DotnetInstallManager : IDotnetInstallManager
                     {
                         inSdkObject = false;
                     }
+                    foundVersionProperty = false;
                     depth--;
                     break;
 
                 case JsonTokenType.PropertyName:
                     if (depth == 1 && reader.ValueTextEquals("sdk"u8))
                     {
-                        inSdkObject = true;
+                        nextValueIsSdk = true;
                     }
                     else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8))
                     {
@@ -187,19 +195,28 @@ public class DotnetInstallManager : IDotnetInstallManager
                     break;
 
                 case JsonTokenType.String:
+                    nextValueIsSdk = false;
                     if (foundVersionProperty)
                     {
                         // Found the version value token — splice in the new version at its byte position.
-                        // TokenStartIndex points to the opening quote of the string value.
-                        long tokenStart = reader.TokenStartIndex;
-                        int tokenLength = (int)reader.ValueSpan.Length + 2; // +2 for surrounding quotes
-                        string replacement = $"\"{newVersion}\"";
+                        // TokenStartIndex is a UTF-8 byte offset, so splice on the byte array
+                        // rather than on the C# string to handle non-ASCII characters correctly.
+                        int tokenStart = (int)reader.TokenStartIndex;
+                        int tokenLength = (int)reader.BytesConsumed - tokenStart;
+                        byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes($"\"{newVersion}\"");
 
-                        return string.Concat(
-                            jsonText.AsSpan(0, (int)tokenStart),
-                            replacement,
-                            jsonText.AsSpan((int)tokenStart + tokenLength));
+                        byte[] result = new byte[bytes.Length - tokenLength + replacementBytes.Length];
+                        bytes.AsSpan(0, tokenStart).CopyTo(result);
+                        replacementBytes.CopyTo(result.AsSpan(tokenStart));
+                        bytes.AsSpan(tokenStart + tokenLength).CopyTo(result.AsSpan(tokenStart + replacementBytes.Length));
+
+                        return System.Text.Encoding.UTF8.GetString(result);
                     }
+                    break;
+
+                default:
+                    nextValueIsSdk = false;
+                    foundVersionProperty = false;
                     break;
             }
         }
