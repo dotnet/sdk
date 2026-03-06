@@ -3240,6 +3240,43 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("public");
     }
 
+    /// <summary>
+    /// Verifies transitive <c>#:ref</c> references work: app.cs → lib1.cs → lib2.cs.
+    /// </summary>
+    [Fact]
+    public void RefDirective_Transitive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            namespace Lib2;
+            public static class Base
+            {
+                public static string Value() => "from lib2";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:ref lib2.cs
+            namespace Lib1;
+            public static class Middle
+            {
+                public static string Value() => $"from lib1 and {Lib2.Base.Value()}";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib1.cs
+            Console.WriteLine(Lib1.Middle.Value());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("from lib1 and from lib2");
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
