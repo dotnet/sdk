@@ -5436,6 +5436,50 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild_ProjectReferences"/>.
+    /// CSC-only optimization is also disabled when <c>#:ref</c> directives are present,
+    /// since we cannot detect updates in the referenced file-based app.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var code = """
+            #:ref lib.cs
+            Console.WriteLine("v1 " + Lib.LibClass.GetMessage());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "app.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: "app.cs");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        // Cannot use CSC because we cannot detect updates in the referenced file-based app.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v2 Hello from Lib v2", programFileName: "app.cs");
+    }
+
+    /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
