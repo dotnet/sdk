@@ -102,7 +102,16 @@ public class GenerateStaticWebAssetsManifest : Task
             var assetsByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
             foreach (var a in assets)
             {
-                if (!assetsByIdentity.ContainsKey(a.Identity))
+                if (assetsByIdentity.TryGetValue(a.Identity, out var existing))
+                {
+                    Log.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Keeping previously seen asset (SourceId='{2}').",
+                        a.Identity,
+                        a.SourceId,
+                        existing.SourceId);
+                }
+                else
                 {
                     assetsByIdentity[a.Identity] = a;
                 }

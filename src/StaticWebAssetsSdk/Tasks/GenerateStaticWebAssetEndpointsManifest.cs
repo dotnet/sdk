@@ -68,7 +68,16 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             var manifestAssets = new Dictionary<string, TargetPathAssetPair>(OSPath.PathComparer);
             foreach (var a in manifestAssetsList)
             {
-                if (!manifestAssets.ContainsKey(a.ResolvedAsset.Identity))
+                if (manifestAssets.TryGetValue(a.ResolvedAsset.Identity, out var existing))
+                {
+                    Log.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Keeping previously seen asset (SourceId='{2}').",
+                        a.ResolvedAsset.Identity,
+                        a.ResolvedAsset.SourceId,
+                        existing.ResolvedAsset.SourceId);
+                }
+                else
                 {
                     manifestAssets[a.ResolvedAsset.Identity] = a;
                 }
