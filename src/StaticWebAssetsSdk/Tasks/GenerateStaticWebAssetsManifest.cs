@@ -99,7 +99,14 @@ public class GenerateStaticWebAssetsManifest : Task
         // inside the manifest because its cumbersome to do it in MSBuild directly.
         if (StaticWebAssetsManifest.ManifestTypes.IsPublish(ManifestType))
         {
-            var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
+            var assetsByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+            foreach (var a in assets)
+            {
+                if (!assetsByIdentity.ContainsKey(a.Identity))
+                {
+                    assetsByIdentity[a.Identity] = a;
+                }
+            }
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var endpoint in Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem))

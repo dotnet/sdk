@@ -64,8 +64,15 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
             var assets = StaticWebAsset.FromTaskItemGroup(Assets);
-            var manifestAssets = ComputeManifestAssets(assets, ManifestType)
-                .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
+            var manifestAssetsList = ComputeManifestAssets(assets, ManifestType);
+            var manifestAssets = new Dictionary<string, TargetPathAssetPair>(OSPath.PathComparer);
+            foreach (var a in manifestAssetsList)
+            {
+                if (!manifestAssets.ContainsKey(a.ResolvedAsset.Identity))
+                {
+                    manifestAssets[a.ResolvedAsset.Identity] = a;
+                }
+            }
 
             // Build exclusion matcher if patterns are provided
             StaticWebAssetGlobMatcher exclusionMatcher = null;

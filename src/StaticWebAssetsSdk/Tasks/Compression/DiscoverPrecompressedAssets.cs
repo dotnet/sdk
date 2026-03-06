@@ -32,7 +32,21 @@ public class DiscoverPrecompressedAssets : Task
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var assetsToUpdate = new List<ITaskItem>();
 
-        var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
+        var candidatesByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+        foreach (var asset in candidates)
+        {
+            if (!candidatesByIdentity.ContainsKey(asset.Identity))
+            {
+                candidatesByIdentity[asset.Identity] = asset;
+            }
+            else
+            {
+                Log.LogMessage(
+                    MessageImportance.Low,
+                    "Skipping duplicate candidate asset '{0}'. The asset was already added from a different source.",
+                    asset.Identity);
+            }
+        }
 
         foreach (var candidate in candidates)
         {

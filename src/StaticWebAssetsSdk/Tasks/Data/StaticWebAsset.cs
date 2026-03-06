@@ -1230,11 +1230,14 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
     {
-        var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length);
+        var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length, OSPath.PathComparer);
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
-            dictionary.Add(candidateAsset.Identity, candidateAsset);
+            if (!dictionary.ContainsKey(candidateAsset.Identity))
+            {
+                dictionary.Add(candidateAsset.Identity, candidateAsset);
+            }
         }
 
         return dictionary;
