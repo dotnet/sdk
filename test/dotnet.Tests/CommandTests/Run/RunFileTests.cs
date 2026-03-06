@@ -3188,12 +3188,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """)
             .And.HaveFileContent("src/A/A.cs", a)
             .And.HaveFileContent("src/A/B.cs", b)
-            .And.HaveFileContentPattern("src/A/A.csproj", """
+            .And.HaveFileContentPattern("src/A/A.csproj", $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
@@ -3307,12 +3307,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveFileContent("C.cs", c)
             .And.HaveFileContent("C_2.cs", d)
             .And.HaveFileContent("Resources.resx", s_resx)
-            .And.HaveFileContentPattern("A.csproj", """
+            .And.HaveFileContentPattern("A.csproj", $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
