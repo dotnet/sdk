@@ -80,7 +80,7 @@ function InstallDotNetSharedFramework {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local dotnetup_exe="$script_dir/dotnetup/dotnetup"
 
-    "$dotnetup_exe" runtime install "$version" --install-path "$dotnet_root" --no-progress --set-default-install false
+    "$dotnetup_exe" runtime install "$version" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked
     local lastexitcode=$?
 
     if [[ $lastexitcode != 0 ]]; then
