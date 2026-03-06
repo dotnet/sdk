@@ -216,7 +216,7 @@ internal static class MSBuildUtility
             {
                 if (i == 0)
                 {
-                    positionalTestModules = token;
+                    positionalProjectOrSolution = token;
                     otherArgs.RemoveAt(0);
                     break;
                 }
@@ -229,7 +229,6 @@ internal static class MSBuildUtility
 
         return (positionalProjectOrSolution, positionalTestModules);
     }
-
 
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
