@@ -149,10 +149,10 @@ internal class InstallWorkflow
             installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
 
         // Classify how the version/channel was determined for telemetry
-        string requestSource = channelFromGlobalJson is not null
-            ? "default-globaljson"
-            : options.VersionOrChannel is not null
-                ? "explicit"
+        string requestSource = options.VersionOrChannel is not null
+            ? "explicit"
+            : channelFromGlobalJson is not null
+                ? "default-globaljson"
                 : "default-latest";
 
         return new WorkflowContext(
@@ -171,7 +171,9 @@ internal class InstallWorkflow
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
     {
-        var installSource = context.GlobalJson?.GlobalJsonPath is not null
+        // Only tag as GlobalJson source if the channel/version actually came from global.json,
+        // not just because a global.json file exists in the directory.
+        var installSource = context.RequestSource == "default-globaljson"
             ? InstallRequestSource.GlobalJson
             : InstallRequestSource.Explicit;
 
@@ -183,7 +185,7 @@ internal class InstallWorkflow
             _channelVersionResolver,
             context.Options.RequireMuxerUpdate,
             installSource,
-            context.GlobalJson?.GlobalJsonPath);
+            installSource == InstallRequestSource.GlobalJson ? context.GlobalJson?.GlobalJsonPath : null);
     }
 
     private static InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

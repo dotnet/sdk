@@ -63,8 +63,16 @@ internal class UninstallWorkflow
             var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
             if (otherSourceSpecs.Count > 0)
             {
-                string sourceDesc = sourceFilter == InstallSource.All ? "" : $"[bold]{sourceFilter}[/] ";
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {sourceDesc}{componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                if (sourceFilter != InstallSource.All)
+                {
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                        $"[yellow]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                        $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                }
                 foreach (var spec in otherSourceSpecs)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
@@ -107,6 +115,10 @@ internal class UninstallWorkflow
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
             }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[dim]No files were removed because they are still in use by other tracked installations.[/]");
         }
 
         // Check if the targeted installations are still present (referenced by another spec)

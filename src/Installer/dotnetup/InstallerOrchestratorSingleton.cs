@@ -69,6 +69,20 @@ internal class InstallerOrchestratorSingleton
 
             if (InstallAlreadyExists(manifestData, install))
             {
+                // Still record the install spec so the user's requested channel is tracked,
+                // even though the version is already installed (possibly via a different channel).
+                manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                {
+                    Component = installRequest.Component,
+                    VersionOrChannel = installRequest.Channel.Name,
+                    InstallSource = installRequest.Options.InstallSource switch
+                    {
+                        InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                        _ => InstallSource.Explicit,
+                    },
+                    GlobalJsonPath = installRequest.Options.GlobalJsonPath
+                });
+
                 Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
