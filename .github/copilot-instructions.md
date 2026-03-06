@@ -26,6 +26,7 @@ Testing:
   - Create a dogfood environment: `source eng/dogfood.sh` 
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
+- For fast incremental iteration on specific projects (e.g., `dotnet`, `Microsoft.DotNet.ProjectTools`), use `eng/deploy-dogfood.ps1` instead of a full `build.cmd`. It builds only the specified projects and copies DLLs into the redist layout (~30s vs ~5min). Usage: `.\eng\deploy-dogfood.ps1 -Projects dotnet,Microsoft.DotNet.ProjectTools`
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
