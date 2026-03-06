@@ -62,8 +62,7 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string? sessionId =
-                Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
+            string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
 
             if (sessionId != null)
             {

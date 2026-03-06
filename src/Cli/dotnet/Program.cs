@@ -284,6 +284,7 @@ public class Program
             defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
 
         var isDotnetBeingInvokedFromNativeInstaller = false;
+        // TODO: This should not be special cased like this. Determine if we can skip first run setup entirely for this command.
         if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
         {
             aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();

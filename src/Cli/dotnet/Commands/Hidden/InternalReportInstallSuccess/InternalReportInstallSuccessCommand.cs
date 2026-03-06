@@ -9,8 +9,6 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
 public class InternalReportInstallSuccessCommand
 {
-    internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
-
     public static int Run(ParseResult parseResult)
     {
         var telemetry = new ThreadBlockingTelemetry();
@@ -42,7 +40,7 @@ public class InternalReportInstallSuccessCommand
 
         internal ThreadBlockingTelemetry()
         {
-            var sessionId = Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
+            var sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
             _telemetry = new TelemetryClient(sessionId);
         }
 

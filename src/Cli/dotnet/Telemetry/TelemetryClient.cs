@@ -19,8 +19,10 @@ public class TelemetryClient : ITelemetryClient
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
-    private static readonly MeterProvider s_metricsProvider;
-    private static readonly TracerProvider s_tracerProvider;
+    private static readonly MeterProviderBuilder s_metricsProviderBuilder;
+    private static MeterProvider? s_metricsProvider;
+    private static readonly TracerProviderBuilder s_tracerProviderBuilder;
+    private static TracerProvider? s_tracerProvider;
     private static readonly List<Activity> s_activities = [];
 
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
@@ -51,20 +53,15 @@ public class TelemetryClient : ITelemetryClient
 
     static TelemetryClient()
     {
-        // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
-        // It is important to keep the MetricsProvider instance active throughout the process lifetime.
-        s_metricsProvider = Sdk.CreateMeterProviderBuilder()
+        s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddOtlpExporter()
-            .Build();
+            .AddOtlpExporter();
 
         var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
-        // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
-        // It is important to keep the TracerProvider instance active throughout the process lifetime.
-        s_tracerProvider = Sdk.CreateTracerProviderBuilder()
+        s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
@@ -76,8 +73,7 @@ public class TelemetryClient : ITelemetryClient
                 o.StorageDirectory = storageDirectory;
             })
             .AddInMemoryExporter(s_activities)
-            .SetSampler(new AlwaysOnSampler())
-            .Build();
+            .SetSampler(new AlwaysOnSampler());
 
         var parentActivityContext = GetParentActivityContext();
         ActivityKind = GetActivityKind(parentActivityContext);
@@ -98,6 +94,14 @@ public class TelemetryClient : ITelemetryClient
         if (!Enabled)
         {
             return;
+        }
+
+        if (s_metricsProvider is null || s_tracerProvider is null)
+        {
+            // Create a new OTel meter and tracer provider.
+            // It is important to keep the provider instances active throughout the process lifetime.
+            s_metricsProvider = s_metricsProviderBuilder.Build();
+            s_tracerProvider = s_tracerProviderBuilder.Build();
         }
 
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
