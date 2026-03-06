@@ -10,7 +10,7 @@ public sealed class GenAPIOptions
 {
     public GenAPIOptions(string[] assembliesPaths)
     {
-        AssembliesPaths = assembliesPaths;
+        AssembliesPaths = assembliesPaths ?? throw new ArgumentNullException(nameof(assembliesPaths));
     }
 
     /// <summary>

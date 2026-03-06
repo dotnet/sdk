@@ -6,13 +6,13 @@ using NuGet.Frameworks;
 namespace Microsoft.DotNet.ApiCompat
 {
     /// <summary>
-    /// Options for running ValidatePackage.
+    /// Options for running <see cref="ValidatePackage"/>.
     /// </summary>
     internal sealed class ValidatePackageOptions
     {
         public ValidatePackageOptions(string packagePath)
         {
-            PackagePath = packagePath;
+            PackagePath = packagePath ?? throw new ArgumentNullException(nameof(packagePath));
         }
 
         /// <summary>

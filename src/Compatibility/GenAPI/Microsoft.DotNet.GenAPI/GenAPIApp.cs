@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI
     public static class GenAPIApp
     {
         /// <summary>
-        /// Initialize and run Roslyn-based GenAPI tool using options.
+        /// Initialize and run Roslyn-based GenAPI tool using <see cref="GenAPIOptions"/>.
         /// </summary>
         public static void Run(ILog log, GenAPIOptions options)
         {

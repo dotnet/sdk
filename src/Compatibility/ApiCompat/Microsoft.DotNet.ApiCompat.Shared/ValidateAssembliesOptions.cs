@@ -4,14 +4,14 @@
 namespace Microsoft.DotNet.ApiCompat
 {
     /// <summary>
-    /// Options for running ValidateAssemblies.
+    /// Options for running <see cref="ValidateAssemblies"/>.
     /// </summary>
     internal sealed class ValidateAssembliesOptions
     {
         public ValidateAssembliesOptions(string[] leftAssemblies, string[] rightAssemblies)
         {
-            LeftAssemblies = leftAssemblies;
-            RightAssemblies = rightAssemblies;
+            LeftAssemblies = leftAssemblies ?? throw new ArgumentNullException(nameof(leftAssemblies));
+            RightAssemblies = rightAssemblies ?? throw new ArgumentNullException(nameof(rightAssemblies));
         }
 
         /// <summary>
