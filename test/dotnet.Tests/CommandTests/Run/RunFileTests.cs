@@ -3181,6 +3181,65 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, "nonexistent.cs"))));
     }
 
+    /// <summary>
+    /// Verifies that <c>#:ref</c> produces a metadata (assembly) reference,
+    /// meaning internal members are not accessible unless <c>InternalsVisibleTo</c> is used.
+    /// </summary>
+    [Fact]
+    public void RefDirective_InternalsNotAccessible()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class PublicClass
+            {
+                public static string PublicMethod() => "public";
+                internal static string InternalMethod() => "internal";
+            }
+            internal static class InternalClass
+            {
+                public static string Method() => "internal class";
+            }
+            """);
+
+        // Accessing internal member should fail.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.PublicClass.InternalMethod());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS");
+
+        // Accessing internal class should fail.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.InternalClass.Method());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS");
+
+        // Accessing public member should succeed.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.PublicClass.PublicMethod());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("public");
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
