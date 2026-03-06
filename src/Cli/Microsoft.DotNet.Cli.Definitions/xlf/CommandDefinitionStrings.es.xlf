@@ -1549,6 +1549,11 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
         <target state="translated">Convertir un programa basado en archivos en un programa basado en proyecto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="new">Delete all source files after conversion</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Determina los cambios sin modificar realmente el sistema de archivos</target>

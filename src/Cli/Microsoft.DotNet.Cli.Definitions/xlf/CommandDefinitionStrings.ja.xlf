@@ -1549,6 +1549,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">ファイルベースのプログラムをプロジェクトベースのプログラムに変換します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="new">Delete all source files after conversion</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">ファイル システムを実際に変更せずに変更を決定します</target>
