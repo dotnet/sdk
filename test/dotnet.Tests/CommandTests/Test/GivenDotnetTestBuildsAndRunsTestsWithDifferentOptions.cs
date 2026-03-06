@@ -614,7 +614,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
             [CombinatorialValues("TestProject", "./TestProject", "TestProject/TestProject.csproj", "./TestProject/TestProject.csproj")] string positionalArgument)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
