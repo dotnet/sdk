@@ -84,6 +84,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
       isDraft
       author { login }
       baseRefName
+      mergeable
+      changedFiles
       mergeStateStatus
       reviewDecision
       labels(first: 20) { nodes { name } }
@@ -92,6 +94,15 @@ query($owner: String!, $repo: String!, $number: Int!) {
           commit {
             statusCheckRollup {
               state
+              contexts(first: 50) {
+                nodes {
+                  ... on CheckRun {
+                    name
+                    conclusion
+                    status
+                  }
+                }
+              }
             }
           }
         }
@@ -285,6 +296,100 @@ function Get-ChangesRequestedReviewer {
     return $null
 }
 
+function Get-CheckRunDetails {
+    <#
+    .SYNOPSIS
+        Extracts per-check-run details (name, conclusion, status) from a PR's commit status.
+        Returns a summary of total, passed, failed, and pending checks plus the failed check names.
+    #>
+    param([PSCustomObject]$Pr)
+
+    $result = [PSCustomObject]@{
+        total       = 0
+        passed      = 0
+        failed      = 0
+        pending     = 0
+        failedNames = @()
+    }
+
+    if (-not $Pr.commits -or -not $Pr.commits.nodes -or $Pr.commits.nodes.Count -eq 0) {
+        return $result
+    }
+
+    $rollup = $Pr.commits.nodes[0].commit.statusCheckRollup
+    if (-not $rollup -or -not $rollup.contexts -or -not $rollup.contexts.nodes) {
+        return $result
+    }
+
+    # Filter to actual CI checks (exclude Maestro policy checks and license/cla)
+    $ciChecks = @($rollup.contexts.nodes | Where-Object {
+        $_.name -and
+        $_.name -notmatch '^Maestro' -and
+        $_.name -notmatch '^license/' -and
+        $_.name -notmatch '^WIP$'
+    })
+
+    $result.total = $ciChecks.Count
+    $result.passed = @($ciChecks | Where-Object { $_.conclusion -eq 'SUCCESS' }).Count
+    $result.failed = @($ciChecks | Where-Object { $_.conclusion -eq 'FAILURE' }).Count
+    $result.pending = @($ciChecks | Where-Object { $_.status -ne 'COMPLETED' }).Count
+    $result.failedNames = @($ciChecks | Where-Object { $_.conclusion -eq 'FAILURE' } | ForEach-Object { $_.name })
+
+    return $result
+}
+
+function Get-PrRecommendation {
+    <#
+    .SYNOPSIS
+        Generates an actionable recommendation for a PR based on its status.
+    #>
+    param(
+        [PSCustomObject]$PrInfo,
+        [PSCustomObject]$CheckDetails
+    )
+
+    $isMergePr = Test-IsMergePr -Title $PrInfo.title
+    $isTemplating = $PrInfo.repo -eq 'dotnet/templating'
+
+    # Merge PR with merge conflicts
+    if ($isMergePr -and $PrInfo.mergeable -eq 'CONFLICTING') {
+        return 'FIX_MERGE_CONFLICTS'
+    }
+
+    # Empty PR (0 changed files, no conflicts) — can be closed/merged trivially
+    if ($PrInfo.changedFiles -eq 0 -and $PrInfo.mergeable -ne 'CONFLICTING') {
+        return 'CLOSE_EMPTY_PR'
+    }
+
+    # Templating single-leg failure — likely flaky, rerun
+    if ($isTemplating -and $CheckDetails.failed -eq 1 -and $CheckDetails.passed -gt 0) {
+        return 'RETRY_SINGLE_LEG'
+    }
+
+    # Ready PRs
+    if ($PrInfo.category -eq 'ready') {
+        return 'MERGE'
+    }
+
+    # Lockdown
+    if ($PrInfo.category -eq 'lockdown') {
+        return 'WAIT_FOR_LOCKDOWN'
+    }
+
+    # Changes requested
+    if ($PrInfo.category -eq 'changes_requested') {
+        return 'ADDRESS_REVIEW'
+    }
+
+    # Blocked with all checks passing — likely just needs review
+    if ($PrInfo.category -eq 'blocked' -and $PrInfo.checkState -eq 'SUCCESS') {
+        return 'NEEDS_REVIEW'
+    }
+
+    # Default blocked
+    return 'INVESTIGATE_FAILURE'
+}
+
 function ConvertTo-PrSummaryObject {
     <#
     .SYNOPSIS
@@ -299,12 +404,22 @@ function ConvertTo-PrSummaryObject {
         author             = $Pr.author
         targetBranch       = $Pr.targetBranch
         ageDays            = $Pr.ageDays
+        mergeable          = $Pr.mergeable
+        changedFiles       = $Pr.changedFiles
         mergeStateStatus   = $Pr.mergeStateStatus
         checkState         = $Pr.checkState
+        checkDetails       = [ordered]@{
+            total       = $Pr.checkDetails.total
+            passed      = $Pr.checkDetails.passed
+            failed      = $Pr.checkDetails.failed
+            pending     = $Pr.checkDetails.pending
+            failedNames = $Pr.checkDetails.failedNames
+        }
         reviewDecision     = $Pr.reviewDecision
         isStale            = $Pr.isStale
         changesRequestedBy = $Pr.changesRequestedBy
         labels             = $Pr.labels
+        recommendation     = $Pr.recommendation
     }
 }
 
@@ -371,6 +486,7 @@ foreach ($repoKey in $IncludeRepo) {
         }
 
         $changesRequestedBy = Get-ChangesRequestedReviewer -Reviews $details.reviews
+        $checkDetails = Get-CheckRunDetails -Pr $details
 
         $prInfo = [PSCustomObject]@{
             repo              = $repoFull
@@ -382,14 +498,20 @@ foreach ($repoKey in $IncludeRepo) {
             createdAt         = $details.createdAt
             ageDays           = $ageDays
             isDraft           = $details.isDraft
+            mergeable         = $details.mergeable
+            changedFiles      = $details.changedFiles
             mergeStateStatus  = $details.mergeStateStatus
             reviewDecision    = $details.reviewDecision
             checkState        = $checkState
+            checkDetails      = $checkDetails
             labels            = $labels
             category          = $category
             isStale           = ($ageDays -ge $DaysStale -and $category -ne 'lockdown')
             changesRequestedBy = $changesRequestedBy
+            recommendation    = $null  # filled below
         }
+
+        $prInfo.recommendation = Get-PrRecommendation -PrInfo $prInfo -CheckDetails $checkDetails
 
         $allPrs += $prInfo
     }
@@ -469,14 +591,22 @@ if (-not $OutputJson) {
     # Failing / Blocked
     Write-Host "❌ Failing / Blocked ($($blocked.Count))" -ForegroundColor Red
     if ($blocked.Count -gt 0) {
-        Write-Host ("-" * 120)
-        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-12} {6,-10}" -f "Repo", "#", "Title", "Target", "Age", "MergeState", "Checks")
-        Write-Host ("-" * 120)
+        Write-Host ("-" * 140)
+        Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
+        Write-Host ("-" * 140)
         foreach ($pr in ($blocked | Sort-Object repo, ageDays -Descending)) {
-            $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
+            $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
-            Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-12} {6,-10}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.mergeStateStatus, $pr.checkState)
+            $recStr = switch ($pr.recommendation) {
+                'CLOSE_EMPTY_PR'       { '🗑️  Close (empty PR)' }
+                'FIX_MERGE_CONFLICTS'  { '🔀 Fix merge conflicts' }
+                'RETRY_SINGLE_LEG'     { "🔄 Retry ($($pr.checkDetails.failedNames -join ', '))" }
+                'NEEDS_REVIEW'         { '👀 Needs review approval' }
+                'INVESTIGATE_FAILURE'  { '🔍 Investigate' }
+                default                { $pr.recommendation }
+            }
+            Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState, $recStr)
         }
     }
     else {
@@ -503,6 +633,53 @@ if (-not $OutputJson) {
         Write-Host "⏳ Stale PRs (>$DaysStale days, excluding Branch Lockdown): $($stale.Count)" -ForegroundColor DarkYellow
         foreach ($pr in $stale) {
             Write-Host "  ⚠️  $($pr.repo)#$($pr.number) - $(Format-AgeString $pr.ageDays) old - $($pr.title)" -ForegroundColor DarkYellow
+        }
+        Write-Host ""
+    }
+
+    # Actionable items
+    $emptyPrs = @($allPrs | Where-Object { $_.recommendation -eq 'CLOSE_EMPTY_PR' })
+    $conflictPrs = @($allPrs | Where-Object { $_.recommendation -eq 'FIX_MERGE_CONFLICTS' })
+    $retryPrs = @($allPrs | Where-Object { $_.recommendation -eq 'RETRY_SINGLE_LEG' })
+    $reviewPrs = @($allPrs | Where-Object { $_.recommendation -eq 'NEEDS_REVIEW' })
+
+    if ($emptyPrs.Count -gt 0 -or $conflictPrs.Count -gt 0 -or $retryPrs.Count -gt 0 -or $reviewPrs.Count -gt 0) {
+        Write-Host "========================================" -ForegroundColor Magenta
+        Write-Host " Quick Actions" -ForegroundColor Magenta
+        Write-Host "========================================" -ForegroundColor Magenta
+
+        if ($emptyPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  🗑️  Close empty PRs (0 file changes):" -ForegroundColor DarkGray
+            foreach ($pr in $emptyPrs) {
+                Write-Host "     gh pr close $($pr.number) --repo $($pr.repo) --comment 'Closing: no file changes after merge.'" -ForegroundColor DarkGray
+            }
+        }
+
+        if ($conflictPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  🔀 Fix merge conflicts:" -ForegroundColor Yellow
+            foreach ($pr in $conflictPrs) {
+                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
+            }
+        }
+
+        if ($retryPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  🔄 Retry single-leg failures (likely flaky):" -ForegroundColor Cyan
+            foreach ($pr in $retryPrs) {
+                $failedLeg = $pr.checkDetails.failedNames -join ', '
+                Write-Host "     $($pr.repo)#$($pr.number) - failed: $failedLeg" -ForegroundColor Cyan
+                Write-Host "     gh pr comment $($pr.number) --repo $($pr.repo) --body '/azp run'" -ForegroundColor DarkGray
+            }
+        }
+
+        if ($reviewPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  👀 Needs review approval (CI passing):" -ForegroundColor Green
+            foreach ($pr in $reviewPrs) {
+                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
+            }
         }
         Write-Host ""
     }

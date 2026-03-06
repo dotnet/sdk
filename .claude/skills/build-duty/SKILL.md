@@ -56,11 +56,16 @@ Use this skill when:
    - `mergeStateStatus` (CLEAN, BLOCKED, UNSTABLE)
    - `statusCheckRollup` (SUCCESS, FAILURE, PENDING)
    - `reviewDecision` (APPROVED, CHANGES_REQUESTED, REVIEW_REQUIRED)
+   - `mergeable` (MERGEABLE, CONFLICTING, UNKNOWN)
+   - `changedFiles` count (0 = empty PR with no actual changes)
+   - Individual check run results (name, conclusion, status)
    - Labels, age, draft status
 
 4. **Classifies each PR** into categories (see below).
 
-5. **Outputs** both human-readable tables and a `[BUILD_DUTY_SUMMARY]` JSON block.
+5. **Generates a recommendation** for each PR (see Recommendation Codes below).
+
+6. **Outputs** both human-readable tables and a `[BUILD_DUTY_SUMMARY]` JSON block.
 
 ## PR Classification Categories
 
@@ -96,6 +101,21 @@ PRs where:
 
 ### ⏳ Stale (cross-cutting flag)
 Any PR older than 7 days (configurable) that does NOT have `Branch Lockdown` label. These may be stuck or forgotten and need attention.
+
+## Recommendation Codes
+
+Each PR gets an automatic recommendation based on its status. The agent should act on these:
+
+| Code | Meaning | Agent Action |
+|------|---------|-------------|
+| `CLOSE_EMPTY_PR` | PR has 0 changed files — no actual code changes after merge/sync | Recommend closing or merging trivially. Provide `gh pr close` command. |
+| `FIX_MERGE_CONFLICTS` | Merge PR has unresolved conflicts | Flag for manual conflict resolution. Cannot be auto-fixed. |
+| `RETRY_SINGLE_LEG` | Only 1 CI leg failed out of many (likely flaky, common in templating) | Comment `/azp run` on the PR to trigger a retry. |
+| `MERGE` | PR is ready to merge | List as quick win. Do NOT auto-merge — human action only. |
+| `WAIT_FOR_LOCKDOWN` | Branch is locked for servicing | No action needed; queue for when lockdown lifts. |
+| `ADDRESS_REVIEW` | Changes were requested by a reviewer | Note the reviewer; requires upstream action. |
+| `NEEDS_REVIEW` | CI is passing but PR needs review approval | List as needing review. Common for VMR PRs. |
+| `INVESTIGATE_FAILURE` | Multiple legs failing or complex failure | Run ci-analysis skill to diagnose. |
 
 ## Analysis Workflow
 
@@ -171,9 +191,28 @@ Synthesize the script output and CI analysis into a markdown report. Use this st
 
 ## ❌ Failing / Blocked ({count})
 
-| # | Title | Repo | Target | Age | Issue |
-|---|-------|------|--------|-----|-------|
-| [#5678](url) | Source code updates | dotnet/sdk | main | 3d | NU1603: package version mismatch |
+| # | Title | Repo | Target | Age | Recommendation | Issue |
+|---|-------|------|--------|-----|----------------|-------|
+| [#5678](url) | Source code updates | dotnet/sdk | main | 3d | 🔍 Investigate | NU1603: package version mismatch |
+
+---
+
+## 🗑️ Empty PRs — Close or Merge ({count})
+
+PRs with 0 file changes. These typically result from merge conflicts that resolved to no-ops.
+
+| # | Title | Repo | Command |
+|---|-------|------|---------|
+| [#1234](url) | [branch] Source code updates | dotnet/dotnet | `gh pr close 1234 --repo dotnet/dotnet --comment 'Closing: no file changes.'` |
+
+---
+
+## 🔀 Merge Conflict PRs ({count})
+
+PRs with unresolved merge conflicts that need manual resolution.
+
+| # | Title | Repo | Target |
+|---|-------|------|--------|
 
 ---
 
