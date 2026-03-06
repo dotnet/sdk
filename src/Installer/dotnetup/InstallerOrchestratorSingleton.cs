@@ -71,17 +71,21 @@ internal class InstallerOrchestratorSingleton
             {
                 // Still record the install spec so the user's requested channel is tracked,
                 // even though the version is already installed (possibly via a different channel).
-                manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                // Skip manifest write for untracked installs.
+                if (!installRequest.Options.Untracked)
                 {
-                    Component = installRequest.Component,
-                    VersionOrChannel = installRequest.Channel.Name,
-                    InstallSource = installRequest.Options.InstallSource switch
+                    manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                     {
-                        InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                        _ => InstallSource.Explicit,
-                    },
-                    GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                });
+                        Component = installRequest.Component,
+                        VersionOrChannel = installRequest.Channel.Name,
+                        InstallSource = installRequest.Options.InstallSource switch
+                        {
+                            InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                            _ => InstallSource.Explicit,
+                        },
+                        GlobalJsonPath = installRequest.Options.GlobalJsonPath
+                    });
+                }
 
                 Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return new InstallResult(install, WasAlreadyInstalled: true);
@@ -89,7 +93,9 @@ internal class InstallerOrchestratorSingleton
 
             // Guard: error if the target directory contains .NET artifacts but isn't tracked in the manifest.
             // This prevents silently mixing managed and unmanaged installations.
-            if (!IsRootInManifest(manifestData, installRequest.InstallRoot)
+            // Skip this guard for untracked installs.
+            if (!installRequest.Options.Untracked
+                && !IsRootInManifest(manifestData, installRequest.InstallRoot)
                 && HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
                 throw new DotnetInstallException(
@@ -130,26 +136,30 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install, out string? validationFailure))
             {
-                // Record the install spec for the channel that was requested
-                manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                // Skip manifest writes for untracked installs.
+                if (!installRequest.Options.Untracked)
                 {
-                    Component = installRequest.Component,
-                    VersionOrChannel = installRequest.Channel.Name,
-                    InstallSource = installRequest.Options.InstallSource switch
+                    // Record the install spec for the channel that was requested
+                    manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                     {
-                        InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                        _ => InstallSource.Explicit,
-                    },
-                    GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                });
+                        Component = installRequest.Component,
+                        VersionOrChannel = installRequest.Channel.Name,
+                        InstallSource = installRequest.Options.InstallSource switch
+                        {
+                            InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                            _ => InstallSource.Explicit,
+                        },
+                        GlobalJsonPath = installRequest.Options.GlobalJsonPath
+                    });
 
-                // Record the installation with its resolved version
-                manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
-                {
-                    Component = installRequest.Component,
-                    Version = versionToInstall.ToString(),
-                    Subcomponents = installer.ExtractedSubcomponents.ToList()
-                });
+                    // Record the installation with its resolved version
+                    manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
+                    {
+                        Component = installRequest.Component,
+                        Version = versionToInstall.ToString(),
+                        Subcomponents = installer.ExtractedSubcomponents.ToList()
+                    });
+                }
             }
             else
             {

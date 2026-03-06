@@ -52,6 +52,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(CommonOptions.InteractiveOption);
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
+        command.Options.Add(CommonOptions.UntrackedOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

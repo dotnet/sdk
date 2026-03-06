@@ -34,6 +34,7 @@ internal class InstallExecutor
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
     /// <param name="installSource">The source of this install request.</param>
     /// <param name="globalJsonPath">The path to the global.json that triggered this install.</param>
+    /// <param name="untracked">If true, install without recording in the manifest.</param>
     /// <returns>The resolved install request with version information.</returns>
     public static ResolvedInstallRequest CreateAndResolveRequest(
         string installPath,
@@ -43,7 +44,8 @@ internal class InstallExecutor
         ChannelVersionResolver channelVersionResolver,
         bool requireMuxerUpdate = false,
         InstallRequestSource installSource = InstallRequestSource.Explicit,
-        string? globalJsonPath = null)
+        string? globalJsonPath = null,
+        bool untracked = false)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -56,7 +58,8 @@ internal class InstallExecutor
                 ManifestPath = manifestPath,
                 RequireMuxerUpdate = requireMuxerUpdate,
                 InstallSource = installSource,
-                GlobalJsonPath = globalJsonPath
+                GlobalJsonPath = globalJsonPath,
+                Untracked = untracked
             });
 
         var resolvedVersion = channelVersionResolver.Resolve(request);

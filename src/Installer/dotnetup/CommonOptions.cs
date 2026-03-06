@@ -73,6 +73,12 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> UntrackedOption = new("--untracked")
+    {
+        Description = "Install without recording in the dotnetup manifest. The installation will not be tracked, updated, or listed by dotnetup.",
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 }

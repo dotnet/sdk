@@ -52,6 +52,12 @@ internal record InstallRequestOptions()
     /// The path to the global.json file that triggered this install, if applicable.
     /// </summary>
     public string? GlobalJsonPath { get; init; }
+
+    /// <summary>
+    /// If true, the installation will not be recorded in the dotnetup manifest
+    /// and the untracked-installation guard will be bypassed.
+    /// </summary>
+    public bool Untracked { get; init; }
 }
 
 /// <summary>
