@@ -3277,6 +3277,78 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("from lib1 and from lib2");
     }
 
+    /// <summary>
+    /// Diamond dependency: app.cs uses both <c>#:ref lib.cs</c> and <c>#:project ProjectLib</c>,
+    /// and both lib.cs (<c>#:project Common</c>) and ProjectLib reference a common project.
+    /// </summary>
+    [Fact]
+    public void RefDirective_DiamondWithProject()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Common project referenced by both lib.cs and ProjectLib.
+        var commonDir = Path.Join(testInstance.Path, "Common");
+        Directory.CreateDirectory(commonDir);
+        File.WriteAllText(Path.Join(commonDir, "Common.cs"), """
+            namespace Common;
+            public static class Shared
+            {
+                public static string Value() => "shared";
+            }
+            """);
+        File.WriteAllText(Path.Join(commonDir, "Common.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // ProjectLib: a regular project referencing Common.
+        var projectLibDir = Path.Join(testInstance.Path, "ProjectLib");
+        Directory.CreateDirectory(projectLibDir);
+        File.WriteAllText(Path.Join(projectLibDir, "ProjectLib.cs"), """
+            namespace ProjectLib;
+            public static class ProjClass
+            {
+                public static string Value() => $"ProjectLib({Common.Shared.Value()})";
+            }
+            """);
+        File.WriteAllText(Path.Join(projectLibDir, "ProjectLib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <ItemGroup>
+                <ProjectReference Include="../Common/Common.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        // lib.cs: a file-based library referencing Common via #:project.
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:project Common
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string Value() => $"Lib({Common.Shared.Value()})";
+            }
+            """);
+
+        // app.cs: references both lib.cs and ProjectLib.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            #:project ProjectLib
+            Console.WriteLine($"{Lib.LibClass.Value()} {ProjectLib.ProjClass.Value()}");
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Lib(shared) ProjectLib(shared)");
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
