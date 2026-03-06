@@ -104,12 +104,25 @@ public class GenerateStaticWebAssetsManifest : Task
             {
                 if (assetsByIdentity.TryGetValue(a.Identity, out var existing))
                 {
-                    Log.LogMessage(
-                        MessageImportance.Low,
-                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Keeping previously seen asset (SourceId='{2}').",
-                        a.Identity,
-                        a.SourceId,
-                        existing.SourceId);
+                    if (existing.SourceId != a.SourceId ||
+                        existing.RelativePath != a.RelativePath)
+                    {
+                        Log.LogWarning(
+                            "Duplicate static web asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                            a.Identity,
+                            existing.SourceId,
+                            a.SourceId,
+                            existing.RelativePath,
+                            a.RelativePath);
+                    }
+                    else
+                    {
+                        Log.LogMessage(
+                            MessageImportance.Low,
+                            "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                            a.Identity,
+                            a.SourceId);
+                    }
                 }
                 else
                 {

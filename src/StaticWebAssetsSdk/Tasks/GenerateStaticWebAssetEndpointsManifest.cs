@@ -70,12 +70,25 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             {
                 if (manifestAssets.TryGetValue(a.ResolvedAsset.Identity, out var existing))
                 {
-                    Log.LogMessage(
-                        MessageImportance.Low,
-                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Keeping previously seen asset (SourceId='{2}').",
-                        a.ResolvedAsset.Identity,
-                        a.ResolvedAsset.SourceId,
-                        existing.ResolvedAsset.SourceId);
+                    if (existing.TargetPath != a.TargetPath ||
+                        existing.ResolvedAsset.SourceId != a.ResolvedAsset.SourceId)
+                    {
+                        Log.LogWarning(
+                            "Duplicate static web asset '{0}' with differing metadata (TargetPath='{1}' vs '{2}', SourceId='{3}' vs '{4}'). Keeping first occurrence.",
+                            a.ResolvedAsset.Identity,
+                            existing.TargetPath,
+                            a.TargetPath,
+                            existing.ResolvedAsset.SourceId,
+                            a.ResolvedAsset.SourceId);
+                    }
+                    else
+                    {
+                        Log.LogMessage(
+                            MessageImportance.Low,
+                            "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                            a.ResolvedAsset.Identity,
+                            a.ResolvedAsset.SourceId);
+                    }
                 }
                 else
                 {

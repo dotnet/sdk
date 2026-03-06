@@ -50,13 +50,39 @@ public class DuplicateAssetIdentityHandlingTest
     }
 
     [Fact]
-    public void DiscoverPrecompressedAssets_WithDuplicateCandidates_DoesNotThrow()
+    public void DiscoverPrecompressedAssets_WithIdenticalDuplicates_LogsLowMessage()
     {
-        // Arrange — simulate two WASM projects providing the same dotnet.js.map
+        // Arrange — truly identical duplicates (same SourceId) → Low-priority message
         var messages = new List<string>();
         var buildEngine = new Mock<IBuildEngine>();
         buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
             .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+        var asset1 = CreateAsset("wwwroot/dotnet.js.map", sourceId: "WasmProject1");
+        var asset2 = CreateAsset("wwwroot/dotnet.js.map", sourceId: "WasmProject1");
+
+        var task = new DiscoverPrecompressedAssets
+        {
+            CandidateAssets = [asset1.ToTaskItem(), asset2.ToTaskItem()],
+            BuildEngine = buildEngine.Object
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert — task succeeds, logs at low importance
+        result.Should().BeTrue();
+        messages.Should().Contain(m => m.Contains("Assets are identical"));
+    }
+
+    [Fact]
+    public void DiscoverPrecompressedAssets_WithMismatchedDuplicates_LogsWarning()
+    {
+        // Arrange — duplicates with different SourceId → Warning
+        var warnings = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogWarningEvent(It.IsAny<BuildWarningEventArgs>()))
+            .Callback<BuildWarningEventArgs>(args => warnings.Add(args.Message));
 
         var asset1 = CreateAsset("wwwroot/dotnet.js.map", sourceId: "WasmProject1");
         var asset2 = CreateAsset("wwwroot/dotnet.js.map", sourceId: "WasmProject2");
@@ -70,9 +96,9 @@ public class DuplicateAssetIdentityHandlingTest
         // Act
         var result = task.Execute();
 
-        // Assert — task succeeds and logs the duplicate
+        // Assert — task succeeds but emits a warning about mismatched metadata
         result.Should().BeTrue();
-        messages.Should().Contain(m => m.Contains("Skipping duplicate candidate asset"));
+        warnings.Should().Contain(m => m.Contains("differing metadata"));
     }
 
     [Fact]
@@ -83,7 +109,7 @@ public class DuplicateAssetIdentityHandlingTest
 
         var uncompressed1 = CreateAsset("wwwroot/site.js", sourceId: "Project1",
             relativePath: "site#[.{fingerprint}]?.js");
-        var uncompressed2 = CreateAsset("wwwroot/site.js", sourceId: "Project2",
+        var uncompressed2 = CreateAsset("wwwroot/site.js", sourceId: "Project1",
             relativePath: "site#[.{fingerprint}]?.js");
         var compressed = CreateAsset("wwwroot/site.js.gz", sourceId: "Project1",
             relativePath: "site.js#[.{fingerprint}]?.gz");

@@ -35,16 +35,31 @@ public class DiscoverPrecompressedAssets : Task
         var candidatesByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
         foreach (var asset in candidates)
         {
-            if (!candidatesByIdentity.ContainsKey(asset.Identity))
+            if (candidatesByIdentity.TryGetValue(asset.Identity, out var existing))
             {
-                candidatesByIdentity[asset.Identity] = asset;
+                if (existing.SourceId != asset.SourceId ||
+                    existing.RelativePath != asset.RelativePath)
+                {
+                    Log.LogWarning(
+                        "Duplicate candidate asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                        asset.Identity,
+                        existing.SourceId,
+                        asset.SourceId,
+                        existing.RelativePath,
+                        asset.RelativePath);
+                }
+                else
+                {
+                    Log.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate candidate asset '{0}' (SourceId='{1}'). Assets are identical.",
+                        asset.Identity,
+                        asset.SourceId);
+                }
             }
             else
             {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "Skipping duplicate candidate asset '{0}'. The asset was already added from a different source.",
-                    asset.Identity);
+                candidatesByIdentity[asset.Identity] = asset;
             }
         }
 

@@ -1240,12 +1240,25 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
             if (dictionary.TryGetValue(candidateAsset.Identity, out var existing))
             {
-                log?.LogMessage(
-                    MessageImportance.Low,
-                    "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Keeping previously seen asset (SourceId='{2}').",
-                    candidateAsset.Identity,
-                    candidateAsset.SourceId,
-                    existing.SourceId);
+                if (existing.SourceId != candidateAsset.SourceId ||
+                    existing.RelativePath != candidateAsset.RelativePath)
+                {
+                    log?.LogWarning(
+                        "Duplicate static web asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                        candidateAsset.Identity,
+                        existing.SourceId,
+                        candidateAsset.SourceId,
+                        existing.RelativePath,
+                        candidateAsset.RelativePath);
+                }
+                else
+                {
+                    log?.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                        candidateAsset.Identity,
+                        candidateAsset.SourceId);
+                }
             }
             else
             {
