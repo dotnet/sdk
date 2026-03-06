@@ -40,7 +40,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         var command = Parser.GetBuiltInCommand(commandName);
         if (command?.Action is AsynchronousCommandLineAction action)
         {
-            commandFunc = (args) => Parser.Invoke([commandName, ..args]);
+            commandFunc = (args) => Parser.Invoke([commandName, .. args]);
             return true;
         }
         // Dummy delegate for failure case.

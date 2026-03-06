@@ -34,6 +34,11 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             Description = Resources.Doesnt_execute_an_implicit_restore_before_formatting,
         };
+        internal static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
+        {
+            HelpName = "framework",
+            Description = Resources.The_target_framework_to_use_when_loading_the_workspace,
+        };
         internal static readonly Option<bool> VerifyNoChanges = new("--verify-no-changes")
         {
             Description = Resources.Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted,
@@ -106,8 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                 formatOptions,
                 logger,
-                cancellationToken,
-                binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
             return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 
@@ -115,6 +119,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(NoRestoreOption);
+            command.Options.Add(FrameworkOption);
             command.Options.Add(VerifyNoChanges);
             command.Options.Add(IncludeOption);
             command.Options.Add(ExcludeOption);
@@ -209,6 +214,12 @@ namespace Microsoft.CodeAnalysis.Tools
                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })
                         : (formatOptions with { BinaryLogPath = binaryLogPath });
                 }
+            }
+
+            if (parseResult.GetResult(FrameworkOption) is not null &&
+                parseResult.GetValue(FrameworkOption) is string { Length: > 0 } framework)
+            {
+                formatOptions = formatOptions with { TargetFramework = framework };
             }
 
             return formatOptions;

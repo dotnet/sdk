@@ -9,7 +9,8 @@
       "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj",
       "test\\dotnet.Tests\\dotnet.Tests.csproj",
       "test\\Microsoft.DotNet.Cli.Utils.Tests\\Microsoft.DotNet.Cli.Utils.Tests.csproj",
-      "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"
+      "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
+      "src\\Cli\\Microsoft.DotNet.Cli.Definitions\\Microsoft.DotNet.Cli.Definitions.csproj"
     ]
   }
 }

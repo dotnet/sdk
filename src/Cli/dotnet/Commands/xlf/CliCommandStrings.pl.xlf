@@ -92,6 +92,11 @@
         <target state="translated">Konstruktor platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
         <target state="new">The device identifier to use for running the application.</target>
@@ -569,8 +574,8 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">Pobieranie właściwości projektów za pomocą programu MSBuild nie zostało poprawnie wykonane z kodem zakończenia: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">Pobieranie właściwości projektów za pomocą programu MSBuild nie zostało poprawnie wykonane z kodem zakończenia: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -2987,6 +2992,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">Opcji --solution-folder i --in-root nie można używać razem; użyj tylko jednej z tych opcji.</target>
@@ -4039,6 +4049,11 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Wersja obciążenia do wyświetlenia lub jedno lub więcej obciążeń i ich wersji połączonych znakiem „@”.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">Wersja zestawu obciążeń {0} ma brakujące manifesty, prawdopodobnie usunięte przez zarządzanie pakietami. Uruchom „dotnet workload repair”, aby to naprawić.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

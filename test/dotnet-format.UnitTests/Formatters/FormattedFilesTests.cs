@@ -72,7 +72,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: false,
-                BinaryLogPath: null);
+                BinaryLogPath: null,
+                TargetFramework: null);
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 

@@ -22,7 +22,8 @@ namespace Microsoft.CodeAnalysis.Tools
             SourceFileMatcher FileMatcher,
             string? ReportPath,
             string? BinaryLogPath,
-            bool IncludeGeneratedFiles)
+            bool IncludeGeneratedFiles,
+            string? TargetFramework)
     {
         public static FormatOptions Instance = new(
             WorkspaceFilePath: null!, // must be supplied
@@ -39,6 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FileMatcher: SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>()),
             ReportPath: null,
             BinaryLogPath: null,
-            IncludeGeneratedFiles: false);
+            IncludeGeneratedFiles: false,
+            TargetFramework: null);
     }
 }
