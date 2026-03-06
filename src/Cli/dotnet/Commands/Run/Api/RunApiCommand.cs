@@ -76,6 +76,7 @@ internal abstract class RunApiInput
                 new ProjectCollection(),
                 errorReporter,
                 out _,
+                out _,
                 out var evaluatedDirectives,
                 validateAllDirectives: true);
 

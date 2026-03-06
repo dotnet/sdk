@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -19,6 +20,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using NuGet.CommandLine.XPlat;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -1147,6 +1149,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             projectCollection,
             ThrowingReporter,
             out var project,
+            out _,
             out var evaluatedDirectives,
             Directives,
             addGlobalProperties);
@@ -1197,6 +1200,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         (modifiedFile with { Path = targetFilePath }).Save();
+    }
+}
+
+/// <summary>
+/// Loaded via reflection by NuGet XPlat CLI. Needs to be <see langword="public"/>.
+/// </summary>
+public sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
+{
+    public bool IsValidEntryPointPath(string entryPointFilePath) => VirtualProjectBuilder.IsValidEntryPointPath(entryPointFilePath);
+
+    public string GetVirtualProjectPath(string entryPointFilePath) => VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
+
+    public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
+    {
+        var fullPath = Path.GetFullPath(entryPointFilePath);
+
+        var builder = new VirtualProjectBuilder(fullPath, VirtualProjectBuildingCommand.TargetFramework);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            static (text, path, textSpan, message, ex) => throw new InvalidOperationException(
+                $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}", ex),
+            out _,
+            out var projectRootElement,
+            out _);
+
+        return projectRootElement;
     }
 }
 
