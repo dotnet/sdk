@@ -3,6 +3,7 @@ For more information, run:
    dotnet new list -h
 These templates matched your input: 
 Template
+.NET
 API
 ASP.NET
 Blazor

@@ -70,7 +70,7 @@ class Class1
             testProject.ReferencedProjects.Add(referencedProjectWithPart);
             testProject.ReferencedProjects.Add(referencedProjectWithMvc);
 
-            var testProjectInstance = _testAssetsManager
+            var testProjectInstance = TestAssetsManager
                 .CreateTestProject(testProject, identifier: aspnetVersion);
 
             var buildCommand = new BuildCommand(testProjectInstance);
@@ -87,7 +87,7 @@ class Class1
             {
                 FileName = exePath
             };
-            TestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 

@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
         private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories)
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments, [CallerMemberName] string callingMethod = "")
         {
-            var testAsset = _testAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
 
             testAsset.Restore(Log, "1");
 
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
-            var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
+            var testAsset = TestAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
 
             testAsset.Restore(Log, "1");
 

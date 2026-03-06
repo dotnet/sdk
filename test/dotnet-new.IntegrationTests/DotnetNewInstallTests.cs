@@ -48,9 +48,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             try
             {
                 Directory.CreateDirectory(path);
-                new DotnetCommand(_log, "new", "console", "-o", path, "-n", "myconsole").Execute().Should().Pass();
+                new DotnetNewCommand(_log, "console", "-o", path, "-n", "myconsole").WithVirtualHive().Execute().Should().Pass();
                 new DotnetCommand(_log, "add", "package", "--project", Path.Combine(path, "myconsole.csproj"), "Microsoft.Azure.Functions.Worker.ProjectTemplates", "-v", "4.0.5086", "--package-directory", path).Execute().Should().Pass();
-                new DotnetCommand(_log, "new", "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).Execute().Should().Pass();
+                new DotnetNewCommand(_log, "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).WithVirtualHive().Execute().Should().Pass();
             }
             finally
             {

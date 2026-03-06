@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void WhenPerfLogDisabledDotNetDoesNotWriteToThePerfLog()
         {
-            var dir = _testAssetsManager.CreateTestDirectory();
+            var dir = TestAssetsManager.CreateTestDirectory();
 
             var result = new DotnetCommand(Log, "--help")
                 .WithEnvironmentVariable("DOTNET_PERFLOG_DIR", dir.Path)
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void WhenPerfLogEnabledDotNetWritesToThePerfLog()
         {
-            var dir = _testAssetsManager.CreateTestDirectory();
+            var dir = TestAssetsManager.CreateTestDirectory();
 
             var result = new DotnetCommand(Log, "--help")
                 .WithEnvironmentVariable("DOTNET_CLI_PERF_LOG", "1")

@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tests
 
         public GivenThatTheUserIsRunningDotNetForTheFirstTime(ITestOutputHelper log, DotNetFirstTimeFixture fixture) : base(log)
         {
-            fixture.Init(log, _testAssetsManager);
+            fixture.Init(log, TestAssetsManager);
             _fixture = fixture;
         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             // Disable telemetry to prevent the creation of the .dotnet folder
             // for machineid and docker cache files
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
 
@@ -202,7 +202,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             var profiled = Path.Combine(dotnetFirstTime.TestDirectory, "profile.d");
 
@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
             var pathsd = Path.Combine(dotnetFirstTime.TestDirectory, "paths.d");
 
@@ -243,7 +243,7 @@ namespace Microsoft.DotNet.Tests
 
         private string GetDotnetVersion()
         {
-            return TestContext.Current.ToolsetUnderTest.SdkVersion;
+            return SdkTestContext.Current.ToolsetUnderTest.SdkVersion;
         }
     }
 }

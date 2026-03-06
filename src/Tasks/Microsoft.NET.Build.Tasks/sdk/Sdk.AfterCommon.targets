@@ -10,5 +10,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
+  <!-- This file is imported by Microsoft.CppCommon.targets -->
+
   <Import Project="..\targets\Microsoft.NET.Sdk.targets" />
+
 </Project>

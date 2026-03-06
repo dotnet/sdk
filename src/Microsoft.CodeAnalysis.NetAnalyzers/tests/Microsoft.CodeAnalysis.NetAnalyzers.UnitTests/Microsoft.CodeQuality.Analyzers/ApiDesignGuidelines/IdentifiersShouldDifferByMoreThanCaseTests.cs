@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -417,6 +418,35 @@ namespace N
             GetCA1708CSharpResultAt(12, 36, Parameter, "N.C.operator +(N.C, int)"),
             GetCA1708CSharpResultAt(18, 20, Parameter, "N.C.this[int, int]"),
             GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
+        }
+
+        [Fact]
+        public async Task TestMultipleExtensionBlocks()
+        {
+            string code = @"
+public static class StringExtensions
+{
+    private const string ExtensionString = ""Extension"";
+
+    // Static class extensions
+    extension(string)
+    {
+        public static string CreateExtension() => ExtensionString;
+    }
+
+    // Instance extensions
+    extension(string s)
+    {
+        public bool IsExtensionString() => s == ExtensionString;
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+            }.RunAsync();
         }
 
         #endregion

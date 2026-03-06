@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         : IAsyncDisposable
     {
         public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
-            => new(logger, TestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
+            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
 
         public DebugTestOutputLogger Logger { get; } = new DebugTestOutputLogger(logger);
 
@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 info.Environment[name] = value;
             }
 
-            TestContext.Current.AddTestEnvironmentVariables(info.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(info.Environment);
 
             return info;
         }
