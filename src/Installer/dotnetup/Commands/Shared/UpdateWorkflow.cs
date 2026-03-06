@@ -88,41 +88,43 @@ internal class UpdateWorkflow
                 if (alreadyInstalled)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{displayName} {spec.VersionOrChannel} is already up to date ([blue]{latestVersion}[/]).");
-                    continue;
                 }
-
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [blue]{latestVersion}[/]...");
-
-                // Install the new version
-                var installRequest = new DotnetInstallRequest(
-                    installRoot,
-                    channel,
-                    spec.Component,
-                    new InstallRequestOptions { ManifestPath = manifestPath })
+                else
                 {
-                    ResolvedVersion = latestVersion
-                };
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [blue]{latestVersion}[/]...");
 
-                try
-                {
-                    var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                    anyUpdated = true;
-
-                    // Update global.json if requested and this spec came from a global.json
-                    if (updateGlobalJson
-                        && spec.InstallSource == InstallSource.GlobalJson
-                        && spec.GlobalJsonPath is not null
-                        && spec.Component == InstallComponent.SDK)
+                    // Install the new version
+                    var installRequest = new DotnetInstallRequest(
+                        installRoot,
+                        channel,
+                        spec.Component,
+                        new InstallRequestOptions { ManifestPath = manifestPath })
                     {
-                        new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
-                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
+                        ResolvedVersion = latestVersion
+                    };
+
+                    try
+                    {
+                        var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                        anyUpdated = true;
+                    }
+                    catch (DotnetInstallException)
+                    {
+                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                        anyFailed = true;
+                        continue;
                     }
                 }
-                catch (DotnetInstallException)
+
+                // Update global.json if requested and this spec came from a global.json
+                if (updateGlobalJson
+                    && spec.InstallSource == InstallSource.GlobalJson
+                    && spec.GlobalJsonPath is not null
+                    && spec.Component == InstallComponent.SDK)
                 {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                    anyFailed = true;
+                    new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
                 }
             }
 
