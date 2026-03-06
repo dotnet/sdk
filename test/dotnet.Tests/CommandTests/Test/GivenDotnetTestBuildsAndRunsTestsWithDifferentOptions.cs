@@ -608,6 +608,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [Theory]
+        [CombinatorialData]
+        public void RunWithDirectoryOrProjectAsFirstUnmatchedToken_ShouldWork(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("TestProject", "./TestProject", "TestProject/TestProject.csproj", "./TestProject/TestProject.csproj")] string positionalArgument)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(positionalArgument,
+                                    "--configuration", configuration);
+
+            result.StdOut.Should().Contain("TestProject.dll");
+            result.StdOut.Should().NotContain("OtherTestProject.dll");
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]

@@ -230,7 +230,6 @@ internal static class MSBuildUtility
         return (positionalProjectOrSolution, positionalTestModules);
     }
 
-
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
