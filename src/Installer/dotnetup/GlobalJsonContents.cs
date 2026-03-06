@@ -7,15 +7,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 public class GlobalJsonContents
 {
-    internal SdkSection? Sdk { get; set; }
-
-    internal class SdkSection
+#pragma warning disable CA1034 // Do not nest type SdkSection
+    public class SdkSection
     {
         public string? Version { get; set; }
         public bool? AllowPrerelease { get; set; }
         public string? RollForward { get; set; }
         public string[]? Paths { get; set; }
     }
+#pragma warning restore CA1034
+
+    public SdkSection? Sdk { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]

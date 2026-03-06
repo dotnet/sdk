@@ -226,9 +226,7 @@ internal class InstallWorkflow
         {
             _dotnetInstaller.UpdateGlobalJson(
                 context.GlobalJson.GlobalJsonPath,
-                resolved.ResolvedVersion!.ToString(),
-                context.GlobalJson.AllowPrerelease,
-                context.GlobalJson.RollForward);
+                resolved.ResolvedVersion!.ToString());
         }
     }
 }

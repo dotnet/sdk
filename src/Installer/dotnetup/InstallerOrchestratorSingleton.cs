@@ -163,7 +163,7 @@ internal class InstallerOrchestratorSingleton
     private static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
     {
         return manifestData.DotnetRoots.Any(root =>
-            string.Equals(root.Path, installRoot.Path, StringComparison.OrdinalIgnoreCase));
+            string.Equals(Path.GetFullPath(root.Path), Path.GetFullPath(installRoot.Path), StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool HasDotnetArtifacts(string? path)

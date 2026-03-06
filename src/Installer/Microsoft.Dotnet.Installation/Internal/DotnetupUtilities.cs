@@ -27,7 +27,7 @@ internal static class DotnetupUtilities
 
         return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
                                 Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                                StringComparison.OrdinalIgnoreCase);
+                                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
     }
 
     public static void ForceReplaceFile(string sourcePath, string destPath)

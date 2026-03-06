@@ -21,8 +21,12 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
         // (but not SDKs — those are updated via `dotnetup sdk update`)
         var workflow = new UpdateWorkflow(new ChannelVersionResolver());
 
+        var components = OperatingSystem.IsWindows()
+            ? new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop }
+            : new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore };
+
         int exitCode = 0;
-        foreach (var component in new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop })
+        foreach (var component in components)
         {
             int result = workflow.Execute(_manifestPath, _installPath, component, _noProgress);
             if (result != 0)

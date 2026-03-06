@@ -71,11 +71,12 @@ internal class GarbageCollector
             }
         }
 
-        // Step 5: Walk the dotnet root on disk and delete orphaned subcomponent folders
-        deletedPaths = DeleteOrphanedSubcomponents(installRoot.Path, referencedSubcomponents);
-
-        // Step 6: Write the updated manifest
+        // Step 5: Write the updated manifest before deleting files, so that a crash
+        // during deletion leaves the manifest consistent (orphaned dirs are cleaned next GC).
         _manifest.WriteManifest(manifest);
+
+        // Step 6: Walk the dotnet root on disk and delete orphaned subcomponent folders
+        deletedPaths = DeleteOrphanedSubcomponents(installRoot.Path, referencedSubcomponents);
 
         return deletedPaths;
     }
@@ -130,7 +131,10 @@ internal class GarbageCollector
 
         // Return the one with the highest version
         return matchingInstallations
-            .OrderByDescending(i => ReleaseVersion.TryParse(i.Version, out var v) ? v : null)
+            .Select(i => (Installation: i, Version: ReleaseVersion.TryParse(i.Version, out var v) ? v : null))
+            .Where(x => x.Version is not null)
+            .OrderByDescending(x => x.Version)
+            .Select(x => x.Installation)
             .First();
     }
 

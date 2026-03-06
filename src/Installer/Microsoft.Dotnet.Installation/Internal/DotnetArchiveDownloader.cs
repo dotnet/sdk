@@ -247,7 +247,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 File.Copy(cachedFilePath, destinationPath, overwrite: true);
 
                 // Report 100% progress immediately since we're using cache
-                progress?.Report(new DownloadProgress(100, 100));
+                var cachedFileSize = new FileInfo(cachedFilePath).Length;
+                progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
 
                 var cachedFileInfo = new FileInfo(cachedFilePath);
                 Activity.Current?.SetTag("download.bytes", cachedFileInfo.Length);

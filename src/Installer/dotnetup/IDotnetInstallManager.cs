@@ -23,7 +23,7 @@ public interface IDotnetInstallManager
 
     void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
 
-    void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null);
+    void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null);
 
     void ConfigureInstallType(InstallType installType, string? dotnetRoot = null);
 

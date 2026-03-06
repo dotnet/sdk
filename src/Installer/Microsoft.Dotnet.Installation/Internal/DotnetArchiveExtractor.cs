@@ -113,8 +113,13 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
+            if (_archivePath is null)
+            {
+                throw new InvalidOperationException("Prepare() must be called before Commit().");
+            }
+
             // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
+            ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, installTask);
             installTask.Value = installTask.MaxValue;
         }
         catch (DotnetInstallException)
@@ -214,7 +219,16 @@ internal class DotnetArchiveExtractor : IDisposable
             return muxerHandler.TempMuxerPath;
         }
 
-        return Path.Combine(targetDir, normalizedName);
+        string destPath = Path.GetFullPath(Path.Combine(targetDir, normalizedName));
+        string fullTargetDir = Path.GetFullPath(targetDir) + Path.DirectorySeparatorChar;
+        if (!destPath.StartsWith(fullTargetDir, StringComparison.Ordinal) &&
+            !string.Equals(destPath, Path.GetFullPath(targetDir), StringComparison.Ordinal))
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveCorrupted,
+                $"Archive entry '{entryName}' would extract outside target directory.");
+        }
+
+        return destPath;
     }
 
     /// <summary>
@@ -293,6 +307,10 @@ internal class DotnetArchiveExtractor : IDisposable
         var tarReader = new TarReader(tarStream);
         TarEntry? entry;
 
+        // Defer hard link creation until after all regular files are extracted,
+        // since the target file may not exist yet when the hard link entry is encountered.
+        var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
+
         while ((entry = tarReader.GetNextEntry()) is not null)
         {
             if (entry.EntryType == TarEntryType.RegularFile)
@@ -304,7 +322,7 @@ internal class DotnetArchiveExtractor : IDisposable
             }
             else if (entry.EntryType == TarEntryType.Directory)
             {
-                string dirPath = Path.Combine(targetDir, entry.Name);
+                string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
                 Directory.CreateDirectory(dirPath);
 
                 if (entry.Mode != default && !OperatingSystem.IsWindows())
@@ -312,9 +330,40 @@ internal class DotnetArchiveExtractor : IDisposable
                     File.SetUnixFileMode(dirPath, entry.Mode);
                 }
             }
+            else if (entry.EntryType == TarEntryType.SymbolicLink)
+            {
+                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+
+                // Remove existing file/link before creating symlink
+                if (File.Exists(destPath) || Directory.Exists(destPath))
+                {
+                    File.Delete(destPath);
+                }
+
+                File.CreateSymbolicLink(destPath, entry.LinkName!);
+            }
+            else if (entry.EntryType == TarEntryType.HardLink)
+            {
+                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                deferredHardLinks.Add((destPath, linkTargetPath));
+            }
 
             onEntryExtracted?.Invoke(entry.Name);
             installTask?.Value += 1;
+        }
+
+        // Create hard links after all regular files have been extracted
+        foreach (var (destPath, targetPath) in deferredHardLinks)
+        {
+            if (File.Exists(destPath))
+            {
+                File.Delete(destPath);
+            }
+
+            File.CreateHardLink(destPath, targetPath);
         }
     }
 

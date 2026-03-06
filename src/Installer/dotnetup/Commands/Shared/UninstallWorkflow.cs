@@ -40,7 +40,7 @@ internal class UninstallWorkflow
 
         if (root is null)
         {
-            AnsiConsole.MarkupLine($"[yellow]No tracked installations found at {resolvedInstallPath}.[/]");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No tracked installations found at {resolvedInstallPath}.[/]");
             return 1;
         }
 

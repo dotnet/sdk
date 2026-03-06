@@ -21,7 +21,7 @@ public readonly struct DownloadProgress
     /// <summary>
     /// Gets the percentage of download completed, if total size is known.
     /// </summary>
-    public double? PercentComplete => TotalBytes.HasValue ? (double)BytesDownloaded / TotalBytes.Value * 100 : null;
+    public double? PercentComplete => TotalBytes is > 0 ? (double)BytesDownloaded / TotalBytes.Value * 100 : null;
 
     public DownloadProgress(long bytesDownloaded, long? totalBytes)
     {

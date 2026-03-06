@@ -101,6 +101,10 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         // Check for component@version syntax
         int atIndex = spec.IndexOf('@');
+        if (atIndex == 0)
+        {
+            return (default, null, $"Error: Invalid component specification '{spec}'. Component name is required before '@'.");
+        }
         if (atIndex > 0)
         {
             string componentName = spec[..atIndex];

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
@@ -56,6 +57,7 @@ internal class UpdateWorkflow
 
         foreach (var root in rootsList)
         {
+            bool rootUpdated = false;
             var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 
             foreach (var spec in root.InstallSpecs.ToList())
@@ -108,6 +110,7 @@ internal class UpdateWorkflow
                         var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
                         AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
                         anyUpdated = true;
+                        rootUpdated = true;
                     }
                     catch (DotnetInstallException)
                     {
@@ -117,19 +120,34 @@ internal class UpdateWorkflow
                     }
                 }
 
-                // Update global.json if requested and this spec came from a global.json
+                // Update global.json if requested and this spec came from a global.json,
+                // but only if the latest version is newer than what's already specified.
                 if (updateGlobalJson
                     && spec.InstallSource == InstallSource.GlobalJson
                     && spec.GlobalJsonPath is not null
                     && spec.Component == InstallComponent.SDK)
                 {
-                    new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
+                    string? currentVersionString = null;
+                    try
+                    {
+                        var json = File.ReadAllText(spec.GlobalJsonPath);
+                        var contents = System.Text.Json.JsonSerializer.Deserialize(json, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                        currentVersionString = contents?.Sdk?.Version;
+                    }
+                    catch { }
+
+                    if (currentVersionString is null
+                        || !ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
+                        || latestVersion > currentVersion)
+                    {
+                        new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
+                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
+                    }
                 }
             }
 
             // Run garbage collection
-            if (anyUpdated)
+            if (rootUpdated)
             {
                 AnsiConsole.WriteLine("Cleaning up old installations...");
                 var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));

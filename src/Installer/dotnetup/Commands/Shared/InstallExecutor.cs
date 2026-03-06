@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -88,17 +89,17 @@ internal class InstallExecutor
         }
         catch (DotnetInstallException ex)
         {
-            SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}: {ex.Message}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install {componentDescription} {resolvedVersion}: {ex.Message}[/]");
             return null;
         }
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLine($"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -141,11 +142,11 @@ internal class InstallExecutor
             try
             {
                 var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
             }
             catch (DotnetInstallException)
             {
-                SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
                 allSucceeded = false;
             }
         }
@@ -192,14 +193,8 @@ internal class InstallExecutor
             var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-            // Check for C:\Program Files\dotnet or C:\Program Files (x86)\dotnet
-            if (!string.IsNullOrEmpty(programFiles) &&
-                fullPath.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            if (!string.IsNullOrEmpty(programFilesX86) &&
-                fullPath.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            if ((!string.IsNullOrEmpty(programFiles) && IsOrIsUnder(fullPath, Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(programFilesX86) && IsOrIsUnder(fullPath, Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
@@ -207,15 +202,21 @@ internal class InstallExecutor
         else
         {
             // Standard admin/package-manager locations on Linux and macOS
-            if (fullPath.StartsWith("/usr/share/dotnet", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/usr/lib/dotnet", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/usr/local/share/dotnet", StringComparison.Ordinal))
+            if (IsOrIsUnder(fullPath, "/usr/share/dotnet", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/usr/lib/dotnet", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/usr/local/share/dotnet", StringComparison.Ordinal))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static bool IsOrIsUnder(string fullPath, string adminPath, StringComparison comparison)
+    {
+        return string.Equals(fullPath, adminPath, comparison) ||
+               fullPath.StartsWith(adminPath + Path.DirectorySeparatorChar, comparison);
     }
 
     /// <summary>
