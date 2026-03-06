@@ -7,7 +7,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class UpdateChannel
 {
-    public string Name { get; set; }
+    public string Name { get; }
 
     public UpdateChannel(string name)
     {

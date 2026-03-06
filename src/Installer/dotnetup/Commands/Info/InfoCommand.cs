@@ -117,6 +117,7 @@ internal class InfoCommand : CommandBase
             Commit = info.Commit,
             Architecture = info.Architecture,
             Rid = info.Rid,
+            InstallSpecs = listData?.InstallSpecs,
             Installations = listData?.Installations
         };
         output.WriteLine(JsonSerializer.Serialize(fullInfo, DotnetupInfoJsonContext.Default.DotnetupFullInfo));
@@ -137,13 +138,18 @@ internal class DotnetupFullInfo
     public string Commit { get; set; } = string.Empty;
     public string Architecture { get; set; } = string.Empty;
     public string Rid { get; set; } = string.Empty;
+    public List<InstallSpecInfo>? InstallSpecs { get; set; }
     public List<InstallationInfo>? Installations { get; set; }
 }
 
 // Note: DotnetupInfo is not serialized directly (only DotnetupFullInfo is),
 // so we don't need it in the JSON context
 [JsonSerializable(typeof(DotnetupFullInfo))]
-[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(InstallSpecInfo))]
+[JsonSerializable(typeof(InstallationInfo))]
+[JsonSerializable(typeof(List<InstallSpecInfo>))]
+[JsonSerializable(typeof(List<InstallationInfo>))]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, UseStringEnumConverter = true)]
 internal partial class DotnetupInfoJsonContext : JsonSerializerContext
 {
 }

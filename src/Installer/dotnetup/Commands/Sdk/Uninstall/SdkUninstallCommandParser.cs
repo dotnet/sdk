@@ -35,7 +35,6 @@ internal static class SdkUninstallCommandParser
         command.Options.Add(CommonOptions.SourceOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);
-        command.Options.Add(CommonOptions.NoProgressOption);
 
         command.SetAction(parseResult => new SdkUninstallCommand(parseResult).Execute());
 

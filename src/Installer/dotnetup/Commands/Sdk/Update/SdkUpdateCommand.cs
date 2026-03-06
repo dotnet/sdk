@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = false) : CommandBase(result)
 {
     private readonly bool _updateAll = updateAllOverride || result.GetValue(SdkUpdateCommandParser.UpdateAllOption);
+    private readonly bool _updateGlobalJson = result.GetValue(SdkUpdateCommandParser.UpdateGlobalJsonOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
@@ -23,6 +24,7 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
             _manifestPath,
             _installPath,
             _updateAll ? null : InstallComponent.SDK,
-            _noProgress);
+            _noProgress,
+            _updateGlobalJson);
     }
 }

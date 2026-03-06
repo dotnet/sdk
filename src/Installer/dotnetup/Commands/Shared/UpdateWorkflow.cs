@@ -26,8 +26,9 @@ internal class UpdateWorkflow
     /// <param name="installPath">Specific install path to update, or null for all roots.</param>
     /// <param name="componentFilter">Which component(s) to update. Null means update all.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
     /// <returns>Exit code (0 for success).</returns>
-    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress)
+    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -51,6 +52,7 @@ internal class UpdateWorkflow
         }
 
         bool anyUpdated = false;
+        bool anyFailed = false;
 
         foreach (var root in rootsList)
         {
@@ -106,10 +108,21 @@ internal class UpdateWorkflow
                     var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
                     anyUpdated = true;
+
+                    // Update global.json if requested and this spec came from a global.json
+                    if (updateGlobalJson
+                        && spec.InstallSource == InstallSource.GlobalJson
+                        && spec.GlobalJsonPath is not null
+                        && spec.Component == InstallComponent.SDK)
+                    {
+                        new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
+                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
+                    }
                 }
                 catch (DotnetInstallException)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                    anyFailed = true;
                 }
             }
 
@@ -134,6 +147,6 @@ internal class UpdateWorkflow
             AnsiConsole.MarkupLine("Everything is up to date.");
         }
 
-        return 0;
+        return anyFailed ? 1 : 0;
     }
 }

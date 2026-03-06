@@ -37,12 +37,12 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
     {
         if (bytes > 1024 * 1024)
         {
-            return $"{bytes / (1024 * 1024)} MB";
+            return $"{bytes / (1024.0 * 1024.0):F1} MB";
         }
 
         if (bytes > 1024)
         {
-            return $"{bytes / 1024} KB";
+            return $"{bytes / 1024.0:F1} KB";
         }
 
         return $"{bytes} B";

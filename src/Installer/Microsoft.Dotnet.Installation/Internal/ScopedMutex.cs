@@ -97,9 +97,8 @@ public class ScopedMutex : IDisposable
         finally
         {
             s_heldMutexes.Value!.Remove(Name);
+            _mutex.Dispose();
         }
-
-        _mutex.Dispose();
     }
 
     private class MutexState

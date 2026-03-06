@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         public void GetLatestVersionForChannel_MajorMinor_ReturnsLatestVersion()
         {
             var manifest = new ChannelVersionResolver();
-            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9.0"), InstallComponent.SDK);
             Assert.NotNull(version);
             Assert.StartsWith("9.0.", version.ToString());
         }
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             Assert.NotNull(version);
 
             // LTS versions should have even major versions (e.g., 6.0, 8.0, 10.0)
-            Assert.True(version.Minor % 2 == 0, $"LTS version {version} should have an even minor version");
+            Assert.True(version.Major % 2 == 0, $"LTS version {version} should have an even major version");
 
             // Should not be a preview version
             Assert.Null(version.Prerelease);
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             Assert.NotNull(version);
 
             // STS versions should have odd major versions (e.g., 7.0, 9.0, 11.0)
-            Assert.True(version.Major % 2 != 0, $"STS version {version} should have an odd minor version");
+            Assert.True(version.Major % 2 != 0, $"STS version {version} should have an odd major version");
 
             // Should not be a preview version
             Assert.Null(version.Prerelease);

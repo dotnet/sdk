@@ -214,7 +214,7 @@ internal class DotnetArchiveExtractor : IDisposable
             return muxerHandler.TempMuxerPath;
         }
 
-        return Path.Combine(targetDir, entryName);
+        return Path.Combine(targetDir, normalizedName);
     }
 
     /// <summary>

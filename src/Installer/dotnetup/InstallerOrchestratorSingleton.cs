@@ -64,7 +64,10 @@ internal class InstallerOrchestratorSingleton
         // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(install, customManifestPath))
+            var manifestManager = new DotnetupSharedManifest(customManifestPath);
+            var manifestData = manifestManager.ReadManifest();
+
+            if (InstallAlreadyExists(manifestData, install))
             {
                 Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return new InstallResult(install, WasAlreadyInstalled: true);
@@ -72,7 +75,7 @@ internal class InstallerOrchestratorSingleton
 
             // Guard: error if the target directory contains .NET artifacts but isn't tracked in the manifest.
             // This prevents silently mixing managed and unmanaged installations.
-            if (!IsRootInManifest(installRequest.InstallRoot, customManifestPath)
+            if (!IsRootInManifest(manifestData, installRequest.InstallRoot)
                 && HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
                 throw new DotnetInstallException(
@@ -100,7 +103,10 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(install, customManifestPath))
+            var manifestManager = new DotnetupSharedManifest(customManifestPath);
+            var manifestData = manifestManager.ReadManifest();
+
+            if (InstallAlreadyExists(manifestData, install))
             {
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
@@ -110,9 +116,7 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install, out string? validationFailure))
             {
-                DotnetupSharedManifest manifestManager = new(customManifestPath);
-
-                // Record the install specfor the channel that was requested
+                // Record the install spec for the channel that was requested
                 manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                 {
                     Component = installRequest.Component,
@@ -147,24 +151,17 @@ internal class InstallerOrchestratorSingleton
     }
 #pragma warning restore CA1822
 
-    private static IEnumerable<Installation> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    private static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
     {
-        var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        return manifestManager.GetInstallations(installRoot);
-    }
-
-    private static bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
-    {
-        var existingInstalls = GetExistingInstalls(install.InstallRoot, customManifestPath);
-        return existingInstalls.Any(existing =>
+        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
+            string.Equals(Path.GetFullPath(r.Path), Path.GetFullPath(install.InstallRoot.Path!), StringComparison.OrdinalIgnoreCase));
+        return root?.Installations.Any(existing =>
             existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component);
+            existing.Component == install.Component) ?? false;
     }
 
-    private static bool IsRootInManifest(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    private static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
     {
-        var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        var manifestData = manifestManager.ReadManifest();
         return manifestData.DotnetRoots.Any(root =>
             string.Equals(root.Path, installRoot.Path, StringComparison.OrdinalIgnoreCase));
     }

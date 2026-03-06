@@ -19,7 +19,7 @@ internal class SdkCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("sdk", "Manage sdk installations");
+        Command command = new("sdk", "Manage SDK installations");
         command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
         command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
 

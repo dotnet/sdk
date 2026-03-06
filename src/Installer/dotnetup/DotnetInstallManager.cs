@@ -126,7 +126,86 @@ public class DotnetInstallManager : IDotnetInstallManager
         Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
     }
 
-    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
+    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null)
+    {
+        if (sdkVersion is null)
+        {
+            return;
+        }
+
+        if (!File.Exists(globalJsonPath))
+        {
+            return;
+        }
+
+        var fileText = File.ReadAllText(globalJsonPath);
+        var updatedText = ReplaceGlobalJsonSdkVersion(fileText, sdkVersion);
+        if (updatedText is not null)
+        {
+            File.WriteAllText(globalJsonPath, updatedText);
+        }
+    }
+
+    /// <summary>
+    /// Replaces the "version" value inside the "sdk" section of a global.json string,
+    /// preserving all existing formatting. Uses Utf8JsonReader to find exact token positions.
+    /// </summary>
+    internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(jsonText);
+        var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+        int depth = 0;
+        bool inSdkObject = false;
+        bool foundVersionProperty = false;
+
+        while (reader.Read())
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.StartObject:
+                    depth++;
+                    break;
+
+                case JsonTokenType.EndObject:
+                    if (inSdkObject && depth == 2)
+                    {
+                        inSdkObject = false;
+                    }
+                    depth--;
+                    break;
+
+                case JsonTokenType.PropertyName:
+                    if (depth == 1 && reader.ValueTextEquals("sdk"u8))
+                    {
+                        inSdkObject = true;
+                    }
+                    else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8))
+                    {
+                        foundVersionProperty = true;
+                    }
+                    break;
+
+                case JsonTokenType.String:
+                    if (foundVersionProperty)
+                    {
+                        // Found the version value token — splice in the new version at its byte position.
+                        // TokenStartIndex points to the opening quote of the string value.
+                        long tokenStart = reader.TokenStartIndex;
+                        int tokenLength = (int)reader.ValueSpan.Length + 2; // +2 for surrounding quotes
+                        string replacement = $"\"{newVersion}\"";
+
+                        return string.Concat(
+                            jsonText.AsSpan(0, (int)tokenStart),
+                            replacement,
+                            jsonText.AsSpan((int)tokenStart + tokenLength));
+                    }
+                    break;
+            }
+        }
+
+        return null;
+    }
 
     public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
     {

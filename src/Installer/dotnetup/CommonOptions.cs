@@ -18,14 +18,14 @@ public enum OutputFormat
 
 internal class CommonOptions
 {
-    public static Option<bool> InteractiveOption = new("--interactive")
+    public static readonly Option<bool> InteractiveOption = new("--interactive")
     {
         Description = Strings.CommandInteractiveOptionDescription,
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => !IsCIEnvironmentOrRedirected()
     };
 
-    public static Option<bool> NoProgressOption = new("--no-progress")
+    public static readonly Option<bool> NoProgressOption = new("--no-progress")
     {
         Description = "Disables progress display for operations",
         Arity = ArgumentArity.ZeroOrOne
@@ -35,39 +35,39 @@ internal class CommonOptions
     /// Output format option for commands that support structured output.
     /// Consistent with dotnet CLI's --format option.
     /// </summary>
-    public static Option<OutputFormat> FormatOption = new("--format")
+    public static readonly Option<OutputFormat> FormatOption = new("--format")
     {
         Description = Strings.FormatOptionDescription,
         Arity = ArgumentArity.ExactlyOne,
         DefaultValueFactory = _ => OutputFormat.Text
     };
 
-    public static Option<string> InstallPathOption = new("--install-path")
+    public static readonly Option<string> InstallPathOption = new("--install-path")
     {
         HelpName = "INSTALL_PATH",
         Description = "The path to install .NET to",
     };
 
-    public static Option<bool?> SetDefaultInstallOption = new("--set-default-install")
+    public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
     {
         Description = "Set the install path as the default dotnet install. This will update the PATH and DOTNET_ROOT environment variables.",
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = r => null
     };
 
-    public static Option<string> ManifestPathOption = new("--manifest-path")
+    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
     {
         HelpName = "MANIFEST_PATH",
         Description = "Custom path to the manifest file for tracking .NET installations",
     };
 
-    public static Option<InstallSource> SourceOption = new("--source")
+    public static readonly Option<InstallSource> SourceOption = new("--source")
     {
         Description = "Filter by install source (explicit, globaljson, all).",
         DefaultValueFactory = _ => InstallSource.Explicit
     };
 
-    public static Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
+    public static readonly Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
     {
         Description = "Fail if the dotnet executable cannot be updated. By default, a warning is displayed but installation continues.",
         Arity = ArgumentArity.ZeroOrOne

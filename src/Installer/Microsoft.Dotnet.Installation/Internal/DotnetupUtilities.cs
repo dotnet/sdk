@@ -7,7 +7,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal static class DotnetupUtilities
 {
-    public static string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+    public static readonly string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 
     public static string GetDotnetExeName()
     {

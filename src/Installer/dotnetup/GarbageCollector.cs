@@ -167,7 +167,7 @@ internal class GarbageCollector
                         Directory.Delete(subDir, recursive: true);
                         deleted.Add(relativePath);
                     }
-                    catch (IOException ex)
+                    catch (Exception ex)
                     {
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                     }
