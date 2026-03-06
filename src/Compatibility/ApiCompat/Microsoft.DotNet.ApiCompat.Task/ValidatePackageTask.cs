@@ -140,9 +140,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
+            if (PackageTargetPath is null) throw new ArgumentNullException(nameof(PackageTargetPath));
+
             SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine, NoWarn);
             ValidatePackage.Run(logFactory,
-                new ValidatePackageOptions(PackageTargetPath!)
+                new ValidatePackageOptions(PackageTargetPath)
                 {
                     GenerateSuppressionFile = GenerateSuppressionFile,
                     PreserveUnnecessarySuppressions = PreserveUnnecessarySuppressions,

@@ -311,6 +311,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableRuleCannotChangeParameterName = parseResult.GetValue(enableRuleCannotChangeParameterNameOption);
 
                 string? package = parseResult.GetValue(packageArgument);
+                if (package is null) throw new ArgumentNullException(nameof(package));
+
                 bool runApiCompat = parseResult.GetValue(runApiCompatOption);
                 bool enableStrictModeForCompatibleTfms = parseResult.GetValue(enableStrictModeForCompatibleTfmsOption);
                 bool enableStrictModeForCompatibleFrameworksInPackage = parseResult.GetValue(enableStrictModeForCompatibleFrameworksInPackageOption);
@@ -323,7 +325,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
                 int exitCode = ValidatePackage.Run(logFactory,
-                    new ValidatePackageOptions(package!)
+                    new ValidatePackageOptions(package)
                     {
                         GenerateSuppressionFile = generateSuppressionFile,
                         PreserveUnnecessarySuppressions = preserveUnnecessarySuppressions,

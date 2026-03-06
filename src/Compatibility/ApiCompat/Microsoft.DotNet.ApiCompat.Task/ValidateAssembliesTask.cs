@@ -132,9 +132,12 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
+            if (LeftAssemblies is null) throw new ArgumentNullException(nameof(LeftAssemblies));
+            if (RightAssemblies is null) throw new ArgumentNullException(nameof(RightAssemblies));
+
             SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine, NoWarn);
             ValidateAssemblies.Run(logFactory,
-                new ValidateAssembliesOptions(LeftAssemblies!, RightAssemblies!)
+                new ValidateAssembliesOptions(LeftAssemblies, RightAssemblies)
                 {
                     GenerateSuppressionFile = GenerateSuppressionFile,
                     PreserveUnnecessarySuppressions = PreserveUnnecessarySuppressions,
