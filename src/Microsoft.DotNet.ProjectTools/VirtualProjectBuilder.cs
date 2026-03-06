@@ -157,7 +157,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude or CSharpDirective.Ref))
         {
             return directives;
         }
@@ -175,6 +175,13 @@ public sealed class VirtualProjectBuilder
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
+                    break;
+
+                case CSharpDirective.Ref refDirective:
+                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), CSharpDirective.Ref.NameKind.Expanded);
+                    refDirective = refDirective.EnsureResolvedPath(reportError);
+
+                    builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
@@ -444,6 +451,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var refDirectives = directives.OfType<CSharpDirective.Ref>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -706,6 +714,48 @@ public sealed class VirtualProjectBuilder
                   </ItemGroup>
 
                 """);
+        }
+
+        if (refDirectives.Any())
+        {
+            bool hasAnyResolved = false;
+
+            foreach (var refDirective in refDirectives)
+            {
+                if (refDirective.ResolvedPath is null)
+                {
+                    // Not yet evaluated (pre-evaluation pass). Skip emitting Reference items.
+                    processedDirectives++;
+                    continue;
+                }
+
+                if (!hasAnyResolved)
+                {
+                    hasAnyResolved = true;
+                    writer.WriteLine("""
+                          <ItemGroup>
+                        """);
+                }
+
+                var resolvedPath = refDirective.ResolvedPath;
+                var refArtifactsPath = GetArtifactsPath(resolvedPath);
+                var refAssemblyName = Path.GetFileNameWithoutExtension(resolvedPath);
+                var hintPath = Path.Combine(refArtifactsPath, "bin", "$(Configuration)", refAssemblyName + ".dll");
+
+                writer.WriteLine($"""
+                        <Reference Include="{EscapeValue(refAssemblyName)}" HintPath="{EscapeValue(hintPath)}" />
+                    """);
+
+                processedDirectives++;
+            }
+
+            if (hasAnyResolved)
+            {
+                writer.WriteLine("""
+                      </ItemGroup>
+
+                    """);
+            }
         }
 
         Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);

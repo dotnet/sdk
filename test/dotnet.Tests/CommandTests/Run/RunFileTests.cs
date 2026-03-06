@@ -3098,6 +3098,89 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello");
     }
 
+    [Fact]
+    public void RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
+    [Fact]
+    public void RefDirective_Subdirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib/mylib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
+    [Fact]
+    public void RefDirective_Errors()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+
+        // Missing name.
+        File.WriteAllText(filePath, """
+            #:ref
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.MissingDirectiveName, "ref"));
+
+        // File does not exist.
+        File.WriteAllText(filePath, """
+            #:ref nonexistent.cs
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidRefDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, "nonexistent.cs"))));
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
