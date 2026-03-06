@@ -130,7 +130,7 @@ internal static class MSBuildUtility
         var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
 
         if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
-            testModulesFilterOptionValue is not null && positionalTestModules is not null)
+            (testModulesFilterOptionValue is not null && positionalTestModules is not null))
         {
             throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
