@@ -65,7 +65,7 @@
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
-    
+
     <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
@@ -133,6 +133,85 @@
 
     <Error Condition="'@(CodeStyleVisualBasicConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleVisualBasicConfig)" DestinationFiles="@(CodeStyleVisualBasicConfig->'$(CodeStyleVisualBasicConfigDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <!-- Microsoft.CodeAnalysis.BannedApiAnalyzers -->
+    <PropertyGroup>
+      <BannedApiCSharpDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\bannedapi\cs</BannedApiCSharpDirectory>
+      <BannedApiVisualBasicDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\bannedapi\vb</BannedApiVisualBasicDirectory>
+      <BannedApiTargetsDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\bannedapi\build</BannedApiTargetsDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <BannedApiCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_BannedApiAnalyzers)/analyzers/dotnet/cs/**/*.dll" />
+      <BannedApiVisualBasicAssemblies Include="$(PkgMicrosoft_CodeAnalysis_BannedApiAnalyzers)/analyzers/dotnet/vb/**/*.dll" />
+      <BannedApiBuildFiles Include="$(PkgMicrosoft_CodeAnalysis_BannedApiAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.BannedApiAnalyzers.props;
+                                    $(PkgMicrosoft_CodeAnalysis_BannedApiAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.BannedApiAnalyzers.targets" />
+    </ItemGroup>
+
+    <Error Condition="'@(BannedApiCSharpAssemblies)' == ''" Text="Something moved around in BannedApiAnalyzers package, could not find C# assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(BannedApiCSharpAssemblies)" DestinationFiles="@(BannedApiCSharpAssemblies->'$(BannedApiCSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(BannedApiVisualBasicAssemblies)' == ''" Text="Something moved around in BannedApiAnalyzers package, could not find VB assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(BannedApiVisualBasicAssemblies)" DestinationFiles="@(BannedApiVisualBasicAssemblies->'$(BannedApiVisualBasicDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(BannedApiBuildFiles)' == ''" Text="Something moved around in BannedApiAnalyzers package, could not find build targets/props. Adjust code here accordingly." />
+    <Copy SourceFiles="@(BannedApiBuildFiles)" DestinationFiles="@(BannedApiBuildFiles->'$(BannedApiTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <!-- Microsoft.CodeAnalysis.PublicApiAnalyzers -->
+    <PropertyGroup>
+      <PublicApiAssembliesDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\publicapi</PublicApiAssembliesDirectory>
+      <PublicApiTargetsDirectory>$(PublicApiAssembliesDirectory)\build</PublicApiTargetsDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- PublicApiAnalyzers DLLs are language-neutral (at analyzers/dotnet/ level, not under cs/ or vb/) -->
+      <PublicApiAssemblies Include="$(PkgMicrosoft_CodeAnalysis_PublicApiAnalyzers)/analyzers/dotnet/*.dll" />
+      <PublicApiBuildFiles Include="$(PkgMicrosoft_CodeAnalysis_PublicApiAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PublicApiAnalyzers.props;
+                                    $(PkgMicrosoft_CodeAnalysis_PublicApiAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PublicApiAnalyzers.targets" />
+    </ItemGroup>
+
+    <Error Condition="'@(PublicApiAssemblies)' == ''" Text="Something moved around in PublicApiAnalyzers package, could not find assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(PublicApiAssemblies)" DestinationFiles="@(PublicApiAssemblies->'$(PublicApiAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(PublicApiBuildFiles)' == ''" Text="Something moved around in PublicApiAnalyzers package, could not find build targets/props. Adjust code here accordingly." />
+    <Copy SourceFiles="@(PublicApiBuildFiles)" DestinationFiles="@(PublicApiBuildFiles->'$(PublicApiTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <!-- Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers -->
+    <PropertyGroup>
+      <PerfSensitiveCSharpDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\performancesensitive\cs</PerfSensitiveCSharpDirectory>
+      <PerfSensitiveTargetsDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\performancesensitive\build</PerfSensitiveTargetsDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PerfSensitiveCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/analyzers/dotnet/cs/**/*.dll" />
+      <PerfSensitiveBuildFiles Include="$(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.props;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.targets;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/PerformanceSensitiveAttribute.cs;
+                                        $(PkgMicrosoft_CodeAnalysis_PerformanceSensitiveAnalyzers)/buildTransitive/PerformanceSensitiveAttribute.vb" />
+    </ItemGroup>
+
+    <Error Condition="'@(PerfSensitiveCSharpAssemblies)' == ''" Text="Something moved around in PerformanceSensitiveAnalyzers package, could not find assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(PerfSensitiveCSharpAssemblies)" DestinationFiles="@(PerfSensitiveCSharpAssemblies->'$(PerfSensitiveCSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(PerfSensitiveBuildFiles)' == ''" Text="Something moved around in PerformanceSensitiveAnalyzers package, could not find build files. Adjust code here accordingly." />
+    <Copy SourceFiles="@(PerfSensitiveBuildFiles)" DestinationFiles="@(PerfSensitiveBuildFiles->'$(PerfSensitiveTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <!-- Microsoft.CodeAnalysis.ResxSourceGenerator -->
+    <PropertyGroup>
+      <ResxSourceGenCSharpDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\resxsourcegen\cs</ResxSourceGenCSharpDirectory>
+      <ResxSourceGenVisualBasicDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\roslynanalyzers\resxsourcegen\vb</ResxSourceGenVisualBasicDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ResxSourceGenCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)/analyzers/dotnet/cs/**/*.dll" />
+      <ResxSourceGenVisualBasicAssemblies Include="$(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)/analyzers/dotnet/vb/**/*.dll" />
+    </ItemGroup>
+
+    <Error Condition="'@(ResxSourceGenCSharpAssemblies)' == ''" Text="Something moved around in ResxSourceGenerator package, could not find C# assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(ResxSourceGenCSharpAssemblies)" DestinationFiles="@(ResxSourceGenCSharpAssemblies->'$(ResxSourceGenCSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(ResxSourceGenVisualBasicAssemblies)' == ''" Text="Something moved around in ResxSourceGenerator package, could not find VB assemblies. Adjust code here accordingly." />
+    <Copy SourceFiles="@(ResxSourceGenVisualBasicAssemblies)" DestinationFiles="@(ResxSourceGenVisualBasicAssemblies->'$(ResxSourceGenVisualBasicDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
   </Target>
 
   <Target Name="PublishDotnetFormat">

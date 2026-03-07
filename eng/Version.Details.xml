@@ -387,6 +387,18 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0-2.26152.106">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="5.6.0-2.26152.106">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.ResxSourceGenerator" Version="5.6.0-2.26152.106">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
+    </Dependency>
     <Dependency Name="System.CommandLine" Version="3.0.0-preview.3.26152.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>

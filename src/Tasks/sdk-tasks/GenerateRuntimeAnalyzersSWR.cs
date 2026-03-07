@@ -49,6 +49,10 @@ namespace Microsoft.DotNet.Cli.Build
                       "WebSDKAnalyzers",
                       @$"{installDir}\WebSDKAnalyzers");
 
+            AddFolder(sb,
+                      "RoslynAnalyzers",
+                      @$"{installDir}\RoslynAnalyzers");
+
             File.WriteAllText(OutputFile, sb.ToString());
 
             return true;

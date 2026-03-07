@@ -97,6 +97,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- EnforceCodeStyleInBuild Allows code style analyzers to be disabled in bulk via msbuild if the user wants to -->
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">false</EnforceCodeStyleInBuild>
+
+    <!-- Opt-in Roslyn analyzer properties. These are always opt-in regardless of AnalysisLevel. -->
+    <EnableBannedApiAnalyzer Condition="'$(EnableBannedApiAnalyzer)' == ''">false</EnableBannedApiAnalyzer>
+    <EnablePublicApiAnalyzer Condition="'$(EnablePublicApiAnalyzer)' == ''">false</EnablePublicApiAnalyzer>
+    <EnableResxSourceGenerator Condition="'$(EnableResxSourceGenerator)' == ''">false</EnableResxSourceGenerator>
+    <EnablePerformanceSensitiveAnalyzer Condition="'$(EnablePerformanceSensitiveAnalyzer)' == ''">false</EnablePerformanceSensitiveAnalyzer>
   </PropertyGroup>
 
   <!-- Establish good defaults for scenarios where no EffectiveAnalysisLevel was set (e.g. .NETFramework) -->
@@ -106,6 +112,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableTrimAnalyzer Condition="'$(EnableTrimAnalyzer)' == ''">false</EnableTrimAnalyzer>
     <EnableAotAnalyzer Condition="'$(EnableAotAnalyzer)' == ''">false</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer Condition="'$(EnableSingleFileAnalyzer)' == ''">false</EnableSingleFileAnalyzer>
+    <EnableBannedApiAnalyzer Condition="'$(EnableBannedApiAnalyzer)' == ''">false</EnableBannedApiAnalyzer>
+    <EnablePublicApiAnalyzer Condition="'$(EnablePublicApiAnalyzer)' == ''">false</EnablePublicApiAnalyzer>
+    <EnableResxSourceGenerator Condition="'$(EnableResxSourceGenerator)' == ''">false</EnableResxSourceGenerator>
+    <EnablePerformanceSensitiveAnalyzer Condition="'$(EnablePerformanceSensitiveAnalyzer)' == ''">false</EnablePerformanceSensitiveAnalyzer>
   </PropertyGroup>
 
   <!-- Unconditionally import 'Microsoft.CodeAnalysis.NetAnalyzers.props' for all C# and VB projects for supporting https://github.com/dotnet/roslyn-analyzers/issues/3977 -->
@@ -118,6 +128,24 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(Language)' == 'C#'" />
   <Import Project="$(MSBuildThisFileDirectory)..\codestyle\vb\build\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.targets"
           Condition="'$(Language)' == 'VB'" />
+
+  <!-- BannedApiAnalyzers build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\build\Microsoft.CodeAnalysis.BannedApiAnalyzers.props"
+          Condition="$(EnableBannedApiAnalyzer)" />
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\build\Microsoft.CodeAnalysis.BannedApiAnalyzers.targets"
+          Condition="$(EnableBannedApiAnalyzer)" />
+
+  <!-- PublicApiAnalyzers build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\build\Microsoft.CodeAnalysis.PublicApiAnalyzers.props"
+          Condition="$(EnablePublicApiAnalyzer)" />
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\build\Microsoft.CodeAnalysis.PublicApiAnalyzers.targets"
+          Condition="$(EnablePublicApiAnalyzer)" />
+
+  <!-- PerformanceSensitiveAnalyzers build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\build\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.props"
+          Condition="$(EnablePerformanceSensitiveAnalyzer)" />
+  <Import Project="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\build\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.targets"
+          Condition="$(EnablePerformanceSensitiveAnalyzer)" />
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
@@ -178,5 +206,133 @@ Copyright (c) .NET Foundation. All rights reserved.
       Include="$(MSBuildThisFileDirectory)..\codestyle\vb\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll"
       IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <!-- BannedApi Analyzers -->
+  <ItemGroup Condition="$(EnableBannedApiAnalyzer)">
+    <Analyzer
+      Condition="'$(Language)' == 'C#'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\cs\Microsoft.CodeAnalysis.BannedApiAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'C#'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\cs\Microsoft.CodeAnalysis.CSharp.BannedApiAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'VB'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\vb\Microsoft.CodeAnalysis.BannedApiAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'VB'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\bannedapi\vb\Microsoft.CodeAnalysis.VisualBasic.BannedApiAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <!-- PublicApi Analyzers (language-neutral) -->
+  <ItemGroup Condition="$(EnablePublicApiAnalyzer)">
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\Microsoft.CodeAnalysis.PublicApiAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\publicapi\Microsoft.CodeAnalysis.PublicApiAnalyzers.CodeFixes.dll"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <!-- PerformanceSensitive Analyzers (C# only) -->
+  <ItemGroup Condition="$(EnablePerformanceSensitiveAnalyzer) And '$(Language)' == 'C#'">
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\cs\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\cs\Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\performancesensitive\cs\Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.CodeFixes.dll"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <!-- ResxSourceGenerator -->
+  <ItemGroup Condition="$(EnableResxSourceGenerator)">
+    <Analyzer
+      Condition="'$(Language)' == 'C#'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\resxsourcegen\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'C#'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\resxsourcegen\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'VB'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\resxsourcegen\vb\Microsoft.CodeAnalysis.ResxSourceGenerator.dll"
+      IsImplicitlyDefined="true" />
+    <Analyzer
+      Condition="'$(Language)' == 'VB'"
+      Include="$(MSBuildThisFileDirectory)..\roslynanalyzers\resxsourcegen\vb\Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.dll"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <!--
+    When a user also references these analyzer packages directly via NuGet, remove the SDK-bundled copies
+    to avoid duplicate analyzer diagnostics. NuGet-resolved analyzers carry NuGetPackageId metadata, so we
+    detect them after ResolvePackageAssets and remove our IsImplicitlyDefined copies.
+  -->
+  <Target Name="_ResolveSdkAnalyzerConflicts"
+          AfterTargets="ResolveLockFileAnalyzers"
+          Condition="$(EnableBannedApiAnalyzer) Or $(EnablePublicApiAnalyzer) Or
+                     $(EnablePerformanceSensitiveAnalyzer) Or $(EnableResxSourceGenerator)">
+
+    <ItemGroup>
+      <!-- Remove SDK-bundled BannedApiAnalyzers when the NuGet package is also referenced -->
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.BannedApiAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.BannedApiAnalyzers'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.CSharp.BannedApiAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.BannedApiAnalyzers'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.VisualBasic.BannedApiAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.BannedApiAnalyzers'))" />
+
+      <!-- Remove SDK-bundled PublicApiAnalyzers when the NuGet package is also referenced -->
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.PublicApiAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.PublicApiAnalyzers'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.PublicApiAnalyzers.CodeFixes' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.PublicApiAnalyzers'))" />
+
+      <!-- Remove SDK-bundled PerformanceSensitiveAnalyzers when the NuGet package is also referenced -->
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.CodeFixes' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers'))" />
+
+      <!-- Remove SDK-bundled ResxSourceGenerator when the NuGet package is also referenced -->
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.ResxSourceGenerator' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.ResxSourceGenerator'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.ResxSourceGenerator'))" />
+      <Analyzer Remove="@(Analyzer)"
+                Condition="'%(Analyzer.IsImplicitlyDefined)' == 'true' And
+                           '%(Filename)' == 'Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic' And
+                           @(Analyzer->AnyHaveMetadataValue('NuGetPackageId', 'Microsoft.CodeAnalysis.ResxSourceGenerator'))" />
+    </ItemGroup>
+  </Target>
 
 </Project>
