@@ -89,10 +89,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             logger.LogTrace(Resources.Determining_diagnostics);
 
-            var severity = _informationProvider.GetSeverity(formatOptions);
+            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, formatOptions.Diagnostics, formatOptions.ExcludeDiagnostics, cancellationToken).ConfigureAwait(false);
 
-            // Filter to analyzers that report diagnostics with equal or greater severity.
-            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, formatOptions.ExcludeDiagnostics, cancellationToken).ConfigureAwait(false);
+            var severity = _informationProvider.GetSeverity(formatOptions);
 
             // Determine which diagnostics are being reported for each project.
             var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
@@ -286,13 +285,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Solution solution,
             ImmutableDictionary<ProjectId, AnalyzersAndFixers> projectAnalyzersAndFixers,
             ImmutableHashSet<string> formattablePaths,
-            DiagnosticSeverity minimumSeverity,
             ImmutableHashSet<string> diagnostics,
             ImmutableHashSet<string> excludeDiagnostics,
             CancellationToken cancellationToken)
         {
-            // We only want to run analyzers for each project that have the potential for reporting a diagnostic with
-            // a severity equal to or greater than specified.
             var projectAnalyzers = ImmutableDictionary.CreateBuilder<ProjectId, ImmutableArray<DiagnosticAnalyzer>>();
             foreach (var projectId in projectAnalyzersAndFixers.Keys)
             {
@@ -337,19 +333,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         continue;
                     }
 
-                    // Always run naming style analyzers because we cannot determine potential severity.
-                    // The reported diagnostics will be filtered by severity when they are run.
-                    if (analyzer.GetType().FullName?.EndsWith("NamingStyleDiagnosticAnalyzer") == true)
-                    {
-                        analyzers.Add(analyzer);
-                        continue;
-                    }
-
-                    var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken).ConfigureAwait(false);
-                    if (severity >= minimumSeverity)
-                    {
-                        analyzers.Add(analyzer);
-                    }
+                    analyzers.Add(analyzer);
                 }
 
                 projectAnalyzers.Add(projectId, analyzers.ToImmutableArray());
