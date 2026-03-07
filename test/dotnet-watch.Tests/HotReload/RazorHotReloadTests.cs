@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
-            App.AssertOutputDoesNotContain("🕵️");
+            App.AssertOutputDoesNotContain("Loaded into process");
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
             await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
