@@ -38,7 +38,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             // env variable passed when launching the server:
             await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
-            App.Process.ClearOutput();
 
             // Middleware should have been loaded to blazor-devserver before the browser is launched:
             await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
