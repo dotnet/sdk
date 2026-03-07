@@ -594,7 +594,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
+            var testInstance = _testAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
                 .WithSource();
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
