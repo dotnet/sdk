@@ -1239,7 +1239,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertAskDeleteSource">
         <source>Delete all source files after conversion?</source>
-        <target state="new">Delete all source files after conversion?</target>
+        <target state="translated">¿Quiere eliminar todos los archivos de origen después de la conversión?</target>
         <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
@@ -1249,17 +1249,17 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
         <source>No - keep all source files</source>
-        <target state="new">No - keep all source files</target>
+        <target state="translated">No: conservar todos los archivos de código fuente</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
         <source>Yes - delete all source files</source>
-        <target state="new">Yes - delete all source files</target>
+        <target state="translated">Sí: eliminar todos los archivos de código fuente</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertDeletedSourceFile">
         <source>Deleted source file: {0}</source>
-        <target state="new">Deleted source file: {0}</target>
+        <target state="translated">Archivo de origen eliminado: {0}</target>
         <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1284,7 +1284,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteSourceFile">
         <source>Dry run: would delete source file: {0}</source>
-        <target state="new">Dry run: would delete source file: {0}</target>
+        <target state="translated">Simulacro: eliminaría el archivo de origen: {0}</target>
         <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
