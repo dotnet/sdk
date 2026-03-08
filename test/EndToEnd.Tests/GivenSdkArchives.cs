@@ -11,7 +11,7 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ItHasDeduplicatedAssemblies()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             Log.WriteLine("SKIPPED: Windows deduplication not yet supported (https://github.com/dotnet/sdk/issues/52182)");
             return;
