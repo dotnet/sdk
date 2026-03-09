@@ -32,7 +32,16 @@ public class DiscoverPrecompressedAssets : Task
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var assetsToUpdate = new List<ITaskItem>();
 
-        var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
+        // Build lookup dictionary, handling duplicate Identities from multiple projects
+        // referencing the same physical file (e.g. NuGet cache assets shared across WASM clients).
+        var candidatesByIdentity = new Dictionary<string, StaticWebAsset>(candidates.Length, OSPath.PathComparer);
+        foreach (var candidate in candidates)
+        {
+            if (!candidatesByIdentity.ContainsKey(candidate.Identity))
+            {
+                candidatesByIdentity.Add(candidate.Identity, candidate);
+            }
+        }
 
         foreach (var candidate in candidates)
         {

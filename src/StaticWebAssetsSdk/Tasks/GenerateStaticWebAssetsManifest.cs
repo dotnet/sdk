@@ -99,7 +99,16 @@ public class GenerateStaticWebAssetsManifest : Task
         // inside the manifest because its cumbersome to do it in MSBuild directly.
         if (StaticWebAssetsManifest.ManifestTypes.IsPublish(ManifestType))
         {
-            var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
+            // Build dictionary handling duplicate Identities from multiple projects
+            // referencing the same physical file (e.g. NuGet cache assets shared across WASM clients).
+            var assetsByIdentity = new Dictionary<string, StaticWebAsset>(assets.Length, OSPath.PathComparer);
+            foreach (var a in assets)
+            {
+                if (!assetsByIdentity.ContainsKey(a.Identity))
+                {
+                    assetsByIdentity.Add(a.Identity, a);
+                }
+            }
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var endpoint in Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem))

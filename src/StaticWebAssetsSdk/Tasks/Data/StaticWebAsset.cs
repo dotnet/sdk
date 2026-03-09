@@ -1234,7 +1234,13 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
-            dictionary.Add(candidateAsset.Identity, candidateAsset);
+            // Multiple projects may reference the same physical file (e.g. NuGet cache assets
+            // shared across WASM clients). Since Identity is the FullPath, same Identity means
+            // same file on disk — keeping the first occurrence is correct.
+            if (!dictionary.ContainsKey(candidateAsset.Identity))
+            {
+                dictionary.Add(candidateAsset.Identity, candidateAsset);
+            }
         }
 
         return dictionary;
