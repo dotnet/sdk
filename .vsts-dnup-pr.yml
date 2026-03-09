@@ -47,11 +47,11 @@ stages:
         displayName: ♻️ Restore
       - powershell: |
           $failed = $false
-          & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore
+          & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
-          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore
+          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
-          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
           if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
         displayName: 🔨 Build with -warnaserror
