@@ -6,6 +6,9 @@
     <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Override shared xunit config to use dotnetup-specific settings (longer long-running test threshold) -->
+    <XUnitDesktopSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitDesktopSettingsFile>
+    <XUnitCoreSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitCoreSettingsFile>
   </PropertyGroup>
 
   <!-- Exclude demo app from test compilation -->
