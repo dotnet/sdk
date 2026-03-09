@@ -151,10 +151,16 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     /// <summary>
-    /// Writes manifest JSON and a companion SHA-256 checksum file atomically.
+    /// Writes manifest JSON and a companion SHA-256 checksum file.
     /// The checksum lets us distinguish product corruption (our bug) from
     /// user edits on the next read.
     /// </summary>
+    /// <remarks>
+    /// The manifest and checksum are written as two separate file operations.
+    /// A crash between the writes could leave them inconsistent, but this is
+    /// self-correcting on the next successful write. All callers are expected
+    /// to hold the installation-state mutex.
+    /// </remarks>
     private void WriteManifestWithChecksum(string json)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);

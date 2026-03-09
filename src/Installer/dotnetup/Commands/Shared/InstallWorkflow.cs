@@ -65,10 +65,7 @@ internal class InstallWorkflow
         if (context is null)
         {
             Console.Error.WriteLine(error);
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "context_resolution_failed");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
-            DotnetupTelemetry.Instance.SetLastErrorInfo(
-                new ExceptionErrorInfo("context_resolution_failed", ErrorCategory.User));
+            RecordWorkflowError("context_resolution_failed", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -77,10 +74,7 @@ internal class InstallWorkflow
         {
             Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is an existing file, not a directory. " +
                 "Please specify a directory path for the installation.");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "install_path_is_file");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
-            DotnetupTelemetry.Instance.SetLastErrorInfo(
-                new ExceptionErrorInfo("install_path_is_file", ErrorCategory.User));
+            RecordWorkflowError("install_path_is_file", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -90,12 +84,9 @@ internal class InstallWorkflow
             Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is a system-managed .NET location. " +
                 "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "admin_path_blocked");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
-            DotnetupTelemetry.Instance.SetLastErrorInfo(
-                new ExceptionErrorInfo("admin_path_blocked", ErrorCategory.User));
+            RecordWorkflowError("admin_path_blocked", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -118,8 +109,7 @@ internal class InstallWorkflow
         var installResult = ExecuteInstallations(context, resolved);
         if (installResult is null)
         {
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "install_failed");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "product");
+            RecordWorkflowError("install_failed", ErrorCategory.Product);
             return new InstallWorkflowResult(1, resolved);
         }
 
@@ -240,5 +230,13 @@ internal class InstallWorkflow
                 context.GlobalJson.AllowPrerelease,
                 context.GlobalJson.RollForward);
         }
+    }
+
+    /// <summary>
+    /// Records a workflow error on the current activity and propagates it to the root span.
+    /// </summary>
+    private static void RecordWorkflowError(string errorType, ErrorCategory category)
+    {
+        DotnetupTelemetry.Instance.RecordError(Activity.Current, errorType, category);
     }
 }

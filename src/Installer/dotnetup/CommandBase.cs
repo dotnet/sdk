@@ -95,20 +95,10 @@ public abstract class CommandBase
     /// <param name="category">Error category: "user" for input/environment issues, "product" for bugs (default).</param>
     protected void RecordFailure(string reason, string? message = null, string category = "product")
     {
-        _commandActivity?.SetTag(TelemetryTagNames.ErrorType, reason);
-        _commandActivity?.SetTag(TelemetryTagNames.ErrorCategory, category);
-        if (message != null)
-        {
-            _commandActivity?.SetTag(TelemetryTagNames.ErrorMessage, message);
-        }
-
-        // Also set LastErrorInfo so the error propagates to the root span
-        // via ApplyLastErrorToActivity in Program.cs.
         var errorCategory = string.Equals(category, "user", StringComparison.OrdinalIgnoreCase)
             ? ErrorCategory.User
             : ErrorCategory.Product;
-        DotnetupTelemetry.Instance.SetLastErrorInfo(
-            new ExceptionErrorInfo(reason, errorCategory, Details: message));
+        DotnetupTelemetry.Instance.RecordError(_commandActivity, reason, errorCategory, message);
     }
 
     /// <summary>

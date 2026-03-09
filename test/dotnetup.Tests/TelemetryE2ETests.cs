@@ -27,14 +27,24 @@ public class TelemetryE2ETests
         ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "0",
     };
 
+    /// <summary>
+    /// Creates a merged environment variable dictionary that includes telemetry debug settings
+    /// and a per-test data directory to avoid writing to the real user profile.
+    /// </summary>
+    private static Dictionary<string, string> GetTelemetryEnvVars(string dataDir) => new(s_telemetryEnvVars)
+    {
+        ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = dataDir,
+    };
+
     [Fact]
     public void InvalidVersion_ProducesUserError_OnRootSpan()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: s_telemetryEnvVars);
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
         exitCode.Should().NotBe(0, "requesting a nonexistent SDK version should fail");
 
@@ -53,9 +63,10 @@ public class TelemetryE2ETests
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: s_telemetryEnvVars);
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
         exitCode.Should().NotBe(0);
 
@@ -71,9 +82,10 @@ public class TelemetryE2ETests
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: s_telemetryEnvVars);
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
         exitCode.Should().NotBe(0);
 
@@ -101,19 +113,31 @@ public class TelemetryE2ETests
     public void SuccessfulHelp_ProducesNoErrorTags()
     {
         // Running --help should succeed without error tags
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            ["--help"], captureOutput: true, environmentVariables: s_telemetryEnvVars);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"dnup-e2e-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
 
-        exitCode.Should().Be(0, "dotnetup --help should succeed");
-
-        var spans = ParseTelemetrySpans(output);
-
-        // If telemetry emits spans (it may not for --help), they should have no error tags
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        if (rootSpan != null)
+        try
         {
-            rootSpan.Tags.Should().NotContainKey("error.type", "--help should not produce error tags");
-            rootSpan.Tags.Should().NotContainKey("error.category", "--help should not produce error tags");
+            var envVars = GetTelemetryEnvVars(tempDir);
+
+            (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+                ["--help"], captureOutput: true, environmentVariables: envVars);
+
+            exitCode.Should().Be(0, "dotnetup --help should succeed");
+
+            var spans = ParseTelemetrySpans(output);
+
+            // If telemetry emits spans (it may not for --help), they should have no error tags
+            var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
+            if (rootSpan != null)
+            {
+                rootSpan.Tags.Should().NotContainKey("error.type", "--help should not produce error tags");
+                rootSpan.Tags.Should().NotContainKey("error.category", "--help should not produce error tags");
+            }
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
         }
     }
 
@@ -122,9 +146,10 @@ public class TelemetryE2ETests
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: s_telemetryEnvVars);
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
         var spans = ParseTelemetrySpans(output);
         var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
@@ -139,6 +164,7 @@ public class TelemetryE2ETests
     public void InstallPathIsFile_ProducesUserError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
 
         // Create a file where the install path would be — user error: path is a file, not a directory
         string filePath = Path.Combine(testEnv.TempRoot, "not-a-directory");
@@ -147,7 +173,7 @@ public class TelemetryE2ETests
         var args = DotnetupTestUtilities.BuildSdkArguments("9.0", filePath, testEnv.ManifestPath);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: s_telemetryEnvVars);
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
         exitCode.Should().NotBe(0, "install-path pointing to a file should fail");
         output.Should().Contain("existing file", "error message should mention it's a file");
@@ -177,6 +203,7 @@ public class TelemetryE2ETests
             var envVars = new Dictionary<string, string>(s_telemetryEnvVars)
             {
                 ["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath,
+                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
             };
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
@@ -221,6 +248,7 @@ public class TelemetryE2ETests
             var envVars = new Dictionary<string, string>(s_telemetryEnvVars)
             {
                 ["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath,
+                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
             };
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(

@@ -163,8 +163,6 @@ public class RuntimeInstallTests
         // This simulates a scenario where dotnetup wrote the file but it got corrupted
         // (e.g., disk error, partial write).
         var checksumPath = testEnv.ManifestPath + ".sha256";
-        var originalContent = File.ReadAllText(testEnv.ManifestPath);
-        var originalChecksum = File.ReadAllText(checksumPath);
 
         // Write corrupt JSON that still matches the stored checksum (impossible naturally,
         // so instead: write corrupt JSON, then rewrite checksum of the corrupt content)

@@ -183,6 +183,22 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
+    /// Records a non-exception error on the given activity and stores it so the root
+    /// span can inherit the tags via <see cref="ApplyLastErrorToActivity"/>.
+    /// Use this instead of manually setting error tags on an activity.
+    /// </summary>
+    /// <param name="activity">The activity to tag (may be null).</param>
+    /// <param name="errorType">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
+    /// <param name="category">Whether this is a user or product error.</param>
+    /// <param name="message">Optional detailed error message.</param>
+    public void RecordError(Activity? activity, string errorType, ErrorCategory category, string? message = null)
+    {
+        var errorInfo = new ExceptionErrorInfo(errorType, category, Details: message);
+        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
+        LastErrorInfo = errorInfo;
+    }
+
+    /// <summary>
     /// Posts a custom telemetry event.
     /// </summary>
     /// <param name="eventName">The name of the event.</param>
