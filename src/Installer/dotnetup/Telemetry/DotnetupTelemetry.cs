@@ -51,12 +51,6 @@ public sealed class DotnetupTelemetry : IDisposable
     public bool Enabled { get; }
 
     /// <summary>
-    /// Gets the last recorded error info. Used to propagate error tags
-    /// from a command activity to the root activity.
-    /// </summary>
-    public ExceptionErrorInfo? LastErrorInfo { get; private set; }
-
-    /// <summary>
     /// Gets the current session ID.
     /// </summary>
     public string SessionId { get; }
@@ -153,39 +147,52 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
-        LastErrorInfo = errorInfo;
+        ApplyErrorToRootActivity(activity, errorInfo);
     }
 
     /// <summary>
-    /// Applies the last recorded error info to the given activity.
-    /// Call this on the root activity after a command fails, so the root span
-    /// also carries error tags for workbook queries that look at all spans.
-    /// </summary>
-    /// <param name="activity">The activity to apply error tags to (typically the root activity).</param>
-    public void ApplyLastErrorToActivity(Activity? activity)
-    {
-        if (activity == null || LastErrorInfo == null)
-        {
-            return;
-        }
-
-        ErrorCodeMapper.ApplyErrorTags(activity, LastErrorInfo);
-    }
-
-    /// <summary>
-    /// Records a non-exception error on the given activity and stores it so the root
-    /// span can inherit the tags via <see cref="ApplyLastErrorToActivity"/>.
-    /// Use this instead of manually setting error tags on an activity.
+    /// Records a non-exception error on the given activity and also propagates
+    /// error tags to the root activity in the same trace.
     /// </summary>
     /// <param name="activity">The activity to tag (may be null).</param>
     /// <param name="errorType">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
-    /// <param name="category">Whether this is a user or product error.</param>
     /// <param name="message">Optional detailed error message.</param>
-    public void RecordError(Activity? activity, string errorType, ErrorCategory category, string? message = null)
+    public void RecordError(Activity? activity, string errorType, string? message = null)
     {
+        var category = ErrorCategoryClassifier.ClassifyErrorType(errorType);
         var errorInfo = new ExceptionErrorInfo(errorType, category, Details: message);
-        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
-        LastErrorInfo = errorInfo;
+        if (activity != null)
+        {
+            ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
+            ApplyErrorToRootActivity(activity, errorInfo);
+        }
+    }
+
+    /// <summary>
+    /// Walks up the activity parent chain to find the root activity and applies
+    /// error tags to it.  This ensures workbook queries on either the command
+    /// span or the root span see error information.
+    /// </summary>
+    private static void ApplyErrorToRootActivity(Activity activity, ExceptionErrorInfo errorInfo)
+    {
+        var root = GetRootActivity(activity);
+        if (root != null && root != activity)
+        {
+            ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
+        }
+    }
+
+    /// <summary>
+    /// Returns the root activity by walking up <see cref="Activity.Parent"/>.
+    /// </summary>
+    private static Activity? GetRootActivity(Activity? activity)
+    {
+        while (activity?.Parent != null)
+        {
+            activity = activity.Parent;
+        }
+
+        return activity;
     }
 
     /// <summary>

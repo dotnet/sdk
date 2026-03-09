@@ -92,13 +92,9 @@ public abstract class CommandBase
     /// </summary>
     /// <param name="reason">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
     /// <param name="message">Optional detailed error message.</param>
-    /// <param name="category">Error category: "user" for input/environment issues, "product" for bugs (default).</param>
-    protected void RecordFailure(string reason, string? message = null, string category = "product")
+    protected void RecordFailure(string reason, string? message = null)
     {
-        var errorCategory = string.Equals(category, "user", StringComparison.OrdinalIgnoreCase)
-            ? ErrorCategory.User
-            : ErrorCategory.Product;
-        DotnetupTelemetry.Instance.RecordError(_commandActivity, reason, errorCategory, message);
+        DotnetupTelemetry.Instance.RecordError(_commandActivity, reason, message);
     }
 
     /// <summary>

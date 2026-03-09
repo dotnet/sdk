@@ -41,7 +41,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         if (errorMessage != null)
         {
             Console.Error.WriteLine(errorMessage);
-            RecordFailure("invalid_component_spec", category: "user");
+            RecordFailure("invalid_component_spec");
             return 1;
         }
 
@@ -50,7 +50,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         {
             Console.Error.WriteLine("Error: Windows Desktop Runtime is only available on Windows.");
             Console.Error.WriteLine($"Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
-            RecordFailure("windowsdesktop_not_supported", category: "user");
+            RecordFailure("windowsdesktop_not_supported");
             return 1;
         }
 
@@ -59,7 +59,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         {
             Console.Error.WriteLine($"Error: '{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations.");
             Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
-            RecordFailure("sdk_version_for_runtime", category: "user");
+            RecordFailure("sdk_version_for_runtime");
             return 1;
         }
 

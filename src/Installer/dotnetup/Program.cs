@@ -35,13 +35,6 @@ internal class DotnetupProgram
             rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
             rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
 
-            // Propagate error tags from the command activity to the root span
-            // so workbook queries on either span see error.type, error.category, etc.
-            if (result != 0)
-            {
-                DotnetupTelemetry.Instance.ApplyLastErrorToActivity(rootActivity);
-            }
-
             return result;
         }
         catch (Exception ex)

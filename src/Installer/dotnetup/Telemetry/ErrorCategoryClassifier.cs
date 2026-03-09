@@ -147,6 +147,33 @@ internal static class ErrorCategoryClassifier
     }
 
     /// <summary>
+    /// Classifies a string error type (used by <see cref="DotnetupTelemetry.RecordError"/>) as product or user error.
+    /// This is the single source of truth for non-exception error categories.
+    /// </summary>
+    internal static ErrorCategory ClassifyErrorType(string errorType)
+    {
+        return errorType switch
+        {
+            // User errors — bad input, environment issues, unsupported scenarios
+            "context_resolution_failed" => ErrorCategory.User,
+            "install_path_is_file" => ErrorCategory.User,
+            "admin_path_blocked" => ErrorCategory.User,
+            "invalid_component_spec" => ErrorCategory.User,
+            "windowsdesktop_not_supported" => ErrorCategory.User,
+            "sdk_version_for_runtime" => ErrorCategory.User,
+            "platform_not_supported" => ErrorCategory.User,
+            "user_install_root_failed" => ErrorCategory.User,
+            "admin_install_root_failed" => ErrorCategory.User,
+
+            // Product errors — bugs, unexpected failures
+            "install_failed" => ErrorCategory.Product,
+
+            // Default to product for unknown error types (fail-safe)
+            _ => ErrorCategory.Product,
+        };
+    }
+
+    /// <summary>
     /// Classifies an IO error by its HResult, returning the error type, category, and optional details
     /// in a single lookup. This avoids a two-step HResult→errorType→category pipeline that could
     /// get out of sync.
