@@ -143,7 +143,7 @@ This file should be imported by eng/Versions.props
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- _git/dotnet-dotnet dependencies -->
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>11.0.0-preview.3.26152.106</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>11.0.0-preview.3.26153.117</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>2.2.0-preview.26157.2</MicrosoftTestingPlatformPackageVersion>
     <MSTestPackageVersion>4.2.0-preview.26157.2</MSTestPackageVersion>
