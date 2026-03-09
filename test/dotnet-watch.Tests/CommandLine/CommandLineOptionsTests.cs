@@ -316,11 +316,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
 
-            // the forwarding function of --property property joins the properties with `:`:
-            AssertEx.SequenceEqual(["--property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
+            // The forwarding function of --property property joins the properties with `:`
+            // --framework is not forwarded as property.
+            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
 
-            // it's ok to keep the two arguments and not to join them with `:` since `run` command handles these options correctly
-            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
+            // It's ok to keep the two arguments and not to join them with `:` since `run` command handles these options correctly
+            // --framework is not forwarded, it will be specified explicitly.
+            AssertEx.SequenceEqual(["--project", "P", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -462,7 +464,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// </summary>
         [Theory]
         [InlineData(new[] { "--configuration", "release" }, new[] { "--property:Configuration=release", NugetInteractiveProperty })]
-        [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
+        [InlineData(new[] { "--framework", "net9.0" }, new[] { NugetInteractiveProperty }, new string[0])]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
         [InlineData(new[] { "--project", "x.csproj" }, new[] { NugetInteractiveProperty }, new[] { "--project", "x.csproj" })]

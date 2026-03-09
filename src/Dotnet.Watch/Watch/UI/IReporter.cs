@@ -184,8 +184,8 @@ namespace Microsoft.DotNet.Watch
         // predefined messages used for testing:
         public static readonly MessageDescriptor<string> CommandDoesNotSupportHotReload = Create<string>("Command '{0}' does not support Hot Reload.", Emoji.HotReload, LogLevel.Debug);
         public static readonly MessageDescriptor<None> HotReloadDisabledByCommandLineSwitch = Create("Hot Reload disabled by command line switch.", Emoji.HotReload, LogLevel.Debug);
-        public static readonly MessageDescriptor<None> HotReloadSessionStartingNotification = CreateNotification<None>();
         public static readonly MessageDescriptor<None> HotReloadSessionStarted = Create("Hot reload session started.", Emoji.HotReload, LogLevel.Debug);
+        public static readonly MessageDescriptor<None> RuntimeProcessLauncherCreatedNotification = CreateNotification<None>();
         public static readonly MessageDescriptor<int> ProjectsRebuilt = Create<int>("Projects rebuilt ({0})", Emoji.HotReload, LogLevel.Debug);
         public static readonly MessageDescriptor<int> ProjectsRestarted = Create<int>("Projects restarted ({0})", Emoji.HotReload, LogLevel.Debug);
         public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> RestartingProjectsNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
@@ -200,6 +200,8 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor<(string, string, int)> LaunchedProcess = Create<(string, string, int)>("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, LogLevel.Debug);
         public static readonly MessageDescriptor<long> ManagedCodeChangesApplied = Create<long>("C# and Razor changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
         public static readonly MessageDescriptor<long> StaticAssetsChangesApplied = Create<long>("Static asset changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
+        public static readonly MessageDescriptor<None> StaticWebAssetManifestNotFound = Create("Static web asset manifest not found.", Emoji.Warning, LogLevel.Warning);
+        public static readonly MessageDescriptor<string> ScopedCssBundleFileNotFound = Create<string>("Scoped CSS bundle file '{BundleFile}' not found.", Emoji.Warning, LogLevel.Warning);
         public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> ChangesAppliedToProjectsNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
         public static readonly MessageDescriptor<int> SendingUpdateBatch = Create(LogEvents.SendingUpdateBatch, Emoji.HotReload);
         public static readonly MessageDescriptor<int> UpdateBatchCompleted = Create(LogEvents.UpdateBatchCompleted, Emoji.HotReload);
@@ -217,7 +219,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor<string> ApplyUpdate_Error = Create<string>("{0}", Emoji.Error, LogLevel.Error);
         public static readonly MessageDescriptor<string> ApplyUpdate_Warning = Create<string>("{0}", Emoji.Warning, LogLevel.Warning);
         public static readonly MessageDescriptor<string> ApplyUpdate_Verbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
-        public static readonly MessageDescriptor<(string, string)> ApplyUpdate_AutoVerbose = Create<(string, string)>("{0}{1}", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor<string> ApplyUpdate_AutoVerbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor<string> ApplyUpdate_ChangingEntryPoint = Create<string>("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, LogLevel.Warning);
         public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor<None> ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
@@ -273,10 +275,14 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor<None> LoadingProjects = Create("Loading projects ...", Emoji.Watch, LogLevel.Information);
         public static readonly MessageDescriptor<(int, double)> LoadedProjects = Create<(int, double)>("Loaded {0} project(s) in {1:0.0}s.", Emoji.Watch, LogLevel.Information);
         public static readonly MessageDescriptor<string> Building = Create<string>("Building {0} ...", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor<string> Restoring = Create<string>("Restoring {0} ...", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor<string> BuildFailed = Create<string>("Build failed: {0}", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor<string> BuildSucceeded = Create<string>("Build succeeded: {0}", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor<string> RestoreFailed = Create<string>("Restore failed: {0}", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor<string> RestoreSucceeded = Create<string>("Restore succeeded: {0}", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> BuildStartedNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
         public static readonly MessageDescriptor<(IEnumerable<ProjectRepresentation> projects, bool success)> BuildCompletedNotification = CreateNotification<(IEnumerable<ProjectRepresentation> projects, bool success)>();
+        public static readonly MessageDescriptor<string> ManifestFileNotFound = Create(LogEvents.ManifestFileNotFound, Emoji.Default);
     }
 
     internal sealed class MessageDescriptor<TArgs>(string? format, Emoji emoji, LogLevel level, EventId id)

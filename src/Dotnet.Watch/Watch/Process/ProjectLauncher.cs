@@ -37,7 +37,7 @@ internal sealed class ProjectLauncher(
         RestartOperation restartOperation,
         CancellationToken cancellationToken)
     {
-        var projectNode = projectGraph.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, context.TargetFramework);
+        var projectNode = projectGraph.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, projectOptions.TargetFramework);
         if (projectNode == null)
         {
             // error already reported
@@ -113,6 +113,12 @@ internal sealed class ProjectLauncher(
             projectOptions.Command,
             "--no-build"
         };
+
+        if (projectOptions.TargetFramework != null)
+        {
+            arguments.Add("--framework");
+            arguments.Add(projectOptions.TargetFramework);
+        }
 
         foreach (var (name, value) in environmentBuilder)
         {

@@ -96,11 +96,9 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
+        public async ValueTask StartSessionAsync(ProjectGraph graph, CancellationToken cancellationToken)
         {
-            Logger.Log(MessageDescriptor.HotReloadSessionStartingNotification);
-
-            var solution = Workspace.CurrentSolution;
+            var solution = await UpdateProjectGraphAsync(graph, cancellationToken);
 
             await _hotReloadService.StartSessionAsync(solution, cancellationToken);
 
@@ -353,7 +351,7 @@ namespace Microsoft.DotNet.Watch
 
             var runningProjectInfos =
                (from project in currentSolution.Projects
-                let runningProject = GetCorrespondingRunningProject(project, runningProjects)
+                let runningProject = GetCorrespondingRunningProjects(runningProjects, project).FirstOrDefault()
                 where runningProject != null
                 let autoRestartProject = autoRestart || runningProject.ProjectNode.IsAutoRestartEnabled()
                 select (project.Id, info: new HotReloadService.RunningProjectInfo() { RestartWhenChangesHaveNoEffect = autoRestartProject }))
@@ -361,7 +359,7 @@ namespace Microsoft.DotNet.Watch
 
             var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectInfos, cancellationToken);
 
-            await DisplayResultsAsync(updates, runningProjectInfos, cancellationToken);
+            await DisplayResultsAsync(updates, currentSolution, runningProjectInfos, cancellationToken);
 
             if (updates.Status is HotReloadService.Status.NoChangesToApply or HotReloadService.Status.Blocked)
             {
@@ -530,24 +528,7 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static RunningProject? GetCorrespondingRunningProject(Project project, ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
-        {
-            if (project.FilePath == null || !runningProjects.TryGetValue(project.FilePath, out var projectsWithPath))
-            {
-                return null;
-            }
-
-            // msbuild workspace doesn't set TFM if the project is not multi-targeted
-            var tfm = HotReloadService.GetTargetFramework(project);
-            if (tfm == null)
-            {
-                return projectsWithPath[0];
-            }
-
-            return projectsWithPath.SingleOrDefault(p => string.Equals(p.ProjectNode.ProjectInstance.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private async ValueTask DisplayResultsAsync(HotReloadService.Updates updates, ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
+        private async ValueTask DisplayResultsAsync(HotReloadService.Updates updates, Solution solution, ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
         {
             switch (updates.Status)
             {
@@ -607,7 +588,8 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, autoPrefix: "");
+                    // TODO: we don't currently have a project associated with the diagnostic
+                    ReportDiagnostic(diagnostic, projectDisplayPrefix: "", autoPrefix: "");
                 }
             }
 
@@ -628,6 +610,10 @@ namespace Microsoft.DotNet.Watch
 
                 foreach (var (projectId, diagnostics) in updates.TransientDiagnostics)
                 {
+                    // The diagnostic may be reported for a project that has been deleted.
+                    var project = solution.GetProject(projectId);
+                    var projectDisplay = project != null ? $"[{GetProjectInstance(project).GetDisplayName()}] " : "";
+
                     foreach (var diagnostic in diagnostics)
                     {
                         var prefix =
@@ -635,7 +621,7 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        ReportDiagnostic(diagnostic, prefix);
+                        ReportDiagnostic(diagnostic, projectDisplay, prefix);
                     }
                 }
             }
@@ -643,23 +629,23 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, string autoPrefix)
+            void ReportDiagnostic(Diagnostic diagnostic, string projectDisplayPrefix, string autoPrefix)
             {
-                var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
+                var message = projectDisplayPrefix + autoPrefix + CSharpDiagnosticFormatter.Instance.Format(diagnostic);
 
                 if (autoPrefix != "")
                 {
-                    Logger.Log(MessageDescriptor.ApplyUpdate_AutoVerbose, autoPrefix, display);
+                    Logger.Log(MessageDescriptor.ApplyUpdate_AutoVerbose, message);
                     errorsToDisplayInApp.Add(MessageDescriptor.RestartingApplicationToApplyChanges.GetMessage());
                 }
                 else
                 {
                     var descriptor = GetMessageDescriptor(diagnostic);
-                    Logger.Log(descriptor, display);
+                    Logger.Log(descriptor, message);
 
                     if (descriptor.Level != LogLevel.None)
                     {
-                        errorsToDisplayInApp.Add(descriptor.GetMessage(display));
+                        errorsToDisplayInApp.Add(descriptor.GetMessage(message));
                     }
                 }
             }
@@ -695,6 +681,9 @@ namespace Microsoft.DotNet.Watch
             Stopwatch stopwatch,
             CancellationToken cancellationToken)
         {
+            // capture snapshot:
+            var runningProjects = _runningProjects;
+
             var assets = new Dictionary<ProjectInstance, Dictionary<string, StaticWebAsset>>();
             var projectInstancesToRegenerate = new HashSet<ProjectInstanceId>();
 
@@ -710,18 +699,10 @@ namespace Microsoft.DotNet.Watch
 
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
-                    if (!evaluationResult.ProjectGraph.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
-                    {
-                        // Shouldn't happen.
-                        Logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
-                        continue;
-                    }
-
-                    foreach (var containingProjectNode in containingProjectNodes)
+                    foreach (var containingProjectNode in evaluationResult.ProjectGraph.GetProjectNodes(containingProjectPath))
                     {
                         if (isScopedCss)
                         {
-                            // The outer build project instance(that specifies TargetFrameworks) won't have the target.
                             if (!HasScopedCssTargets(containingProjectNode.ProjectInstance))
                             {
                                 continue;
@@ -733,7 +714,8 @@ namespace Microsoft.DotNet.Watch
                         foreach (var referencingProjectNode in containingProjectNode.GetAncestorsAndSelf())
                         {
                             var applicationProjectInstance = referencingProjectNode.ProjectInstance;
-                            if (!TryGetRunningProject(applicationProjectInstance.FullPath, out _))
+                            var runningApplicationProject = GetCorrespondingRunningProjects(runningProjects, applicationProjectInstance).FirstOrDefault();
+                            if (runningApplicationProject == null)
                             {
                                 continue;
                             }
@@ -758,14 +740,14 @@ namespace Microsoft.DotNet.Watch
                                 if (!evaluationResult.StaticWebAssetsManifests.TryGetValue(applicationProjectInstance.GetId(), out var manifest))
                                 {
                                     // Shouldn't happen.
-                                    Logger.LogWarning("[{Project}] Static web asset manifest not found.", containingProjectNode.GetDisplayName());
+                                    runningApplicationProject.ClientLogger.Log(MessageDescriptor.StaticWebAssetManifestNotFound);
                                     continue;
                                 }
 
                                 if (!manifest.TryGetBundleFilePath(bundleFileName, out var bundleFilePath))
                                 {
                                     // Shouldn't happen.
-                                    Logger.LogWarning("[{Project}] Scoped CSS bundle file '{BundleFile}' not found.", containingProjectNode.GetDisplayName(), bundleFileName);
+                                    runningApplicationProject.ClientLogger.Log(MessageDescriptor.ScopedCssBundleFileNotFound, bundleFileName);
                                     continue;
                                 }
 
@@ -838,12 +820,7 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                if (!TryGetRunningProject(applicationProjectInstance.FullPath, out var runningProjects))
-                {
-                    continue;
-                }
-
-                foreach (var runningProject in runningProjects)
+                foreach (var runningProject in GetCorrespondingRunningProjects(runningProjects, applicationProjectInstance))
                 {
                     if (!builder.StaticAssetsToUpdate.TryGetValue(runningProject, out var updatesPerRunningProject))
                     {
@@ -954,12 +931,7 @@ namespace Microsoft.DotNet.Watch
             {
                 foreach (var containingProjectPath in changedFile.Item.ContainingProjectPaths)
                 {
-                    if (!projectGraph.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
-                    {
-                        // Shouldn't happen.
-                        Logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
-                        continue;
-                    }
+                    var containingProjectNodes = projectGraph.GetProjectNodes(containingProjectPath);
 
                     // Relaunch all projects whose dependency is affected by this file change.
                     foreach (var ancestor in containingProjectNodes[0].GetAncestorsAndSelf())
@@ -982,12 +954,52 @@ namespace Microsoft.DotNet.Watch
             return relaunchOperations;
         }
 
-        public bool TryGetRunningProject(string projectPath, out ImmutableArray<RunningProject> projects)
+        private static IEnumerable<RunningProject> GetCorrespondingRunningProjects(ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects, Project project)
         {
-            lock (_runningProjectsAndUpdatesGuard)
+            if (project.FilePath == null || !runningProjects.TryGetValue(project.FilePath, out var projectsWithPath))
             {
-                return _runningProjects.TryGetValue(projectPath, out projects);
+                return [];
             }
+
+            // msbuild workspace doesn't set TFM if the project is not multi-targeted
+            var tfm = HotReloadService.GetTargetFramework(project);
+            if (tfm == null)
+            {
+                Debug.Assert(projectsWithPath.All(p => string.Equals(p.GetTargetFramework(), projectsWithPath[0].GetTargetFramework(), StringComparison.OrdinalIgnoreCase)));
+                return projectsWithPath;
+            }
+
+            return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static IEnumerable<RunningProject> GetCorrespondingRunningProjects(ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects, ProjectInstance project)
+        {
+            if (!runningProjects.TryGetValue(project.FullPath, out var projectsWithPath))
+            {
+                return [];
+            }
+
+            var tfm = project.GetTargetFramework();
+            return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private ProjectInstance GetProjectInstance(Project project)
+        {
+            Debug.Assert(project.FilePath != null);
+
+            if (!_projectInstances.TryGetValue(project.FilePath, out var instances))
+            {
+                throw new InvalidOperationException($"Project '{project.FilePath}' (id = '{project.Id}') not found in project graph");
+            }
+
+            // msbuild workspace doesn't set TFM if the project is not multi-targeted
+            var tfm = HotReloadService.GetTargetFramework(project);
+            if (tfm == null)
+            {
+                return instances.Single();
+            }
+
+            return instances.Single(instance => string.Equals(instance.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
         }
 
         private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(IEnumerable<HotReloadService.Update> updates)
@@ -1000,12 +1012,13 @@ namespace Microsoft.DotNet.Watch
                     keySelector: static group => group.Key,
                     elementSelector: static group => group.Select(static node => node.ProjectInstance).ToImmutableArray());
 
-        public async Task UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
+        public async Task<Solution> UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
         {
             _projectInstances = CreateProjectInstanceMap(projectGraph);
 
             var solution = await Workspace.UpdateProjectGraphAsync([.. projectGraph.EntryPointNodes.Select(n => n.ProjectInstance.FullPath)], cancellationToken);
             await SolutionUpdatedAsync(solution, "project update", cancellationToken);
+            return solution;
         }
 
         public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)

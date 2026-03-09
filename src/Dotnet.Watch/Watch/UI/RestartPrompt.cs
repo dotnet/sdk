@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class RestartPrompt(ILogger logger, ConsoleInputReader requester, bool? noPrompt)
+    internal sealed class RestartPrompt(ILogger logger, ConsoleInputReader inputReader, bool? noPrompt)
     {
         public bool? AutoRestartPreference { get; private set; } = noPrompt;
 
@@ -17,12 +17,12 @@ namespace Microsoft.DotNet.Watch
                 return AutoRestartPreference.Value;
             }
 
-            var key = await requester.GetKeyAsync(
+            var keyInfo = await inputReader.GetKeyAsync(
                 $"{question} Yes (y) / No (n) / Always (a) / Never (v)",
                 AcceptKey,
                 cancellationToken);
 
-            switch (key)
+            switch (keyInfo.Key)
             {
                 case ConsoleKey.Escape:
                 case ConsoleKey.Y:

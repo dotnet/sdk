@@ -55,13 +55,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps", identifier: isDirectoryProps.ToString())
                 .WithSource();
 
+            var dependencyProjectDisplay = $"Dependency ({ToolsetInfo.CurrentTargetFramework})";
             var symbolName = isDirectoryProps ? "BUILD_CONST_IN_PROPS" : "BUILD_CONST_IN_CSPROJ";
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
-            var libSourcePath = Path.Combine(dependencyDir, "Foo.cs");
+            var dependencySourcePath = Path.Combine(dependencyDir, "Foo.cs");
             var buildFilePath = isDirectoryProps ? Path.Combine(testAsset.Path, "Directory.Build.props") : Path.Combine(dependencyDir, "Dependency.csproj");
 
-            File.WriteAllText(libSourcePath, $$"""
+            File.WriteAllText(dependencySourcePath, $$"""
                 public class Lib
                 {
                     public static void Print()
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
-            await App.WaitUntilOutputContains("dotnet watch ⌚ [auto-restart] error ENC1102: Changing project setting 'DefineConstants'");
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ [{dependencyProjectDisplay}] [auto-restart] error ENC1102: Changing project setting 'DefineConstants'");
 
             await App.WaitUntilOutputContains($"{symbolName} not set");
         }

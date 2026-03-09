@@ -70,6 +70,7 @@ namespace Microsoft.DotNet.Watch
                     CtrlR => new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true),
                     >= 'a' and <= 'z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'a'), shift: false, alt: false, control: false),
                     >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: true, alt: false, control: false),
+                    >= '0' and <= '9' => new ConsoleKeyInfo(c, ConsoleKey.NumPad0 + (c - '0'), shift: false, alt: false, control: false),
                     _ => default
                 };
 
