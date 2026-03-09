@@ -173,16 +173,6 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Sets the last error info directly. Use this for non-exception error paths
-    /// (e.g., <see cref="CommandBase.RecordFailure"/>) that need to propagate
-    /// error tags to the root span.
-    /// </summary>
-    public void SetLastErrorInfo(ExceptionErrorInfo errorInfo)
-    {
-        LastErrorInfo = errorInfo;
-    }
-
-    /// <summary>
     /// Records a non-exception error on the given activity and stores it so the root
     /// span can inherit the tags via <see cref="ApplyLastErrorToActivity"/>.
     /// Use this instead of manually setting error tags on an activity.
@@ -196,52 +186,6 @@ public sealed class DotnetupTelemetry : IDisposable
         var errorInfo = new ExceptionErrorInfo(errorType, category, Details: message);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
         LastErrorInfo = errorInfo;
-    }
-
-    /// <summary>
-    /// Posts a custom telemetry event.
-    /// </summary>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="properties">Optional string properties.</param>
-    /// <param name="measurements">Optional numeric measurements.</param>
-    public void PostEvent(
-        string eventName,
-        Dictionary<string, string>? properties = null,
-        Dictionary<string, double>? measurements = null)
-    {
-        if (!Enabled)
-        {
-            return;
-        }
-
-        using var activity = CommandSource.StartActivity(eventName, ActivityKind.Internal);
-        if (activity == null)
-        {
-            return;
-        }
-
-        // Add common properties to each span for App Insights customDimensions
-        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
-        {
-            activity.SetTag(attr.Key, attr.Value?.ToString());
-        }
-        activity.SetTag(TelemetryTagNames.Caller, "dotnetup");
-
-        if (properties != null)
-        {
-            foreach (var (key, value) in properties)
-            {
-                activity.SetTag(key, value);
-            }
-        }
-
-        if (measurements != null)
-        {
-            foreach (var (key, value) in measurements)
-            {
-                activity.SetTag(key, value);
-            }
-        }
     }
 
     /// <summary>

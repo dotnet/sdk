@@ -65,7 +65,7 @@ internal class InstallWorkflow
         if (context is null)
         {
             Console.Error.WriteLine(error);
-            RecordWorkflowError("context_resolution_failed", ErrorCategory.User);
+            DotnetupTelemetry.Instance.RecordError(Activity.Current, "context_resolution_failed", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -74,7 +74,7 @@ internal class InstallWorkflow
         {
             Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is an existing file, not a directory. " +
                 "Please specify a directory path for the installation.");
-            RecordWorkflowError("install_path_is_file", ErrorCategory.User);
+            DotnetupTelemetry.Instance.RecordError(Activity.Current, "install_path_is_file", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -86,7 +86,7 @@ internal class InstallWorkflow
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-            RecordWorkflowError("admin_path_blocked", ErrorCategory.User);
+            DotnetupTelemetry.Instance.RecordError(Activity.Current, "admin_path_blocked", ErrorCategory.User);
             return new InstallWorkflowResult(1, null);
         }
 
@@ -109,7 +109,7 @@ internal class InstallWorkflow
         var installResult = ExecuteInstallations(context, resolved);
         if (installResult is null)
         {
-            RecordWorkflowError("install_failed", ErrorCategory.Product);
+            DotnetupTelemetry.Instance.RecordError(Activity.Current, "install_failed", ErrorCategory.Product);
             return new InstallWorkflowResult(1, resolved);
         }
 
@@ -232,11 +232,4 @@ internal class InstallWorkflow
         }
     }
 
-    /// <summary>
-    /// Records a workflow error on the current activity and propagates it to the root span.
-    /// </summary>
-    private static void RecordWorkflowError(string errorType, ErrorCategory category)
-    {
-        DotnetupTelemetry.Instance.RecordError(Activity.Current, errorType, category);
-    }
 }
