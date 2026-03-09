@@ -11,12 +11,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     {
         internal readonly string AssemblyPath;
         internal readonly string DisplayName;
-
-        /// <summary>
-        /// xUnit v3 class filter arguments ready for the command line, e.g.
-        /// "--filter-class Ns.ClassA --filter-class Ns.ClassB".
-        /// Empty when the partition covers the entire assembly (no filtering needed).
-        /// </summary>
         internal readonly string ClassFilterArgs;
 
         public AssemblyPartitionInfo(

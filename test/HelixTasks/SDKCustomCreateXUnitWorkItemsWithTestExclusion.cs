@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 string chmodPrefix = IsPosixShell ? $"chmod +x {Path.GetFileNameWithoutExtension(assemblyName)} && " : "";
 
                 string command = $"{chmodPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 25m {enableDiagLogging} {passthroughSection}";
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {enableDiagLogging} {passthroughSection}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
