@@ -8,7 +8,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// Stores its own project directory independently from the process's CWD,
     /// enabling tests to verify tasks resolve paths relative to ProjectDirectory, not CWD.
     /// </summary>
-    public class TestDriverProxy : DispatchProxy
+    internal class TestDriverProxy : DispatchProxy
     {
         private string _projectDirectory = string.Empty;
         private Dictionary<string, string> _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -104,7 +104,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "GetEnvironmentVariables" => GetEnvVars(),
                 "SetEnvironmentVariable" => DoSetEnvVar(args),
                 "SetEnvironment" => DoSetEnv(args),
-                "GetProcessStartInfo" => CreateProcessStartInfo(),
+                "GetProcessStartInfo" => throw new NotImplementedException(
+                    "GetProcessStartInfo is not used by SDK tasks."),
                 "Dispose" => null,
                 _ => throw new NotSupportedException($"Method '{targetMethod.Name}' is not supported by {nameof(TestDriverProxy)}."),
             };
@@ -158,14 +159,5 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return null;
         }
 
-        private ProcessStartInfo CreateProcessStartInfo()
-        {
-            var psi = new ProcessStartInfo { WorkingDirectory = _projectDirectory };
-            foreach (var kvp in _environmentVariables)
-            {
-                psi.Environment[kvp.Key] = kvp.Value;
-            }
-            return psi;
-        }
     }
 }
