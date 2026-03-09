@@ -604,7 +604,10 @@ public partial class DefineStaticWebAssets : Task
 
     private void ApplyGroupDefinitions()
     {
-        var definitions = new List<(string Name, string Value, string SourceId, int Order, StaticWebAssetGlobMatcher IncludeMatcher, StaticWebAssetGlobMatcher ExcludeMatcher, StaticWebAssetGlobMatcher RelativePathMatcher)>();
+        var definitions = new List<(string Name, string Value, string SourceId, int Order,
+            StaticWebAssetGlobMatcher IncludeMatcher, StaticWebAssetGlobMatcher ExcludeMatcher,
+            StaticWebAssetGlobMatcher RelativePathMatcher, string RelativePathPrefix,
+            string ContentRootSuffix)>();
 
         foreach (var def in StaticWebAssetGroupDefinitions)
         {
@@ -620,6 +623,8 @@ public partial class DefineStaticWebAssets : Task
             var includePattern = def.GetMetadata("IncludePattern");
             var excludePattern = def.GetMetadata("ExcludePattern");
             var relativePathPattern = def.GetMetadata("RelativePathPattern");
+            var relativePathPrefix = def.GetMetadata("RelativePathPrefix");
+            var contentRootSuffix = def.GetMetadata("ContentRootSuffix");
 
             StaticWebAssetGlobMatcher includeMatcher = null;
             if (!string.IsNullOrEmpty(includePattern))
@@ -645,7 +650,7 @@ public partial class DefineStaticWebAssets : Task
                     .Build();
             }
 
-            definitions.Add((name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher));
+            definitions.Add((name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher, relativePathPrefix, contentRootSuffix));
         }
 
         // Validate that no two definitions share the same (Order, SourceId) — the spec requires this
@@ -676,7 +681,7 @@ public partial class DefineStaticWebAssets : Task
             var currentRelativePath = asset.RelativePath;
             var groupEntries = new List<string>();
 
-            foreach (var (name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher) in definitions)
+            foreach (var (name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher, relativePathPrefix, contentRootSuffix) in definitions)
             {
                 if (includeMatcher == null)
                 {
@@ -732,10 +737,19 @@ public partial class DefineStaticWebAssets : Task
                         groupEntries.Add(name + "=" + strippedPrefix.TrimEnd('/'));
                         Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, strippedPrefix.TrimEnd('/'));
 
-                        // Inject a file-only (~) token to encode the group membership in the RelativePath.
-                        // Example: V4/css/site.css → #[{BootstrapVersion}/]~css/site.css
-                        var tokenExpression = "#[{" + name + "}/]~";
-                        newRelativePath = tokenExpression + newRelativePath;
+                        // RelativePathPrefix: optionally prepend to the computed relative path (literal, may contain tokens).
+                        // The SDK does NOT auto-inject file-only tokens — the consumer controls this.
+                        if (!string.IsNullOrEmpty(relativePathPrefix))
+                        {
+                            newRelativePath = relativePathPrefix + newRelativePath;
+                            Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", name, relativePathPrefix);
+                        }
+
+                        // ContentRootSuffix: adjust ContentRoot (independent of prefix/token).
+                        if (!string.IsNullOrEmpty(contentRootSuffix))
+                        {
+                            ApplyContentRootSuffix(ref asset, contentRootSuffix, name);
+                        }
 
                         Log.LogMessage(MessageImportance.Low, "Group '{0}' transformed RelativePath from '{1}' to '{2}'.",
                             name, currentRelativePath, newRelativePath);
@@ -748,6 +762,19 @@ public partial class DefineStaticWebAssets : Task
                     // No path stripping — just tag with the group definition's Value.
                     groupEntries.Add(name + "=" + value);
                     Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, name, value);
+
+                    // RelativePathPrefix: optionally prepend to the path (literal, may contain tokens).
+                    if (!string.IsNullOrEmpty(relativePathPrefix))
+                    {
+                        currentRelativePath = relativePathPrefix + currentRelativePath;
+                        Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", name, relativePathPrefix);
+                    }
+
+                    // ContentRootSuffix: adjust ContentRoot (independent of prefix).
+                    if (!string.IsNullOrEmpty(contentRootSuffix))
+                    {
+                        ApplyContentRootSuffix(ref asset, contentRootSuffix, name);
+                    }
                 }
             }
 
@@ -758,5 +785,18 @@ public partial class DefineStaticWebAssets : Task
                 Assets[i] = asset.ToTaskItem();
             }
         }
+    }
+
+    private void ApplyContentRootSuffix(ref StaticWebAsset asset, string contentRootSuffix, string groupName)
+    {
+        var suffix = contentRootSuffix.Replace('/', Path.DirectorySeparatorChar);
+        if (!suffix.EndsWith(Path.DirectorySeparatorChar.ToString()))
+        {
+            suffix += Path.DirectorySeparatorChar;
+        }
+        asset.ContentRoot = asset.ContentRoot + suffix;
+        Log.LogMessage(MessageImportance.Low,
+            "Group '{0}' adjusted ContentRoot to '{1}' via ContentRootSuffix.",
+            groupName, asset.ContentRoot);
     }
 }

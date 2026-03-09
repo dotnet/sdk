@@ -472,4 +472,82 @@ public class ResolveCompressedAssetsTest
         task2.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
         task2.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
     }
+
+    [Fact]
+    public void ProducesDistinctIdentities_ForGroupVariantsWithIdenticalContent()
+    {
+        // Arrange — two assets that differ only in AssetGroups but have the same
+        // SourceId, BasePath, AssetKind, RelativePath (after token stripping) and
+        // Fingerprint (identical file content). Before the fix, these would produce
+        // the same compressed asset Identity and crash in ToAssetDictionary.
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var v4ItemSpec = Path.Combine(OutputBasePath, "staticwebassets", "V4", "css", "site.css");
+        var v5ItemSpec = Path.Combine(OutputBasePath, "staticwebassets", "V5", "css", "site.css");
+
+        var v4Asset = new StaticWebAsset()
+        {
+            Identity = v4ItemSpec,
+            OriginalItemSpec = v4ItemSpec,
+            RelativePath = "#[{BootstrapVersion}/]~css/site#[.{fingerprint}]?.css",
+            ContentRoot = Path.Combine(OutputBasePath, "staticwebassets"),
+            SourceType = StaticWebAsset.SourceTypes.Package,
+            SourceId = "Microsoft.AspNetCore.Identity.UI",
+            BasePath = "_content/Microsoft.AspNetCore.Identity.UI",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetGroups = "BootstrapVersion=V4",
+            Fingerprint = "samehash123",
+            Integrity = "sameintegrity",
+            FileLength = 42,
+            LastWriteTime = DateTime.UtcNow
+        }.ToTaskItem();
+
+        var v5Asset = new StaticWebAsset()
+        {
+            Identity = v5ItemSpec,
+            OriginalItemSpec = v5ItemSpec,
+            RelativePath = "#[{BootstrapVersion}/]~css/site#[.{fingerprint}]?.css",
+            ContentRoot = Path.Combine(OutputBasePath, "staticwebassets"),
+            SourceType = StaticWebAsset.SourceTypes.Package,
+            SourceId = "Microsoft.AspNetCore.Identity.UI",
+            BasePath = "_content/Microsoft.AspNetCore.Identity.UI",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetGroups = "BootstrapVersion=V5",
+            Fingerprint = "samehash123",
+            Integrity = "sameintegrity",
+            FileLength = 42,
+            LastWriteTime = DateTime.UtcNow
+        }.ToTaskItem();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { v4Asset, v5Asset },
+            IncludePatterns = "**/*.css",
+            Formats = "gzip",
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".gz");
+
+        // The critical assertion: the two compressed assets must have different Identities
+        // so they don't collide when added to a dictionary keyed by Identity.
+        compressed[0].ItemSpec.Should().NotBe(compressed[1].ItemSpec,
+            "group variants with identical content must produce distinct compressed asset identities");
+    }
 }

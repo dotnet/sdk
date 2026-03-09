@@ -780,4 +780,427 @@ public class AssetGroupFilteringTest : IDisposable
         asset.Normalize();
         return asset;
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // DefineStaticWebAssets – ContentRootSuffix + RelativePathPrefix
+    // ──────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void ApplyGroupDefinitions_ContentRootSuffix_AdjustsContentRoot()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["ContentRootSuffix"] = "V4"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("css/site.css", "RelativePathPattern stripped the V4/ prefix");
+        asset.ContentRoot.Should().Be(wwwrootPath + "V4" + Path.DirectorySeparatorChar,
+            "ContentRootSuffix appended V4 to wwwroot path");
+        asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_PatternOnly_NoAutoFileOnlyToken()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**"
+                    // No RelativePathPrefix, no ContentRootSuffix
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("css/site.css",
+            "RelativePathPattern stripped V4/ prefix — no auto-injection of file-only ~ token");
+        asset.RelativePath.Should().NotContain("~", "SDK must not auto-inject file-only tokens");
+        asset.ContentRoot.Should().Be(wwwrootPath, "ContentRoot unchanged when no ContentRootSuffix");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_RelativePathPrefix_FileOnlyToken()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["RelativePathPrefix"] = "#[{BootstrapVersion}/]~"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("#[{BootstrapVersion}/]~css/site.css",
+            "pattern strips V4/, prefix prepends file-only token expression");
+        asset.ContentRoot.Should().Be(wwwrootPath, "ContentRoot unchanged when no ContentRootSuffix");
+        asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_RelativePathPrefix_LiteralPrepend()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["RelativePathPrefix"] = "shared/"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("shared/css/site.css",
+            "pattern strips V4/, prefix prepends literal 'shared/'");
+        asset.ContentRoot.Should().Be(wwwrootPath, "ContentRoot unchanged when no ContentRootSuffix");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_AllThreeOrthogonal()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["RelativePathPrefix"] = "shared/",
+                    ["ContentRootSuffix"] = "V4"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("shared/css/site.css",
+            "pattern strips V4/, prefix prepends 'shared/'");
+        asset.ContentRoot.Should().Be(wwwrootPath + "V4" + Path.DirectorySeparatorChar,
+            "ContentRootSuffix applied independently");
+        asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_RelativePathPrefix_WithoutPattern_PrependsToOriginalPath()
+    {
+        var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(file, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity",
+                    ["Fingerprint"] = "fingerprint",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = wwwrootPath,
+            BasePath = "mylib",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("Theme", new Dictionary<string, string>
+                {
+                    ["Value"] = "Default",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "**",
+                    ["RelativePathPrefix"] = "lib/"
+                    // No RelativePathPattern — no stripping, just prepend
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.RelativePath.Should().Be("lib/css/site.css",
+            "no pattern stripping, but prefix 'lib/' prepended to original path");
+        asset.AssetGroups.Should().Contain("Theme=Default");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_ContentRootSuffix_MultipleGroups_EachGetsOwnContentRoot()
+    {
+        var fileV4 = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+        var fileV5 = CreateTempFile("wwwroot", "V5", "css", "site.css", "body-v5{}");
+        var wwwrootPath = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var task = new DefineStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            TestResolveFileDetails = (_, _) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero)),
+            CandidateAssets = new[]
+            {
+                new TaskItem(fileV4, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity-v4",
+                    ["Fingerprint"] = "fingerprint-v4",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "10",
+                }),
+                new TaskItem(fileV5, new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "",
+                    ["TargetPath"] = "",
+                    ["Link"] = "",
+                    ["CopyToOutputDirectory"] = "",
+                    ["CopyToPublishDirectory"] = "",
+                    ["Integrity"] = "integrity-v5",
+                    ["Fingerprint"] = "fingerprint-v5",
+                    ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                    ["FileLength"] = "11",
+                })
+            },
+            RelativePathPattern = "wwwroot/**",
+            SourceType = "Discovered",
+            SourceId = "IdentityUI",
+            ContentRoot = wwwrootPath,
+            BasePath = "Identity",
+            StaticWebAssetGroupDefinitions = new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V5",
+                    ["Order"] = "0",
+                    ["IncludePattern"] = "V5/**",
+                    ["RelativePathPattern"] = "V5/**",
+                    ["ContentRootSuffix"] = "V5"
+                }),
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "1",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["ContentRootSuffix"] = "V4"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(2);
+
+        var assets = task.Assets.Select(a => StaticWebAsset.FromTaskItem(a)).ToList();
+        var v4Asset = assets.Single(a => a.AssetGroups.Contains("BootstrapVersion=V4"));
+        var v5Asset = assets.Single(a => a.AssetGroups.Contains("BootstrapVersion=V5"));
+
+        v4Asset.ContentRoot.Should().Be(wwwrootPath + "V4" + Path.DirectorySeparatorChar,
+            "V4 asset gets its own ContentRoot with V4 suffix");
+        v4Asset.RelativePath.Should().Be("css/site.css");
+
+        v5Asset.ContentRoot.Should().Be(wwwrootPath + "V5" + Path.DirectorySeparatorChar,
+            "V5 asset gets its own ContentRoot with V5 suffix");
+        v5Asset.RelativePath.Should().Be("css/site.css");
+    }
 }

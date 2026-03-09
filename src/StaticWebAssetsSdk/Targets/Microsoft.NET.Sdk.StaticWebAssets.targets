@@ -698,7 +698,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets;AssignLinkMetadata">
 
     <PropertyGroup>
       <_ResolveProjectStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
