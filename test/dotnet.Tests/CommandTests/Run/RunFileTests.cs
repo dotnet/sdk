@@ -4077,7 +4077,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // Use variable file name.
             if (rewritten.Contains(fileName, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(fileName, "{fileName}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(fileName, "{FileName}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -4332,14 +4332,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             return arg.Replace("\"", string.Empty);
         }
 
-        static string? GetGeneratedMethodName(string fileName)
+        static string? GetGeneratedMethodName(string assetFileName)
         {
-            return fileName switch
+            return assetFileName switch
             {
                 $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}.AssemblyAttributes.cs" => "AssemblyAttributes",
-                $"{programName}.GlobalUsings.g.cs" => "GlobalUsings",
-                $"{programName}.AssemblyInfo.cs" => "AssemblyInfo",
-                $"{programName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
+                $"{fileName}.GlobalUsings.g.cs" => "GlobalUsings",
+                $"{fileName}.AssemblyInfo.cs" => "AssemblyInfo",
+                $"{fileName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
                 $"{programName}{FileNameSuffixes.RuntimeConfigJson}" => "RuntimeConfig",
                 _ => null,
             };
