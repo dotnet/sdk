@@ -446,4 +446,54 @@ internal sealed partial class CSharpCompilerCommand
 
         return RuntimeVersion;
     }
+
+    /// <summary>
+    /// Reads the <c>FrameworkList.xml</c> from the current targeting pack and yields one
+    /// <c>/reference:</c> argument per managed assembly listed there.
+    /// </summary>
+    private IEnumerable<string> GetFrameworkReferenceArguments()
+        => GetFrameworkArguments(type: "Managed", language: null, argPrefix: "/reference:");
+
+    /// <summary>
+    /// Reads the <c>FrameworkList.xml</c> from the current targeting pack and yields one
+    /// <c>/analyzer:</c> argument per C# analyzer assembly listed there.
+    /// </summary>
+    private IEnumerable<string> GetFrameworkAnalyzerArguments()
+        => GetFrameworkArguments(type: "Analyzer", language: "cs", argPrefix: "/analyzer:");
+
+    /// <summary>
+    /// Reads the <c>FrameworkList.xml</c> from the current targeting pack and yields one
+    /// compiler argument per matching assembly listed there.
+    /// </summary>
+    private IEnumerable<string> GetFrameworkArguments(string type, string? language, string argPrefix)
+    {
+        var packRoot = Path.Join(DotNetRootPath, "packs", "Microsoft.NETCore.App.Ref", RuntimeVersion);
+        var frameworkListPath = Path.Join(packRoot, "data", "FrameworkList.xml");
+        if (!File.Exists(frameworkListPath))
+        {
+            throw new InvalidOperationException($"FrameworkList.xml not found at '{frameworkListPath}'. The SDK installation may be corrupted.");
+        }
+
+        var frameworkList = XDocument.Load(frameworkListPath);
+        foreach (var file in frameworkList.Root?.Elements("File") ?? [])
+        {
+            if (file.Attribute("Type")?.Value.Equals(type, StringComparison.OrdinalIgnoreCase) != true)
+            {
+                continue;
+            }
+
+            if (language is not null && file.Attribute("Language")?.Value.Equals(language, StringComparison.OrdinalIgnoreCase) != true)
+            {
+                continue;
+            }
+
+            var filePath = file.Attribute("Path")?.Value;
+            if (string.IsNullOrEmpty(filePath))
+            {
+                continue;
+            }
+
+            yield return $"{argPrefix}{Path.Join(packRoot, filePath)}";
+        }
+    }
 }

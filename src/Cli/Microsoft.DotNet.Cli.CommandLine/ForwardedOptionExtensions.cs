@@ -135,6 +135,34 @@ public static class ForwardedOptionExtensions
         /// Forward the option as a singular calculated string value.
         /// </summary>
         public Option<TValue> ForwardAsSingle(Func<TValue, string> format) => option.SetForwardingFunction(format);
+
+        /// <summary>
+        /// Configures the Option to only forward if it has an explicitly provided value, and not to forward if the value is implicitly provided (either via a default value or via implicit value inference for zero-arity options). This is useful for options where you only want to forward if the user explicitly provided the option, and not forward if the option just happens to have a value.
+        /// This is most commonly useful for boolean options with no default value factory, where S.CL will infer a value of 'true' if the option is present and 'false' if it is absent.
+        /// </summary>
+        public Option<TValue> IfExplicitlyProvided()
+        {
+            if (s_forwardingFunctions.TryGetValue(option, out var existingFunc))
+            {
+                // wrap the existing forwarding function with an additional check to ensure the option's value is explicitly provided
+                Func<ParseResult, IEnumerable<string>> wrapped = pr =>
+                {
+                    if (pr.GetResult(option) is OptionResult r && !r.Implicit)
+                    {
+                        return existingFunc(pr);
+                    }
+                    else
+                    {
+                        return [];
+                    }
+                };
+                lock (s_forwardingFunctions)
+                {
+                    s_forwardingFunctions[option] = wrapped;
+                }
+            }
+            return option;
+        }
     }
 
     extension(Option<bool> option)
@@ -147,19 +175,14 @@ public static class ForwardedOptionExtensions
         /// </summary>
         public Option<bool> ForwardIfEnabled(string value) => option.SetForwardingFunction((bool o) => o ? [value] : []);
         /// <summary>
-        /// Forward the boolean option as a string value. This value will be forwarded as long as the option has a OptionResult - which means that
+        /// Forward the boolean option as an array of string values. This value will be forwarded as long as the option has a OptionResult - which means that
         /// any implicit value calculation will cause the string value to be forwarded. For boolean options specifically, if the option is zero arity
         /// and has no default value factory, S.CL will synthesize a true or false value based on whether the option was provided or not, so we need to
         /// add an additional implicit 'value is true' check to prevent accidentally forwarding the option for flags that are absent..
         /// </summary>
         public Option<bool> ForwardIfEnabled(string[] value) => option.SetForwardingFunction((bool o) => o ? value : []);
 
-        /// <summary>
-        /// Forward the boolean option as a string value. This value will be forwarded as long as the option has a OptionResult - which means that
-        /// any implicit value calculation will cause the string value to be forwarded. For boolean options specifically, if the option is zero arity
-        /// and has no default value factory, S.CL will synthesize a true or false value based on whether the option was provided or not, so we need to
-        /// add an additional implicit 'value is true' check to prevent accidentally forwarding the option for flags that are absent..
-        /// </summary>
+        /// <inheritdoc cref="ForwardIfEnabled(Option{bool}, string)"/>
         public Option<bool> ForwardAs(string value) => option.ForwardIfEnabled(value);
     }
 

@@ -5,6 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.Reflection;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -17,29 +20,32 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition definition)
+    internal abstract class BaseCommand<TDefinition>(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
         : Command(definition.Name, definition.Description)
+        where TDefinition : Command
     {
-        protected static readonly Dictionary<CommandDefinition, Func<Func<ParseResult, ITemplateEngineHost>, BaseCommand>> SubcommandFactories = new()
+        public readonly TDefinition Definition = definition;
+
+        protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, Command, Command>> SubcommandFactories = new()
         {
-            { CommandDefinition.Alias.Command, hostBuilder => new AliasCommand(hostBuilder) },
-            { CommandDefinition.Alias.Add.Command, hostBuilder => new AliasAddCommand(hostBuilder) },
-            { CommandDefinition.Alias.Add.LegacyCommand, hostBuilder => new LegacyAliasAddCommand(hostBuilder) },
-            { CommandDefinition.Alias.Show.Command, hostBuilder => new AliasShowCommand(hostBuilder) },
-            { CommandDefinition.Alias.Show.LegacyCommand, hostBuilder => new LegacyAliasShowCommand(hostBuilder) },
-            { CommandDefinition.Instantiate.Command, hostBuilder => new InstantiateCommand(hostBuilder) },
-            { CommandDefinition.Details.Command, hostBuilder => new DetailsCommand(hostBuilder) },
-            { CommandDefinition.Install.Command, hostBuilder => new InstallCommand(hostBuilder) },
-            { CommandDefinition.Install.LegacyCommand, hostBuilder => new LegacyInstallCommand(hostBuilder) },
-            { CommandDefinition.Uninstall.Command, hostBuilder => new UninstallCommand(hostBuilder) },
-            { CommandDefinition.Uninstall.LegacyCommand, hostBuilder => new LegacyUninstallCommand(hostBuilder) },
-            { CommandDefinition.List.Command, hostBuilder => new ListCommand(hostBuilder) },
-            { CommandDefinition.List.LegacyCommand, hostBuilder => new LegacyListCommand(hostBuilder) },
-            { CommandDefinition.Search.Command, hostBuilder => new SearchCommand(hostBuilder) },
-            { CommandDefinition.Search.LegacyCommand, hostBuilder => new LegacySearchCommand(hostBuilder) },
-            { CommandDefinition.Update.Command, hostBuilder => new UpdateCommand(hostBuilder) },
-            { CommandDefinition.Update.LegacyApplyCommand, hostBuilder => new LegacyUpdateApplyCommand(hostBuilder) },
-            { CommandDefinition.Update.LegacyCheckCommand, hostBuilder => new LegacyUpdateCheckCommand(hostBuilder) },
+            { NewAliasCommandDefinition.Name, (hostBuilder, definition) => new AliasCommand(hostBuilder, (NewAliasCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.Name, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.Name, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewCreateCommandDefinition.Name, (hostBuilder, definition) => new InstantiateCommand(hostBuilder, (NewCreateCommandDefinition)definition) },
+            { NewDetailsCommandDefinition.Name, (hostBuilder, definition) => new DetailsCommand(hostBuilder, (NewDetailsCommandDefinition)definition) },
+            { NewInstallCommandDefinition.Name, (hostBuilder, definition) => new InstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewInstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyInstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.Name, (hostBuilder, definition) => new UninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyUninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewListCommandDefinition.Name, (hostBuilder, definition) => new ListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewListCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewSearchCommandDefinition.Name, (hostBuilder, definition) => new SearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewSearchCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacySearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewUpdateCommandDefinition.Name, (hostBuilder, definition) => new UpdateCommand(hostBuilder, (NewUpdateCommandDefinition)definition) },
+            { NewUpdateApplyLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateApplyCommand(hostBuilder, (NewUpdateApplyLegacyCommandDefinition)definition) },
+            { NewUpdateCheckLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateCheckCommand(hostBuilder, (NewUpdateCheckLegacyCommandDefinition)definition) },
         };
 
         protected internal virtual IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
@@ -62,13 +68,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
     }
 
-    internal abstract class BaseCommand<TArgs> : BaseCommand where TArgs : GlobalArgs
+    internal abstract class BaseCommand<TArgs, TDefinition> : BaseCommand<TDefinition>
+        where TDefinition : Command
+        where TArgs : GlobalArgs
     {
-        internal BaseCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            CommandDefinition definition)
+        internal BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
             : base(hostBuilder, definition)
         {
+            this.DocsLink = definition.DocsLink;
             Hidden = definition.Hidden;
             TreatUnmatchedTokensAsErrors = definition.TreatUnmatchedTokensAsErrors;
 
@@ -77,9 +84,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arguments.AddRange(definition.Arguments);
             Validators.AddRange(definition.Validators);
 
-            foreach (CommandDefinition subcommandDef in definition.Subcommands)
+            foreach (var subcommandDef in definition.Subcommands)
             {
-                Add(SubcommandFactories[subcommandDef](hostBuilder));
+                Add(SubcommandFactories[subcommandDef.Name](hostBuilder, subcommandDef));
             }
 
             Action = new CommandAction(this);
@@ -91,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return base.GetCompletions(context);
             }
-            GlobalArgs args = new(this, context.ParseResult);
+            var args = new GlobalArgs(context.ParseResult);
             using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
             using TemplatePackageManager templatePackageManager = new(environmentSettings);
             return GetCompletions(context, environmentSettings, templatePackageManager).ToList();
@@ -118,27 +125,30 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_TemplateShortNameCommandConflict_Info, usedCommandAlias);
-            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(CommandDefinition.Instantiate.ShortNameArgument, usedCommandAlias));
+
+            var example = Example.For<InstantiateCommand>(args.ParseResult).WithArguments(usedCommandAlias);
+
+            Reporter.Output.WriteCommand(example);
             Reporter.Output.WriteLine();
         }
 
-        protected static void PrintDeprecationMessage<TDepr, TNew>(ParseResult parseResult, Option? additionalOption = null)
-            where TDepr : Command
-            where TNew : Command
+        protected static void PrintDeprecationMessage<TDeprecatedCommand, TNewCommand>(ParseResult parseResult, Func<TNewCommand, Option>? additionalNewOptionSelector = null)
+            where TDeprecatedCommand : Command
+            where TNewCommand : Command
         {
-            var newCommandExample = Example.For<TNew>(parseResult);
-            if (additionalOption != null)
+            var newCommandExample = Example.For<TNewCommand>(parseResult);
+            if (additionalNewOptionSelector != null)
             {
-                newCommandExample.WithOption(additionalOption);
+                newCommandExample = newCommandExample.WithOption(additionalNewOptionSelector);
             }
 
             Reporter.Output.WriteLine(string.Format(
              LocalizableStrings.Commands_Warning_DeprecatedCommand,
-             Example.For<TDepr>(parseResult),
+             Example.For<TDeprecatedCommand>(parseResult),
              newCommandExample).Yellow());
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_Warning_DeprecatedCommand_Info.Yellow());
-            Reporter.Output.WriteCommand(Example.For<TNew>(parseResult).WithHelpOption().ToString().Yellow());
+            Reporter.Output.WriteCommand(Example.For<TNewCommand>(parseResult).WithHelpOption().ToString().Yellow());
             Reporter.Output.WriteLine();
         }
 
@@ -222,9 +232,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private sealed class CommandAction : AsynchronousCommandLineAction
         {
-            private readonly BaseCommand<TArgs> _command;
+            private readonly BaseCommand<TArgs, TDefinition> _command;
 
-            public CommandAction(BaseCommand<TArgs> command) => _command = command;
+            public CommandAction(BaseCommand<TArgs, TDefinition> command) => _command = command;
 
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
