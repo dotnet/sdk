@@ -59,6 +59,11 @@
         <target state="translated">La specifica di entrambe le opzioni `-r|--runtime` e `-os` non è supportata.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotUseAddSourceWithSourceMapping">
+        <source>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
+        <target state="translated">L'opzione --add-source non può essere combinata con il mapping dell'origine pacchetto. Per usare una sorgente aggiuntiva, aggiornare le impostazioni di mapping dell'origine nel file di configurazione di NuGet. Altre informazioni: https://aka.ms/nuget-package-source-mapping</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
         <source>Column maximum width must be greater than zero.</source>
         <target state="translated">La larghezza massima della colonna deve essere maggiore di zero.</target>

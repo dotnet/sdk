@@ -7,7 +7,6 @@ using Microsoft.Build.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[Collection(nameof(InProcBuildTestCollection))]
 public class BinaryLoggerTests
 {
     [Theory]
@@ -27,29 +26,37 @@ public class BinaryLoggerTests
     [InlineData("\"\"\"path{}\"", "path{}.binlog", false)] // wildcard {} not supported
     public void ParseBinaryLogFilePath(string? value, string? expected, bool matchesMSBuildImpl = true)
     {
-        Assert.Equal(expected, CommandLineOptions.ParseBinaryLogFilePath(value));
-
-        if (!matchesMSBuildImpl)
+        ProjectBuildManager.Test_BuildSemaphore.Wait();
+        try
         {
-            return;
+            Assert.Equal(expected, CommandLineOptions.ParseBinaryLogFilePath(value));
+
+            if (!matchesMSBuildImpl)
+            {
+                return;
+            }
+
+            Assert.NotNull(value);
+            Assert.NotNull(expected);
+
+            var dir = SdkTestContext.Current.TestExecutionDirectory;
+            Directory.SetCurrentDirectory(dir);
+
+            var bl = new BinaryLogger() { Parameters = value };
+            bl.Initialize(new EventSource());
+
+            var actualPath = bl.GetType().GetProperty("FilePath", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(bl);
+            if (actualPath != null)
+            {
+                Assert.Equal(Path.Combine(dir, expected), actualPath);
+            }
+
+            bl.Shutdown();
         }
-
-        Assert.NotNull(value);
-        Assert.NotNull(expected);
-
-        var dir = SdkTestContext.Current.TestExecutionDirectory;
-        Directory.SetCurrentDirectory(dir);
-
-        var bl = new BinaryLogger() { Parameters = value };
-        bl.Initialize(new EventSource());
-
-        var actualPath = bl.GetType().GetProperty("FilePath", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(bl);
-        if (actualPath != null)
+        finally
         {
-            Assert.Equal(Path.Combine(dir, expected), actualPath);
+            ProjectBuildManager.Test_BuildSemaphore.Release();
         }
-
-        bl.Shutdown();
     }
 
     private class EventSource : IEventSource

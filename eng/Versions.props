@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build">
+﻿<Project DefaultTargets="Build">
 
   <Import Project="Version.Details.props" />
 
@@ -21,7 +21,7 @@
     <BuiltinWorkloadFeatureBand>$(VersionMajor).$(VersionMinor).100</BuiltinWorkloadFeatureBand>
     <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
     <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
-    <!-- In source-build the version of the compiler must be same or newer than the version of the
+    <!-- In source-buildthe version of the compiler must be same or newer than the version of the
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>

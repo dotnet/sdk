@@ -19,6 +19,11 @@ internal class TestLogger(ITestOutputHelper? output = null) : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
+        if (logLevel == LogLevel.None)
+        {
+            return;
+        }
+
         var message = $"[{logLevel}] {formatter(state, exception)}";
 
         lock (Guard)
