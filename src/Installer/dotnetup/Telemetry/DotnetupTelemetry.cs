@@ -32,10 +32,8 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Connection string for Application Insights.
-    /// TODO: Replace with the official SDK CLI Application Insights key before production release.
-    /// See https://github.com/dotnet/sdk/issues/52785
     /// </summary>
-    private const string ConnectionString = "InstrumentationKey=04172778-3bc9-4db6-b50f-cafe87756a47;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/;LiveEndpoint=https://westus2.livediagnostics.monitor.azure.com/;ApplicationId=fbd94297-7083-42b8-aaa5-1886192b4272";
+    private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
 
     /// <summary>
     /// Environment variable to opt out of telemetry.
