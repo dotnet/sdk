@@ -186,7 +186,7 @@ internal class MsbuildProject
             if (_interactive)
             {
                 // NuGet need this environment variable to call plugin dll
-                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", PathResolver.Default.DotnetExecutable);
                 // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
                 _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
                 project = _projects.LoadProject(

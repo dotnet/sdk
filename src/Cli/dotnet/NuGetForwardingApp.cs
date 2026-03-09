@@ -37,8 +37,6 @@ public class NuGetForwardingApp
 
     private static string GetNuGetExePath()
     {
-        return Path.Combine(
-            AppContext.BaseDirectory,
-            s_nugetExeName);
+        return PathResolver.Default.GetNuGetPath();
     }
 }

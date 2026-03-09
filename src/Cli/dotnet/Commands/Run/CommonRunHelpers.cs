@@ -17,7 +17,7 @@ internal static class CommonRunHelpers
     public static Dictionary<string, string> GetGlobalPropertiesFromArgs(MSBuildArgs msbuildArgs)
     {
         var globalProperties = msbuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
+        globalProperties[Constants.MSBuildExtensionsPath] = PathResolver.Default.SdkRoot;
         return globalProperties;
     }
 

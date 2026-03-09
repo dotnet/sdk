@@ -102,7 +102,9 @@ internal class FileBasedInstaller : IInstaller
         var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var workloadSetPackageVersion);
         var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
-        var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+        var workloadSetPath = PathResolver.Default.GetWorkloadSetPath(
+            workloadSetFeatureBand.ToString(),
+            workloadSetVersion);
 
         try
         {
@@ -269,7 +271,7 @@ internal class FileBasedInstaller : IInstaller
 
     string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)
     {
-        return Path.Combine(_workloadRootDir, "sdk-manifests", sdkFeatureBand);
+        return PathResolver.Default.GetManifestDirectory(sdkFeatureBand);
     }
 
     public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
