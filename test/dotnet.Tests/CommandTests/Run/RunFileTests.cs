@@ -6102,7 +6102,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var projectBasedFiles = ReadFiles();
 
         fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
-        fileBasedResult.StdErr?.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.StdErr!.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
         fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
         fileBasedFiles.Should().Equal(projectBasedFiles);
 
