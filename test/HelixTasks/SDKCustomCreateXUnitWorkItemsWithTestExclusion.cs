@@ -154,9 +154,17 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
                 string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
-                var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                // xUnit v3 uses Microsoft.Testing.Platform which ignores VSTest-style --filter
+                // (it gets converted to VSTestTestCaseFilter, an MSBuild property MTP silently drops).
+                // Pass --filter-class args after the -- separator so they reach the xUnit v3 test
+                // runner directly.  See https://github.com/dotnet/sdk/issues/45927
+                var passthroughArgs = new List<string>();
+                if (!string.IsNullOrEmpty(assemblyPartitionInfo.ClassFilterArgs))
+                    passthroughArgs.Add(assemblyPartitionInfo.ClassFilterArgs);
+                if (!string.IsNullOrEmpty(arguments))
+                    passthroughArgs.Add(arguments);
+                string passthroughSection = passthroughArgs.Count > 0 ? "-- " + string.Join(" ", passthroughArgs) : "";
 
                 // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
                 // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
@@ -164,7 +172,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 string chmodPrefix = IsPosixShell ? $"chmod +x {Path.GetFileNameWithoutExtension(assemblyName)} && " : "";
 
                 string command = $"{chmodPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 25m {testFilter} {enableDiagLogging} {arguments}";
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 25m {enableDiagLogging} {passthroughSection}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 

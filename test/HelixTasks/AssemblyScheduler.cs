@@ -11,23 +11,29 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     {
         internal readonly string AssemblyPath;
         internal readonly string DisplayName;
-        internal readonly string ClassListArgumentString;
+
+        /// <summary>
+        /// xUnit v3 class filter arguments ready for the command line, e.g.
+        /// "--filter-class Ns.ClassA --filter-class Ns.ClassB".
+        /// Empty when the partition covers the entire assembly (no filtering needed).
+        /// </summary>
+        internal readonly string ClassFilterArgs;
 
         public AssemblyPartitionInfo(
             string assemblyPath,
             string displayName,
-            string classListArgumentString)
+            string classFilterArgs)
         {
             AssemblyPath = assemblyPath;
             DisplayName = displayName;
-            ClassListArgumentString = classListArgumentString;
+            ClassFilterArgs = classFilterArgs;
         }
 
         public AssemblyPartitionInfo(string assemblyPath)
         {
             AssemblyPath = assemblyPath;
             DisplayName = Path.GetFileName(assemblyPath);
-            ClassListArgumentString = string.Empty;
+            ClassFilterArgs = string.Empty;
         }
 
         public override string ToString() => DisplayName;
@@ -96,9 +102,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                     if (_builder.Length > 0)
                     {
-                        _builder.Append("|");
+                        _builder.Append(' ');
                     }
-                    _builder.Append($@"{typeInfo.FullName}");
+                    _builder.Append($"--filter-class {typeInfo.FullName}");
 
                     CheckForPartitionLimit(done: false);
                 }
@@ -127,9 +133,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     return;
                 }
 
-                // One item we have to consider here is the maximum command line length in 
+                // One item we have to consider here is the maximum command line length in
                 // Windows which is 32767 characters (XP is smaller but don't care).  Once
-                // we get close then create a partition and move on. 
+                // we get close then create a partition and move on.
                 if (_currentTypeInfoList.Sum(x => x.MethodCount) >= _methodLimit ||
                     _builder.Length > 25000)
                 {
