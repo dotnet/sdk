@@ -12,11 +12,12 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static Option<bool> CreateYesOption() => new("--yes", "-y")
+    public static Option<bool> CreateYesOption(bool hidden = false) => new("--yes", "-y")
     {
         Description = CommandDefinitionStrings.YesOptionDescription,
         Arity = ArgumentArity.Zero,
-        IsDynamic = true
+        IsDynamic = true,
+        Hidden = hidden
     };
 
     public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption() =>

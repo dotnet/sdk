@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">Nenašly se žádné testovací projekty.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">Identifikátor zařízení, který se má použít ke spuštění aplikace</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">ZAŘÍZENÍ</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">Vypíše dostupná zařízení pro spuštění aplikace.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
@@ -226,7 +226,7 @@ Prohledané cesty: „{1}“, „{2}“.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="new">Build failed with exit code: {0}.</target>
+        <target state="translated">Sestavení se nezdařilo s ukončovacím kódem: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -1237,10 +1237,30 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Kontext projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Chcete po převodu odstranit všechny zdrojové soubory?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Zadejte výstupní adresář (stisknutím klávesy Enter použijete výchozí hodnotu: {0}, adresář nesmí existovat):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Ne – zachovat všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Ano – odstranit všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Odstraněný zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -1261,6 +1281,11 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Zkušební spuštění: vytvoří soubor: {0}</target>
         <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Zkušební spuštění: odstraní zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
@@ -1349,7 +1374,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">Dostupná zařízení:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -1364,7 +1389,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">Nasazení do zařízení se nezdařilo. Opravte všechny chyby nasazení a spusťte příkaz znovu.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -1419,7 +1444,7 @@ Aktuální OutputType je {2}.</target>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">Tento projekt nelze spustit, protože je k dispozici více zařízení. Zadejte prosím zařízení, které se má použít, předáním argumentu {0} s jednou z následujících hodnot:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -1431,7 +1456,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">Posunutím nahoru a dolů zobrazíte další zařízení.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -1441,7 +1466,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">Pro tento projekt nejsou k dispozici žádná zařízení.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1456,7 +1481,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">Vyberte zařízení pro spuštění:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -1638,7 +1663,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">Soubory filtru řešení (.slnf) nepodporují možnosti --in-root nebo --solution-folder.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -1775,23 +1800,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">Umožňuje instalaci nebo správu nástrojů, které rozšiřují prostředí .NET.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">Stahování balíčku nástrojů bylo zrušeno.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">Balíček nástroje {0}@{1} bude stažen ze zdroje {2}.
-Chcete pokračovat?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">Stažení balíčku nástroje vyžaduje potvrzení. Spusťte v interaktivním režimu nebo potvrďte akci pomocí možnosti příkazového řádku --yes.</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}

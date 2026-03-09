@@ -56,7 +56,7 @@ This ensures only processes that received the public key via the environment var
 
 ### 1. WebSocket Capability Detection
 
-[ProjectGraphUtilities.cs](../../src/BuiltInTools/Watch/Build/ProjectGraphUtilities.cs) checks for the `HotReloadWebSockets` capability.
+[ProjectGraphUtilities.cs](../../src/Dotnet.Watch/Watch/Build/ProjectGraphUtilities.cs) checks for the `HotReloadWebSockets` capability.
 
 ### 2. MobileAppModel
 

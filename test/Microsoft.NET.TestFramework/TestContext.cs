@@ -110,7 +110,7 @@ namespace Microsoft.NET.TestFramework
             return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
         }
 
-        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
+        public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
             environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 

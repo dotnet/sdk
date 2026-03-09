@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">Non sono stati trovati progetti di test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">Identificatore del dispositivo da usare per l'esecuzione dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">DISPOSITIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">Elencare i dispositivi disponibili per l'esecuzione dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
@@ -226,7 +226,7 @@ Percorsi cercati: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="new">Build failed with exit code: {0}.</target>
+        <target state="translated">Compilazione non riuscita con codice di uscita: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -1237,10 +1237,30 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Contesto progetto</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Eliminare tutti i file di origine dopo la conversione?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Specificare la directory di output (premere INVIO per impostazione predefinita: '{0}', la directory non deve esistere):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">No: mantenere tutti i file di origine</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Sì: eliminare tutti i file di origine</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">File di origine eliminato: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -1261,6 +1281,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Esecuzione di prova: creerebbe il file: {0}</target>
         <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Esecuzione di prova: eliminerebbe il file di origine {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
@@ -1349,7 +1374,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">Dispositivi disponibili:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -1364,7 +1389,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">Distribuzione sul dispositivo non riuscita. Correggere eventuali errori di distribuzione ed eseguire di nuovo.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -1419,7 +1444,7 @@ L'OutputType corrente è '{2}'.</target>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">Non è possibile eseguire questo progetto perché sono disponibili più dispositivi. Specificare il dispositivo da usare passando l'argomento {0} con uno dei valori seguenti:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -1431,7 +1456,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">Scorri verso l'alto o verso il basso per visualizzare altri dispositivi</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -1441,7 +1466,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">Nessun dispositivo disponibile per questo progetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1456,7 +1481,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">Selezionare un dispositivo in cui eseguire:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -1638,7 +1663,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">I file di filtro della soluzione (.slnf) non supportano le opzioni --in-root o --solution-folder.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -1775,23 +1800,6 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">Consente di installare o gestire strumenti che estendono l'esperienza .NET.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">Download del pacchetto dello strumento annullato</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">Il pacchetto dello strumento {0}@{1} verrà scaricato da {2}.
-Procedere?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">Il download del pacchetto dello strumento richiede conferma. Esegui in modalità interattiva o usa l'opzione della riga di comando "--yes" per confermare.</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}

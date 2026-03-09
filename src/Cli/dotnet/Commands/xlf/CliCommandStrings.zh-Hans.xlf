@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">未找到任何测试项目。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">用于运行该应用程序的设备的标识符。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">设备</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">列出可用于运行该应用程序的设备。</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
@@ -226,7 +226,7 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="new">Build failed with exit code: {0}.</target>
+        <target state="translated">生成失败，退出代码: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -1237,10 +1237,30 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">项目上下文</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">转换后是否删除所有源文件?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">指定输出目录(按 Enter 使用默认值: ‘{0}’，目录不得存在):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">否 - 保留所有源文件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">是 - 删除所有源文件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">已删除的源文件: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -1261,6 +1281,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Dry run: would create file: {0}</source>
         <target state="translated">试运行: 将创建文件: {0}</target>
         <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">试运行: 将删除源文件: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
@@ -1349,7 +1374,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">可用的设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -1364,7 +1389,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">部署到设备失败。请修复部署错误后重试。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -1419,7 +1444,7 @@ The current OutputType is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">无法运行此项目，因为有多个设备可用。请通过传递 {0} 参数并为其指定以下值之一来选择要使用的设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -1431,7 +1456,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">上下移动以显示更多设备</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -1441,7 +1466,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">此项目没有可用设备。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1456,7 +1481,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">选择运行设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -1638,7 +1663,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">解决方案筛选器文件(.slnf)不支持 --in-root 或 --solution-folder 选项。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -1775,23 +1800,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">安装或管理扩展 .NET 体验的工具。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">已取消工具包下载</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">将从源 {2} 下载工具包 {0}@{1}。
-是否继续?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">工具包下载需要确认。在交互模式下运行，或使用 “--yes” 命令行选项进行确认。</target>
-        <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}

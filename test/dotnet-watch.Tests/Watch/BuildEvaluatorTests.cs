@@ -26,7 +26,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 LoggerFactory = NullLoggerFactory.Instance,
                 ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
-                RootProjectOptions = TestOptions.ProjectOptions,
+                MainProjectOptions = TestOptions.ProjectOptions,
+                RootProjects = [TestOptions.ProjectOptions.Representation],
+                TargetFramework = null,
+                BuildArguments = [],
                 EnvironmentOptions = environmentOptions,
                 BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory()

@@ -61,7 +61,7 @@
       </trans-unit>
       <trans-unit id="CannotUseAddSourceWithSourceMapping">
         <source>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
-        <target state="new">The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</target>
+        <target state="translated">La opción --add-source no se puede combinar con la asignación de origen del paquete. Para usar un origen adicional, actualice la configuración de asignación de origen del archivo de configuración de NuGet. Más información: https://aka.ms/nuget-package-source-mapping</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">

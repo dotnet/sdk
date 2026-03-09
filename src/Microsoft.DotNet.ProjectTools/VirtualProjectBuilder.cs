@@ -15,15 +15,15 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal sealed class VirtualProjectBuilder
+public sealed class VirtualProjectBuilder
 {
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
 
-    public string EntryPointFileFullPath { get; }
+    internal string EntryPointFileFullPath { get; }
 
-    public SourceFile EntryPointSourceFile
+    internal SourceFile EntryPointSourceFile
     {
         get
         {
@@ -36,14 +36,14 @@ internal sealed class VirtualProjectBuilder
         }
     }
 
-    public string ArtifactsPath
+    internal string ArtifactsPath
         => field ??= GetArtifactsPath(EntryPointFileFullPath);
 
-    public string[]? RequestedTargets { get; }
+    internal string[]? RequestedTargets { get; }
 
-    public VirtualProjectBuilder(
+    internal VirtualProjectBuilder(
         string entryPointFileFullPath,
-        string targetFrameworkVersion,
+        string targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null,
         SourceText? sourceText = null)
@@ -53,7 +53,7 @@ internal sealed class VirtualProjectBuilder
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFrameworkVersion);
+        _defaultProperties = GetDefaultProperties(targetFramework);
 
         if (sourceText != null)
         {
@@ -64,17 +64,17 @@ internal sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
         ("OutputType", "Exe"),
-        ("TargetFramework", $"net{targetFrameworkVersion}"),
+        ("TargetFramework", targetFramework),
         ("ImplicitUsings", "enable"),
         ("Nullable", "enable"),
         ("PublishAot", "true"),
         ("PackAsTool", "true"),
     ];
 
-    public static string GetArtifactsPath(string entryPointFileFullPath)
+    internal static string GetArtifactsPath(string entryPointFileFullPath)
     {
         // Include entry point file name so the directory name is not completely opaque.
         string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
@@ -84,10 +84,13 @@ internal sealed class VirtualProjectBuilder
         return GetTempSubpath(directoryName);
     }
 
+    public static string GetVirtualProjectPath(string entryPointFilePath)
+        => Path.ChangeExtension(entryPointFilePath, ".csproj");
+
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
-    public static string GetTempSubdirectory()
+    internal static string GetTempSubdirectory()
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -105,7 +108,7 @@ internal sealed class VirtualProjectBuilder
     /// <summary>
     /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
     /// </summary>
-    public static string GetTempSubpath(string name)
+    internal static string GetTempSubpath(string name)
     {
         return Path.Join(GetTempSubdirectory(), name);
     }
@@ -198,7 +201,7 @@ internal sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
-    public ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
+    internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
         return MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping))
             ? CSharpDirective.IncludeOrExclude.ParseMapping(
@@ -208,7 +211,24 @@ internal sealed class VirtualProjectBuilder
             : CSharpDirective.IncludeOrExclude.DefaultMapping;
     }
 
-    public void CreateProjectInstance(
+    public static ProjectInstance CreateProjectInstance(
+        string entryPointFilePath,
+        string targetFramework,
+        ProjectCollection projectCollection,
+        Action<string, int, string> errorReporter)
+    {
+        var builder = new VirtualProjectBuilder(entryPointFilePath, targetFramework);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
+            out var projectInstance,
+            out _);
+
+        return projectInstance;
+    }
+
+    internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter reportError,
         out ProjectInstance project,
@@ -295,7 +315,7 @@ internal sealed class VirtualProjectBuilder
             {
                 if (!File.Exists(filePath))
                 {
-                    reportError(EntryPointSourceFile, default, string.Format(Resources.IncludedFileNotFound, filePath));
+                    reportError(EntryPointSourceFile.Text, EntryPointSourceFile.Path, default, string.Format(Resources.IncludedFileNotFound, filePath));
                     continue;
                 }
 
@@ -398,14 +418,15 @@ internal sealed class VirtualProjectBuilder
             if (!value)
             {
                 reportError(
-                    directive.Info.SourceFile,
+                    directive.Info.SourceFile.Text,
+                    directive.Info.SourceFile.Path,
                     directive.Info.Span,
                     string.Format(Resources.ExperimentalFeatureDisabled, flagName));
             }
         }
     }
 
-    public static void WriteProjectFile(
+    internal static void WriteProjectFile(
         TextWriter writer,
         ImmutableArray<CSharpDirective> directives,
         IEnumerable<(string name, string value)> defaultProperties,
@@ -752,39 +773,5 @@ internal sealed class VirtualProjectBuilder
                     """);
             }
         }
-    }
-
-    public static SourceFile RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile)
-    {
-        if (directives.Length == 0)
-        {
-            return sourceFile;
-        }
-
-#if DEBUG
-        var filteredDirectives = directives.Where(d => d.Info.SourceFile.Path == sourceFile.Path);
-        Debug.Assert(
-            filteredDirectives.OrderBy(static d => d.Info.Span.Start).SequenceEqual(filteredDirectives),
-            "Directives should be ordered by source location.");
-#endif
-
-        var text = sourceFile.Text;
-
-        for (int i = directives.Length - 1; i >= 0; i--)
-        {
-            var directive = directives[i];
-            if (directive.Info.SourceFile.Path == sourceFile.Path)
-            {
-                text = text.Replace(directive.Info.Span, string.Empty);
-            }
-        }
-
-        return sourceFile.WithText(text);
-    }
-
-    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceFile sourceFile, string targetFilePath)
-    {
-        var modifiedFile = RemoveDirectivesFromFile(directives, sourceFile);
-        modifiedFile.WithPath(targetFilePath).Save();
     }
 }
