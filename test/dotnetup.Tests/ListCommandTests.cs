@@ -136,7 +136,7 @@ public class ListCommandTests
             installationsArray.GetArrayLength().Should().Be(1);
 
             var firstInstall = installationsArray[0];
-            firstInstall.GetProperty("component").GetString().Should().Be("sdk");
+            firstInstall.GetProperty("component").GetString().Should().Be("SDK");
             firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
             firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
             firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
