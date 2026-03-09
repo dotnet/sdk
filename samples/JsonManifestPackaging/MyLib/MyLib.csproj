@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
+    <!-- Mark js/framework*.js as a framework asset for testing materialization -->
+    <StaticWebAssetFrameworkPattern>js/framework*</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
 </Project>
