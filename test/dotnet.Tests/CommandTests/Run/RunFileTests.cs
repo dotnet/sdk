@@ -2152,17 +2152,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property OutputType=Library
             #:property PublishAot=false
             #:property LangVersion=preview
+            #:property TargetFramework=
             #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
             class C;
-            """);
-
-        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <TargetFramework></TargetFramework>
-              </PropertyGroup>
-            </Project>
             """);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
@@ -2277,17 +2269,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property OutputType=Exe
             #:property PublishAot=false
             #:property LangVersion=preview
+            #:property TargetFramework=
             #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
             Console.WriteLine("Hello Exe");
-            """);
-
-        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <TargetFramework></TargetFramework>
-              </PropertyGroup>
-            </Project>
             """);
 
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
@@ -3986,10 +3970,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string entryPointPathNormalized = NormalizePath(entryPointPath);
         var msbuildArgsToVerify = new List<string>();
         var nuGetPackageFilePaths = new List<string>();
+        bool referenceSpreadInserted = false;
+        bool analyzerSpreadInserted = false;
+        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
             // The .NET Foundation licenses this file to you under the MIT license.
+
+            using System.Text.Json;
 
             namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -3997,8 +3986,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             partial class CSharpCompilerCommand
             {
                 private IEnumerable<string> GetCscArguments(
-                    string fileName,
-                    string fileNameWithoutExtension,
                     string objDir,
                     string binDir)
                 {
@@ -4097,7 +4084,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // Use variable program name.
             if (rewritten.Contains(programName, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(programName, "{fileNameWithoutExtension}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(programName, "{FileNameWithoutExtension}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -4111,6 +4098,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // Ignore `/analyzerconfig` which is not variable (so it comes from the machine or sdk repo).
             if (!needsInterpolation && arg.StartsWith("/analyzerconfig", StringComparison.Ordinal))
             {
+                continue;
+            }
+
+            // Use GetFrameworkReferenceArguments() for framework references instead of hard-coding them.
+            if (arg.StartsWith("/reference:", StringComparison.Ordinal))
+            {
+                if (!referenceSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkReferenceArguments(),
+                        """);
+                    referenceSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
+                continue;
+            }
+
+            // Use GetFrameworkAnalyzerArguments() for targeting-pack analyzers instead of hard-coding them.
+            if (arg.StartsWith("/analyzer:", StringComparison.Ordinal)
+                && rewritten.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!analyzerSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkAnalyzerArguments(),
+                        """);
+                    analyzerSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
                 continue;
             }
 
@@ -4150,6 +4168,70 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         code.AppendLine("""
                     ];
                 }
+            """);
+
+        // Generate file content templates.
+        var baseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.GetDirectoryName(entryPointPath)!);
+        var replacements = new List<(string, string)>
+        {
+            (TestPathUtility.ResolveTempPrefixLink(entryPointPath), nameof(CSharpCompilerCommand.EntryPointFileFullPath)),
+            (baseDirectory + Path.DirectorySeparatorChar, nameof(CSharpCompilerCommand.BaseDirectoryWithTrailingSeparator)),
+            (baseDirectory, nameof(CSharpCompilerCommand.BaseDirectory)),
+            (programName, nameof(CSharpCompilerCommand.FileNameWithoutExtension)),
+            (CSharpCompilerCommand.TargetFrameworkVersion, nameof(CSharpCompilerCommand.TargetFrameworkVersion)),
+            (CSharpCompilerCommand.TargetFramework, nameof(CSharpCompilerCommand.TargetFramework)),
+            (CSharpCompilerCommand.DefaultRuntimeVersion, nameof(CSharpCompilerCommand.DefaultRuntimeVersion)),
+        };
+        var emittedFiles = Directory.EnumerateFiles(artifactsDir, "*", SearchOption.AllDirectories).Order();
+        foreach (var emittedFile in emittedFiles)
+        {
+            var emittedFileName = Path.GetFileName(emittedFile);
+            var generatedMethodName = GetGeneratedMethodName(emittedFileName);
+            if (generatedMethodName is null)
+            {
+                Log.WriteLine($"Skipping unrecognized file '{emittedFile}'.");
+                continue;
+            }
+
+            var emittedFileContent = File.ReadAllText(emittedFile);
+
+            string interpolatedString = emittedFileContent;
+            string interpolationPrefix;
+
+            if (emittedFileName.EndsWith(".json", StringComparison.Ordinal))
+            {
+                interpolationPrefix = "$$";
+                foreach (var (key, value) in replacements)
+                {
+                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ")}}");
+                }
+            }
+            else
+            {
+                interpolationPrefix = "$";
+                foreach (var (key, value) in replacements)
+                {
+                    interpolatedString = interpolatedString.Replace(key, "{" + value + "}");
+                }
+            }
+
+            if (interpolatedString == emittedFileContent)
+            {
+                interpolationPrefix = "";
+            }
+
+            code.AppendLine($$""""
+
+                    private string Get{{generatedMethodName}}Content()
+                    {
+                        return {{interpolationPrefix}}"""
+                {{interpolatedString}}
+                """;
+                    }
+                """");
+        }
+
+        code.AppendLine("""
             }
             """);
 
@@ -4201,12 +4283,30 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Check that csc args between MSBuild run and CSC-only run are equivalent.
         var normalizedCscOnlyArgs = cscOnlyCallArgs
-            .Select(static a => NormalizePathArg(RemoveQuotes(a)));
+            .Select(static a => NormalizePathArg(RemoveQuotes(a)))
+            .ToList();
         Log.WriteLine("CSC-only args:");
         Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
         Log.WriteLine("MSBuild args:");
         Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
-        normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify,
+
+        // References and targeting-pack analyzers may be in a different order (FrameworkList.xml vs. MSBuild),
+        // so compare them as sets. All other args must be in the same order.
+        var cscOnlyRefArgs = normalizedCscOnlyArgs.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var cscOnlyAnalyzerArgs = normalizedCscOnlyArgs.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var cscOnlyOtherArgs = normalizedCscOnlyArgs.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        var msbuildRefArgs = msbuildArgsToVerify.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var msbuildAnalyzerArgs = msbuildArgsToVerify.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var msbuildOtherArgs = msbuildArgsToVerify.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        cscOnlyRefArgs.Should().NotBeEmpty(
+            "framework references should be resolved from FrameworkList.xml");
+        cscOnlyRefArgs.Should().BeEquivalentTo(msbuildRefArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyAnalyzerArgs.Should().NotBeEmpty(
+            "framework analyzers should be resolved from FrameworkList.xml");
+        cscOnlyAnalyzerArgs.Should().BeEquivalentTo(msbuildAnalyzerArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyOtherArgs.Should().Equal(msbuildOtherArgs,
             "the generated file might be outdated, run this test locally to regenerate it");
 
         static CompilerCall FindCompilerCall(string binaryLogPath)
@@ -4230,6 +4330,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         static string RemoveQuotes(string arg)
         {
             return arg.Replace("\"", string.Empty);
+        }
+
+        static string? GetGeneratedMethodName(string fileName)
+        {
+            return fileName switch
+            {
+                $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}.AssemblyAttributes.cs" => "AssemblyAttributes",
+                $"{programName}.GlobalUsings.g.cs" => "GlobalUsings",
+                $"{programName}.AssemblyInfo.cs" => "AssemblyInfo",
+                $"{programName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
+                $"{programName}{FileNameSuffixes.RuntimeConfigJson}" => "RuntimeConfig",
+                _ => null,
+            };
         }
     }
 
@@ -4298,7 +4411,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             var msbuildFileText = File.ReadAllText(msbuildFile);
             if (cscOnlyFileText.ReplaceLineEndings() != msbuildFileText.ReplaceLineEndings())
             {
-                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, find the template in '{nameof(CSharpCompilerCommand)}.cs' and update it): {cscOnlyFile}");
+                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, run test '{nameof(CscArguments)}' locally to re-generate the template): {cscOnlyFile}");
                 const int limit = 3_000;
                 if (cscOnlyFileText.Length < limit && msbuildFileText.Length < limit)
                 {

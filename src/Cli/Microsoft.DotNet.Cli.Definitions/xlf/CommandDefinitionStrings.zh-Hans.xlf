@@ -1549,6 +1549,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">将基于文件的程序转换为基于项目的程序。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="translated">转换后删除所有源文件</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">确定更改但不实际修改文件系统</target>

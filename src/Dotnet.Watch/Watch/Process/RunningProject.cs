@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal delegate ValueTask<RunningProject> RestartOperation(CancellationToken cancellationToken);
+    internal delegate ValueTask RestartOperation(CancellationToken cancellationToken);
 
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Watch
         public ILogger ClientLogger => clientLogger;
         public ImmutableArray<string> ManagedCodeUpdateCapabilities => managedCodeUpdateCapabilities;
         public RunningProcess Process => process;
-        public RestartOperation RestartOperation => restartOperation;
 
         /// <summary>
         /// Set to true when the process termination is being requested so that it can be auto-restarted.
@@ -84,6 +83,16 @@ namespace Microsoft.DotNet.Watch
 
                 ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", process.Id, e.ToString());
             }
+        }
+
+        /// <summary>
+        /// Triggers restart operation.
+        /// </summary>
+        public async ValueTask RestartAsync(CancellationToken cancellationToken)
+        {
+            ClientLogger.Log(MessageDescriptor.ProjectRestarting);
+            await restartOperation(cancellationToken);
+            ClientLogger.Log(MessageDescriptor.ProjectRestarted);
         }
     }
 }

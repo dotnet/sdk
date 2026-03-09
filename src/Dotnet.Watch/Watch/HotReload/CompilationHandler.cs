@@ -28,8 +28,10 @@ namespace Microsoft.DotNet.Watch
 
         /// <summary>
         /// Projects that have been launched and to which we apply changes.
+        /// Maps <see cref="ProjectInstance.FullPath"/> to the list of running instances of that project.
         /// </summary>
-        private ImmutableDictionary<string, ImmutableArray<RunningProject>> _runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty;
+        private ImmutableDictionary<string, ImmutableArray<RunningProject>> _runningProjects
+            = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.WithComparers(PathUtilities.OSSpecificPathComparer);
 
         /// <summary>
         /// All updates that were attempted. Includes updates whose application failed.
@@ -43,7 +45,8 @@ namespace Microsoft.DotNet.Watch
         /// Current set of project instances indexed by <see cref="ProjectInstance.FullPath"/>.
         /// Updated whenever the project graph changes.
         /// </summary>
-        private ImmutableDictionary<string, ImmutableArray<ProjectInstance>> _projectInstances = [];
+        private ImmutableDictionary<string, ImmutableArray<ProjectInstance>> _projectInstances
+            = ImmutableDictionary<string, ImmutableArray<ProjectInstance>>.Empty.WithComparers(PathUtilities.OSSpecificPathComparer);
 
         public CompilationHandler(DotNetWatchContext context)
         {
@@ -58,7 +61,7 @@ namespace Microsoft.DotNet.Watch
             Workspace?.Dispose();
         }
 
-        private ILogger Logger
+        public ILogger Logger
             => _context.Logger;
 
         public async ValueTask TerminatePeripheralProcessesAndDispose(CancellationToken cancellationToken)
@@ -81,9 +84,10 @@ namespace Microsoft.DotNet.Watch
                 _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.Contains(update.ProjectId));
             }
         }
+
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
         {
-            Logger.Log(MessageDescriptor.HotReloadSessionStarting);
+            Logger.Log(MessageDescriptor.HotReloadSessionStartingNotification);
 
             var solution = Workspace.CurrentSolution;
 
@@ -286,7 +290,7 @@ namespace Microsoft.DotNet.Watch
                 await runningProject.Process.TerminateAsync();
 
                 // Creates a new running project and launches it:
-                await runningProject.RestartOperation(cancellationToken);
+                await runningProject.RestartAsync(cancellationToken);
             }
             catch (Exception e)
             {
@@ -393,10 +397,10 @@ namespace Microsoft.DotNet.Watch
             CancellationToken cancellationToken)
         {
             var applyTasks = new List<Task>();
+            ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate = [];
 
             if (managedCodeUpdates is not [])
             {
-                ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate;
                 lock (_runningProjectsAndUpdatesGuard)
                 {
                     // Adding the updates makes sure that all new processes receive them before they are added to running processes.
@@ -442,34 +446,38 @@ namespace Microsoft.DotNet.Watch
             applyTasks.AddRange(await Task.WhenAll(staticAssetApplyTaskProducers));
 
             // fire and forget:
-            _ = CompleteApplyOperationAsync(applyTasks, stopwatch, managedCodeUpdates.Count > 0, staticAssetUpdates.Count > 0);
-        }
+            _ = CompleteApplyOperationAsync();
 
-        private async Task CompleteApplyOperationAsync(IEnumerable<Task> applyTasks, Stopwatch stopwatch, bool hasManagedCodeUpdates, bool hasStaticAssetUpdates)
-        {
-            try
+            async Task CompleteApplyOperationAsync()
             {
-                await Task.WhenAll(applyTasks);
-
-                var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-
-                if (hasManagedCodeUpdates)
+                try
                 {
-                    _context.Logger.Log(MessageDescriptor.ManagedCodeChangesApplied, elapsedMilliseconds);
+                    await Task.WhenAll(applyTasks);
+
+                    var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+                    if (managedCodeUpdates.Count > 0)
+                    {
+                        _context.Logger.Log(MessageDescriptor.ManagedCodeChangesApplied, elapsedMilliseconds);
+                    }
+
+                    if (staticAssetUpdates.Count > 0)
+                    {
+                        _context.Logger.Log(MessageDescriptor.StaticAssetsChangesApplied, elapsedMilliseconds);
+                    }
+
+                    _context.Logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification,
+                        projectsToUpdate.Select(e => e.Value.First().Options.Representation).Concat(
+                            staticAssetUpdates.Select(e => e.Key.Options.Representation)));
                 }
-
-                if (hasStaticAssetUpdates)
+                catch (Exception e)
                 {
-                    _context.Logger.Log(MessageDescriptor.StaticAssetsChangesApplied, elapsedMilliseconds);
-                }
-            }
-            catch (Exception e)
-            {
-                // Handle all exceptions since this is a fire-and-forget task.
+                    // Handle all exceptions since this is a fire-and-forget task.
 
-                if (e is not OperationCanceledException)
-                {
-                    _context.Logger.LogError("Failed to apply managedCodeUpdates: {Exception}", e.ToString());
+                    if (e is not OperationCanceledException)
+                    {
+                        _context.Logger.LogError("Failed to apply managedCodeUpdates: {Exception}", e.ToString());
+                    }
                 }
             }
         }
@@ -838,6 +846,25 @@ namespace Microsoft.DotNet.Watch
             return projectsToRestart;
         }
 
+        /// <summary>
+        /// Restarts given projects after their process have been terminated via <see cref="TerminatePeripheralProcessesAsync"/>.
+        /// </summary>
+        internal async Task RestartPeripheralProjectsAsync(IReadOnlyList<RunningProject> projectsToRestart, CancellationToken cancellationToken)
+        {
+            if (projectsToRestart.Any(p => p.Options.IsMainProject))
+            {
+                throw new InvalidOperationException("Main project can't be restarted.");
+            }
+
+            _context.Logger.Log(MessageDescriptor.RestartingProjectsNotification, projectsToRestart.Select(p => p.Options.Representation));
+
+            await Task.WhenAll(
+                projectsToRestart.Select(async runningProject => runningProject.RestartAsync(cancellationToken)))
+                .WaitAsync(cancellationToken);
+
+            _context.Logger.Log(MessageDescriptor.ProjectsRestarted, projectsToRestart.Count);
+        }
+
         private bool RemoveRunningProject(RunningProject project)
         {
             var projectPath = project.ProjectNode.ProjectInstance.FullPath;
@@ -894,15 +921,10 @@ namespace Microsoft.DotNet.Watch
 
         public async Task UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Loading projects ...");
-            var stopwatch = Stopwatch.StartNew();
-
             _projectInstances = CreateProjectInstanceMap(projectGraph);
 
             var solution = await Workspace.UpdateProjectGraphAsync([.. projectGraph.EntryPointNodes.Select(n => n.ProjectInstance.FullPath)], cancellationToken);
             await SolutionUpdatedAsync(solution, "project update", cancellationToken);
-
-            Logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
         }
 
         public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)

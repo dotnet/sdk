@@ -110,7 +110,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
             return sessionId;
         }
 
-        public async ValueTask<RunningProject> StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool isRestart, CancellationToken cancellationToken)
+        public async ValueTask StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool isRestart, CancellationToken cancellationToken)
         {
             // Neither request from DCP nor restart should happen once the disposal has started.
             ObjectDisposedException.ThrowIf(_isDisposed, this);
@@ -179,7 +179,6 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
             }
 
             _logger.LogDebug("[#{SessionId}] Session started", sessionId);
-            return runningProject;
 
             async Task StartChannelReader(CancellationToken cancellationToken)
             {

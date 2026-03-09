@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Cannot_specify_both_0_and_1_options">
         <source>Cannot specify both '{0}' and '{1}' options.</source>
-        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <target state="translated">Não é possível especificar as opções "{0}" e "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_msbuild_project_file_in_0">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <target state="translated">Não foi possível encontrar um arquivo de projeto do MSBuild em '{0}'. Especifique qual projeto deve ser usado com a opção --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">Foram encontrados vários arquivos de projeto do MSBuild em '{0}'. Especifique qual deve ser usado com a opção --project.</target>
+        <target state="translated">Foram encontrados vários arquivos de projeto do MSBuild em '{0}'. Especifique qual deve ser usado com a opção --project.</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -144,7 +144,7 @@ Exemplos:
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
-        <target state="new">The specified path '{0}' is invalid: {1}</target>
+        <target state="translated">O caminho especificado "{0}" é inválido: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">

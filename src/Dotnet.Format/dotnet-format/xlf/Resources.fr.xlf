@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">Le fichier projet ou le fichier solution MSBuild est introuvable dans '{0}'. Spécifiez celui qui doit être utilisé avec l'argument &lt;espace de travail&gt;.</target>
+        <target state="translated">Le fichier projet ou le fichier solution MSBuild est introuvable dans « {0} ». Spécifiez celui qui doit être utilisé avec l'argument &lt;espace de travail&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects">
@@ -209,7 +209,7 @@
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">Plusieurs fichiers projet MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'argument &lt;espace de travail&gt;.</target>
+        <target state="translated">Plusieurs fichiers projet MSBuild trouvés dans « {0} ». Spécifiez celui qui doit être utilisé avec l'argument &lt;espace de travail&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files">
         <source>Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</source>
-        <target state="translated">Indique si l'argument '&lt;espace de travail&gt;' doit être traité en tant que simple dossier de fichiers.</target>
+        <target state="translated">Indique si l’argument `&lt;workspace&gt;` doit être traité en tant que simple dossier de fichiers.</target>
         <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">

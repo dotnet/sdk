@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Cannot_specify_both_0_and_1_options">
         <source>Cannot specify both '{0}' and '{1}' options.</source>
-        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <target state="translated">'{0}' オプションと '{1}' オプションの両方を指定することはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_msbuild_project_file_in_0">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <target state="translated">'{0}' で MSBuild プロジェクト ファイルが見つかりませんでした。使用するプロジェクトを --project オプションで指定してください。</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">複数の MSBuild プロジェクト ファイルが '{0}' で見つかりました。使用するものを --project オプションで指定してください。</target>
+        <target state="translated">複数の MSBuild プロジェクト ファイルが '{0}' で見つかりました。使用するものを --project オプションで指定してください。</target>
         <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -144,7 +144,7 @@ Examples:
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
-        <target state="new">The specified path '{0}' is invalid: {1}</target>
+        <target state="translated">指定されたパス '{0}' は無効です: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
