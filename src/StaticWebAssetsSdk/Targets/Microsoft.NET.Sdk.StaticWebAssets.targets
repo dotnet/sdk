@@ -304,6 +304,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveCoreStaticWebAssetsDependsOn>
       UpdateExistingPackageStaticWebAssets;
       ResolveProjectStaticWebAssets;
+      ResolveAdditionalStaticWebAssets;
       ResolveEmbeddedProjectsStaticWebAssets;
       ResolveReferencedProjectsStaticWebAssets;
       $(ResolveCoreStaticWebAssetsDependsOn);
@@ -737,6 +738,61 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Content Remove="@(StaticWebAsset)" />
 
       <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ResolveAdditionalStaticWebAssets processes additional content roots passed via the AdditionalStaticWebAssetsBasePath property.
+    The property is a semicolon separated list of values where each value is a content root path followed by a base path separated by comma.
+    For example: <<content-root-1>>,<<base-path-1>>;<<content-root-2>>,<<base-path-2>>
+  -->
+  <Target Name="ResolveAdditionalStaticWebAssets"
+    Condition="'$(NoBuild)' != 'true' and '$(AdditionalStaticWebAssetsBasePath)' != ''"
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+
+    <!-- Parse the semicolon-separated list into items, then extract ContentRoot and BasePath using string split -->
+    <ItemGroup>
+      <_AdditionalStaticWebAssetsBasePathEntry Include="$(AdditionalStaticWebAssetsBasePath)" />
+      <_ParsedAdditionalContentRoot Include="@(_AdditionalStaticWebAssetsBasePathEntry)">
+        <ContentRoot>$([System.String]::Copy('%(Identity)').Split(',')[0].Trim())$([System.IO.Path]::DirectorySeparatorChar)</ContentRoot>
+        <BasePath>$([System.String]::Copy('%(Identity)').Split(',')[1].Trim())</BasePath>
+      </_ParsedAdditionalContentRoot>
+    </ItemGroup>
+
+    <!-- Discover files from each content root -->
+    <ItemGroup>
+      <_AdditionalContentRootCandidates Include="%(_ParsedAdditionalContentRoot.ContentRoot)**">
+        <ContentRoot>%(_ParsedAdditionalContentRoot.ContentRoot)</ContentRoot>
+        <BasePath>%(_ParsedAdditionalContentRoot.BasePath)</BasePath>
+      </_AdditionalContentRootCandidates>
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_AdditionalContentRootCandidates)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+        <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_AdditionalStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_AdditionalStaticWebAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\AdditionalContentRoot\%(_ParsedAdditionalContentRoot.Identity)" Condition="Exists('%(_ParsedAdditionalContentRoot.ContentRoot)')">
+        <Source>$(PackageId)</Source>
+        <BasePath>%(_ParsedAdditionalContentRoot.BasePath)</BasePath>
+        <ContentRoot>%(_ParsedAdditionalContentRoot.ContentRoot)</ContentRoot>
+        <Pattern>**</Pattern>
+      </StaticWebAssetDiscoveryPattern>
     </ItemGroup>
 
   </Target>
