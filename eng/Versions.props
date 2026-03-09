@@ -139,18 +139,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.14.0-rc.116</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.14.0-rc.116</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.14.0-rc.116</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.14.0-rc.116</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.14.0-rc.116</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.14.0-rc.116</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.0-rc.116</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.14.0-rc.116</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.14.0-rc.116</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.14.0-rc.116</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.14.0-rc.116</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.14.0-rc.116</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.14.3-rc.1</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.14.3-rc.1</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.14.3-rc.1</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.14.3-rc.1</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.14.3-rc.1</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.14.3-rc.1</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.3-rc.1</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.14.3-rc.1</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.14.3-rc.1</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.14.3-rc.1</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.14.3-rc.1</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.14.3-rc.1</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->

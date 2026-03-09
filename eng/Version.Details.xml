@@ -139,74 +139,74 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>baa6b294e728e6171378b4e8c52e42e7c4d4ed63</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Build.Tasks" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Commands" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Common" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Configuration" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Credentials" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Frameworks" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.LibraryModel" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.ProjectModel" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Protocol" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Packaging" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Versioning" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="6.14.0-rc.116">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>0da03caba83448ee887f0f1846dd05e1f1705d45</Sha>
+    <Dependency Name="NuGet.Localization" Version="6.14.3-rc.1">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.1-release-25428-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
