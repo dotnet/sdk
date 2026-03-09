@@ -11,23 +11,23 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     {
         internal readonly string AssemblyPath;
         internal readonly string DisplayName;
-        internal readonly string ClassFilterArgs;
+        internal readonly string ClassListArgumentString;
 
         public AssemblyPartitionInfo(
             string assemblyPath,
             string displayName,
-            string classFilterArgs)
+            string classListArgumentString)
         {
             AssemblyPath = assemblyPath;
             DisplayName = displayName;
-            ClassFilterArgs = classFilterArgs;
+            ClassListArgumentString = classListArgumentString;
         }
 
         public AssemblyPartitionInfo(string assemblyPath)
         {
             AssemblyPath = assemblyPath;
             DisplayName = Path.GetFileName(assemblyPath);
-            ClassFilterArgs = string.Empty;
+            ClassListArgumentString = string.Empty;
         }
 
         public override string ToString() => DisplayName;
@@ -96,9 +96,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                     if (_builder.Length > 0)
                     {
-                        _builder.Append(' ');
+                        _builder.Append("|");
                     }
-                    _builder.Append($"--filter-class {typeInfo.FullName}");
+                    _builder.Append($@"{typeInfo.FullName}");
 
                     CheckForPartitionLimit(done: false);
                 }
@@ -127,9 +127,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     return;
                 }
 
-                // One item we have to consider here is the maximum command line length in
+                // One item we have to consider here is the maximum command line length in 
                 // Windows which is 32767 characters (XP is smaller but don't care).  Once
-                // we get close then create a partition and move on.
+                // we get close then create a partition and move on. 
                 if (_currentTypeInfoList.Sum(x => x.MethodCount) >= _methodLimit ||
                     _builder.Length > 25000)
                 {
