@@ -37,7 +37,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Windows
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();
@@ -52,7 +51,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Linux with backslash separators
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();

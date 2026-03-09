@@ -81,6 +81,12 @@ namespace Microsoft.DotNet.Watch
 
         public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
 
+        private static string ValidateMuxerPath(string path)
+        {
+            Debug.Assert(Path.GetFileName(path) == $"dotnet{PathUtilities.ExecutableExtension}");
+            return path;
+        }
+
         public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)
             => options.BinaryLogPath != null
                ? $"{Path.Combine(WorkingDirectory, options.BinaryLogPath)[..^".binlog".Length]}-dotnet-watch.{operationName}.{Path.GetFileName(projectPath)}.{Interlocked.Increment(ref _uniqueLogId)}.binlog"

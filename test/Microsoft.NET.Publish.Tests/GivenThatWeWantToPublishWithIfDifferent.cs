@@ -30,7 +30,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["data2.txt"] = "Data file 2 content";
             testProject.SourceFiles["data3.txt"] = "Data file 3 content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             // Update the project file to set CopyToPublishDirectory metadata
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
@@ -79,7 +79,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["unchangedData.txt"] = "Original content";
             testProject.SourceFiles["changedData.txt"] = "Original content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -145,7 +145,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["config.json"] = "{ \"setting\": \"value\" }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -185,7 +185,7 @@ namespace PublishCompileWithIfDifferent
     public class SourceClass { }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -230,7 +230,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             
             mainProject.SourceFiles["main.txt"] = "Main project content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(mainProject);
+            var testAsset = TestAssetsManager.CreateTestProject(mainProject);
 
             // Configure the referenced project to include the file with IfDifferent
             var referencedProjectFile = Path.Combine(testAsset.Path, referencedProject.Name, $"{referencedProject.Name}.csproj");
@@ -281,7 +281,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["ifDifferent.txt"] = "IfDifferent copy";
             testProject.SourceFiles["doNotCopy.txt"] = "Do not copy";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -320,7 +320,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles[Path.Combine("source", "data.txt")] = "Data in subfolder";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -359,7 +359,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["appdata.txt"] = "Application data";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -402,7 +402,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 

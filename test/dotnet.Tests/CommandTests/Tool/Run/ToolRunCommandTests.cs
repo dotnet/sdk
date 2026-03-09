@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
-            var testDirectoryRoot = _testAssetsManager.CreateTestDirectory();
+            var testDirectoryRoot = TestAssetsManager.CreateTestDirectory();
             var fileSystem = new FileSystemWrapper();
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
 

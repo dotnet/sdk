@@ -183,18 +183,7 @@ public static class Program
         }
 
         IDiffGenerator diffGenerator = DiffGeneratorFactory.Create(log,
-                                                                   diffConfig.BeforeAssembliesFolderPath,
-                                                                   diffConfig.BeforeAssemblyReferencesFolderPath,
-                                                                   diffConfig.AfterAssembliesFolderPath,
-                                                                   diffConfig.AfterAssemblyReferencesFolderPath,
-                                                                   diffConfig.OutputFolderPath,
-                                                                   diffConfig.BeforeFriendlyName,
-                                                                   diffConfig.AfterFriendlyName,
-                                                                   diffConfig.TableOfContentsTitle,
-                                                                   diffConfig.FilesWithAssembliesToExclude,
-                                                                   diffConfig.FilesWithAttributesToExclude,
-                                                                   diffConfig.FilesWithApisToExclude,
-                                                                   diffConfig.AddPartialModifier,
+                                                                   diffConfig,
                                                                    writeToDisk: true,
                                                                    diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options
                                                                    );

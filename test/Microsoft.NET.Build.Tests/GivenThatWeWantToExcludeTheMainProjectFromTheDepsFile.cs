@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges((path, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(path) == testProject.Name)

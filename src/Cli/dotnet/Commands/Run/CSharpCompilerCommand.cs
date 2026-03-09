@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.CSharp;
@@ -21,6 +22,9 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed partial class CSharpCompilerCommand
 {
+    [JsonSerializable(typeof(string))]
+    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext;
+
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 
     /// <summary>
@@ -44,8 +48,8 @@ internal sealed partial class CSharpCompilerCommand
     private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
-    internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
-    internal static string DefaultRuntimeVersion => field ??= GetDefaultRuntimeVersion();
+    internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
+    private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
     internal static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     internal static string TargetFramework => field ??= $"net{TargetFrameworkVersion}";
 
@@ -329,10 +333,26 @@ internal sealed partial class CSharpCompilerCommand
         return false;
     }
 
+    private static string ComputeRuntimeVersion()
+    {
+        var executingRuntimeVersion = RuntimeInformation.FrameworkDescription.Split(' ').Last();
+        var executingRuntimeMajorVersion = executingRuntimeVersion.Split('.').First();
+        var tfmMajorVersion = TargetFrameworkVersion.Split('.').First();
+
+        // If the target framework is still net10.0 while the runtime is already 11.0.x, we need to force-use 10.0.x runtime.
+        if (tfmMajorVersion != executingRuntimeMajorVersion)
+        {
+            return tfmMajorVersion + ".0.0";
+        }
+
+        // Otherwise, we can use the current runtime.
+        return executingRuntimeVersion;
+    }
+
     /// <summary>
     /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
     /// </summary>
-    private static string GetDefaultRuntimeVersion()
+    private static string ComputeDefaultRuntimeVersion()
     {
         if (NuGetVersion.TryParse(RuntimeVersion, out var version))
         {

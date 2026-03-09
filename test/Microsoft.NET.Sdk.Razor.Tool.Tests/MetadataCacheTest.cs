@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void GetMetadata_AddsToCache()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var metadataCache = new MetadataCache();
             var assemblyFilePath = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");
 
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void GetMetadata_UsesCache()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var metadataCache = new MetadataCache();
             var assemblyFilePath = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");
 
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void GetMetadata_MultipleFiles_ReturnsDifferentResultsAndAddsToCache()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var metadataCache = new MetadataCache();
             var assemblyFilePath1 = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");
             var assemblyFilePath2 = LoaderTestResources.Gamma.WriteToFile(directory.Path, "Gamma.dll");
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void GetMetadata_ReplacesCache_IfFileTimestampChanged()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var metadataCache = new MetadataCache();
             var assemblyFilePath = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");
 

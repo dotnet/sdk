@@ -16,10 +16,12 @@
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net7" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net8" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net9" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net10" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net6" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net7" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net8" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net9" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net10" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
@@ -117,7 +119,7 @@
     <!-- NOTE: When setting this to true, we need to also add logic to include it in the exe installation bundle, either via a new MSI or by including it in an existing one. -->
     <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
   </PropertyGroup>
-  
+
   <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
 
     <PropertyGroup>

@@ -19,6 +19,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
   InstallDotNetSharedFramework "9.0.0"
+  InstallDotNetSharedFramework "10.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -42,7 +43,6 @@ function CreateBuildEnvScripts()
   $scriptContents = @"
 @echo off
 title SDK Build ($RepoRoot)
-set DOTNET_MULTILEVEL_LOOKUP=0
 REM https://aka.ms/vs/unsigned-dotnet-debugger-lib
 set VSDebugger_ValidateDotnetDebugLibSignatures=0
 
@@ -62,7 +62,6 @@ DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Consol
   $scriptPath = Join-Path $ArtifactsDir "sdk-build-env.ps1"
   $scriptContents = @"
 `$host.ui.RawUI.WindowTitle = "SDK Build ($RepoRoot)"
-`$env:DOTNET_MULTILEVEL_LOOKUP=0
 # https://aka.ms/vs/unsigned-dotnet-debugger-lib
 `$env:VSDebugger_ValidateDotnetDebugLibSignatures=0
 

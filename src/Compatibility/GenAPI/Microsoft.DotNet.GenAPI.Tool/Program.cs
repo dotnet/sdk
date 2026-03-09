@@ -105,16 +105,17 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Debug.Assert(assemblies != null, "Assemblies cannot be null.");
 
                 GenAPIApp.Run(log,
-                    assemblies,
-                    parseResult.GetValue(assemblyReferencesOption),
-                    parseResult.GetValue(outputPathOption),
-                    parseResult.GetValue(headerFileOption),
-                    parseResult.GetValue(exceptionMessageOption),
-                    parseResult.GetValue(excludeApiFilesOption),
-                    parseResult.GetValue(excludeAttributesFilesOption),
-                    respectInternals,
-                    parseResult.GetValue(includeAssemblyAttributesOption)
-                );
+                    new GenAPIOptions(assemblies)
+                    {
+                        AssemblyReferencesPaths = parseResult.GetValue(assemblyReferencesOption),
+                        OutputPath = parseResult.GetValue(outputPathOption),
+                        HeaderFile = parseResult.GetValue(headerFileOption),
+                        ExceptionMessage = parseResult.GetValue(exceptionMessageOption),
+                        ExcludeApiFiles = parseResult.GetValue(excludeApiFilesOption),
+                        ExcludeAttributesFiles = parseResult.GetValue(excludeAttributesFilesOption),
+                        RespectInternals = respectInternals,
+                        IncludeAssemblyAttributes = parseResult.GetValue(includeAssemblyAttributesOption),
+                    });
             });
 
             return rootCommand.Parse(args).Invoke();

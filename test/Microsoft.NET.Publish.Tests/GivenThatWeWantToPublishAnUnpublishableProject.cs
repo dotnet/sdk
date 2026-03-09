@@ -12,7 +12,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void It_does_not_publish_to_the_publish_folder()
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("Unpublishable")
                 .WithSource();
 

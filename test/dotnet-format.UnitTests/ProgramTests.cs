@@ -1,8 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using Microsoft.CodeAnalysis.Tools.Commands;
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using ProductionDotNetHelper = Microsoft.CodeAnalysis.Tools.Utilities.DotNetHelper;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
@@ -244,6 +247,77 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Empty(result.Errors);
+        }
+
+        [Fact]
+        public void CommandLine_FrameworkOption_IsParsedCorrectly()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+
+            // Act
+            var result = sut.Parse(new[] { "--framework", "net8.0" });
+
+            // Assert
+            Assert.Empty(result.Errors);
+            Assert.Equal("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
+        }
+
+        [Fact]
+        public void CommandLine_FrameworkOption_ShortAlias_IsParsedCorrectly()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+
+            // Act
+            var result = sut.Parse(new[] { "-f", "net8.0" });
+
+            // Assert
+            Assert.Empty(result.Errors);
+            Assert.Equal("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
+        }
+
+        [Fact]
+        public void CommandLine_FolderValidation_FailsIfFrameworkSpecified()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+
+            // Act
+            var result = sut.Parse(new[] { "whitespace", "--folder", "--framework", "net8.0" });
+
+            // Assert
+            Assert.Single(result.Errors);
+        }
+
+        [Fact]
+        public void ParseCommonOptions_FrameworkOption_SetsTargetFramework()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+            var result = sut.Parse(new[] { "--framework", "net8.0" });
+            var logger = new TestLogger();
+
+            // Act
+            var formatOptions = result.ParseCommonOptions(FormatOptions.Instance, logger);
+
+            // Assert
+            Assert.Equal("net8.0", formatOptions.TargetFramework);
+        }
+
+        [Fact]
+        public void ParseCommonOptions_NoFrameworkOption_LeavesTargetFrameworkNull()
+        {
+            // Arrange
+            var sut = RootFormatCommand.GetCommand();
+            var result = sut.Parse(Array.Empty<string>());
+            var logger = new TestLogger();
+
+            // Act
+            var formatOptions = result.ParseCommonOptions(FormatOptions.Instance, logger);
+
+            // Assert
+            Assert.Null(formatOptions.TargetFramework);
         }
     }
 }

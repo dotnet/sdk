@@ -89,7 +89,12 @@ public static class SlnFileFactory
         IEnumerable<string> filteredSolutionProjectPaths;
         try
         {
-            JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
+            var options = new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            };
+            JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath), options).RootElement;
             originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
             // Normalize path separators to OS-specific for cross-platform compatibility
             originalSolutionPath = SlnfFileHelper.NormalizePathSeparatorsToOS(originalSolutionPath);

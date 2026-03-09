@@ -374,6 +374,11 @@
         <target state="translated">NETSDK1156: .NET ホストの実行可能ファイル '{0}' が見つかりません。</target>
         <note>{StrBegins="NETSDK1156: "}</note>
       </trans-unit>
+      <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
+        <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
+        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
+      </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
         <target state="translated">NETSDK1055: DotnetTool は、netcoreapp2.1 未満のターゲット フレームワークをサポートしていません。</target>

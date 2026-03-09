@@ -17,14 +17,14 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "host",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
 
     private WatchableApp CreateServerApp(string serverPipe)
         => new(
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "server",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
 
     private WatchableApp CreateResourceApp(string serverPipe)
         => new(
@@ -36,7 +36,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
     public async Task Host()
     {
-        var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
+        var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
             .WithSource();
 
         var projectDir = Path.Combine(testAsset.Path, "AppWithDeps");
@@ -51,7 +51,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
     public async Task ServerAndResources()
     {
-        var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMultiProc")
+        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
             .WithSource();
 
         var tfm = ToolsetInfo.CurrentTargetFramework;

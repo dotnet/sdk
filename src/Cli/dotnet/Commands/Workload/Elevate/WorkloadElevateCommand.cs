@@ -12,28 +12,28 @@ internal class WorkloadElevateCommand(ParseResult parseResult)
 {
     public override int Execute()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            NetSdkMsiInstallerServer? server = null;
-
-            try
-            {
-                server = NetSdkMsiInstallerServer.Create(VerifySignatures);
-                server.Run();
-            }
-            catch (Exception e)
-            {
-                throw new GracefulException(e.Message, isUserError: false);
-            }
-            finally
-            {
-                server?.Shutdown();
-            }
-        }
-        else
+        if (!OperatingSystem.IsWindows())
         {
             throw new GracefulException(CliCommandStrings.RequiresWindows, isUserError: false);
         }
+
+#if !DOT_NET_BUILD_FROM_SOURCE
+        NetSdkMsiInstallerServer? server = null;
+
+        try
+        {
+            server = NetSdkMsiInstallerServer.Create(VerifySignatures);
+            server.Run();
+        }
+        catch (Exception e)
+        {
+            throw new GracefulException(e.Message, isUserError: false);
+        }
+        finally
+        {
+            server?.Shutdown();
+        }
+#endif
 
         return 0;
     }

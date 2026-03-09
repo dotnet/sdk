@@ -30,7 +30,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
                 File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
-                new string[] { };
+                [];
 
             WorkloadRootPath[] workloadRootPaths;
             if (userProfileDir != null && WorkloadFileBasedInstall.IsUserLocal(dotnetRootPath, sdkVersion) && Directory.Exists(userProfileDir))
@@ -674,7 +674,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             /// <summary>
             /// The workload pack ID. The NuGet package ID <see cref="ResolvedPackageId"/> may differ from this.
             /// </summary>
-            [JsonConverter(typeof(PackIdJsonConverter))]
             public WorkloadPackId Id { get; }
 
             public string Version { get; }
@@ -746,7 +745,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 return value.info.Version;
             }
-            
+
             throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
 
@@ -760,7 +759,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
-            
+
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
         {
             InitializeManifests();

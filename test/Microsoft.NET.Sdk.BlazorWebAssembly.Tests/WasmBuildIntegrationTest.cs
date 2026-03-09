@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.WebAssembly;
@@ -562,7 +563,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -698,6 +699,23 @@ public class TestReference
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        public void Restore_WithRuntime_Works()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorHosted");
+
+            var nugetRestorePath = Path.Combine(testInstance.TestRoot, ".nuget");
+
+            new DotnetRestoreCommand(Log, "-bl:msbuild-restore.binlog", "-r", "linux-x64")
+                .WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"))
+                .WithEnvironmentVariable("NUGET_PACKAGES", nugetRestorePath)
+                .Execute()
+                .Should().Pass();
+
+            new DirectoryInfo(Path.Combine(nugetRestorePath, "microsoft.netcore.app.runtime.mono.linux-x64"))
+                .Should().NotExist();
+        }
+
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
@@ -790,10 +808,10 @@ public class TestReference
                 b.runtimeOptions.Should().Contain("--jiterpreter-jit-call-enabled");
             });
 
-        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig)
+        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig, [CallerMemberName] string callerName = null)
         {
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: callerName + string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
 
             foreach (var property in properties)
             {

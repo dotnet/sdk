@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedBeforeVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenPrereleaseAndVersionOptionIsPassedFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             WhenValidProjectAndPackageWithPackageDirectoryContainingSpaceArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedAfterVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedWithFrameworkItGetsAdded()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenValidPackageIsPassedMSBuildDoesNotPrintVersionHeader()
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -241,7 +241,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenMultiplePackagesArePassedCommandFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Fact]
         public void WhenNoPackageisPassedCommandFails()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Path;
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void VersionRange(bool asArgument)
         {
             var testAsset = "TestAppSimple";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -325,7 +325,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -350,7 +350,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
                 #:package {sourceFilePackageId}@13.0.1
@@ -371,7 +371,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, MemberData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion(string[] inputVersions, string? expectedVersion, string _)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             var packages = inputVersions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
@@ -408,7 +408,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, MemberData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion_Prerelease(string[] inputVersions, string? _, string expectedVersion)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             var packages = inputVersions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
@@ -438,7 +438,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -461,7 +461,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -482,7 +482,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
@@ -525,7 +525,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -571,7 +571,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
                 Console.WriteLine();
@@ -628,7 +628,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "A") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
             var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
@@ -678,7 +678,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: "A") is not { } args) return;
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
 
             string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
             var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
@@ -730,7 +730,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         private string GetPackagePath(string targetFramework, string packageName, string version, [CallerMemberName] string callingMethod = "", string? identifier = null)
         {
             var project = GetProject(targetFramework, packageName, version);
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
 
             packCommand
                 .Execute()

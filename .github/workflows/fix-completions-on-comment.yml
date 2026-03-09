@@ -1,0 +1,559 @@
+name: Fix completion snapshots on command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+env:
+  REPO_NAME: ${{ github.event.repository.name }}
+  RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  authorize:
+    name: Authorize Request
+    # Only run on PR comments on pull requests
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    outputs:
+      should_run: ${{ steps.command-filter.outputs.should_run }}
+      pr_number: ${{ steps.metadata.outputs.pr_number }}
+      head_ref: ${{ steps.metadata.outputs.head_ref }}
+
+    steps:
+      - name: Evaluate comment command
+        id: command-filter
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const body = (process.env.COMMENT_BODY || '').trim().toLowerCase();
+            const shouldRun = body.startsWith('/fixcompletions') || body.startsWith('/completions');
+            core.setOutput('should_run', String(shouldRun));
+            if (!shouldRun) {
+              core.info('Comment does not invoke /fixcompletions or /completions. Skipping workflow.');
+            }
+
+      - name: Ensure commenter is trusted
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.payload.comment.user.login;
+
+            if (!username) {
+              throw new Error('Unable to resolve commenter username from event payload.');
+            }
+
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username,
+              });
+
+              const allowed = ['admin', 'write'];
+              if (!allowed.includes(permission.permission)) {
+                throw new Error(`@${username} has "${permission.permission}" access.`);
+              }
+
+              core.info(`Verified ${username} has ${permission.permission} access.`);
+            } catch (error) {
+              throw new Error(`Only collaborators with write access may trigger this workflow. ${error.message || error}`);
+            }
+
+      - name: React to comment
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: 'eyes',
+            });
+
+      - name: Comment on PR - Started
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ format('▶️ CLI completion snapshot update started. Track progress in [this workflow run]({0}).', env.RUN_URL) }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+
+      - name: Capture PR metadata
+        id: metadata
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number,
+            });
+
+            core.setOutput('pr_number', String(pr.data.number));
+            core.setOutput('head_ref', pr.data.head.ref);
+
+  generate:
+    name: Generate Snapshot Updates
+    needs: authorize
+    if: needs.authorize.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      changes: ${{ steps.check-changes.outputs.changes }}
+      diff_summary: ${{ steps.package.outputs.diff_summary }}
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: refs/pull/${{ needs.authorize.outputs.pr_number }}/head
+          path: pr
+          persist-credentials: false
+
+      - name: Build repository
+        id: build
+        working-directory: pr
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+
+      - name: Run completion tests
+        id: test
+        if: steps.build.outcome == 'success'
+        working-directory: pr
+        run: |
+          set +e
+          ./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~VerifyCompletions"
+          exit_code=$?
+          set -e
+
+          if [ "$exit_code" -gt 1 ]; then
+            echo "dotnet test exited with $exit_code (unexpected)." >&2
+            exit "$exit_code"
+          fi
+
+          echo "exitcode=$exit_code" >> "$GITHUB_OUTPUT"
+
+          if [ "$exit_code" -eq 1 ]; then
+            echo "Detected expected test failures that generate updated snapshots. Continuing."
+          fi
+        continue-on-error: true
+        timeout-minutes: 10
+
+      - name: Compare snapshots
+        id: compare
+        if: steps.test.outcome != 'skipped'
+        working-directory: pr
+        run: |
+          ./.dotnet/dotnet msbuild test/dotnet.Tests/dotnet.Tests.csproj -restore -t:CompareCliSnapshots
+        continue-on-error: true
+
+      - name: Check for snapshot changes
+        id: check-changes
+        if: steps.compare.outcome == 'success'
+        working-directory: pr
+        run: |
+          shopt -s nullglob
+          received_files=(test/dotnet.Tests/CompletionTests/snapshots/**/*.received.*)
+          shopt -u nullglob
+
+          diff_output=$(git diff --name-only -- test/dotnet.Tests/CompletionTests/snapshots/ | grep -E '\.verified\.' || true)
+
+          if [ ${#received_files[@]} -gt 0 ] || [ -n "$diff_output" ]; then
+            echo "changes=true" >> "$GITHUB_OUTPUT"
+            echo "Changed snapshot files:"
+            if [ ${#received_files[@]} -gt 0 ]; then
+              printf '%s\n' "${received_files[@]}"
+            fi
+            if [ -n "$diff_output" ]; then
+              echo "$diff_output"
+            fi
+          else
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update verified snapshots
+        id: update
+        if: steps.check-changes.outputs.changes == 'true'
+        working-directory: pr
+        run: |
+          ./.dotnet/dotnet msbuild test/dotnet.Tests/dotnet.Tests.csproj -restore -t:UpdateCliSnapshots
+        continue-on-error: true
+
+      - name: Evaluate generation result
+        id: evaluate
+        if: always()
+        run: |
+          status="success"
+          reason=""
+
+          if [ "${BUILD_OUTCOME}" != "success" ]; then
+            status="failed"
+            reason="build"
+          elif [ "${TEST_OUTCOME}" = "failure" ] && [ "${CHANGES_DETECTED}" != "true" ]; then
+            status="failed"
+            reason="tests"
+          elif [ "${COMPARE_OUTCOME}" != "success" ]; then
+            status="failed"
+            reason="compare"
+          elif [ "${UPDATE_OUTCOME}" = "failure" ]; then
+            status="failed"
+            reason="update"
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+          COMPARE_OUTCOME: ${{ steps.compare.outcome }}
+          UPDATE_OUTCOME: ${{ steps.update.outcome }}
+          CHANGES_DETECTED: ${{ steps.check-changes.outputs.changes }}
+
+      - name: Package snapshot artifacts
+        id: package
+        if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
+        working-directory: pr
+        run: |
+          mkdir -p __artifacts
+          git diff --name-only -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/changed-files.txt
+          git status --short test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/status.txt
+          git diff --stat -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/diff-summary.txt
+          tar -czf __artifacts/snapshots.tar.gz test/dotnet.Tests/CompletionTests/snapshots
+          printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload snapshot artifacts
+        if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cli-completion-snapshots
+          path: pr/__artifacts
+          if-no-files-found: error
+
+      - name: Create failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        working-directory: pr
+        run: |
+          mkdir -p __failure
+          if [ -n "${STEPS_EVALUATE_OUTPUTS_FAILURE_REASON}" ]; then
+            echo "${STEPS_EVALUATE_OUTPUTS_FAILURE_REASON}" > __failure/failure_reason.txt
+          else
+            echo "unknown" > __failure/failure_reason.txt
+          fi
+
+      - name: Upload failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cli-completion-failure
+          path: pr/__failure
+          if-no-files-found: ignore
+
+      - name: Fail job when generation unsuccessful
+        if: steps.evaluate.outputs.status == 'failed'
+        run: |
+          echo "Snapshot generation failed."
+          exit 1
+
+  apply:
+    name: Apply Snapshot Updates
+    needs: [authorize, generate]
+    if: needs.authorize.outputs.should_run == 'true' && needs.generate.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: ${{ needs.authorize.outputs.head_ref }}
+          persist-credentials: false
+
+      - name: Download snapshot artifacts
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: cli-completion-snapshots
+          path: artifact
+
+      - name: Apply snapshot updates
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          tar -xzf artifact/snapshots.tar.gz
+
+      - name: Validate and stage snapshot files
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          if [ ! -f artifact/changed-files.txt ]; then
+            echo "Expected list of changed files is missing." >&2
+            exit 1
+          fi
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if [[ "$file" == test/dotnet.Tests/CompletionTests/snapshots/* ]]; then
+              git add "$file"
+            else
+              echo "Disallowed file detected in artifact: $file" >&2
+              exit 1
+            fi
+          done < artifact/changed-files.txt
+
+      - name: Prepare commit message
+        id: commit-message
+        if: needs.generate.outputs.changes == 'true'
+        shell: bash
+        run: |
+          COMMIT_DATE=$(date -u +"%Y-%m-%d")
+          printf 'message=Update CLI completion snapshots - %s\n' "$COMMIT_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit snapshot changes
+        id: commit
+        if: needs.generate.outputs.changes == 'true'
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ steps.commit-message.outputs.message }}
+          ALLOWED_PATTERNS: |
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.*
+          GIT_USER_NAME: github-actions[bot]
+          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          shopt -s globstar
+
+          git config user.name "${GIT_USER_NAME}"
+          git config user.email "${GIT_USER_EMAIL}"
+
+          mapfile -t staged_files < <(git diff --cached --name-only)
+          if [ ${#staged_files[@]} -eq 0 ]; then
+            echo "No staged files were found. Nothing to commit." >&2
+            exit 1
+          fi
+
+          if [ -z "${ALLOWED_PATTERNS//,/ }" ]; then
+            echo "No allowed patterns were provided." >&2
+            exit 1
+          fi
+
+          patterns_normalised=$(printf '%s' "${ALLOWED_PATTERNS}" | tr ',' '\n')
+          mapfile -t allowed_patterns < <(printf '%s\n' "${patterns_normalised}" | sed -e 's/^\s*//' -e 's/\s*$//' | sed -e '/^$/d')
+
+          if [ ${#allowed_patterns[@]} -eq 0 ]; then
+            echo "Allowed pattern list is empty after normalisation." >&2
+            exit 1
+          fi
+
+          for file in "${staged_files[@]}"; do
+            match=false
+            for pattern in "${allowed_patterns[@]}"; do
+              if [[ "$file" == $pattern ]]; then
+                match=true
+                break
+              fi
+            done
+
+            if [ "$match" = false ]; then
+              echo "File '$file' does not match the allowed patterns." >&2
+              exit 1
+            fi
+          done
+
+          git commit -m "${COMMIT_MESSAGE}"
+
+      - name: Push snapshot changes
+        if: steps.commit.outcome == 'success'
+        env:
+          HEAD_REF: ${{ needs.authorize.outputs.head_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:"${HEAD_REF}"
+
+      - name: Prepare success comment
+        id: success-comment
+        if: steps.commit.outcome == 'success'
+        shell: bash
+        env:
+          DIFF_SUMMARY: ${{ needs.generate.outputs.diff_summary }}
+        run: |
+          body="✅ CLI completion snapshots have been updated and committed to this PR. See [workflow details](${RUN_URL})."
+          if [ -n "${DIFF_SUMMARY}" ]; then
+            body="${body}"$'\n\n```\n'"${DIFF_SUMMARY}"$'\n```'
+          fi
+          printf 'body<<EOF\n%s\nEOF\n' "$body" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR - Success
+        if: steps.commit.outcome == 'success'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ steps.success-comment.outputs.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REACTION_COMMENT_ID: ${{ github.event.comment.id }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+            if (process.env.REACTION_COMMENT_ID) {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                content: '+1',
+              });
+            }
+
+      - name: Comment on PR - No changes
+        if: needs.generate.outputs.changes != 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ format('ℹ️ No completion snapshot files needed to be updated. Review [the workflow run]({0}).', env.RUN_URL) }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REACTION_COMMENT_ID: ${{ github.event.comment.id }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+            if (process.env.REACTION_COMMENT_ID) {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                content: '+1',
+              });
+            }
+
+  report-failure:
+    name: Report Failure
+    needs: [authorize, generate, apply]
+    if: needs.authorize.outputs.should_run == 'true' && needs.authorize.result == 'success' && failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Download failure diagnostics
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: cli-completion-failure
+          path: diagnostics
+        continue-on-error: true
+
+      - name: Prepare failure comment
+        id: failure-comment
+        shell: bash
+        env:
+          GENERATE_RESULT: ${{ needs.generate.result }}
+          APPLY_RESULT: ${{ needs.apply.result }}
+        run: |
+          run_url="${RUN_URL}"
+          reason=""
+          if [ -f diagnostics/failure_reason.txt ]; then
+            reason=$(tr -d '\r' < diagnostics/failure_reason.txt | tr -d '\000')
+          fi
+
+          message="❌ Failed to update completion snapshots."
+          if [ "${GENERATE_RESULT}" = "failure" ]; then
+            case "$reason" in
+              build)
+                message="$message The build failed."
+                ;;
+              tests)
+                message="$message The completion tests failed."
+                ;;
+              compare)
+                message="$message Snapshot comparison did not complete."
+                ;;
+              update)
+                message="$message Snapshot files could not be updated."
+                ;;
+            esac
+          elif [ "${APPLY_RESULT}" = "failure" ]; then
+            message="$message Applying or pushing the snapshot changes failed."
+          fi
+
+          message="$message Please check [the workflow run](${run_url}) for details."
+          printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR - Failure
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REACTION_COMMENT_ID: ${{ github.event.comment.id }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+            if (process.env.REACTION_COMMENT_ID) {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                content: 'confused',
+              });
+            }

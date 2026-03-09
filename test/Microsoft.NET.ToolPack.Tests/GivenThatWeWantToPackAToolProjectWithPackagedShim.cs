@@ -19,7 +19,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         public GivenThatWeWantToPackAToolProjectWithPackagedShim(NupkgOfPackWithShimsFixture fixture, ITestOutputHelper log) : base(log)
         {
-            fixture.Init(log, _testAssetsManager);
+            fixture.Init(log, TestAssetsManager);
             _fixture = fixture;
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.NET.ToolPack.Tests
             string targetFramework,
             Dictionary<string, string> additionalProperty = null)
         {
-            return _testAssetsManager
+            return TestAssetsManager
                 .CopyTestAsset("PortableTool", assetName)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -139,8 +139,8 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework)
         {
-            string shimoutputPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "shimoutput");
-            TestAsset helloWorldAsset = _testAssetsManager
+            string shimoutputPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "shimoutput");
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString(), identifier: multiTarget.ToString() + targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -396,7 +396,7 @@ namespace Microsoft.NET.ToolPack.Tests
             testProject.AdditionalProperties.Add("ToolCommandName", _customToolCommandName);
             testProject.AdditionalProperties.Add("PackAsTool", "true");
 
-            TestAsset asset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset asset = TestAssetsManager.CreateTestProject(testProject);
             var packCommand = new PackCommand(Log, Path.Combine(asset.Path, testProject.Name));
 
             packCommand

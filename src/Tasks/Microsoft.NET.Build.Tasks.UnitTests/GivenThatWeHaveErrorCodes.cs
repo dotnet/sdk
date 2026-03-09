@@ -5,6 +5,7 @@
 
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Xunit;
@@ -96,7 +97,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ResxIsCommentedWithCorrectStrBegin()
         {
-            var doc = XDocument.Load("Strings.resx");
+            var resxPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Strings.resx");
+            var doc = XDocument.Load(resxPath);
             var ns = doc.Root.Name.Namespace;
 
             foreach (var data in doc.Root.Elements(ns + "data"))
