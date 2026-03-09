@@ -98,21 +98,6 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
     }
 
-    /// <summary>
-    /// Checks if the component files already exist on disk (e.g., from an SDK install that includes the runtime).
-    /// This is a lightweight check that doesn't validate the full installation integrity.
-    /// </summary>
-    public static bool ComponentFilesExist(DotnetInstall install)
-    {
-        string? installRoot = install.InstallRoot.Path;
-        if (string.IsNullOrEmpty(installRoot))
-        {
-            return false;
-        }
-
-        return ValidateComponentLayout(installRoot, install.Version.ToString(), install.Component);
-    }
-
     private static bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
     {
         failureReason = null;

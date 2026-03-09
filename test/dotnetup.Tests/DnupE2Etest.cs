@@ -525,10 +525,10 @@ public class ReuseAndErrorTests
     }
 
     [Theory]
-    [InlineData("runtime@9.0", InstallComponent.Runtime, true)] // SDK includes core runtime (using explicit "runtime@version" syntax)
-    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
-    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop (Windows only)
-    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent, bool shouldSkipDownload)
+    [InlineData("runtime@9.0", InstallComponent.Runtime)] // SDK includes core runtime (using explicit "runtime@version" syntax)
+    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore)] // SDK also includes aspnetcore runtime
+    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop)] // SDK does include windowsdesktop (Windows only)
+    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent)
     {
         // Windows Desktop Runtime is only available on Windows - skip this test case on non-Windows
         if (componentSpec.StartsWith("windowsdesktop") && !OperatingSystem.IsWindows())
@@ -539,7 +539,6 @@ public class ReuseAndErrorTests
         // This test verifies that:
         // 1. SDK install completes and is tracked in manifest
         // 2. Runtime install for same version succeeds and is tracked separately
-        // 3. Runtime reuses files from SDK if already present (no download)
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
@@ -581,13 +580,6 @@ public class ReuseAndErrorTests
         finalInstalls.Should().HaveCount(2, $"both SDK and {expectedComponent} should be tracked");
         finalInstalls.Should().Contain(i => i.Component == InstallComponent.SDK);
         finalInstalls.Should().Contain(i => i.Component == expectedComponent);
-
-        // Step 4: Verify correct behavior based on whether SDK included this runtime
-        if (shouldSkipDownload)
-        {
-            output.Should().Contain("files already exist", "Should detect files already exist from SDK");
-            output.Should().NotContain("Downloading", "Should not download when files already exist from SDK");
-        }
     }
 
     /// <summary>
