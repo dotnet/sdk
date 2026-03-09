@@ -38,7 +38,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             // env variable passed when launching the server:
             await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
-            App.Process.ClearOutput();
 
             // Middleware should have been loaded to blazor-devserver before the browser is launched:
             await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
@@ -49,7 +48,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
-            App.AssertOutputDoesNotContain("🕵️");
+            App.AssertOutputDoesNotContain("Loaded into process");
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
             await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));

@@ -39,7 +39,7 @@ public class BinaryLoggerTests
             Assert.NotNull(value);
             Assert.NotNull(expected);
 
-            var dir = TestContext.Current.TestExecutionDirectory;
+            var dir = SdkTestContext.Current.TestExecutionDirectory;
             Directory.SetCurrentDirectory(dir);
 
             var bl = new BinaryLogger() { Parameters = value };
