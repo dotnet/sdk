@@ -111,17 +111,54 @@ public class ReadPackageAssetsManifest : Task
             } while (changed);
 
             // Phase 3: Emit MSBuild items for included assets
+            var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var asset in includedAssets)
             {
                 var resolvedIdentity = ResolveAssetPath(asset, packageRoot);
-                var taskItem = new TaskItem(resolvedIdentity);
-                taskItem.SetMetadata("SourceType", asset.SourceType);
-                taskItem.SetMetadata("SourceId", sourceId);
-                taskItem.SetMetadata("ContentRoot", contentRoot);
-                taskItem.SetMetadata("BasePath", asset.BasePath);
+
+                var identity = resolvedIdentity;
+                var emittedSourceType = asset.SourceType;
+                var emittedSourceId = sourceId;
+                var emittedContentRoot = contentRoot;
+                var emittedBasePath = asset.BasePath;
+                var emittedAssetMode = asset.AssetMode;
+
+                if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
+                {
+                    var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
+                    var resolvedRelativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
+                    var destPath = Path.GetFullPath(Path.Combine(fxDir, resolvedRelativePath));
+
+                    if (!File.Exists(resolvedIdentity))
+                    {
+                        Log.LogError("Source file '{0}' does not exist for framework asset materialization.", resolvedIdentity);
+                        return false;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+
+                    if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(resolvedIdentity) > File.GetLastWriteTimeUtc(destPath))
+                    {
+                        File.Copy(resolvedIdentity, destPath, overwrite: true);
+                    }
+
+                    assetMapping[resolvedIdentity] = destPath;
+                    identity = destPath;
+                    emittedSourceType = StaticWebAsset.SourceTypes.Discovered;
+                    emittedSourceId = ProjectPackageId;
+                    emittedContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
+                    emittedBasePath = ProjectBasePath;
+                    emittedAssetMode = StaticWebAsset.AssetModes.CurrentProject;
+                }
+
+                var taskItem = new TaskItem(identity);
+                taskItem.SetMetadata("SourceType", emittedSourceType);
+                taskItem.SetMetadata("SourceId", emittedSourceId);
+                taskItem.SetMetadata("ContentRoot", emittedContentRoot);
+                taskItem.SetMetadata("BasePath", emittedBasePath);
                 taskItem.SetMetadata("RelativePath", asset.RelativePath);
                 taskItem.SetMetadata("AssetKind", asset.AssetKind);
-                taskItem.SetMetadata("AssetMode", asset.AssetMode);
+                taskItem.SetMetadata("AssetMode", emittedAssetMode);
                 taskItem.SetMetadata("AssetRole", asset.AssetRole);
                 taskItem.SetMetadata("AssetTraitName", asset.AssetTraitName);
                 taskItem.SetMetadata("AssetTraitValue", asset.AssetTraitValue);
@@ -132,7 +169,7 @@ public class ReadPackageAssetsManifest : Task
                 taskItem.SetMetadata("CopyToPublishDirectory", asset.CopyToPublishDirectory);
                 taskItem.SetMetadata("FileLength", asset.FileLength);
                 taskItem.SetMetadata("LastWriteTime", asset.LastWriteTime);
-                taskItem.SetMetadata("OriginalItemSpec", resolvedIdentity);
+                taskItem.SetMetadata("OriginalItemSpec", identity);
 
                 // Remap RelatedAsset to resolved absolute path
                 if (!string.IsNullOrEmpty(asset.RelatedAsset))
@@ -154,6 +191,11 @@ public class ReadPackageAssetsManifest : Task
                 if (excludedAssetPaths.Contains(resolvedAssetFile))
                 {
                     continue;
+                }
+
+                if (assetMapping.TryGetValue(resolvedAssetFile, out var remappedAssetFile))
+                {
+                    resolvedAssetFile = remappedAssetFile;
                 }
 
                 var taskItem = new TaskItem(endpoint.Route);
