@@ -64,8 +64,11 @@ internal class InstallerOrchestratorSingleton
         // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            var manifestManager = new DotnetupSharedManifest(customManifestPath);
-            var manifestData = manifestManager.ReadManifest();
+            // Untracked installs don't interact with the manifest, so skip reading it
+            // entirely. This avoids errors when the manifest uses a legacy format.
+            var manifestData = installRequest.Options.Untracked
+                ? new DotnetupManifestData()
+                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
 
             if (InstallAlreadyExists(manifestData, install))
             {
@@ -74,6 +77,7 @@ internal class InstallerOrchestratorSingleton
                 // Skip manifest write for untracked installs.
                 if (!installRequest.Options.Untracked)
                 {
+                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
                     manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                     {
                         Component = installRequest.Component,
@@ -123,8 +127,10 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            var manifestManager = new DotnetupSharedManifest(customManifestPath);
-            var manifestData = manifestManager.ReadManifest();
+            // Untracked installs skip manifest entirely to avoid legacy format errors.
+            var manifestData = installRequest.Options.Untracked
+                ? new DotnetupManifestData()
+                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
 
             if (InstallAlreadyExists(manifestData, install))
             {
@@ -139,6 +145,8 @@ internal class InstallerOrchestratorSingleton
                 // Skip manifest writes for untracked installs.
                 if (!installRequest.Options.Untracked)
                 {
+                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
+
                     // Record the install spec for the channel that was requested
                     manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                     {
