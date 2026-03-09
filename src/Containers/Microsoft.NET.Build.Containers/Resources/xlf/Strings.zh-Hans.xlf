@@ -179,11 +179,6 @@
         <target state="translated">已将映像索引“{0}”推送到注册表“{1}”。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">不支持为 Podman 创建映像索引。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: 未能从本地注册表加载映像。stdout: {0}</target>
