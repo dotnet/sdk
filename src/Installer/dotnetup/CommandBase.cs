@@ -87,17 +87,6 @@ public abstract class CommandBase
     }
 
     /// <summary>
-    /// Records a failure reason without throwing an exception.
-    /// Use this when returning a non-zero exit code to capture the error context.
-    /// </summary>
-    /// <param name="reason">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
-    /// <param name="message">Optional detailed error message.</param>
-    protected void RecordFailure(string reason, string? message = null)
-    {
-        DotnetupTelemetry.Instance.RecordError(_commandActivity, reason, message);
-    }
-
-    /// <summary>
     /// Records the requested version/channel with PII sanitization.
     /// Only known safe patterns are passed through; unknown patterns are replaced with "invalid".
     /// </summary>

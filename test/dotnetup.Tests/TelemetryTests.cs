@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
@@ -339,17 +340,41 @@ public class DotnetupTelemetryTests : IDisposable
     [Fact]
     public void ApplyLastErrorToActivity_WithNullActivity_DoesNotThrow()
     {
-        // RecordError with null activity should not throw
+        // RecordException with null activity should not throw
         var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordError(null, "test"));
+            DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
 
         Assert.Null(exception);
     }
 
-    [Fact]
-    public void RecordError_PropagatesTagsToRootActivity()
+    /// <summary>
+    /// Simulates what RecordException does internally: maps exception to error info,
+    /// applies tags to the activity, then walks up to root and applies there too.
+    /// Tests use this instead of RecordException because that method guards on Enabled
+    /// (which is false in unit tests — telemetry export requires opt-in).
+    /// </summary>
+    private static void SimulateRecordException(Activity activity, Exception ex)
     {
-        // Root activity → child activity records error → root should also get tags
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
+
+        // Walk to root and apply there too (mirrors ApplyErrorToRootActivity)
+        var root = activity;
+        while (root.Parent != null)
+        {
+            root = root.Parent;
+        }
+
+        if (root != activity)
+        {
+            ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
+        }
+    }
+
+    [Fact]
+    public void RecordException_PropagatesTagsToRootActivity()
+    {
+        // Root activity → child activity records exception → root should also get tags
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-root", ActivityKind.Internal);
         Assert.NotNull(rootActivity);
@@ -358,44 +383,35 @@ public class DotnetupTelemetryTests : IDisposable
             "test-command", ActivityKind.Internal);
         Assert.NotNull(commandActivity);
 
-        DotnetupTelemetry.Instance.RecordError(
-            commandActivity, "context_resolution_failed", "some detail");
+        SimulateRecordException(commandActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, "resolution failed"));
 
         // Both command and root should have error tags
-        Assert.Equal("context_resolution_failed", commandActivity.GetTagItem("error.type"));
+        Assert.Equal("ContextResolutionFailed", commandActivity.GetTagItem("error.type"));
         Assert.Equal("user", commandActivity.GetTagItem("error.category"));
-        Assert.Equal("context_resolution_failed", rootActivity.GetTagItem("error.type"));
+        Assert.Equal("ContextResolutionFailed", rootActivity.GetTagItem("error.type"));
         Assert.Equal("user", rootActivity.GetTagItem("error.category"));
     }
 
     [Fact]
-    public void RecordError_OnRootActivity_DoesNotDoubleTag()
+    public void RecordException_OnRootActivity_DoesNotDoubleTag()
     {
-        // When error is recorded directly on the root (no parent), it should still work
+        // When exception is recorded directly on the root (no parent), it should still work
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-root-only", ActivityKind.Internal);
         Assert.NotNull(rootActivity);
 
-        DotnetupTelemetry.Instance.RecordError(
-            rootActivity, "install_failed");
+        SimulateRecordException(rootActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
-        Assert.Equal("install_failed", rootActivity.GetTagItem("error.type"));
+        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
         Assert.Equal("product", rootActivity.GetTagItem("error.category"));
     }
 
     [Fact]
-    public void RecordError_WithNullActivity_DoesNotThrow()
+    public void RecordException_SecondExceptionOverwritesFirstOnRoot()
     {
-        var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordError(null, "null_test"));
-
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public void RecordError_SecondErrorOverwritesFirstOnRoot()
-    {
-        // Two errors on the same trace — last one wins on the root span
+        // Two exceptions on the same trace — last one wins on the root span
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-overwrite-root", ActivityKind.Internal);
         Assert.NotNull(rootActivity);
@@ -404,20 +420,20 @@ public class DotnetupTelemetryTests : IDisposable
             "test-overwrite-cmd", ActivityKind.Internal);
         Assert.NotNull(commandActivity);
 
-        DotnetupTelemetry.Instance.RecordError(
-            commandActivity, "admin_path_blocked");
-        DotnetupTelemetry.Instance.RecordError(
-            commandActivity, "install_failed");
+        SimulateRecordException(commandActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.AdminPathBlocked, "blocked"));
+        SimulateRecordException(commandActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "failed"));
 
         // Root should have the last error (SetTag overwrites)
-        Assert.Equal("install_failed", rootActivity.GetTagItem("error.type"));
+        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
         Assert.Equal("product", rootActivity.GetTagItem("error.category"));
     }
 
     [Fact]
-    public void RecordError_DeeplyNestedActivity_PropagatesTagsToRoot()
+    public void RecordException_DeeplyNestedActivity_PropagatesTagsToRoot()
     {
-        // Root → child → grandchild: error on grandchild should reach root
+        // Root → child → grandchild: exception on grandchild should reach root
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-deep-root", ActivityKind.Internal);
         Assert.NotNull(rootActivity);
@@ -430,20 +446,20 @@ public class DotnetupTelemetryTests : IDisposable
             "test-deep-grandchild", ActivityKind.Internal);
         Assert.NotNull(grandchildActivity);
 
-        DotnetupTelemetry.Instance.RecordError(
-            grandchildActivity, "install_failed");
+        SimulateRecordException(grandchildActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
-        Assert.Equal("install_failed", grandchildActivity.GetTagItem("error.type"));
-        Assert.Equal("install_failed", rootActivity.GetTagItem("error.type"));
+        Assert.Equal("InstallFailed", grandchildActivity.GetTagItem("error.type"));
+        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
     }
 
     [Fact]
-    public void InnerRecordError_ThenOuterRecordException_LastWinsOnRoot()
+    public void InnerRecordException_ThenOuterRecordException_LastWinsOnRoot()
     {
-        // Simulates: InstallWorkflow records a RecordError("install_failed"),
-        // then the exception propagates up to Program.Main's catch block where
-        // RecordException(rootActivity, ex) is called.
-        // The root span should end up with the exception's error type (the outermost).
+        // Simulates: InstallWorkflow throws DotnetInstallException(InstallFailed),
+        // CommandBase catches it and calls RecordException on commandActivity.
+        // Then Program.Main catches it and calls RecordException on rootActivity.
+        // The root span should end up with the outermost exception's error type.
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-stack-root", ActivityKind.Internal);
         Assert.NotNull(rootActivity);
@@ -452,53 +468,50 @@ public class DotnetupTelemetryTests : IDisposable
             "test-stack-command", ActivityKind.Internal);
         Assert.NotNull(commandActivity);
 
-        // Step 1: Inner code records a non-exception error on the command span
-        DotnetupTelemetry.Instance.RecordError(
-            commandActivity, "install_failed");
+        // Step 1: CommandBase catches the install exception
+        SimulateRecordException(commandActivity,
+            new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
-        // Root should now have "install_failed"
-        Assert.Equal("install_failed", rootActivity.GetTagItem("error.type"));
+        // Root should now have "InstallFailed" via parent walk
+        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
 
         commandActivity.Stop();
 
-        // Step 2: Exception propagates to the catch block in Program.cs,
-        // which calls RecordException directly on the root activity.
-        // Since RecordException guards on Enabled, simulate the net effect:
-        // ApplyErrorTags is called on rootActivity, overwriting the previous tags.
-        var exceptionError = new ExceptionErrorInfo(
-            "invalid_operation", ErrorCategory.Product, Details: "Something broke");
-        ErrorCodeMapper.ApplyErrorTags(rootActivity, exceptionError);
+        // Step 2: If outer code records a different exception on root directly
+        SimulateRecordException(rootActivity,
+            new InvalidOperationException("Something broke"));
 
-        // Root should now show the exception-level error, not the inner one
-        Assert.Equal("invalid_operation", rootActivity.GetTagItem("error.type"));
+        // Root should now show the outer exception-level error
+        Assert.Equal("InvalidOperation", rootActivity.GetTagItem("error.type"));
         Assert.Equal("product", rootActivity.GetTagItem("error.category"));
 
         // Command span should still have its original error
-        Assert.Equal("install_failed", commandActivity.GetTagItem("error.type"));
+        Assert.Equal("InstallFailed", commandActivity.GetTagItem("error.type"));
     }
 
     [Fact]
-    public void RecordError_WithoutCategory_UsesClassifier()
+    public void RecordException_ClassifiesByErrorCode()
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-classifier-default", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        // "admin_path_blocked" is classified as User by ErrorCategoryClassifier
-        DotnetupTelemetry.Instance.RecordError(activity, "admin_path_blocked");
+        // AdminPathBlocked is classified as User by ErrorCategoryClassifier
+        SimulateRecordException(activity,
+            new DotnetInstallException(DotnetInstallErrorCode.AdminPathBlocked, "blocked"));
 
         Assert.Equal("user", activity.GetTagItem("error.category"));
     }
 
     [Fact]
-    public void RecordError_WithoutCategory_DefaultsToProductForUnknown()
+    public void RecordException_UnknownException_DefaultsToProduct()
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-classifier-unknown", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        // Unknown error types should default to product
-        DotnetupTelemetry.Instance.RecordError(activity, "something_unexpected");
+        // Unknown exception types should default to product
+        SimulateRecordException(activity, new Exception("something unexpected"));
 
         Assert.Equal("product", activity.GetTagItem("error.category"));
     }

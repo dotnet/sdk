@@ -170,6 +170,12 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.Product,
                 StackTrace: fullStackTrace),
 
+            // Platform not supported - user trying a feature on wrong OS
+            PlatformNotSupportedException => new ExceptionErrorInfo(
+                "PlatformNotSupported",
+                Category: ErrorCategory.User,
+                StackTrace: fullStackTrace),
+
             // Not supported - could be user trying unsupported scenario
             NotSupportedException => new ExceptionErrorInfo(
                 "NotSupported",

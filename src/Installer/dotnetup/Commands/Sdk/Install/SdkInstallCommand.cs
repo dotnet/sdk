@@ -40,8 +40,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson,
             _requireMuxerUpdate);
 
-        var result = workflow.Execute(options);
-        return result.ExitCode;
+        workflow.Execute(options);
+        return 0;
     }
 
     private string? ResolveChannelFromGlobalJson(string globalJsonPath)

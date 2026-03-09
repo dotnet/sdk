@@ -30,89 +30,63 @@ internal class DefaultInstallCommand : CommandBase
 
     private int SetUserInstallRoot()
     {
-        try
+        if (!OperatingSystem.IsWindows())
         {
-            if (OperatingSystem.IsWindows())
-            {
-                var changes = _installRootManager.GetUserInstallRootChanges();
-
-                if (!changes.NeedsChange())
-                {
-                    Console.WriteLine($"User install root already configured for {changes.UserDotnetPath}");
-                    return 0;
-                }
-
-                Console.WriteLine($"Setting up user install root at: {changes.UserDotnetPath}");
-
-                bool succeeded = InstallRootManager.ApplyUserInstallRoot(
-                    changes,
-                    Console.WriteLine,
-                    Console.Error.WriteLine);
-
-                if (!succeeded)
-                {
-                    // UAC prompt was cancelled
-                    return 1;
-                }
-
-                Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
-                return 0;
-            }
-            else
-            {
-                Console.Error.WriteLine("Error: Non-Windows platforms not yet supported");
-                RecordFailure("platform_not_supported");
-                return 1;
-            }
+            throw new PlatformNotSupportedException("Configuring the user install root is not yet supported on non-Windows platforms.");
         }
-        catch (Exception ex)
+
+        var changes = _installRootManager.GetUserInstallRootChanges();
+
+        if (!changes.NeedsChange())
         {
-            Console.Error.WriteLine($"Error: Failed to configure user install root: {ex.ToString()}");
-            RecordFailure("user_install_root_failed");
+            Console.WriteLine($"User install root already configured for {changes.UserDotnetPath}");
+            return 0;
+        }
+
+        Console.WriteLine($"Setting up user install root at: {changes.UserDotnetPath}");
+
+        bool succeeded = InstallRootManager.ApplyUserInstallRoot(
+            changes,
+            Console.WriteLine,
+            Console.Error.WriteLine);
+
+        if (!succeeded)
+        {
+            // UAC prompt was cancelled
             return 1;
         }
+
+        Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
+        return 0;
     }
 
     private int SetAdminInstallRoot()
     {
-        try
+        if (!OperatingSystem.IsWindows())
         {
-            if (OperatingSystem.IsWindows())
-            {
-                var changes = _installRootManager.GetAdminInstallRootChanges();
-
-                if (!changes.NeedsChange())
-                {
-                    Console.WriteLine("Admin install root already configured.");
-                    return 0;
-                }
-
-                bool succeeded = InstallRootManager.ApplyAdminInstallRoot(
-                    changes,
-                    Console.WriteLine,
-                    Console.Error.WriteLine);
-
-                if (!succeeded)
-                {
-                    // Elevation was cancelled
-                    return 1;
-                }
-
-                Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
-                return 0;
-            }
-            else
-            {
-                Console.Error.WriteLine("Error: Admin install root is only supported on Windows.");
-                RecordFailure("platform_not_supported");
-                return 1;
-            }
+            throw new PlatformNotSupportedException("Configuring the admin install root is only supported on Windows.");
         }
-        catch (Exception ex)
+
+        var changes = _installRootManager.GetAdminInstallRootChanges();
+
+        if (!changes.NeedsChange())
         {
-            Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.ToString()}");
-            RecordFailure("admin_install_root_failed");
+            Console.WriteLine("Admin install root already configured.");
+            return 0;
+        }
+
+        bool succeeded = InstallRootManager.ApplyAdminInstallRoot(
+            changes,
+            Console.WriteLine,
+            Console.Error.WriteLine);
+
+        if (!succeeded)
+        {
+            // Elevation was cancelled
             return 1;
         }
+
+        Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
+        return 0;
     }
 }

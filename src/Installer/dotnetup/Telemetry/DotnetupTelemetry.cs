@@ -151,24 +151,6 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Records a non-exception error on the given activity and also propagates
-    /// error tags to the root activity in the same trace.
-    /// </summary>
-    /// <param name="activity">The activity to tag (may be null).</param>
-    /// <param name="errorType">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
-    /// <param name="message">Optional detailed error message.</param>
-    public void RecordError(Activity? activity, string errorType, string? message = null)
-    {
-        var category = ErrorCategoryClassifier.ClassifyErrorType(errorType);
-        var errorInfo = new ExceptionErrorInfo(errorType, category, Details: message);
-        if (activity != null)
-        {
-            ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
-            ApplyErrorToRootActivity(activity, errorInfo);
-        }
-    }
-
-    /// <summary>
     /// Walks up the activity parent chain to find the root activity and applies
     /// error tags to it.  This ensures workbook queries on either the command
     /// span or the root span see error information.

@@ -40,27 +40,23 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         if (errorMessage != null)
         {
-            Console.Error.WriteLine(errorMessage);
-            RecordFailure("invalid_component_spec");
-            return 1;
+            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidChannel, errorMessage);
         }
 
         // Windows Desktop Runtime is only available on Windows
         if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
-            Console.Error.WriteLine("Error: Windows Desktop Runtime is only available on Windows.");
-            Console.Error.WriteLine($"Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
-            RecordFailure("windowsdesktop_not_supported");
-            return 1;
+            throw new PlatformNotSupportedException(
+                $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
         }
 
         // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
         if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
         {
-            Console.Error.WriteLine($"Error: '{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations.");
-            Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
-            RecordFailure("sdk_version_for_runtime");
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
+                + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
         }
 
         // Use GetDisplayName() from InstallComponentExtensions for consistent descriptions
@@ -79,8 +75,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             componentDescription,
             RequireMuxerUpdate: _requireMuxerUpdate);
 
-        InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
-        return workflowResult.ExitCode;
+        workflow.Execute(options);
+        return 0;
     }
 
     /// <summary>

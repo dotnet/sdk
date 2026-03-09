@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -36,8 +37,6 @@ internal class InstallWorkflow
         Func<string, string?>? ResolveChannelFromGlobalJson = null,
         bool RequireMuxerUpdate = false);
 
-    public record InstallWorkflowResult(int ExitCode, InstallExecutor.ResolvedInstallRequest? ResolvedRequest);
-
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
     /// </summary>
@@ -54,7 +53,7 @@ internal class InstallWorkflow
         string RequestSource,
         PathSource PathSource);
 
-    public InstallWorkflowResult Execute(InstallWorkflowOptions options)
+    public void Execute(InstallWorkflowOptions options)
     {
         // Record telemetry for the install request
         Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
@@ -64,30 +63,28 @@ internal class InstallWorkflow
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
         {
-            Console.Error.WriteLine(error);
-            DotnetupTelemetry.Instance.RecordError(Activity.Current, "context_resolution_failed");
-            return new InstallWorkflowResult(1, null);
+            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, error ?? "Failed to resolve workflow context.");
         }
 
         // Block install paths that point to existing files (not directories)
         if (File.Exists(context.InstallPath))
         {
-            Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is an existing file, not a directory. " +
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallPathIsFile,
+                $"The install path '{context.InstallPath}' is an existing file, not a directory. " +
                 "Please specify a directory path for the installation.");
-            DotnetupTelemetry.Instance.RecordError(Activity.Current, "install_path_is_file");
-            return new InstallWorkflowResult(1, null);
         }
 
         // Block admin/system-managed install paths — dotnetup should not install there
         if (InstallExecutor.IsAdminInstallPath(context.InstallPath))
         {
-            Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is a system-managed .NET location. " +
-                "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
-                "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-            DotnetupTelemetry.Instance.RecordError(Activity.Current, "admin_path_blocked");
-            return new InstallWorkflowResult(1, null);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminPathBlocked,
+                $"The install path '{context.InstallPath}' is a system-managed .NET location. " +
+                "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
+                "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
 
         // Record resolved context telemetry
@@ -109,15 +106,17 @@ internal class InstallWorkflow
         var installResult = ExecuteInstallations(context, resolved);
         if (installResult is null)
         {
-            DotnetupTelemetry.Instance.RecordError(Activity.Current, "install_failed");
-            return new InstallWorkflowResult(1, resolved);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallFailed,
+                "The installation failed.",
+                version: resolved.ResolvedVersion?.ToString(),
+                component: context.Options.Component.ToString());
         }
 
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
         InstallExecutor.DisplayComplete();
-        return new InstallWorkflowResult(0, resolved);
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)

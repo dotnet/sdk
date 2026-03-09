@@ -183,7 +183,7 @@ public class TelemetryE2ETests
         rootSpan.Should().NotBeNull("root span should be emitted");
 
         rootSpan!.Tags.Should().ContainKey("error.type");
-        rootSpan.Tags["error.type"].Should().Be("install_path_is_file");
+        rootSpan.Tags["error.type"].Should().Be("InstallPathIsFile");
         rootSpan.Tags.Should().ContainKey("error.category");
         rootSpan.Tags["error.category"].Should().Be("user");
     }

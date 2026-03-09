@@ -44,6 +44,10 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestUserCorrupted => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallPathIsFile => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
+            DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product
@@ -144,33 +148,6 @@ internal static class ErrorCategoryClassifier
         }
 
         return (ErrorCategory.Product, null, "network_unknown");
-    }
-
-    /// <summary>
-    /// Classifies a string error type (used by <see cref="DotnetupTelemetry.RecordError"/>) as product or user error.
-    /// This is the single source of truth for non-exception error categories.
-    /// </summary>
-    internal static ErrorCategory ClassifyErrorType(string errorType)
-    {
-        return errorType switch
-        {
-            // User errors — bad input, environment issues, unsupported scenarios
-            "context_resolution_failed" => ErrorCategory.User,
-            "install_path_is_file" => ErrorCategory.User,
-            "admin_path_blocked" => ErrorCategory.User,
-            "invalid_component_spec" => ErrorCategory.User,
-            "windowsdesktop_not_supported" => ErrorCategory.User,
-            "sdk_version_for_runtime" => ErrorCategory.User,
-            "platform_not_supported" => ErrorCategory.User,
-            "user_install_root_failed" => ErrorCategory.User,
-            "admin_install_root_failed" => ErrorCategory.User,
-
-            // Product errors — bugs, unexpected failures
-            "install_failed" => ErrorCategory.Product,
-
-            // Default to product for unknown error types (fail-safe)
-            _ => ErrorCategory.Product,
-        };
     }
 
     /// <summary>

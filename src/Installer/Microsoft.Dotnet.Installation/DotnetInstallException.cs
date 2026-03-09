@@ -61,6 +61,18 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The dotnetup installation manifest was modified externally and is now corrupted.</summary>
     LocalManifestUserCorrupted,
+
+    /// <summary>The install path points to an existing file instead of a directory.</summary>
+    InstallPathIsFile,
+
+    /// <summary>The install path is a system-managed admin path that dotnetup cannot write to.</summary>
+    AdminPathBlocked,
+
+    /// <summary>Failed to resolve the workflow context (path resolution, global.json, etc.).</summary>
+    ContextResolutionFailed,
+
+    /// <summary>The installation execution failed (download, extraction, or post-install steps).</summary>
+    InstallFailed,
 }
 
 /// <summary>
