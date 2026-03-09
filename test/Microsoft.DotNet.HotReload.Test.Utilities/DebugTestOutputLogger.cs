@@ -33,10 +33,19 @@ public class DebugTestOutputLogger(ITestOutputHelper logger) : ITestOutputHelper
     {
         _output.AppendLine(message);
         Debug.WriteLine(message);
-        logger.WriteLine(message);
+
+        try
+        {
+            logger.WriteLine(message);
+        }
+        catch (InvalidOperationException)
+        {
+            // test output might have been disposed
+        }
+
         OnMessage?.Invoke(message);
     }
 
     public void WriteLine(string format, params object[] args)
-        =>  WriteLine(string.Format(format, args));
+        => WriteLine(string.Format(format, args));
 }

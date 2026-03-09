@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!hotReload)
             {
-                App.DotnetWatchArgs.Add("--no-hot-reload");
+                App.WatchArgs.Add("--no-hot-reload");
             }
 
             App.Start(testAsset, []);
@@ -57,11 +57,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!hotReload)
             {
-                App.DotnetWatchArgs.Add("--no-hot-reload");
+                App.WatchArgs.Add("--no-hot-reload");
             }
 
-            App.DotnetWatchArgs.Add("--launch-profile");
-            App.DotnetWatchArgs.Add("Second");
+            App.WatchArgs.Add("--launch-profile");
+            App.WatchArgs.Add("Second");
             App.Start(testAsset, []);
             Assert.Equal("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!hotReload)
             {
-                App.DotnetWatchArgs.Add("--no-hot-reload");
+                App.WatchArgs.Add("--no-hot-reload");
             }
 
             App.Start(testAsset, ["--", "--launch-profile", "Third"]);
@@ -131,6 +131,26 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineEquals("Environment: Development");
         }
 
+        [Fact]
+        public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingFileOption()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+                .WithSource();
+
+            File.Move(Path.Combine(testAsset.Path, "Properties", "launchSettings.json"), Path.Combine(testAsset.Path, "Program.run.json"));
+            File.Delete(Path.Combine(testAsset.Path, "WatchAppWithLaunchSettings.csproj"));
+
+            var directoryInfo = new DirectoryInfo(testAsset.Path);
+
+            // Configure the working directory to be one level above the test app directory.
+            App.Start(
+                testAsset,
+                ["--file", Path.Combine(testAsset.Path, "Program.cs")],
+                workingDirectory: Path.GetFullPath(directoryInfo.Parent.FullName));
+
+            await App.AssertOutputLineEquals("Environment: Development");
+        }
+
         [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/29047")]
         public async Task Run_WithHotReloadEnabled_DoesNotReadConsoleIn_InNonInteractiveMode()
         {
@@ -140,7 +160,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.EnvironmentVariables.Add("READ_INPUT", "true");
             App.Start(testAsset, ["--non-interactive"]);
 
-            await App.AssertStarted();
+            await App.WaitForOutputLineContaining("Started");
 
             var standardInput = App.Process.Process.StandardInput;
             var inputString = "This is a test input";

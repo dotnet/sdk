@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -163,6 +164,7 @@ internal sealed class TestApplication(
             processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
+        processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
         return processStartInfo;
     }
 

@@ -29,7 +29,7 @@ internal abstract class ToolExecuteCommandDefinitionBase : Command
     public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
     public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption();
     public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();
-    public readonly Option<bool> YesOption = CommonOptions.CreateYesOption();
+    public readonly Option<bool> YesOption = CommonOptions.CreateYesOption(hidden: true);
     public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
     public readonly NuGetRestoreOptions RestoreOptions = new(forward: true);

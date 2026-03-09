@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             environmentOptions ??= TestOptions.GetEnvironmentOptions();
 
             var processOutputReporter = new TestProcessOutputReporter();
+            var cmdOptions = TestOptions.GetCommandLineOptions(args ?? []);
+            var projectOptions = TestOptions.GetProjectOptions(cmdOptions);
 
             return new()
             {
@@ -23,7 +25,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 BuildLogger = NullLogger.Instance,
                 ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
-                RootProjectOptions = TestOptions.GetProjectOptions(args),
+                MainProjectOptions = projectOptions,
+                RootProjects = [projectOptions.Representation],
+                TargetFramework = cmdOptions.TargetFramework,
+                BuildArguments = cmdOptions.BuildArguments,
                 EnvironmentOptions = environmentOptions,
                 BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
