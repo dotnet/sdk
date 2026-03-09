@@ -16,6 +16,10 @@ function InitializeCustomSDKToolset {
 
     $cli = InitializeDotnetCli -install:$true
 
+    # Redirect dotnetup data directory under artifacts so build scripts
+    # don't read/write the user's home-folder manifest.
+    $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir ".dotnetup"
+
     # Build dotnetup if not already present (needs SDK to be installed first)
     EnsureDotnetupBuilt
 

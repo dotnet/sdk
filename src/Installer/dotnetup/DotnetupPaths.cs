@@ -24,7 +24,7 @@ internal static class DotnetupPaths
     /// On Linux: $XDG_DATA_HOME/dotnetup or ~/.local/share/dotnetup
     /// </summary>
     /// <remarks>
-    /// Can be overridden via DOTNET_TESTHOOK_DOTNETUP_DATA_DIR environment variable.
+    /// Can be overridden via DOTNET_DOTNETUP_DATA_DIR environment variable.
     /// Throws if the base directory cannot be determined.
     /// </remarks>
     public static string DataDirectory
@@ -32,7 +32,7 @@ internal static class DotnetupPaths
         get
         {
             // Allow override for testing — avoids touching the real user profile.
-            var overrideDir = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DOTNETUP_DATA_DIR");
+            var overrideDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
             if (!string.IsNullOrEmpty(overrideDir))
             {
                 return overrideDir;

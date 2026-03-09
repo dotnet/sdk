@@ -323,7 +323,7 @@ public class DotnetupTelemetryTests
 public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
-    private const string DataDirEnvVar = "DOTNET_TESTHOOK_DOTNETUP_DATA_DIR";
+    private const string DataDirEnvVar = "DOTNET_DOTNETUP_DATA_DIR";
 
     private readonly string _tempDir;
     private readonly string? _originalDataDir;
