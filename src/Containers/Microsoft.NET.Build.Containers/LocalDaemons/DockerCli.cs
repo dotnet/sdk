@@ -89,15 +89,9 @@ internal sealed class DockerCli
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
-        CancellationToken cancellationToken,
-        bool checkContainerdStore = false)
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        if (checkContainerdStore && !IsContainerdStoreEnabledForDocker())
-        {
-            throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
-        }
 
         string commandPath = await FindFullCommandPath(cancellationToken);
 
@@ -134,9 +128,103 @@ internal sealed class DockerCli
         // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
         => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
 
-    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
-        => await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
-    
+    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        string? command = await GetCommandAsync(cancellationToken);
+        if (command == PodmanCommand)
+        {
+            // Podman's 'load' only keeps the image matching the host architecture from a multi-arch OCI tarball.
+            // Instead, we load each arch separately and assemble them using 'podman manifest'.
+            await LoadMultiArchImageWithPodmanAsync(multiArchImage, sourceReference, destinationReference, cancellationToken);
+        }
+        else
+        {
+            // Docker requires the containerd image store to load multi-arch OCI tarballs.
+            await LoadMultiArchImageWithDockerAsync(multiArchImage, sourceReference, destinationReference, cancellationToken);
+        }
+    }
+
+    private async Task LoadMultiArchImageWithDockerAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        if (!IsContainerdStoreEnabledForDocker())
+        {
+            throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
+        }
+
+        await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken);
+    }
+
+    private async Task LoadMultiArchImageWithPodmanAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string commandPath = await FindFullCommandPath(cancellationToken);
+        var createdImages = new List<string>();
+        string firstTag = destinationReference.Tags.First();
+        string manifestName = $"{destinationReference.Repository}:{firstTag}";
+
+        try
+        {
+            // Create the manifest list.
+            await RunAndIgnoreAsync($"manifest rm {manifestName}");
+            await RunAsync($"manifest create {manifestName}");
+
+            // Load per-arch images and add them to the manifest list.
+            // We intentionally don't remove these because that makes the manifest unusable.
+            foreach (var image in multiArchImage.Images!)
+            {
+                string repo = $"{destinationReference.Repository}-{image.Architecture}";
+                string tag = $"{repo}:{firstTag}";
+                var destRef = new DestinationImageReference(this, repo, new[] { firstTag });
+
+                await LoadAsync(image, sourceReference, destRef, WriteDockerImageToStreamAsync, cancellationToken);
+                createdImages.Add(tag);
+
+                await RunAsync($"manifest add {manifestName} {tag}");
+            }
+
+            // Tag the manifest list for any additional tags.
+            foreach (string tag in destinationReference.Tags.Skip(1))
+            {
+                string additionalTag = $"{destinationReference.Repository}:{tag}";
+
+                await RunAsync($"tag {manifestName} {additionalTag}");
+                createdImages.Add(additionalTag);
+            }
+        }
+        catch
+        {
+            await RunAndIgnoreAsync($"manifest rm {manifestName}");
+
+            foreach (string image in createdImages)
+            {
+                await RunAndIgnoreAsync($"rmi {image}");
+            }
+
+            throw;
+        }
+
+        async Task RunAsync(string arguments)
+        {
+            (int exitCode, string stderr) = await RunProcessAsync(commandPath, arguments, cancellationToken);
+
+            if (exitCode != 0)
+            {
+                throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), stderr));
+            }
+        }
+
+        async Task RunAndIgnoreAsync(string arguments)
+        {
+            try
+            {
+                _ = await RunProcessAsync(commandPath, arguments, CancellationToken.None);
+            }
+            catch
+            { }
+        }
+    }
+
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
         bool commandPathWasUnknown = _command is null; // avoid running the version command twice.
@@ -655,18 +743,12 @@ internal sealed class DockerCli
         }
     }
 
-    private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
+    private static async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
     {
         try
         {
-            ProcessStartInfo psi = new(command, "version")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            using var process = Process.Start(psi)!;
-            await process.WaitForExitAsync(cancellationToken);
-            return process.ExitCode == 0;
+            (int ExitCode, string StandardError) = await RunProcessAsync(command, "version", cancellationToken);
+            return ExitCode == 0;
         }
         catch (OperationCanceledException)
         {
@@ -676,6 +758,29 @@ internal sealed class DockerCli
         {
             return false;
         }
+    }
+
+    private static async Task<(int ExitCode, string StandardError)> RunProcessAsync(string commandPath, string arguments, CancellationToken cancellationToken)
+    {
+        ProcessStartInfo psi = new(commandPath, arguments)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            RedirectStandardInput = true
+        };
+
+        using Process process = Process.Start(psi) ??
+            throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, commandPath));
+
+        // Close standard input and ignore standard output.
+        process.StandardInput.Close();
+        _ = process.StandardOutput.ReadToEndAsync(cancellationToken)
+            .ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+
+        return (process.ExitCode, stderr);
     }
 #endif
 
