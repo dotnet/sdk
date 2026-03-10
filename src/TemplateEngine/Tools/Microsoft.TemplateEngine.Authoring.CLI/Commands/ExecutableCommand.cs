@@ -39,11 +39,19 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
             {
-                using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled));
-                TModel arguments = _command.ParseContext(parseResult);
+                int result;
+                using (ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled)))
+                {
+                    TModel arguments = _command.ParseContext(parseResult);
 
-                //exceptions are handled by parser itself
-                return await _command.ExecuteAsync(arguments, loggerFactory, cancellationToken).ConfigureAwait(false);
+                    //exceptions are handled by parser itself
+                    result = await _command.ExecuteAsync(arguments, loggerFactory, cancellationToken).ConfigureAwait(false);
+                }
+                // Ensure all console output is flushed after the logger factory
+                // (and its background queue thread) has been disposed.
+                Console.Out.Flush();
+                Console.Error.Flush();
+                return result;
             }
         }
     }

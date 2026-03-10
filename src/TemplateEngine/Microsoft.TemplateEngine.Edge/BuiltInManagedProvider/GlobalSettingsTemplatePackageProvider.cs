@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private readonly Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private readonly Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
         private readonly GlobalSettings _globalSettings;
+        private volatile bool _disposed;
 
         public GlobalSettingsTemplatePackageProvider(GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
         {
@@ -43,7 +44,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             string globalSettingsFilePath = Path.Combine(environmentSettings.Paths.GlobalSettingsDir, "packages.json");
             _globalSettings = new GlobalSettings(environmentSettings, globalSettingsFilePath);
             // We can't just add "SettingsChanged+=TemplatePackagesChanged", because TemplatePackagesChanged is null at this time.
-            _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
+            _globalSettings.SettingsChanged += OnGlobalSettingsChanged;
         }
 
         public event Action? TemplatePackagesChanged;
@@ -197,7 +198,20 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
         public void Dispose()
         {
+            _disposed = true;
+            _globalSettings.SettingsChanged -= OnGlobalSettingsChanged;
             _globalSettings.Dispose();
+        }
+
+        private void OnGlobalSettingsChanged()
+        {
+            // Guard against SettingsChanged firing during cascading disposal: Dispose() sets _disposed
+            // then unsubscribes, but an in-flight callback may already be past the delegate check.
+            if (_disposed)
+            {
+                return;
+            }
+            TemplatePackagesChanged?.Invoke();
         }
 
         private async Task UpdateTemplatePackagesMetadataAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken)

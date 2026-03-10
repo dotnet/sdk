@@ -22,6 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Scanner _installScanner;
         private volatile TemplateCache? _userTemplateCache;
         private Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>? _cachedSources;
+        private volatile bool _disposed;
 
         /// <summary>
         /// Creates the instance.
@@ -116,6 +117,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void Dispose()
         {
+            _disposed = true;
             if (_cachedSources == null)
             {
                 return;
@@ -255,6 +257,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 provider.TemplatePackagesChanged += () =>
                 {
+                    // Events from providers may be in-flight when Dispose is called. Guard against
+                    // updating _cachedSources or raising TemplatePackagesChanged on a disposed instance.
+                    if (_disposed)
+                    {
+                        return;
+                    }
                     _cachedSources[provider] = provider.GetAllTemplatePackagesAsync(default);
                     TemplatePackagesChanged?.Invoke();
                 };
@@ -342,7 +350,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             var scanResults = new ScanResult?[allTemplatePackages.Count];
-            Parallel.For(0, allTemplatePackages.Count, async (index) =>
+            await Task.WhenAll(Enumerable.Range(0, allTemplatePackages.Count).Select(async index =>
             {
                 try
                 {
@@ -354,7 +362,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToScan, allTemplatePackages[index].MountPointUri, ex.Message);
                     _logger.LogDebug($"Stack trace: {ex.StackTrace}");
                 }
-            });
+            })).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             cache = new TemplateCache(allTemplatePackages, scanResults, mountPoints, _environmentSettings);
             foreach (var scanResult in scanResults)

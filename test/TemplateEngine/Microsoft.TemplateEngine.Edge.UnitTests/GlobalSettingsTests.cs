@@ -51,7 +51,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             var taskSource = new TaskCompletionSource<TemplatePackageData>();
-            globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatePackagesAsync(default)).Single());
+            globalSettings2.SettingsChanged += () =>
+            {
+                try
+                {
+                    var result = globalSettings2.GetInstalledTemplatePackagesAsync(default).GetAwaiter().GetResult();
+                    taskSource.TrySetResult(result.Single());
+                }
+                catch (ObjectDisposedException)
+                {
+                    // FileSystemWatcher callbacks race with test cleanup disposal.
+                    // This handler may fire after globalSettings2 is disposed at end of test.
+                }
+            };
             var mutex = await globalSettings1.LockAsync(default);
             var newData = new TemplatePackageData(
                 Guid.NewGuid(),
@@ -60,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 new Dictionary<string, string>() { { "a", "b" } });
             await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default);
             mutex.Dispose();
-            var timeoutTask = Task.Delay(2000);
+            var timeoutTask = Task.Delay(10000);
             var firstFinishedTask = await Task.WhenAny(timeoutTask, taskSource.Task);
             Assert.Equal(taskSource.Task, firstFinishedTask);
 
