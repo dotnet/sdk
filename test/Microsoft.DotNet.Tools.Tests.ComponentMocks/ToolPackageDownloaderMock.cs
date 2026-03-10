@@ -13,6 +13,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
@@ -336,6 +337,18 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
+
+        public PackageDeprecationMetadata? DeprecationMetadataToReturn { get; set; }
+
+        public PackageDeprecationMetadata? GetPackageDeprecationMetadata(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            NuGetVersion version,
+            VerbosityOptions verbosity,
+            RestoreActionConfig? restoreActionConfig = null)
+        {
+            return DeprecationMetadataToReturn;
+        }
 
         private class TestToolPackage : IToolPackage
         {

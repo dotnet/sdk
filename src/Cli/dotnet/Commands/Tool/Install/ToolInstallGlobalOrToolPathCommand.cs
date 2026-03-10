@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
@@ -31,6 +32,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 {
     private readonly IEnvironmentPathInstruction _environmentPathInstruction;
     private readonly IReporter _reporter;
+    private readonly IReporter _errorReporter;
     private readonly CreateShellShimRepository _createShellShimRepository;
     private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
     private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
@@ -126,6 +128,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                                               ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
 
         _reporter = reporter ?? Reporter.Output;
+        _errorReporter = reporter ?? Reporter.Error;
     }
 
     public static T GetValueOrDefault<T>(Option<T> option, T defaultOption, ParseResult parseResult)
@@ -262,6 +265,14 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 }
 
                 PrintSuccessMessage(oldPackage, newInstalledPackage);
+
+                var deprecationMetadata = toolPackageDownloader.GetPackageDeprecationMetadata(
+                    new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
+                    packageId,
+                    newInstalledPackage.Version,
+                    _verbosity,
+                    restoreActionConfig);
+                ToolDeprecationWarning.PrintDeprecationWarning(_errorReporter, packageId, deprecationMetadata);
             }, packageId);
         });
 

@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -161,6 +162,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false)
         {
             return Task.FromResult($"http://mock-url/{packageId}.{packageVersion}.nupkg");
+        }
+
+        public PackageDeprecationMetadata DeprecationMetadataToReturn { get; set; }
+
+        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(PackageId packageId,
+            NuGetVersion version,
+            PackageSourceLocation packageSourceLocation = null)
+        {
+            return Task.FromResult(DeprecationMetadataToReturn);
         }
     }
 }

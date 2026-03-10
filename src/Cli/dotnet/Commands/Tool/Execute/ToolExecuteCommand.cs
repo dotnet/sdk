@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
@@ -126,6 +127,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 isGlobalToolRollForward: false,
                 restoreActionConfig: _restoreActionConfig);
         }
+
+        var deprecationMetadata = _toolPackageDownloader.GetPackageDeprecationMetadata(
+            packageLocation,
+            packageId,
+            toolPackage.Version,
+            _verbosity,
+            _restoreActionConfig);
+        ToolDeprecationWarning.PrintDeprecationWarning(Reporter.Error, packageId, deprecationMetadata);
 
         using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");
         toolExecuteActivity?.SetTag("tool.package.id", packageId.ToString());
