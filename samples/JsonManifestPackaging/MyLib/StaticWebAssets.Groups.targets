@@ -1,0 +1,73 @@
+<Project>
+  <!--
+    Declare a deferred group for 'rendering'. At import time, the Value is empty.
+    The eager filtering phase will skip requirements matching this group because Deferred=true.
+    The value will be resolved by the ResolveServerRenderingGroup target below.
+  -->
+  <ItemGroup>
+    <StaticWebAssetGroup Include="rendering" Deferred="true" SourceId="MyLib" />
+  </ItemGroup>
+
+  <!--
+    Inline task: checks whether a specific assembly name exists in the resolved references.
+    Uses RoslynCodeTaskFactory so it works on both .NET and .NET Framework MSBuild hosts.
+  -->
+  <UsingTask TaskName="CheckAssemblyReference"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ReferencePaths ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <AssemblyName ParameterType="System.String" Required="true" />
+      <Found ParameterType="System.Boolean" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+Found = false;
+if (ReferencePaths != null)
+{
+    for (int i = 0; i < ReferencePaths.Length; i++)
+    {
+        var fileName = System.IO.Path.GetFileNameWithoutExtension(ReferencePaths[i].ItemSpec);
+        if (string.Equals(fileName, AssemblyName, System.StringComparison.OrdinalIgnoreCase))
+        {
+            Found = true;
+            break;
+        }
+    }
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!--
+    Wire the deferred group resolution target into the FilterDeferredStaticWebAssetGroupsDependsOn chain.
+    This ensures ResolveServerRenderingGroup runs AFTER ResolveAssemblyReferences (so @(ReferencePath) is
+    populated) and BEFORE FilterDeferredStaticWebAssetGroups (which evaluates the deferred groups).
+  -->
+  <PropertyGroup>
+    <FilterDeferredStaticWebAssetGroupsDependsOn>
+      ResolveAssemblyReferences;
+      ResolveServerRenderingGroup;
+      $(FilterDeferredStaticWebAssetGroupsDependsOn)
+    </FilterDeferredStaticWebAssetGroupsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ResolveServerRenderingGroup">
+    <CheckAssemblyReference
+      ReferencePaths="@(ReferencePath)"
+      AssemblyName="Microsoft.AspNetCore.Components.Endpoints">
+      <Output TaskParameter="Found" PropertyName="_HasComponentsEndpoints" />
+    </CheckAssemblyReference>
+
+    <ItemGroup Condition="'$(_HasComponentsEndpoints)' == 'True'">
+      <!-- Update the deferred group with the resolved value -->
+      <StaticWebAssetGroup Remove="rendering" />
+      <StaticWebAssetGroup Include="rendering" Value="server" Deferred="true" SourceId="MyLib" />
+    </ItemGroup>
+
+    <Message Importance="high"
+             Text="MyLib deferred group 'rendering': _HasComponentsEndpoints=$(_HasComponentsEndpoints)" />
+  </Target>
+</Project>
