@@ -8,12 +8,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-/// <summary>
-/// Generates a JSON manifest file containing both static web asset and endpoint data
-/// for inclusion in a NuGet package. Replaces the pair of XML .props generators
-/// (GenerateStaticWebAssetsPropsFile + GenerateStaticWebAssetEndpointsPropsFile) for
-/// the new .targets-based packaging path (net11.0+).
-/// </summary>
+// Generates a JSON manifest file containing both static web asset and endpoint data
+// for inclusion in a NuGet package. Replaces the pair of XML .props generators
+// (GenerateStaticWebAssetsPropsFile + GenerateStaticWebAssetEndpointsPropsFile) for
+// the new .targets-based packaging path (net11.0+).
 public class GeneratePackageAssetsManifestFile : Task
 {
     [Required]
@@ -125,23 +123,14 @@ public class GeneratePackageAssetsManifestFile : Task
             });
         }
 
-        // Build manifest endpoints
-        // First, build a lookup from asset Identity to package-relative path for AssetFile remapping
-        var assetDict = new Dictionary<string, string>(Utils.OSPath.PathComparer);
-        foreach (var element in StaticWebAssets)
-        {
-            var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '/', tokenResolver);
-            assetDict[element.ItemSpec] = packagePath;
-        }
-
+        // Build manifest endpoints — reuse identityToPackagePath for AssetFile remapping
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(StaticWebAssetEndpoints);
         var manifestEndpoints = new List<StaticWebAssetEndpoint>();
         foreach (var endpoint in endpoints.OrderBy(e => e.Route, StringComparer.OrdinalIgnoreCase)
             .ThenBy(e => e.AssetFile, StringComparer.OrdinalIgnoreCase))
         {
             // Remap AssetFile to package-relative path
-            if (assetDict.TryGetValue(endpoint.AssetFile, out var packageRelativePath))
+            if (identityToPackagePath.TryGetValue(endpoint.AssetFile, out var packageRelativePath))
             {
                 endpoint.AssetFile = packageRelativePath;
             }

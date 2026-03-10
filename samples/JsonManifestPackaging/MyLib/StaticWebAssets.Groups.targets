@@ -67,7 +67,7 @@ if (ReferencePaths != null)
       <StaticWebAssetGroup Include="rendering" Value="server" Deferred="true" SourceId="MyLib" />
     </ItemGroup>
 
-    <Message Importance="high"
+    <Message Importance="low"
              Text="MyLib deferred group 'rendering': _HasComponentsEndpoints=$(_HasComponentsEndpoints)" />
   </Target>
 </Project>

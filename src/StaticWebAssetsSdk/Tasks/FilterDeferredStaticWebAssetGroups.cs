@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -52,7 +53,11 @@ public class FilterDeferredStaticWebAssetGroups : Task
 
         foreach (var assetItem in Assets)
         {
-            if (IsExcludedByDeferredGroups(assetItem, deferredGroupNames))
+            if (StaticWebAssetGroupFilter.IsExcludedByDeferredGroups(
+                    assetItem.GetMetadata("AssetGroups"),
+                    assetItem.GetMetadata("SourceId"),
+                    deferredGroupNames,
+                    StaticWebAssetGroups))
             {
                 excludedAssetFiles.Add(assetItem.ItemSpec);
                 Log.LogMessage(MessageImportance.Low,
@@ -65,27 +70,11 @@ public class FilterDeferredStaticWebAssetGroups : Task
         }
 
         // Phase 2: Cascading exclusion of related/alternative assets
-        if (excludedAssetFiles.Count > 0)
-        {
-            bool changed;
-            do
-            {
-                changed = false;
-                for (var i = includedAssets.Count - 1; i >= 0; i--)
-                {
-                    var relatedAsset = includedAssets[i].GetMetadata("RelatedAsset");
-                    if (!string.IsNullOrEmpty(relatedAsset) && excludedAssetFiles.Contains(relatedAsset))
-                    {
-                        excludedAssetFiles.Add(includedAssets[i].ItemSpec);
-                        Log.LogMessage(MessageImportance.Low,
-                            "Excluding related asset '{0}' because its primary '{1}' was excluded by deferred group filtering.",
-                            includedAssets[i].ItemSpec, relatedAsset);
-                        includedAssets.RemoveAt(i);
-                        changed = true;
-                    }
-                }
-            } while (changed);
-        }
+        StaticWebAssetGroupFilter.CascadeExclusions(
+            includedAssets,
+            excludedAssetFiles,
+            item => item.ItemSpec,
+            item => item.GetMetadata("RelatedAsset"));
 
         FilteredAssets = includedAssets.ToArray();
 
@@ -113,67 +102,5 @@ public class FilterDeferredStaticWebAssetGroups : Task
         }
 
         return !Log.HasLoggedErrors;
-    }
-
-    private bool IsExcludedByDeferredGroups(ITaskItem assetItem, HashSet<string> deferredGroupNames)
-    {
-        var assetGroups = assetItem.GetMetadata("AssetGroups");
-        if (string.IsNullOrEmpty(assetGroups))
-        {
-            return false; // Ungrouped assets are never excluded
-        }
-
-        var sourceId = assetItem.GetMetadata("SourceId");
-        var requirements = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var requirement in requirements)
-        {
-            var eqIdx = requirement.IndexOf('=');
-            if (eqIdx < 0)
-            {
-                continue;
-            }
-
-            var reqName = requirement.Substring(0, eqIdx);
-            var reqValue = requirement.Substring(eqIdx + 1);
-
-            // Only evaluate requirements whose group name is deferred
-            if (!deferredGroupNames.Contains(reqName))
-            {
-                continue;
-            }
-
-            var satisfied = false;
-            if (StaticWebAssetGroups != null)
-            {
-                foreach (var group in StaticWebAssetGroups)
-                {
-                    if (!string.Equals(group.ItemSpec, reqName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    var groupSourceId = group.GetMetadata("SourceId");
-                    if (!string.IsNullOrEmpty(groupSourceId) &&
-                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (string.Equals(group.GetMetadata("Value"), reqValue, StringComparison.Ordinal))
-                    {
-                        satisfied = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!satisfied)
-            {
-                return true; // Deferred requirement not satisfied → exclude
-            }
-        }
-
-        return false;
     }
 }
