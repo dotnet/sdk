@@ -142,9 +142,9 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesPackageVersion>10.0.2</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>10.0.2</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>10.0.2</SystemWindowsExtensionsPackageVersion>
-    <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.2.0-preview.26157.2</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.2.0-preview.26157.2</MSTestPackageVersion>
+      <!-- microsoft-testfx dependencies -->
+    <MicrosoftTestingPlatformPackageVersion>2.2.0-preview.26159.3</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.2.0-preview.26159.3</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
@@ -173,7 +173,34 @@ This file should be imported by eng/Versions.props
     <MicrosoftAspNetCoreMetadataVersion>$(MicrosoftAspNetCoreMetadataPackageVersion)</MicrosoftAspNetCoreMetadataVersion>
     <MicrosoftAspNetCoreMvcAnalyzersVersion>$(MicrosoftAspNetCoreMvcAnalyzersPackageVersion)</MicrosoftAspNetCoreMvcAnalyzersVersion>
     <MicrosoftAspNetCoreMvcApiAnalyzersVersion>$(MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion)</MicrosoftAspNetCoreMvcApiAnalyzersVersion>
+    <!-- dotnet-core-setup dependencies -->
+    <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
+    <!-- dotnet-dotnet dependencies -->
+    <dotnetdevcertsVersion>$(dotnetdevcertsPackageVersion)</dotnetdevcertsVersion>
+    <dotnetuserjwtsVersion>$(dotnetuserjwtsPackageVersion)</dotnetuserjwtsVersion>
+    <dotnetusersecretsVersion>$(dotnetusersecretsPackageVersion)</dotnetusersecretsVersion>
+    <MicrosoftAspNetCoreAnalyzersVersion>$(MicrosoftAspNetCoreAnalyzersPackageVersion)</MicrosoftAspNetCoreAnalyzersVersion>
+    <MicrosoftAspNetCoreAppRefVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRefInternalVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</MicrosoftAspNetCoreAppRefInternalVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookVersion>$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookVersion>
+    <MicrosoftAspNetCoreAuthenticationGoogleVersion>$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)</MicrosoftAspNetCoreAuthenticationGoogleVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)</MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>
+    <MicrosoftAspNetCoreAuthorizationVersion>$(MicrosoftAspNetCoreAuthorizationPackageVersion)</MicrosoftAspNetCoreAuthorizationVersion>
+    <MicrosoftAspNetCoreComponentsVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreComponentsVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersVersion>$(MicrosoftAspNetCoreComponentsAnalyzersPackageVersion)</MicrosoftAspNetCoreComponentsAnalyzersVersion>
+    <MicrosoftAspNetCoreComponentsFormsVersion>$(MicrosoftAspNetCoreComponentsFormsPackageVersion)</MicrosoftAspNetCoreComponentsFormsVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersVersion>$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)</MicrosoftAspNetCoreComponentsSdkAnalyzersVersion>
+    <MicrosoftAspNetCoreComponentsWebVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</MicrosoftAspNetCoreComponentsWebVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>
+    <MicrosoftAspNetCoreComponentsWebViewVersion>$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)</MicrosoftAspNetCoreComponentsWebViewVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatVersion>$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)</MicrosoftAspNetCoreDeveloperCertificatesXPlatVersion>
+    <MicrosoftAspNetCoreMetadataVersion>$(MicrosoftAspNetCoreMetadataPackageVersion)</MicrosoftAspNetCoreMetadataVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersVersion>$(MicrosoftAspNetCoreMvcAnalyzersPackageVersion)</MicrosoftAspNetCoreMvcAnalyzersVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersVersion>$(MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion)</MicrosoftAspNetCoreMvcApiAnalyzersVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalVersion>$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalVersion>
+    <MicrosoftAspNetCoreTestHostVersion>$(MicrosoftAspNetCoreTestHostPackageVersion)</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftBclAsyncInterfacesVersion>$(MicrosoftBclAsyncInterfacesPackageVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftAspNetCoreTestHostVersion>$(MicrosoftAspNetCoreTestHostPackageVersion)</MicrosoftAspNetCoreTestHostVersion>
     <MicrosoftBclAsyncInterfacesVersion>$(MicrosoftBclAsyncInterfacesPackageVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
@@ -193,12 +220,18 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisWorkspacesMSBuildVersion>$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)</MicrosoftCodeAnalysisWorkspacesMSBuildVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>$(MicrosoftDeploymentDotNetReleasesPackageVersion)</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftDiaSymReaderVersion>$(MicrosoftDiaSymReaderPackageVersion)</MicrosoftDiaSymReaderVersion>
+    <MicrosoftDeploymentDotNetReleasesVersion>$(MicrosoftDeploymentDotNetReleasesPackageVersion)</MicrosoftDeploymentDotNetReleasesVersion>
+    <MicrosoftDiaSymReaderVersion>$(MicrosoftDiaSymReaderPackageVersion)</MicrosoftDiaSymReaderVersion>
     <MicrosoftDotNetArcadeSdkVersion>$(MicrosoftDotNetArcadeSdkPackageVersion)</MicrosoftDotNetArcadeSdkVersion>
     <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
     <MicrosoftDotNetBuildTasksWorkloadsVersion>$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)</MicrosoftDotNetBuildTasksWorkloadsVersion>
     <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
     <MicrosoftDotNetSignToolVersion>$(MicrosoftDotNetSignToolPackageVersion)</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetWebItemTemplates100Version>$(MicrosoftDotNetWebItemTemplates100PackageVersion)</MicrosoftDotNetWebItemTemplates100Version>
+    <MicrosoftDotNetWebProjectTemplates100Version>$(MicrosoftDotNetWebProjectTemplates100PackageVersion)</MicrosoftDotNetWebProjectTemplates100Version>
+    <MicrosoftDotnetWinFormsProjectTemplatesVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplatesVersion>
+    <MicrosoftDotnetWpfProjectTemplatesVersion>$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)</MicrosoftDotnetWpfProjectTemplatesVersion>
     <MicrosoftDotNetWebItemTemplates100Version>$(MicrosoftDotNetWebItemTemplates100PackageVersion)</MicrosoftDotNetWebItemTemplates100Version>
     <MicrosoftDotNetWebProjectTemplates100Version>$(MicrosoftDotNetWebProjectTemplates100PackageVersion)</MicrosoftDotNetWebProjectTemplates100Version>
     <MicrosoftDotnetWinFormsProjectTemplatesVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplatesVersion>
@@ -214,17 +247,33 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsLoggingAbstractionsVersion>$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>$(MicrosoftExtensionsLoggingConsolePackageVersion)</MicrosoftExtensionsLoggingConsoleVersion>
     <MicrosoftExtensionsObjectPoolVersion>$(MicrosoftExtensionsObjectPoolPackageVersion)</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>$(MicrosoftExtensionsConfigurationIniPackageVersion)</MicrosoftExtensionsConfigurationIniVersion>
+    <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedVersion>$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)</MicrosoftExtensionsFileProvidersEmbeddedVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsLoggingPackageVersion)</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>$(MicrosoftExtensionsLoggingConsolePackageVersion)</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsObjectPoolVersion>$(MicrosoftExtensionsObjectPoolPackageVersion)</MicrosoftExtensionsObjectPoolVersion>
     <MicrosoftFSharpCompilerVersion>$(MicrosoftFSharpCompilerPackageVersion)</MicrosoftFSharpCompilerVersion>
+    <MicrosoftJSInteropVersion>$(MicrosoftJSInteropPackageVersion)</MicrosoftJSInteropVersion>
     <MicrosoftJSInteropVersion>$(MicrosoftJSInteropPackageVersion)</MicrosoftJSInteropVersion>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
     <MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>$(MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion)</MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>
+    <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
+    <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
+    <MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>$(MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion)</MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>
     <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>$(MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
+    <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
     <MicrosoftNETTestSdkVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftNETTestSdkVersion>
+    <MicrosoftNETCoreAppRefVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCorePlatformsVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftNETCorePlatformsVersion>
     <MicrosoftNETCoreAppRefVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRefVersion>
     <MicrosoftNETCorePlatformsVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftNETCorePlatformsVersion>
     <MicrosoftSourceLinkAzureReposGitVersion>$(MicrosoftSourceLinkAzureReposGitPackageVersion)</MicrosoftSourceLinkAzureReposGitVersion>
@@ -243,6 +292,10 @@ This file should be imported by eng/Versions.props
     <MicrosoftTemplateSearchTemplateDiscoveryVersion>$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryVersion>
     <MicrosoftTestPlatformBuildVersion>$(MicrosoftTestPlatformBuildPackageVersion)</MicrosoftTestPlatformBuildVersion>
     <MicrosoftTestPlatformCLIVersion>$(MicrosoftTestPlatformCLIPackageVersion)</MicrosoftTestPlatformCLIVersion>
+    <MicrosoftWebXdtVersion>$(MicrosoftWebXdtPackageVersion)</MicrosoftWebXdtVersion>
+    <MicrosoftWin32SystemEventsVersion>$(MicrosoftWin32SystemEventsPackageVersion)</MicrosoftWin32SystemEventsVersion>
+    <MicrosoftWindowsDesktopAppInternalVersion>$(MicrosoftWindowsDesktopAppInternalPackageVersion)</MicrosoftWindowsDesktopAppInternalVersion>
+    <MicrosoftWindowsDesktopAppRefVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefVersion>
     <MicrosoftWebXdtVersion>$(MicrosoftWebXdtPackageVersion)</MicrosoftWebXdtVersion>
     <MicrosoftWin32SystemEventsVersion>$(MicrosoftWin32SystemEventsPackageVersion)</MicrosoftWin32SystemEventsVersion>
     <MicrosoftWindowsDesktopAppInternalVersion>$(MicrosoftWindowsDesktopAppInternalPackageVersion)</MicrosoftWindowsDesktopAppInternalVersion>
@@ -285,6 +338,7 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesVersion>$(SystemTextEncodingCodePagesPackageVersion)</SystemTextEncodingCodePagesVersion>
     <SystemTextJsonVersion>$(SystemTextJsonPackageVersion)</SystemTextJsonVersion>
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
+    <!-- microsoft-testfx dependencies -->
     <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>
