@@ -150,32 +150,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
         _writer.WriteEndObject();
     }
 
-    public void WriteArray<T>(IEnumerable<T>? elements, WriteValue<T> writeElement)
-    {
-        ArgumentNullException.ThrowIfNull(writeElement);
-
-        if (elements is null)
-        {
-            _writer.WriteNullValue();
-            return;
-        }
-
-        _writer.WriteStartArray();
-
-        foreach (var element in elements)
-        {
-            writeElement(this, element);
-        }
-
-        _writer.WriteEndArray();
-    }
-
-    public void WriteArray<T>(string propertyName, IEnumerable<T>? elements, WriteValue<T> writeElement)
-    {
-        _writer.WritePropertyName(propertyName);
-        WriteArray(elements, writeElement);
-    }
-
     public void WriteArray<T>(IReadOnlyList<T>? elements, WriteValue<T> writeElement)
     {
         ArgumentNullException.ThrowIfNull(writeElement);
