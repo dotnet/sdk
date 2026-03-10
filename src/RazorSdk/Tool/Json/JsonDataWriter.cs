@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
@@ -11,21 +11,21 @@ internal delegate void WriteValue<T>(JsonDataWriter writer, T value);
 
 /// <summary>
 ///  This is an abstraction used to write JSON data. Currently, this
-///  wraps a <see cref="JsonWriter"/> from JSON.NET.
+///  wraps a <see cref="Utf8JsonWriter"/> from System.Text.Json.
 /// </summary>
-internal readonly ref struct JsonDataWriter(JsonWriter writer)
+internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
 {
-    private readonly JsonWriter _writer = writer;
+    private readonly Utf8JsonWriter _writer = writer;
 
     public void Write(bool value)
     {
-        _writer.WriteValue(value);
+        _writer.WriteBooleanValue(value);
     }
 
     public void Write(string propertyName, bool value)
     {
         _writer.WritePropertyName(propertyName);
-        _writer.WriteValue(value);
+        _writer.WriteBooleanValue(value);
     }
 
     public void WriteIfNotTrue(string propertyName, bool value)
@@ -46,13 +46,13 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
     public void Write(byte value)
     {
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue((int)value);
     }
 
     public void Write(string propertyName, byte value)
     {
         _writer.WritePropertyName(propertyName);
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue((int)value);
     }
 
     public void WriteIfNotZero(string propertyName, byte value)
@@ -70,13 +70,13 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
     public void Write(int value)
     {
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue(value);
     }
 
     public void Write(string propertyName, int value)
     {
         _writer.WritePropertyName(propertyName);
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue(value);
     }
 
     public void WriteIfNotZero(string propertyName, int value)
@@ -94,13 +94,13 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
     public void Write(long value)
     {
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue(value);
     }
 
     public void Write(string propertyName, long value)
     {
         _writer.WritePropertyName(propertyName);
-        _writer.WriteValue(value);
+        _writer.WriteNumberValue(value);
     }
 
     public void WriteIfNotZero(string propertyName, long value)
@@ -118,13 +118,13 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
     public void Write(string? value)
     {
-        _writer.WriteValue(value);
+        _writer.WriteStringValue(value);
     }
 
     public void Write(string propertyName, string? value)
     {
         _writer.WritePropertyName(propertyName);
-        _writer.WriteValue(value);
+        _writer.WriteStringValue(value);
     }
 
     public void WriteIfNotDefault(string propertyName, string? value, string? defaultValue)
@@ -178,11 +178,11 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
     {
         if (value is null)
         {
-            _writer.WriteNull();
+            _writer.WriteNullValue();
         }
         else
         {
-            _writer.WriteValue(value.AbsoluteUri);
+            _writer.WriteStringValue(value.AbsoluteUri);
         }
     }
 
@@ -196,7 +196,7 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
     {
         if (value is null)
         {
-            _writer.WriteNull();
+            _writer.WriteNullValue();
             return;
         }
 
@@ -227,7 +227,7 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
         if (elements is null)
         {
-            _writer.WriteNull();
+            _writer.WriteNullValue();
             return;
         }
 
@@ -253,7 +253,7 @@ internal readonly ref struct JsonDataWriter(JsonWriter writer)
 
         if (elements is null)
         {
-            _writer.WriteNull();
+            _writer.WriteNullValue();
             return;
         }
 

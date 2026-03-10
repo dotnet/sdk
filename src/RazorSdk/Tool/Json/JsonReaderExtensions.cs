@@ -3,14 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
 internal static class JsonReaderExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CheckToken(this JsonReader reader, JsonToken expectedToken)
+    public static void CheckToken(ref Utf8JsonReader reader, JsonTokenType expectedToken)
     {
         if (reader.TokenType != expectedToken)
         {
@@ -18,7 +18,7 @@ internal static class JsonReaderExtensions
         }
 
         [DoesNotReturn]
-        static void ThrowUnexpectedTokenException(JsonToken expectedToken, JsonToken actualToken)
+        static void ThrowUnexpectedTokenException(JsonTokenType expectedToken, JsonTokenType actualToken)
         {
             throw new InvalidOperationException(
                 Strings.FormatExpected_JSON_token_0_but_it_was_1(expectedToken, actualToken));
@@ -26,9 +26,9 @@ internal static class JsonReaderExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReadToken(this JsonReader reader, JsonToken expectedToken)
+    public static void ReadToken(ref Utf8JsonReader reader, JsonTokenType expectedToken)
     {
-        reader.CheckToken(expectedToken);
+        CheckToken(ref reader, expectedToken);
         reader.Read();
     }
 }
