@@ -441,7 +441,8 @@ internal sealed partial class CSharpCompilerCommand
 
     private static string ComputeRuntimeVersion()
     {
-        var executingRuntimeVersion = RuntimeInformation.FrameworkDescription.Split(' ').Last();
+        var executingRuntimeVersion = Path.GetFileName(Path.GetDirectoryName(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()));
+        Debug.Assert(!string.IsNullOrWhiteSpace(executingRuntimeVersion));
         var executingRuntimeMajorVersion = executingRuntimeVersion.Split('.').First();
         var tfmMajorVersion = TargetFrameworkVersion.Split('.').First();
 
