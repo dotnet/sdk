@@ -79,6 +79,7 @@ namespace Microsoft.DotNet.Watch
                 using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
                 var iterationCancellationToken = iterationCancellationSource.Token;
 
+                var suppressWaitForFileChange = false;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? mainRunningProject = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
@@ -280,18 +281,10 @@ namespace Microsoft.DotNet.Watch
 
                         // Apply updates only after dependencies have been deployed,
                         // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                        if (updates.ManagedCodeUpdates.Count > 0 || updates.StaticAssetsToUpdate.Count > 0)
-                        {
-                            await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, stopwatch, iterationCancellationToken);
-                        }
-
+                        await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
                         if (updates.ProjectsToRestart is not [])
                         {
-                            await Task.WhenAll(
-                                updates.ProjectsToRestart.Select(async runningProject => runningProject.RestartOperation(shutdownCancellationToken)))
-                                .WaitAsync(shutdownCancellationToken);
-
-                            _context.Logger.Log(MessageDescriptor.ProjectsRestarted, updates.ProjectsToRestart.Count);
+                            await compilationHandler.RestartPeripheralProjectsAsync(updates.ProjectsToRestart, shutdownCancellationToken);
                         }
 
                         async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(IReadOnlyList<string> rebuiltProjects)
@@ -404,6 +397,10 @@ namespace Microsoft.DotNet.Watch
                 {
                     // start next iteration unless shutdown is requested
                 }
+                catch (Exception) when (!(suppressWaitForFileChange = true))
+                {
+                    // unreachable
+                }
                 finally
                 {
                     // stop watching file changes:
@@ -442,7 +439,7 @@ namespace Microsoft.DotNet.Watch
                     {
                         _context.Logger.Log(MessageDescriptor.Restarting);
                     }
-                    else if (mainRunningProject?.IsRestarting != true)
+                    else if (mainRunningProject?.IsRestarting != true && !suppressWaitForFileChange)
                     {
                         using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
                         await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
@@ -881,15 +878,14 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _context.Logger.LogInformation("Loading projects ...");
+                _context.Logger.Log(MessageDescriptor.LoadingProjects);
                 var stopwatch = Stopwatch.StartNew();
 
                 var result = await EvaluationResult.TryCreateAsync(_designTimeBuildGraphFactory, _context.Options, _context.EnvironmentOptions, restore, cancellationToken);
-                var timeDisplay = stopwatch.Elapsed.TotalSeconds.ToString("0.0");
 
                 if (result != null)
                 {
-                    _context.Logger.LogInformation("Loaded {ProjectCount} project(s) in {Time}s.", result.ProjectGraph.Graph.ProjectNodes.Count, timeDisplay);
+                    _context.Logger.Log(MessageDescriptor.LoadedProjects, result.ProjectGraph.Graph.ProjectNodes.Count, stopwatch.Elapsed.TotalSeconds);
                     return result;
                 }
 
@@ -907,57 +903,74 @@ namespace Microsoft.DotNet.Watch
         {
             Debug.Assert(projects.Any());
 
-            if (projects is [var singleProject])
-            {
-                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, cancellationToken);
-            }
-
-            // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
-
-            var success = true;
-            var projectPaths = projects.Where(p => p.PhysicalPath != null).Select(p => p.PhysicalPath!).ToArray();
-
-            if (projectPaths is [var singleProjectPath])
-            {
-                success |= await BuildFileOrProjectOrSolutionAsync(singleProjectPath, cancellationToken);
-            }
-            else if (projectPaths is not [])
-            {
-                var solutionFile = Path.Combine(Path.GetTempFileName() + ".slnx");
-                var solutionElement = new XElement("Solution");
-
-                foreach (var projectPath in projectPaths)
-                {
-                    solutionElement.Add(new XElement("Project", new XAttribute("Path", projectPath)));
-                }
-
-                var doc = new XDocument(solutionElement);
-                doc.Save(solutionFile);
-
-                try
-                {
-                    success |= await BuildFileOrProjectOrSolutionAsync(solutionFile, cancellationToken);
-                }
-                finally
-                {
-                    try
-                    {
-                        File.Delete(solutionFile);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-            }
-
-            // To maximize parallelism of building dependencies, build file-based projects after all physical projects:
-            foreach (var file in projects.Where(p => p.EntryPointFilePath != null).Select(p => p.EntryPointFilePath!))
-            {
-                success |= await BuildFileOrProjectOrSolutionAsync(file, cancellationToken);
-            }
+            _context.Logger.Log(MessageDescriptor.BuildStartedNotification, projects);
+            var success = await BuildAsync();
+            _context.Logger.Log(MessageDescriptor.BuildCompletedNotification, (projects, success));
 
             return success;
+
+            async Task<bool> BuildAsync()
+            {
+                if (projects is [var singleProject])
+                {
+                    return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, cancellationToken);
+                }
+
+                // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
+
+                var projectPaths = projects.Where(p => p.PhysicalPath != null).Select(p => p.PhysicalPath!).ToArray();
+
+                if (projectPaths is [var singleProjectPath])
+                {
+                    if (!await BuildFileOrProjectOrSolutionAsync(singleProjectPath, cancellationToken))
+                    {
+                        return false;
+                    }
+                }
+                else if (projectPaths is not [])
+                {
+                    var solutionFile = Path.Combine(Path.GetTempFileName() + ".slnx");
+                    var solutionElement = new XElement("Solution");
+
+                    foreach (var projectPath in projectPaths)
+                    {
+                        solutionElement.Add(new XElement("Project", new XAttribute("Path", projectPath)));
+                    }
+
+                    var doc = new XDocument(solutionElement);
+                    doc.Save(solutionFile);
+
+                    try
+                    {
+                        if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, cancellationToken))
+                        {
+                            return false;
+                        }
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            File.Delete(solutionFile);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }
+                }
+
+                // To maximize parallelism of building dependencies, build file-based projects after all physical projects:
+                foreach (var file in projects.Where(p => p.EntryPointFilePath != null).Select(p => p.EntryPointFilePath!))
+                {
+                    if (!await BuildFileOrProjectOrSolutionAsync(file, cancellationToken))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, CancellationToken cancellationToken)
@@ -965,7 +978,7 @@ namespace Microsoft.DotNet.Watch
             List<OutputLine>? capturedOutput = _context.EnvironmentOptions.TestFlags != TestFlags.None ? [] : null;
             var processSpec = new ProcessSpec
             {
-                Executable = _context.EnvironmentOptions.MuxerPath,
+                Executable = _context.EnvironmentOptions.GetMuxerPath(),
                 WorkingDirectory = Path.GetDirectoryName(path),
                 IsUserApplication = false,
 

@@ -11,7 +11,7 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
     buildArguments: [],
     new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
     NullLogger.Instance,
-    TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options)
+    TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory) is var options ? options : options)
 {
     public Func<EvaluationResult?>? TryCreateImpl;
 

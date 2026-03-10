@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watch
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = context.EnvironmentOptions.MuxerPath,
+                    Executable = context.EnvironmentOptions.GetMuxerPath(),
                     WorkingDirectory = context.EnvironmentOptions.WorkingDirectory,
                     IsUserApplication = true,
                     Arguments = buildEvaluator.GetProcessArguments(iteration),
@@ -58,7 +58,8 @@ namespace Microsoft.DotNet.Watch
                     {
                         [EnvironmentVariables.Names.DotnetWatch] = "1",
                         [EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture),
-                    }
+                    },
+                    OnOutput = line => context.ProcessOutputReporter.ReportOutput(line)
                 };
 
                 var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel

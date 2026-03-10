@@ -849,6 +849,24 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Dry run: would create file: {0}</value>
     <comment>{0} is the file full path.</comment>
   </data>
+  <data name="ProjectConvertAskDeleteSource" xml:space="preserve">
+    <value>Delete all source files after conversion?</value>
+    <comment>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</comment>
+  </data>
+  <data name="ProjectConvertDeletedSourceFile" xml:space="preserve">
+    <value>Deleted source file: {0}</value>
+    <comment>{0} is the source file path.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteSourceFile" xml:space="preserve">
+    <value>Dry run: would delete source file: {0}</value>
+    <comment>{0} is the source file path.</comment>
+  </data>
+  <data name="ProjectConvertDeleteSourceChoiceYes" xml:space="preserve">
+    <value>Yes - delete all source files</value>
+  </data>
+  <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
+    <value>No - keep all source files</value>
+  </data>
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>
@@ -1473,10 +1491,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
-  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
-    <value>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</value>
-  </data>
   <data name="ConfirmationPromptYesValue" xml:space="preserve">
     <value>y</value>
     <comment>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</comment>
@@ -1487,13 +1501,6 @@ Proceed?</value>
   </data>
   <data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
     <value>Please type '{0}' for yes or '{1}' for no.</value>
-  </data>
-  <data name="ToolDownloadCanceled" xml:space="preserve">
-    <value>Tool package download canceled</value>
-  </data>
-  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
-    <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
-    <comment>{Locked="--yes"}</comment>
   </data>
   <data name="TestCommandUseSolution" xml:space="preserve">
     <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
