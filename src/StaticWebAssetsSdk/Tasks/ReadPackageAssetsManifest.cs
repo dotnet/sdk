@@ -4,16 +4,15 @@
 #nullable disable
 
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-/// <summary>
-/// Reads StaticWebAssetPackageManifest items, deserializes the JSON manifests,
-/// applies group filtering, and emits matching assets and endpoints as MSBuild items.
-/// This replaces the eager import of XML .props files with a task-based read-and-filter approach.
-/// </summary>
+// Reads StaticWebAssetPackageManifest items, deserializes the JSON manifests,
+// applies group filtering, and emits matching assets and endpoints as MSBuild items.
+// This replaces the eager import of XML .props files with a task-based read-and-filter approach.
 public class ReadPackageAssetsManifest : Task
 {
     [Required]
@@ -76,7 +75,7 @@ public class ReadPackageAssetsManifest : Task
 
             foreach (var asset in manifest.Assets)
             {
-                if (IsAssetIncludedByGroups(asset, sourceId))
+                if (StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, sourceId, StaticWebAssetGroups))
                 {
                     includedAssets.Add(asset);
                 }
@@ -89,26 +88,11 @@ public class ReadPackageAssetsManifest : Task
             }
 
             // Phase 2: Cascading exclusion of related assets
-            bool changed;
-            do
-            {
-                changed = false;
-                for (int i = includedAssets.Count - 1; i >= 0; i--)
-                {
-                    var asset = includedAssets[i];
-                    if (!string.IsNullOrEmpty(asset.RelatedAsset))
-                    {
-                        var resolvedRelated = ResolvePath(packageRoot, asset.RelatedAsset);
-                        if (excludedAssetPaths.Contains(resolvedRelated))
-                        {
-                            var resolvedPath = ResolveAssetPath(asset, packageRoot);
-                            excludedAssetPaths.Add(resolvedPath);
-                            includedAssets.RemoveAt(i);
-                            changed = true;
-                        }
-                    }
-                }
-            } while (changed);
+            StaticWebAssetGroupFilter.CascadeExclusions(
+                includedAssets,
+                excludedAssetPaths,
+                a => ResolveAssetPath(a, packageRoot),
+                a => string.IsNullOrEmpty(a.RelatedAsset) ? null : ResolvePath(packageRoot, a.RelatedAsset));
 
             // Phase 3: Emit MSBuild items for included assets
             var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -217,97 +201,6 @@ public class ReadPackageAssetsManifest : Task
         Endpoints = allEndpoints.ToArray();
 
         return !Log.HasLoggedErrors;
-    }
-
-    private bool IsAssetIncludedByGroups(PackageManifestAsset asset, string sourceId)
-    {
-        if (string.IsNullOrEmpty(asset.AssetGroups))
-        {
-            return true; // Ungrouped assets are always included
-        }
-
-        // Parse AssetGroups: "name1=value1;name2=value2"
-        var requirements = asset.AssetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-        foreach (var requirement in requirements)
-        {
-            var eqIdx = requirement.IndexOf('=');
-            if (eqIdx < 0)
-            {
-                continue;
-            }
-
-            var reqName = requirement.Substring(0, eqIdx);
-            var reqValue = requirement.Substring(eqIdx + 1);
-
-            // If this requirement matches a deferred group, skip it during eager filtering.
-            // The deferred group will be evaluated later by FilterDeferredStaticWebAssetGroups.
-            if (IsDeferredGroup(reqName, sourceId))
-            {
-                continue;
-            }
-
-            var satisfied = false;
-            if (StaticWebAssetGroups != null)
-            {
-                foreach (var group in StaticWebAssetGroups)
-                {
-                    var groupName = group.ItemSpec;
-                    var groupValue = group.GetMetadata("Value");
-                    var groupSourceId = group.GetMetadata("SourceId");
-
-                    // SourceId-scoped groups only match assets from that source
-                    if (!string.IsNullOrEmpty(groupSourceId) &&
-                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (string.Equals(groupName, reqName, StringComparison.Ordinal) &&
-                        string.Equals(groupValue, reqValue, StringComparison.Ordinal))
-                    {
-                        satisfied = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!satisfied)
-            {
-                return false; // AND-matching: all requirements must be satisfied
-            }
-        }
-
-        return true;
-    }
-
-    private bool IsDeferredGroup(string groupName, string sourceId)
-    {
-        if (StaticWebAssetGroups == null)
-        {
-            return false;
-        }
-
-        foreach (var group in StaticWebAssetGroups)
-        {
-            if (!string.Equals(group.ItemSpec, groupName, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var groupSourceId = group.GetMetadata("SourceId");
-            if (!string.IsNullOrEmpty(groupSourceId) &&
-                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (string.Equals(group.GetMetadata("Deferred"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static string ResolveAssetPath(PackageManifestAsset asset, string packageRoot)

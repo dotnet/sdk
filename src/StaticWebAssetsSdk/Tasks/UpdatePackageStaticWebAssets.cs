@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using static Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils.StaticWebAssetGroupFilter;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -52,7 +53,7 @@ public class UpdatePackageStaticWebAssets : Task
 
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate))
+                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), StaticWebAssetGroups))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
                         // Add to originalAssets so the target removes it from @(StaticWebAsset),
@@ -66,7 +67,7 @@ public class UpdatePackageStaticWebAssets : Task
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate))
+                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), StaticWebAssetGroups))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
                         originalAssets.Add(candidate);
@@ -84,33 +85,11 @@ public class UpdatePackageStaticWebAssets : Task
             }
 
             // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
-            // Repeat until no new exclusions are found (for recursive chains).
-            if (excludedAssetFiles.Count > 0)
-            {
-                bool changed;
-                do
-                {
-                    changed = false;
-                    for (var i = updatedAssets.Count - 1; i >= 0; i--)
-                    {
-                        var asset = updatedAssets[i];
-                        var relatedAsset = asset.GetMetadata(nameof(StaticWebAsset.RelatedAsset));
-                        if (!string.IsNullOrEmpty(relatedAsset) && excludedAssetFiles.Contains(relatedAsset))
-                        {
-                            var assetFullPath = asset.GetMetadata("FullPath");
-                            if (!string.IsNullOrEmpty(assetFullPath))
-                            {
-                                excludedAssetFiles.Add(assetFullPath);
-                            }
-                            Log.LogMessage(MessageImportance.Low,
-                                "Excluding related asset '{0}' because its primary '{1}' was excluded by group filtering.",
-                                asset.ItemSpec, relatedAsset);
-                            updatedAssets.RemoveAt(i);
-                            changed = true;
-                        }
-                    }
-                } while (changed);
-            }
+            CascadeExclusions(
+                updatedAssets,
+                excludedAssetFiles,
+                item => item.GetMetadata("FullPath"),
+                item => item.GetMetadata(nameof(StaticWebAsset.RelatedAsset)));
 
             OriginalAssets = [.. originalAssets];
             UpdatedAssets = [.. updatedAssets];
@@ -126,71 +105,6 @@ public class UpdatePackageStaticWebAssets : Task
         }
 
         return !Log.HasLoggedErrors;
-    }
-
-    private bool IsAssetIncludedByGroups(ITaskItem candidate)
-    {
-        var assetGroups = candidate.GetMetadata("AssetGroups");
-        if (string.IsNullOrEmpty(assetGroups))
-        {
-            // Assets without AssetGroups are unconditional — always included.
-            return true;
-        }
-
-        var groupEntries = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-        var assetGroupDict = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var entry in groupEntries)
-        {
-            var eqIndex = entry.IndexOf('=');
-            if (eqIndex > 0)
-            {
-                var name = entry.Substring(0, eqIndex);
-                var value = entry.Substring(eqIndex + 1);
-                assetGroupDict[name] = value;
-            }
-        }
-
-        var sourceId = candidate.GetMetadata(nameof(StaticWebAsset.SourceId));
-
-        // AND-matching: every name=value entry on the asset must be satisfied by at least one
-        // applicable StaticWebAssetGroup declaration. If no declarations exist at all, grouped
-        // assets are excluded (no declaration can satisfy any requirement).
-        foreach (var kvp in assetGroupDict)
-        {
-            var entryName = kvp.Key;
-            var entryValue = kvp.Value;
-            var satisfied = false;
-
-            if (StaticWebAssetGroups != null)
-            {
-                foreach (var group in StaticWebAssetGroups)
-                {
-                    var groupSourceId = group.GetMetadata("SourceId");
-                    if (!string.IsNullOrEmpty(groupSourceId) &&
-                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (string.Equals(group.ItemSpec, entryName, StringComparison.Ordinal) &&
-                        string.Equals(group.GetMetadata("Value"), entryValue, StringComparison.Ordinal))
-                    {
-                        satisfied = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!satisfied)
-            {
-                Log.LogMessage(MessageImportance.Low,
-                    "Excluding asset '{0}' because group requirement '{1}={2}' has no matching StaticWebAssetGroup declaration.",
-                    candidate.ItemSpec, entryName, entryValue);
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void RemapEndpoints(Dictionary<string, string> assetMapping, HashSet<string> excludedAssetFiles)

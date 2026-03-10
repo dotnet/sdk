@@ -72,7 +72,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         var filteredAssets = new List<StaticWebAsset>(assets.Length);
         foreach (var asset in assets)
         {
-            if (!IsAssetIncludedByGroups(asset))
+            if (!StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, asset.SourceId, StaticWebAssetGroups))
             {
                 excludedAssetFiles.Add(asset.Identity);
                 Log.LogMessage(MessageImportance.Low,
@@ -85,27 +85,11 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         }
 
         // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
-        if (excludedAssetFiles.Count > 0)
-        {
-            bool changed;
-            do
-            {
-                changed = false;
-                for (var i = filteredAssets.Count - 1; i >= 0; i--)
-                {
-                    var asset = filteredAssets[i];
-                    if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
-                    {
-                        excludedAssetFiles.Add(asset.Identity);
-                        Log.LogMessage(MessageImportance.Low,
-                            "Excluding related asset '{0}' because its primary '{1}' was excluded by group filtering.",
-                            asset.Identity, asset.RelatedAsset);
-                        filteredAssets.RemoveAt(i);
-                        changed = true;
-                    }
-                }
-            } while (changed);
-        }
+        StaticWebAssetGroupFilter.CascadeExclusions(
+            filteredAssets,
+            excludedAssetFiles,
+            a => a.Identity,
+            a => a.RelatedAsset);
 
         UpdatedAssets = filteredAssets.Select(a => a.ToTaskItem()).ToArray();
 
@@ -136,99 +120,6 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             .Select(a => a.ToTaskItem()).ToArray();
 
         return !Log.HasLoggedErrors;
-    }
-
-    private bool IsAssetIncludedByGroups(StaticWebAsset asset)
-    {
-        if (string.IsNullOrEmpty(asset.AssetGroups))
-        {
-            return true;
-        }
-
-        var groupEntries = asset.AssetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-        var assetGroupDict = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var entry in groupEntries)
-        {
-            var eqIndex = entry.IndexOf('=');
-            if (eqIndex > 0)
-            {
-                assetGroupDict[entry.Substring(0, eqIndex)] = entry.Substring(eqIndex + 1);
-            }
-        }
-
-        var sourceId = asset.SourceId;
-
-        foreach (var kvp in assetGroupDict)
-        {
-            var entryName = kvp.Key;
-            var entryValue = kvp.Value;
-
-            // If this requirement matches a deferred group, skip it during eager filtering.
-            // The deferred group will be evaluated later by FilterDeferredStaticWebAssetGroups.
-            if (IsDeferredGroup(entryName, sourceId))
-            {
-                continue;
-            }
-
-            var satisfied = false;
-
-            if (StaticWebAssetGroups != null)
-            {
-                foreach (var group in StaticWebAssetGroups)
-                {
-                    var groupSourceId = group.GetMetadata("SourceId");
-                    if (!string.IsNullOrEmpty(groupSourceId) &&
-                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (string.Equals(group.ItemSpec, entryName, StringComparison.Ordinal) &&
-                        string.Equals(group.GetMetadata("Value"), entryValue, StringComparison.Ordinal))
-                    {
-                        satisfied = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!satisfied)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private bool IsDeferredGroup(string groupName, string sourceId)
-    {
-        if (StaticWebAssetGroups == null)
-        {
-            return false;
-        }
-
-        foreach (var group in StaticWebAssetGroups)
-        {
-            if (!string.Equals(group.ItemSpec, groupName, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var groupSourceId = group.GetMetadata("SourceId");
-            if (!string.IsNullOrEmpty(groupSourceId) &&
-                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (string.Equals(group.GetMetadata("Deferred"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private bool TryInferFingerprint(Regex[] fingerprintExpressions, string relativePath, out string fingerprint, out string newRelativePath)

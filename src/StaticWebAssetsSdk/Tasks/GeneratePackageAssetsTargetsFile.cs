@@ -3,17 +3,15 @@
 
 #nullable disable
 
-using System.Security.Cryptography;
 using System.Xml;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-/// <summary>
-/// Generates a lightweight .targets file that adds a single StaticWebAssetPackageManifest
-/// item pointing to the JSON manifest file. This replaces the heavyweight XML .props files
-/// that contained all asset/endpoint data as MSBuild items.
-/// </summary>
+// Generates a lightweight .targets file that adds a single StaticWebAssetPackageManifest
+// item pointing to the JSON manifest file. This replaces the heavyweight XML .props files
+// that contained all asset/endpoint data as MSBuild items.
 public class GeneratePackageAssetsTargetsFile : Task
 {
     [Required]
@@ -24,9 +22,6 @@ public class GeneratePackageAssetsTargetsFile : Task
 
     public string PackagePathPrefix { get; set; } = "staticwebassets";
 
-    /// <summary>
-    /// The name of the JSON manifest file (e.g., "MyLib.PackageAssets.json").
-    /// </summary>
     [Required]
     public string ManifestFileName { get; set; }
 
@@ -76,35 +71,8 @@ public class GeneratePackageAssetsTargetsFile : Task
         }
 
         var data = memoryStream.ToArray();
-        WriteFile(data);
+        this.PersistFileIfChanged(data, TargetFilePath);
 
         return !Log.HasLoggedErrors;
-    }
-
-    private void WriteFile(byte[] data)
-    {
-        var dataHash = ComputeHash(data);
-        var fileExists = File.Exists(TargetFilePath);
-        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(TargetFilePath)) : "";
-
-        if (!fileExists)
-        {
-            File.WriteAllBytes(TargetFilePath, data);
-        }
-        else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
-        {
-            File.WriteAllBytes(TargetFilePath, data);
-        }
-    }
-
-    private static string ComputeHash(byte[] data)
-    {
-#if NET6_0_OR_GREATER
-        var result = SHA256.HashData(data);
-        return Convert.ToBase64String(result);
-#else
-        using var sha256 = SHA256.Create();
-        return Convert.ToBase64String(sha256.ComputeHash(data));
-#endif
     }
 }
