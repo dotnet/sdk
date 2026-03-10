@@ -12,7 +12,7 @@ using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedComman
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
 
-public class HelpCommand(string[] helpArgs)
+public sealed class HelpCommand(string[] helpArgs)
 {
     public static int Run(ParseResult result)
     {
@@ -20,7 +20,8 @@ public class HelpCommand(string[] helpArgs)
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        if (result.GetValue(HelpCommandParser.Argument) is string[] args && args is not [])
+        var definition = (HelpCommandDefinition)result.CommandResult.Command;
+        if (result.GetValue(definition.Argument) is string[] args && args is not [])
         {
             return new HelpCommand(args).Execute();
         }
@@ -38,7 +39,7 @@ public class HelpCommand(string[] helpArgs)
     public static void PrintVersionHeader()
     {
         var versionString = string.IsNullOrEmpty(Product.Version) ? string.Empty : $" ({Product.Version})";
-        Reporter.Output.WriteLine(Product.LongName + versionString);
+        Reporter.Output.WriteLine(LocalizableStrings.DotNetSdkInfo + versionString);
     }
 
     public static Process ConfigureProcess(string docUrl)

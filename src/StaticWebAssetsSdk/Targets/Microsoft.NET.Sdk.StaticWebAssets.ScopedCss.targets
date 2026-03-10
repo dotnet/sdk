@@ -142,6 +142,33 @@ Integration with static web assets:
   </ComputeCssScope>
 </Target>
 
+<!--
+  Creates a cache file containing the CssScope values for all scoped CSS files.
+  This file is used as an input to _ProcessScopedCssFiles to ensure that changes
+  to CssScope metadata (e.g., custom scopes defined in the project file) trigger
+  a rebuild of the scoped CSS files.
+  See: https://github.com/dotnet/sdk/issues/50646
+-->
+<Target Name="_CreateScopedCssScopeCache" DependsOnTargets="ComputeCssScope">
+  <PropertyGroup>
+    <_ScopedCssIntermediatePath>$([System.IO.Path]::GetFullPath($(IntermediateOutputPath)scopedcss\))</_ScopedCssIntermediatePath>
+    <_ScopedCssScopeCacheFile>$(_ScopedCssIntermediatePath)scopedcss.cache</_ScopedCssScopeCacheFile>
+  </PropertyGroup>
+
+  <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
+
+  <!-- Write a line for each scoped CSS file with its identity and scope, only when different -->
+  <WriteLinesToFile
+    File="$(_ScopedCssScopeCacheFile)"
+    Lines="@(_ScopedCss->'%(Identity)=%(CssScope)')"
+    Overwrite="true"
+    WriteOnlyWhenDifferent="true" />
+
+  <ItemGroup>
+    <FileWrites Include="$(_ScopedCssScopeCacheFile)" />
+  </ItemGroup>
+</Target>
+
 <!-- Sets the output path for the processed scoped css files. They will all have a '.rz.scp.css' extension to flag them as processed
      scoped css files. -->
 <Target Name="ResolveScopedCssOutputs" DependsOnTargets="$(ResolveScopedCssOutputsDependsOn)">
@@ -171,10 +198,12 @@ Integration with static web assets:
     BeforeTargets="CollectUpToDateCheckInputDesignTime;CollectUpToDateCheckBuiltDesignTime" />
 
 <!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
-<Target Name="_ProcessScopedCssFiles" Inputs="@(_ScopedCss)" Outputs="@(_ScopedCssOutputs)" DependsOnTargets="ResolveScopedCssOutputs">
+<Target Name="_ProcessScopedCssFiles" Inputs="@(_ScopedCss);$(_ScopedCssScopeCacheFile)" Outputs="@(_ScopedCssOutputs)" DependsOnTargets="ResolveScopedCssOutputs;_CreateScopedCssScopeCache">
 
   <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
-  <RewriteCss FilesToTransform="@(_ScopedCss)" />
+  <!-- SkipIfOutputIsNewer is false because the target's Inputs/Outputs already handles incrementalism.
+       The cache file in Inputs tracks CssScope metadata changes that wouldn't be detected by file timestamps alone. -->
+  <RewriteCss FilesToTransform="@(_ScopedCss)" SkipIfOutputIsNewer="false" />
 
   <ItemGroup>
     <FileWrites Include="%(_ScopedCss.OutputFile)" />

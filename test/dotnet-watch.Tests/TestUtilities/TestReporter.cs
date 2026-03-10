@@ -7,12 +7,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
     {
-        private readonly Dictionary<EventId, Action> _actions = [];
         public readonly List<string> ProcessOutput = [];
-        public readonly List<(MessageSeverity severity, string text)> Messages = [];
-
-        public bool IsVerbose
-            => true;
+        public readonly List<(LogLevel level, string text)> Messages = [];
 
         bool IProcessOutputReporter.PrefixProcessOutput
             => true;
@@ -27,42 +23,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             OnProcessOutput?.Invoke(line);
         }
 
-        public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
+        public void Report(EventId id, Emoji emoji, LogLevel level, string message)
         {
-            var semaphore = new SemaphoreSlim(initialCount: 0);
-            RegisterAction(descriptor, () => semaphore.Release());
-            return semaphore;
-        }
-
-        public void RegisterAction(MessageDescriptor eventId, Action action)
-            => RegisterAction(eventId.Id, action);
-
-        public void RegisterAction(EventId eventId, Action action)
-        {
-            if (_actions.TryGetValue(eventId, out var existing))
-            {
-                existing += action;
-            }
-            else
-            {
-                existing = action;
-            }
-
-            _actions[eventId] = existing;
-        }
-
-        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
-        {
-            if (severity != MessageSeverity.None)
-            {
-                Messages.Add((severity, message));
-                WriteTestOutput($"{ToString(severity)} {emoji.ToDisplay()} {message}");
-            }
-
-            if (_actions.TryGetValue(id, out var action))
-            {
-                action();
-            }
+            Messages.Add((level, message));
+            WriteTestOutput($"{ToString(level)} {emoji.ToDisplay()} {message}");
         }
 
         private void WriteTestOutput(string line)
@@ -77,13 +41,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        private static string ToString(MessageSeverity severity)
-            => severity switch
+        private static string ToString(LogLevel level)
+            => level switch
             {
-                MessageSeverity.Verbose => "verbose",
-                MessageSeverity.Output => "output",
-                MessageSeverity.Warning => "warning",
-                MessageSeverity.Error => "error",
+                LogLevel.Trace or LogLevel.Debug => "verbose",
+                LogLevel.Information => "output",
+                LogLevel.Warning => "warning",
+                LogLevel.Critical or LogLevel.Error => "error",
                 _ => throw new InvalidOperationException()
             };
     }

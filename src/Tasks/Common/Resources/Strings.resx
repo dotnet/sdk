@@ -921,10 +921,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</value>
     <comment>{StrBegins="NETSDK1208: "}</comment>
   </data>
-  <data name="UnsupportedVisualStudioVersion" xml:space="preserve">
-    <value>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</value>
-    <comment>{StrBegins="NETSDK1209: "}</comment>
-  </data>
   <data name="IsAotCompatibleUnsupported" xml:space="preserve">
     <value>NETSDK1210: IsAotCompatible and EnableAotAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
 &lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</value>
@@ -1014,5 +1010,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="DotnetToolDoesNotSupportCustomNuspecFile" xml:space="preserve">
+    <value>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</value>
+    <comment>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</comment>
+  </data>
+  <!-- The latest message added is DotnetToolDoesNotSupportCustomNuspecFile. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

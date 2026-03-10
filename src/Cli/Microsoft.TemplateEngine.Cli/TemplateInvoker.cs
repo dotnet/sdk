@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Utilities;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -237,7 +239,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Error.WriteLine(LocalizableStrings.TemplateCreator_Error_TemplateNotFound.Bold().Red());
                     Reporter.Error.WriteLine();
                     Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_RebuildCache);
-                    Reporter.Output.WriteCommand(Example.For<NewCommand>(templateArgs.ParseResult).WithOption(CommandDefinition.New.DebugRebuildCacheOption));
+                    Reporter.Output.WriteCommand(Example.For<NewCommand>(templateArgs.ParseResult).WithOption(c => c.Definition.DebugRebuildCacheOption));
                     Reporter.Output.WriteLine();
                     IManagedTemplatePackage? templatePackage = null;
                     try
@@ -253,10 +255,10 @@ namespace Microsoft.TemplateEngine.Cli
                     if (templatePackage != null)
                     {
                         Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_Uninstall);
-                        Reporter.Output.WriteCommand(Example.For<UninstallCommand>(templateArgs.ParseResult).WithArgument(CommandDefinition.Uninstall.NameArgument, templatePackage.DisplayName));
+                        Reporter.Output.WriteCommand(Example.For<UninstallCommand>(templateArgs.ParseResult).WithArguments(templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                         Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_Install);
-                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArgument(CommandDefinition.Install.NameArgument, templatePackage.DisplayName));
+                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArguments(templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                     }
                     return NewCommandStatus.NotFound;
@@ -268,7 +270,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Error.WriteCommand(
                         Example
                             .For<NewCommand>(templateArgs.ParseResult)
-                            .WithArgument(CommandDefinition.New.ShortNameArgument, templateArgs.Template.ShortNameList[0])
+                            .WithArguments(templateArgs.Template.ShortNameList[0])
                             .WithHelpOption());
                     return NewCommandStatus.InvalidOption;
                 case CreationResultStatus.DestructiveChangesDetected:
@@ -287,9 +289,9 @@ namespace Microsoft.TemplateEngine.Cli
                     }
                     Reporter.Error.WriteLine(
                         string.Format(
-                            LocalizableStrings.RerunCommandAndPassForceToCreateAnyway, SharedOptions.ForceOption.Name).Bold().Red()
+                            LocalizableStrings.RerunCommandAndPassForceToCreateAnyway, SharedOptionsFactory.ForceOptionName).Bold().Red()
                         );
-                    Reporter.Error.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
+                    Reporter.Error.WriteCommand(Example.FromExistingTokens<TemplateCommand>(templateArgs.ParseResult).WithOption(c => c.ForceOption));
                     return NewCommandStatus.CannotCreateOutputFile;
                 case CreationResultStatus.TemplateIssueDetected:
                     if (!string.IsNullOrEmpty(instantiateResult.ErrorMessage))

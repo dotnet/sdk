@@ -498,6 +498,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BuildStaticWebAssetsCopyAlways Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'Always'" />
       <_BuildStaticWebAssetsPreserveNewest Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'PreserveNewest'" />
+      <_BuildStaticWebAssetsIfDifferent Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'IfDifferent'" />
     </ItemGroup>
 
   </Target>
@@ -538,7 +539,28 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways">
+  <Target Name="_BuildCopyStaticWebAssetsIfDifferent"
+    AfterTargets="_SplitStaticWebAssetsByCopyOptions">
+
+    <!--
+        Using SkipUnchangedFiles="true" because we want only differing files.
+    -->
+    <Copy SourceFiles="@(_BuildStaticWebAssetsIfDifferent)"
+      DestinationFiles="@(_BuildStaticWebAssetsIfDifferent->'%(TargetPath)')"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways;_BuildCopyStaticWebAssetsIfDifferent">
 
     <ItemGroup>
       <_UpToDateCheckStaticWebAssetCandidate Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
@@ -719,10 +741,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets">
-    <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
+  <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <UpdatePackageStaticWebAssets
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+      ProjectPackageId="$(PackageId)"
+      ProjectBasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
+      <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
@@ -740,6 +769,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
+      <!-- Remap endpoints for materialized framework assets -->
+      <StaticWebAssetEndpoint Remove="@(_RemappedFrameworkEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_RemappedFrameworkEndpoints)" />
     </ItemGroup>
 
   </Target>

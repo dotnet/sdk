@@ -56,24 +56,21 @@ to make extensible for .NET MAUI (and future) scenarios.
 ```xml
 <ItemGroup>
   <!-- Android examples -->
-  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" RuntimeIdentifier="android-x64" />
-  <Devices Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online"  RuntimeIdentifier="android-x64" />
-  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online"  RuntimeIdentifier="android-arm64" />
+  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" />
+  <Devices Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online" />
+  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
   <!-- iOS examples -->
-  <Devices Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown"    RuntimeIdentifier="iossimulator-arm64" />
-  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted"      RuntimeIdentifier="iossimulator-arm64" />
-  <Devices Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" RuntimeIdentifier="ios-arm64" />
-  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired"      RuntimeIdentifier="ios-arm64" />
+  <Devices Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown" />
+  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted" />
+  <Devices Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" />
+  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
 </ItemGroup>
 ```
 
-_NOTE: each workload can decide which metadata values for `%(Type)`,
-`%(Status)`, and `%(RuntimeIdentifier)` are useful, filtering offline
-devices, etc. The output above would be analogous to running `adb
-devices`, `xcrun simctl list devices`, or `xcrun devicectl list
-devices`. The `%(RuntimeIdentifier)` metadata is optional but
-recommended, as it allows the build system to pass the appropriate RID
-to subsequent build, deploy, and run steps._
+_NOTE: each workload can decide which metadata values for `%(Type)`
+and `%(Status)` are useful, filtering offline devices, etc. The output
+above would be analogous to running `adb devices`, `xcrun simctl list
+devices`, or `xcrun devicectl list devices`._
 
 * Continuing on...
 
@@ -84,8 +81,8 @@ to subsequent build, deploy, and run steps._
     `--device` switch. Listing the options returned by the
     `ComputeAvailableDevices` MSBuild target.
 
-* `build`: unchanged, but is passed `-p:Device` and optionally `-p:RuntimeIdentifier`
-  if the selected device provided a `%(RuntimeIdentifier)` metadata value.
+* `build`: unchanged, but is passed `-p:Device`.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `deploy`
 
@@ -93,19 +90,19 @@ to subsequent build, deploy, and run steps._
     iOS or Android workload, etc.
 
   * Call the MSBuild target, passing in the identifier for the selected
-    `-p:Device` global MSBuild property, and optionally `-p:RuntimeIdentifier`
-    if the selected device provided a `%(RuntimeIdentifier)` metadata value.
+    `-p:Device` global MSBuild property.
+
+  * Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
   * This step needs to run, even with `--no-build`, as you may have
     selected a different device.
 
-* `ComputeRunArguments`: unchanged, but is passed `-p:Device` and optionally
-  `-p:RuntimeIdentifier` if the selected device provided a `%(RuntimeIdentifier)` 
-  metadata value.
+* `ComputeRunArguments`: unchanged, but is passed `-p:Device`.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `run`: unchanged. `ComputeRunArguments` should have set a valid
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
-  `-p:Device` and optionally `-p:RuntimeIdentifier`.
+  `-p:Device`.
 
 ## New `dotnet run` Command-line Switches
 
@@ -145,6 +142,89 @@ A new `--device` switch will:
 
 * The iOS and Android workloads will know how to interpret `$(Device)`
   to select an appropriate device, emulator, or simulator.
+
+## Environment Variables
+
+The `dotnet run` command supports passing environment variables via the
+`-e` or `--environment` option:
+
+```dotnetcli
+dotnet run -e FOO=BAR -e ANOTHER=VALUE
+```
+
+These environment variables are:
+
+1. **Passed to the running application** - as process environment
+   variables when the app is launched.
+
+2. **Passed to MSBuild during build, deploy, and ComputeRunArguments** -
+   as `@(RuntimeEnvironmentVariable)` items that workloads can consume.
+   **This behavior is opt-in**: projects must declare the `RuntimeEnvironmentVariableSupport`
+   project capability to receive these items.
+
+```xml
+<ItemGroup>
+  <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+  <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+</ItemGroup>
+```
+
+This allows workloads (iOS, Android, etc.) to access environment
+variables during the `build`, `DeployToDevice`, and `ComputeRunArguments` target execution.
+
+### Opting In
+
+To receive environment variables as MSBuild items, projects must opt in by declaring
+the `RuntimeEnvironmentVariableSupport` project capability:
+
+```xml
+<ItemGroup>
+  <ProjectCapability Include="RuntimeEnvironmentVariableSupport" />
+</ItemGroup>
+```
+
+Mobile workloads (iOS, Android, etc.) should declare this capability in their SDK targets
+so that all projects using those workloads automatically opt in.
+
+Workloads can consume these items in their MSBuild targets:
+
+```xml
+<Target Name="DeployToDevice">
+  <!-- Access environment variables from dotnet run -e -->
+  <Message Text="Environment: @(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" />
+</Target>
+```
+
+### Implementation Details
+
+For the **build step**, which uses out-of-process MSBuild via `dotnet build`,
+environment variables are injected by creating a temporary `.props` file.
+The file is created in the project's `$(IntermediateOutputPath)` directory
+(e.g., `obj/Debug/net11.0-android/dotnet-run-env.props`). The path is
+obtained from the project evaluation performed during target framework and
+device selection. If `IntermediateOutputPath` is not available, the file
+falls back to the `obj/` directory.
+
+The file is passed to MSBuild via the `CustomBeforeMicrosoftCommonProps` property,
+ensuring the items are available early in evaluation.
+The temporary file is automatically deleted after the build completes.
+
+The generated props file looks like:
+
+```xml
+<Project>
+  <ItemGroup>
+    <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+    <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+  </ItemGroup>
+</Project>
+```
+
+For the **deploy step** (`DeployToDevice` target) and
+**ComputeRunArguments target**, which use in-process MSBuild,
+environment variables are added directly as
+`@(RuntimeEnvironmentVariable)` items to the `ProjectInstance` before
+invoking the target.
 
 ## Binary Logs for Device Selection
 

@@ -9,70 +9,70 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandDefinition>
 {
-    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
-    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
+    private readonly string _file;
+    private readonly string? _outputDirectory;
+    private readonly bool _force;
+    private readonly bool _dryRun;
+
+    public ProjectConvertCommand(ParseResult parseResult)
+        : base(parseResult)
+    {
+        _file = parseResult.GetValue(Definition.FileArgument) ?? string.Empty;
+        _outputDirectory = parseResult.GetValue(Definition.OutputOption)?.FullName;
+        _force = parseResult.GetValue(Definition.ForceOption);
+        _dryRun = parseResult.GetValue(Definition.DryRunOption);
+    }
 
     public override int Execute()
     {
         // Check the entry point file path.
         string file = Path.GetFullPath(_file);
-        if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
+        if (!VirtualProjectBuilder.IsValidEntryPointPath(file))
         {
             throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
         string targetDirectory = DetermineOutputDirectory(file);
 
-        // Find directives (this can fail, so do this before creating the target directory).
-        var sourceFile = SourceFile.Load(file);
-        var diagnostics = DiagnosticBag.ThrowOnFirst();
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, diagnostics);
-
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
-        var command = new VirtualProjectBuildingCommand(
-            entryPointFileFullPath: file,
-            msbuildArgs: MSBuildArgs.FromOtherArgs([]))
-        {
-            Directives = directives,
-        };
-        var projectInstance = command.CreateProjectInstance(projectCollection);
 
-        // Evaluate directives.
-        directives = FileLevelDirectiveHelpers.EvaluateDirectives(projectInstance, directives, sourceFile, diagnostics);
-        command.Directives = directives;
-        projectInstance = command.CreateProjectInstance(projectCollection);
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            out var projectInstance,
+            out var evaluatedDirectives,
+            validateAllDirectives: !_force);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
-
-        bool dryRun = _parseResult.GetValue(ProjectConvertCommandParser.DryRunOption);
 
         CreateDirectory(targetDirectory);
 
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
         // Process the entry point file.
-        if (dryRun)
+        if (_dryRun)
         {
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, file, targetFile);
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetFile);
         }
         else
         {
-            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(builder.EntryPointSourceFile, targetFile);
         }
 
         // Create project file.
         string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
-        if (dryRun)
+        if (_dryRun)
         {
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCreateFile, projectFile);
         }
@@ -80,9 +80,12 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
+            VirtualProjectBuilder.WriteProjectFile(
+                writer,
+                UpdateDirectives(evaluatedDirectives),
+                isVirtualProject: false,
                 userSecretsId: DetermineUserSecretsId(),
-                excludeDefaultProperties: FindDefaultPropertiesToExclude());
+                defaultProperties: GetDefaultProperties());
         }
 
         // Copy or move over included items.
@@ -98,14 +101,31 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
             CreateDirectory(targetItemDirectory);
-            CopyFile(item.FullPath, targetItemFullPath);
+
+            if (item.ItemType == "Compile")
+            {
+                if (_dryRun)
+                {
+                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, item.FullPath, targetItemFullPath);
+                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetItemFullPath);
+                }
+                else
+                {
+                    var sourceFile = SourceFile.Load(item.FullPath);
+                    VirtualProjectBuildingCommand.RemoveDirectivesFromFile(sourceFile, targetItemFullPath);
+                }
+            }
+            else
+            {
+                CopyFile(item.FullPath, targetItemFullPath);
+            }
         }
 
         return 0;
 
         void CreateDirectory(string path)
         {
-            if (dryRun)
+            if (_dryRun)
             {
                 if (!Directory.Exists(path))
                 {
@@ -120,7 +140,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         void CopyFile(string source, string target)
         {
-            if (dryRun)
+            if (_dryRun)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, source, target);
             }
@@ -130,13 +150,16 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             }
         }
 
-        IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
+        IEnumerable<(string ItemType, string FullPath, string RelativePath)> FindIncludedItems()
         {
-            string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
+            string entryPointFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
 
             // Include only items we know are files.
-            string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
-            var items = itemTypes.SelectMany(t => projectInstance.GetItems(t));
+            var mapping = builder.GetItemMapping(projectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
+
+            var items = mapping.SelectMany(e => projectInstance.GetItems(e.ItemType));
+
+            var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in items)
             {
@@ -147,12 +170,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                     continue;
                 }
 
-                // Exclude items that are not contained within the entry point file directory.
                 string itemFullPath = Path.GetFullPath(path: item.GetMetadataValue("FullPath"), basePath: entryPointFileDirectory);
-                if (!itemFullPath.StartsWith(entryPointFileDirectory, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
 
                 // Exclude items that do not exist.
                 if (!File.Exists(itemFullPath))
@@ -161,7 +179,32 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 }
 
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
-                yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
+
+                // Files outside the source directory should be copied into the target directory at the top level.
+                // Possibly with a number suffix to avoid conflicts.
+                // For C# files, this is needed so we can remove directives from them.
+                // For others, this is consistent but also we can omit the item groups from the converted project file and keep it simple.
+                if (itemRelativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+                {
+                    itemRelativePath = Path.GetFileName(itemFullPath);
+                    string fileNameWithoutExtension;
+                    string extension;
+                    if (!topLevelFileNames.Add(itemRelativePath))
+                    {
+                        fileNameWithoutExtension = Path.GetFileNameWithoutExtension(itemRelativePath);
+                        extension = Path.GetExtension(itemRelativePath);
+
+                        var counter = 1;
+                        do
+                        {
+                            counter++;
+                            itemRelativePath = $"{fileNameWithoutExtension}_{counter}{extension}";
+                        }
+                        while (!topLevelFileNames.Add(itemRelativePath));
+                    }
+                }
+
+                yield return (item.ItemType, FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
         }
 
@@ -231,14 +274,14 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             return result.DrainToImmutable();
         }
 
-        IEnumerable<string> FindDefaultPropertiesToExclude()
+        IEnumerable<(string name, string value)> GetDefaultProperties()
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuildingCommand.DefaultProperties)
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
-                if (!string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return name;
+                    yield return (name, defaultValue);
                 }
             }
         }

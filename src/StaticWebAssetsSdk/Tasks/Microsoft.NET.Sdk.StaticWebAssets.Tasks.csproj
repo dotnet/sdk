@@ -4,34 +4,33 @@
     <StaticWebAssetsSdkRoot>$(RepoRoot)\src\StaticWebAssetsSdk\</StaticWebAssetsSdkRoot>
     <PackageId>Microsoft.NET.Sdk.StaticWebAssets</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-    <RootNamespace>Microsoft.AspNetCore.StaticWebAssets.Tasks</RootNamespace>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <OutputType>Library</OutputType>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <Description>SDK for building and publishing applications containing static web assets.</Description>
     <RootNamespace>Microsoft.NET.Sdk.StaticWebAssets</RootNamespace>
 
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)'!='net472'">false</CopyLocalLockFileAssemblies>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">false</CopyLocalLockFileAssemblies>
 
     <OutputPath>$(BaseOutputPath)</OutputPath>
     <IsPackable>true</IsPackable>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
     <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>

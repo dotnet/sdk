@@ -9,7 +9,7 @@
 
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
-    <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
+    <Exec Command="&quot;$(DotNetTool)&quot; --version" ConsoleToMsbuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
     </Exec>
 

@@ -43,7 +43,7 @@ namespace dotnet.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier: command);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier: command);
 
             var slnDirectory = testAsset.TestRoot;
 

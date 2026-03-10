@@ -64,8 +64,8 @@ namespace Microsoft.DotNet.NativeWrapper
             // the current process path on .NET Framework. We are expected to find dotnet on PATH.
             dotnetExe = _getCurrentProcessPath();
 
-            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileNameWithoutExtension(dotnetExe)
-                    .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
+            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileName(dotnetExe)
+                    .Equals(Constants.DotNetFileName, StringComparison.InvariantCultureIgnoreCase))
 #endif
             {
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
@@ -73,13 +73,14 @@ namespace Microsoft.DotNet.NativeWrapper
 #if NET
                 if (dotnetExeFromPath != null && !OperatingSystem.IsWindows())
                 {
-                    // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
+                    // e.g. on Linux the 'dotnet' command from PATH may be a symlink so we need to
                     // resolve it to get the actual path to the binary
                     FileSystemInfo fileInfo = new FileInfo(dotnetExeFromPath);
                     if ((fileInfo.Attributes & FileAttributes.ReparsePoint) != 0)
                     {
                         fileInfo = fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
                     }
+
                     dotnetExeFromPath = fileInfo.FullName;
                 }
 #endif
@@ -108,6 +109,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return dotnetDirectory;
         }
+
 
         public static string? GetDotnetExeDirectory(Func<string, string?>? getEnvironmentVariable = null, Action<FormattableString>? log = null)
         {

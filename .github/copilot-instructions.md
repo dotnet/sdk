@@ -6,15 +6,14 @@ Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
 - User-visible changes to behavior should be considered carefully before committing. They should always be flagged.
-- When generating code, run `dotnet format` to ensure uniform formatting.
+- Only edit the files that are necessary to address the specific issue. Do not run `dotnet format` or make formatting changes to additional files.
 - Prefer using file-based namespaces for new code.
 - Do not allow unused `using` directives to be committed.
-- Commit your changes, and then format them.
-- Add the format commit SHA to the .git-blame-ignore-revs file so that the commit doesn't dirty git blame in the future
 - Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
 Testing:
 - Large changes should always include test changes.
+- When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo:
   - Use the repo-local dotnet instance: `./.dotnet/dotnet`

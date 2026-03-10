@@ -7,12 +7,10 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
 using EmptyFiles;
-using Xunit;
-using Xunit.Abstractions;
 
 public class PowershellProviderTests(ITestOutputHelper log)
 {
-    private IShellProvider provider = new PowershellShellProvider();
+    private IShellProvider provider = new PowerShellShellProvider();
 
     [Fact]
     public async Task GenericCompletions()
