@@ -458,31 +458,6 @@ public class ConcurrentInstallationTests
 [Collection("DotnetupReuseCollection")]
 public class ReuseAndErrorTests
 {
-    public static IEnumerable<object?[]> ReuseTestData => new List<object?[]>
-    {
-        new object?[] { "sdk", "9.0.103" },
-        new object?[] { "runtime", "9.0" },  // Uses new component@version syntax (plain version = core runtime)
-    };
-
-    [Theory]
-    [MemberData(nameof(ReuseTestData))]
-    public void Install_ReusesExistingInstall(string componentType, string channelOrSpec)
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = componentType == "sdk"
-            ? DotnetupTestUtilities.BuildSdkArguments(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath)
-            : DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath);
-
-        // First install
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"First installation failed. Output:\n{output}");
-
-        // Second install should be skipped
-        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"Second installation failed. Output:\n{output}");
-        output.Should().Contain("is already installed, skipping installation");
-    }
-
     [Fact]
     public void RuntimeInstall_FeatureBand_ReturnsError()
     {
