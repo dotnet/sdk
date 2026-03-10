@@ -37,6 +37,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="$(MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion)" />
 
     <!-- roslyn-sdk dependencies-->
@@ -55,6 +56,7 @@
     <PackageVersion Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
     <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />

@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             {
                 var ns = project.Root.Name.Namespace;
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "RestorePackagesPath", TestContext.Current.TestGlobalPackagesFolder));
+                    .Add(new XElement(ns + "RestorePackagesPath", SdkTestContext.Current.TestGlobalPackagesFolder));
             });
         }
     }

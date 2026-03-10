@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
                 FileName = Path.Combine(publishDirectory.FullName, testProject.Name + EnvironmentInfo.ExecutableExtension)
             };
 
-            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
 
             var result = runAppCommand.ToCommand()
                 .CaptureStdErr()
