@@ -1,0 +1,382 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using System.Text.Json;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Moq;
+
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public class GeneratePackageAssetsManifestFileTest : IDisposable
+{
+    private readonly string _tempDir;
+    private readonly Mock<IBuildEngine> _buildEngine;
+    private readonly List<string> _errorMessages;
+
+    public GeneratePackageAssetsManifestFileTest()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "GenPkgManifest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDir);
+
+        _errorMessages = new List<string>();
+        _buildEngine = new Mock<IBuildEngine>();
+        _buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
+        _buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()));
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+        {
+            try { Directory.Delete(_tempDir, recursive: true); } catch { }
+        }
+    }
+
+    [Fact]
+    public void EmptyAssets_ProducesEmptyManifest()
+    {
+        var manifestPath = Path.Combine(_tempDir, "empty.json");
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = Array.Empty<ITaskItem>(),
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        File.Exists(manifestPath).Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Version.Should().Be(1);
+        manifest.Assets.Should().BeEmpty();
+        manifest.Endpoints.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Assets_SerializedWithCorrectPackagePaths()
+    {
+        var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        var asset = new StaticWebAsset
+        {
+            Identity = file,
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = contentRoot,
+            BasePath = "_content/mylib",
+            RelativePath = "css/site#[.{fingerprint}]?.css",
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "Never",
+            CopyToPublishDirectory = "PreserveNewest",
+            OriginalItemSpec = file,
+            Fingerprint = "abc123",
+            Integrity = "sha256-test",
+            FileLength = 6,
+            LastWriteTime = DateTime.UtcNow,
+        };
+        asset.ApplyDefaults();
+        asset.Normalize();
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { asset.ToTaskItem() },
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Assets.Should().HaveCount(1);
+        var manifestAsset = manifest.Assets[0];
+
+        // Discovered assets don't include BasePath in the target path
+        manifestAsset.PackagePath.Should().Contain("css");
+        manifestAsset.PackagePath.Should().Contain("site");
+        manifestAsset.RelativePath.Should().Be("css/site#[.{fingerprint}]?.css");
+        manifestAsset.AssetRole.Should().Be("Primary");
+    }
+
+    [Fact]
+    public void RelatedAsset_RemappedToPackageRelativePath()
+    {
+        var primaryFile = CreateTempFile("wwwroot", "css", "site.css", "body{}");
+        var relatedFile = CreateTempFile("wwwroot", "css", "site.css.gz", "compressed");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        var primary = new StaticWebAsset
+        {
+            Identity = primaryFile,
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = contentRoot,
+            BasePath = "_content/mylib",
+            RelativePath = "css/site.css",
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "Never",
+            CopyToPublishDirectory = "PreserveNewest",
+            OriginalItemSpec = primaryFile,
+            Fingerprint = "abc",
+            Integrity = "sha256-test",
+            FileLength = 6,
+            LastWriteTime = DateTime.UtcNow,
+        };
+        primary.ApplyDefaults();
+        primary.Normalize();
+
+        var related = new StaticWebAsset
+        {
+            Identity = relatedFile,
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = contentRoot,
+            BasePath = "_content/mylib",
+            RelativePath = "css/site.css.gz",
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Alternative",
+            RelatedAsset = primaryFile,
+            AssetTraitName = "Content-Encoding",
+            AssetTraitValue = "gzip",
+            CopyToOutputDirectory = "Never",
+            CopyToPublishDirectory = "PreserveNewest",
+            OriginalItemSpec = relatedFile,
+            Fingerprint = "def",
+            Integrity = "sha256-test2",
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow,
+        };
+        related.ApplyDefaults();
+        related.Normalize();
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { primary.ToTaskItem(), related.ToTaskItem() },
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Assets.Should().HaveCount(2);
+
+        var relatedAsset = manifest.Assets.First(a => a.AssetRole == "Alternative");
+        // The RelatedAsset should be remapped from the absolute path to a package-relative path
+        relatedAsset.RelatedAsset.Should().NotBe(primaryFile);
+        relatedAsset.RelatedAsset.Should().NotBeNullOrEmpty();
+        // It should match the primary's PackagePath
+        var primaryAsset = manifest.Assets.First(a => a.AssetRole == "Primary");
+        relatedAsset.RelatedAsset.Should().Be(primaryAsset.PackagePath);
+    }
+
+    [Fact]
+    public void Endpoints_AssetFileRemappedToPackageRelativePath()
+    {
+        var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        var asset = new StaticWebAsset
+        {
+            Identity = file,
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = contentRoot,
+            BasePath = "_content/mylib",
+            RelativePath = "js/app.js",
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "Never",
+            CopyToPublishDirectory = "PreserveNewest",
+            OriginalItemSpec = file,
+            Fingerprint = "abc",
+            Integrity = "sha256-test",
+            FileLength = 6,
+            LastWriteTime = DateTime.UtcNow,
+        };
+        asset.ApplyDefaults();
+        asset.Normalize();
+
+        var endpoint = new StaticWebAssetEndpoint
+        {
+            Route = "_content/mylib/js/app.js",
+            AssetFile = file,
+            Selectors = [],
+            ResponseHeaders = [new() { Name = "Content-Type", Value = "text/javascript" }],
+            EndpointProperties = [],
+        };
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { asset.ToTaskItem() },
+            StaticWebAssetEndpoints = StaticWebAssetEndpoint.ToTaskItems(new[] { endpoint }),
+            TargetManifestPath = manifestPath,
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Endpoints.Should().HaveCount(1);
+        var ep = manifest.Endpoints[0];
+        // AssetFile should be remapped from absolute to package-relative
+        ep.AssetFile.Should().NotBe(file);
+        ep.AssetFile.Should().Be(manifest.Assets[0].PackagePath);
+    }
+
+    [Fact]
+    public void FrameworkPattern_TagsMatchingAssetsAsFramework()
+    {
+        var fwFile = CreateTempFile("wwwroot", "js", "framework.js", "fw");
+        var nonFwFile = CreateTempFile("wwwroot", "js", "app.js", "app");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        var fwAsset = CreateAsset(fwFile, contentRoot, "js/framework.js", "abc");
+        var nonFwAsset = CreateAsset(nonFwFile, contentRoot, "js/app.js", "def");
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { fwAsset.ToTaskItem(), nonFwAsset.ToTaskItem() },
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+            FrameworkPattern = "js/framework*",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Assets.Should().HaveCount(2);
+
+        var fwManifestAsset = manifest.Assets.First(a => a.RelativePath == "js/framework.js");
+        fwManifestAsset.SourceType.Should().Be("Framework");
+
+        var nonFwManifestAsset = manifest.Assets.First(a => a.RelativePath == "js/app.js");
+        nonFwManifestAsset.SourceType.Should().Be("Package");
+    }
+
+    [Fact]
+    public void AssetGroups_PreservedInManifest()
+    {
+        var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        var asset = CreateAsset(file, contentRoot, "css/site.css", "abc");
+        asset.AssetGroups = "BootstrapVersion=V5";
+
+        var task = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { asset.ToTaskItem() },
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        var manifest = JsonSerializer.Deserialize(
+            File.ReadAllBytes(manifestPath),
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+        manifest.Assets.Should().HaveCount(1);
+        manifest.Assets[0].AssetGroups.Should().Be("BootstrapVersion=V5");
+    }
+
+    // Helpers
+
+    private string CreateTempFile(params string[] pathParts)
+    {
+        var content = pathParts[^1];
+        var segments = pathParts[..^1];
+
+        var dir = Path.Combine(new[] { _tempDir }.Concat(segments[..^1]).ToArray());
+        Directory.CreateDirectory(dir);
+        var filePath = Path.Combine(dir, segments[^1]);
+        File.WriteAllText(filePath, content);
+        return filePath;
+    }
+
+    private StaticWebAsset CreateAsset(string filePath, string contentRoot, string relativePath, string fingerprint)
+    {
+        var asset = new StaticWebAsset
+        {
+            Identity = filePath,
+            SourceType = "Discovered",
+            SourceId = "MyLib",
+            ContentRoot = contentRoot,
+            BasePath = "_content/mylib",
+            RelativePath = relativePath,
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "Never",
+            CopyToPublishDirectory = "PreserveNewest",
+            OriginalItemSpec = filePath,
+            Fingerprint = fingerprint,
+            Integrity = "sha256-" + fingerprint,
+            FileLength = 6,
+            LastWriteTime = DateTime.UtcNow,
+        };
+        asset.ApplyDefaults();
+        asset.Normalize();
+        return asset;
+    }
+}
