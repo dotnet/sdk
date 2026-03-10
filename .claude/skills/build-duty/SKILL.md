@@ -108,7 +108,9 @@ Each PR gets an automatic recommendation based on its status. The agent should a
 
 | Code | Meaning | Agent Action |
 |------|---------|-------------|
+| `MERGE_EMPTY_CODEFLOW` | PR from dotnet-bot with 0 changed files — inter-branch codeflow with merge commits | Recommend merging. Completing these PRs reduces churn in the next codeflow PR. |
 | `CLOSE_EMPTY_PR` | PR has 0 changed files — no actual code changes after merge/sync | Recommend closing or merging trivially. Provide `gh pr close` command. |
+| `FIX_DARC_CONFLICT` | PR from maestro with 0 changed files and a darc merge conflict comment | Flag for manual resolution using `darc vmr resolve-conflict`. Direct the engineer to check the PR comments for step-by-step instructions. |
 | `FIX_MERGE_CONFLICTS` | Merge PR has unresolved conflicts | Flag for manual conflict resolution. Cannot be auto-fixed. |
 | `RETRY_SINGLE_LEG` | Only 1 CI leg failed out of many (likely flaky, common in templating) | Comment `/azp run` on the PR to trigger a retry. |
 | `MERGE` | PR is ready to merge | List as quick win. Do NOT auto-merge — human action only. |
@@ -200,10 +202,15 @@ Synthesize the script output and CI analysis into a markdown report. Use this st
 ## 🗑️ Empty PRs — Close or Merge ({count})
 
 PRs with 0 file changes. These typically result from merge conflicts that resolved to no-ops.
+- **dotnet-bot PRs (codeflow):** Merge these — they contain merge commits and completing them reduces churn in the next codeflow PR.
+- **maestro PRs with darc conflict comment:** Run `darc vmr resolve-conflict` per the instructions in the PR comments.
+- **Other empty PRs:** Close with `gh pr close`.
 
-| # | Title | Repo | Command |
-|---|-------|------|---------|
-| [#1234](url) | [branch] Source code updates | dotnet/dotnet | `gh pr close 1234 --repo dotnet/dotnet --comment 'Closing: no file changes.'` |
+| # | Title | Repo | Recommendation | Command |
+|---|-------|------|----------------|---------|
+| [#1234](url) | [branch] Source code updates | dotnet/dotnet | Close | `gh pr close 1234 --repo dotnet/dotnet --comment 'Closing: no file changes.'` |
+| [#2345](url) | Merge branch X => Y | dotnet/sdk | Merge (codeflow) | Ready to merge — reduces churn in next PR |
+| [#3456](url) | [branch] Source code updates | dotnet/sdk | Fix darc conflict | See PR comments for `darc vmr resolve-conflict` instructions |
 
 ---
 

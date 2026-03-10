@@ -338,6 +338,32 @@ function Get-CheckRunDetails {
     return $result
 }
 
+function Test-HasDarcConflictComment {
+    <#
+    .SYNOPSIS
+        Checks if a PR has a comment from maestro indicating a darc merge conflict
+        that requires running 'darc vmr resolve-conflict' to fix.
+    #>
+    param(
+        [string]$Repo,
+        [int]$Number
+    )
+
+    try {
+        $comments = gh pr view $Number --repo $Repo --json comments --jq '.comments[-5:][].body' 2>&1
+        if ($LASTEXITCODE -ne 0) { return $false }
+        foreach ($body in $comments) {
+            if ($body -match 'Action Required.*Conflict detected' -and $body -match 'darc vmr resolve-conflict') {
+                return $true
+            }
+        }
+        return $false
+    }
+    catch {
+        return $false
+    }
+}
+
 function Get-PrRecommendation {
     <#
     .SYNOPSIS
@@ -356,8 +382,20 @@ function Get-PrRecommendation {
         return 'FIX_MERGE_CONFLICTS'
     }
 
-    # Empty PR (0 changed files, no conflicts) — can be closed/merged trivially
+    # Empty PR (0 changed files, no conflicts) — author-specific guidance
     if ($PrInfo.changedFiles -eq 0 -and $PrInfo.mergeable -ne 'CONFLICTING') {
+        # dotnet-bot: inter-branch codeflow with merge commits — merge to reduce churn in the next PR
+        if ($PrInfo.author -eq 'dotnet-bot') {
+            return 'MERGE_EMPTY_CODEFLOW'
+        }
+
+        # dotnet-maestro[bot]: check for darc conflict comment indicating a merge error
+        if ($PrInfo.author -eq 'dotnet-maestro[bot]') {
+            if (Test-HasDarcConflictComment -Repo $PrInfo.repo -Number $PrInfo.number) {
+                return 'FIX_DARC_CONFLICT'
+            }
+        }
+
         return 'CLOSE_EMPTY_PR'
     }
 
@@ -599,12 +637,14 @@ if (-not $OutputJson) {
             $ageStr = Format-AgeString $pr.ageDays
             $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
             $recStr = switch ($pr.recommendation) {
-                'CLOSE_EMPTY_PR'       { '🗑️  Close (empty PR)' }
-                'FIX_MERGE_CONFLICTS'  { '🔀 Fix merge conflicts' }
-                'RETRY_SINGLE_LEG'     { "🔄 Retry ($($pr.checkDetails.failedNames -join ', '))" }
-                'NEEDS_REVIEW'         { '👀 Needs review approval' }
-                'INVESTIGATE_FAILURE'  { '🔍 Investigate' }
-                default                { $pr.recommendation }
+                'CLOSE_EMPTY_PR'        { '🗑️  Close (empty PR)' }
+                'MERGE_EMPTY_CODEFLOW'  { '✅ Merge (empty codeflow)' }
+                'FIX_DARC_CONFLICT'     { '🔧 Fix darc conflict' }
+                'FIX_MERGE_CONFLICTS'   { '🔀 Fix merge conflicts' }
+                'RETRY_SINGLE_LEG'      { "🔄 Retry ($($pr.checkDetails.failedNames -join ', '))" }
+                'NEEDS_REVIEW'          { '👀 Needs review approval' }
+                'INVESTIGATE_FAILURE'   { '🔍 Investigate' }
+                default                 { $pr.recommendation }
             }
             Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState, $recStr)
         }
@@ -639,20 +679,39 @@ if (-not $OutputJson) {
 
     # Actionable items
     $emptyPrs = @($allPrs | Where-Object { $_.recommendation -eq 'CLOSE_EMPTY_PR' })
+    $emptyCodeflowPrs = @($allPrs | Where-Object { $_.recommendation -eq 'MERGE_EMPTY_CODEFLOW' })
+    $darcConflictPrs = @($allPrs | Where-Object { $_.recommendation -eq 'FIX_DARC_CONFLICT' })
     $conflictPrs = @($allPrs | Where-Object { $_.recommendation -eq 'FIX_MERGE_CONFLICTS' })
     $retryPrs = @($allPrs | Where-Object { $_.recommendation -eq 'RETRY_SINGLE_LEG' })
     $reviewPrs = @($allPrs | Where-Object { $_.recommendation -eq 'NEEDS_REVIEW' })
 
-    if ($emptyPrs.Count -gt 0 -or $conflictPrs.Count -gt 0 -or $retryPrs.Count -gt 0 -or $reviewPrs.Count -gt 0) {
+    if ($emptyPrs.Count -gt 0 -or $emptyCodeflowPrs.Count -gt 0 -or $darcConflictPrs.Count -gt 0 -or $conflictPrs.Count -gt 0 -or $retryPrs.Count -gt 0 -or $reviewPrs.Count -gt 0) {
         Write-Host "========================================" -ForegroundColor Magenta
         Write-Host " Quick Actions" -ForegroundColor Magenta
         Write-Host "========================================" -ForegroundColor Magenta
+
+        if ($emptyCodeflowPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  ✅ Merge empty codeflow PRs (0 file changes, merge commits reduce churn in next PR):" -ForegroundColor Green
+            foreach ($pr in $emptyCodeflowPrs) {
+                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
+            }
+        }
 
         if ($emptyPrs.Count -gt 0) {
             Write-Host ""
             Write-Host "  🗑️  Close empty PRs (0 file changes):" -ForegroundColor DarkGray
             foreach ($pr in $emptyPrs) {
                 Write-Host "     gh pr close $($pr.number) --repo $($pr.repo) --comment 'Closing: no file changes after merge.'" -ForegroundColor DarkGray
+            }
+        }
+
+        if ($darcConflictPrs.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  🔧 Fix darc merge conflicts (run 'darc vmr resolve-conflict'):" -ForegroundColor Yellow
+            foreach ($pr in $darcConflictPrs) {
+                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
+                Write-Host "     See PR comments for darc resolve-conflict instructions" -ForegroundColor DarkGray
             }
         }
 
