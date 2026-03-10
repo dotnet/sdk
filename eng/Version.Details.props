@@ -142,7 +142,7 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesPackageVersion>10.0.2</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>10.0.2</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>10.0.2</SystemWindowsExtensionsPackageVersion>
-      <!-- microsoft-testfx dependencies -->
+    <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>2.2.0-preview.26159.3</MicrosoftTestingPlatformPackageVersion>
     <MSTestPackageVersion>4.2.0-preview.26159.3</MSTestPackageVersion>
   </PropertyGroup>
