@@ -10,9 +10,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
 internal static partial class ObjectWriters
 {
-    public static void Write(JsonDataWriter writer, TagHelperDescriptor? value)
-        => writer.WriteObject(value, WriteProperties);
-
     public static void WriteProperties(JsonDataWriter writer, TagHelperDescriptor value)
     {
         writer.Write(nameof(value.Flags), (byte)value.Flags);

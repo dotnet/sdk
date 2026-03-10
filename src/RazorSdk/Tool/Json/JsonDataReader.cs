@@ -30,10 +30,6 @@ internal ref struct JsonDataReader
     public bool IsObjectStart => _currentValue.ValueKind == JsonValueKind.Object;
     public bool IsString => _currentValue.ValueKind == JsonValueKind.String;
 
-    public bool IsPropertyName(string propertyName)
-        => _element.ValueKind == JsonValueKind.Object &&
-           _element.TryGetProperty(propertyName, out _);
-
     public void ReadPropertyName(string propertyName)
     {
         if (!_element.TryGetProperty(propertyName, out _currentValue))
@@ -52,45 +48,17 @@ internal ref struct JsonDataReader
     public bool TryReadPropertyName(string propertyName)
         => _element.TryGetProperty(propertyName, out _currentValue);
 
-    public bool TryReadNextPropertyName([NotNullWhen(true)] out string? propertyName)
-    {
-        // Not directly supported with the JsonElement tree model.
-        propertyName = null;
-        return false;
-    }
-
     public bool TryReadNull()
         => _currentValue.ValueKind == JsonValueKind.Null;
 
     public bool ReadBoolean()
         => _currentValue.GetBoolean();
 
-    public bool ReadBoolean(string propertyName)
-    {
-        ReadPropertyName(propertyName);
-        return ReadBoolean();
-    }
-
-    public bool ReadBooleanOrDefault(string propertyName, bool defaultValue = default)
-        => TryReadPropertyName(propertyName) ? ReadBoolean() : defaultValue;
-
     public bool ReadBooleanOrTrue(string propertyName)
         => !TryReadPropertyName(propertyName) || ReadBoolean();
 
     public bool ReadBooleanOrFalse(string propertyName)
         => TryReadPropertyName(propertyName) && ReadBoolean();
-
-    public bool TryReadBoolean(string propertyName, out bool value)
-    {
-        if (TryReadPropertyName(propertyName))
-        {
-            value = ReadBoolean();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
 
     public byte ReadByte()
         => _currentValue.GetByte();
@@ -101,18 +69,6 @@ internal ref struct JsonDataReader
     public byte ReadByteOrZero(string propertyName)
         => TryReadPropertyName(propertyName) ? ReadByte() : (byte)0;
 
-    public bool TryReadByte(string propertyName, out byte value)
-    {
-        if (TryReadPropertyName(propertyName))
-        {
-            value = ReadByte();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
     public byte ReadByte(string propertyName)
     {
         ReadPropertyName(propertyName);
@@ -122,55 +78,13 @@ internal ref struct JsonDataReader
     public int ReadInt32()
         => _currentValue.GetInt32();
 
-    public int ReadInt32OrDefault(string propertyName, int defaultValue = default)
-        => TryReadPropertyName(propertyName) ? ReadInt32() : defaultValue;
-
     public int ReadInt32OrZero(string propertyName)
         => TryReadPropertyName(propertyName) ? ReadInt32() : 0;
-
-    public bool TryReadInt32(string propertyName, out int value)
-    {
-        if (TryReadPropertyName(propertyName))
-        {
-            value = ReadInt32();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
 
     public int ReadInt32(string propertyName)
     {
         ReadPropertyName(propertyName);
         return ReadInt32();
-    }
-
-    public long ReadInt64()
-        => _currentValue.GetInt64();
-
-    public long ReadInt64OrDefault(string propertyName, int defaultValue = default)
-        => TryReadPropertyName(propertyName) ? ReadInt64() : defaultValue;
-
-    public long ReadInt64OrZero(string propertyName)
-        => TryReadPropertyName(propertyName) ? ReadInt64() : 0;
-
-    public bool TryReadInt64(string propertyName, out long value)
-    {
-        if (TryReadPropertyName(propertyName))
-        {
-            value = ReadInt64();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    public long ReadInt64(string propertyName)
-    {
-        ReadPropertyName(propertyName);
-        return ReadInt64();
     }
 
     public string? ReadString()
@@ -189,23 +103,8 @@ internal ref struct JsonDataReader
         return ReadString();
     }
 
-    public string? ReadStringOrDefault(string propertyName, string? defaultValue = default)
-        => TryReadPropertyName(propertyName) ? ReadString() : defaultValue;
-
     public string? ReadStringOrNull(string propertyName)
         => TryReadPropertyName(propertyName) ? ReadString() : null;
-
-    public bool TryReadString(string propertyName, out string? value)
-    {
-        if (TryReadPropertyName(propertyName))
-        {
-            value = ReadString();
-            return true;
-        }
-
-        value = null;
-        return false;
-    }
 
     public string ReadNonNullString()
         => _currentValue.GetString().AssumeNotNull();
@@ -235,57 +134,6 @@ internal ref struct JsonDataReader
                 $"Could not read value - JSON value kind was '{kind}'.");
         }
     }
-
-    public Uri? ReadUri(string propertyName)
-    {
-        ReadPropertyName(propertyName);
-        return ReadUri();
-    }
-
-    public Uri? ReadUri()
-    {
-        return ReadString() is string uriString
-            ? new Uri(uriString)
-            : null;
-    }
-
-    public Uri ReadNonNullUri(string propertyName)
-    {
-        ReadPropertyName(propertyName);
-        return ReadNonNullUri();
-    }
-
-    public Uri ReadNonNullUri()
-    {
-        var uriString = ReadNonNullString();
-        return new Uri(uriString);
-    }
-
-    [return: MaybeNull]
-    public T ReadObject<T>(ReadProperties<T> readProperties)
-    {
-        if (TryReadNull())
-        {
-            return default;
-        }
-
-        return ReadNonNullObject(readProperties);
-    }
-
-    [return: MaybeNull]
-    public T ReadObject<T>(string propertyName, ReadProperties<T> readProperties)
-    {
-        ReadPropertyName(propertyName);
-        return ReadObject(readProperties);
-    }
-
-    [return: MaybeNull]
-    public T ReadObjectOrDefault<T>(string propertyName, ReadProperties<T> readProperties, T defaultValue)
-        => TryReadPropertyName(propertyName) ? ReadObject(readProperties) : defaultValue;
-
-    public T? ReadObjectOrNull<T>(string propertyName, ReadProperties<T> readProperties)
-        where T : class
-        => ReadObjectOrDefault(propertyName, readProperties!, defaultValue: null);
 
     public T ReadNonNullObject<T>(ReadProperties<T> readProperties)
         => readProperties(new JsonDataReader(_currentValue));
@@ -322,15 +170,6 @@ internal ref struct JsonDataReader
         return result;
     }
 
-    public T[]? ReadArray<T>(string propertyName, ReadValue<T> readElement)
-    {
-        ReadPropertyName(propertyName);
-        return ReadArray(readElement);
-    }
-
-    public T[] ReadArrayOrEmpty<T>(string propertyName, ReadValue<T> readElement)
-        => TryReadPropertyName(propertyName) ? ReadArray(readElement) ?? [] : [];
-
     public ImmutableArray<T> ReadImmutableArray<T>(ReadValue<T> readElement)
     {
         var length = _currentValue.GetArrayLength();
@@ -348,17 +187,6 @@ internal ref struct JsonDataReader
         return builder.ToImmutable();
     }
 
-    public ImmutableArray<T> ReadImmutableArray<T>(string propertyName, ReadValue<T> readElement)
-    {
-        ReadPropertyName(propertyName);
-        return ReadImmutableArray(readElement);
-    }
-
     public ImmutableArray<T> ReadImmutableArrayOrEmpty<T>(string propertyName, ReadValue<T> readElement)
         => TryReadPropertyName(propertyName) ? ReadImmutableArray(readElement) : [];
-
-    public void ReadToEndOfCurrentObject()
-    {
-        // No-op: with JsonElement, the entire object is already parsed in memory.
-    }
 }

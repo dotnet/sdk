@@ -44,11 +44,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
         }
     }
 
-    public void Write(byte value)
-    {
-        _writer.WriteNumberValue((int)value);
-    }
-
     public void Write(string propertyName, byte value)
     {
         _writer.WritePropertyName(propertyName);
@@ -92,30 +87,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
         }
     }
 
-    public void Write(long value)
-    {
-        _writer.WriteNumberValue(value);
-    }
-
-    public void Write(string propertyName, long value)
-    {
-        _writer.WritePropertyName(propertyName);
-        _writer.WriteNumberValue(value);
-    }
-
-    public void WriteIfNotZero(string propertyName, long value)
-    {
-        WriteIfNotDefault(propertyName, value, defaultValue: 0);
-    }
-
-    public void WriteIfNotDefault(string propertyName, long value, long defaultValue)
-    {
-        if (value != defaultValue)
-        {
-            Write(propertyName, value);
-        }
-    }
-
     public void Write(string? value)
     {
         _writer.WriteStringValue(value);
@@ -125,14 +96,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
     {
         _writer.WritePropertyName(propertyName);
         _writer.WriteStringValue(value);
-    }
-
-    public void WriteIfNotDefault(string propertyName, string? value, string? defaultValue)
-    {
-        if (value != defaultValue)
-        {
-            Write(propertyName, value);
-        }
     }
 
     public void WriteIfNotNull(string propertyName, string? value)
@@ -168,24 +131,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
         }
     }
 
-    public void Write(string propertyName, Uri? value)
-    {
-        _writer.WritePropertyName(propertyName);
-        Write(value);
-    }
-
-    public void Write(Uri? value)
-    {
-        if (value is null)
-        {
-            _writer.WriteNullValue();
-        }
-        else
-        {
-            _writer.WriteStringValue(value.AbsoluteUri);
-        }
-    }
-
     public void WriteObject<T>(string propertyName, T? value, WriteProperties<T> writeProperties)
     {
         _writer.WritePropertyName(propertyName);
@@ -203,22 +148,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
         _writer.WriteStartObject();
         writeProperties(this, value);
         _writer.WriteEndObject();
-    }
-
-    public void WriteObjectIfNotDefault<T>(string propertyName, T? value, T? defaultValue, WriteProperties<T> writeProperties)
-    {
-        if (!EqualityComparer<T?>.Default.Equals(value, defaultValue))
-        {
-            WriteObject(propertyName, value, writeProperties);
-        }
-    }
-
-    public void WriteObjectIfNotNull<T>(string propertyName, T? value, WriteProperties<T> writeProperties)
-    {
-        if (value is not null)
-        {
-            WriteObject(propertyName, value, writeProperties);
-        }
     }
 
     public void WriteArray<T>(IEnumerable<T>? elements, WriteValue<T> writeElement)
@@ -293,14 +222,6 @@ internal readonly ref struct JsonDataWriter(Utf8JsonWriter writer)
     {
         _writer.WritePropertyName(propertyName);
         WriteArray(elements, writeElement);
-    }
-
-    public void WriteArrayIfNotNullOrEmpty<T>(string propertyName, IEnumerable<T>? elements, WriteValue<T> writeElement)
-    {
-        if (elements?.Any() == true)
-        {
-            WriteArray(propertyName, elements, writeElement);
-        }
     }
 
     public void WriteArrayIfNotDefaultOrEmpty<T>(string propertyName, ImmutableArray<T> elements, WriteValue<T> writeElement)
