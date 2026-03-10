@@ -162,6 +162,14 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         {
             var entryName = kvp.Key;
             var entryValue = kvp.Value;
+
+            // If this requirement matches a deferred group, skip it during eager filtering.
+            // The deferred group will be evaluated later by FilterDeferredStaticWebAssetGroups.
+            if (IsDeferredGroup(entryName, sourceId))
+            {
+                continue;
+            }
+
             var satisfied = false;
 
             if (StaticWebAssetGroups != null)
@@ -191,6 +199,36 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         }
 
         return true;
+    }
+
+    private bool IsDeferredGroup(string groupName, string sourceId)
+    {
+        if (StaticWebAssetGroups == null)
+        {
+            return false;
+        }
+
+        foreach (var group in StaticWebAssetGroups)
+        {
+            if (!string.Equals(group.ItemSpec, groupName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var groupSourceId = group.GetMetadata("SourceId");
+            if (!string.IsNullOrEmpty(groupSourceId) &&
+                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (string.Equals(group.GetMetadata("Deferred"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool TryInferFingerprint(Regex[] fingerprintExpressions, string relativePath, out string fingerprint, out string newRelativePath)

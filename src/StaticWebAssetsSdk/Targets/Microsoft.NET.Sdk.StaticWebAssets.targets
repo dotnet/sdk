@@ -127,6 +127,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterDeferredStaticWebAssetGroups"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -323,8 +328,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
       ResolveStaticWebAssetsInputs;
+      FilterDeferredStaticWebAssetGroups;
       $(ResolveBuildRelatedStaticWebAssetsDependsOn)
     </ResolveBuildRelatedStaticWebAssetsDependsOn>
+
+    <FilterDeferredStaticWebAssetGroupsDependsOn>
+      ResolveStaticWebAssetsInputs;
+      $(FilterDeferredStaticWebAssetGroupsDependsOn)
+    </FilterDeferredStaticWebAssetGroupsDependsOn>
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest;AddStaticWebAssetEndpointsBuildManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
@@ -712,6 +723,24 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveCoreStaticWebAssets" DependsOnTargets="$(ResolveCoreStaticWebAssetsDependsOn)" />
 
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
+
+  <Target Name="FilterDeferredStaticWebAssetGroups" DependsOnTargets="$(FilterDeferredStaticWebAssetGroupsDependsOn)">
+    <FilterDeferredStaticWebAssetGroups
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
+    >
+      <Output TaskParameter="FilteredAssets" ItemName="_FilteredDeferredAssets" />
+      <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredDeferredEndpoints" />
+    </FilterDeferredStaticWebAssetGroups>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAsset Include="@(_FilteredDeferredAssets)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_FilteredDeferredEndpoints)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="ResolveBuildRelatedStaticWebAssets" DependsOnTargets="$(ResolveBuildRelatedStaticWebAssetsDependsOn)" />
 

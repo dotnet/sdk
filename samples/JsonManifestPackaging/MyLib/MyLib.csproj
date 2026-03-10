@@ -7,4 +7,9 @@
     <StaticWebAssetFrameworkPattern>js/framework*</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
+  <!-- Group definition: tag server-rendering.js with rendering=server -->
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="rendering" Value="server" IncludePattern="js/server-rendering*" />
+  </ItemGroup>
+
 </Project>

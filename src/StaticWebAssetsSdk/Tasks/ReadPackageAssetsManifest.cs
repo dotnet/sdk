@@ -226,11 +226,6 @@ public class ReadPackageAssetsManifest : Task
             return true; // Ungrouped assets are always included
         }
 
-        if (StaticWebAssetGroups == null || StaticWebAssetGroups.Length == 0)
-        {
-            return false; // Grouped assets require declarations; none present → excluded
-        }
-
         // Parse AssetGroups: "name1=value1;name2=value2"
         var requirements = asset.AssetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
         foreach (var requirement in requirements)
@@ -244,25 +239,35 @@ public class ReadPackageAssetsManifest : Task
             var reqName = requirement.Substring(0, eqIdx);
             var reqValue = requirement.Substring(eqIdx + 1);
 
-            var satisfied = false;
-            foreach (var group in StaticWebAssetGroups)
+            // If this requirement matches a deferred group, skip it during eager filtering.
+            // The deferred group will be evaluated later by FilterDeferredStaticWebAssetGroups.
+            if (IsDeferredGroup(reqName, sourceId))
             {
-                var groupName = group.ItemSpec;
-                var groupValue = group.GetMetadata("Value");
-                var groupSourceId = group.GetMetadata("SourceId");
+                continue;
+            }
 
-                // SourceId-scoped groups only match assets from that source
-                if (!string.IsNullOrEmpty(groupSourceId) &&
-                    !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            var satisfied = false;
+            if (StaticWebAssetGroups != null)
+            {
+                foreach (var group in StaticWebAssetGroups)
                 {
-                    continue;
-                }
+                    var groupName = group.ItemSpec;
+                    var groupValue = group.GetMetadata("Value");
+                    var groupSourceId = group.GetMetadata("SourceId");
 
-                if (string.Equals(groupName, reqName, StringComparison.Ordinal) &&
-                    string.Equals(groupValue, reqValue, StringComparison.Ordinal))
-                {
-                    satisfied = true;
-                    break;
+                    // SourceId-scoped groups only match assets from that source
+                    if (!string.IsNullOrEmpty(groupSourceId) &&
+                        !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(groupName, reqName, StringComparison.Ordinal) &&
+                        string.Equals(groupValue, reqValue, StringComparison.Ordinal))
+                    {
+                        satisfied = true;
+                        break;
+                    }
                 }
             }
 
@@ -273,6 +278,36 @@ public class ReadPackageAssetsManifest : Task
         }
 
         return true;
+    }
+
+    private bool IsDeferredGroup(string groupName, string sourceId)
+    {
+        if (StaticWebAssetGroups == null)
+        {
+            return false;
+        }
+
+        foreach (var group in StaticWebAssetGroups)
+        {
+            if (!string.Equals(group.ItemSpec, groupName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var groupSourceId = group.GetMetadata("SourceId");
+            if (!string.IsNullOrEmpty(groupSourceId) &&
+                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (string.Equals(group.GetMetadata("Deferred"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string ResolveAssetPath(PackageManifestAsset asset, string packageRoot)

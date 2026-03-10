@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <!-- Using PackageReference to test JSON manifest consumption WITHOUT ASP.NET Core endpoints -->
+  <ItemGroup>
+    <PackageReference Include="MyLib" Version="11.0.100-dev" />
+  </ItemGroup>
+
+</Project>
