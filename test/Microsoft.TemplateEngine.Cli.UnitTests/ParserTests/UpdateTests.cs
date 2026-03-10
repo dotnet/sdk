@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_CanParseAddSourceOption(string optionName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update {optionName} my-custom-source");
             UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_Error_WhenArguments(string commandName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new {commandName} source");
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_CanParseInteractiveOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update --interactive");
             UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_CanParseCheckOnlyOption(string optionAlias)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update {optionAlias}");
             UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_Legacy_CanParseCheckOnlyOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new --update-check");
             UpdateCommandArgs args = new((LegacyUpdateCheckCommand)parseResult.CommandResult.Command, parseResult);
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_Legacy_CanParseAddSourceOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
@@ -132,7 +132,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_Legacy_CanParseInteractiveOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_Legacy_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Update_CanReturnParseError(string command, string expectedInvalidTokens)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse(command);
             IEnumerable<string> errorMessages = parseResult.Errors.Select(error => error.Message);
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             Command rootCommand = new("dotnet")
             {
                 myCommand

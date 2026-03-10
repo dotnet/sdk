@@ -21,7 +21,7 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
 
     public override bool Execute()
     {
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, MetadataEntry>();
 
         // Extract version from a path like:
         //   ...\packs\Microsoft.NetCore.App.Ref\<version>\analyzers\**\*.*
@@ -29,24 +29,32 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
         foreach (var input in Inputs ?? [])
         {
             var deploymentSubpath = input.GetMetadata("DeploymentSubpath");
-            var recursiveDir = input.GetMetadata("CustomRecursiveDir");
+            var recursiveDir = input.GetMetadata("CustomRecursiveDir").Replace('/', '\\');
 
-            var slashIndex = recursiveDir.IndexOfAny('/', '\\');
+            var slashIndex = recursiveDir.IndexOf('\\');
             var version = recursiveDir.Substring(0, slashIndex);
             var rest = recursiveDir.Substring(slashIndex + 1);
 
             input.SetMetadata("CustomRecursiveDir", rest);
 
-            if (!metadata.TryGetValue(deploymentSubpath, out var existingVersion))
+            if (!metadata.TryGetValue(deploymentSubpath, out var entry))
             {
-                metadata.Add(deploymentSubpath, version);
+                entry = new MetadataEntry(version);
+                metadata.Add(deploymentSubpath, entry);
             }
-            else if (existingVersion != version)
+            else if (entry.Version != version)
             {
-                Log.LogError($"Version mismatch for '{deploymentSubpath}': '{existingVersion}' != '{version}'. " +
+                Log.LogError($"Version mismatch for '{deploymentSubpath}': '{entry.Version}' != '{version}'. " +
                     $"Expected only one version of '{input.GetMetadata("Identity")}'.");
                 return false;
             }
+
+            if (!rest.EndsWith("\\"))
+            {
+                rest += '\\';
+            }
+
+            entry.Files.Add($"{rest}{input.GetMetadata("Filename")}{input.GetMetadata("Extension")}");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(MetadataFilePath)!);
@@ -54,5 +62,11 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
 
         Outputs = Inputs;
         return true;
+    }
+
+    private sealed class MetadataEntry(string version)
+    {
+        public string Version { get; } = version;
+        public List<string> Files { get; } = [];
     }
 }

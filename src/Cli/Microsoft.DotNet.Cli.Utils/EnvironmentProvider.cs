@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -136,6 +137,12 @@ public class EnvironmentProvider(
         return Environment.GetEnvironmentVariable(variable, target);
     }
 
+    public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value)
+    {
+        value = Environment.GetEnvironmentVariable(name);
+        return value != null;
+    }
+
     public void SetEnvironmentVariable(string variable, string value, EnvironmentVariableTarget target)
     {
         Environment.SetEnvironmentVariable(variable, value, target);
@@ -149,5 +156,58 @@ public class EnvironmentProvider(
         }
 
         return null;
+    }
+
+    public bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value)
+    {
+        if (TryGetEnvironmentVariable(name, out string? strValue) &&
+            (bool.TryParse(strValue, out bool boolValue)
+             || TryParseNonBoolConstantStringAsBool(strValue, out boolValue)))
+        {
+            value = boolValue;
+            return true;
+        }
+        else
+        {
+            value = false;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Parses non-boolean constant strings like "1", "0", "yes", "no", "on", "off" as boolean values.
+    /// </summary>
+    private static bool TryParseNonBoolConstantStringAsBool(string? strValue, out bool value)
+    {
+        switch (strValue?.ToLowerInvariant())
+        {
+            case "1":
+            case "yes":
+            case "on":
+                value = true;
+                return true;
+            case "0":
+            case "no":
+            case "off":
+                value = false;
+                return true;
+            default:
+                value = false;
+                return false;
+        }
+    }
+
+    public bool TryGetEnvironmentVariableAsInt(string name, [NotNullWhen(true)] out int value)
+    {
+        if (TryGetEnvironmentVariable(name, out string? strValue) && int.TryParse(strValue, out int intValue))
+        {
+            value = intValue;
+            return true;
+        }
+        else
+        {
+            value = -1;
+            return false;
+        }
     }
 }

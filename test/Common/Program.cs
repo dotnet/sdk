@@ -1,8 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
+
+namespace Microsoft.NET.TestFramework;
 
 #pragma warning disable SA1205 // Partial elements should declare access
 partial class Program
