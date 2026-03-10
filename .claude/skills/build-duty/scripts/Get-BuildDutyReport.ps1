@@ -18,9 +18,6 @@
 .PARAMETER OutputJson
     Output only the JSON summary (no human-readable tables).
 
-.PARAMETER SkipCIDetails
-    Skip fetching detailed CI status for failing PRs (faster but less detail).
-
 .EXAMPLE
     .\Get-BuildDutyReport.ps1
     # Full report across all repos
@@ -40,9 +37,7 @@ param(
 
     [int]$DaysStale = 7,
 
-    [switch]$OutputJson,
-
-    [switch]$SkipCIDetails
+    [switch]$OutputJson
 )
 
 $ErrorActionPreference = 'Stop'
@@ -88,7 +83,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
       changedFiles
       mergeStateStatus
       reviewDecision
-      labels(first: 20) { nodes { name } }
+      labels(first: 100) { nodes { name } }
       commits(last: 1) {
         nodes {
           commit {
@@ -128,12 +123,6 @@ function Get-PrDetails {
         [string]$Repo,
         [int]$Number
     )
-
-    $variables = @{
-        owner  = $Owner
-        repo   = $Repo
-        number = $Number
-    } | ConvertTo-Json -Compress
 
     try {
         $result = gh api graphql -f "query=$PrDetailQuery" --field "owner=$Owner" --field "repo=$Repo" --field "number=$Number" 2>&1
@@ -569,7 +558,7 @@ if (-not $OutputJson) {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host " Build Duty PR Triage Report" -ForegroundColor Cyan
-    Write-Host " Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC' -AsUTC)" -ForegroundColor Cyan
+    Write-Host " Generated: $([DateTimeOffset]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host ""
 
@@ -579,7 +568,7 @@ if (-not $OutputJson) {
         Write-Host ("-" * 120)
         Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-10}" -f "Repo", "#", "Title", "Target", "Age", "Checks")
         Write-Host ("-" * 120)
-        foreach ($pr in ($ready | Sort-Object repo, ageDays -Descending)) {
+        foreach ($pr in ($ready | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
             $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
@@ -597,7 +586,7 @@ if (-not $OutputJson) {
         Write-Host ("-" * 120)
         Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
         Write-Host ("-" * 120)
-        foreach ($pr in ($lockdown | Sort-Object repo, ageDays -Descending)) {
+        foreach ($pr in ($lockdown | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
             $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr)
@@ -614,7 +603,7 @@ if (-not $OutputJson) {
         Write-Host ("-" * 120)
         Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-15}" -f "Repo", "#", "Title", "Target", "Age", "Reviewer")
         Write-Host ("-" * 120)
-        foreach ($pr in ($changesRequested | Sort-Object repo, ageDays -Descending)) {
+        foreach ($pr in ($changesRequested | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
             $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             $reviewer = if ($pr.changesRequestedBy) { "@$($pr.changesRequestedBy)" } else { "unknown" }
@@ -632,7 +621,7 @@ if (-not $OutputJson) {
         Write-Host ("-" * 140)
         Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
         Write-Host ("-" * 140)
-        foreach ($pr in ($blocked | Sort-Object repo, ageDays -Descending)) {
+        foreach ($pr in ($blocked | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
             $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
@@ -660,7 +649,7 @@ if (-not $OutputJson) {
         Write-Host ("-" * 120)
         Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
         Write-Host ("-" * 120)
-        foreach ($pr in ($draft | Sort-Object repo, ageDays -Descending)) {
+        foreach ($pr in ($draft | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
             $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
             $ageStr = Format-AgeString $pr.ageDays
             Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr) -ForegroundColor DarkGray

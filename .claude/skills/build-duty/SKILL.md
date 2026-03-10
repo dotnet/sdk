@@ -94,8 +94,9 @@ PRs where:
 ### ❌ Failing / Blocked
 PRs where:
 - `mergeStateStatus` is `BLOCKED`
-- Or `statusCheckRollup` is `FAILURE` or `PENDING`
 - Or has `DO NOT MERGE` label
+
+> Note: Classification relies on GitHub's `mergeStateStatus` and labels. Individual failing or pending status checks may not cause a PR to be categorized as Failing / Blocked if GitHub still reports `mergeStateStatus` as `CLEAN` (i.e., only non-required checks are failing).
 
 **Action:** Investigate failures. Use the ci-analysis skill for detailed failure information.
 
