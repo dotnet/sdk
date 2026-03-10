@@ -140,10 +140,9 @@ namespace Microsoft.TemplateEngine
 
         internal static int ToInt32(this JsonNode? token, string? key = null, int defaultValue = 0)
         {
-            int value;
             if (key == null)
             {
-                if (token == null || token.GetValueKind() != JsonValueKind.Number || !int.TryParse(token.ToJsonString(), out value))
+                if (token == null || !token.TryParseInt(out int value))
                 {
                     return defaultValue;
                 }
@@ -157,20 +156,12 @@ namespace Microsoft.TemplateEngine
             }
 
             JsonNode? element = GetPropertyCaseInsensitive(obj, key);
-            if (element == null)
+            if (element == null || !element.TryParseInt(out int result))
             {
                 return defaultValue;
             }
-            else if (element.GetValueKind() == JsonValueKind.Number)
-            {
-                return element.ToInt32();
-            }
-            else if (int.TryParse(element.ToJsonString(), out value))
-            {
-                return value;
-            }
 
-            return defaultValue;
+            return result;
         }
 
         internal static T ToEnum<T>(this JsonNode token, string? key = null, T defaultValue = default, bool ignoreCase = false)

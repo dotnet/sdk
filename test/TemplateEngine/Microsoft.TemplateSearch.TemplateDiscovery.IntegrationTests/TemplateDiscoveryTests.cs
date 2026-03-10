@@ -114,7 +114,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .ExitWith(0);
 
             var jObjectV1 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")))!.AsObject();
-            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.AsObject().Single(p => p.Key.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value!["Owners"]!.GetValue<string>());
+            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.AsObject().Single(p => p.Key.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value!["Owners"]!.AsArray().Select(n => n!.GetValue<string>()).Single());
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
             Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.GetValue<string>());
         }

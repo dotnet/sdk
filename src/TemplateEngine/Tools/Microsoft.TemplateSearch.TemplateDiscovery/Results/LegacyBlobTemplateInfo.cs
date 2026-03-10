@@ -159,7 +159,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public IReadOnlyList<Guid> PostActions { get; }
 
         [JsonIgnore]
-        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => [];
 
         // ShortName should get deserialized when it exists, for backwards compat.
         // But moving forward, ShortNameList should be the definitive source.
@@ -188,10 +188,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string? DisplayName => null;
 
             [JsonIgnore]
-            public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
+            public IReadOnlyDictionary<string, ParameterChoice> Choices => new Dictionary<string, ParameterChoice>();
 
         }
 
@@ -214,7 +214,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string DisplayName => throw new NotImplementedException();
+            public string DisplayName => string.Empty;
         }
     }
 }

@@ -82,21 +82,21 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         [JsonIgnore]
-        string ITemplateLocator.MountPointUri => throw new NotImplementedException();
+        string ITemplateLocator.MountPointUri => string.Empty;
 
         public string? Author { get; private set; }
 
         public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
         [JsonIgnore]
-        public string DefaultName => throw new NotImplementedException();
+        public string DefaultName => string.Empty;
 
         public string? Description { get; private set; }
 
         public string Identity { get; private set; }
 
         [JsonIgnore]
-        Guid ITemplateLocator.GeneratorId => throw new NotImplementedException();
+        Guid ITemplateLocator.GeneratorId => Guid.Empty;
 
         public string? GroupIdentity { get; private set; }
 
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateSearch.Common
 
         [JsonIgnore]
         [Obsolete("Use ShortNameList instead.")]
-        string ITemplateInfo.ShortName => throw new NotImplementedException();
+        string ITemplateInfo.ShortName => ShortNameList.Count > 0 ? ShortNameList[0] : string.Empty;
 
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
@@ -122,13 +122,13 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         [JsonIgnore]
-        string ITemplateLocator.ConfigPlace => throw new NotImplementedException();
+        string ITemplateLocator.ConfigPlace => string.Empty;
 
         [JsonIgnore]
-        string IExtendedTemplateLocator.LocaleConfigPlace => throw new NotImplementedException();
+        string IExtendedTemplateLocator.LocaleConfigPlace => string.Empty;
 
         [JsonIgnore]
-        string IExtendedTemplateLocator.HostConfigPlace => throw new NotImplementedException();
+        string IExtendedTemplateLocator.HostConfigPlace => string.Empty;
 
         public string? ThirdPartyNotices { get; private set; }
 
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<Guid> PostActions { get; private set; } = [];
 
         [JsonIgnore]
-        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => [];
 
         public static BlobStorageTemplateInfo FromJObject(JsonObject entry)
         {
@@ -407,7 +407,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultValue { get; internal set; }
 
             [JsonIgnore]
-            string ITemplateParameter.DisplayName => throw new NotImplementedException();
+            string ITemplateParameter.DisplayName => string.Empty;
 
             public string? DefaultIfOptionWithoutValue { get; internal set; }
 
@@ -415,7 +415,7 @@ namespace Microsoft.TemplateSearch.Common
 
             [Obsolete]
             [JsonIgnore]
-            string ITemplateParameter.Documentation => throw new NotImplementedException();
+            string ITemplateParameter.Documentation => string.Empty;
 
             public bool AllowMultipleValues { get; internal set; }
 
@@ -458,10 +458,10 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string DisplayName => throw new NotImplementedException();
+            public string DisplayName => string.Empty;
 
             [JsonIgnore]
-            public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
+            public IReadOnlyDictionary<string, ParameterChoice> Choices => new Dictionary<string, ParameterChoice>();
 
         }
 
@@ -484,7 +484,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string DisplayName => throw new NotImplementedException();
+            public string DisplayName => string.Empty;
         }
 
     }
