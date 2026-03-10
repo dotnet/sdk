@@ -274,4 +274,139 @@ public class ManifestTests
             CleanupManifest(manifestPath);
         }
     }
+
+    [Fact]
+    public void AddInstallSpec_DifferentSource_CreatesDuplicate()
+    {
+        // Demonstrates the scenario that SkipInstallSpecRecording prevents:
+        // if AddInstallSpec is called with a different InstallSource for the same
+        // component/channel, it creates a duplicate entry.
+        var manifestPath = CreateTempManifestPath();
+        try
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+            // Original spec from GlobalJson
+            manifest.AddInstallSpec(installRoot, new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "9.0",
+                InstallSource = InstallSource.GlobalJson,
+                GlobalJsonPath = @"C:\Projects\myapp\global.json"
+            });
+
+            // Without SkipInstallSpecRecording, an update would call AddInstallSpec again
+            // with Explicit source, creating a duplicate
+            manifest.AddInstallSpec(installRoot, new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "9.0",
+                InstallSource = InstallSource.Explicit
+            });
+
+            // This shows the bug: two specs for the same component/channel
+            manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
+        }
+        finally
+        {
+            CleanupManifest(manifestPath);
+        }
+    }
+
+    [Fact]
+    public void Update_RecordsInstallation_WithoutDuplicatingSpec()
+    {
+        // Simulates the fixed update flow: the update adds a new installation
+        // for the channel but does NOT call AddInstallSpec (SkipInstallSpecRecording = true),
+        // so no duplicate spec is created.
+        var manifestPath = CreateTempManifestPath();
+        try
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+            // Initial state: GlobalJson spec + installation at 9.0.100
+            manifest.AddInstallSpec(installRoot, new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "9.0",
+                InstallSource = InstallSource.GlobalJson,
+                GlobalJsonPath = @"C:\Projects\myapp\global.json"
+            });
+            manifest.AddInstallation(installRoot, new Installation
+            {
+                Component = InstallComponent.SDK,
+                Version = "9.0.100",
+                Subcomponents = ["sdk/9.0.100"]
+            });
+
+            // Simulate update: only add the new installation (no AddInstallSpec call)
+            manifest.AddInstallation(installRoot, new Installation
+            {
+                Component = InstallComponent.SDK,
+                Version = "9.0.200",
+                Subcomponents = ["sdk/9.0.200"]
+            });
+
+            // Should still have exactly 1 install spec (the original GlobalJson one)
+            var specs = manifest.GetInstallSpecs(installRoot).ToList();
+            specs.Should().ContainSingle();
+            specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
+
+            // Should have both installations recorded
+            manifest.GetInstallations(installRoot).Should().HaveCount(2);
+        }
+        finally
+        {
+            CleanupManifest(manifestPath);
+        }
+    }
+
+    [Fact]
+    public void Update_ExplicitSpec_RecordsInstallation_WithoutDuplicatingSpec()
+    {
+        // Same as above but with an Explicit spec instead of GlobalJson
+        var manifestPath = CreateTempManifestPath();
+        try
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+            // Initial state: Explicit spec + installation at 9.0.100
+            manifest.AddInstallSpec(installRoot, new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "9.0",
+                InstallSource = InstallSource.Explicit
+            });
+            manifest.AddInstallation(installRoot, new Installation
+            {
+                Component = InstallComponent.SDK,
+                Version = "9.0.100",
+                Subcomponents = ["sdk/9.0.100"]
+            });
+
+            // Simulate update: only add the new installation (SkipInstallSpecRecording)
+            manifest.AddInstallation(installRoot, new Installation
+            {
+                Component = InstallComponent.SDK,
+                Version = "9.0.200",
+                Subcomponents = ["sdk/9.0.200"]
+            });
+
+            // Should still have exactly 1 install spec
+            manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+
+            // Should have both installations
+            manifest.GetInstallations(installRoot).Should().HaveCount(2);
+        }
+        finally
+        {
+            CleanupManifest(manifestPath);
+        }
+    }
 }

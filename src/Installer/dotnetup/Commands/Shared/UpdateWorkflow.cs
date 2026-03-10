@@ -67,98 +67,15 @@ internal class UpdateWorkflow
                     continue;
                 }
 
-                var channel = new UpdateChannel(spec.VersionOrChannel);
-
-                // Skip fully-specified versions — they can't be updated
-                if (channel.IsFullySpecifiedVersion())
-                {
-                    continue;
-                }
-
-                var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
-                string displayName = spec.Component.GetDisplayName();
-                if (latestVersion is null)
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
-                    continue;
-                }
-
-                // Check if this version is already installed
-                var alreadyInstalled = root.Installations.Any(i =>
-                    i.Component == spec.Component && i.Version == latestVersion.ToString());
-
-                if (alreadyInstalled)
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{displayName} {spec.VersionOrChannel} is already up to date ([blue]{latestVersion}[/]).");
-                }
-                else
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [blue]{latestVersion}[/]...");
-
-                    // Install the new version
-                    var installRequest = new DotnetInstallRequest(
-                        installRoot,
-                        channel,
-                        spec.Component,
-                        new InstallRequestOptions { ManifestPath = manifestPath })
-                    {
-                        ResolvedVersion = latestVersion
-                    };
-
-                    try
-                    {
-                        var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                        anyUpdated = true;
-                        rootUpdated = true;
-                    }
-                    catch (DotnetInstallException)
-                    {
-                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                        anyFailed = true;
-                        continue;
-                    }
-                }
-
-                // Update global.json if requested and this spec came from a global.json,
-                // but only if the latest version is newer than what's already specified.
-                if (updateGlobalJson
-                    && spec.InstallSource == InstallSource.GlobalJson
-                    && spec.GlobalJsonPath is not null
-                    && spec.Component == InstallComponent.SDK)
-                {
-                    string? currentVersionString = null;
-                    try
-                    {
-                        var json = File.ReadAllText(spec.GlobalJsonPath);
-                        var contents = System.Text.Json.JsonSerializer.Deserialize(json, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-                        currentVersionString = contents?.Sdk?.Version;
-                    }
-                    catch { }
-
-                    if (currentVersionString is null
-                        || !ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
-                        || latestVersion > currentVersion)
-                    {
-                        new DotnetInstallManager().UpdateGlobalJson(spec.GlobalJsonPath, latestVersion.ToString());
-                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{spec.GlobalJsonPath}[/] to {latestVersion}.");
-                    }
-                }
+                var (updated, failed) = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson);
+                if (updated) { anyUpdated = true; rootUpdated = true; }
+                if (failed) { anyFailed = true; }
             }
 
             // Run garbage collection
             if (rootUpdated)
             {
-                AnsiConsole.WriteLine("Cleaning up old installations...");
-                var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
-                var deleted = gc.Collect(installRoot);
-                if (deleted.Count > 0)
-                {
-                    foreach (var d in deleted)
-                    {
-                        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
-                    }
-                }
+                GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, "Cleaning up old installations...");
             }
         }
 
@@ -168,5 +85,105 @@ internal class UpdateWorkflow
         }
 
         return anyFailed ? 1 : 0;
+    }
+
+    /// <summary>
+    /// Processes a single install spec: checks for updates, installs if newer version available,
+    /// and optionally updates the corresponding global.json.
+    /// </summary>
+    /// <returns>A tuple of (wasUpdated, hadFailure).</returns>
+    private (bool Updated, bool Failed) UpdateSpec(
+        InstallSpec spec,
+        DotnetRootEntry root,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool noProgress,
+        bool updateGlobalJson)
+    {
+        var channel = new UpdateChannel(spec.VersionOrChannel);
+
+        // Skip fully-specified versions — they can't be updated
+        if (channel.IsFullySpecifiedVersion())
+        {
+            return (false, false);
+        }
+
+        var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
+        string displayName = spec.Component.GetDisplayName();
+        if (latestVersion is null)
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
+            return (false, false);
+        }
+
+        // Check if this version is already installed
+        var alreadyInstalled = root.Installations.Any(i =>
+            i.Component == spec.Component && i.Version == latestVersion.ToString());
+
+        bool updated = false;
+        if (alreadyInstalled)
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion}).[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [blue]{latestVersion}[/]...");
+
+            var installRequest = new DotnetInstallRequest(
+                installRoot,
+                channel,
+                spec.Component,
+                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true })
+            {
+                ResolvedVersion = latestVersion
+            };
+
+            try
+            {
+                var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                updated = true;
+            }
+            catch (DotnetInstallException)
+            {
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                return (false, true);
+            }
+        }
+
+        // Update global.json if requested and this spec came from a global.json,
+        // but only if the latest version is newer than what's already specified.
+        if (updateGlobalJson
+            && spec.InstallSource == InstallSource.GlobalJson
+            && spec.GlobalJsonPath is not null
+            && spec.Component == InstallComponent.SDK)
+        {
+            UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
+        }
+
+        return (updated, false);
+    }
+
+    /// <summary>
+    /// Updates a global.json file to the latest version if it's newer than the current one.
+    /// </summary>
+    private static void UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
+    {
+        string? currentVersionString = null;
+        try
+        {
+            var json = File.ReadAllText(globalJsonPath);
+            var contents = System.Text.Json.JsonSerializer.Deserialize(json, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+            currentVersionString = contents?.Sdk?.Version;
+        }
+        catch { }
+
+        if (currentVersionString is null
+            || !ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
+            || latestVersion > currentVersion)
+        {
+            new DotnetInstallManager().UpdateGlobalJson(globalJsonPath, latestVersion.ToString());
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{globalJsonPath}[/] to {latestVersion}.");
+        }
     }
 }

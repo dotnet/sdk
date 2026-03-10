@@ -216,6 +216,9 @@ internal class InstallExecutor
         return false;
     }
 
+    // Checks whether fullPath equals adminPath or is a child directory of it.
+    // A separate equality check prevents false matches on path prefixes
+    // (e.g. "C:\Program Files\dotnet is cool" matching "C:\Program Files\dotnet").
     private static bool IsOrIsUnder(string fullPath, string adminPath, StringComparison comparison)
     {
         return string.Equals(fullPath, adminPath, comparison) ||

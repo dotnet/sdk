@@ -13,6 +13,7 @@ internal static class RuntimeUninstallCommandParser
     ///   - "9.0" - uninstalls core runtime 9.0 channel spec
     ///   - "aspnetcore@10.0" - uninstalls ASP.NET Core 10.0 channel spec
     ///   - "windowsdesktop@9.0" - uninstalls Windows Desktop 9.0 channel spec
+    /// See also: RuntimeInstallCommandParser.ComponentSpecArgument (optional variant for install).
     /// </summary>
     public static readonly Argument<string> ComponentSpecArgument = new("component-spec")
     {
@@ -38,7 +39,7 @@ internal static class RuntimeUninstallCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("uninstall", "Removes a .NET Runtime install spec and cleans up unused installations");
+        Command command = new("uninstall", "Removes a .NET Runtime Installation.");
 
         command.Arguments.Add(ComponentSpecArgument);
         command.Options.Add(CommonOptions.SourceOption);

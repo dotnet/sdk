@@ -29,7 +29,6 @@ internal class UninstallWorkflow
         var manifestData = manifest.ReadManifest();
 
         // Resolve install path
-        // TODO: Discuss whether we should update/uninstall all install roots or just the default one when --install-path is not specified.
         var dotnetInstaller = new DotnetInstallManager();
         string resolvedInstallPath = installPath
             ?? dotnetInstaller.GetConfiguredInstallType()?.Path
@@ -105,21 +104,7 @@ internal class UninstallWorkflow
         }
 
         // Run garbage collection
-        AnsiConsole.WriteLine("Running garbage collection...");
-        var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
-        var deleted = gc.Collect(installRoot);
-
-        if (deleted.Count > 0)
-        {
-            foreach (var d in deleted)
-            {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
-            }
-        }
-        else
-        {
-            AnsiConsole.MarkupLine("[dim]No files were removed because they are still in use by other tracked installations.[/]");
-        }
+        GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, "Running garbage collection...", showEmptyMessage: true);
 
         // Check if the targeted installations are still present (referenced by another spec)
         if (targetedInstallations.Count > 0)

@@ -23,7 +23,7 @@ internal static class RuntimeUpdateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("update", "Updates tracked .NET Runtime installations to the latest versions");
+        Command command = new("update", "Updates tracked .NET Runtime installations.");
 
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);

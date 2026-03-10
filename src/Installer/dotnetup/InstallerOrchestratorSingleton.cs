@@ -59,7 +59,6 @@ internal class InstallerOrchestratorSingleton
             installRequest.Component);
 
         string? customManifestPath = installRequest.Options.ManifestPath;
-        string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
@@ -78,20 +77,21 @@ internal class InstallerOrchestratorSingleton
                 if (!installRequest.Options.Untracked)
                 {
                     var manifestManager = new DotnetupSharedManifest(customManifestPath);
-                    manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                    if (!installRequest.Options.SkipInstallSpecRecording)
                     {
-                        Component = installRequest.Component,
-                        VersionOrChannel = installRequest.Channel.Name,
-                        InstallSource = installRequest.Options.InstallSource switch
+                        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                         {
-                            InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                            _ => InstallSource.Explicit,
-                        },
-                        GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                    });
+                            Component = installRequest.Component,
+                            VersionOrChannel = installRequest.Channel.Name,
+                            InstallSource = installRequest.Options.InstallSource switch
+                            {
+                                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                                _ => InstallSource.Explicit,
+                            },
+                            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+                        });
+                    }
                 }
-
-                Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
@@ -148,17 +148,20 @@ internal class InstallerOrchestratorSingleton
                     var manifestManager = new DotnetupSharedManifest(customManifestPath);
 
                     // Record the install spec for the channel that was requested
-                    manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+                    if (!installRequest.Options.SkipInstallSpecRecording)
                     {
-                        Component = installRequest.Component,
-                        VersionOrChannel = installRequest.Channel.Name,
-                        InstallSource = installRequest.Options.InstallSource switch
+                        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
                         {
-                            InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                            _ => InstallSource.Explicit,
-                        },
-                        GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                    });
+                            Component = installRequest.Component,
+                            VersionOrChannel = installRequest.Channel.Name,
+                            InstallSource = installRequest.Options.InstallSource switch
+                            {
+                                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                                _ => InstallSource.Explicit,
+                            },
+                            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+                        });
+                    }
 
                     // Record the installation with its resolved version
                     manifestManager.AddInstallation(installRequest.InstallRoot, new Installation

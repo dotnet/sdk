@@ -39,12 +39,13 @@ internal static class SubcomponentResolver
 
     // Top-level folders that are known but are not subcomponent areas.
     // These are silently skipped during GC and extraction tracking.
-    private static readonly HashSet<string> s_ignoredFolders =
-    [
-with(StringComparer.OrdinalIgnoreCase),
+#pragma warning disable IDE0028 // Collection expression can't specify a custom comparer
+    private static readonly HashSet<string> s_ignoredFolders = new(StringComparer.OrdinalIgnoreCase)
+    {
         "metadata",
         "swidtag",
-    ];
+    };
+#pragma warning restore IDE0028
 
     /// <summary>
     /// Resolves a relative archive entry path to its subcomponent identifier.
@@ -60,8 +61,13 @@ with(StringComparer.OrdinalIgnoreCase),
             return null;
         }
 
-        // Normalize to forward slashes and trim trailing slashes
-        var normalized = relativeEntryPath.Replace('\\', '/').TrimEnd('/');
+        // Normalize to forward slashes, strip leading "./" (common in tar archives), and trim trailing slashes
+        var normalized = relativeEntryPath.Replace('\\', '/');
+        if (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized.Substring(2);
+        }
+        normalized = normalized.TrimEnd('/');
 
         // Split into segments
         var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);

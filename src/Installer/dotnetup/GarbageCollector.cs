@@ -145,6 +145,11 @@ internal class GarbageCollector
     {
         var deleted = new List<string>();
 
+        if (!Directory.Exists(dotnetRootPath))
+        {
+            return deleted;
+        }
+
         foreach (var topLevelDir in Directory.GetDirectories(dotnetRootPath))
         {
             var topLevelName = Path.GetFileName(topLevelDir);

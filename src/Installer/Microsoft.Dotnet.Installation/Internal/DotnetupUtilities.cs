@@ -9,6 +9,9 @@ internal static class DotnetupUtilities
 {
     public static readonly string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 
+    public static readonly StringComparison PathComparison =
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
     public static string GetDotnetExeName()
     {
         return "dotnet" + ExeSuffix;

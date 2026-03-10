@@ -141,10 +141,7 @@ internal static class InstallationLister
                     writer.WriteLine();
                     writer.WriteLine("    Tracked channels:");
 
-                    var specGrid = new Grid();
-                    specGrid.AddColumn(new GridColumn().PadLeft(6).PadRight(2).NoWrap());
-                    specGrid.AddColumn(new GridColumn().PadRight(2).NoWrap());
-                    specGrid.AddColumn(new GridColumn().NoWrap());
+                    var specGrid = CreateIndentedGrid();
 
                     foreach (var spec in specs.OrderBy(s => s.Component).ThenBy(s => s.VersionOrChannel))
                     {
@@ -169,10 +166,7 @@ internal static class InstallationLister
                     writer.WriteLine();
                     writer.WriteLine("    Installed versions:");
 
-                    var installGrid = new Grid();
-                    installGrid.AddColumn(new GridColumn().PadLeft(6).PadRight(2).NoWrap());
-                    installGrid.AddColumn(new GridColumn().PadRight(2).NoWrap());
-                    installGrid.AddColumn(new GridColumn().NoWrap());
+                    var installGrid = CreateIndentedGrid();
 
                     foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
                     {
@@ -195,6 +189,15 @@ internal static class InstallationLister
         }
 
         writer.WriteLine($"{Strings.ListTotal}: {listData.Installations.Count}");
+    }
+
+    private static Grid CreateIndentedGrid()
+    {
+        var grid = new Grid();
+        grid.AddColumn(new GridColumn().PadLeft(6).PadRight(2).NoWrap());
+        grid.AddColumn(new GridColumn().PadRight(2).NoWrap());
+        grid.AddColumn(new GridColumn().NoWrap());
+        return grid;
     }
 
     public static void WriteJson(TextWriter writer, ListData listData)

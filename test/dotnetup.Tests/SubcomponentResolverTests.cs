@@ -13,7 +13,7 @@ public class SubcomponentResolverTests
     [InlineData("sdk/10.0.101/dotnet.dll", "sdk/10.0.101")]
     [InlineData("sdk/10.0.101", "sdk/10.0.101")]
     [InlineData("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
-    public void ResolvesSkdPaths(string input, string expected)
+    public void ResolvesSdkPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input).Should().Be(expected);
     }

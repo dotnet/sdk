@@ -17,7 +17,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
-    private readonly HashSet<string> _extractedSubcomponents = [with(StringComparer.Ordinal)];
+    private readonly HashSet<string> _extractedSubcomponents = [];
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -221,8 +221,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
         string destPath = Path.GetFullPath(Path.Combine(targetDir, normalizedName));
         string fullTargetDir = Path.GetFullPath(targetDir) + Path.DirectorySeparatorChar;
-        if (!destPath.StartsWith(fullTargetDir, StringComparison.Ordinal) &&
-            !string.Equals(destPath, Path.GetFullPath(targetDir), StringComparison.Ordinal))
+        if (!destPath.StartsWith(fullTargetDir, DotnetupUtilities.PathComparison) &&
+            !string.Equals(destPath, Path.GetFullPath(targetDir), DotnetupUtilities.PathComparison))
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveCorrupted,
                 $"Archive entry '{entryName}' would extract outside target directory.");

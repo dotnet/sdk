@@ -10,7 +10,7 @@ internal static class SdkUpdateCommandParser
 
     public static readonly Option<bool> UpdateAllOption = new("--all")
     {
-        Description = "Update all installed components, not just SDKs",
+        Description = "Update all installed components, including runtimes and SDKs. Defaults to true for the sdk update command, and false for the runtime command.",
         Arity = ArgumentArity.Zero
     };
 

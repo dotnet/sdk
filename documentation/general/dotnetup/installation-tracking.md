@@ -51,14 +51,12 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 ```json
 {
-  schemaVersion: "1",
-  dotnetRoots:
-  [
+  "schemaVersion": "1",
+  "dotnetRoots": [
     {
-      path: "C:\\Users\\Daniel\\AppData\\Local\\dotnet",
-      architecture: "x64",
-      installSpecs:
-      [
+      "path": "C:\\Users\\Daniel\\AppData\\Local\\dotnet",
+      "architecture": "x64",
+      "installSpecs": [
         {
           "component": "sdk",
           "versionOrChannel": "10",
@@ -70,26 +68,22 @@ We could represent the dotnet roots in the manifest as a node which has properti
           "installSource": "explicit"
         }
       ],
-      installations:
-      [
+      "installations": [
         {
           "component": "sdk",
           "version": "10.0.103",
-          "subcomponents":
-          [
+          "subcomponents": [
             "sdk/10.0.103",
             "shared/Microsoft.AspNetCore.App/10.0.3",
             "shared/Microsoft.NETCore.App/10.0.3",
-            "shared/Microsoft.WindowsDesktop.App/10.0.3",
-            "etc."
+            "shared/Microsoft.WindowsDesktop.App/10.0.3"
           ]
         },
         {
           "component": "runtime",
           "version": "9.0.12",
-          "subcomponents":
-          [
-            "shared/Microsoft.NETCore.App/9.0.12",
+          "subcomponents": [
+            "shared/Microsoft.NETCore.App/9.0.12"
           ]
         }
       ]

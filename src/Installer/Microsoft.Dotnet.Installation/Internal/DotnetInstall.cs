@@ -58,6 +58,13 @@ internal record InstallRequestOptions()
     /// and the untracked-installation guard will be bypassed.
     /// </summary>
     public bool Untracked { get; init; }
+
+    /// <summary>
+    /// If true, the install spec will not be recorded in the manifest.
+    /// The installation itself is still recorded. Use this when the install spec
+    /// already exists (e.g., during updates) to avoid creating duplicates.
+    /// </summary>
+    public bool SkipInstallSpecRecording { get; init; }
 }
 
 /// <summary>

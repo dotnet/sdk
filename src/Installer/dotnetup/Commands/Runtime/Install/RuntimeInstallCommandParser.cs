@@ -14,6 +14,7 @@ internal static class RuntimeInstallCommandParser
     ///   - "latest" - installs latest core runtime
     ///   - "aspnetcore@10.0.1" - installs ASP.NET Core runtime 10.0.1
     ///   - "windowsdesktop@9.0" - installs Windows Desktop runtime for 9.0 channel
+    /// See also: RuntimeUninstallCommandParser.ComponentSpecArgument (required variant for uninstall).
     /// </summary>
     public static readonly Argument<string?> ComponentSpecArgument = new("component-spec")
     {

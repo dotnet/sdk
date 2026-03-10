@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Shared utility for resolving the SDK channel (feature band) from a global.json file.
-/// Takes into account the rollForward and allowPrerelease properties.
+/// Takes into account the rollForward policy.
 /// </summary>
 internal static class GlobalJsonChannelResolver
 {
