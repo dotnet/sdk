@@ -17,12 +17,11 @@ internal static class GarbageCollectionRunner
     /// </summary>
     /// <param name="manifestPath">Path to the manifest file.</param>
     /// <param name="installRoot">The dotnet install root to clean.</param>
-    /// <param name="statusMessage">Message to display before running GC (e.g., "Running garbage collection..." or "Cleaning up old installations...").</param>
     /// <param name="showEmptyMessage">If true, shows a message when nothing was deleted.</param>
     /// <returns>The list of deleted subcomponent paths.</returns>
-    public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, string statusMessage, bool showEmptyMessage = false)
+    public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, bool showEmptyMessage = false)
     {
-        AnsiConsole.WriteLine(statusMessage);
+        AnsiConsole.WriteLine("Removing unused installations...");
         var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
         var deleted = gc.Collect(installRoot);
 

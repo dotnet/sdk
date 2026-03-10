@@ -107,6 +107,10 @@ internal static class InstallationLister
         return new ListData { InstallSpecs = installSpecs, Installations = installations };
     }
 
+    private const int IndentSize = 2;
+
+    private static string Indent(int level, string text) => $"{new string(' ', level * IndentSize)}{text}";
+
     public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
         writer.WriteLine();
@@ -115,7 +119,7 @@ internal static class InstallationLister
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
         {
-            writer.WriteLine($"  {Strings.ListNoInstallations}");
+            writer.WriteLine(Indent(1, Strings.ListNoInstallations));
         }
         else
         {
@@ -132,14 +136,14 @@ internal static class InstallationLister
 
             foreach (var rootPath in allRoots)
             {
-                writer.WriteLine($"  {rootPath}");
+                writer.WriteLine(Indent(1, rootPath));
 
                 // Show tracked channels/specs
                 var specs = listData.InstallSpecs.Where(s => s.InstallRoot == rootPath).ToList();
                 if (specs.Count > 0)
                 {
                     writer.WriteLine();
-                    writer.WriteLine("    Tracked channels:");
+                    writer.WriteLine(Indent(2, "Tracked channels:"));
 
                     var specGrid = CreateIndentedGrid();
 
@@ -164,7 +168,7 @@ internal static class InstallationLister
                 if (installs.Count > 0)
                 {
                     writer.WriteLine();
-                    writer.WriteLine("    Installed versions:");
+                    writer.WriteLine(Indent(2, "Installed versions:"));
 
                     var installGrid = CreateIndentedGrid();
 
@@ -194,8 +198,8 @@ internal static class InstallationLister
     private static Grid CreateIndentedGrid()
     {
         var grid = new Grid();
-        grid.AddColumn(new GridColumn().PadLeft(6).PadRight(2).NoWrap());
-        grid.AddColumn(new GridColumn().PadRight(2).NoWrap());
+        grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
+        grid.AddColumn(new GridColumn().PadRight(IndentSize).NoWrap());
         grid.AddColumn(new GridColumn().NoWrap());
         return grid;
     }

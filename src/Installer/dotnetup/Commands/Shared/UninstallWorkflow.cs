@@ -104,7 +104,7 @@ internal class UninstallWorkflow
         }
 
         // Run garbage collection
-        GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, "Running garbage collection...", showEmptyMessage: true);
+        GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, showEmptyMessage: true);
 
         // Check if the targeted installations are still present (referenced by another spec)
         if (targetedInstallations.Count > 0)

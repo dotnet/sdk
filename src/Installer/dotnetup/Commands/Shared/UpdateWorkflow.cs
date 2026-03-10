@@ -75,7 +75,7 @@ internal class UpdateWorkflow
             // Run garbage collection
             if (rootUpdated)
             {
-                GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, "Cleaning up old installations...");
+                GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
             }
         }
 

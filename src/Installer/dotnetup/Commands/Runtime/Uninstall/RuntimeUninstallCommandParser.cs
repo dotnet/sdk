@@ -7,21 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Uninstall;
 
 internal static class RuntimeUninstallCommandParser
 {
-    /// <summary>
-    /// The component@version specification for which runtime to uninstall.
-    /// Examples:
-    ///   - "9.0" - uninstalls core runtime 9.0 channel spec
-    ///   - "aspnetcore@10.0" - uninstalls ASP.NET Core 10.0 channel spec
-    ///   - "windowsdesktop@9.0" - uninstalls Windows Desktop 9.0 channel spec
-    /// See also: RuntimeInstallCommandParser.ComponentSpecArgument (optional variant for install).
-    /// </summary>
-    public static readonly Argument<string> ComponentSpecArgument = new("component-spec")
-    {
-        HelpName = "COMPONENT_SPEC",
-        Description = "The version/channel (e.g., 9.0) or component@version (e.g., aspnetcore@10.0) to uninstall. "
-            + "When only a version is provided, the core .NET runtime install spec is targeted. "
-            + "Valid component types: " + string.Join(", ", Install.RuntimeInstallCommand.GetValidRuntimeTypes()),
-    };
+    public static readonly Argument<string?> ComponentSpecArgument =
+        CommonOptions.CreateRuntimeComponentSpecArgument(required: true, actionVerb: "uninstall");
 
     private static readonly Command s_runtimeUninstallCommand = ConstructCommand();
 

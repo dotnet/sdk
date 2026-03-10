@@ -39,13 +39,12 @@ internal static class SubcomponentResolver
 
     // Top-level folders that are known but are not subcomponent areas.
     // These are silently skipped during GC and extraction tracking.
-#pragma warning disable IDE0028 // Collection expression can't specify a custom comparer
-    private static readonly HashSet<string> s_ignoredFolders = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> s_ignoredFolders =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "metadata",
         "swidtag",
-    };
-#pragma warning restore IDE0028
+    ];
 
     /// <summary>
     /// Resolves a relative archive entry path to its subcomponent identifier.

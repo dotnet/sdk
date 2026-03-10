@@ -73,25 +73,7 @@ internal class InstallerOrchestratorSingleton
             {
                 // Still record the install spec so the user's requested channel is tracked,
                 // even though the version is already installed (possibly via a different channel).
-                // Skip manifest write for untracked installs.
-                if (!installRequest.Options.Untracked)
-                {
-                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
-                    if (!installRequest.Options.SkipInstallSpecRecording)
-                    {
-                        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
-                        {
-                            Component = installRequest.Component,
-                            VersionOrChannel = installRequest.Channel.Name,
-                            InstallSource = installRequest.Options.InstallSource switch
-                            {
-                                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                                _ => InstallSource.Explicit,
-                            },
-                            GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                        });
-                    }
-                }
+                RecordInstallSpec(installRequest, customManifestPath);
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
@@ -142,28 +124,12 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install, out string? validationFailure))
             {
-                // Skip manifest writes for untracked installs.
+                RecordInstallSpec(installRequest, customManifestPath);
+
+                // Record the installation with its resolved version
                 if (!installRequest.Options.Untracked)
                 {
                     var manifestManager = new DotnetupSharedManifest(customManifestPath);
-
-                    // Record the install spec for the channel that was requested
-                    if (!installRequest.Options.SkipInstallSpecRecording)
-                    {
-                        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
-                        {
-                            Component = installRequest.Component,
-                            VersionOrChannel = installRequest.Channel.Name,
-                            InstallSource = installRequest.Options.InstallSource switch
-                            {
-                                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                                _ => InstallSource.Explicit,
-                            },
-                            GlobalJsonPath = installRequest.Options.GlobalJsonPath
-                        });
-                    }
-
-                    // Record the installation with its resolved version
                     manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
                     {
                         Component = installRequest.Component,
@@ -185,6 +151,30 @@ internal class InstallerOrchestratorSingleton
         return new InstallResult(install, WasAlreadyInstalled: false);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
+    /// </summary>
+    private static void RecordInstallSpec(DotnetInstallRequest installRequest, string? customManifestPath)
+    {
+        if (installRequest.Options.Untracked || installRequest.Options.SkipInstallSpecRecording)
+        {
+            return;
+        }
+
+        var manifestManager = new DotnetupSharedManifest(customManifestPath);
+        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+        {
+            Component = installRequest.Component,
+            VersionOrChannel = installRequest.Channel.Name,
+            InstallSource = installRequest.Options.InstallSource switch
+            {
+                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                _ => InstallSource.Explicit,
+            },
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+        });
+    }
 
     private static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
     {

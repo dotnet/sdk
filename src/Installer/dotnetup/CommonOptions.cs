@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -78,6 +79,28 @@ internal class CommonOptions
         Description = "Install without recording in the dotnetup manifest. The installation will not be tracked, updated, or listed by dotnetup.",
         Arity = ArgumentArity.ZeroOrOne
     };
+
+    /// <summary>
+    /// Creates a component-spec argument for runtime commands.
+    /// Each command needs its own Argument instance (System.CommandLine requirement),
+    /// but the shape and valid types are shared.
+    /// </summary>
+    /// <param name="required">
+    /// If true, the argument is required (arity = ExactlyOne).
+    /// If false, the argument is optional (arity = ZeroOrOne).
+    /// </param>
+    /// <param name="actionVerb">Verb for the description (e.g., "install", "uninstall").</param>
+    public static Argument<string?> CreateRuntimeComponentSpecArgument(bool required, string actionVerb)
+    {
+        return new Argument<string?>("component-spec")
+        {
+            HelpName = "COMPONENT_SPEC",
+            Description = $"The version/channel (e.g., 10.0) or component@version (e.g., aspnetcore@10.0) to {actionVerb}. "
+                + "When only a version is provided, the core .NET runtime is targeted. "
+                + "Valid component types: " + string.Join(", ", RuntimeInstallCommand.GetValidRuntimeTypes()),
+            Arity = required ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+        };
+    }
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
