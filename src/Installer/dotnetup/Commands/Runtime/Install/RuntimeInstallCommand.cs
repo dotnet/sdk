@@ -46,7 +46,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         // Windows Desktop Runtime is only available on Windows
         if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException(
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
                 $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
         }
 

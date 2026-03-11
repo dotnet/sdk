@@ -73,6 +73,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The installation execution failed (download, extraction, or post-install steps).</summary>
     InstallFailed,
+
+    /// <summary>The requested feature is not supported on the current platform.</summary>
+    PlatformNotSupported,
 }
 
 /// <summary>

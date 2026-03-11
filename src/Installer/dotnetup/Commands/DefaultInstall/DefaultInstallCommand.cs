@@ -32,7 +32,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Configuring the user install root is not yet supported on non-Windows platforms.");
+            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the user install root is not yet supported on non-Windows platforms.");
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
@@ -64,7 +64,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Configuring the admin install root is only supported on Windows.");
+            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the admin install root is only supported on Windows.");
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();

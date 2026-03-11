@@ -56,6 +56,7 @@ public class TelemetryE2ETests
 
         rootSpan!.Tags.Should().ContainKey("error.type", "root span should have error.type tag");
         rootSpan.Tags.Should().ContainKey("error.category", "root span should have error.category tag");
+        rootSpan.Tags["error.category"].Should().Be("user", "requesting a nonexistent SDK version should be a user error");
     }
 
     [Fact]
@@ -200,11 +201,8 @@ public class TelemetryE2ETests
 
         try
         {
-            var envVars = new Dictionary<string, string>(s_telemetryEnvVars)
-            {
-                ["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath,
-                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
-            };
+            var envVars = GetTelemetryEnvVars(tempDir);
+            envVars["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath;
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
                 ["list"], captureOutput: true, environmentVariables: envVars);
@@ -245,11 +243,8 @@ public class TelemetryE2ETests
 
         try
         {
-            var envVars = new Dictionary<string, string>(s_telemetryEnvVars)
-            {
-                ["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath,
-                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
-            };
+            var envVars = GetTelemetryEnvVars(tempDir);
+            envVars["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath;
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
                 ["list"], captureOutput: true, environmentVariables: envVars);
@@ -274,19 +269,30 @@ public class TelemetryE2ETests
     [Fact]
     public void TelemetryDisabled_ProducesNoSpans()
     {
-        var envVars = new Dictionary<string, string>
+        string tempDir = Path.Combine(Path.GetTempPath(), $"dnup-e2e-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+
+        try
         {
-            ["DOTNETUP_TELEMETRY_DEBUG"] = "1",
-            ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
-        };
+            var envVars = new Dictionary<string, string>
+            {
+                ["DOTNETUP_TELEMETRY_DEBUG"] = "1",
+                ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
+                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
+            };
 
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            ["--help"], captureOutput: true, environmentVariables: envVars);
+            (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+                ["--help"], captureOutput: true, environmentVariables: envVars);
 
-        exitCode.Should().Be(0);
+            exitCode.Should().Be(0);
 
-        var spans = ParseTelemetrySpans(output);
-        spans.Should().BeEmpty("no telemetry spans should be emitted when telemetry is opted out");
+            var spans = ParseTelemetrySpans(output);
+            spans.Should().BeEmpty("no telemetry spans should be emitted when telemetry is opted out");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
     }
 
     /// <summary>

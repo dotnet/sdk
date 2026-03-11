@@ -147,34 +147,20 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
-        ApplyErrorToRootActivity(activity, errorInfo);
-    }
 
-    /// <summary>
-    /// Walks up the activity parent chain to find the root activity and applies
-    /// error tags to it.  This ensures workbook queries on either the command
-    /// span or the root span see error information.
-    /// </summary>
-    private static void ApplyErrorToRootActivity(Activity activity, ExceptionErrorInfo errorInfo)
-    {
-        var root = GetRootActivity(activity);
-        if (root != null && root != activity)
+        // Walk up to the root activity and apply the same error tags there,
+        // so workbook queries on either the command span or the root span
+        // see error information.
+        var root = activity;
+        while (root.Parent != null)
+        {
+            root = root.Parent;
+        }
+
+        if (root != activity)
         {
             ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
         }
-    }
-
-    /// <summary>
-    /// Returns the root activity by walking up <see cref="Activity.Parent"/>.
-    /// </summary>
-    private static Activity? GetRootActivity(Activity? activity)
-    {
-        while (activity?.Parent != null)
-        {
-            activity = activity.Parent;
-        }
-
-        return activity;
     }
 
     /// <summary>

@@ -14,12 +14,8 @@ internal class InstallExecutor
 {
     /// <summary>
     /// Result of an installation execution.
-    /// Success is computed from whether Install is non-null to avoid sync issues.
     /// </summary>
-    public record InstallResult(DotnetInstall? Install, bool WasAlreadyInstalled = false)
-    {
-        public bool Success => Install is not null;
-    }
+    public record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled = false);
 
     /// <summary>
     /// Result of creating and resolving an install request.
@@ -80,11 +76,6 @@ internal class InstallExecutor
 #pragma warning restore CA1305
 
         var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-        if (installResult.Install == null)
-        {
-            SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}[/]");
-            return new InstallResult(null);
-        }
 
         if (installResult.WasAlreadyInstalled)
         {

@@ -104,14 +104,6 @@ internal class InstallWorkflow
         Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
 
         var installResult = ExecuteInstallations(context, resolved);
-        if (installResult is null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.InstallFailed,
-                "The installation failed.",
-                version: resolved.ResolvedVersion?.ToString(),
-                component: context.Options.Component.ToString());
-        }
 
         ApplyPostInstallConfiguration(context, resolved);
 
@@ -185,7 +177,7 @@ internal class InstallWorkflow
             context.Options.RequireMuxerUpdate);
     }
 
-    private static InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.
@@ -199,11 +191,6 @@ internal class InstallWorkflow
             resolved.ResolvedVersion?.ToString(),
             context.Options.ComponentDescription,
             context.Options.NoProgress);
-
-        if (!installResult.Success)
-        {
-            return null;
-        }
 
         InstallExecutor.ExecuteAdditionalInstalls(
             additionalVersions,

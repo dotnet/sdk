@@ -48,6 +48,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
             DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
             DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product
