@@ -7,12 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-    public static readonly Argument<string?> ChannelArgument = new("channel")
-    {
-        HelpName = "CHANNEL",
-        Description = "The channel of the .NET SDK to install.  For example: latest, 10, or 9.0.3xx.  A specific version (for example 9.0.304) can also be specified.",
-        Arity = ArgumentArity.ZeroOrOne,
-    };
+    public static readonly Argument<string?> ChannelArgument =
+        CommonOptions.CreateSdkChannelArgument(required: false, actionVerb: "install");
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {

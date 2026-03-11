@@ -81,6 +81,26 @@ internal class CommonOptions
     };
 
     /// <summary>
+    /// Creates a channel argument for SDK commands.
+    /// Each command needs its own Argument instance (System.CommandLine requirement),
+    /// but the shape is shared.
+    /// </summary>
+    /// <param name="required">
+    /// If true, the argument is required (arity = ExactlyOne).
+    /// If false, the argument is optional (arity = ZeroOrOne).
+    /// </param>
+    /// <param name="actionVerb">Verb for the description (e.g., "install", "remove").</param>
+    public static Argument<string?> CreateSdkChannelArgument(bool required, string actionVerb)
+    {
+        return new Argument<string?>("channel")
+        {
+            HelpName = "CHANNEL",
+            Description = $"The channel or version of the .NET SDK to {actionVerb} (e.g., latest, 10, 9.0.3xx, or 9.0.304).",
+            Arity = required ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+        };
+    }
+
+    /// <summary>
     /// Creates a component-spec argument for runtime commands.
     /// Each command needs its own Argument instance (System.CommandLine requirement),
     /// but the shape and valid types are shared.

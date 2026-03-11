@@ -37,7 +37,6 @@ internal class UpdateWorkflow
         var manifestData = manifest.ReadManifest();
 
         // Determine which dotnet root(s) to update
-        // TODO: Discuss whether we should update all install roots or just the default one when --install-path is not specified.
         var rootsToUpdate = manifestData.DotnetRoots.AsEnumerable();
         if (!string.IsNullOrEmpty(installPath))
         {

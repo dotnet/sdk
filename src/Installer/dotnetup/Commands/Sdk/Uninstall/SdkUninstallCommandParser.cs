@@ -7,11 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 
 internal static class SdkUninstallCommandParser
 {
-    public static readonly Argument<string> ChannelArgument = new("channel")
-    {
-        HelpName = "CHANNEL",
-        Description = "The channel or version of the install spec to remove (e.g., 10, 9.0, 9.0.103).",
-    };
+    public static readonly Argument<string?> ChannelArgument =
+        CommonOptions.CreateSdkChannelArgument(required: true, actionVerb: "remove");
 
     private static readonly Command s_sdkUninstallCommand = ConstructCommand();
 
