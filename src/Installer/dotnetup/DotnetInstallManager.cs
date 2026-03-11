@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
-using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
