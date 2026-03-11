@@ -8,6 +8,7 @@
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ControlFlowGuard>Guard</ControlFlowGuard>
 
 
     <!-- Strong naming not needed on .NET Core -->
@@ -18,7 +19,6 @@
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup>

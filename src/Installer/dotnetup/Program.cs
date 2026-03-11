@@ -34,6 +34,7 @@ internal class DotnetupProgram
             var result = Parser.Invoke(args);
             rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
             rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+
             return result;
         }
         catch (Exception ex)
@@ -51,9 +52,26 @@ internal class DotnetupProgram
         }
         finally
         {
-            // Ensure telemetry is flushed before exit
-            DotnetupTelemetry.Instance.Flush();
-            DotnetupTelemetry.Instance.Dispose();
+            // Stop the root activity before disposing so the console/Azure Monitor
+            // exporters see it.  The 'using' dispose that follows is a no-op on
+            // an already-stopped Activity.
+            rootActivity?.Stop();
+
+            // The Azure Monitor exporter has built-in offline storage
+            // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
+            // survives process exit and is retried on the next run.
+            // Dispose on a background thread with a short timeout so we
+            // never block the user waiting for a network round-trip.
+            // This mirrors the pattern used by the .NET CLI, which writes
+            // telemetry to disk and sends it asynchronously.
+            try
+            {
+                Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
+            }
+            catch
+            {
+                // Telemetry should never delay or crash the process exit.
+            }
         }
     }
 }
