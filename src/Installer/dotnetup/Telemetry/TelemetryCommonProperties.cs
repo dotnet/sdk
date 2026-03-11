@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -118,14 +115,16 @@ internal static class TelemetryCommonProperties
 
     private static bool DetectDevBuild()
     {
-        // Debug builds are always considered dev builds
+        // Check for DOTNETUP_DEV_BUILD environment variable
+        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
+        var isEnvSet = string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
+                       string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
 #if DEBUG
+        // Debug builds are always considered dev builds
+        _ = isEnvSet; // suppress unused warning in debug
         return true;
 #else
-        // Check for DOTNETUP_DEV_BUILD environment variable (for release builds in dev scenarios)
-        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
-        return string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
-               string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
+        return isEnvSet;
 #endif
     }
 
