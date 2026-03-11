@@ -40,7 +40,7 @@ stages:
       enableSbom: false
       steps:
       - powershell: |
-          & .\restore.cmd
+          & .\restore.cmd -projects dotnetup.slnf
         displayName: 🍱 Bootstrap toolset
       - powershell: |
           & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj

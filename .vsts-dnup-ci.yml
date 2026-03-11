@@ -104,6 +104,12 @@ extends:
         enabled: true
       binskim:
         enabled: true
+      # CFS (Container/Feed Security) scans the entire repo checkout and flags
+      # repo-wide files (template nuget.configs, test assets, the pandoc Dockerfile)
+      # that are not dotnetup-owned. The main SDK CI pipeline doesn't run CFS
+      # (it uses the legacy Arcade template). Disable until the repo migrates to 1ES.
+      cfs:
+        enabled: false
       ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         componentgovernance:
           # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
