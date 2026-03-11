@@ -87,13 +87,12 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ConnectionString = ConnectionString;
             });
 
-#if DEBUG
-            // Console exporter for local debugging
+            // Console exporter for local debugging / E2E test verification.
+            // Set DOTNETUP_TELEMETRY_DEBUG=1 to enable.
             if (Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1")
             {
                 builder.AddConsoleExporter();
             }
-#endif
 
             _tracerProvider = builder.Build();
         }
@@ -146,51 +145,19 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
-    }
 
-    /// <summary>
-    /// Posts a custom telemetry event.
-    /// </summary>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="properties">Optional string properties.</param>
-    /// <param name="measurements">Optional numeric measurements.</param>
-    public void PostEvent(
-        string eventName,
-        Dictionary<string, string>? properties = null,
-        Dictionary<string, double>? measurements = null)
-    {
-        if (!Enabled)
+        // Walk up to the root activity and apply the same error tags there,
+        // so workbook queries on either the command span or the root span
+        // see error information.
+        var root = activity;
+        while (root.Parent != null)
         {
-            return;
+            root = root.Parent;
         }
 
-        using var activity = CommandSource.StartActivity(eventName, ActivityKind.Internal);
-        if (activity == null)
+        if (root != activity)
         {
-            return;
-        }
-
-        // Add common properties to each span for App Insights customDimensions
-        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
-        {
-            activity.SetTag(attr.Key, attr.Value?.ToString());
-        }
-        activity.SetTag(TelemetryTagNames.Caller, "dotnetup");
-
-        if (properties != null)
-        {
-            foreach (var (key, value) in properties)
-            {
-                activity.SetTag(key, value);
-            }
-        }
-
-        if (measurements != null)
-        {
-            foreach (var (key, value) in measurements)
-            {
-                activity.SetTag(key, value);
-            }
+            ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
         }
     }
 

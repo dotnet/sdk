@@ -43,6 +43,12 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product,
+            DotnetInstallErrorCode.LocalManifestUserCorrupted => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallPathIsFile => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
+            DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

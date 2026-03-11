@@ -47,6 +47,16 @@ public abstract class CommandBase
             AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
             return 1;
         }
+        catch (Exception ex)
+        {
+            // Unexpected errors - still record telemetry so error_type is populated
+            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+#if DEBUG
+            Console.Error.WriteLine(ex.StackTrace);
+#endif
+            return 1;
+        }
         finally
         {
             _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
@@ -74,23 +84,6 @@ public abstract class CommandBase
     protected void SetCommandTag(string key, object? value)
     {
         _commandActivity?.SetTag(key, value);
-    }
-
-    /// <summary>
-    /// Records a failure reason without throwing an exception.
-    /// Use this when returning a non-zero exit code to capture the error context.
-    /// </summary>
-    /// <param name="reason">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
-    /// <param name="message">Optional detailed error message.</param>
-    /// <param name="category">Error category: "user" for input/environment issues, "product" for bugs (default).</param>
-    protected void RecordFailure(string reason, string? message = null, string category = "product")
-    {
-        _commandActivity?.SetTag(TelemetryTagNames.ErrorType, reason);
-        _commandActivity?.SetTag(TelemetryTagNames.ErrorCategory, category);
-        if (message != null)
-        {
-            _commandActivity?.SetTag(TelemetryTagNames.ErrorMessage, message);
-        }
     }
 
     /// <summary>
