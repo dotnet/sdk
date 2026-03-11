@@ -66,7 +66,7 @@ internal class DotnetupProgram
             // telemetry to disk and sends it asynchronously.
             try
             {
-                Task.Run(() => DotnetupTelemetry.Instance.Dispose()).Wait(TimeSpan.FromMilliseconds(100));
+                Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
             }
             catch
             {
