@@ -8,12 +8,12 @@ This file should be imported by eng/Versions.props
     <!-- dotnet-core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- dotnet-dotnet dependencies -->
-    <dotnetdevcertsPackageVersion>11.0.0-preview.2.26160.101</dotnetdevcertsPackageVersion>
-    <dotnetuserjwtsPackageVersion>11.0.0-preview.2.26160.101</dotnetuserjwtsPackageVersion>
-    <dotnetusersecretsPackageVersion>11.0.0-preview.2.26160.101</dotnetusersecretsPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <dotnetdevcertsPackageVersion>11.0.0-preview.2.26161.101</dotnetdevcertsPackageVersion>
+    <dotnetuserjwtsPackageVersion>11.0.0-preview.2.26161.101</dotnetuserjwtsPackageVersion>
+    <dotnetusersecretsPackageVersion>11.0.0-preview.2.26161.101</dotnetusersecretsPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAppRefPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreAppRefInternalPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreAppRefInternalPackageVersion>
+    <MicrosoftAspNetCoreAppRefInternalPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreAppRefInternalPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
     <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
@@ -21,47 +21,47 @@ This file should be imported by eng/Versions.props
     <MicrosoftAspNetCoreComponentsPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
     <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>11.0.0-preview.2.26160.101</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>10.0.0-preview.26160.101</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>11.0.0-preview.2.26161.101</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>10.0.0-preview.26161.101</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>11.0.0-preview.2.final</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>11.0.0-preview.2.final</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftBuildPackageVersion>18.5.0-preview-26160-101</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildLocalizationPackageVersion>18.5.0-preview-26160-101</MicrosoftBuildLocalizationPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.5.0-rc.16101</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <MicrosoftBuildPackageVersion>18.5.0-preview-26161-101</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildLocalizationPackageVersion>18.5.0-preview-26161-101</MicrosoftBuildLocalizationPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.5.0-rc.16201</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftBuildTasksGitPackageVersion>11.0.100-preview.2.final</MicrosoftBuildTasksGitPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisBuildClientPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>10.0.0-preview.26160.101</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.6.0-2.26160.101</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftDeploymentDotNetReleasesPackageVersion>2.0.0-preview.1.26160.101</MicrosoftDeploymentDotNetReleasesPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisBuildClientPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>10.0.0-preview.26161.101</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.6.0-2.26161.101</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftDeploymentDotNetReleasesPackageVersion>2.0.0-preview.1.26161.101</MicrosoftDeploymentDotNetReleasesPackageVersion>
     <MicrosoftDiaSymReaderPackageVersion>3.0.0-preview.2.final</MicrosoftDiaSymReaderPackageVersion>
-    <MicrosoftDotNetArcadeSdkPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetHelixSdkPackageVersion>
-    <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetSignToolPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetSignToolPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-preview.2.final</MicrosoftDotNetWebItemTemplates110PackageVersion>
     <MicrosoftDotNetWebProjectTemplates110PackageVersion>11.0.0-preview.2.final</MicrosoftDotNetWebProjectTemplates110PackageVersion>
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>11.0.0-preview.2.26160.101</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>11.0.0-preview.2.26160.101</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
-    <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetXliffTasksPackageVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26160.101</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>11.0.0-preview.2.26161.101</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>11.0.0-preview.2.26161.101</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetXliffTasksPackageVersion>
+    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26161.101</MicrosoftDotNetXUnitExtensionsPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsConfigurationIniPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
@@ -71,19 +71,19 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>11.0.0-preview.2.final</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftFSharpCompilerPackageVersion>15.2.100-preview3.26160.101</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>15.2.100-preview3.26161.101</MicrosoftFSharpCompilerPackageVersion>
     <MicrosoftJSInteropPackageVersion>11.0.0-preview.2.final</MicrosoftJSInteropPackageVersion>
-    <MicrosoftNetCompilersToolsetPackageVersion>5.6.0-2.26160.101</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.6.0-2.26160.101</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
-    <MicrosoftNETHostModelPackageVersion>11.0.0-preview.2.26160.101</MicrosoftNETHostModelPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>5.6.0-2.26161.101</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.6.0-2.26161.101</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftNETHostModelPackageVersion>11.0.0-preview.2.26161.101</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-preview.2.final</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>11.0.0-preview.2.final</MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>
     <MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>10.0.0-preview.7.25377.103</MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.0.0-preview.26160.101</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-preview.2.26160.101</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>18.5.0-preview-26160-101</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.0.0-preview.26161.101</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-preview.2.26161.101</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>18.5.0-preview-26161-101</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>11.0.0-preview.2.final</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>11.0.0-preview.2.26160.101</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>11.0.0-preview.2.26161.101</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftSourceLinkAzureReposGitPackageVersion>11.0.100-preview.2.final</MicrosoftSourceLinkAzureReposGitPackageVersion>
     <MicrosoftSourceLinkBitbucketGitPackageVersion>11.0.100-preview.2.final</MicrosoftSourceLinkBitbucketGitPackageVersion>
     <MicrosoftSourceLinkCommonPackageVersion>11.0.100-preview.2.final</MicrosoftSourceLinkCommonPackageVersion>
@@ -92,34 +92,34 @@ This file should be imported by eng/Versions.props
     <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-preview.2.final</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion>11.0.100-preview.2.final</MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-preview.2.final</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineMocksPackageVersion>11.0.100-preview.2.26160.101</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>11.0.100-preview.2.26161.101</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-preview.2.final</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineTestHelperPackageVersion>11.0.100-preview.2.26160.101</MicrosoftTemplateEngineTestHelperPackageVersion>
+    <MicrosoftTemplateEngineTestHelperPackageVersion>11.0.100-preview.2.26161.101</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-preview.2.final</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-preview.2.final</MicrosoftTemplateSearchCommonPackageVersion>
-    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.2.26160.101</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
-    <MicrosoftTestPlatformBuildPackageVersion>18.5.0-preview-26160-101</MicrosoftTestPlatformBuildPackageVersion>
-    <MicrosoftTestPlatformCLIPackageVersion>18.5.0-preview-26160-101</MicrosoftTestPlatformCLIPackageVersion>
+    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.2.26161.101</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
+    <MicrosoftTestPlatformBuildPackageVersion>18.5.0-preview-26161-101</MicrosoftTestPlatformBuildPackageVersion>
+    <MicrosoftTestPlatformCLIPackageVersion>18.5.0-preview-26161-101</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.3.0-preview.2.final</MicrosoftWebXdtPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>11.0.0-preview.2.final</MicrosoftWin32SystemEventsPackageVersion>
-    <MicrosoftWindowsDesktopAppInternalPackageVersion>11.0.0-preview.2.26160.101</MicrosoftWindowsDesktopAppInternalPackageVersion>
+    <MicrosoftWindowsDesktopAppInternalPackageVersion>11.0.0-preview.2.26161.101</MicrosoftWindowsDesktopAppInternalPackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>11.0.0-preview.2.final</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <NuGetBuildTasksPackageVersion>7.5.0-rc.16101</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>7.5.0-rc.16101</NuGetBuildTasksConsolePackageVersion>
-    <NuGetBuildTasksPackPackageVersion>7.5.0-rc.16101</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>7.5.0-rc.16101</NuGetCommandLineXPlatPackageVersion>
-    <NuGetCommandsPackageVersion>7.5.0-rc.16101</NuGetCommandsPackageVersion>
-    <NuGetCommonPackageVersion>7.5.0-rc.16101</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>7.5.0-rc.16101</NuGetConfigurationPackageVersion>
-    <NuGetCredentialsPackageVersion>7.5.0-rc.16101</NuGetCredentialsPackageVersion>
-    <NuGetDependencyResolverCorePackageVersion>7.5.0-rc.16101</NuGetDependencyResolverCorePackageVersion>
-    <NuGetFrameworksPackageVersion>7.5.0-rc.16101</NuGetFrameworksPackageVersion>
-    <NuGetLibraryModelPackageVersion>7.5.0-rc.16101</NuGetLibraryModelPackageVersion>
-    <NuGetLocalizationPackageVersion>7.5.0-rc.16101</NuGetLocalizationPackageVersion>
-    <NuGetPackagingPackageVersion>7.5.0-rc.16101</NuGetPackagingPackageVersion>
-    <NuGetProjectModelPackageVersion>7.5.0-rc.16101</NuGetProjectModelPackageVersion>
-    <NuGetProtocolPackageVersion>7.5.0-rc.16101</NuGetProtocolPackageVersion>
-    <NuGetVersioningPackageVersion>7.5.0-rc.16101</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>7.5.0-rc.16201</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>7.5.0-rc.16201</NuGetBuildTasksConsolePackageVersion>
+    <NuGetBuildTasksPackPackageVersion>7.5.0-rc.16201</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>7.5.0-rc.16201</NuGetCommandLineXPlatPackageVersion>
+    <NuGetCommandsPackageVersion>7.5.0-rc.16201</NuGetCommandsPackageVersion>
+    <NuGetCommonPackageVersion>7.5.0-rc.16201</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>7.5.0-rc.16201</NuGetConfigurationPackageVersion>
+    <NuGetCredentialsPackageVersion>7.5.0-rc.16201</NuGetCredentialsPackageVersion>
+    <NuGetDependencyResolverCorePackageVersion>7.5.0-rc.16201</NuGetDependencyResolverCorePackageVersion>
+    <NuGetFrameworksPackageVersion>7.5.0-rc.16201</NuGetFrameworksPackageVersion>
+    <NuGetLibraryModelPackageVersion>7.5.0-rc.16201</NuGetLibraryModelPackageVersion>
+    <NuGetLocalizationPackageVersion>7.5.0-rc.16201</NuGetLocalizationPackageVersion>
+    <NuGetPackagingPackageVersion>7.5.0-rc.16201</NuGetPackagingPackageVersion>
+    <NuGetProjectModelPackageVersion>7.5.0-rc.16201</NuGetProjectModelPackageVersion>
+    <NuGetProtocolPackageVersion>7.5.0-rc.16201</NuGetProtocolPackageVersion>
+    <NuGetVersioningPackageVersion>7.5.0-rc.16201</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>11.0.0-preview.2.final</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>3.0.0-preview.2.final</SystemCommandLinePackageVersion>
     <SystemComponentModelCompositionPackageVersion>11.0.0-preview.2.final</SystemComponentModelCompositionPackageVersion>
