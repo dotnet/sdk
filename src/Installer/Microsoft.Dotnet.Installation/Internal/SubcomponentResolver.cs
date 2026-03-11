@@ -18,6 +18,8 @@ internal enum SubcomponentResolveResult
     TooShallow,
     /// <summary>Known non-subcomponent folder (e.g., swidtag, metadata) — expected to be ignored.</summary>
     IgnoredFolder,
+    /// <summary>Input resolved to an empty path after normalization (e.g., "/", ".//").</summary>
+    EmptyPath,
 }
 
 /// <summary>
@@ -70,10 +72,11 @@ internal static class SubcomponentResolver
 
         // Split into segments
         var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length < 2)
+
+        if (segments.Length == 0)
         {
-            // Root-level file (e.g., "dotnet.exe", "LICENSE.txt")
-            result = SubcomponentResolveResult.RootLevelFile;
+            // Degenerate input (e.g., "/", ".//") that becomes empty after normalization.
+            result = SubcomponentResolveResult.EmptyPath;
             return null;
         }
 
@@ -87,6 +90,13 @@ internal static class SubcomponentResolver
 
         if (!s_subcomponentDepthByFolder.TryGetValue(topLevelFolder, out int requiredDepth))
         {
+            if (segments.Length < 2)
+            {
+                // Single-segment path that isn't a known folder (e.g., "dotnet.exe", "LICENSE.txt")
+                result = SubcomponentResolveResult.RootLevelFile;
+                return null;
+            }
+
             // Unknown top-level folder — not a recognized subcomponent
             result = SubcomponentResolveResult.UnknownFolder;
             return null;
