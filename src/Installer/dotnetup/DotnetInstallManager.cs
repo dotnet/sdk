@@ -177,6 +177,14 @@ public class DotnetInstallManager : IDotnetInstallManager
                     pathEntries.Insert(0, dotnetRoot);
                     // Set DOTNET_ROOT
                     Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+
+                    // Persist to shell profiles
+                    var dotnetupPath = Environment.ProcessPath;
+                    var shellProvider = ShellDetection.GetCurrentShellProvider();
+                    if (dotnetupPath is not null && shellProvider is not null)
+                    {
+                        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
+                    }
                     break;
                 case InstallType.Admin:
                     if (string.IsNullOrEmpty(dotnetRoot))

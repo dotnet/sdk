@@ -5,6 +5,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 public class PowerShellEnvShellProvider : IEnvShellProvider
 {
+    private const string MarkerComment = "# dotnetup";
+
     public string ArgumentName => "pwsh";
 
     public string Extension => "ps1";
@@ -27,5 +29,23 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
             $env:DOTNET_ROOT = '{escapedPath}'
             $env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH
             """;
+    }
+
+    public IReadOnlyList<string> GetProfilePaths()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return [Path.Combine(home, ".config", "powershell", "Microsoft.PowerShell_profile.ps1")];
+    }
+
+    public string GenerateProfileEntry(string dotnetupPath)
+    {
+        var escapedPath = dotnetupPath.Replace("'", "''");
+        return $"{MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh | Invoke-Expression";
+    }
+
+    public string GenerateActivationCommand(string dotnetupPath)
+    {
+        var escapedPath = dotnetupPath.Replace("'", "''");
+        return $"& '{escapedPath}' print-env-script --shell pwsh | Invoke-Expression";
     }
 }

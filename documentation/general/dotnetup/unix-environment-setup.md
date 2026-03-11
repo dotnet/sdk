@@ -141,15 +141,61 @@ As noted in the discussion, generating scripts dynamically has several advantage
 4. **Immediate availability**: No download or extraction step needed
 5. **Transparency**: Users can easily inspect what the script does by running the command
 
+## Shell Profile Modification
+
+Building on `print-env-script`, dotnetup can automatically modify shell profile files so that `.NET` is available in every new terminal session. This is triggered in two ways:
+
+1. **`sdk install --interactive`** — When the user confirms "set as default install?", dotnetup persists the environment configuration to shell profiles in addition to setting environment variables for the current process.
+2. **`defaultinstall user`** — Standalone command that configures the default install, including shell profile modification on Unix.
+
+After either operation, dotnetup prints a command the user can paste into the current terminal to activate `.NET` immediately, since profile changes only take effect in new shells.
+
+### Which Profile Files Are Modified
+
+| Shell | Files modified | Rationale |
+|-------|---------------|-----------|
+| **bash** | `~/.bashrc` (always) + the first existing of `~/.bash_profile` / `~/.profile` (creates `~/.profile` if neither exists) | `.bashrc` covers Linux terminals (non-login shells). The login profile covers macOS Terminal and SSH sessions. We never create `~/.bash_profile` to avoid shadowing an existing `~/.profile`. |
+| **zsh** | `~/.zshrc` (created if needed) | Covers all interactive zsh sessions. `~/.zshenv` is avoided because on macOS, `/etc/zprofile` runs `path_helper` which resets PATH after `.zshenv` loads. |
+| **pwsh** | `~/.config/powershell/Microsoft.PowerShell_profile.ps1` (creates directory and file if needed) | Standard `$PROFILE` path on Unix. |
+
+### Profile Entry Format
+
+Each profile file gets a marker comment and an eval line:
+
+**Bash / Zsh:**
+```bash
+# dotnetup
+eval "$(/path/to/dotnetup print-env-script --shell bash)"
+```
+
+**PowerShell:**
+```powershell
+# dotnetup
+& /path/to/dotnetup print-env-script --shell pwsh | Invoke-Expression
+```
+
+The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`).
+
+### Reversibility
+
+- The `# dotnetup` marker comment immediately before the eval line identifies the addition.
+- To remove: find the marker line and the line after it, remove both.
+- Before modifying any file, dotnetup creates a backup (e.g., `~/.bashrc.dotnetup-backup`).
+
+### Provider Model
+
+The `IEnvShellProvider` interface is extended with two methods so each shell provider owns its profile knowledge:
+
+- `GetProfilePaths()` — Returns the list of profile file paths to modify for the shell.
+- `GenerateProfileEntry(string dotnetupPath)` — Generates the marker comment and eval line.
+
+A `ShellProfileManager` class coordinates the file I/O: adding and removing entries, creating backups, and ensuring idempotency (entries are not duplicated if already present).
+
 ## Future Work
 
-This command provides the foundation for future enhancements:
-
-1. **Automatic profile modification**: Add a command to automatically update shell configuration files (`.bashrc`, `.zshrc`, etc.) with user consent
-2. **Profile backup**: Create backups of shell configuration files before modification
-3. **Uninstall/removal**: Add commands to remove dotnetup configuration from shell profiles
-4. **Additional shells**: Support for fish, tcsh, and other shells
-5. **Environment validation**: Commands to verify that the environment is correctly configured
+1. **`defaultinstall admin` on Unix**: System-wide configuration (e.g., `/etc/profile.d/`) is not yet supported.
+2. **Additional shells**: Support for fish, tcsh, and other shells.
+3. **Environment validation**: Commands to verify that the environment is correctly configured.
 
 ## Related Issues
 
@@ -163,5 +209,6 @@ The implementation includes comprehensive tests:
 - Shell provider tests for script generation
 - Security tests for special character handling
 - Help documentation tests
+- Shell profile manager tests for add/remove/idempotency/backup behavior
 
 All tests ensure that the generated scripts are syntactically correct and properly escape paths.
