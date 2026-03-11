@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Helper class for Windows-specific PATH management operations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsPathHelper : IDisposable
+internal sealed partial class WindowsPathHelper : IDisposable
 {
     private const string RegistryEnvironmentPath = @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
     private const string PathVariableName = "Path";
@@ -28,12 +28,12 @@ internal sealed class WindowsPathHelper : IDisposable
     private readonly string? _logFilePath;
     private bool _disposed;
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern IntPtr SendMessageTimeout(
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    private static partial IntPtr SendMessageTimeout(
         IntPtr hWnd,
         int Msg,
         IntPtr wParam,
-        string lParam,
+        [MarshalAs(UnmanagedType.LPTStr)] string lParam,
         int fuFlags,
         int uTimeout,
         out IntPtr lpdwResult);
@@ -349,7 +349,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
-    /// <param name="pathToRemove">The path to remove.</param>
+    /// <param name="pathsToRemove">The paths to remove.</param>
     /// <returns>The modified unexpanded PATH string.</returns>
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {

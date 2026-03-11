@@ -93,7 +93,6 @@ public static partial class VersionSanitizer
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);
         }
 
-
         // Check for partial versions like "8" or "8.0" which ReleaseVersion may not parse
         var parts = version.Split('.');
         if (parts.Length <= 2 && parts.All(p => int.TryParse(p, out var n) && n >= 0 && n < 100))
