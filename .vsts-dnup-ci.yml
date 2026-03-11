@@ -113,7 +113,7 @@ extends:
       - stage: style_check
         displayName: 📏 Style check
         jobs:
-        - template: /eng/common/templates-official/job/job.yml
+        - template: /eng/common/templates-official/job/job.yml@self
           parameters:
             displayName: '📏 dotnetup style check'
             pool:
