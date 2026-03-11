@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -37,8 +38,6 @@ internal class InstallWorkflow
         bool RequireMuxerUpdate = false,
         bool Untracked = false);
 
-    public record InstallWorkflowResult(int ExitCode, InstallExecutor.ResolvedInstallRequest? ResolvedRequest);
-
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
     /// </summary>
@@ -55,7 +54,7 @@ internal class InstallWorkflow
         string RequestSource,
         PathSource PathSource);
 
-    public InstallWorkflowResult Execute(InstallWorkflowOptions options)
+    public void Execute(InstallWorkflowOptions options)
     {
         // Record telemetry for the install request
         Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
@@ -65,23 +64,28 @@ internal class InstallWorkflow
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
         {
-            Console.Error.WriteLine(error);
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "context_resolution_failed");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
-            return new InstallWorkflowResult(1, null);
+            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, error ?? "Failed to resolve workflow context.");
+        }
+
+        // Block install paths that point to existing files (not directories)
+        if (File.Exists(context.InstallPath))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallPathIsFile,
+                $"The install path '{context.InstallPath}' is an existing file, not a directory. " +
+                "Please specify a directory path for the installation.");
         }
 
         // Block admin/system-managed install paths — dotnetup should not install there
         if (InstallExecutor.IsAdminInstallPath(context.InstallPath))
         {
-            Console.Error.WriteLine($"Error: The install path '{context.InstallPath}' is a system-managed .NET location. " +
-                "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
-                "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "admin_path_blocked");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "user");
-            return new InstallWorkflowResult(1, null);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminPathBlocked,
+                $"The install path '{context.InstallPath}' is a system-managed .NET location. " +
+                "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
+                "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
 
         // Record resolved context telemetry
@@ -101,18 +105,11 @@ internal class InstallWorkflow
         Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
 
         var installResult = ExecuteInstallations(context, resolved);
-        if (installResult is null)
-        {
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorType, "install_failed");
-            Activity.Current?.SetTag(TelemetryTagNames.ErrorCategory, "product");
-            return new InstallWorkflowResult(1, resolved);
-        }
 
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
         InstallExecutor.DisplayComplete();
-        return new InstallWorkflowResult(0, resolved);
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
@@ -190,7 +187,7 @@ internal class InstallWorkflow
             context.Options.Untracked);
     }
 
-    private static InstallExecutor.InstallResult? ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.
@@ -204,11 +201,6 @@ internal class InstallWorkflow
             resolved.ResolvedVersion?.ToString(),
             context.Options.ComponentDescription,
             context.Options.NoProgress);
-
-        if (installResult is null)
-        {
-            return null;
-        }
 
         InstallExecutor.ExecuteAdditionalInstalls(
             additionalVersions,
@@ -233,4 +225,5 @@ internal class InstallWorkflow
                 resolved.ResolvedVersion!.ToString());
         }
     }
+
 }

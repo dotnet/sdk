@@ -42,7 +42,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             _requireMuxerUpdate,
             _untracked);
 
-        var result = workflow.Execute(options);
-        return result.ExitCode;
+        workflow.Execute(options);
+        return 0;
     }
 }

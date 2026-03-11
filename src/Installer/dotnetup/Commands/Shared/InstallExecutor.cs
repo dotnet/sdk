@@ -74,8 +74,8 @@ internal class InstallExecutor
     /// <param name="resolvedVersion">The resolved version string for display purposes.</param>
     /// <param name="componentDescription">Description of the component (e.g., ".NET SDK", ".NET Runtime").</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
-    /// <returns>The installation result, or null if installation failed.</returns>
-    public static InstallResult? ExecuteInstall(
+    /// <returns>The installation result.</returns>
+    public static InstallResult ExecuteInstall(
         DotnetInstallRequest installRequest,
         string? resolvedVersion,
         string componentDescription,
@@ -85,16 +85,7 @@ internal class InstallExecutor
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
 #pragma warning restore CA1305
 
-        Microsoft.DotNet.Tools.Bootstrapper.InstallResult orchestratorResult;
-        try
-        {
-            orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-        }
-        catch (DotnetInstallException ex)
-        {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install {componentDescription} {resolvedVersion}: {ex.Message}[/]");
-            return null;
-        }
+        var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
         if (orchestratorResult.WasAlreadyInstalled)
         {

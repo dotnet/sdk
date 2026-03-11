@@ -141,7 +141,7 @@ internal class InstallerOrchestratorSingleton
             else
             {
                 throw new DotnetInstallException(
-                    DotnetInstallErrorCode.Unknown,
+                    DotnetInstallErrorCode.InstallFailed,
                     $"Installation validation failed: {validationFailure}",
                     version: versionToInstall.ToString(),
                     component: installRequest.Component.ToString());

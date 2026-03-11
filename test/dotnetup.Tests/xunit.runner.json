@@ -1,3 +1,7 @@
 {
-  "longRunningTestSeconds": 300
+  "$schema": "https://xunit.net/schema/current/xunit.runner.schema.json",
+  "diagnosticMessages": true,
+  "longRunningTestSeconds": 300,
+  "showLiveOutput": true,
+  "shadowCopy": false
 }

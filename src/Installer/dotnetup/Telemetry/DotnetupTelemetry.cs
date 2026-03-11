@@ -32,10 +32,8 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Connection string for Application Insights.
-    /// TODO: Replace with the official SDK CLI Application Insights key before production release.
-    /// See https://github.com/dotnet/sdk/issues/52785
     /// </summary>
-    private const string ConnectionString = "InstrumentationKey=04172778-3bc9-4db6-b50f-cafe87756a47;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/;LiveEndpoint=https://westus2.livediagnostics.monitor.azure.com/;ApplicationId=fbd94297-7083-42b8-aaa5-1886192b4272";
+    private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
 
     /// <summary>
     /// Environment variable to opt out of telemetry.
@@ -89,13 +87,12 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ConnectionString = ConnectionString;
             });
 
-#if DEBUG
-            // Console exporter for local debugging
+            // Console exporter for local debugging / E2E test verification.
+            // Set DOTNETUP_TELEMETRY_DEBUG=1 to enable.
             if (Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1")
             {
                 builder.AddConsoleExporter();
             }
-#endif
 
             _tracerProvider = builder.Build();
         }
@@ -148,51 +145,19 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
-    }
 
-    /// <summary>
-    /// Posts a custom telemetry event.
-    /// </summary>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="properties">Optional string properties.</param>
-    /// <param name="measurements">Optional numeric measurements.</param>
-    public void PostEvent(
-        string eventName,
-        Dictionary<string, string>? properties = null,
-        Dictionary<string, double>? measurements = null)
-    {
-        if (!Enabled)
+        // Walk up to the root activity and apply the same error tags there,
+        // so workbook queries on either the command span or the root span
+        // see error information.
+        var root = activity;
+        while (root.Parent != null)
         {
-            return;
+            root = root.Parent;
         }
 
-        using var activity = CommandSource.StartActivity(eventName, ActivityKind.Internal);
-        if (activity == null)
+        if (root != activity)
         {
-            return;
-        }
-
-        // Add common properties to each span for App Insights customDimensions
-        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
-        {
-            activity.SetTag(attr.Key, attr.Value?.ToString());
-        }
-        activity.SetTag(TelemetryTagNames.Caller, "dotnetup");
-
-        if (properties != null)
-        {
-            foreach (var (key, value) in properties)
-            {
-                activity.SetTag(key, value);
-            }
-        }
-
-        if (measurements != null)
-        {
-            foreach (var (key, value) in measurements)
-            {
-                activity.SetTag(key, value);
-            }
+            ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
         }
     }
 

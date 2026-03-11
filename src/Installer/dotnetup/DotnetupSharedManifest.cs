@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -22,7 +24,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
             var emptyManifest = new DotnetupManifestData();
-            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(emptyManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+            var json = JsonSerializer.Serialize(emptyManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+            WriteManifestWithChecksum(json);
         }
     }
 
@@ -84,7 +87,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 return manifest;
             }
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
             // Check if it's a legacy format (JSON array of DotnetInstall objects)
             if (json.TrimStart().StartsWith('['))
@@ -95,9 +98,21 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                     "Delete the manifest file and reinstall any SDKs/runtimes that were in this dotnet root.");
             }
 
+            // Check whether dotnetup last wrote the file. If the checksum matches,
+            // we produced invalid JSON ourselves (product bug). If it doesn't match,
+            // an external edit broke the file (user error).
+            var errorCode = VerifyChecksumMatches(json)
+                ? DotnetInstallErrorCode.LocalManifestCorrupted
+                : DotnetInstallErrorCode.LocalManifestUserCorrupted;
+
+            var suffix = errorCode == DotnetInstallErrorCode.LocalManifestUserCorrupted
+                ? " The file appears to have been modified outside of dotnetup."
+                : string.Empty;
+
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.LocalManifestCorrupted,
-                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.");
+                errorCode,
+                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.{suffix}",
+                ex);
         }
 
         // Deserialization returned null — treat as empty manifest
@@ -107,9 +122,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     internal void WriteManifest(DotnetupManifestData manifest)
     {
         AssertHasFinalizationMutex();
-        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
         var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
-        File.WriteAllText(ManifestPath, json);
+        WriteManifestWithChecksum(json);
     }
 
     private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
@@ -140,6 +154,57 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         };
         manifest.DotnetRoots.Add(newRoot);
         return newRoot;
+    }
+
+    /// <summary>
+    /// Writes manifest JSON and a companion SHA-256 checksum file.
+    /// The checksum lets us distinguish product corruption (our bug) from
+    /// user edits on the next read.
+    /// </summary>
+    /// <remarks>
+    /// The manifest and checksum are written as two separate file operations.
+    /// A crash between the writes could leave them inconsistent, but this is
+    /// self-correcting on the next successful write. All callers are expected
+    /// to hold the installation-state mutex.
+    /// </remarks>
+    private void WriteManifestWithChecksum(string json)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
+        File.WriteAllText(ManifestPath, json);
+        File.WriteAllText(ChecksumPath, ComputeHash(json));
+    }
+
+    /// <summary>
+    /// Returns true if the raw JSON content matches the last checksum dotnetup wrote.
+    /// If the checksum file is missing or unreadable, returns false (assume external edit).
+    /// </summary>
+    private bool VerifyChecksumMatches(string rawJson)
+    {
+        try
+        {
+            if (!File.Exists(ChecksumPath))
+            {
+                return false;
+            }
+
+            var storedHash = File.ReadAllText(ChecksumPath).Trim();
+            var currentHash = ComputeHash(rawJson);
+            return string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            // If we can't read the checksum file, assume external modification.
+            return false;
+        }
+    }
+
+    private string ChecksumPath => ManifestPath + ".sha256";
+
+    private static string ComputeHash(string content)
+    {
+        var bytes = Encoding.UTF8.GetBytes(content);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash);
     }
 
     // --- Install Spec operations ---
