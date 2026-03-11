@@ -22,8 +22,8 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
         var workflow = new UpdateWorkflow(new ChannelVersionResolver());
 
         var components = OperatingSystem.IsWindows()
-            ? new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop }
-            : new[] { InstallComponent.Runtime, InstallComponent.ASPNETCore };
+            ? [InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop]
+            : (InstallComponent[])[InstallComponent.Runtime, InstallComponent.ASPNETCore];
 
         int exitCode = 0;
         foreach (var component in components)

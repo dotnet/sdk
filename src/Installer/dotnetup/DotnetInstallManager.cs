@@ -277,7 +277,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
             string exeName = "dotnet";
             // Remove only actual dotnet installation folders from PATH
-            pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
+            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
 
             switch (installType)
             {

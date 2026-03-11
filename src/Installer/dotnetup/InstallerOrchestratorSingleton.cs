@@ -134,7 +134,7 @@ internal class InstallerOrchestratorSingleton
                     {
                         Component = installRequest.Component,
                         Version = versionToInstall.ToString(),
-                        Subcomponents = installer.ExtractedSubcomponents.ToList()
+                        Subcomponents = [.. installer.ExtractedSubcomponents]
                     });
                 }
             }

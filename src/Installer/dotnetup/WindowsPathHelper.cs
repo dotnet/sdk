@@ -169,7 +169,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     public static List<string> SplitPath(string path)
     {
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
-        return envProvider.SplitPaths(path).ToList();
+        return [.. envProvider.SplitPaths(path)];
     }
 
     /// <summary>

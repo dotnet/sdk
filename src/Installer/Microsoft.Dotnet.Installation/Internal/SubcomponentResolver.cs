@@ -43,7 +43,7 @@ internal static class SubcomponentResolver
     // These are silently skipped during GC and extraction tracking.
     private static readonly HashSet<string> s_ignoredFolders =
     [
-        with(StringComparer.OrdinalIgnoreCase),
+with(StringComparer.OrdinalIgnoreCase),
         "metadata",
         "swidtag",
     ];

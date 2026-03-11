@@ -22,7 +22,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
     /// </summary>
-    public IReadOnlyList<string> ExtractedSubcomponents => _extractedSubcomponents.ToList();
+    public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
 
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
