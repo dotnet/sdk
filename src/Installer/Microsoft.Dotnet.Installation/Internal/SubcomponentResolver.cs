@@ -70,7 +70,8 @@ internal static class SubcomponentResolver
         }
         normalized = normalized.TrimEnd('/');
 
-        // Split into segments
+        // Split into segments. RemoveEmptyEntries ensures inputs like "/" or "//"
+        // produce an empty array rather than arrays of empty strings.
         var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         if (segments.Length == 0)

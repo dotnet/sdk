@@ -211,6 +211,190 @@ public class RuntimeInstallTests
             "no checksum file → assume external edit → user error");
     }
 
+    [Fact]
+    public void ManifestValidation_InvalidVersion_WithChecksumMismatch_ThrowsUserCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Write a valid manifest first
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        }
+
+        // Now hand-edit the manifest with an invalid version (don't update checksum)
+        var json = File.ReadAllText(testEnv.ManifestPath);
+        json = json.Replace("9.0.0", "not-a-version");
+        File.WriteAllText(testEnv.ManifestPath, json);
+
+        using var mutex2 = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "checksum doesn't match user-edited content with invalid version → user error");
+        ex.Message.Should().Contain("not-a-version");
+    }
+
+    [Fact]
+    public void ManifestValidation_InvalidVersion_WithMatchingChecksum_SkipsValidation()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write manifest with invalid version and compute matching checksum.
+        // When the checksum matches, we trust the data (we wrote it) and skip validation.
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.SDK, Version = "totally-invalid" }
+                    ]
+                }
+            ]
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        File.WriteAllText(testEnv.ManifestPath, json);
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(json));
+        File.WriteAllText(checksumPath, Convert.ToHexString(hash));
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+
+        // Should NOT throw — checksum matches so validation is skipped
+        var result = manifest.ReadManifest();
+        result.DotnetRoots.Should().HaveCount(1);
+        result.DotnetRoots[0].Installations.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void ManifestValidation_EmptyVersion_ThrowsCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.Runtime, Version = "" }
+                    ]
+                }
+            ]
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        File.WriteAllText(testEnv.ManifestPath, json);
+        // Don't write a matching checksum — this simulates user edit
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("empty version");
+    }
+
+    [Fact]
+    public void ManifestValidation_ValidData_DoesNotThrow()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        }
+
+        // Re-read should succeed without throwing
+        DotnetupManifestData result;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            result = manifest.ReadManifest();
+        }
+
+        result.DotnetRoots.Should().HaveCount(1);
+        result.DotnetRoots[0].Installations.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void ManifestValidation_InvalidComponentType_ThrowsUserCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write a manifest with an out-of-range component integer (simulates user hand-edit)
+        // Enums serialize as integers by default; an undefined value like 999 deserializes silently.
+        var json = """
+            {
+              "dotnetRoots": [
+                {
+                  "path": "PLACEHOLDER",
+                  "architecture": 0,
+                  "installations": [
+                    { "component": 999, "version": "9.0.0" }
+                  ],
+                  "installSpecs": []
+                }
+              ]
+            }
+            """.Replace("PLACEHOLDER", testEnv.InstallPath.Replace("\\", "\\\\"));
+        File.WriteAllText(testEnv.ManifestPath, json);
+        // Write a non-matching checksum to trigger validation
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("Unknown component type");
+    }
+
+    [Fact]
+    public void ManifestValidation_InvalidComponentString_ThrowsUserCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write a manifest with an unrecognized string component (simulates user hand-edit).
+        // System.Text.Json will throw a JsonException for an unknown string enum value.
+        var json = """
+            {
+              "dotnetRoots": [
+                {
+                  "path": "PLACEHOLDER",
+                  "architecture": 0,
+                  "installations": [
+                    { "component": "FooBar", "version": "9.0.0" }
+                  ],
+                  "installSpecs": []
+                }
+              ]
+            }
+            """.Replace("PLACEHOLDER", testEnv.InstallPath.Replace("\\", "\\\\"));
+        File.WriteAllText(testEnv.ManifestPath, json);
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "invalid string enum value should fail JSON deserialization and be detected as user edit");
+    }
+
     #endregion
 
     #region Manifest Tracking Tests

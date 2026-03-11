@@ -4,6 +4,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -84,6 +85,14 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             var manifest = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
             if (manifest is not null)
             {
+                // Only validate field values if the checksum doesn't match — if we wrote
+                // the file ourselves the data is trusted; validation is only needed to
+                // catch external / manual edits.
+                if (!VerifyChecksumMatches(json))
+                {
+                    ValidateManifestData(manifest);
+                }
+
                 return manifest;
             }
         }
@@ -205,6 +214,65 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         var bytes = Encoding.UTF8.GetBytes(content);
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash);
+    }
+
+    /// <summary>
+    /// Validates manifest data after deserialization when the checksum does not match
+    /// (i.e., the file was modified outside of dotnetup). Checks that version strings
+    /// in installation records are valid <see cref="ReleaseVersion"/> values and
+    /// that required fields are non-empty.
+    /// </summary>
+    private void ValidateManifestData(DotnetupManifestData manifest)
+    {
+        var errors = new List<string>();
+
+        foreach (var root in manifest.DotnetRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root.Path))
+            {
+                errors.Add("A dotnet root entry has an empty path.");
+            }
+
+            foreach (var installation in root.Installations)
+            {
+                if (!Enum.IsDefined(installation.Component))
+                {
+                    errors.Add($"Unknown component type '{(int)installation.Component}' in an installation record in root '{root.Path}'.");
+                }
+
+                if (string.IsNullOrWhiteSpace(installation.Version))
+                {
+                    errors.Add($"An installation record for {installation.Component} in root '{root.Path}' has an empty version.");
+                    continue;
+                }
+
+                if (!ReleaseVersion.TryParse(installation.Version, out _))
+                {
+                    errors.Add($"Invalid version '{installation.Version}' for {installation.Component} in root '{root.Path}'.");
+                }
+            }
+
+            foreach (var spec in root.InstallSpecs)
+            {
+                if (!Enum.IsDefined(spec.Component))
+                {
+                    errors.Add($"Unknown component type '{(int)spec.Component}' in an install spec in root '{root.Path}'.");
+                }
+
+                if (string.IsNullOrWhiteSpace(spec.VersionOrChannel))
+                {
+                    errors.Add($"An install spec for {spec.Component} in root '{root.Path}' has an empty version/channel.");
+                }
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestUserCorrupted,
+                $"The dotnetup manifest at {ManifestPath} contains invalid data: {string.Join("; ", errors)}. " +
+                $"The file appears to have been modified outside of dotnetup. Consider deleting it and re-running the install.");
+        }
     }
 
     // --- Install Spec operations ---

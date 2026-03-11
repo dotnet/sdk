@@ -39,8 +39,9 @@ internal class UninstallWorkflow
 
         if (root is null)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No tracked installations found at {resolvedInstallPath}.[/]");
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UninstallTargetNotFound,
+                $"No tracked installations found at {resolvedInstallPath}.");
         }
 
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
@@ -72,10 +73,12 @@ internal class UninstallWorkflow
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
                         $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
                 }
+
                 foreach (var spec in otherSourceSpecs)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
                 }
+
                 if (sourceFilter != InstallSource.All)
                 {
                     AnsiConsole.MarkupLine("[dim]Use --source all to target these specs.[/]");
@@ -85,6 +88,7 @@ internal class UninstallWorkflow
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
             }
+
             return 1;
         }
 
