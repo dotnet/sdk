@@ -1,0 +1,27 @@
+<Project>
+  <!-- Import the repo root Directory.Build.props directly, skipping test-specific one -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\Directory.Build.props" />
+
+  <!-- This is not a test project - remove test-specific settings -->
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+    <GenerateProgramFile>true</GenerateProgramFile>
+  </PropertyGroup>
+
+  <!-- Remove test-specific global usings -->
+  <ItemGroup>
+    <Using Remove="FluentAssertions" />
+    <Using Remove="Microsoft.NET.TestFramework" />
+    <Using Remove="Microsoft.NET.TestFramework.Assertions" />
+    <Using Remove="Microsoft.NET.TestFramework.Commands" />
+    <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Remove="Microsoft.NET.TestFramework.Utilities" />
+    <Using Remove="Xunit" />
+    <Using Remove="Xunit.Abstractions" />
+  </ItemGroup>
+
+  <!-- Remove test package references -->
+  <ItemGroup>
+    <PackageReference Remove="AwesomeAssertions" />
+  </ItemGroup>
+</Project>
