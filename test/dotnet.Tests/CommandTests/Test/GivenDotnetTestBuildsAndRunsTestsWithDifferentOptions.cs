@@ -594,7 +594,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterAsFirstUnmatchedToken_ShouldWork(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();= "TestProjectsWithShared.slnf";
+            string testSolutionFilterPath = "TestProjectsWithShared.slnf";
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
