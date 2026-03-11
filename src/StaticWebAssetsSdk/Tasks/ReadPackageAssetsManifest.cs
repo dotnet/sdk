@@ -85,6 +85,8 @@ public class ReadPackageAssetsManifest : Task
                     // Track the package-relative path that we would have resolved for this asset
                     var resolvedPath = ResolveAssetPath(asset, packageRoot);
                     excludedAssetPaths.Add(resolvedPath);
+                    Log.LogMessage(MessageImportance.Low,
+                        "Excluding package asset '{0}' from '{1}' by group filtering.", resolvedPath, sourceId);
                 }
             }
 
@@ -175,6 +177,9 @@ public class ReadPackageAssetsManifest : Task
                 var resolvedAssetFile = ResolvePath(packageRoot, endpoint.AssetFile);
                 if (excludedAssetPaths.Contains(resolvedAssetFile))
                 {
+                    Log.LogMessage(MessageImportance.Low,
+                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
+                        endpoint.Route, resolvedAssetFile);
                     continue;
                 }
 

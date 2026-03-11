@@ -741,6 +741,8 @@ public partial class DefineStaticWebAssets : Task
         {
             if (def.IncludeMatcher == null)
             {
+                Log.LogMessage(MessageImportance.Low,
+                    "Skipping group definition '{0}' because it has no IncludePattern.", def.Name);
                 continue;
             }
             matchContext.SetPathAndReinitialize(pathWithoutTokens);

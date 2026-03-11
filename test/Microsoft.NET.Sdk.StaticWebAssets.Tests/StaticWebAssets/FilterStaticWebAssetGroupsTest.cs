@@ -9,16 +9,16 @@ using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
+public class FilterStaticWebAssetGroupsTest : IDisposable
 {
     private readonly string _tempDir;
     private readonly Mock<IBuildEngine> _buildEngine;
     private readonly List<string> _errorMessages;
     private readonly List<string> _logMessages;
 
-    public FilterDeferredStaticWebAssetGroupsTest()
+    public FilterStaticWebAssetGroupsTest()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "FilterDeferred_" + Guid.NewGuid().ToString("N"));
+        _tempDir = Path.Combine(Path.GetTempPath(), "FilterGroups_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
 
         _errorMessages = new List<string>();
@@ -47,11 +47,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
         var endpoint1 = CreateEndpointItem("app.js", asset1.ItemSpec);
         var endpoint2 = CreateEndpointItem("site.css", asset2.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset1, asset2 },
             Endpoints = new[] { endpoint1, endpoint2 },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("BootstrapVersion", new Dictionary<string, string>
@@ -77,11 +78,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
 
         var endpoint = CreateEndpointItem("server.js", asset.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
@@ -106,11 +108,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
         var endpoint = CreateEndpointItem("server.js", asset.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
@@ -162,11 +165,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
         var primaryEndpoint = CreateEndpointItem("server.js", primary.ItemSpec);
         var relatedEndpoint = CreateEndpointItem("server.js.gz", related.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { primary, related },
             Endpoints = new[] { primaryEndpoint, relatedEndpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
@@ -194,11 +198,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
         var includedEndpoint = CreateEndpointItem("app.js", includedAsset.ItemSpec);
         var excludedEndpoint = CreateEndpointItem("server.js", excludedAsset.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { includedAsset, excludedAsset },
             Endpoints = new[] { includedEndpoint, excludedEndpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
@@ -228,11 +233,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
 
         var endpoint = CreateEndpointItem("site.css", asset.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("BootstrapVersion", new Dictionary<string, string>
@@ -263,11 +269,12 @@ public class FilterDeferredStaticWebAssetGroupsTest : IDisposable
         var asset = CreateAssetItem("app.js", "MyLib", "");
         var endpoint = CreateEndpointItem("app.js", asset.ItemSpec);
 
-        var task = new FilterDeferredStaticWebAssetGroups
+        var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
+            DeferredOnly = true,
             StaticWebAssetGroups = null,
         };
 

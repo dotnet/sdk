@@ -35,14 +35,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GenerateStaticWebAssetsManifest>
 
     <!-- Filter the current project's own grouped assets after the publish manifest has been written. -->
-    <FilterCurrentProjectAssetGroups
+    <FilterStaticWebAssetGroups
       Assets="@(_FinalPublishStaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
       StaticWebAssetGroups="@(StaticWebAssetGroup)"
-      Source="$(PackageId)">
+      Source="$(PackageId)"
+      DeferredOnly="false">
       <Output TaskParameter="FilteredAssets" ItemName="_FilteredPublishAssets" />
       <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredPublishEndpoints" />
-    </FilterCurrentProjectAssetGroups>
+    </FilterStaticWebAssetGroups>
 
     <ItemGroup>
       <_FinalPublishStaticWebAsset Remove="@(_FinalPublishStaticWebAsset)" />

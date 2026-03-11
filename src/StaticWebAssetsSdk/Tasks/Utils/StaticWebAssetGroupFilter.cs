@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 // Shared group-filtering logic used by ReadPackageAssetsManifest,
 // UpdatePackageStaticWebAssets, UpdateExternallyDefinedStaticWebAssets,
-// and FilterDeferredStaticWebAssetGroups.
+// and FilterStaticWebAssetGroups.
 internal static class StaticWebAssetGroupFilter
 {
     // Returns true if the asset's group requirements are satisfied by the declared groups.

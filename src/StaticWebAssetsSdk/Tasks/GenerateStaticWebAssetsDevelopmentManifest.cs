@@ -104,17 +104,14 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
         foreach (var group in assetsByTargetPath)
         {
-            var candidates = StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build).ToList();
+            var candidates = StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build);
+            var asset = candidates.SingleOrDefault();
 
-            if (candidates.Count == 0)
+            if (asset == null)
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is a 'Publish' asset.", group.Key);
                 continue;
             }
-
-            // After group filtering, there should be at most one candidate per target path.
-            // If multiple remain (e.g. Build vs All asset kinds), pick the first.
-            var asset = candidates[0];
 
             if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))
             {

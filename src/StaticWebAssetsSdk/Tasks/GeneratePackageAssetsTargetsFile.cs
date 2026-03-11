@@ -29,18 +29,6 @@ public class GeneratePackageAssetsTargetsFile : Task
     {
         var normalizedPrefix = PackagePathPrefix.Replace("/", "\\").TrimStart('\\');
 
-        // Build the lightweight .targets XML
-        // Contents:
-        // <Project>
-        //   <ItemGroup>
-        //     <StaticWebAssetPackageManifest Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory){ManifestFileName}'))">
-        //       <SourceId>{PackageId}</SourceId>
-        //       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-        //       <PackageRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</PackageRoot>
-        //     </StaticWebAssetPackageManifest>
-        //   </ItemGroup>
-        // </Project>
-
         var itemGroup = new XElement("ItemGroup");
         var manifestItem = new XElement("StaticWebAssetPackageManifest",
             new XAttribute("Include", $@"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory){ManifestFileName}'))"),

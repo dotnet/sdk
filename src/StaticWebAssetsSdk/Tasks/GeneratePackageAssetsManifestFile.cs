@@ -75,7 +75,7 @@ public class GeneratePackageAssetsManifestFile : Task
         {
             var asset = StaticWebAsset.FromTaskItem(element);
             var relativePath = asset.RelativePath;
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '/', tokenResolver);
+            var packagePath = identityToPackagePath[element.ItemSpec];
 
             var emittedSourceType = "Package";
             if (hasFrameworkMatcher)
