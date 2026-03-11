@@ -31,6 +31,7 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
             var currentProjectAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind);
 
             var resultAssets = new List<StaticWebAsset>(currentProjectAssets.Count);
+            var groupSet = new HashSet<string>(StringComparer.Ordinal);
             foreach (var kvp in currentProjectAssets)
             {
                 var targetPath = kvp.Key;
@@ -38,7 +39,7 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
                 if (all != null)
                 {
                     // If all assets have distinct, non-empty AssetGroups, they can coexist
-                    if (StaticWebAsset.AllAssetsHaveDistinctGroups(all))
+                    if (StaticWebAsset.AllAssetsHaveDistinctGroups(all, groupSet))
                     {
                         foreach (var groupedAsset in all)
                         {

@@ -112,9 +112,8 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                 continue;
             }
 
-            // When multiple assets exist at the same target path with different AssetGroups,
-            // just pick the first one for the development manifest. The consumer will filter
-            // based on group selection at consumption time.
+            // After group filtering, there should be at most one candidate per target path.
+            // If multiple remain (e.g. Build vs All asset kinds), pick the first.
             var asset = candidates[0];
 
             if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))

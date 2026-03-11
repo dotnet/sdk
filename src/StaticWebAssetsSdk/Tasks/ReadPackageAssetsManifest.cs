@@ -34,6 +34,7 @@ public class ReadPackageAssetsManifest : Task
 
     public override bool Execute()
     {
+        var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var allAssets = new List<ITaskItem>();
         var allEndpoints = new List<ITaskItem>();
 
@@ -75,7 +76,7 @@ public class ReadPackageAssetsManifest : Task
 
             foreach (var asset in manifest.Assets)
             {
-                if (StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, sourceId, StaticWebAssetGroups))
+                if (StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, sourceId, groups))
                 {
                     includedAssets.Add(asset);
                 }

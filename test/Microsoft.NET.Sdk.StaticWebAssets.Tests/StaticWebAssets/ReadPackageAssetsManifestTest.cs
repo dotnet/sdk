@@ -505,4 +505,99 @@ public class ReadPackageAssetsManifestTest : IDisposable
             LastWriteTime = "Mon, 15 Nov 1990 00:00:00 GMT",
         };
     }
+
+    // Scenario 6: Custom .targets author override
+    // A package author disables the auto-generated .targets and manually provides
+    // their own .targets that still registers a StaticWebAssetPackageManifest item.
+    // The consumer's ReadPackageAssetsManifest should still work correctly.
+    [Fact]
+    public void CustomTargetsOverride_ManualManifestItem_WorksCorrectly()
+    {
+        // Setup: simulate a package that has its manifest at a custom location
+        // (as if the author wrote their own .targets pointing to the manifest)
+        var packageRoot = SetupPackageRoot("CustomLib",
+            CreateManifestAsset("staticwebassets/js/custom.js", "js/custom.js", "_content/customlib", ""),
+            CreateManifestAsset("staticwebassets/css/theme.css", "css/theme.css", "_content/customlib", ""));
+
+        // The manifest item metadata mirrors what a hand-authored .targets would produce.
+        // The key difference from auto-generated: the author controls the paths.
+        var manifestItem = CreateManifestItem(packageRoot, "CustomLib");
+
+        var task = new ReadPackageAssetsManifest
+        {
+            BuildEngine = _buildEngine.Object,
+            PackageManifests = new[] { manifestItem },
+            IntermediateOutputPath = Path.Combine(_tempDir, "obj"),
+            ProjectPackageId = "ConsumerApp",
+            ProjectBasePath = "_content/consumerapp",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.Assets.Should().HaveCount(2);
+
+        // Both assets should have the custom package's SourceId
+        task.Assets.Should().OnlyContain(a => a.GetMetadata("SourceId") == "CustomLib");
+        // Both should resolve Identity paths under the package root
+        task.Assets.Should().OnlyContain(a => a.ItemSpec.StartsWith(
+            Path.Combine(packageRoot, "staticwebassets")));
+    }
+
+    // Scenario 7: Multiple packages contributing manifests to the same consumer
+    // Two packages each provide a StaticWebAssetPackageManifest item.
+    // Group filtering should be applied independently per SourceId.
+    [Fact]
+    public void MultiplePackages_IndependentGroupFilteringPerSourceId()
+    {
+        // Package A: has grouped assets (BootstrapVersion=V5)
+        var packageRootA = SetupPackageRoot("PkgA",
+            CreateManifestAsset("staticwebassets/css/a.css", "css/a.css", "_content/pkga", "BootstrapVersion=V5"),
+            CreateManifestAsset("staticwebassets/js/a.js", "js/a.js", "_content/pkga", ""));
+
+        // Package B: has grouped assets (Theme=Dark) and ungrouped
+        var packageRootB = SetupPackageRoot("PkgB",
+            CreateManifestAsset("staticwebassets/css/b.css", "css/b.css", "_content/pkgb", "Theme=Dark"),
+            CreateManifestAsset("staticwebassets/js/b.js", "js/b.js", "_content/pkgb", ""));
+
+        var manifestA = CreateManifestItem(packageRootA, "PkgA");
+        var manifestB = CreateManifestItem(packageRootB, "PkgB");
+
+        var task = new ReadPackageAssetsManifest
+        {
+            BuildEngine = _buildEngine.Object,
+            PackageManifests = new[] { manifestA, manifestB },
+            StaticWebAssetGroups = new ITaskItem[]
+            {
+                // Consumer declares BootstrapVersion=V5 for PkgA
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V5",
+                    ["SourceId"] = "PkgA"
+                }),
+                // Consumer does NOT declare Theme for PkgB → grouped asset excluded
+            },
+            IntermediateOutputPath = Path.Combine(_tempDir, "obj"),
+            ProjectPackageId = "ConsumerApp",
+            ProjectBasePath = "_content/consumerapp",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+
+        // PkgA: css/a.css included (group matched), js/a.js included (ungrouped)
+        // PkgB: css/b.css excluded (Theme=Dark not declared), js/b.js included (ungrouped)
+        task.Assets.Should().HaveCount(3);
+
+        var assetPaths = task.Assets.Select(a => a.GetMetadata("RelativePath")).ToList();
+        assetPaths.Should().Contain("css/a.css");
+        assetPaths.Should().Contain("js/a.js");
+        assetPaths.Should().Contain("js/b.js");
+        assetPaths.Should().NotContain("css/b.css");
+
+        // Verify SourceIds are correct
+        task.Assets.Where(a => a.GetMetadata("SourceId") == "PkgA").Should().HaveCount(2);
+        task.Assets.Where(a => a.GetMetadata("SourceId") == "PkgB").Should().HaveCount(1);
+    }
 }

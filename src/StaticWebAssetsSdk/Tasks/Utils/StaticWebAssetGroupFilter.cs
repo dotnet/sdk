@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using Microsoft.Build.Framework;
-
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 // Shared group-filtering logic used by ReadPackageAssetsManifest,
@@ -14,7 +12,7 @@ internal static class StaticWebAssetGroupFilter
 {
     // Returns true if the asset's group requirements are satisfied by the declared groups.
     // During eager filtering, deferred groups are skipped (treated as provisionally satisfied).
-    public static bool IsAssetIncludedByGroups(string assetGroups, string sourceId, ITaskItem[] staticWebAssetGroups)
+    public static bool IsAssetIncludedByGroups(string assetGroups, string sourceId, StaticWebAssetGroup[] staticWebAssetGroups)
     {
         if (string.IsNullOrEmpty(assetGroups))
         {
@@ -49,7 +47,7 @@ internal static class StaticWebAssetGroupFilter
 
     // Returns true if the asset should be excluded by deferred group evaluation.
     // Only evaluates requirements whose group name is in deferredGroupNames.
-    public static bool IsExcludedByDeferredGroups(string assetGroups, string sourceId, HashSet<string> deferredGroupNames, ITaskItem[] staticWebAssetGroups)
+    public static bool IsExcludedByDeferredGroups(string assetGroups, string sourceId, HashSet<string> deferredGroupNames, StaticWebAssetGroup[] staticWebAssetGroups)
     {
         if (string.IsNullOrEmpty(assetGroups))
         {
@@ -112,7 +110,7 @@ internal static class StaticWebAssetGroupFilter
         } while (changed);
     }
 
-    private static bool IsGroupRequirementSatisfied(string reqName, string reqValue, string sourceId, ITaskItem[] staticWebAssetGroups)
+    private static bool IsGroupRequirementSatisfied(string reqName, string reqValue, string sourceId, StaticWebAssetGroup[] staticWebAssetGroups)
     {
         if (staticWebAssetGroups == null)
         {
@@ -121,15 +119,14 @@ internal static class StaticWebAssetGroupFilter
 
         foreach (var group in staticWebAssetGroups)
         {
-            var groupSourceId = group.GetMetadata("SourceId");
-            if (!string.IsNullOrEmpty(groupSourceId) &&
-                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(group.SourceId) &&
+                !string.Equals(group.SourceId, sourceId, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (string.Equals(group.ItemSpec, reqName, StringComparison.Ordinal) &&
-                string.Equals(group.GetMetadata("Value"), reqValue, StringComparison.Ordinal))
+            if (string.Equals(group.Name, reqName, StringComparison.Ordinal) &&
+                string.Equals(group.Value, reqValue, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -138,7 +135,7 @@ internal static class StaticWebAssetGroupFilter
         return false;
     }
 
-    private static bool IsDeferredGroup(string groupName, string sourceId, ITaskItem[] staticWebAssetGroups)
+    private static bool IsDeferredGroup(string groupName, string sourceId, StaticWebAssetGroup[] staticWebAssetGroups)
     {
         if (staticWebAssetGroups == null)
         {
@@ -147,19 +144,18 @@ internal static class StaticWebAssetGroupFilter
 
         foreach (var group in staticWebAssetGroups)
         {
-            if (!string.Equals(group.ItemSpec, groupName, StringComparison.Ordinal))
+            if (!string.Equals(group.Name, groupName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            var groupSourceId = group.GetMetadata("SourceId");
-            if (!string.IsNullOrEmpty(groupSourceId) &&
-                !string.Equals(groupSourceId, sourceId, StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(group.SourceId) &&
+                !string.Equals(group.SourceId, sourceId, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (string.Equals(group.GetMetadata("Deferred"), "true", StringComparison.OrdinalIgnoreCase))
+            if (group.Deferred)
             {
                 return true;
             }

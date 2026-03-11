@@ -40,6 +40,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
     {
         var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
+        var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var endpointByAsset = endpoints
             .GroupBy(e => e.AssetFile, OSPath.PathComparer)
             .ToDictionary(e => e.Key, e => e.ToArray(), OSPath.PathComparer);
@@ -72,7 +73,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         var filteredAssets = new List<StaticWebAsset>(assets.Length);
         foreach (var asset in assets)
         {
-            if (!StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, asset.SourceId, StaticWebAssetGroups))
+            if (!StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, asset.SourceId, groups))
             {
                 excludedAssetFiles.Add(asset.Identity);
                 Log.LogMessage(MessageImportance.Low,
