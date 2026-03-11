@@ -14,42 +14,19 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ManifestTests
 {
-    private static string CreateTempManifestPath()
-    {
-        var dir = Path.Combine(Path.GetTempPath(), "dotnetup-manifest-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
-        return Path.Combine(dir, "manifest.json");
-    }
-
-    private static void CleanupManifest(string path)
-    {
-        var dir = Path.GetDirectoryName(path)!;
-        if (Directory.Exists(dir))
-        {
-            Directory.Delete(dir, recursive: true);
-        }
-    }
-
     [Fact]
     public void NewManifestCreatesValidJson()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
-        {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
 
-            var json = File.ReadAllText(manifestPath);
-            var data = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        var json = File.ReadAllText(testEnv.ManifestPath);
+        var data = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
 
-            data.Should().NotBeNull();
-            data!.SchemaVersion.Should().Be("1");
-            data.DotnetRoots.Should().BeEmpty();
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        data.Should().NotBeNull();
+        data!.SchemaVersion.Should().Be("1");
+        data.DotnetRoots.Should().BeEmpty();
     }
 
     [Fact]
@@ -123,156 +100,120 @@ public class ManifestTests
     [Fact]
     public void LegacyFormatThrowsError()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+        using var testEnv = new TestEnvironment();
 
-            // Write old-format manifest (JSON array)
-            File.WriteAllText(manifestPath, "[{\"installRoot\":{\"path\":\"C:\\\\dotnet\",\"architecture\":\"x64\"},\"version\":\"9.0.103\",\"component\":\"SDK\"}]");
+        // Write old-format manifest (JSON array)
+        File.WriteAllText(testEnv.ManifestPath, "[{\"installRoot\":{\"path\":\"C:\\\\dotnet\",\"architecture\":\"x64\"},\"version\":\"9.0.103\",\"component\":\"SDK\"}]");
 
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
 
-            // Should throw because legacy format is no longer supported
-            var act = () => manifest.ReadManifest();
-            act.Should().Throw<DotnetInstallException>()
-                .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestCorrupted)
-                .WithMessage("*legacy format*no longer supported*");
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        // Should throw because legacy format is no longer supported
+        var act = () => manifest.ReadManifest();
+        act.Should().Throw<DotnetInstallException>()
+            .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestCorrupted)
+            .WithMessage("*legacy format*no longer supported*");
     }
 
     [Fact]
     public void AddAndRemoveInstallSpec()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        var spec = new InstallSpec
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "10",
+            InstallSource = InstallSource.Explicit
+        };
 
-            var spec = new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "10",
-                InstallSource = InstallSource.Explicit
-            };
+        manifest.AddInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
 
-            manifest.AddInstallSpec(installRoot, spec);
-            manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+        // Adding duplicate should not create a second entry
+        manifest.AddInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
 
-            // Adding duplicate should not create a second entry
-            manifest.AddInstallSpec(installRoot, spec);
-            manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
-
-            manifest.RemoveInstallSpec(installRoot, spec);
-            manifest.GetInstallSpecs(installRoot).Should().BeEmpty();
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        manifest.RemoveInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().BeEmpty();
     }
 
     [Fact]
     public void AddAndRemoveInstallation()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        var installation = new Installation
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+            Component = InstallComponent.SDK,
+            Version = "10.0.103",
+            Subcomponents = ["sdk/10.0.103", "shared/Microsoft.NETCore.App/10.0.3"]
+        };
 
-            var installation = new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "10.0.103",
-                Subcomponents = ["sdk/10.0.103", "shared/Microsoft.NETCore.App/10.0.3"]
-            };
+        manifest.AddInstallation(installRoot, installation);
+        var installations = manifest.GetInstallations(installRoot).ToList();
+        installations.Should().ContainSingle();
+        installations[0].Version.Should().Be("10.0.103");
+        installations[0].Subcomponents.Should().HaveCount(2);
 
-            manifest.AddInstallation(installRoot, installation);
-            var installations = manifest.GetInstallations(installRoot).ToList();
-            installations.Should().ContainSingle();
-            installations[0].Version.Should().Be("10.0.103");
-            installations[0].Subcomponents.Should().HaveCount(2);
+        // Adding duplicate should not create a second entry
+        manifest.AddInstallation(installRoot, installation);
+        manifest.GetInstallations(installRoot).Should().ContainSingle();
 
-            // Adding duplicate should not create a second entry
-            manifest.AddInstallation(installRoot, installation);
-            manifest.GetInstallations(installRoot).Should().ContainSingle();
-
-            manifest.RemoveInstallation(installRoot, installation);
-            manifest.GetInstallations(installRoot).Should().BeEmpty();
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        manifest.RemoveInstallation(installRoot, installation);
+        manifest.GetInstallations(installRoot).Should().BeEmpty();
     }
 
     [Fact]
     public void MultipleDotnetRoots()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
-        {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
 
-            var root1 = new DotnetInstallRoot(@"C:\dotnet-x64", InstallArchitecture.x64);
-            var root2 = new DotnetInstallRoot(@"C:\dotnet-arm64", InstallArchitecture.arm64);
+        var root1 = new DotnetInstallRoot(@"C:\dotnet-x64", InstallArchitecture.x64);
+        var root2 = new DotnetInstallRoot(@"C:\dotnet-arm64", InstallArchitecture.arm64);
 
-            manifest.AddInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
-            manifest.AddInstallation(root2, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.AddInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.AddInstallation(root2, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
 
-            manifest.GetInstallations(root1).Should().ContainSingle();
-            manifest.GetInstallations(root2).Should().ContainSingle();
+        manifest.GetInstallations(root1).Should().ContainSingle();
+        manifest.GetInstallations(root2).Should().ContainSingle();
 
-            // Remove from one root shouldn't affect the other
-            manifest.RemoveInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
-            manifest.GetInstallations(root1).Should().BeEmpty();
-            manifest.GetInstallations(root2).Should().ContainSingle();
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        // Remove from one root shouldn't affect the other
+        manifest.RemoveInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.GetInstallations(root1).Should().BeEmpty();
+        manifest.GetInstallations(root2).Should().ContainSingle();
     }
 
     [Fact]
     public void GlobalJsonInstallSpec()
     {
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        var spec = new InstallSpec
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "10.0.100",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        };
 
-            var spec = new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "10.0.100",
-                InstallSource = InstallSource.GlobalJson,
-                GlobalJsonPath = @"C:\Projects\myapp\global.json"
-            };
+        manifest.AddInstallSpec(installRoot, spec);
 
-            manifest.AddInstallSpec(installRoot, spec);
-
-            var specs = manifest.GetInstallSpecs(installRoot).ToList();
-            specs.Should().ContainSingle();
-            specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
-            specs[0].GlobalJsonPath.Should().Be(@"C:\Projects\myapp\global.json");
-        }
-        finally
-        {
-            CleanupManifest(manifestPath);
-        }
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().ContainSingle();
+        specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
+        specs[0].GlobalJsonPath.Should().Be(@"C:\Projects\myapp\global.json");
     }
 
     [Fact]
@@ -281,38 +222,31 @@ public class ManifestTests
         // Demonstrates the scenario that SkipInstallSpecRecording prevents:
         // if AddInstallSpec is called with a different InstallSource for the same
         // component/channel, it creates a duplicate entry.
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        // Original spec from GlobalJson
+        manifest.AddInstallSpec(installRoot, new InstallSpec
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        });
 
-            // Original spec from GlobalJson
-            manifest.AddInstallSpec(installRoot, new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "9.0",
-                InstallSource = InstallSource.GlobalJson,
-                GlobalJsonPath = @"C:\Projects\myapp\global.json"
-            });
-
-            // Without SkipInstallSpecRecording, an update would call AddInstallSpec again
-            // with Explicit source, creating a duplicate
-            manifest.AddInstallSpec(installRoot, new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "9.0",
-                InstallSource = InstallSource.Explicit
-            });
-
-            // This shows the bug: two specs for the same component/channel
-            manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
-        }
-        finally
+        // Without SkipInstallSpecRecording, an update would call AddInstallSpec again
+        // with Explicit source, creating a duplicate
+        manifest.AddInstallSpec(installRoot, new InstallSpec
         {
-            CleanupManifest(manifestPath);
-        }
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.Explicit
+        });
+
+        // This shows the bug: two specs for the same component/channel
+        manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
     }
 
     [Fact]
@@ -321,92 +255,78 @@ public class ManifestTests
         // Simulates the fixed update flow: the update adds a new installation
         // for the channel but does NOT call AddInstallSpec (SkipInstallSpecRecording = true),
         // so no duplicate spec is created.
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        // Initial state: GlobalJson spec + installation at 9.0.100
+        manifest.AddInstallSpec(installRoot, new InstallSpec
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
-
-            // Initial state: GlobalJson spec + installation at 9.0.100
-            manifest.AddInstallSpec(installRoot, new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "9.0",
-                InstallSource = InstallSource.GlobalJson,
-                GlobalJsonPath = @"C:\Projects\myapp\global.json"
-            });
-            manifest.AddInstallation(installRoot, new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "9.0.100",
-                Subcomponents = ["sdk/9.0.100"]
-            });
-
-            // Simulate update: only add the new installation (no AddInstallSpec call)
-            manifest.AddInstallation(installRoot, new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "9.0.200",
-                Subcomponents = ["sdk/9.0.200"]
-            });
-
-            // Should still have exactly 1 install spec (the original GlobalJson one)
-            var specs = manifest.GetInstallSpecs(installRoot).ToList();
-            specs.Should().ContainSingle();
-            specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
-
-            // Should have both installations recorded
-            manifest.GetInstallations(installRoot).Should().HaveCount(2);
-        }
-        finally
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        });
+        manifest.AddInstallation(installRoot, new Installation
         {
-            CleanupManifest(manifestPath);
-        }
+            Component = InstallComponent.SDK,
+            Version = "9.0.100",
+            Subcomponents = ["sdk/9.0.100"]
+        });
+
+        // Simulate update: only add the new installation (no AddInstallSpec call)
+        manifest.AddInstallation(installRoot, new Installation
+        {
+            Component = InstallComponent.SDK,
+            Version = "9.0.200",
+            Subcomponents = ["sdk/9.0.200"]
+        });
+
+        // Should still have exactly 1 install spec (the original GlobalJson one)
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().ContainSingle();
+        specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
+
+        // Should have both installations recorded
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
     }
 
     [Fact]
     public void Update_ExplicitSpec_RecordsInstallation_WithoutDuplicatingSpec()
     {
         // Same as above but with an Explicit spec instead of GlobalJson
-        var manifestPath = CreateTempManifestPath();
-        try
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+
+        // Initial state: Explicit spec + installation at 9.0.100
+        manifest.AddInstallSpec(installRoot, new InstallSpec
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
-
-            // Initial state: Explicit spec + installation at 9.0.100
-            manifest.AddInstallSpec(installRoot, new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                VersionOrChannel = "9.0",
-                InstallSource = InstallSource.Explicit
-            });
-            manifest.AddInstallation(installRoot, new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "9.0.100",
-                Subcomponents = ["sdk/9.0.100"]
-            });
-
-            // Simulate update: only add the new installation (SkipInstallSpecRecording)
-            manifest.AddInstallation(installRoot, new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "9.0.200",
-                Subcomponents = ["sdk/9.0.200"]
-            });
-
-            // Should still have exactly 1 install spec
-            manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
-
-            // Should have both installations
-            manifest.GetInstallations(installRoot).Should().HaveCount(2);
-        }
-        finally
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.Explicit
+        });
+        manifest.AddInstallation(installRoot, new Installation
         {
-            CleanupManifest(manifestPath);
-        }
+            Component = InstallComponent.SDK,
+            Version = "9.0.100",
+            Subcomponents = ["sdk/9.0.100"]
+        });
+
+        // Simulate update: only add the new installation (SkipInstallSpecRecording)
+        manifest.AddInstallation(installRoot, new Installation
+        {
+            Component = InstallComponent.SDK,
+            Version = "9.0.200",
+            Subcomponents = ["sdk/9.0.200"]
+        });
+
+        // Should still have exactly 1 install spec
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+
+        // Should have both installations
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
     }
 }

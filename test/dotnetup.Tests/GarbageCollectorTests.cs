@@ -5,42 +5,21 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class GarbageCollectorTests
 {
-    private sealed class TestDirectories : IDisposable
-    {
-        public string RootPath { get; }
-        public string DotnetRoot { get; }
-        public string ManifestPath { get; }
-
-        public TestDirectories()
-        {
-            RootPath = Path.Combine(Path.GetTempPath(), "dotnetup-gc-tests", Guid.NewGuid().ToString("N"));
-            DotnetRoot = Path.Combine(RootPath, "dotnet");
-            var dotnetupDir = Path.Combine(RootPath, "dotnetup");
-            Directory.CreateDirectory(DotnetRoot);
-            Directory.CreateDirectory(dotnetupDir);
-            ManifestPath = Path.Combine(dotnetupDir, "manifest.json");
-        }
-
-        public void Dispose()
-        {
-            try { Directory.Delete(RootPath, true); } catch { }
-        }
-    }
-
     [Fact]
     public void RemovesUnreferencedInstallationRecords()
     {
-        using var dirs = new TestDirectories();
+        using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-        var manifest = new DotnetupSharedManifest(dirs.ManifestPath);
-        var installRoot = new DotnetInstallRoot(dirs.DotnetRoot, InstallArchitecture.x64);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         // Add a spec for channel "10" and two installations
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -65,8 +44,8 @@ public class GarbageCollectorTests
         });
 
         // Create both sdk dirs on disk
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.102"));
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.103"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.102"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.103"));
 
         // GC should keep 10.0.103 (latest matching "10") and remove 10.0.102
         var gc = new GarbageCollector(manifest);
@@ -79,18 +58,18 @@ public class GarbageCollectorTests
 
         // The old version's folder should have been deleted from disk
         deleted.Should().Contain("sdk/10.0.102");
-        Directory.Exists(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.102")).Should().BeFalse();
-        Directory.Exists(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.103")).Should().BeTrue();
+        Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.102")).Should().BeFalse();
+        Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.103")).Should().BeTrue();
     }
 
     [Fact]
     public void KeepsInstallationReferencedByMultipleSpecs()
     {
-        using var dirs = new TestDirectories();
+        using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-        var manifest = new DotnetupSharedManifest(dirs.ManifestPath);
-        var installRoot = new DotnetInstallRoot(dirs.DotnetRoot, InstallArchitecture.x64);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         // Two specs that both match the same installation
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -113,7 +92,7 @@ public class GarbageCollectorTests
             Subcomponents = ["sdk/10.0.103"]
         });
 
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.103"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.103"));
 
         var gc = new GarbageCollector(manifest);
         var deleted = gc.Collect(installRoot);
@@ -125,11 +104,11 @@ public class GarbageCollectorTests
     [Fact]
     public void RemovesStaleGlobalJsonSpecs()
     {
-        using var dirs = new TestDirectories();
+        using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-        var manifest = new DotnetupSharedManifest(dirs.ManifestPath);
-        var installRoot = new DotnetInstallRoot(dirs.DotnetRoot, InstallArchitecture.x64);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         // Add a global.json spec pointing to a non-existent file
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -137,7 +116,7 @@ public class GarbageCollectorTests
             Component = InstallComponent.SDK,
             VersionOrChannel = "10.0.100",
             InstallSource = InstallSource.GlobalJson,
-            GlobalJsonPath = Path.Combine(dirs.DotnetRoot, "nonexistent", "global.json")
+            GlobalJsonPath = Path.Combine(testEnv.InstallPath, "nonexistent", "global.json")
         });
 
         manifest.AddInstallation(installRoot, new Installation
@@ -147,7 +126,7 @@ public class GarbageCollectorTests
             Subcomponents = ["sdk/10.0.100"]
         });
 
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.100"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.100"));
 
         var gc = new GarbageCollector(manifest);
         var deleted = gc.Collect(installRoot);
@@ -161,11 +140,11 @@ public class GarbageCollectorTests
     [Fact]
     public void VersionMatchingWorksForChannelPatterns()
     {
-        using var dirs = new TestDirectories();
+        using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-        var manifest = new DotnetupSharedManifest(dirs.ManifestPath);
-        var installRoot = new DotnetInstallRoot(dirs.DotnetRoot, InstallArchitecture.x64);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         // Feature band spec: "10.0.1xx"
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -190,8 +169,8 @@ public class GarbageCollectorTests
             Subcomponents = ["sdk/10.0.204"]
         });
 
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.103"));
-        Directory.CreateDirectory(Path.Combine(dirs.DotnetRoot, "sdk", "10.0.204"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.103"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.204"));
 
         var gc = new GarbageCollector(manifest);
         var deleted = gc.Collect(installRoot);

@@ -20,21 +20,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 internal static class DotnetupTestUtilities
 {
     /// <summary>
-    /// Creates a test environment with proper temporary directories
+    /// Creates a test environment with proper temporary directories and environment configuration.
     /// </summary>
     public static TestEnvironment CreateTestEnvironment()
-    {
-        string tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-e2e", Guid.NewGuid().ToString("N"));
-        string installPath = Path.Combine(tempRoot, "dotnet-root");
-        string manifestPath = Path.Combine(tempRoot, "dotnetup_manifest.json");
-
-        // Create necessary directories
-        Directory.CreateDirectory(tempRoot);
-        Directory.CreateDirectory(installPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
-
-        return new TestEnvironment(tempRoot, installPath, manifestPath);
-    }
+        => new(configureEnvironment: true);
 
     /// <summary>
     /// Builds command line arguments for SDK install
