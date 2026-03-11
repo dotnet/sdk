@@ -219,8 +219,7 @@ public class ManifestTests
     [Fact]
     public void AddInstallSpec_DifferentSource_CreatesDuplicate()
     {
-        // Demonstrates the scenario that SkipInstallSpecRecording prevents:
-        // if AddInstallSpec is called with a different InstallSource for the same
+        // If AddInstallSpec is called with a different InstallSource for the same
         // component/channel, it creates a duplicate entry.
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
@@ -236,8 +235,7 @@ public class ManifestTests
             GlobalJsonPath = @"C:\Projects\myapp\global.json"
         });
 
-        // Without SkipInstallSpecRecording, an update would call AddInstallSpec again
-        // with Explicit source, creating a duplicate
+        // Additional explicit spec for the same component/channel
         manifest.AddInstallSpec(installRoot, new InstallSpec
         {
             Component = InstallComponent.SDK,
@@ -245,7 +243,7 @@ public class ManifestTests
             InstallSource = InstallSource.Explicit
         });
 
-        // This shows the bug: two specs for the same component/channel
+        // There should now be 2 specs for the same component/channel but different sources
         manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
     }
 
