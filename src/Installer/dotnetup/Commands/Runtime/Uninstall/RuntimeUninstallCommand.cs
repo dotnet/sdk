@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Uninstall;
@@ -22,17 +23,15 @@ internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result)
 
         if (errorMessage != null)
         {
-            Console.Error.WriteLine(errorMessage);
-            RecordFailure("invalid_component_spec", category: "user");
-            return 1;
+            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidChannel, errorMessage);
         }
 
         if (string.IsNullOrEmpty(versionOrChannel))
         {
-            Console.Error.WriteLine("Error: A version or channel must be specified for uninstall.");
-            Console.Error.WriteLine("Examples: dotnetup runtime uninstall 9.0, dotnetup runtime uninstall aspnetcore@10.0");
-            RecordFailure("missing_version", category: "user");
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                "A version or channel must be specified for uninstall. " +
+                "Examples: dotnetup runtime uninstall 9.0, dotnetup runtime uninstall aspnetcore@10.0");
         }
 
         return UninstallWorkflow.Execute(

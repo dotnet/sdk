@@ -146,7 +146,7 @@ public class RuntimeInstallTests
 
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK));
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
         }
 
         var checksumAfter = File.ReadAllText(checksumPath).Trim();
@@ -174,7 +174,7 @@ public class RuntimeInstallTests
         File.WriteAllText(checksumPath, Convert.ToHexString(hash));
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestCorrupted,
             "checksum matches corrupt content → product error");
     }
@@ -189,7 +189,7 @@ public class RuntimeInstallTests
         File.WriteAllText(testEnv.ManifestPath, "user broke this {[}");
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "checksum doesn't match user-edited content → user error");
     }
@@ -206,7 +206,7 @@ public class RuntimeInstallTests
         File.WriteAllText(testEnv.ManifestPath, "garbage data");
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.GetInstalledVersions().ToList());
+        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "no checksum file → assume external edit → user error");
     }
