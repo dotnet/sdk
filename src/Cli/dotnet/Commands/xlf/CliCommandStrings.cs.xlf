@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../CliCommandStrings.resx">
     <body>
@@ -2386,21 +2386,43 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Kontext projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Chcete po převodu odstranit všechny zdrojové soubory?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Umožňuje převést program na bázi souboru na program na bázi projektu.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Zadejte výstupní adresář (stisknutím klávesy Enter použijete výchozí hodnotu: {0}, adresář nesmí existovat):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Ne – zachovat všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Ano – odstranit všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Odstraněný zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Určuje změny, aniž by ve skutečnosti měnil systém souborů.</target>
         <note />
       </trans-unit>
+
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
         <target state="translated">Zkušební spuštění: odebere direktivy na úrovni souboru ze souboru: {0}</target>
@@ -2421,6 +2443,11 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Zkušební spuštění: vytvoří soubor: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Zkušební spuštění: odstraní zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
         <target state="translated">Zkušební spuštění: odstraní soubor: {0}</target>
@@ -2440,6 +2467,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <source>The XML file that contains the list of packages to be stored.</source>
         <target state="translated">Soubor XML obsahující seznam balíčků, které se mají uložit</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
