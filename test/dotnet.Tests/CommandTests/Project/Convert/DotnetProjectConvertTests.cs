@@ -2017,7 +2017,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithFlag()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         
         var csFile = Path.Combine(testInstance.Path, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
@@ -2038,7 +2038,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithoutFlag_NonInteractive()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         
         var csFile = Path.Combine(testInstance.Path, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
@@ -2060,7 +2060,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_DryRun()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         
         var csFile = Path.Combine(testInstance.Path, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
@@ -2082,7 +2082,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithCustomOutput()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         
         var csFile = Path.Combine(testInstance.Path, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
@@ -2105,7 +2105,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithDefaultFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Create entry point file with default items enabled
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
@@ -2138,7 +2138,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithDefaultFiles_NotDeleted()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         
         // Create entry point file with default items enabled
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
@@ -2172,7 +2172,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithIncludeDirective()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Create entry point file with #:include directive
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
@@ -2202,7 +2202,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithIncludeDirective_NotDeleted()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Create entry point file with #:include directive
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
@@ -2233,7 +2233,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithIncludeDirective_MultipleFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Create entry point file with multiple #:include directives
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
@@ -2271,7 +2271,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DeleteSource_WithIncludeDirective_Transitive()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Create entry point file with #:include directive
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """

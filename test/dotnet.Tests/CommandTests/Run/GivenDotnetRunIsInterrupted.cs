@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact]
         public void ItTerminatesWinExeAppWithCloseMainWindow()
         {
-            var asset = _testAssetsManager.CopyTestAsset("WinExeApp")
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
