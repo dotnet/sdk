@@ -129,7 +129,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(outOfTreeBaseDirectory);
 
         // Create NuGet.config in our out-of-tree base directory.
-        var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
@@ -3945,9 +3945,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(TestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(TestContext.Current.NuGetCachePath!);
+        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
+        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -4213,7 +4213,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Save the code.
         var codeFolder = new DirectoryInfo(Path.Join(
-            TestContext.Current.ToolsetUnderTest.RepoRoot,
+            SdkTestContext.Current.ToolsetUnderTest.RepoRoot,
             "src", "Cli", "dotnet", "Commands", "Run"));
         var nonGeneratedFile = codeFolder.File("CSharpCompilerCommand.cs");
         if (!nonGeneratedFile.Exists)
@@ -4882,7 +4882,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
             """);
 
-        var expectedDotNetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+        var expectedDotNetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
 
         var cscResult = new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithWorkingDirectory(testInstance.Path)
@@ -5513,6 +5513,63 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Using built-in CSC args here (cannot reuse auxiliary files like csc.rsp here).
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 ");
+    }
+
+    /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after a full MSBuild build,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void MSBuild_WritesCscRsp()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:property Configuration=Release
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // A build directive forces a full MSBuild build.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello");
+
+        // csc.rsp should be written to disk after a full MSBuild build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after a full MSBuild build");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
+    }
+
+    /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after <c>dotnet build file.cs</c>,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void DotnetBuild_WritesCscRsp()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // csc.rsp should be written to disk after dotnet build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after dotnet build file.cs");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
     }
 
     /// <summary>

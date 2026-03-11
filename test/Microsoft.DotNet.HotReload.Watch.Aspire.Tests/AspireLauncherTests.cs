@@ -17,14 +17,14 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "host",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
 
     private WatchableApp CreateServerApp(string serverPipe)
         => new(
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "server",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
 
     private WatchableApp CreateResourceApp(string serverPipe)
         => new(

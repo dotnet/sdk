@@ -17,7 +17,7 @@ internal static class TestOptions
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", TestAsset? asset = null)
         => new(
             WorkingDirectory: workingDirectory,
-            SdkDirectory: TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+            SdkDirectory: SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
             LogMessagePrefix: "dotnet watch",
             ProcessCleanupTimeout: null,
             IsPollingEnabled: true,
