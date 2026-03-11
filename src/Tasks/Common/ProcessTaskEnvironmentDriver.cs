@@ -100,18 +100,10 @@ namespace Microsoft.Build.Framework
         /// <inheritdoc/>
         public ProcessStartInfo GetProcessStartInfo()
         {
-            var startInfo = new ProcessStartInfo
-            {
-                WorkingDirectory = _projectDirectory.Value,
-            };
-
-            // Populate environment from the scoped environment dictionary
-            foreach (var kvp in _environmentVariables)
-            {
-                startInfo.EnvironmentVariables[kvp.Key] = kvp.Value;
-            }
-
-            return startInfo;
+            // No SDK task calls this method. It exists only to satisfy the ITaskEnvironmentDriver
+            // interface contract. ToolTask subclasses use their own process-start logic instead.
+            throw new NotImplementedException(
+                "ProcessTaskEnvironmentDriver.GetProcessStartInfo is not used by SDK tasks.");
         }
 
         /// <inheritdoc/>

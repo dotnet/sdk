@@ -174,43 +174,59 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNoPackageSourceMappingItShouldError()
         {
-            string getTestLocalFeedPath = GetTestLocalFeedPath();
-            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
-            Log.WriteLine(relativePath);
-            var dictionary = new Dictionary<string, IReadOnlyList<string>>
-            {
-                { "sourceA", new List<string>() { "a" } }
-            };
-            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
-            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+            string testFeed = GetTestLocalFeedPath();
+            FilePath configPath = GenerateRandomNugetConfigFilePath();
+            FileSystemWrapper fs = new();
+            
+            fs.Directory.CreateDirectory(configPath.GetDirectoryPath().Value);
+            string configContent = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""testfeed"" value=""{testFeed}"" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key=""testfeed"">
+      <package pattern=""someotherpackage*"" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>";
+            fs.File.WriteAllText(configPath.Value, configContent);
 
-            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
+            Func<Task> downloadAction = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
-                packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+                new PackageSourceLocation(nugetConfig: configPath));
+            (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
         public async Task GivenPackageSourceMappingFeedNotFoundItShouldError()
         {
-            string getTestLocalFeedPath = GetTestLocalFeedPath();
-            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
-            Log.WriteLine(relativePath);
-            var dictionary = new Dictionary<string, IReadOnlyList<string>>
-            {
-                { "nonexistentfeed", new List<string>() { TestPackageId.ToString() } }
-            };
-            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
-            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+            string testFeed = GetTestLocalFeedPath();
+            FilePath configPath = GenerateRandomNugetConfigFilePath();
+            FileSystemWrapper fs = new();
+            
+            fs.Directory.CreateDirectory(configPath.GetDirectoryPath().Value);
+            string configContent = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""actualfeed"" value=""{testFeed}"" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key=""missingfeed"">
+      <package pattern=""{TestPackageId}*"" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>";
+            fs.File.WriteAllText(configPath.Value, configContent);
 
-            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
+            Func<Task> downloadAction = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
-                packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+                new PackageSourceLocation(nugetConfig: configPath));
+            (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -391,5 +407,25 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private static string GetTestLocalFeedPath() =>
             Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
+
+        [Fact]
+        public async Task RejectsAdditionalSourceFeedsWhenMappingActive()
+        {
+            var mappingRules = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "feed1", new List<string> { "PackageX.*" } }
+            };
+            var mapping = new PackageSourceMapping(new ReadOnlyDictionary<string, IReadOnlyList<string>>(mappingRules));
+            string someFeed = GetTestLocalFeedPath();
+
+            var download = () => _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(additionalSourceFeeds: new[] { someFeed }),
+                packageSourceMapping: mapping);
+            
+            (await download.Should().ThrowAsync<NuGetPackageInstallerException>())
+                .Which.Message.Should().Contain(CliStrings.CannotUseAddSourceWithSourceMapping);
+        }
     }
 }

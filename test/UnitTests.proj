@@ -8,6 +8,9 @@
 
     <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
+    <!-- Helix SDK specifies the default run name to be: $(TestRunNamePrefix)$(_CurrentTargetQueue)$(TestRunNameSuffix) -->
+    <TestRunNamePrefix Condition="'$(AGENT_JOBNAME)' != ''">$(AGENT_JOBNAME) run on </TestRunNamePrefix>
+    <TestRunNameSuffix Condition="'$(SYSTEM_JOBATTEMPT)' != ''"> (attempt $(SYSTEM_JOBATTEMPT))</TestRunNameSuffix>
     <XUnitWorkItemTimeout>02:00:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 

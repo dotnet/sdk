@@ -40,6 +40,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
     public bool AllowEmptySourceType { get; set; }
 
+    public string FrameworkPattern { get; set; }
+
     public override bool Execute()
     {
         if (!ValidateArguments())
@@ -59,6 +61,21 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
 
+        StaticWebAssetGlobMatcher frameworkMatcher = null;
+        if (!string.IsNullOrEmpty(FrameworkPattern))
+        {
+            var patterns = FrameworkPattern
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .ToArray();
+            frameworkMatcher = new StaticWebAssetGlobMatcherBuilder()
+                .AddIncludePatterns(patterns)
+                .Build();
+        }
+
+        var hasFrameworkMatcher = frameworkMatcher != null;
+        var matchContext = hasFrameworkMatcher ? StaticWebAssetGlobMatcher.CreateMatchContext() : default;
+
         var itemGroup = new XElement("ItemGroup");
         var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
             .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
@@ -68,9 +85,26 @@ public class GenerateStaticWebAssetsPropsFile : Task
             var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
             var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
+
+            var emittedSourceType = "Package";
+            if (hasFrameworkMatcher)
+            {
+                matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+                var match = frameworkMatcher.Match(matchContext);
+                if (match.IsMatch)
+                {
+                    emittedSourceType = "Framework";
+                    Log.LogMessage(MessageImportance.Low, "Asset '{0}' with relative path '{1}' matched framework pattern. Emitting as Framework.", element.ItemSpec, relativePath);
+                }
+                else
+                {
+                    Log.LogMessage(MessageImportance.Low, "Asset '{0}' with relative path '{1}' did not match framework pattern. Emitting as Package.", element.ItemSpec, relativePath);
+                }
+            }
+
             itemGroup.Add(new XElement("StaticWebAsset",
                 new XAttribute("Include", fullPathExpression),
-                new XElement(SourceType, "Package"),
+                new XElement(SourceType, emittedSourceType),
                 new XElement(SourceId, element.GetMetadata(SourceId)),
                 new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                 new XElement(BasePath, element.GetMetadata(BasePath)),
