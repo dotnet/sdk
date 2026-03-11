@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -79,7 +81,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                using var stream = File.OpenRead(globalJsonPath);
+                using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
                 var contents = JsonSerializer.Deserialize(
                     stream,
                     GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
@@ -139,11 +141,11 @@ public class DotnetInstallManager : IDotnetInstallManager
             return;
         }
 
-        var fileText = File.ReadAllText(globalJsonPath);
+        var (fileText, encoding) = GlobalJsonFileHelper.ReadFileWithEncodingDetection(globalJsonPath);
         var updatedText = ReplaceGlobalJsonSdkVersion(fileText, sdkVersion);
         if (updatedText is not null)
         {
-            File.WriteAllText(globalJsonPath, updatedText);
+            File.WriteAllText(globalJsonPath, updatedText, encoding);
         }
     }
 
