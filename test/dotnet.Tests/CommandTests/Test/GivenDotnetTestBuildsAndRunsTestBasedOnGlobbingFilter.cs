@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
                                     "--root-directory", testInstance.TestRoot);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
 

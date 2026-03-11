@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp1.1", true, true, "1.1.13")]
         [InlineData("netcoreapp1.1", false, false, "1.1.2")]
         [InlineData("netcoreapp2.0", false, true, "2.0.0")]
-        [InlineData("netcoreapp2.0", true, true, TestContext.LatestRuntimePatchForNetCoreApp2_0)]
+        [InlineData("netcoreapp2.0", true, true, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0)]
         [InlineData("netcoreapp2.0", false, false, "2.0.0")]
         public void It_targets_the_right_framework_depending_on_output_type(string targetFramework, bool selfContained, bool isExe, string expectedFrameworkVersion)
         {
@@ -101,10 +101,10 @@ namespace Microsoft.NET.Build.Tests
             //  Test that the resolved version is greater than or equal to the latest runtime patch
             //  we know about, so that when a new runtime patch is released the test doesn't
             //  immediately start failing
-            var minimumExpectedVersion = new NuGetVersion(TestContext.LatestRuntimePatchForNetCoreApp2_0);
+            var minimumExpectedVersion = new NuGetVersion(SdkTestContext.LatestRuntimePatchForNetCoreApp2_0);
             netCoreAppLibrary.Version.CompareTo(minimumExpectedVersion).Should().BeGreaterThanOrEqualTo(0,
                 "the version resolved from a RuntimeFrameworkVersion of '{0}' should be at least {1}",
-                testProject.RuntimeFrameworkVersion, TestContext.LatestRuntimePatchForNetCoreApp2_0);
+                testProject.RuntimeFrameworkVersion, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0);
         }
 
         private void It_targets_the_right_framework(

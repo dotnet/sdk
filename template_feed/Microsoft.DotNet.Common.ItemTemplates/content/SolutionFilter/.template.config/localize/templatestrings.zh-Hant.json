@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "解決方案篩選檔案",
+  "description": "建立一個參考上層解決方案的解決方案篩選檔案",
+  "symbols/ParentSolution/displayName": "上層解決方案檔案",
+  "symbols/ParentSolution/description": "此篩選器所參考的上層解決方案檔案 (sln 或 slnx，預設為同名且副檔名為 .slnx)。"
+}
