@@ -8,7 +8,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class FilterDeferredStaticWebAssetGroups : Task
+// Filters the current project's own assets and endpoints by group declarations.
+// Runs after the build/publish manifest has been written (which retains all variants)
+// so that the dev manifest and endpoints manifest only include the selected variant.
+public class FilterCurrentProjectAssetGroups : Task
 {
     [Required]
     public ITaskItem[] Assets { get; set; }
@@ -17,6 +20,9 @@ public class FilterDeferredStaticWebAssetGroups : Task
     public ITaskItem[] Endpoints { get; set; }
 
     public ITaskItem[] StaticWebAssetGroups { get; set; }
+
+    [Required]
+    public string Source { get; set; }
 
     [Output]
     public ITaskItem[] FilteredAssets { get; set; }
@@ -28,47 +34,41 @@ public class FilterDeferredStaticWebAssetGroups : Task
     {
         var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
 
-        // Collect which group names are deferred
-        var deferredGroupNames = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in groups)
+        if (groups.Length == 0)
         {
-            if (group.Deferred)
-            {
-                deferredGroupNames.Add(group.Name);
-            }
-        }
-
-        if (deferredGroupNames.Count == 0)
-        {
-            // No deferred groups — nothing to filter
             FilteredAssets = Assets;
             FilteredEndpoints = Endpoints;
             return true;
         }
 
-        // Phase 1: Evaluate deferred group requirements on each asset
         var excludedAssetFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var includedAssets = new List<ITaskItem>(Assets.Length);
 
         foreach (var assetItem in Assets)
         {
-            if (StaticWebAssetGroupFilter.IsExcludedByDeferredGroups(
-                    assetItem.GetMetadata("AssetGroups"),
-                    assetItem.GetMetadata("SourceId"),
-                    deferredGroupNames,
-                    groups))
+            var sourceId = assetItem.GetMetadata("SourceId");
+
+            // Only filter assets from the current project
+            if (!string.Equals(sourceId, Source, StringComparison.Ordinal))
             {
-                excludedAssetFiles.Add(assetItem.ItemSpec);
-                Log.LogMessage(MessageImportance.Low,
-                    "Excluding asset '{0}' by deferred group filtering.", assetItem.ItemSpec);
+                includedAssets.Add(assetItem);
+                continue;
             }
-            else
+
+            var assetGroups = assetItem.GetMetadata("AssetGroups");
+            if (StaticWebAssetGroupFilter.IsAssetIncludedByGroups(assetGroups, sourceId, groups))
             {
                 includedAssets.Add(assetItem);
             }
+            else
+            {
+                excludedAssetFiles.Add(assetItem.ItemSpec);
+                Log.LogMessage(MessageImportance.Low,
+                    "Excluding current-project asset '{0}' by group filtering.", assetItem.ItemSpec);
+            }
         }
 
-        // Phase 2: Cascading exclusion of related/alternative assets
+        // Cascading exclusion of related/alternative assets
         StaticWebAssetGroupFilter.CascadeExclusions(
             includedAssets,
             excludedAssetFiles,
@@ -77,7 +77,7 @@ public class FilterDeferredStaticWebAssetGroups : Task
 
         FilteredAssets = includedAssets.ToArray();
 
-        // Phase 3: Filter endpoints for excluded assets
+        // Filter endpoints for excluded assets
         if (excludedAssetFiles.Count > 0)
         {
             var filteredEndpoints = new List<ITaskItem>(Endpoints.Length);
@@ -87,7 +87,7 @@ public class FilterDeferredStaticWebAssetGroups : Task
                 if (!string.IsNullOrEmpty(assetFile) && excludedAssetFiles.Contains(assetFile))
                 {
                     Log.LogMessage(MessageImportance.Low,
-                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by deferred group filtering.",
+                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by current-project group filtering.",
                         endpoint.ItemSpec, assetFile);
                     continue;
                 }

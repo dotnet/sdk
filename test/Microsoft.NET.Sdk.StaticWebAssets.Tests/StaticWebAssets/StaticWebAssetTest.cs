@@ -15,7 +15,8 @@ public class StaticWebAssetTest
         var asset = CreateAsset("wwwroot/app.js", "app.js", "All", "All");
         var group = (asset, (StaticWebAsset)null, (IReadOnlyList<StaticWebAsset>)null);
 
-        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason);
+        var groupSet = new HashSet<string>(StringComparer.Ordinal);
+        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet);
 
         Assert.True(result);
         Assert.Null(reason);
@@ -28,7 +29,8 @@ public class StaticWebAssetTest
         var asset2 = CreateAsset("wwwroot/app.js", "app.js", "All", "All", sourceId: "Project2");
         var group = (asset1, asset2, (IReadOnlyList<StaticWebAsset>)null);
 
-        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason);
+        var groupSet2 = new HashSet<string>(StringComparer.Ordinal);
+        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet2);
 
         Assert.False(result);
         Assert.Contains("different projects", reason);
@@ -41,7 +43,8 @@ public class StaticWebAssetTest
         var asset2 = CreateAsset("obj/app.js", "app.js", "All", "All");
         var group = (asset1, asset2, (IReadOnlyList<StaticWebAsset>)null);
 
-        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason);
+        var groupSet3 = new HashSet<string>(StringComparer.Ordinal);
+        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet3);
 
         Assert.False(result);
         Assert.Contains("'All' assets", reason);
@@ -54,7 +57,8 @@ public class StaticWebAssetTest
         var publishAsset = CreateAsset("obj/app.js", "app.js", "Publish", "All");
         var group = (buildAsset, publishAsset, (IReadOnlyList<StaticWebAsset>)null);
 
-        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason);
+        var groupSet4 = new HashSet<string>(StringComparer.Ordinal);
+        var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet4);
 
         Assert.True(result);
         Assert.Null(reason);
@@ -140,7 +144,8 @@ public class StaticWebAssetTest
         computedAsset.Fingerprint = "xyz789";
 
         var group = (discoveredAsset, computedAsset, (IReadOnlyList<StaticWebAsset>)null);
-        var result = StaticWebAsset.ValidateAssetGroup("MyApp.styles.css", group, out var reason);
+        var groupSet = new HashSet<string>(StringComparer.Ordinal);
+        var result = StaticWebAsset.ValidateAssetGroup("MyApp.styles.css", group, out var reason, groupSet);
 
         Assert.False(result);
         Assert.Contains("'All' assets", reason);

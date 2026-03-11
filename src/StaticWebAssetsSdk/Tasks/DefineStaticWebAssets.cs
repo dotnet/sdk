@@ -626,16 +626,40 @@ public partial class DefineStaticWebAssets : Task
         }
     }
 
-    private readonly record struct GroupDefinition(
-        string Name,
-        string Value,
-        string SourceId,
-        int Order,
-        StaticWebAssetGlobMatcher IncludeMatcher,
-        StaticWebAssetGlobMatcher ExcludeMatcher,
-        StaticWebAssetGlobMatcher RelativePathMatcher,
-        string RelativePathPrefix,
-        string ContentRootSuffix);
+    private readonly struct GroupDefinition
+    {
+        public GroupDefinition(
+            string name,
+            string value,
+            string sourceId,
+            int order,
+            StaticWebAssetGlobMatcher includeMatcher,
+            StaticWebAssetGlobMatcher excludeMatcher,
+            StaticWebAssetGlobMatcher relativePathMatcher,
+            string relativePathPrefix,
+            string contentRootSuffix)
+        {
+            Name = name;
+            Value = value;
+            SourceId = sourceId;
+            Order = order;
+            IncludeMatcher = includeMatcher;
+            ExcludeMatcher = excludeMatcher;
+            RelativePathMatcher = relativePathMatcher;
+            RelativePathPrefix = relativePathPrefix;
+            ContentRootSuffix = contentRootSuffix;
+        }
+
+        public string Name { get; }
+        public string Value { get; }
+        public string SourceId { get; }
+        public int Order { get; }
+        public StaticWebAssetGlobMatcher IncludeMatcher { get; }
+        public StaticWebAssetGlobMatcher ExcludeMatcher { get; }
+        public StaticWebAssetGlobMatcher RelativePathMatcher { get; }
+        public string RelativePathPrefix { get; }
+        public string ContentRootSuffix { get; }
+    }
 
     private List<GroupDefinition> ParseGroupDefinitions()
     {
@@ -710,6 +734,7 @@ public partial class DefineStaticWebAssets : Task
         StaticWebAsset asset, List<GroupDefinition> definitions, StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
         var currentRelativePath = asset.RelativePath;
+        var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
         var groupEntries = new List<string>();
 
         foreach (var def in definitions)
@@ -718,8 +743,6 @@ public partial class DefineStaticWebAssets : Task
             {
                 continue;
             }
-
-            var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
             matchContext.SetPathAndReinitialize(pathWithoutTokens);
             var includeMatch = def.IncludeMatcher.Match(matchContext);
 
@@ -779,6 +802,7 @@ public partial class DefineStaticWebAssets : Task
                         def.Name, currentRelativePath, newRelativePath);
 
                     currentRelativePath = newRelativePath;
+                    pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
                 }
             }
             else
@@ -789,6 +813,7 @@ public partial class DefineStaticWebAssets : Task
                 if (!string.IsNullOrEmpty(def.RelativePathPrefix))
                 {
                     currentRelativePath = def.RelativePathPrefix + currentRelativePath;
+                    pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
                     Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
                 }
 

@@ -397,7 +397,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
-    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason)
+    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason, HashSet<string> reusableGroupSet)
     {
         var prototypeItem = group.First;
         StaticWebAsset build = null;
@@ -414,7 +414,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         // If assets at the same path have different non-empty AssetGroups values, they are variant
         // alternatives that will be disambiguated by group filtering on the consumer side.
         // Allow them to coexist in the manifest.
-        if (AllAssetsHaveDistinctGroups(group))
+        if (AllAssetsHaveDistinctGroups(group, reusableGroupSet))
         {
             reason = null;
             return true;
@@ -496,45 +496,56 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     private static bool AllAssetsHaveDistinctGroups(
-        (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group)
+        (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group,
+        HashSet<string> reusableGroupSet)
     {
-        // Enumerate the tuple fields without allocating a List.
-        // This overload exists to avoid an allocation on a warm path.
-        static IEnumerable<StaticWebAsset> Enumerate(
-            (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) g)
+        reusableGroupSet.Clear();
+
+        if (!TryAddAssetGroup(reusableGroupSet, group.First))
         {
-            yield return g.First;
-            if (g.Second != null)
+            return false;
+        }
+
+        if (group.Second != null && !TryAddAssetGroup(reusableGroupSet, group.Second))
+        {
+            return false;
+        }
+
+        if (group.Others != null)
+        {
+            foreach (var item in group.Others)
             {
-                yield return g.Second;
-            }
-            if (g.Others != null)
-            {
-                foreach (var item in g.Others)
+                if (!TryAddAssetGroup(reusableGroupSet, item))
                 {
-                    yield return item;
+                    return false;
                 }
             }
         }
 
-        return AllAssetsHaveDistinctGroups(Enumerate(group));
+        return reusableGroupSet.Count > 0;
     }
 
-    internal static bool AllAssetsHaveDistinctGroups(IEnumerable<StaticWebAsset> assets)
+    internal static bool AllAssetsHaveDistinctGroups(IEnumerable<StaticWebAsset> assets, HashSet<string> reusableGroupSet)
     {
-        var groups = new HashSet<string>(StringComparer.Ordinal);
+        reusableGroupSet.Clear();
+
         foreach (var asset in assets)
         {
-            if (string.IsNullOrEmpty(asset.AssetGroups))
-            {
-                return false;
-            }
-            if (!groups.Add(asset.AssetGroups))
+            if (!TryAddAssetGroup(reusableGroupSet, asset))
             {
                 return false;
             }
         }
-        return groups.Count > 0;
+        return reusableGroupSet.Count > 0;
+    }
+
+    private static bool TryAddAssetGroup(HashSet<string> groups, StaticWebAsset asset)
+    {
+        if (string.IsNullOrEmpty(asset.AssetGroups))
+        {
+            return false;
+        }
+        return groups.Add(asset.AssetGroups);
     }
 
     private bool HasKind(string assetKind) =>

@@ -41,6 +41,7 @@ public class UpdatePackageStaticWebAssets : Task
     {
         try
         {
+            var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
             var originalAssets = new List<ITaskItem>();
             var updatedAssets = new List<ITaskItem>();
             var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
@@ -53,7 +54,7 @@ public class UpdatePackageStaticWebAssets : Task
 
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), StaticWebAssetGroups))
+                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), groups))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
                         // Add to originalAssets so the target removes it from @(StaticWebAsset),
@@ -67,7 +68,7 @@ public class UpdatePackageStaticWebAssets : Task
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), StaticWebAssetGroups))
+                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), groups))
                     {
                         excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
                         originalAssets.Add(candidate);

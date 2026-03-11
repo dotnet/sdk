@@ -602,7 +602,8 @@ public class AssetGroupFilteringTest : IDisposable
             CreateStaticWebAsset("b.css", "BootstrapVersion=V5")
         };
 
-        StaticWebAsset.AllAssetsHaveDistinctGroups(assets).Should().BeTrue();
+        var groupSet = new HashSet<string>(StringComparer.Ordinal);
+        StaticWebAsset.AllAssetsHaveDistinctGroups(assets, groupSet).Should().BeTrue();
     }
 
     [Fact]
@@ -614,7 +615,8 @@ public class AssetGroupFilteringTest : IDisposable
             CreateStaticWebAsset("b.css", "")
         };
 
-        StaticWebAsset.AllAssetsHaveDistinctGroups(assets).Should().BeFalse();
+        var groupSet = new HashSet<string>(StringComparer.Ordinal);
+        StaticWebAsset.AllAssetsHaveDistinctGroups(assets, groupSet).Should().BeFalse();
     }
 
     [Fact]
@@ -626,7 +628,8 @@ public class AssetGroupFilteringTest : IDisposable
             CreateStaticWebAsset("b.css", "BootstrapVersion=V5")
         };
 
-        StaticWebAsset.AllAssetsHaveDistinctGroups(assets).Should().BeFalse();
+        var groupSet = new HashSet<string>(StringComparer.Ordinal);
+        StaticWebAsset.AllAssetsHaveDistinctGroups(assets, groupSet).Should().BeFalse();
     }
 
     // ──────────────────────────────────────────────────────────────────────

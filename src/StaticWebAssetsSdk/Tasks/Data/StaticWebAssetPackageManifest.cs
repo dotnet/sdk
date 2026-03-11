@@ -50,7 +50,9 @@ public class PackageManifestAsset
     public string SourceType { get; set; }
 
     public string AssetKind { get; set; }
+
     public string AssetMode { get; set; }
+
     public string AssetRole { get; set; }
 
     /// <summary>
@@ -60,6 +62,7 @@ public class PackageManifestAsset
     public string RelatedAsset { get; set; }
 
     public string AssetTraitName { get; set; }
+
     public string AssetTraitValue { get; set; }
 
     /// <summary>
@@ -69,11 +72,14 @@ public class PackageManifestAsset
     public string AssetGroups { get; set; }
 
     public string Fingerprint { get; set; }
+
     public string Integrity { get; set; }
 
     public string CopyToOutputDirectory { get; set; }
+
     public string CopyToPublishDirectory { get; set; }
 
     public string FileLength { get; set; }
+
     public string LastWriteTime { get; set; }
 }

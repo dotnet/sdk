@@ -132,6 +132,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterCurrentProjectAssetGroups"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -683,6 +688,25 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetBuildManifestPath)"
       ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
+
+    <!-- Filter the current project's own grouped assets after the build manifest has been written.
+         This ensures the build manifest retains all variants (for consumers) while the endpoints
+         manifest and dev manifest only include the variant selected by the project's groups. -->
+    <FilterCurrentProjectAssetGroups
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
+      Source="$(PackageId)">
+      <Output TaskParameter="FilteredAssets" ItemName="_CurrentProjectFilteredAssets" />
+      <Output TaskParameter="FilteredEndpoints" ItemName="_CurrentProjectFilteredEndpoints" />
+    </FilterCurrentProjectAssetGroups>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAsset Include="@(_CurrentProjectFilteredAssets)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_CurrentProjectFilteredEndpoints)" />
+    </ItemGroup>
 
     <GenerateStaticWebAssetEndpointsManifest
       Source="$(PackageId)"
