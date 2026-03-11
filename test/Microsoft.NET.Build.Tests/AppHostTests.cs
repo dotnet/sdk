@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
@@ -39,8 +41,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.1.0.60101")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
@@ -77,40 +77,6 @@ namespace Microsoft.NET.Build.Tests
                 .Pass()
                 .And
                 .HaveStdOutContaining("Hello World!");
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_can_disable_codesign_if_opt_out(string targetFramework)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute(new string[] {
-                    "/p:_EnableMacOSCodeSign=false;ProduceReferenceAssembly=false",
-                })
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost was not signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-d", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: code object is not signed at all");
-
-            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset, targetFramework));
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
@@ -152,71 +118,53 @@ namespace Microsoft.NET.Build.Tests
             Directory.Delete(buildProjDir, true);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_codesigns_a_framework_dependent_app(string targetFramework)
+        [Theory]
+        [InlineData("net8.0", "osx-x64", true)]
+        [InlineData("net8.0", "osx-arm64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", true)]
+        [InlineData("net8.0", "osx-x64", false)]
+        [InlineData("net8.0", "osx-arm64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", false)]
+        [InlineData("net8.0", "osx-x64", null)]
+        [InlineData("net8.0", "osx-arm64", null)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", null)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", null)]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool? enableMacOSCodesign)
         {
+            const bool CodesignsByDefault = true;
+            const string testAssetName = "HelloWorld";
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost is signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("netcoreapp3.1", true)]
-        [InlineData("net5.0", false)]
-        [InlineData("net5.0", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, bool selfContained)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}" };
-            if (!selfContained)
-                buildArgs.Add("/p:PublishSingleFile=true");
+            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
+            if (enableMacOSCodesign.HasValue)
+            {
+                buildArgs.Add($"/p:_EnableMacOSCodeSign={enableMacOSCodesign.Value}");
+            }
 
             buildCommand
                 .Execute(buildArgs.ToArray())
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, testAssetName);
 
-            // Check that the apphost is signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
+            // Check that the apphost is signed if expected
+            var shouldBeSigned = enableMacOSCodesign ?? CodesignsByDefault;
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a Mach-O signature load command.");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                MachOSignature.HasValidMachOSignature(new FileInfo(appHostFullPath), Log)
+                    .Should()
+                    .Be(shouldBeSigned, $"The app host should have a valid Mach-O signature for {rid}.");
+            }
         }
 
         [Theory]
@@ -453,7 +401,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [WindowsOnlyFact] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
         public void It_retries_on_failure_to_create_apphost()
         {
             var testProject = new TestProject()

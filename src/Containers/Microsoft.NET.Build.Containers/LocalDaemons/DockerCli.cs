@@ -221,7 +221,7 @@ internal sealed class DockerCli
                     dockerCommandResult.StdErr));
             }
 
-            return JsonDocument.Parse(dockerCommandResult.StdOut);
+            return JsonDocument.Parse(dockerCommandResult.StdOut ?? string.Empty);
         }
         catch (Exception e) when (e is not DockerLoadException)
         {
@@ -247,12 +247,12 @@ internal sealed class DockerCli
                 {
                     foreach (var property in indexConfigs.EnumerateObject())
                     {
-                        if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure", out var secure) && !secure.GetBoolean())
+                        if (property.Value.ValueKind == JsonValueKind.Object
+                            && property.Value.TryGetProperty("Secure", out var secure)
+                            && !secure.GetBoolean()
+                            && property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }
@@ -263,12 +263,12 @@ internal sealed class DockerCli
             {
                 foreach (var property in registries.EnumerateObject())
                 {
-                    if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure", out var insecure) && insecure.GetBoolean())
+                    if (property.Value.ValueKind == JsonValueKind.Object
+                        && property.Value.TryGetProperty("Insecure", out var insecure)
+                        && insecure.GetBoolean()
+                        && property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -311,7 +311,6 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-
         // Feed each layer tarball into the stream
         JsonArray layerTarballPaths = new();
         await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
@@ -341,7 +340,7 @@ internal sealed class DockerCli
             if (sourceReference.Registry is { } registry)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken).ConfigureAwait(false); ;
+                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken).ConfigureAwait(false);
 
                 // Stuff that (uncompressed) tarball into the image tar stream
                 // TODO uncompress!!

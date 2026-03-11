@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class Example
     {
         private List<string> _commandParts = new();
-        private CliCommand _currentCommand;
+        private Command _currentCommand;
 
-        private Example(CliCommand currentCommand, params string[] commandParts)
+        private Example(Command currentCommand, params string[] commandParts)
         {
             _commandParts.AddRange(commandParts);
             _currentCommand = currentCommand;
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return string.Join(" ", _commandParts);
         }
 
-        internal static Example For<T>(ParseResult parseResult) where T : CliCommand
+        internal static Example For<T>(ParseResult parseResult) where T : Command
         {
             var commandResult = parseResult.CommandResult;
 
@@ -47,13 +47,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             // if the command is not found in parents of command result, try to search it in the whole command tree
-            CliCommand siblingCommand = SearchForSiblingCommand<T>(parseResult.CommandResult.Command);
+            Command siblingCommand = SearchForSiblingCommand<T>(parseResult.CommandResult.Command);
             List<string> parentCommands2 = new();
-            CliCommand? nextCommand = siblingCommand;
+            Command? nextCommand = siblingCommand;
             while (nextCommand != null)
             {
                 parentCommands2.Add(nextCommand.Name);
-                nextCommand = nextCommand.Parents.OfType<CliCommand>().FirstOrDefault();
+                nextCommand = nextCommand.Parents.OfType<Command>().FirstOrDefault();
             }
             parentCommands2.Reverse();
             return new Example(siblingCommand, parentCommands2.ToArray());
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new Example(parseResult.CommandResult.Command, commandParts.ToArray());
         }
 
-        internal Example WithOption(CliOption option, params string[] args)
+        internal Example WithOption(Option option, params string[] args)
         {
             if (!_currentCommand.Options.Contains(option) && !_currentCommand.Options.Any(o => o.Name == option.Name))
             {
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return this;
         }
 
-        internal Example WithArgument(CliArgument argument, params string[] args)
+        internal Example WithArgument(Argument argument, params string[] args)
         {
             if (!_currentCommand.Arguments.Contains(argument))
             {
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return this;
         }
 
-        internal Example WithSubcommand(CliCommand command)
+        internal Example WithSubcommand(Command command)
         {
             if (!_currentCommand.Subcommands.Contains(command))
             {
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Example WithSubcommand(string token)
         {
-            CliCommand? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(token) || c.Aliases.Contains(token));
+            Command? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(token) || c.Aliases.Contains(token));
 
             if (commandToUse is null)
             {
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return this;
         }
 
-        internal Example WithSubcommand<T>() where T : CliCommand
+        internal Example WithSubcommand<T>() where T : Command
         {
             if (!_currentCommand.Subcommands.Any(c => c is T))
             {
@@ -148,22 +148,22 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return this;
         }
 
-        private static T SearchForSiblingCommand<T>(CliCommand currentCommand) where T : CliCommand
+        private static T SearchForSiblingCommand<T>(Command currentCommand) where T : Command
         {
-            CliCommand? next = currentCommand;
-            CliCommand root = currentCommand;
+            Command? next = currentCommand;
+            Command root = currentCommand;
 
             while (next != null)
             {
                 root = next;
-                next = next?.Parents.OfType<CliCommand>().FirstOrDefault();
+                next = next?.Parents.OfType<Command>().FirstOrDefault();
             }
 
-            Queue<CliCommand> probes = new();
+            Queue<Command> probes = new();
             probes.Enqueue(root);
             while (probes.Count > 0)
             {
-                CliCommand current = probes.Dequeue();
+                Command current = probes.Dequeue();
                 if (current is T typedCommand)
                 {
                     return typedCommand;

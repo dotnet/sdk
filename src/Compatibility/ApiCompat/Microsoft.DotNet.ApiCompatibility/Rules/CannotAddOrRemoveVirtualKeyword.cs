@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         leftMetadata,
                         rightMetadata,
                         DiagnosticIds.CannotRemoveVirtualFromMember,
-                        string.Format(Resources.CannotRemoveVirtualFromMember, left),
+                        string.Format(Resources.CannotRemoveVirtualOrAbstractFromMember, "virtual", left),
                         DifferenceType.Removed,
                         right));
                 }
@@ -83,6 +83,21 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         DiagnosticIds.CannotAddVirtualToMember,
                         string.Format(Resources.CannotAddVirtualToMember, right),
                         DifferenceType.Added,
+                        right));
+                }
+            }
+
+            if (left.IsAbstract)
+            {
+                if (!right.IsAbstract && !right.IsVirtual)
+                {
+                    // abstract can be made virtual but cannot remove abstract.
+                    differences.Add(new CompatDifference(
+                        leftMetadata,
+                        rightMetadata,
+                        DiagnosticIds.CannotRemoveVirtualFromMember,
+                        string.Format(Resources.CannotRemoveVirtualOrAbstractFromMember, "abstract", left),
+                        DifferenceType.Removed,
                         right));
                 }
             }

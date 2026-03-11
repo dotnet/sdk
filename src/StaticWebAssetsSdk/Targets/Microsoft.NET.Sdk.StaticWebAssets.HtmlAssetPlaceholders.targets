@@ -1,0 +1,216 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.OverrideHtmlAssetPlaceholders.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+    
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.OverrideHtmlAssetPlaceholders" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+
+  <PropertyGroup>
+
+    <!--
+        ResolveBuildRelatedStaticWebAssets
+          ResolveHtmlAssetPlaceholdersBuildStaticWebAssets
+            GenerateHtmlAssetPlaceholdersBuildStaticWebAssets
+              ResolveHtmlAssetPlaceholdersBuildConfiguration
+     -->
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      ResolveHtmlAssetPlaceholdersBuildStaticWebAssets;
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn)
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
+    <ResolveCompressedFilesDependsOn>
+      $(ResolveCompressedFilesDependsOn);
+      ResolveHtmlAssetPlaceholdersBuildStaticWebAssets
+    </ResolveCompressedFilesDependsOn>
+    <ResolveBuildServiceWorkerStaticWebAssetsDependsOn>
+      $(ResolveBuildServiceWorkerStaticWebAssetsDependsOn);
+      ResolveHtmlAssetPlaceholdersBuildStaticWebAssets
+    </ResolveBuildServiceWorkerStaticWebAssetsDependsOn>
+    <ResolveHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
+      $(ResolveHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn);
+      GenerateHtmlAssetPlaceholdersBuildStaticWebAssets
+    </ResolveHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
+    <GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
+      $(GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn);
+      ResolveHtmlAssetPlaceholdersBuildConfiguration
+    </GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
+
+    <!--
+        ResolvePublishRelatedStaticWebAssets
+          ResolveHtmlAssetPlaceholdersPublishStaticWebAssets
+            GenerateHtmlAssetPlaceholdersPublishStaticWebAssets
+              ResolveHtmlAssetPlaceholdersPublishConfiguration
+     -->
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
+      ResolveHtmlAssetPlaceholdersPublishStaticWebAssets;
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn)
+    </ResolvePublishRelatedStaticWebAssetsDependsOn>
+    <ResolvePublishCompressedStaticWebAssetsDependsOn>
+      $(ResolvePublishCompressedStaticWebAssetsDependsOn);
+      ResolveHtmlAssetPlaceholdersPublishStaticWebAssets
+    </ResolvePublishCompressedStaticWebAssetsDependsOn>
+    <ResolvePublishServiceWorkerStaticWebAssetsDependsOn>
+      $(ResolvePublishServiceWorkerStaticWebAssetsDependsOn);
+      ResolveHtmlAssetPlaceholdersPublishStaticWebAssets
+    </ResolvePublishServiceWorkerStaticWebAssetsDependsOn>
+    <ResolveHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn>
+      $(ResolveHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn);
+      GenerateHtmlAssetPlaceholdersPublishStaticWebAssets
+    </ResolveHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn>
+    <GenerateHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn>
+      $(GenerateHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn);
+      ResolveHtmlAssetPlaceholdersPublishConfiguration
+    </GenerateHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn>
+
+  </PropertyGroup>
+
+  <!-- Build -->
+
+  <Target Name="ResolveHtmlAssetPlaceholdersBuildConfiguration">
+    <PropertyGroup>
+      <_BuildHtmlAssetPlaceholdersPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'htmlassetplaceholders', 'build'))</_BuildHtmlAssetPlaceholdersPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_BuildHtmlAssetPlaceholdersPath)"/>
+
+    <ItemGroup>
+      <_HtmlStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish' and '%(Extension)' == '.html'" />
+      <_EsModuleCandidate Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish'" />
+    </ItemGroup>
+
+    <FilterStaticWebAssetEndpoints Condition="'@(_EsModuleCandidate)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_EsModuleCandidate)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_EsModuleCandidateEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+  </Target>
+
+  <Target Name="GenerateHtmlAssetPlaceholdersBuildStaticWebAssets" DependsOnTargets="$(GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn)">
+    <OverrideHtmlAssetPlaceholders
+      Assets="@(_EsModuleCandidate)"
+      Endpoints="@(_EsModuleCandidateEndpoints)"
+      IncludeOnlyHardFingerprintedModules="false"
+      HtmlFiles="@(_HtmlStaticWebAssets)"
+      OutputPath="$(_BuildHtmlAssetPlaceholdersPath)">
+      <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
+      <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlFilesToRemove" />
+      <Output TaskParameter="FileWrites" ItemName="FileWrites" />
+    </OverrideHtmlAssetPlaceholders>
+  </Target>
+
+  <Target Name="ResolveHtmlAssetPlaceholdersBuildStaticWebAssets" DependsOnTargets="$(ResolveHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn)">
+    <ItemGroup>
+      <_HtmlCandidatesNoMetadata
+        Include="@(_HtmlCandidates)"
+        RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
+      <_HtmlCandidatesNoMetadata ContentRoot="$(_BuildHtmlAssetPlaceholdersPath)" />
+    </ItemGroup>
+    <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)"
+      SourceType="Computed"
+      AssetKind="Build"
+    >
+      <Output TaskParameter="Assets" ItemName="_UpdatedHtmlStaticWebAssets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_UpdatedHtmlStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <FilterStaticWebAssetEndpoints Condition="'@(_HtmlFilesToRemove)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_HtmlFilesToRemove)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlFileEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
+      <StaticWebAsset Include="@(_UpdatedHtmlStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_HtmlFileEndpointsToRemove)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedHtmlStaticWebAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+  
+  <!-- Publish -->
+
+  <Target Name="ResolveHtmlAssetPlaceholdersPublishConfiguration">
+    <PropertyGroup>
+      <_PublishHtmlAssetPlaceholdersPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'htmlassetplaceholders', 'publish'))</_PublishHtmlAssetPlaceholdersPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_PublishHtmlAssetPlaceholdersPath)"/>
+
+    <ItemGroup>
+      <_EsModuleCandidateForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <FilterStaticWebAssetEndpoints Condition="'@(_EsModuleCandidateForPublish)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_EsModuleCandidateForPublish)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_EsModuleCandidateForPublishEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+  </Target>
+
+  <Target Name="GenerateHtmlAssetPlaceholdersPublishStaticWebAssets" DependsOnTargets="$(GenerateHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn)">
+    <OverrideHtmlAssetPlaceholders
+      Assets="@(_EsModuleCandidateForPublish)"
+      Endpoints="@(_EsModuleCandidateForPublishEndpoints)"
+      IncludeOnlyHardFingerprintedModules="true"
+      HtmlFiles="@(_HtmlStaticWebAssets)"
+      OutputPath="$(_PublishHtmlAssetPlaceholdersPath)">
+      <Output TaskParameter="HtmlCandidates" ItemName="_HtmlPublishCandidates" />
+      <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlPublishFilesToRemove" />
+      <Output TaskParameter="FileWrites" ItemName="FileWrites" />
+    </OverrideHtmlAssetPlaceholders>
+  </Target>
+
+  <Target Name="ResolveHtmlAssetPlaceholdersPublishStaticWebAssets" DependsOnTargets="$(ResolveHtmlAssetPlaceholdersPublishStaticWebAssetsDependsOn)">
+    <ItemGroup>
+      <_HtmlPublishCandidatesNoMetadata
+        Include="@(_HtmlPublishCandidates)"
+        RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
+      <_HtmlPublishCandidatesNoMetadata ContentRoot="$(_PublishHtmlAssetPlaceholdersPath)" />
+    </ItemGroup>
+    <DefineStaticWebAssets CandidateAssets="@(_HtmlPublishCandidatesNoMetadata)"
+      SourceType="Computed"
+      AssetKind="Publish"
+    >
+      <Output TaskParameter="Assets" ItemName="_UpdatedHtmlPublishStaticWebAssets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_UpdatedHtmlPublishStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlPublishStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <FilterStaticWebAssetEndpoints Condition="'@(_HtmlPublishFilesToRemove)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_HtmlPublishFilesToRemove)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlPublishFileEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_HtmlPublishFilesToRemove)" />
+      <StaticWebAsset Include="@(_UpdatedHtmlPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_HtmlPublishFileEndpointsToRemove)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedHtmlPublishStaticWebAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

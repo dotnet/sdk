@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\sdk.sln",
+    "path": "..\\..\\sdk.slnx",
     "projects": [
       "src\\WebSdk\\ProjectSystem\\Tasks\\Microsoft.NET.Sdk.Web.ProjectSystem.Tasks.csproj",
       "src\\WebSdk\\Publish\\Tasks\\Microsoft.NET.Sdk.Publish.Tasks.csproj",
