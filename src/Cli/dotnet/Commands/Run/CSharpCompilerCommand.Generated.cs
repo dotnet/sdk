@@ -70,14 +70,14 @@ partial class CSharpCompilerCommand
         return $$"""
 {
   "runtimeOptions": {
-    "tfm": {{JsonSerializer.Serialize(TargetFramework)}},
+    "tfm": {{JsonSerializer.Serialize(TargetFramework, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
     "framework": {
       "name": "Microsoft.NETCore.App",
-      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion)}}
+      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion, CSharpCompilerCommandJsonSerializerContext.Default.String)}}
     },
     "configProperties": {
-      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
-      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(BaseDirectory)}},
+      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
+      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(BaseDirectory, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
       "Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability": true,
       "System.ComponentModel.DefaultValueAttribute.IsSupported": false,
       "System.ComponentModel.Design.IDesignerHost.IsSupported": false,
@@ -154,6 +154,7 @@ is_global = true
 build_property.EnableAotAnalyzer = true
 build_property.EnableSingleFileAnalyzer = true
 build_property.EnableTrimAnalyzer = true
+build_property.EnableUnsafeAnalyzer = 
 build_property.IncludeAllContentForSelfExtract = 
 build_property.VerifyReferenceTrimCompatibility = 
 build_property.VerifyReferenceAotCompatibility = 

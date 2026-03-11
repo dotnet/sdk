@@ -4071,6 +4071,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 needsInterpolation = true;
             }
 
+            // Use variable target framework version.
+            if (rewritten.Contains(CSharpCompilerCommand.TargetFrameworkVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(CSharpCompilerCommand.TargetFrameworkVersion, "{" + nameof(CSharpCompilerCommand.TargetFrameworkVersion) + "}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
             // Ignore `/analyzerconfig` which is not variable (so it comes from the machine or sdk repo).
             if (!needsInterpolation && arg.StartsWith("/analyzerconfig", StringComparison.Ordinal))
             {
@@ -4179,7 +4186,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 interpolationPrefix = "$$";
                 foreach (var (key, value) in replacements)
                 {
-                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ")}}");
+                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ", CSharpCompilerCommandJsonSerializerContext.Default.String)}}");
                 }
             }
             else

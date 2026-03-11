@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -49,7 +48,7 @@ internal sealed partial class CSharpCompilerCommand
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
-    private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
+    internal static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
     internal static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     internal static string TargetFramework => field ??= $"net{TargetFrameworkVersion}";
 
