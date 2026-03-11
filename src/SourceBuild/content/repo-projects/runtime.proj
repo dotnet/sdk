@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
+
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeWasmEnableThreads=true</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeNativeAOTRuntimePack=true</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoEnableLLVM=$(DotNetBuildMonoEnableLLVM)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoAOTEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoAOTEnableLLVM=$(DotNetBuildMonoAOTEnableLLVM)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoBundleLLVMOptimizer)' != ''">$(BuildArgs) /p:DotNetBuildMonoBundleLLVMOptimizer=$(DotNetBuildMonoBundleLLVMOptimizer)</BuildArgs>
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
+    <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <BuildNonPortable>true</BuildNonPortable>
+    <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
+
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="cecil" />
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="emsdk" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_4" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_8" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,213 @@
+// This file configures where the VMR synchronizes the sources from.
+// Each development repository has a mapping record which says where the remote repo is,
+// what files are in/excluded from the sync, etc.
+//
+// This file does not contain information about what version of sources is synchronized.
+// Please check the source-manifest.json file for that purpose.
+//
+// More details on this file's mechanics:
+// https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#repository-source-mappings
+{
+    // Location within the VMR where the source-build patches are stored
+    // These patches are applied on top of the code synchronized into the VMR
+    "patchesPath": "src/sdk/src/SourceBuild/patches",
+
+    "sourceMappingsPath": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
+
+    // Some files are copied outside of the src/ directory into other locations
+    // When files in the source paths are changed, they are automatically synchronized too
+    "additionalMappings": [
+        {
+            "source": "src/sdk/src/SourceBuild/content",
+            "destination": ""
+        },
+        {
+            "source": "src/sdk/eng/common",
+            "destination": "eng/common"
+        },
+        {
+            "source": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
+            "destination": "src"
+        }
+    ],
+
+    // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
+    // When no "include" filter is specified, "**/*" is used
+    // The default filters do not apply to submodules
+    // Only filters which start with submodule's path are applied when syncing submodules
+    "defaults": {
+        "defaultRef": "main"
+    },
+
+    // Each of these mappings has a corresponding folder in the src/ directory
+    "mappings": [
+        {
+            "name": "arcade",
+            "defaultRemote": "https://github.com/dotnet/arcade"
+        },
+        {
+            "name": "aspire",
+            "defaultRemote": "https://github.com/dotnet/aspire",
+            "exclude": [
+                "src/Aspire.Dashboard/**/*",
+                "samples/**/*"
+            ]
+        },
+        {
+            "name": "aspnetcore",
+            "defaultRemote": "https://github.com/dotnet/aspnetcore",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
+                "src/Installers/Windows/AspNetCoreModule-Setup/**/*"
+            ]
+        },
+        {
+            "name": "cecil",
+            "defaultRemote": "https://github.com/dotnet/cecil"
+        },
+        {
+            "name": "command-line-api",
+            "defaultRemote": "https://github.com/dotnet/command-line-api"
+        },
+        {
+            "name": "deployment-tools",
+            "defaultRemote": "https://github.com/dotnet/deployment-tools"
+        },
+        {
+            "name": "diagnostics",
+            "defaultRemote": "https://github.com/dotnet/diagnostics"
+        },
+        {
+            "name": "efcore",
+            "defaultRemote": "https://github.com/dotnet/efcore"
+        },
+        {
+            "name": "emsdk",
+            "defaultRemote": "https://github.com/dotnet/emsdk"
+        },
+        {
+            "name": "fsharp",
+            "defaultRemote": "https://github.com/dotnet/fsharp"
+        },
+        {
+            "name": "msbuild",
+            "defaultRemote": "https://github.com/dotnet/msbuild"
+        },
+        {
+            "name": "nuget-client",
+            "defaultRemote": "https://github.com/NuGet/NuGet.Client",
+            "defaultRef": "dev"
+        },
+        {
+            "name": "razor",
+            "defaultRemote": "https://github.com/dotnet/razor"
+        },
+        {
+            "name": "roslyn",
+            "defaultRemote": "https://github.com/dotnet/roslyn"
+        },
+        {
+            "name": "roslyn-analyzers",
+            "defaultRemote": "https://github.com/dotnet/roslyn-analyzers"
+        },
+        {
+            "name": "runtime",
+            "defaultRemote": "https://github.com/dotnet/runtime"
+        },
+        {
+            "name": "scenario-tests",
+            "defaultRemote": "https://github.com/dotnet/scenario-tests"
+        },
+        {
+            "name": "sdk",
+            "defaultRemote": "https://github.com/dotnet/sdk",
+            "exclude": [
+              // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
+              "src/SourceBuild/content/**/*"
+            ]
+        },
+        {
+            "name": "source-build-externals",
+            "defaultRemote": "https://github.com/dotnet/source-build-externals",
+            "exclude": [
+                "src/application-insights/**/*.exe",
+                "src/application-insights/**/*.dll",
+                "src/application-insights/**/*.zip",
+                "src/application-insights/**/NuGet.config",
+                "src/humanizer/samples/**/*.js",
+                "src/newtonsoft-json/**/NuGet.Config",
+                "src/spectre-console/docs/**",
+                "src/spectre-console/NuGet.Config",
+                "src/spectre-console/examples/Console/Canvas/Mandelbrot.cs",
+                "src/xunit/NuGet.Config"
+            ]
+        },
+        {
+            "name": "source-build-reference-packages",
+            "defaultRemote": "https://github.com/dotnet/source-build-reference-packages"
+        },
+        {
+            "name": "sourcelink",
+            "defaultRemote": "https://github.com/dotnet/sourcelink"
+        },
+        {
+            "name": "symreader",
+            "defaultRemote": "https://github.com/dotnet/symreader"
+        },
+        {
+            "name": "templating",
+            "defaultRemote": "https://github.com/dotnet/templating"
+        },
+        {
+            "name": "test-templates",
+            "defaultRemote": "https://github.com/dotnet/test-templates"
+        },
+        {
+            "name": "vstest",
+            "defaultRemote": "https://github.com/microsoft/vstest",
+            "exclude": [
+                // Non-OSS license used in VS specific build configurations.
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4255
+                "src/package/licenses/LICENSE_VS.txt",
+                "test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/dotnetWinX86.exe"
+            ]
+        },
+        {
+            "name": "xdt",
+            "defaultRemote": "https://github.com/dotnet/xdt"
+        },
+        {
+            // TODO: Remove the xliff-tasks mapping once the synchronization flags it as unused
+            // We no longer synchronize it but we can't remove it yet until
+            // it disappears from all of the Version.Details.xml files.
+            // https://github.com/dotnet/source-build/issues/4359
+            "name": "xliff-tasks",
+            "defaultRemote": "https://github.com/dotnet/xliff-tasks",
+            "ignoreDefaults": true,
+            "exclude": [ "**/*" ]
+        },
+        {
+            "name": "winforms",
+            "defaultRemote": "https://github.com/dotnet/winforms",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/3772
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.cs",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.ico",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.resx",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/LICENSE.txt"
+            ]
+        },
+        {
+            "name": "wpf",
+            "defaultRemote": "https://github.com/dotnet/wpf",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4590
+                "src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Resources/ColorProfiles/sRGB.icm"
+            ]
+        },
+        {
+            "name": "windowsdesktop",
+            "defaultRemote": "https://github.com/dotnet/windowsdesktop"
+        }
+    ]
+}

@@ -1,23 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolvePackageFileConflicts : TaskWithAssemblyResolveHooks
+    public class ResolvePackageFileConflicts : TaskBase
     {
-        private HashSet<ITaskItem> referenceConflicts = new HashSet<ITaskItem>();
-        private HashSet<ITaskItem> analyzerConflicts = new HashSet<ITaskItem>();
-        private HashSet<ITaskItem> copyLocalConflicts = new HashSet<ITaskItem>();
-        private HashSet<ConflictItem> compilePlatformWinners = new HashSet<ConflictItem>();
-        private HashSet<ConflictItem> allConflicts = new HashSet<ConflictItem>();
+        private HashSet<ITaskItem> referenceConflicts = new();
+        private HashSet<ITaskItem> analyzerConflicts = new();
+        private HashSet<ITaskItem> copyLocalConflicts = new();
+        private HashSet<ConflictItem> compilePlatformWinners = new();
+        private HashSet<ConflictItem> allConflicts = new();
 
         public ITaskItem[] References { get; set; }
 
@@ -210,7 +205,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             var conflictItems = new ITaskItem[conflicts.Count];
 
             int i = 0;
-            foreach(var conflict in conflicts)
+            foreach (var conflict in conflicts)
             {
                 conflictItems[i++] = CreateConflictTaskItem(conflict);
             }

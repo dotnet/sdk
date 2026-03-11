@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-search" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-new-search" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet new search
 .PP
@@ -28,9 +28,9 @@ dotnet-new-search - searches for the templates supported by dotnet-new on NuGet.
 \f[C]
 dotnet new search <TEMPLATE_NAME>
 
-dotnet new search [<TEMPLATE_NAME>] [--author <AUTHOR>] [-lang|--language {\[dq]C#\[dq]|\[dq]F#\[dq]|VB}]
+dotnet new search [<TEMPLATE_NAME>] [--author <AUTHOR>] [-lang|--language <language>]
     [--package <PACKAGE>] [--tag <TAG>] [--type <TYPE>]
-    [--columns <COLUMNS>] [--columns-all]
+    [--columns <author|language|tags|type>] [--columns-all]
     [-d|--diagnostics] [--verbosity <LEVEL>] [-h|--help]
 \f[R]
 .fi
@@ -63,7 +63,7 @@ To activate tab completion for the .NET SDK, see Enable tab completion.
 .RS 2
 .PP
 If the argument is specified, only templates containing \f[V]<TEMPLATE_NAME>\f[R] in the template name or short name will be shown.
-The argument is mandatory when \f[V]--author\f[R], \f[V]--language\f[R], \f[V]--package\f[R], \f[V]--tag\f[R] or \f[V]--type\f[R] options are not specified.
+The argument is mandatory when \f[V]--author\f[R], \f[V]--language\f[R], \f[V]--package\f[R], \f[V]--tag\f[R], or \f[V]--type\f[R] options are not specified.
 .RS
 .PP
 Starting with .NET SDK 6.0.100, you can put the \f[V]<TEMPLATE_NAME>\f[R] argument after the \f[V]--search\f[R] option.
@@ -77,26 +77,26 @@ Using more than one argument is not allowed.
 .RS 2
 .PP
 Filters templates based on template author.
-Partial match is supported.
+A partial match is supported.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--columns <COLUMNS>\f[B]\f[R]
 .RS 2
 .PP
-Comma-separated list of columns to display in the output.
+The list of columns to display in the output.
 The supported columns are:
-.IP \[bu] 2
-\f[V]language\f[R] - A comma-separated list of languages supported by the template.
-.IP \[bu] 2
-\f[V]tags\f[R] - The list of template tags.
 .IP \[bu] 2
 \f[V]author\f[R] - The template author.
 .IP \[bu] 2
-\f[V]type\f[R] - The template type: project or item.
+\f[V]language\f[R] - The template language.
+.IP \[bu] 2
+\f[V]tags\f[R] - The list of template tags.
+.IP \[bu] 2
+\f[V]type\f[R] - The template type.
 .PP
-The template name, short name, package name and total downloads count are always shown.
-The default list of columns is template name, short name, author, language, package, and total downloads.
-This list is equivalent to specifying \f[V]--columns=author,language\f[R].
+The template name, short name, package name, an indication if it\[cq]s a trusted source, and total downloads count are always shown.
+The default list of columns is template name, short name, language, package, an indication if it\[cq]s a trusted source, and total downloads.
+To specify multiple columns, use the \f[V]--columns\f[R] option multiple times.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--columns-all\f[B]\f[R]
@@ -119,11 +119,11 @@ Prints out help for the search command.
 Available since .NET SDK 7.0.100.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-lang|--language {C#|F#|VB}\f[B]\f[R]
+\f[B]\f[VB]-lang|--language <language>\f[B]\f[R]
 .RS 2
 .PP
 Filters templates based on language supported by the template.
-The language accepted varies by the template.
+The language accepted varies by the template, possible languages are C#, F#, VB, SQL, JSON, TypeScript, and more.
 Not valid for some templates.
 .RS
 .PP
@@ -137,7 +137,7 @@ For example, \f[V]dotnet new --search --language \[dq]F#\[dq]\f[R].
 .RS 2
 .PP
 Filters templates based on NuGet package ID.
-Partial match is supported.
+A partial match is supported.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--tag <TAG>\f[B]\f[R]
@@ -202,7 +202,7 @@ Search for all C# templates, showing the type and tags in the output.
 .IP
 .nf
 \f[C]
-dotnet new search --language \[dq]C#\[dq] --columns \[dq]type,tags\[dq]
+dotnet new search --language \[dq]C#\[dq] --columns \[dq]type\[dq] --columns \[dq]tags\[dq]
 \f[R]
 .fi
 .RE

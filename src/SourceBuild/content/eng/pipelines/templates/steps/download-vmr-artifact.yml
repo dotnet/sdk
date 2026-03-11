@@ -1,0 +1,22 @@
+parameters:
+- name: buildName
+  type: string
+
+- name: architecture
+  type: string
+
+- name: patterns
+  type: string
+
+- name: displayName
+  type: string
+  default: Download VMR Artifact
+
+steps:
+- template: ../steps/download-pipeline-artifact.yml
+  parameters:
+    pipeline: $(DOTNET_DOTNET_CI_PIPELINE_ID)
+    buildId: $(DotnetDotnetBuildId)
+    artifact: ${{ parameters.buildName }}_${{ parameters.architecture }}_Artifacts
+    patterns: ${{ parameters.patterns }}
+    displayName: ${{ parameters.displayName }}

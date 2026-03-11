@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Command">
+        <source>Command</source>
+        <target state="translated">Команда</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="translated">Показывает журнал действий по установке рабочей нагрузки.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Date">
+        <source>Date</source>
+        <target state="translated">Дата</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonVersion">
+        <source>Global.json Version</source>
+        <target state="translated">Global.json Version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Id">
+        <source>Id</source>
+        <target state="translated">ИД</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoHistoryFound">
+        <source>No workload history found</source>
+        <target state="translated">Журнал рабочих нагрузок не найден</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownRecordsInformationalMessage">
+        <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
+        <target state="translated">Строки с нерегистрируемыми в журнале изменениями представляют изменения из действий, отличных от команд рабочей нагрузки .NET CLI. Обычно это представляет обновление пакета SDK для .NET или Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload Version</source>
+        <target state="translated">Версия рабочей нагрузки</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Workloads">
+        <source>Workloads</source>
+        <target state="translated">Рабочие нагрузки</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

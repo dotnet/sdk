@@ -13,17 +13,27 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverStaticWebAssets"
-    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
-  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeStaticWebAssetsTargetPaths"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -49,11 +59,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssets"
-    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
-  <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ValidateStaticWebAssetsUniquePaths"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -89,6 +94,31 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.MergeStaticWebAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterStaticWebAssetEndpoints"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateStaticWebAssetEndpoints"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveStaticWebAssetEndpointRoutes"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveFingerprintedStaticWebAssetEndpointsForAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateExternallyDefinedStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -206,7 +236,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       During a build for the project the following happens:
         PrepareForRun ->
           GenerateStaticWebAssetsManifest ->
-            ResolveStaticWebAssetsInputs ->
+            ResolveBuildRelatedStaticWebAssets ->
               ResolveProjectStaticWebAssets;
               ResolveEmbeddedProjectStaticWebAssets;
               ResolveReferencedProjectStaticWebAssetsConfiguration;
@@ -226,10 +256,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         ComputeFilesToPublish ->
           StaticWebAssetsPrepareForPublish ->
             GenerateStaticWebAssetsPublishManifest ->
-              ResolvePublishStaticWebAssets ->
-                LoadStaticWebAssetsBuildManifest;
-                ComputeReferencedProjectsPublishAssets;
-                  Invokes ComputeReferencedStaticWebAssetsPublishManifest on referenced projects and gets the list of publish assets.
+              ResolveRelatedPublishStaticWebAssets ->
+                ResolvePublishStaticWebAssets;
+                  LoadStaticWebAssetsBuildManifest;
+                  ComputeReferencedProjectsPublishAssets;
+                    Invokes ComputeReferencedStaticWebAssetsPublishManifest on referenced projects and gets the list of publish assets.
 
         // This target is only called by referencing projects, which helps us
         ComputeReferencedStaticWebAssetsPublishManifest ->
@@ -241,7 +272,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         GetCopyToPublishDirectoryItems (only on self-contained mode) ->
           AddStaticWebAssetsToTheListOfResolvedAssetsToPublish ->
             GenerateStaticWebAssetsPublishManifest ->
-              ResolvePublishStaticWebAssets ->
+              ResolveRelatedPublishStaticWebAssets ->
                 LoadStaticWebAssetsBuildManifest;
                 ComputeReferencedProjectsPublishAssets;
                   Invokes ComputeReferencedStaticWebAssetsPublishManifest on referenced projects and gets the list of publish assets.
@@ -254,24 +285,73 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- For preview only, to ease in the new implementation -->
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
-    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest;GenerateComputedBuildStaticWebAssets;CopyStaticWebAssetsToOutputDirectory</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);ResolveBuildStaticWebAssets;GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputDirectory;</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'true'">$(StaticWebAssetsPrepareForRunDependsOn);WriteStaticWebAssetsUpToDateCheck;</StaticWebAssetsPrepareForRunDependsOn>
 
     <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
-    <GenerateComputedBuildStaticWebAssetsDependsOn></GenerateComputedBuildStaticWebAssetsDependsOn>
+    <GenerateComputedBuildStaticWebAssetsDependsOn>ResolveCoreStaticWebAssets;$(GenerateComputedBuildStaticWebAssetsDependsOn)</GenerateComputedBuildStaticWebAssetsDependsOn>
 
-    <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveStaticWebAssetsInputs</GenerateStaticWebAssetsManifestDependsOn>
+    <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveBuildStaticWebAssets</GenerateStaticWebAssetsManifestDependsOn>
 
-    <ResolveStaticWebAssetsInputsDependsOn>UpdateExistingPackageStaticWebAssets;ResolveProjectStaticWebAssets;ResolveEmbeddedProjectsStaticWebAssets;ResolveReferencedProjectsStaticWebAssets;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+    <!-- There are now three stages:
+      ResolveCoreStaticWebAssets: This is the stage where we resolve the static web assets for the current project, packages and project references. These assets exist on disk
+      and are part of the project or one of its dependencies.
+      ResolveStaticWebAssetsInputs: This is the stage where we resolve assets that are generating by the build process, like scoped CSS bundles and that need to look at the
+      entire set of assets that are provided to the project.
+      ResolveBuildRelatedStaticWebAssets: This is the stage where we resolve assets that are derived from the assets that were resolved in ResolveStaticWebAssetsInputs.
+    -->
 
-    <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest</GetCopyToOutputDirectoryItemsDependsOn>
+    <ResolveCoreStaticWebAssetsDependsOn>
+      UpdateExistingPackageStaticWebAssets;
+      ResolveProjectStaticWebAssets;
+      ResolveEmbeddedProjectsStaticWebAssets;
+      ResolveReferencedProjectsStaticWebAssets;
+      $(ResolveCoreStaticWebAssetsDependsOn);
+    </ResolveCoreStaticWebAssetsDependsOn>
+
+    <ResolveStaticWebAssetsInputsDependsOn>
+      ResolveCoreStaticWebAssets;
+      GenerateComputedBuildStaticWebAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      ResolveStaticWebAssetsInputs;
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn)
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
+
+    <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest;AddStaticWebAssetEndpointsBuildManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
     <CopyStaticWebAssetsToOutputDirectoryDependsOn>LoadStaticWebAssetsBuildManifest;$(CopyStaticWebAssetsToOutputDirectoryDependsOn)</CopyStaticWebAssetsToOutputDirectoryDependsOn>
 
     <!-- StaticWebAssetsPrepareForPublish -> ComputeFilesToPublish -->
 
-    <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateStaticWebAssetsPublishManifest;GenerateComputedPublishStaticWebAssets</StaticWebAssetsPrepareForPublishDependsOn>
+    <StaticWebAssetsPrepareForPublishDependsOn>
+      $(StaticWebAssetsPrepareForPublishDependsOn);
+      ResolveStaticWebAssetsConfiguration;
+      GenerateStaticWebAssetsPublishManifest;
+    </StaticWebAssetsPrepareForPublishDependsOn>
 
-    <GenerateStaticWebAssetsPublishManifestDependsOn>ResolveStaticWebAssetsConfiguration;ResolvePublishStaticWebAssets;$(GenerateStaticWebAssetsPublishManifestDependsOn)</GenerateStaticWebAssetsPublishManifestDependsOn>
+    <GenerateStaticWebAssetsPublishManifestDependsOn>
+      ResolveStaticWebAssetsConfiguration;
+      ResolveAllPublishStaticWebAssets;
+      $(GenerateStaticWebAssetsPublishManifestDependsOn);
+    </GenerateStaticWebAssetsPublishManifestDependsOn>
+
+    <ResolveCorePublishStaticWebAssetsDependsOn>
+      LoadStaticWebAssetsBuildManifest;
+      ComputeReferencedProjectsEmbeddedPublishAssets;
+      ComputeReferencedProjectsPublishAssets;
+      $(ResolveCorePublishStaticWebAssetsDependsOn);
+    </ResolveCorePublishStaticWebAssetsDependsOn>
+
+    <ResolvePublishStaticWebAssetsDependsOn>
+      ResolveCorePublishStaticWebAssets;
+      GenerateComputedPublishStaticWebAssets;
+      $(ResolvePublishStaticWebAssetsDependsOn);
+    </ResolvePublishStaticWebAssetsDependsOn>
+
+    <ResolvePublishRelatedStaticWebAssetsDependsOn></ResolvePublishRelatedStaticWebAssetsDependsOn>
 
     <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
     <GenerateComputedPublishStaticWebAssetsDependsOn></GenerateComputedPublishStaticWebAssetsDependsOn>
@@ -280,8 +360,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(ComputeReferencedStaticWebAssetsPublishManifestDependsOn);
       StaticWebAssetsPrepareForPublish;
     </ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
-
-    <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsEmbeddedPublishAssets;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
 
     <CopyStaticWebAssetsToPublishDirectoryDependsOn>StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest;$(CopyStaticWebAssetsToPublishDirectoryDependsOn)</CopyStaticWebAssetsToPublishDirectoryDependsOn>
 
@@ -304,6 +382,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetCanonicalMetadata Include="RelatedAsset" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitName" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitValue" />
+    <_StaticWebAssetCanonicalMetadata Include="Fingerprint" />
+    <_StaticWebAssetCanonicalMetadata Include="Integrity" />
     <_StaticWebAssetCanonicalMetadata Include="CopyToOutputDirectory" />
     <_StaticWebAssetCanonicalMetadata Include="CopyToPublishDirectory" />
     <_StaticWebAssetCanonicalMetadata Include="OriginalItemSpec" />
@@ -313,6 +393,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetDiscoveryPatternCanonicalMetadata Include="BasePath" />
     <_StaticWebAssetDiscoveryPatternCanonicalMetadata Include="ContentRoot" />
     <_StaticWebAssetDiscoveryPatternCanonicalMetadata Include="Pattern" />
+
+    <!-- Static web assets endpoint metadata -->
+    <_StaticWebAssetEndpointCanonicalMetadata Include="AssetFile" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="Selectors" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="EndpointProperties" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="ResponseHeaders" />
 
     <!-- Static web assets project configuration metadata -->
     <_StaticWebAssetProjectConfigurationCanonicalMetadata Include="Version" />
@@ -342,6 +428,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
+      <StaticWebAssetEndpointMode Condition="'$(StaticWebAssetEndpointMode)' == ''" >Hosted</StaticWebAssetEndpointMode>
+      <StaticWebAssetsFingerprintContent Condition="'$(StaticWebAssetsFingerprintContent)' == ''">true</StaticWebAssetsFingerprintContent>
+      <StaticWebAssetFingerprintingEnabled Condition="'$(StaticWebAssetFingerprintingEnabled)' == ''">true</StaticWebAssetFingerprintingEnabled>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
 
@@ -350,22 +439,29 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
+      <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
+      <StaticWebAssetEndpointsPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.endpoints.json</StaticWebAssetEndpointsPublishManifestPath>
       <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
 
       <!-- Temporary files -->
       <_GeneratedStaticWebAssetsPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssets.props</_GeneratedStaticWebAssetsPropsFile>
+      <_GeneratedStaticWebAssetEndpointsPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_GeneratedStaticWebAssetEndpointsPropsFile>
       <_GeneratedBuildPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.build.$(PackageId).props</_GeneratedBuildPropsFile>
       <_GeneratedBuildMultitargetingPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildMultiTargeting.$(PackageId).props</_GeneratedBuildMultitargetingPropsFile>
       <_GeneratedBuildTransitivePropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildTransitive.$(PackageId).props</_GeneratedBuildTransitivePropsFile>
 
       <!-- Package relative import paths -->
       <_StaticWebAssetsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssets.props</_StaticWebAssetsPropsFileImportPath>
+      <_StaticWebAssetEndpointsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_StaticWebAssetEndpointsPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildPropsFileImportPath>..\build\$(PackageId).props</_StaticWebAssetsGeneratedBuildPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>..\buildMultiTargeting\$(PackageId).props</_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>
 
-      <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
+      <!-- Design -->
+      <StaticWebAssetUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.upToDateCheck.txt</StaticWebAssetUpToDateCheckManifestPath>
+      <StaticWebAssetReferencesUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.references.upToDateCheck.txt</StaticWebAssetReferencesUpToDateCheckManifestPath>
+      <StaticWebAssetUpToDateCheckRemovedManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.removed.txt</StaticWebAssetUpToDateCheckRemovedManifestPath>
 
     </PropertyGroup>
 
@@ -438,11 +534,54 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways">
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetCandidate Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
+    </ItemGroup>
+
+    <ComputeReferenceStaticWebAssetItems
+      Assets="@(_UpToDateCheckStaticWebAssetCandidate)"
+      Patterns="@(DiscoveryPattern)"
+      ProjectMode="$(StaticWebAssetProjectMode)"
+      AssetKind="Build"
+      Source="$(PackageId)"
+    >
+      <Output TaskParameter="StaticWebAssets" ItemName="_UpToDateCheckStaticWebAssetResolved" />
+    </ComputeReferenceStaticWebAssetItems>
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetResolvedCandidate Include="@(_UpToDateCheckStaticWebAssetResolved->'%(OriginalItemSpec)')" />
+      <_UpToDateCheckStaticWebAsset Include="@(_UpToDateCheckStaticWebAssetResolvedCandidate->Distinct())" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(StaticWebAssetUpToDateCheckManifestPath)"
+      Lines="@(_UpToDateCheckStaticWebAsset)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Condition="'@(_UpToDateCheckStaticWebAsset)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="$(StaticWebAssetUpToDateCheckManifestPath)" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="AddStaticWebAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>
       <ContentWithTargetPath Condition="Exists('$(StaticWebAssetDevelopmentManifestPath)')"
         Include="$(StaticWebAssetDevelopmentManifestPath)"
         TargetPath="$(TargetName).staticwebassets.runtime.json"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="Never" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddStaticWebAssetEndpointsBuildManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <ItemGroup>
+      <ContentWithTargetPath Condition="Exists('$(StaticWebAssetEndpointsBuildManifestPath)')"
+        Include="$(StaticWebAssetEndpointsBuildManifestPath)"
+        TargetPath="$(TargetName).staticwebassets.endpoints.json"
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="Never" />
     </ItemGroup>
@@ -480,8 +619,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       ReferencedProjectsConfigurations="@(StaticWebAssetProjectConfiguration)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsManifest>
+
+    <GenerateStaticWebAssetEndpointsManifest
+      Source="$(PackageId)"
+      ManifestType="Build"
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
+    </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
@@ -493,27 +641,44 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
     </ItemGroup>
 
   </Target>
 
+  <Target Name="ResolveCoreStaticWebAssets" DependsOnTargets="$(ResolveCoreStaticWebAssetsDependsOn)" />
+
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
+
+  <Target Name="ResolveBuildRelatedStaticWebAssets" DependsOnTargets="$(ResolveBuildRelatedStaticWebAssetsDependsOn)" />
+
+  <Target Name="ResolveBuildStaticWebAssets" DependsOnTargets="ResolveCoreStaticWebAssets;ResolveStaticWebAssetsInputs;ResolveBuildRelatedStaticWebAssets" />
 
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
-    <DiscoverStaticWebAssets
-      Candidates="@(Content)"
+    <DefineStaticWebAssets
+      CandidateAssets="@(Content)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      RelativePathPattern="wwwroot/**"
+      SourceType="Discovered"
       SourceId="$(PackageId)"
-      Pattern="wwwroot/**"
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+        <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(StaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
-      <Output TaskParameter="DiscoveredStaticWebAssets" ItemName="StaticWebAsset" />
-    </DiscoverStaticWebAssets>
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
 
     <ItemGroup>
 
@@ -545,6 +710,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.References.targets" />
 
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Design.targets" Condition="'$(DesignTimeBuild)' == 'true' and '$(BuildingInsideVisualStudio)' == 'true'" />
+
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Pack.targets" />
@@ -554,5 +721,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets" Condition="'$(JSModulesEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Compression.targets" Condition="'$(CompressionEnabled)' == 'true'" />
+
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
 </Project>

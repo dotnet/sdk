@@ -1,0 +1,68 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+  <PropertyGroup>
+    <ArtifactsDir>$(RepoRoot)artifacts/</ArtifactsDir>
+    <VirtualMonoRepoTasksAssembly>$(ArtifactsDir)bin/VirtualMonoRepo.Tasks/$(Configuration)/net7.0/VirtualMonoRepo.Tasks.dll</VirtualMonoRepoTasksAssembly>
+
+    <VmrDir Condition=" '$(VmrDir)' != '' ">$([MSBuild]::EnsureTrailingSlash('$(VmrDir)'))</VmrDir>
+    <TmpDir Condition=" '$(TmpDir)' == '' ">$(ArtifactsDir)tmp/</TmpDir>
+    <VmrDefaultBranch Condition=" '$(VmrDefaultBranch)' == '' ">main</VmrDefaultBranch>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.VirtualMonoRepo.Tasks.VirtualMonoRepo_Initialize" AssemblyFile="$(VirtualMonoRepoTasksAssembly)" />
+
+  <Target Name="Build" DependsOnTargets="InitializeVMR" />
+
+  <!--
+    This target initializes a fresh VMR from scratch by assembling it similarly to the tarball.
+    Instead of cloning the repositories, we pull the sources via the `darc vmr initialize` command.
+    Most of the targets are reused from the tarball generation process (SourceBuildArcadeTarball.targets).
+  -->
+  <Target Name="InitializeVMR" DependsOnTargets="InitializeCleanVmr;
+                                                 InitializeRepoAndDependentsRecursive">
+    <Message Text="VMR was successfully initialized in '$(VmrDir)'" Importance="High" />
+  </Target>
+
+  <Target Name="InitializeCleanVmr">
+    <RemoveDir Directories='$(VmrDir)' Condition=" EXISTS('$(VmrDir)') " />
+    <MakeDir Directories="$(VmrDir)" />
+    <MakeDir Directories="$(TmpDir)" Condition=" !EXISTS('$(TmpDir)') " />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)/source-mappings.json" DestinationFolder="$(VmrDir)/src" />
+
+    <Exec WorkingDirectory="$(VmrDir)" Command="git init -b $(VmrDefaultBranch)" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git commit --allow-empty -m 'Initial commit of the VMR%0D%0A%0D%0A[[ commit created by automation ]]'" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git remote add origin https://github.com/dotnet/dotnet" /> <!-- source link needs this -->
+  </Target>
+
+  <Target Name="InitializeRepoAndDependentsRecursive">
+    <!-- Get sdk's SHA if not passed in -->
+    <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" WorkingDirectory="$(RepoRoot)" Condition=" '$(TargetRevision)' == '' ">
+      <Output TaskParameter="ConsoleOutput" ItemName="RootRepoCommitSha" />
+    </Exec>
+
+    <PropertyGroup>
+      <RootRepoName>$([System.IO.Path]::GetFileName("$(RepoRoot.TrimEnd('/').TrimEnd('\\'))"))</RootRepoName>
+      <TargetRevision Condition=" '$(TargetRevision)' == '' ">@(RootRepoCommitSha)</TargetRevision>
+    </PropertyGroup>
+
+    <Message Text="--> Initializing individual repos recursively. Starting from sdk / $(TargetRevision)" Importance="High" />
+
+    <!-- We are hardcoding the package version for the root repo (sdk), since there
+         isn't a Version.Details.xml file to read it from.
+         See https://github.com/dotnet/source-build/issues/2250 -->
+    <VirtualMonoRepo_Initialize
+      Repository="sdk"
+      Revision="$(TargetRevision)"
+      PackageVersion="8.0.100"
+      Recursive="true"
+      VmrPath="$(VmrDir)"
+      TmpPath="$(TmpDir)"
+      SdkPath="$(RepoRoot)"
+      ComponentTemplatePath="$(MSBuildThisFileDirectory)/Component.template.md"
+      TpnTemplatePath="$(MSBuildThisFileDirectory)/THIRD-PARTY-NOTICES.template.txt"
+      SourceMappingsPath="$(MSBuildThisFileDirectory)/source-mappings.json" />
+
+    <Message Text=" -> Done initializing individual repositories recursively" Importance="High" />
+  </Target>
+
+</Project>

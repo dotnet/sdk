@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Globalization;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
@@ -16,7 +14,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         /// <param name="searchBase">The base directory to search</param>
         /// <param name="project">The filename of the project. Can be null.</param>
         /// </summary>
-        public static string FindMsBuildProject(string searchBase, string project)
+        public static string FindMsBuildProject(string searchBase, string? project)
         {
             Ensure.NotNullOrEmpty(searchBase, nameof(searchBase));
 
