@@ -185,18 +185,58 @@ internal class DotnetArchiveExtractor : IDisposable
             MuxerHandler = new MuxerHandler(_request.InstallRoot.Path, _request.Options.RequireMuxerUpdate);
         }
 
-        // Extract everything, redirecting muxer to temp path
+        // Build a predicate that skips entries whose subcomponent already exists on disk.
+        // The archive is still downloaded and all subcomponents are tracked for the manifest,
+        // but extraction is skipped to avoid overwriting files from an earlier installation.
+        var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir);
+
+        // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent);
+            ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent, shouldSkipEntry);
         }
         else
         {
-            ExtractZipArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent);
+            ExtractZipArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent, shouldSkipEntry);
         }
 
         // After extraction, decide whether to keep or discard the temp muxer
         MuxerHandler?.FinalizeAfterExtraction();
+    }
+
+    /// <summary>
+    /// Creates a predicate that returns true for archive entries whose subcomponent
+    /// directory already exists on disk. Used to skip re-extracting subcomponents
+    /// that were installed by a previous installation (e.g., a runtime that overlaps
+    /// with an already-installed SDK). The entry is still reported to the
+    /// <c>onEntryExtracted</c> callback so the subcomponent is recorded in the manifest.
+    /// </summary>
+    private static Func<string, bool> CreateExistingSubcomponentSkipPredicate(string targetDir)
+    {
+        var cache = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+        return (string entryName) =>
+        {
+            var subcomponentId = SubcomponentResolver.Resolve(entryName);
+            if (subcomponentId is null)
+            {
+                return false;
+            }
+
+            if (!cache.TryGetValue(subcomponentId, out bool exists))
+            {
+                var subcomponentPath = Path.Combine(targetDir, subcomponentId.Replace('/', Path.DirectorySeparatorChar));
+                exists = Directory.Exists(subcomponentPath);
+                cache[subcomponentId] = exists;
+
+                if (exists)
+                {
+                    Console.Error.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
+                }
+            }
+
+            return exists;
+        };
     }
 
     /// <summary>
@@ -242,14 +282,14 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
+    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
         try
         {
             InitializeExtractionProgress(installTask, CountTarEntries(decompressedPath));
-            ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted);
+            ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
         }
         finally
         {
@@ -301,7 +341,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// Extracts the contents of a tar file to the target directory.
     /// Exposed as internal static for testing.
     /// </summary>
-    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
+    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -313,42 +353,47 @@ internal class DotnetArchiveExtractor : IDisposable
 
         while ((entry = tarReader.GetNextEntry()) is not null)
         {
-            if (entry.EntryType == TarEntryType.RegularFile)
-            {
-                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                // ExtractToFile handles Unix permissions automatically via entry.Mode
-                entry.ExtractToFile(destPath, overwrite: true);
-            }
-            else if (entry.EntryType == TarEntryType.Directory)
-            {
-                string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                Directory.CreateDirectory(dirPath);
+            bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
 
-                if (entry.Mode != default && !OperatingSystem.IsWindows())
+            if (!skip)
+            {
+                if (entry.EntryType == TarEntryType.RegularFile)
                 {
-                    File.SetUnixFileMode(dirPath, entry.Mode);
+                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                    // ExtractToFile handles Unix permissions automatically via entry.Mode
+                    entry.ExtractToFile(destPath, overwrite: true);
                 }
-            }
-            else if (entry.EntryType == TarEntryType.SymbolicLink)
-            {
-                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-
-                // Remove existing file/link before creating symlink
-                if (File.Exists(destPath) || Directory.Exists(destPath))
+                else if (entry.EntryType == TarEntryType.Directory)
                 {
-                    File.Delete(destPath);
-                }
+                    string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                    Directory.CreateDirectory(dirPath);
 
-                File.CreateSymbolicLink(destPath, entry.LinkName!);
-            }
-            else if (entry.EntryType == TarEntryType.HardLink)
-            {
-                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                deferredHardLinks.Add((destPath, linkTargetPath));
+                    if (entry.Mode != default && !OperatingSystem.IsWindows())
+                    {
+                        File.SetUnixFileMode(dirPath, entry.Mode);
+                    }
+                }
+                else if (entry.EntryType == TarEntryType.SymbolicLink)
+                {
+                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+
+                    // Remove existing file/link before creating symlink
+                    if (File.Exists(destPath) || Directory.Exists(destPath))
+                    {
+                        File.Delete(destPath);
+                    }
+
+                    File.CreateSymbolicLink(destPath, entry.LinkName!);
+                }
+                else if (entry.EntryType == TarEntryType.HardLink)
+                {
+                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+                    string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                    deferredHardLinks.Add((destPath, linkTargetPath));
+                }
             }
 
             onEntryExtracted?.Invoke(entry.Name);
@@ -370,23 +415,28 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a zip archive to the target directory.
     /// </summary>
-    private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null)
+    private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
         InitializeExtractionProgress(installTask, zip.Entries.Count);
 
         foreach (var entry in zip.Entries)
         {
-            // Directory entries have no file name
-            if (string.IsNullOrEmpty(Path.GetFileName(entry.FullName)))
+            bool skip = shouldSkipEntry?.Invoke(entry.FullName) ?? false;
+
+            if (!skip)
             {
-                Directory.CreateDirectory(Path.Combine(targetDir, entry.FullName));
-            }
-            else
-            {
-                string destPath = ResolveEntryDestPath(entry.FullName, targetDir, muxerHandler);
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                entry.ExtractToFile(destPath, overwrite: true);
+                // Directory entries have no file name
+                if (string.IsNullOrEmpty(Path.GetFileName(entry.FullName)))
+                {
+                    Directory.CreateDirectory(Path.Combine(targetDir, entry.FullName));
+                }
+                else
+                {
+                    string destPath = ResolveEntryDestPath(entry.FullName, targetDir, muxerHandler);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                    entry.ExtractToFile(destPath, overwrite: true);
+                }
             }
 
             onEntryExtracted?.Invoke(entry.FullName);
