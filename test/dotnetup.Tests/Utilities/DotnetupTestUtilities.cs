@@ -49,7 +49,7 @@ internal static class DotnetupTestUtilities
     /// </summary>
     public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null, string? source = null)
     {
-        var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath, "--interactive", "false"]);
+        var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath]);
 
         if (!string.IsNullOrEmpty(manifestPath))
         {
@@ -69,7 +69,7 @@ internal static class DotnetupTestUtilities
     /// </summary>
     public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null, string? source = null)
     {
-        var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath, "--interactive", "false"]);
+        var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath]);
 
         if (!string.IsNullOrEmpty(manifestPath))
         {

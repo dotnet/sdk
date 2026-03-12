@@ -13,18 +13,20 @@ internal class ListCommand : CommandBase
 {
     private readonly OutputFormat _format;
     private readonly bool _skipVerification;
+    private readonly string? _manifestPath;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
+        _manifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
     }
 
     protected override string GetCommandName() => "list";
 
     protected override int ExecuteCore()
     {
-        var listData = InstallationLister.GetListData(verify: !_skipVerification);
+        var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath);
 
         if (_format == OutputFormat.Json)
         {
@@ -47,7 +49,7 @@ internal static class InstallationLister
     /// <summary>
     /// Gets both install specs and installations from the manifest.
     /// </summary>
-    public static ListData GetListData(bool verify = false)
+    public static ListData GetListData(bool verify = false, string? manifestPath = null)
     {
         var installSpecs = new List<InstallSpecInfo>();
         var installations = new List<InstallationInfo>();
@@ -55,9 +57,11 @@ internal static class InstallationLister
         DotnetupManifestData manifestData;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            var manifest = new DotnetupSharedManifest();
+            var manifest = new DotnetupSharedManifest(manifestPath);
             manifestData = manifest.ReadManifest();
         }
+
+        var validator = new ArchiveInstallationValidator();
 
         foreach (var root in manifestData.DotnetRoots)
         {
@@ -89,7 +93,7 @@ internal static class InstallationLister
                         installRoot,
                         new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
                         installation.Component);
-                    isValid = new ArchiveInstallationValidator().Validate(dotnetInstall, out validationFailure);
+                    isValid = validator.Validate(dotnetInstall, out validationFailure);
                 }
 
                 installations.Add(new InstallationInfo
@@ -138,61 +142,69 @@ internal static class InstallationLister
             {
                 writer.WriteLine(Indent(1, rootPath));
 
-                // Show tracked channels/specs
                 var specs = listData.InstallSpecs.Where(s => s.InstallRoot == rootPath).ToList();
-                if (specs.Count > 0)
-                {
-                    writer.WriteLine();
-                    writer.WriteLine(Indent(2, "Tracked channels:"));
+                DisplayInstallRoots(writer, console, specs);
 
-                    var specGrid = CreateIndentedGrid();
-
-                    foreach (var spec in specs.OrderBy(s => s.Component).ThenBy(s => s.VersionOrChannel))
-                    {
-                        string sourceDisplay = spec.Source == InstallSource.GlobalJson && spec.GlobalJsonPath is not null
-                            ? spec.GlobalJsonPath
-                            : spec.Source.ToString().ToLowerInvariant();
-
-                        specGrid.AddRow(
-                            spec.Component.GetDisplayName(),
-                            spec.VersionOrChannel,
-                            $"[dim](source: {sourceDisplay})[/]"
-                        );
-                    }
-
-                    console.Write(specGrid);
-                }
-
-                // Show installed versions
                 var installs = listData.Installations.Where(i => i.InstallRoot == rootPath).ToList();
-                if (installs.Count > 0)
-                {
-                    writer.WriteLine();
-                    writer.WriteLine(Indent(2, "Installed versions:"));
-
-                    var installGrid = CreateIndentedGrid();
-
-                    foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
-                    {
-                        string status = install.IsValid == false
-                            ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
-                            : $"({install.Architecture})";
-
-                        installGrid.AddRow(
-                            install.Component.GetDisplayName(),
-                            install.Version,
-                            status
-                        );
-                    }
-
-                    console.Write(installGrid);
-                }
+                DisplayInstallations(writer, console, installs);
 
                 writer.WriteLine();
             }
         }
 
         writer.WriteLine($"{Strings.ListTotal}: {listData.Installations.Count}");
+    }
+
+    private static void DisplayInstallRoots(TextWriter writer, IAnsiConsole console, List<InstallSpecInfo> specs)
+    {
+        if (specs.Count > 0)
+        {
+            writer.WriteLine();
+            writer.WriteLine(Indent(2, "Tracked channels:"));
+
+            var specGrid = CreateIndentedGrid();
+
+            foreach (var spec in specs.OrderBy(s => s.Component).ThenBy(s => s.VersionOrChannel))
+            {
+                string sourceDisplay = spec.Source == InstallSource.GlobalJson && spec.GlobalJsonPath is not null
+                    ? spec.GlobalJsonPath
+                    : spec.Source.ToString().ToLowerInvariant();
+
+                specGrid.AddRow(
+                    spec.Component.GetDisplayName(),
+                    spec.VersionOrChannel,
+                    $"[dim](source: {sourceDisplay})[/]"
+                );
+            }
+
+            console.Write(specGrid);
+        }
+    }
+
+    private static void DisplayInstallations(TextWriter writer, IAnsiConsole console, List<InstallationInfo> installs)
+    {
+        if (installs.Count > 0)
+        {
+            writer.WriteLine();
+            writer.WriteLine(Indent(2, "Installed versions:"));
+
+            var installGrid = CreateIndentedGrid();
+
+            foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
+            {
+                string status = install.IsValid == false
+                    ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
+                    : $"({install.Architecture})";
+
+                installGrid.AddRow(
+                    install.Component.GetDisplayName(),
+                    install.Version,
+                    status
+                );
+            }
+
+            console.Write(installGrid);
+        }
     }
 
     private static Grid CreateIndentedGrid()
