@@ -34,6 +34,16 @@ public class FilterStaticWebAssetGroups : Task
     [Output]
     public ITaskItem[] FilteredEndpoints { get; set; }
 
+    // Endpoints whose asset was excluded by group filtering.
+    [Output]
+    public ITaskItem[] RemovedEndpoints { get; set; }
+
+    // Endpoints that share a route with a removed endpoint but belong to a
+    // non-excluded asset.  MSBuild Remove operations match by ItemSpec (Route),
+    // so callers that remove by ItemSpec must re-add surviving endpoints.
+    [Output]
+    public ITaskItem[] SurvivingEndpoints { get; set; }
+
     public override bool Execute()
     {
         var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
@@ -42,6 +52,8 @@ public class FilterStaticWebAssetGroups : Task
         {
             FilteredAssets = Assets;
             FilteredEndpoints = Endpoints;
+            RemovedEndpoints = [];
+            SurvivingEndpoints = [];
             return true;
         }
 
@@ -94,24 +106,35 @@ public class FilterStaticWebAssetGroups : Task
 
         if (excludedAssetFiles.Count > 0)
         {
+            var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(parsedEndpoints);
+            var (removedEndpoints, survivingEndpoints) =
+                StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedAssetFiles);
+
+            var removedSet = new HashSet<StaticWebAssetEndpoint>(
+                removedEndpoints, StaticWebAssetEndpoint.RouteAndAssetComparer);
+
             var filteredEndpoints = new List<StaticWebAssetEndpoint>(parsedEndpoints.Length);
             foreach (var endpoint in parsedEndpoints)
             {
-                var assetFile = endpoint.AssetFile;
-                if (!string.IsNullOrEmpty(assetFile) && excludedAssetFiles.Contains(assetFile))
+                if (removedSet.Contains(endpoint))
                 {
                     Log.LogMessage(MessageImportance.Low,
                         "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
-                        endpoint.Route, assetFile);
+                        endpoint.Route, endpoint.AssetFile);
                     continue;
                 }
                 filteredEndpoints.Add(endpoint);
             }
+
             FilteredEndpoints = StaticWebAssetEndpoint.ToTaskItems(filteredEndpoints);
+            RemovedEndpoints = StaticWebAssetEndpoint.ToTaskItems(removedEndpoints);
+            SurvivingEndpoints = StaticWebAssetEndpoint.ToTaskItems(survivingEndpoints);
         }
         else
         {
             FilteredEndpoints = StaticWebAssetEndpoint.ToTaskItems(parsedEndpoints);
+            RemovedEndpoints = [];
+            SurvivingEndpoints = [];
         }
 
         return !Log.HasLoggedErrors;
