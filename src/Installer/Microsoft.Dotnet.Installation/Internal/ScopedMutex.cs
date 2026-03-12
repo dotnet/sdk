@@ -30,7 +30,7 @@ public class ScopedMutex : IDisposable
         if (held.TryGetValue(name, out var state))
         {
             // Re-entrant: this thread already holds this mutex
-            state.HoldCount++;
+            ++state.HoldCount;
             _isReentrant = true;
             _mutex = null!;
             return;

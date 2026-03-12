@@ -555,9 +555,34 @@ public class ReuseAndErrorTests
         finalInstalls.Should().HaveCount(2, $"both SDK and {expectedComponent} should be tracked");
         finalInstalls.Should().Contain(i => i.Component == InstallComponent.SDK);
         finalInstalls.Should().Contain(i => i.Component == expectedComponent);
+
+        // Step 4: Verify subcomponent-level skip - the runtime install should detect that
+        // shared framework files already exist on disk from the SDK install
+        output.Should().Contain("already exists on disk, skipping extraction",
+            "Runtime install should skip extracting subcomponents that were already laid down by the SDK install");
     }
 
-    /// <summary>
+    [Theory]
+    [InlineData("sdk", "9.0")]
+    [InlineData("runtime@9.0", null)]
+    public void Install_ReusesExistingInstall(string componentType, string? channel)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Step 1: First install
+        string[] firstArgs = componentType.Contains('@')
+            ? DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentType, testEnv.InstallPath, testEnv.ManifestPath)
+            : DotnetupTestUtilities.BuildSdkArguments(channel!, testEnv.InstallPath, testEnv.ManifestPath);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"First install failed. Output:\n{output}");
+
+        // Step 2: Same install again - should be short-circuited via manifest
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Second install failed. Output:\n{output}");
+        output.Should().Contain("is already installed",
+            "Re-installing the same component should detect it is already installed and skip the download");
+    }
 }
 
 /// <summary>

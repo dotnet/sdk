@@ -22,7 +22,12 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     {
         if (!File.Exists(ManifestPath))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
+            var directory = Path.GetDirectoryName(ManifestPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var emptyManifest = new DotnetupManifestData();
             var json = JsonSerializer.Serialize(emptyManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
             WriteManifestWithChecksum(json);
