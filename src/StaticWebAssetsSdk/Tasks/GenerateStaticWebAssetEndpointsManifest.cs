@@ -226,24 +226,24 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
         foreach (var group in assetsByTargetPath)
         {
-            var candidate = StaticWebAsset.ChooseNearestAssetKind(group, kind).SingleOrDefault();
+            var asset = StaticWebAsset.ChooseNearestAssetKind(group, kind).SingleOrDefault();
 
-            if (candidate == null)
+            if (asset == null)
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is not a '{1}' or 'All' asset.", group.Key, kind);
                 continue;
             }
 
-            if (candidate.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(candidate, StaticWebAssetsManifest.ManifestModes.Root))
+            if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because asset mode is '{1}'",
-                    candidate.Identity,
-                    candidate.AssetMode);
+                    asset.Identity,
+                    asset.AssetMode);
 
                 continue;
             }
 
-            yield return new TargetPathAssetPair(group.Key, candidate);
+            yield return new TargetPathAssetPair(group.Key, asset);
         }
     }
 

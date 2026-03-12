@@ -104,8 +104,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
         foreach (var group in assetsByTargetPath)
         {
-            var candidates = StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build);
-            var asset = candidates.SingleOrDefault();
+            var asset = StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build).SingleOrDefault();
 
             if (asset == null)
             {

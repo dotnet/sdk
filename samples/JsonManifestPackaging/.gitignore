@@ -1,6 +1,0 @@
-# Build artifacts
-local-packages/*.nupkg
-local-packages/*.symbols.nupkg
-
-# Diagnostic/debug output
-*.txt

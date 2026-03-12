@@ -788,6 +788,8 @@ public partial class DefineStaticWebAssets : Task
                 var rpMatch = def.RelativePathMatcher.Match(matchContext);
                 if (rpMatch.IsMatch)
                 {
+                    // Safe to use pathWithoutTokens here: DefineStaticWebAssets runs on raw
+                    // Content items before fingerprint/token expressions are applied.
                     var newRelativePath = StaticWebAsset.Normalize(rpMatch.Stem);
 
                     if (!string.IsNullOrEmpty(def.RelativePathPrefix))

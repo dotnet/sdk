@@ -737,10 +737,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
 
   <Target Name="FilterDeferredStaticWebAssetGroups" DependsOnTargets="$(FilterDeferredStaticWebAssetGroupsDependsOn)">
-    <!-- This target is intentionally a no-op for the global item lists.
-         Filtering is applied only when generating the dev and endpoints manifests
-         inside GenerateStaticWebAssetsManifest. The build manifest and pack targets
-         use the full unfiltered set so ALL group variants ship in the nupkg. -->
+    <!-- Extension point for asset groups that need to inspect other properties at build
+         time to produce the final value for a deferred group. Libraries or SDK
+         extensions can override FilterDeferredStaticWebAssetGroupsDependsOn to run
+         custom targets that resolve deferred groups before the final filtering pass. -->
   </Target>
 
   <Target Name="ResolveBuildRelatedStaticWebAssets" DependsOnTargets="$(ResolveBuildRelatedStaticWebAssetsDependsOn)" />

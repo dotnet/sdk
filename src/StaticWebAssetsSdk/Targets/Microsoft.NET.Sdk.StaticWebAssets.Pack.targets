@@ -165,16 +165,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackStaticWebAssetCandidates Include="@(StaticWebAsset)" Exclude="@(_StaticWebAssetExcludedFromPack)" />
     </ItemGroup>
 
-    <!-- Detect the convention file for asset group definitions -->
-    <ItemGroup Condition="'$(_UseJsonManifestPackaging)' != 'true' and Exists('$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props')">
-      <_StaticWebAssetGroupsConventionFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props" />
-      <StaticWebAssetPackageFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.props">
-        <PackagePath>build\StaticWebAssets.Groups.props</PackagePath>
-      </StaticWebAssetPackageFile>
-    </ItemGroup>
-
-    <!-- Detect .targets convention file for asset groups (net11.0+ path) -->
-    <ItemGroup Condition="'$(_UseJsonManifestPackaging)' == 'true' and Exists('$(MSBuildProjectDirectory)\StaticWebAssets.Groups.targets')">
+    <!-- Detect .targets convention file for asset groups -->
+    <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\StaticWebAssets.Groups.targets')">
       <_StaticWebAssetGroupsConventionFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.targets" />
       <StaticWebAssetPackageFile Include="$(MSBuildProjectDirectory)\StaticWebAssets.Groups.targets">
         <PackagePath>build\StaticWebAssets.Groups.targets</PackagePath>
@@ -215,13 +207,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- This is similar to what we do when providing assets as reference. We use _PackStaticWebAssets as ComputeEndpointsForReferenceStaticWebAssets
       discards any endpoint that doesn't have a matching asset, which acts as a filter to ensure we only provide the relevant endpoints.
     -->
-    <ItemGroup>
-      <_PackEndpointCandidates Include="@(StaticWebAssetEndpoint)" />
-    </ItemGroup>
-
     <ComputeEndpointsForReferenceStaticWebAssets
       Assets="@(_PackStaticWebAssets)"
-      CandidateEndpoints="@(_PackEndpointCandidates)"
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
     >
       <Output TaskParameter="Endpoints" ItemName="_PackStaticWebAssetEndpoints" />
     </ComputeEndpointsForReferenceStaticWebAssets>
