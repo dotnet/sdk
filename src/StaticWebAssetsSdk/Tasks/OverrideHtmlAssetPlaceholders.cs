@@ -151,9 +151,16 @@ public partial class OverrideHtmlAssetPlaceholders : Task
         return String.Join(Environment.NewLine, links.Select(l => l.Value));
     }
 
-    private string GetFingerprintedAssetPath(Dictionary<string, ResourceAsset> urlMappings, string assetPath)
+    internal string GetFingerprintedAssetPath(Dictionary<string, ResourceAsset> urlMappings, string assetPath)
     {
         if (urlMappings.TryGetValue(assetPath, out var asset) && (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
+        {
+            return asset.Url;
+        }
+
+        if (assetPath.StartsWith("./", StringComparison.Ordinal) &&
+            urlMappings.TryGetValue(assetPath.Substring(2), out asset) &&
+            (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
         {
             return asset.Url;
         }
