@@ -21,12 +21,12 @@ function InitializeCustomSDKToolset {
 
   InitializeDotNetCli true
 
-  # Build dotnetup if not already present (needs SDK to be installed first)
-  EnsureDotnetupBuilt
-
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
+  # dotnetup is only built when test runtimes are needed (it's the install tool).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
+    # Build dotnetup if not already present (needs SDK to be installed first)
+    EnsureDotnetupBuilt
     InstallDotNetSharedFramework "6.0.0"
     InstallDotNetSharedFramework "7.0.0"
     InstallDotNetSharedFramework "8.0.0"

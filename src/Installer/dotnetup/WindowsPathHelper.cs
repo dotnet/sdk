@@ -23,12 +23,12 @@ internal sealed partial class WindowsPathHelper : IDisposable
     private readonly string? _logFilePath;
     private bool _disposed;
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageTimeoutW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     private static partial IntPtr SendMessageTimeout(
         IntPtr hWnd,
         int Msg,
         IntPtr wParam,
-        [MarshalAs(UnmanagedType.LPTStr)] string lParam,
+        string lParam,
         int fuFlags,
         int uTimeout,
         out IntPtr lpdwResult);

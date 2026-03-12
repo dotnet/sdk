@@ -52,6 +52,10 @@ jobs:
         publishLocation: Container
 
     steps:
+    # Use shallow checkout to save disk in space-constrained cross-build containers.
+    - checkout: self
+      fetchDepth: 1
+
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
           & .\restore.cmd -projects dotnetup.slnf $(_officialBuildProperties)
@@ -73,10 +77,19 @@ jobs:
         env:
           DOTNET_INSTALL_TEST_RUNTIMES: false
       - script: |
-          # Free disk space in cross-build containers by clearing the NuGet HTTP cache.
-          # Restored packages remain in the global-packages cache; only the HTTP cache is disposable.
+          # Free disk space in cross-build containers.
+          # 1. Clear disposable NuGet HTTP cache (restored packages remain in global-packages).
           ./.dotnet/dotnet nuget locals http-cache --clear 2>/dev/null || true
-          echo "Disk usage after cache cleanup:"
+          # 2. Delete source trees not needed for the dotnetup publish.
+          rm -rf test/ template_feed/ documentation/ benchmarks/ .github/ .claude/
+          rm -rf src/Microsoft.CodeAnalysis.NetAnalyzers src/Cli src/Tasks src/WebSdk
+          rm -rf src/Layout src/BuiltInTools src/Compatibility src/Containers
+          rm -rf src/StaticWebAssetsSdk src/RazorSdk src/Workloads src/BlazorWasmSdk
+          rm -rf src/WasmSdk src/Microsoft.DotNet.ProjectTools src/Microsoft.Win32.Msi
+          rm -rf src/Microsoft.DotNet.TemplateLocator src/Microsoft.Net.Sdk.Compilers.Toolset
+          rm -rf src/Microsoft.Extensions.Logging.MSBuild src/Common
+          rm -rf src/System.CommandLine.StaticCompletions
+          echo "Disk usage after cleanup:"
           df -h / || true
         displayName: 🧹 Free disk space
       - script: |

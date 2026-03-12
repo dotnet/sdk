@@ -123,7 +123,11 @@ internal static class DotnetupTestUtilities
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        string rid = RuntimeInformation.RuntimeIdentifier;
+
+        // RuntimeInformation.RuntimeIdentifier can return version-qualified RIDs on Windows
+        // (e.g. "win10-x64"), but dotnet publish output directories use portable RIDs like
+        // "win-x64". Normalize to the portable form so the directory lookup succeeds.
+        string rid = GetPortableRid();
 
         // Try matching configuration first, then fall back to the other.
         // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
@@ -265,6 +269,48 @@ internal static class DotnetupTestUtilities
         }
 
         throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
+    }
+
+    /// <summary>
+    /// Returns the portable (non-version-qualified) RID for the current platform,
+    /// e.g. "win-x64", "linux-arm64", "osx-x64". This matches the RID used by
+    /// <c>dotnet publish -r</c> output directories and CI pipeline parameters.
+    /// </summary>
+    private static string GetPortableRid()
+    {
+        string arch = RuntimeInformation.OSArchitecture switch
+        {
+            Architecture.X64 => "x64",
+            Architecture.Arm64 => "arm64",
+            Architecture.X86 => "x86",
+            Architecture.Arm => "arm",
+            _ => RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()
+        };
+
+        if (OperatingSystem.IsWindows())
+        {
+            return $"win-{arch}";
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            return $"osx-{arch}";
+        }
+
+        // Detect musl-based Linux (Alpine, etc.)
+        if (OperatingSystem.IsLinux())
+        {
+            // RuntimeInformation.RuntimeIdentifier contains "musl" on Alpine/musl distros
+            if (RuntimeInformation.RuntimeIdentifier.Contains("musl", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"linux-musl-{arch}";
+            }
+
+            return $"linux-{arch}";
+        }
+
+        // Fallback: strip version digits from the runtime RID (e.g. "win10-x64" -> "win-x64")
+        return RuntimeInformation.RuntimeIdentifier;
     }
 
 }
