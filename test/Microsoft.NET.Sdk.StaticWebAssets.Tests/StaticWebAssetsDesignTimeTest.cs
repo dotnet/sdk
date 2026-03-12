@@ -123,6 +123,59 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
+    [Fact]
+    public void CollectUpToDateCheckInputOutputsDesignTime_IncludesReferencedProjectsManifests_WithCleanObjFolder()
+    {
+        // Arrange - this test validates the fix for dotnet/aspnetcore#65738.
+        // The design-time target must resolve referenced project manifests even
+        // when no prior build has run (clean obj folder), because VS evaluates
+        // FUTDC inputs on initial project load before any build occurs.
+        var testAsset = "RazorAppWithP2PReference";
+        ProjectDirectory = AddIntrospection(CreateAspNetSdkTestAsset(testAsset));
+
+        var build = CreateBuildCommand(ProjectDirectory, "AppWithP2PReference");
+        var classLibBuild = CreateBuildCommand(ProjectDirectory, "ClassLibrary");
+
+        // Do NOT run a build first - go straight to design-time targets on a clean obj folder.
+        var msbuild = CreateMSBuildCommand(
+            ProjectDirectory,
+            "AppWithP2PReference",
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssetsConfiguration;CollectStaticWebAssetInputsDesignTime;CollectStaticWebAssetOutputsDesignTime");
+
+        msbuild.Execute("/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true", "/bl:design.binlog").Should().Pass();
+
+        // Verify the dependency chain wiring: CollectUpToDateCheckInputDesignTimeDependsOn
+        // must include ResolveReferencedProjectsStaticWebAssetsConfiguration so that VS
+        // invokes it during design-time evaluation. If this wiring is reverted, the
+        // references file would not exist on a clean obj folder and the FUTDC inputs
+        // would be empty.
+        var depChainFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsDependsOn.txt");
+        var depChainMsbuild = CreateMSBuildCommand(
+            ProjectDirectory,
+            "AppWithP2PReference",
+            "ReportDependsOn");
+        depChainMsbuild.Execute(
+            "/p:DesignTimeBuild=true",
+            "/p:BuildingInsideVisualStudio=true",
+            $"""/p:_ReportDependsOnOutputPath={depChainFilePath}""").Should().Pass();
+        new FileInfo(depChainFilePath).Should().Exist();
+        var depChain = File.ReadAllText(depChainFilePath);
+        depChain.Should().Contain("ResolveReferencedProjectsStaticWebAssetsConfiguration");
+
+        // The referenced project's manifest path should be included as a FUTDC input
+        // even though no prior build has created the references upToDateCheck file.
+        var inputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCInput.txt");
+        new FileInfo(inputFilePath).Should().Exist();
+        var inputFiles = File.ReadAllLines(inputFilePath);
+        inputFiles.Should().Contain(Path.Combine(classLibBuild.GetIntermediateDirectory().FullName, "staticwebassets.build.json"));
+
+        var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
+        new FileInfo(outputFilePath).Should().Exist();
+        var outputFiles = File.ReadAllLines(outputFilePath);
+        outputFiles.Should().ContainSingle();
+        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+    }
+
     private static MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)
     {
         return (MSBuildCommand)new MSBuildCommand(testAsset.Log, targets, testAsset.TestRoot, relativeProjectPath)
@@ -156,8 +209,18 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
                                 Encoding="UTF-8"
                                 />
                         </Target>
-                        """
-                        ));
+                        """));
+                project.Document.Root.LastNode.AddAfterSelf(
+                    XElement.Parse("""
+                        <Target Name="ReportDependsOn">
+                            <WriteLinesToFile
+                                File="$(_ReportDependsOnOutputPath)"
+                                Lines="$(CollectUpToDateCheckInputDesignTimeDependsOn)"
+                                Overwrite="true"
+                                Encoding="UTF-8"
+                                />
+                        </Target>
+                        """));
             });
     }
 }
