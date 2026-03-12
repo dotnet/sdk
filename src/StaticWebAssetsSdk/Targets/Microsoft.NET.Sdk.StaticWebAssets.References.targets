@@ -53,7 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)' == 'true'"
       File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
       Lines="@(_ReferenceManifestPath)"
-      Overwrite="false"
+      Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
     <MergeConfigurationProperties
