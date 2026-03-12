@@ -29,6 +29,7 @@ internal static class ListCommandParser
         command.Options.Add(FormatOption);
         command.Options.Add(NoVerifyOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
 
         command.SetAction(parseResult => new ListCommand(parseResult).Execute());
 

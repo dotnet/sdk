@@ -14,19 +14,21 @@ internal class ListCommand : CommandBase
     private readonly OutputFormat _format;
     private readonly bool _skipVerification;
     private readonly string? _manifestPath;
+    private readonly string? _installPath;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
         _manifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
+        _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
     }
 
     protected override string GetCommandName() => "list";
 
     protected override int ExecuteCore()
     {
-        var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath);
+        var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath, installPath: _installPath);
 
         if (_format == OutputFormat.Json)
         {
@@ -49,7 +51,7 @@ internal static class InstallationLister
     /// <summary>
     /// Gets both install specs and installations from the manifest.
     /// </summary>
-    public static ListData GetListData(bool verify = false, string? manifestPath = null)
+    public static ListData GetListData(bool verify = false, string? manifestPath = null, string? installPath = null)
     {
         var installSpecs = new List<InstallSpecInfo>();
         var installations = new List<InstallationInfo>();
@@ -63,7 +65,12 @@ internal static class InstallationLister
 
         var validator = new ArchiveInstallationValidator();
 
-        foreach (var root in manifestData.DotnetRoots)
+        var roots = installPath is not null
+            ? manifestData.DotnetRoots.Where(r => string.Equals(
+                Path.GetFullPath(r.Path), Path.GetFullPath(installPath), StringComparison.OrdinalIgnoreCase))
+            : manifestData.DotnetRoots;
+
+        foreach (var root in roots)
         {
             var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 
