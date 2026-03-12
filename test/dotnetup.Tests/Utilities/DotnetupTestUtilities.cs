@@ -45,6 +45,66 @@ internal static class DotnetupTestUtilities
         => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
 
     /// <summary>
+    /// Builds command line arguments for SDK uninstall
+    /// </summary>
+    public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath, "--interactive", "false"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for runtime uninstall using component@version syntax
+    /// </summary>
+    public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath, "--interactive", "false"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup list
+    /// </summary>
+    public static string[] BuildListArguments(string installPath, string? manifestPath = null, string? format = null)
+    {
+        var commandArgs = new List<string>(["list", "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            commandArgs.AddRange(["--format", format]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
     /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
     /// </summary>
     public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
