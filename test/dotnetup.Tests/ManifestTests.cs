@@ -545,14 +545,14 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         var checksumPath = testEnv.ManifestPath + ".sha256";
 
-        // Write a manifest with an out-of-range component integer (simulates user hand-edit)
-        // Enums serialize as integers by default; an undefined value like 999 deserializes silently.
+        // Write a manifest with an out-of-range component integer (simulates user hand-edit).
+        // With UseStringEnumConverter, an undefined integer like 999 still deserializes silently.
         var json = """
             {
               "dotnetRoots": [
                 {
                   "path": "PLACEHOLDER",
-                  "architecture": 0,
+                  "architecture": "x86",
                   "installations": [
                     { "component": 999, "version": "9.0.0" }
                   ],
@@ -585,7 +585,7 @@ public class ManifestTests
               "dotnetRoots": [
                 {
                   "path": "PLACEHOLDER",
-                  "architecture": 0,
+                  "architecture": "x86",
                   "installations": [
                     { "component": "FooBar", "version": "9.0.0" }
                   ],

@@ -98,6 +98,19 @@ public class SubcomponentResolverTests
         result.Should().Be(SubcomponentResolveResult.TooShallow);
     }
 
+    [Theory]
+    [InlineData("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
+    [InlineData("shared\\Microsoft.NETCore.App\\10.0.1\\System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
+    [InlineData("host\\fxr\\10.0.1\\hostfxr.dll", "host/fxr/10.0.1")]
+    [InlineData("packs\\Microsoft.NETCore.App.Ref\\10.0.1\\data\\foo.xml", "packs/Microsoft.NETCore.App.Ref/10.0.1")]
+    [InlineData("templates\\10.0.1\\something.nupkg", "templates/10.0.1")]
+    [InlineData("sdk-manifests\\10.0.100\\microsoft.net.sdk.android\\36.1.2\\WorkloadManifest.json", "sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2")]
+    public void NormalizesBackslashesToForwardSlashes(string input, string expected)
+    {
+        SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
+        result.Should().Be(SubcomponentResolveResult.Resolved);
+    }
+
     [Fact]
     public void TryGetDepthWorksForKnownFolders()
     {

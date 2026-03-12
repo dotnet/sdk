@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true,
     Converters = new[] { typeof(ReleaseVersionJsonConverter) })]
 [JsonSerializable(typeof(DotnetupManifestData))]
 [JsonSerializable(typeof(DotnetRootEntry))]

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -143,7 +144,9 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("delete-orphaned-subcomponents");
         var deleted = new List<string>();
+        var failedCount = 0;
 
         if (!Directory.Exists(dotnetRootPath))
         {
@@ -179,9 +182,22 @@ internal class GarbageCollector
                     catch (Exception ex)
                     {
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
+                        failedCount++;
+                        activity?.AddEvent(new ActivityEvent("gc.delete_failed", tags: new ActivityTagsCollection
+                        {
+                            { "gc.path", relativePath },
+                            { "error.type", ex.GetType().Name },
+                        }));
                     }
                 }
             }
+        }
+
+        activity?.SetTag("gc.deleted_count", deleted.Count);
+        activity?.SetTag("gc.failed_count", failedCount);
+        if (failedCount > 0)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
         }
 
         return deleted;

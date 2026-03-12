@@ -138,7 +138,7 @@ public class GarbageCollectorTests
     }
 
     [Fact]
-    public void VersionMatchingWorksForChannelPatterns()
+    public void VersionMatchingWorksForExplicitChannelPatterns()
     {
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);

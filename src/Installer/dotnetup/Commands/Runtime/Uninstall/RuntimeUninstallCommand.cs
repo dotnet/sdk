@@ -18,12 +18,7 @@ internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result)
     protected override int ExecuteCore()
     {
         // Parse the component spec to determine runtime type and version/channel
-        var (component, versionOrChannel, errorMessage) = Install.RuntimeInstallCommand.ParseComponentSpec(_componentSpec);
-
-        if (errorMessage != null)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidChannel, errorMessage);
-        }
+        var (component, versionOrChannel) = Install.RuntimeInstallCommand.ParseComponentSpec(_componentSpec);
 
         if (string.IsNullOrEmpty(versionOrChannel))
         {

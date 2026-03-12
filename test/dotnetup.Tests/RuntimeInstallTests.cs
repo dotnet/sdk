@@ -83,9 +83,8 @@ public class RuntimeInstallTests
     [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
     public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
-        var (component, version, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
+        var (component, version) = RuntimeInstallCommand.ParseComponentSpec(spec);
 
-        error.Should().BeNull();
         component.Should().Be(expectedComponent);
         version.Should().Be(expectedVersion);
     }
@@ -94,24 +93,24 @@ public class RuntimeInstallTests
     [InlineData("invalid@10.0.1", "invalid")]
     [InlineData("sdk@10.0.1", "sdk")]
     [InlineData("unknown@latest", "unknown")]
-    public void ComponentSpecParsing_InvalidComponent_ReturnsError(string spec, string invalidComponent)
+    public void ComponentSpecParsing_InvalidComponent_ThrowsException(string spec, string invalidComponent)
     {
-        var (_, _, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
+        var action = () => RuntimeInstallCommand.ParseComponentSpec(spec);
 
-        error.Should().NotBeNull();
-        error.Should().Contain(invalidComponent);
+        action.Should().Throw<DotnetInstallException>()
+            .WithMessage($"*{invalidComponent}*");
     }
 
     [Theory]
     [InlineData("aspnetcore@")]
     [InlineData("runtime@")]
     [InlineData("windowsdesktop@")]
-    public void ComponentSpecParsing_MissingVersion_ReturnsError(string spec)
+    public void ComponentSpecParsing_MissingVersion_ThrowsException(string spec)
     {
-        var (_, _, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
+        var action = () => RuntimeInstallCommand.ParseComponentSpec(spec);
 
-        error.Should().NotBeNull();
-        error.Should().Contain("Version is required");
+        action.Should().Throw<DotnetInstallException>()
+            .WithMessage("*Version is required*");
     }
 
     #endregion

@@ -8,10 +8,8 @@ public class ScopedMutex : IDisposable
     private readonly Mutex _mutex;
     private readonly bool _isReentrant;
 
-    // Track recursive holds on a per-thread basis, keyed by mutex name.
-#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
-    private static readonly ThreadLocal<Dictionary<string, MutexState>> s_heldMutexes = new(() => new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase));
-#pragma warning restore IDE0028
+    // Track recursive holds on a per-execution-context basis, keyed by mutex name.
+    private static readonly AsyncLocal<Dictionary<string, MutexState>> s_heldMutexCounts = new();
 
     /// <summary>
     /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
@@ -26,7 +24,9 @@ public class ScopedMutex : IDisposable
     public ScopedMutex(string name)
     {
         Name = name;
-        var held = s_heldMutexes.Value!;
+#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
+        var held = s_heldMutexCounts.Value ??= new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore IDE0028
 
         if (held.TryGetValue(name, out var state))
         {
@@ -67,7 +67,7 @@ public class ScopedMutex : IDisposable
     }
 
     public string Name { get; }
-    public static bool CurrentThreadHoldsMutex => s_heldMutexes.Value!.Count > 0;
+    public static bool CurrentThreadHoldsMutex => s_heldMutexCounts.Value is { Count: > 0 };
 
     public void Dispose()
     {
@@ -76,7 +76,9 @@ public class ScopedMutex : IDisposable
         if (_isReentrant)
         {
             // Re-entrant: just decrement the hold count
-            var held = s_heldMutexes.Value!;
+#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
+            var held = s_heldMutexCounts.Value ??= new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore IDE0028
             if (held.TryGetValue(Name, out var state))
             {
                 state.HoldCount--;
@@ -96,7 +98,7 @@ public class ScopedMutex : IDisposable
         }
         finally
         {
-            s_heldMutexes.Value!.Remove(Name);
+            s_heldMutexCounts.Value?.Remove(Name);
             _mutex.Dispose();
         }
     }

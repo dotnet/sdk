@@ -14,7 +14,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public DotnetupSharedManifest(string? manifestPath = null)
     {
-        _customManifestPath = manifestPath;
+        _customManifestPath = manifestPath is not null ? Path.GetFullPath(manifestPath) : null;
         EnsureManifestExists();
     }
 

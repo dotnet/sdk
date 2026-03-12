@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -21,12 +22,14 @@ internal static class GarbageCollectionRunner
     /// <returns>The list of deleted subcomponent paths.</returns>
     public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, bool showEmptyMessage = false)
     {
-        AnsiConsole.WriteLine("Removing unused installations...");
+        Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
+
         var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
         var deleted = gc.Collect(installRoot);
 
         if (deleted.Count > 0)
         {
+            AnsiConsole.WriteLine("Removing unused installations...");
             foreach (var d in deleted)
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
