@@ -51,7 +51,7 @@
       <Version>[%(Version)]</Version>
     </PackageDownload>
 
-    <PackageReference Include="Microsoft.DotNet.SignCheck" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.SignCheckTask" IncludeAssets="build" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="ValidateBundledManifestSigning"
@@ -61,7 +61,6 @@
           $(BUILD_SOURCEBRANCH.Contains('release')) "
           BeforeTargets="GenerateWorkloadManifestsWxs">
     <PropertyGroup>
-      <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
       <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
       <SignCheckErrorLog Condition="'$(SignCheckErrorLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.errors.log</SignCheckErrorLog>
     </PropertyGroup>
@@ -75,13 +74,13 @@
       <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
     </ItemGroup>
 
-    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'"
-                   Command="$(SignCheckExe) ^
-                   --recursive ^
-                   -f UnsignedFiles ^
-                   -i @(SignCheckWorkloadManifestMsiInputFiles, ' ') ^
-                   -l $(SignCheckLog) ^
-                   -e $(SignCheckErrorLog)" />
+    <Microsoft.DotNet.SignCheckTask.SignCheckTask
+      Condition="'@(SignCheckWorkloadManifestMsiInputFiles)' != ''"
+      InputFiles="@(SignCheckWorkloadManifestMsiInputFiles)"
+      LogFile="$(SignCheckLog)"
+      ErrorLogFile="$(SignCheckErrorLog)"
+      Recursive="true"
+      Format="UnsignedFiles" />
 
     <Error
       Text="Signing validation failed for workload manifest MSI. Check $(SignCheckErrorLog) for more information."
