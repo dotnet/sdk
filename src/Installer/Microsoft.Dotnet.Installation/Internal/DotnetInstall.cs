@@ -1,9 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -29,4 +27,10 @@ internal record InstallRequestOptions()
 {
     // Include options such as the custom feed, manifest path, etc.
     public string? ManifestPath { get; init; }
+
+    /// <summary>
+    /// If true, the installation will fail if the muxer (dotnet executable) cannot be updated.
+    /// If false (default), a warning is displayed but installation continues.
+    /// </summary>
+    public bool RequireMuxerUpdate { get; init; }
 }

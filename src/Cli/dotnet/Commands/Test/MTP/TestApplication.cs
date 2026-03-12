@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
@@ -10,6 +11,7 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -55,20 +57,59 @@ internal sealed class TestApplication(
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
-            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
+            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
+            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
+            var stdOutBuilder = new ConcurrentQueue<string>();
+            var stdErrBuilder = new ConcurrentQueue<string>();
 
-            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
+            var stdOutTask = Task.Factory.StartNew(() =>
+            {
+                var stdOut = process.StandardOutput;
+                string? currentLine;
+                while ((currentLine = stdOut.ReadLine()) is not null)
+                {
+                    stdOutBuilder.Enqueue(currentLine);
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            var stdErrTask = Task.Factory.StartNew(() =>
+            {
+                var stdErr = process.StandardError;
+                string? currentLine;
+                while ((currentLine = stdErr.ReadLine()) is not null)
+                {
+                    stdErrBuilder.Enqueue(currentLine);
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
+            // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
             await process.WaitForExitAsync();
 
-            _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
+            // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
+            // We might not be able to consume all the output if the test app has exited but left a child process alive.
+            try
+            {
+                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException)
+            {
+            }
 
-            if (_handler.HasMismatchingTestSessionEventCount())
+            var exitCode = process.ExitCode;
+            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
+
+            // This condition is to prevent considering the test app as successful when we didn't receive test session end.
+            // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
+            // For example, if hangdump timeout is reached, the process will be killed and we will have mismatching count.
+            // Or if there is a crash (e.g, Environment.FailFast), etc.
+            // So this is only a safe guard to avoid passing the test run if Environment.Exit(0) is called in one of the tests for example.
+            if (exitCode == 0 && _handler.HasMismatchingTestSessionEventCount())
             {
                 throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
             }
 
-            return process.ExitCode;
+            return exitCode;
         }
         finally
         {
@@ -97,12 +138,11 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is not null)
+        if (Module.LaunchSettings is ProjectLaunchProfile)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
-                string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.Environment[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
             // Env variables specified on command line override those specified in launch profile:
@@ -144,25 +184,25 @@ internal sealed class TestApplication(
 
         if (TestOptions.IsDiscovery)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
         if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
         }
 
         if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        foreach (var arg in _buildOptions.UnmatchedTokens)
+        foreach (var arg in _buildOptions.TestApplicationArguments)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }

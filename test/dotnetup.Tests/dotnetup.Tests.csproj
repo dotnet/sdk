@@ -1,12 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Override shared xunit config to use dotnetup-specific settings (longer long-running test threshold) -->
+    <XUnitDesktopSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitDesktopSettingsFile>
+    <XUnitCoreSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitCoreSettingsFile>
   </PropertyGroup>
+
+  <!-- Exclude demo app from test compilation -->
+  <ItemGroup>
+    <Compile Remove="TestAssets\TelemetryIntegrationDemo\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Installer\dotnetup\dotnetup.csproj" />

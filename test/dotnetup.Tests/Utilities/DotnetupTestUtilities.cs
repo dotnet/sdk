@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -36,45 +37,80 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Builds command line arguments for dotnetup
+    /// Builds command line arguments for SDK install
+    /// </summary>
+    public static string[] BuildSdkArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
+
+    /// <summary>
+    /// Builds command line arguments for runtime install using the new component@version syntax.
+    /// This delegates to BuildArguments with the componentSpec pre-formatted.
+    /// </summary>
+    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress);
+
+    /// <summary>
+    /// Builds command line arguments for runtime install
+    /// </summary>
+    public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
     /// </summary>
     public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildSdkArguments(channel, installPath, manifestPath, disableProgress);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup
+    /// </summary>
+    public static string[] BuildArguments(InstallComponent component, string channel, string installPath, string? manifestPath = null, bool disableProgress = true, string? runtimeType = null)
     {
-        var args = new List<string>
+        var commandArgs = new List<string>();
+
+        if (component == InstallComponent.SDK)
         {
-            "sdk",
-            "install",
-            channel
-        };
+            commandArgs.AddRange(["sdk", "install", channel]);
+        }
+        else
+        {
+            // Runtime install: dotnetup runtime install <component@version> or dotnetup runtime install <version>
+            // Format: "runtime" defaults to core runtime, "aspnetcore@9.0" for ASP.NET Core, etc.
+            string componentSpec = runtimeType is null or "core" or "runtime"
+                ? channel  // Just version for core runtime (e.g., "9.0")
+                : $"{runtimeType}@{channel}";  // component@version for others (e.g., "aspnetcore@9.0")
+            commandArgs.AddRange(["runtime", "install", componentSpec]);
+        }
 
-        args.Add("--install-path");
-        args.Add(installPath);
-        args.Add("--interactive");
-        args.Add("false");
+        return BuildArgumentsCore(commandArgs, installPath, manifestPath, disableProgress);
+    }
 
-        // Add manifest path option if specified for test isolation
+    /// <summary>
+    /// Core method that appends common options to command arguments.
+    /// </summary>
+    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress)
+    {
+        commandArgs.AddRange(["--install-path", installPath, "--interactive", "false"]);
+
         if (!string.IsNullOrEmpty(manifestPath))
         {
-            args.Add("--manifest-path");
-            args.Add(manifestPath);
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
         }
 
         // Add no-progress option when running tests in parallel to avoid Spectre.Console exclusivity issues
         if (disableProgress)
         {
-            args.Add("--no-progress");
+            commandArgs.Add("--no-progress");
         }
 
-        return [.. args];
+        return [.. commandArgs];
     }
 
     /// <summary>
-    /// Runs the dotnetup executable as a separate process
+    /// Gets the path to the dotnetup executable for the current build configuration
     /// </summary>
-    /// <param name="args">Command line arguments for dotnetup</param>
-    /// <param name="captureOutput">Whether to capture and return the output</param>
-    /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    /// <returns>Full path to dotnetup executable</returns>
+    public static string GetDotnetupExecutablePath()
     {
 #if DEBUG
         string configuration = "Debug";
@@ -83,9 +119,11 @@ internal static class DotnetupTestUtilities
 #endif
 
         string repoRoot = GetRepositoryRoot();
+        string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
+        string tfm = Path.GetFileName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
         string dotnetupPath = Path.Combine(
             repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, "net10.0", "dotnetup.dll");
+            "artifacts", "bin", "dotnetup", configuration, tfm, executableName);
 
         // Ensure path is normalized and exists
         dotnetupPath = Path.GetFullPath(dotnetupPath);
@@ -94,15 +132,45 @@ internal static class DotnetupTestUtilities
             throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
         }
 
+        return dotnetupPath;
+    }
+
+    /// <summary>
+    /// Runs the dotnetup executable as a separate process
+    /// </summary>
+    /// <param name="args">Command line arguments for dotnetup</param>
+    /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <param name="workingDirectory">Working directory for the process</param>
+    /// <param name="environmentVariables">Additional environment variables to set on the process</param>
+    /// <returns>A tuple with exit code and captured output (if requested)</returns>
+    public static (int exitCode, string output) RunDotnetupProcess(
+        string[] args,
+        bool captureOutput = false,
+        string? workingDirectory = null,
+        Dictionary<string, string>? environmentVariables = null)
+    {
+        string dotnetupPath = GetDotnetupExecutablePath();
+
         using var process = new Process();
-        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DotnetupUtilities.GetDotnetExeName());
-        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DotnetupUtilities.GetDotnetExeName();
-        process.StartInfo.Arguments = $"\"{dotnetupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
+        process.StartInfo.FileName = dotnetupPath;
+        process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
+
+        // Suppress the .NET welcome message / first-run experience in test output
+        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Apply any additional environment variables
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                process.StartInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
 
         StringBuilder outputBuilder = new();
         if (captureOutput)

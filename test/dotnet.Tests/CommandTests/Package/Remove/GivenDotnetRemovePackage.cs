@@ -15,7 +15,7 @@ Usage:
   dotnet remove [<PROJECT | FILE>] package <PACKAGE_NAME>... [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PACKAGE_NAME>    The package reference to remove.
 
 Options:
@@ -29,7 +29,7 @@ Usage:
   dotnet remove <PROJECT | FILE> [command] [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.
@@ -66,7 +66,7 @@ Commands:
         [Fact]
         public void WhenReferencedPackageIsPassedItGetsRemoved()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource().Path;
 
@@ -89,7 +89,7 @@ Commands:
         [Fact]
         public void FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -111,7 +111,7 @@ Commands:
         [Fact]
         public void FileBasedApp_Multiple()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -139,7 +139,7 @@ Commands:
         [Fact]
         public void FileBasedApp_None()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();

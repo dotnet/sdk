@@ -2193,10 +2193,37 @@ Widening and user defined conversions are not supported with generic types.</val
     <value>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</value>
   </data>
   <data name="AvoidPotentiallyExpensiveCallWhenLoggingMessage" xml:space="preserve">
-    <value>Evaluation of this argument may be expensive and unnecessary if logging is disabled</value>
+    <value>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</value>
   </data>
   <data name="AvoidPotentiallyExpensiveCallWhenLoggingTitle" xml:space="preserve">
     <value>Avoid potentially expensive logging</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation" xml:space="preserve">
+    <value>anonymous object creation</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation" xml:space="preserve">
+    <value>array creation</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression" xml:space="preserve">
+    <value>await expression</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion" xml:space="preserve">
+    <value>boxing conversion</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression" xml:space="preserve">
+    <value>collection expression</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation" xml:space="preserve">
+    <value>method invocation</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation" xml:space="preserve">
+    <value>object creation</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation" xml:space="preserve">
+    <value>string interpolation</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression" xml:space="preserve">
+    <value>with expression</value>
   </data>
   <data name="AvoidSingleUseOfLocalJsonSerializerOptionsMessage" xml:space="preserve">
     <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</value>

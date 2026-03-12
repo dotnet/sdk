@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -98,5 +101,114 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
                 $"Version {version} should be a preview/rc/beta/alpha version"
             );
         }
+
+        [Theory]
+        [InlineData("latest", true)]
+        [InlineData("preview", true)]
+        [InlineData("lts", true)]
+        [InlineData("sts", true)]
+        [InlineData("LTS", true)]  // Case insensitive
+        [InlineData("9", true)]
+        [InlineData("9.0", true)]
+        [InlineData("9.0.100", true)]
+        [InlineData("9.0.1xx", true)]
+        [InlineData("10", true)]
+        [InlineData("99", true)]  // Max reasonable major
+        [InlineData("99.0.100", true)]
+        [InlineData("10.0.100-preview.1.32640", true)]  // Full prerelease version
+        public void IsValidChannelFormat_ValidInputs_ReturnsTrue(string channel, bool expected)
+        {
+            Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
+        }
+
+        [Theory]
+        [InlineData("939393939", false)]  // Way too large major version
+        [InlineData("100", false)]  // Just over max reasonable
+        [InlineData("999999", false)]
+        [InlineData("", false)]
+        [InlineData("   ", false)]
+        [InlineData("abc", false)]
+        [InlineData("invalid", false)]
+        [InlineData("-1", false)]  // Negative
+        [InlineData("9.-1.100", false)]  // Negative minor
+        [InlineData("10.0.1xxx", false)]  // Invalid wildcard
+        [InlineData("10.0.1xx-preview.1", false)]  // Wildcards with prerelease not supported
+        public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
+        {
+            Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
+        }
+        [Fact]
+        public void GetSupportedChannels_WithFeatureBands_IncludesFeatureBandChannels()
+        {
+            var resolver = new ChannelVersionResolver();
+            var channels = resolver.GetSupportedChannels(includeFeatureBands: true).ToList();
+
+            // Should include named channels
+            Assert.Contains("latest", channels);
+            Assert.Contains("lts", channels);
+            Assert.Contains("sts", channels);
+            Assert.Contains("preview", channels);
+
+            // Should include product versions like "10.0"
+            Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));
+
+            // Should include feature bands like "10.0.1xx"
+            Assert.Contains(channels, c => c.EndsWith("xx"));
+        }
+
+        [Fact]
+        public void GetSupportedChannels_WithoutFeatureBands_ExcludesFeatureBandChannels()
+        {
+            var resolver = new ChannelVersionResolver();
+            var channels = resolver.GetSupportedChannels(includeFeatureBands: false).ToList();
+
+            // Should include named channels
+            Assert.Contains("latest", channels);
+            Assert.Contains("lts", channels);
+            Assert.Contains("sts", channels);
+            Assert.Contains("preview", channels);
+
+            // Should include product versions like "10.0"
+            Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));
+
+            // Should NOT include feature bands like "10.0.1xx"
+            Assert.DoesNotContain(channels, c => c.EndsWith("xx"));
+        }
+
+        [Fact]
+        public void GetSupportedChannels_DefaultIncludesFeatureBands()
+        {
+            var resolver = new ChannelVersionResolver();
+
+            // Default call should include feature bands (for backward compatibility)
+            var channels = resolver.GetSupportedChannels().ToList();
+
+            Assert.Contains(channels, c => c.EndsWith("xx"));
+        }
+
+        #region UpdateChannel.IsSdkVersionOrFeatureBand Tests
+
+        [Theory]
+        [InlineData("9.0.1xx", true)]    // Feature band pattern
+        [InlineData("9.0.2xx", true)]    // Feature band pattern
+        [InlineData("10.0.1xx", true)]   // Feature band pattern
+        [InlineData("9.0.12x", true)]    // Partial feature band pattern (unsupported but should be caught)
+        [InlineData("9.0.103", true)]    // SDK version (patch >= 100)
+        [InlineData("9.0.304", true)]    // SDK version (patch >= 100)
+        [InlineData("10.0.100", true)]   // SDK version (patch >= 100)
+        [InlineData("9.0.12", false)]    // Runtime version (patch < 100)
+        [InlineData("9.0.0", false)]     // Runtime version (patch < 100)
+        [InlineData("9.0.99", false)]    // Runtime version (patch < 100, edge case)
+        [InlineData("latest", false)]    // Channel name
+        [InlineData("lts", false)]       // Channel name
+        [InlineData("9.0", false)]       // Major.minor channel
+        [InlineData("9", false)]         // Major-only channel
+        public void UpdateChannel_IsSdkVersionOrFeatureBand_DetectsCorrectly(string channel, bool expectedResult)
+        {
+            var updateChannel = new UpdateChannel(channel);
+            Assert.Equal(expectedResult, updateChannel.IsSdkVersionOrFeatureBand());
+        }
+
+        #endregion
     }
 }

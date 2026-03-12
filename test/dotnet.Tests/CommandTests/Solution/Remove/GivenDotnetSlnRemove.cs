@@ -17,7 +17,7 @@ Usage:
   dotnet solution <SLN_FILE> remove [<PROJECT_PATH>...] [options]
 
 Arguments:
-  <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>    The project paths or names to remove from the solution.
 
 Options:
@@ -94,7 +94,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -115,7 +115,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectoryRoot = _testAssetsManager
+            var projectDirectoryRoot = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -141,7 +141,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -159,7 +159,7 @@ Options:
         [InlineData("solution")]
         public void WhenNoSolutionExistsInTheDirectoryRemovePrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -178,7 +178,7 @@ Options:
         [InlineData("solution")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -199,7 +199,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenPassedAReferenceNotInSlnItPrintsStatus(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -222,7 +222,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -253,7 +253,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -284,7 +284,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -309,7 +309,7 @@ Options:
         [InlineData("solution")]
         public async Task WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndDuplicateProjectReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -341,7 +341,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -377,7 +377,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -407,7 +407,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenDirectoryContainingProjectIsGivenProjectIsRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -436,7 +436,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -460,7 +460,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -484,7 +484,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenReferenceIsRemovedSlnBuilds(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -528,7 +528,7 @@ Options:
         [InlineData("solution")]
         public void WhenProjectIsRemovedSolutionHasUTF8BOM(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -571,7 +571,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenFinalReferenceIsRemovedEmptySectionsAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -601,7 +601,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -626,7 +626,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndLastCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -651,7 +651,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnProjectDependencyToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -676,7 +676,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -696,7 +696,7 @@ Options:
 
         private string GetSolutionFileTemplateContents(string templateFileName)
         {
-            var templateContentDirectory = _testAssetsManager
+            var templateContentDirectory = TestAssetsManager
                 .CopyTestAsset("SolutionFilesTemplates", identifier: "SolutionFilesTemplates")
                 .WithSource()
                 .Path;

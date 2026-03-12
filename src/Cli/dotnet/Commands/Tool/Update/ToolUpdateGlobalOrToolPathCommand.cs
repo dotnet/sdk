@@ -18,7 +18,7 @@ internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownlo
     IEnumerable<string> additionalRestoreArguments = null,
     string currentWorkingDirectory = null);
 
-internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
+internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdateCommandDefinition>  
 {
     private readonly CreateShellShimRepository _createShellShimRepository;
     private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
@@ -32,24 +32,17 @@ internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
         : base(parseResult)
     {
         _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
-                                              ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
+            ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
 
-        _createShellShimRepository =
-            createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
-
-        PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Id is string s)
-        {
-            packageId = new PackageId(s);
-        }
+        _createShellShimRepository = createShellShimRepository ??
+            ShellShimRepositoryFactory.CreateShellShimRepository;
 
         _toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                parseResult,
-                packageId,
-                _createToolPackageStoreDownloaderUninstaller,
-                _createShellShimRepository,
-                reporter: reporter,
-                store: _store);
+            parseResult,
+            _createToolPackageStoreDownloaderUninstaller,
+            _createShellShimRepository,
+            reporter: reporter,
+            store: _store);
     }
 
     public override int Execute()

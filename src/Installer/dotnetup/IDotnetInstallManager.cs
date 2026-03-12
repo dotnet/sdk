@@ -1,9 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -13,7 +10,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 // - Handle writing to install manifest and garbage collection
 // - Orchestrate installation so that only one install happens at a time
 // - Call into installer implementation
-
 
 public interface IDotnetInstallManager
 {
@@ -31,7 +27,6 @@ public interface IDotnetInstallManager
 
     void ConfigureInstallType(InstallType installType, string? dotnetRoot = null);
 
-
 }
 
 public class GlobalJsonInfo
@@ -48,7 +43,7 @@ public class GlobalJsonInfo
         get
         {
             return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
-                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], GlobalJsonPath!) : null;
+                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], Path.GetDirectoryName(GlobalJsonPath)!) : null;
         }
     }
 }
@@ -56,9 +51,7 @@ public class GlobalJsonInfo
 public record DotnetInstallRootConfiguration(
     DotnetInstallRoot InstallRoot,
     InstallType InstallType,
-    bool IsOnPath,
-    //  We may also need additional information to handle the case of whether DOTNET_ROOT is not set or whether it's set to a different path
-    bool IsSetAsDotnetRoot)
+    bool IsFullyConfigured)
 {
     public string Path => InstallRoot.Path;
 }

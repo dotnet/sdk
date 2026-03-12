@@ -7,9 +7,9 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -371,17 +371,17 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
     {
         if (buildOptions.NoLaunchProfile)
         {
             return null;
         }
 
-        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        var launchSettingsPath = LaunchSettings.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
         bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
-        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        var runJsonPath = LaunchSettings.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
         bool hasRunJson = File.Exists(runJsonPath);
 
         if (hasLaunchSettings)
@@ -406,13 +406,13 @@ internal static class SolutionAndProjectUtility
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, profileName);
-        if (!result.Success)
+        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.LaunchSettings;
+        return result.Profile;
     }
 }

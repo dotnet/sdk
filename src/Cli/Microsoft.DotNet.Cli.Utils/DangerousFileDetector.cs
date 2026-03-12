@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP
 using System.Runtime.Versioning;
-#endif
+using Windows.Win32.System.Com;
+using Windows.Win32.System.Com.Urlmon;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -28,39 +28,50 @@ internal class DangerousFileDetector : IDangerousFileDetector
         private const uint ZoneInternet = 3;
         private const uint ZoneUntrusted = 4;
         private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
-        private static IInternetSecurityManager? internetSecurityManager = null;
 
-#if NETCOREAPP
+        private static bool s_attemptedLoad;
+        private static ComClassFactory? s_classFactory = null;
+
         [SupportedOSPlatform("windows")]
-#endif
-        public static bool IsDangerous(string filename)
+        public static unsafe bool IsDangerous(string filename)
         {
-            try
+            if (!s_attemptedLoad)
             {
-                // First check the zone, if they are not an untrusted zone, they aren't dangerous
-                if (internetSecurityManager == null)
+                s_attemptedLoad = true;
+                if (!ComClassFactory.TryCreate(CLSID.InternetSecurityManager, out s_classFactory, out HRESULT result))
                 {
-                    Type? iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
-                    if (iismType is not null)
+                    // When the COM is missing(Class not registered error), it is in a locked down
+                    // version like Nano Server
+
+                    if (result != HRESULT.REGDB_E_CLASSNOTREG)
                     {
-                        internetSecurityManager = Activator.CreateInstance(iismType) as IInternetSecurityManager;
+                        result.ThrowOnFailure();
                     }
                 }
-                int zone = 0;
-                internetSecurityManager?.MapUrlToZone(Path.GetFullPath(filename), out zone, 0);
-                if (zone < ZoneInternet)
-                {
-                    return false;
-                }
-                // By default all file types that get here are considered dangerous
-                return true;
             }
-            catch (COMException ex) when (ex.ErrorCode == REGDB_E_CLASSNOTREG)
+
+            if (s_classFactory is not { } factory)
             {
-                // When the COM is missing(Class not registered error), it is in a locked down
-                // version like Nano Server
                 return false;
             }
+
+            using var securityManager = factory.TryCreateInstance<IInternetSecurityManager>(out HRESULT hr);
+            if (hr.Failed)
+            {
+                return false;
+            }
+
+            // First check the zone, if they are not an untrusted zone, they aren't dangerous
+            filename = Path.GetFullPath(filename);
+            hr = securityManager.Pointer->MapUrlToZone(filename, out uint zone, PInvoke.MUTZ_ISFILE);
+
+            if (zone < (uint)URLZONE.URLZONE_INTERNET)
+            {
+                return false;
+            }
+
+            // By default all file types that get here are considered dangerous
+            return true;
         }
     }
 }

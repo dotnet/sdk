@@ -1,10 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -13,18 +9,18 @@ public class SpectreProgressTarget : IProgressTarget
 {
     public IProgressReporter CreateProgressReporter() => new Reporter();
 
-    class Reporter : IProgressReporter
+    private sealed class Reporter : IProgressReporter
     {
-        TaskCompletionSource _overallTask = new TaskCompletionSource();
-        ProgressContext _progressContext;
+        private readonly TaskCompletionSource _overallTask = new();
+        private readonly ProgressContext _progressContext;
 
         public Reporter()
         {
-            TaskCompletionSource<ProgressContext> tcs = new TaskCompletionSource<ProgressContext>();
+            TaskCompletionSource<ProgressContext> tcs = new();
             var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
-                await _overallTask.Task;
+                await _overallTask.Task.ConfigureAwait(false);
             });
 
             _progressContext = tcs.Task.GetAwaiter().GetResult();
@@ -41,9 +37,10 @@ public class SpectreProgressTarget : IProgressTarget
         }
     }
 
-    class ProgressTaskImpl : IProgressTask
+    private sealed class ProgressTaskImpl : IProgressTask
     {
         private readonly Spectre.Console.ProgressTask _task;
+
         public ProgressTaskImpl(Spectre.Console.ProgressTask task)
         {
             _task = task;
@@ -54,11 +51,13 @@ public class SpectreProgressTarget : IProgressTarget
             get => _task.Value;
             set => _task.Value = value;
         }
+
         public string Description
         {
             get => _task.Description;
             set => _task.Description = value;
         }
+
         public double MaxValue
         {
             get => _task.MaxValue;

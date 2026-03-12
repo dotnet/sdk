@@ -7,8 +7,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-
-
     public static readonly Argument<string?> ChannelArgument = new("channel")
     {
         HelpName = "CHANNEL",
@@ -16,18 +14,12 @@ internal static class SdkInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<string> InstallPathOption = new("--install-path")
-    {
-        HelpName = "INSTALL_PATH",
-        Description = "The path to install the .NET SDK to",
-    };
-
-    public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
-    {
-        Description = "Set the install path as the default dotnet install.  This will update the PATH and DOTNET_ROOT environhment variables.",
-        Arity = ArgumentArity.ZeroOrOne,
-        DefaultValueFactory = r => null
-    };
+    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
+    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
+    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
+    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
+    public static readonly Option<bool> RequireMuxerUpdateOption = CommonOptions.RequireMuxerUpdateOption;
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
@@ -36,30 +28,21 @@ internal static class SdkInstallCommandParser
         DefaultValueFactory = r => null
     };
 
-    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
-    {
-        HelpName = "MANIFEST_PATH",
-        Description = "Custom path to the manifest file for tracking .NET SDK installations",
-    };
-
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-
-    private static readonly Command SdkInstallCommand = ConstructCommand();
+    private static readonly Command s_sdkInstallCommand = ConstructCommand();
 
     public static Command GetSdkInstallCommand()
     {
-        return SdkInstallCommand;
+        return s_sdkInstallCommand;
     }
 
     //  Trying to use the same command object for both "dotnetup install" and "dotnetup sdk install" causes the following exception:
     //  System.InvalidOperationException: Command install has more than one child named "channel".
     //  So we create a separate instance for each case
-    private static readonly Command RootInstallCommand = ConstructCommand();
+    private static readonly Command s_rootInstallCommand = ConstructCommand();
 
     public static Command GetRootInstallCommand()
     {
-        return RootInstallCommand;
+        return s_rootInstallCommand;
     }
 
     private static Command ConstructCommand()
@@ -75,6 +58,7 @@ internal static class SdkInstallCommandParser
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);
+        command.Options.Add(RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

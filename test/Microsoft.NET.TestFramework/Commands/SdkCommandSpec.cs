@@ -19,6 +19,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public bool RedirectStandardInput { get; set; }
 
+        public bool DisableOutputAndErrorRedirection { get; set; }
+
         private string EscapeArgs()
         {
             //  Note: this doesn't handle invoking .cmd files via "cmd /c" on Windows, which probably won't be necessary here

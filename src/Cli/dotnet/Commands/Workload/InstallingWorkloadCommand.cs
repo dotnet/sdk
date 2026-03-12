@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -17,11 +16,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
-using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
-internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
+internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<InstallingWorkloadCommandDefinition>
 {
     protected readonly string[] _arguments;
     protected readonly bool _printDownloadLinkOnly;
@@ -89,32 +87,31 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         INuGetPackageDownloader nugetPackageDownloader,
         IWorkloadManifestUpdater workloadManifestUpdater,
         string tempDirPath,
-        Option<VerbosityOptions> verbosityOptions = null,
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
-        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: verbosityOptions)
+        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
     {
         _arguments = parseResult.GetArguments();
-        _printDownloadLinkOnly = parseResult.GetValue(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption);
-        _fromCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.FromCacheOption);
-        _includePreviews = parseResult.GetValue(InstallingWorkloadCommandParser.IncludePreviewOption);
-        _downloadToCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.DownloadToCacheOption);
+        _printDownloadLinkOnly = parseResult.GetValue(Definition.PrintDownloadLinkOnlyOption);
+        _fromCacheOption = parseResult.GetValue(Definition.FromCacheOption);
+        _includePreviews = parseResult.GetValue(Definition.IncludePreviewOption);
+        _downloadToCacheOption = parseResult.GetValue(Definition.DownloadToCacheOption);
 
-        _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
-        _workloadSetVersionFromCommandLine = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+        _fromRollbackDefinition = parseResult.GetValue(Definition.FromRollbackFileOption);
+        _workloadSetVersionFromCommandLine = parseResult.GetValue(Definition.WorkloadSetVersionOption);
 
-        var configOption = parseResult.GetValue(InstallingWorkloadCommandParser.ConfigOption);
-        var sourceOption = parseResult.GetValue(InstallingWorkloadCommandParser.SourceOption);
+        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        var sourceOption = parseResult.GetValue(Definition.SourceOption);
         _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
             new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(Definition.SdkVersionOption)))
         {
             //  Specifying a different SDK version to operate on is only supported for --print-download-link-only and --download-to-cache
             if (_printDownloadLinkOnly || !string.IsNullOrEmpty(_downloadToCacheOption))
             {
-                _targetSdkVersion = new ReleaseVersion(parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption));
+                _targetSdkVersion = new ReleaseVersion(parseResult.GetValue(Definition.SdkVersionOption));
             }
             else
             {
@@ -146,14 +143,14 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         else if (SpecifiedWorkloadSetVersionOnCommandLine && UseRollback)
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineOptions,
-                InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
-                InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name), isUserError: true);
+                Definition.FromRollbackFileOption.Name,
+                Definition.WorkloadSetVersionOption.Name), isUserError: true);
         }
         else if (SpecifiedWorkloadSetVersionOnCommandLine && FromHistory)
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineOptions,
-                InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name,
-                WorkloadUpdateCommandParser.FromHistoryOption.Name), isUserError: true);
+                Definition.WorkloadSetVersionOption.Name,
+                WorkloadUpdateCommandDefinition.FromHistoryOptionName), isUserError: true);
         }
         else if (_shouldUseWorkloadSets == true && (UseRollback || FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null))
         {
@@ -178,14 +175,9 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         return InstallStateContents.FromPath(path);
     }
 
-    public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
-    {
-        return WorkloadManifestUpdater.ShouldUseWorkloadSetMode(sdkFeatureBand, dotnetDir);
-    }
-
     protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
     {
-        var shouldUseWorkloadSetsPerInstallState = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
+        var shouldUseWorkloadSetsPerInstallState = WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
         var updateToLatestWorkloadSet = _shouldUseWorkloadSets ?? shouldUseWorkloadSetsPerInstallState && !SpecifiedWorkloadSetVersionInGlobalJson;
         if (FromHistory && !string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.WorkloadSetVersion))
         {
@@ -214,7 +206,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
             //  If a workload set version is specified, then switch to workload set update mode
             //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
             //  for MSI-based installs.
-            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
+            if (!WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
             {
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
             }
@@ -223,7 +215,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
                     _sdkFeatureBand,
+#if DOT_NET_BUILD_FROM_SOURCE
+                    _workloadInstaller,
+#else
                     _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+#endif
                     _sdkFeatureBand.IsPrerelease,
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
@@ -259,8 +255,8 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 var currentWorkloadVersionInfo = _workloadResolver.GetWorkloadVersion();
                 if (resolvedWorkloadSetVersion != null && currentWorkloadVersionInfo.IsInstalled && !currentWorkloadVersionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
                 {
-                    var currentPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(currentWorkloadVersionInfo.Version, out var currentWorkloadSetSdkFeatureBand);
-                    var advertisedPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(resolvedWorkloadSetVersion, out var advertisedWorkloadSetSdkFeatureBand);
+                    var currentWorkloadSetSdkFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(currentWorkloadVersionInfo.Version, out var currentPackageVersion);
+                    var advertisedWorkloadSetSdkFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(resolvedWorkloadSetVersion, out var advertisedPackageVersion);
 
                     if (currentWorkloadSetSdkFeatureBand > advertisedWorkloadSetSdkFeatureBand ||
                         new NuGetVersion(currentPackageVersion) >= new NuGetVersion(advertisedPackageVersion))
@@ -465,77 +461,5 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         }
 #endif
         return workloadsWithExistingInstallRecords;
-    }
-}
-
-internal static class InstallingWorkloadCommandParser
-{
-    public static readonly Option<IEnumerable<string>> WorkloadSetVersionOption = new("--version")
-    {
-        Description = CliCommandStrings.WorkloadSetVersionOptionDescription,
-        AllowMultipleArgumentsPerToken = true
-    };
-
-    public static readonly Option<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
-    {
-        Description = CliCommandStrings.PrintDownloadLinkOnlyDescription,
-        Hidden = true
-    };
-
-    public static readonly Option<string> FromCacheOption = new("--from-cache")
-    {
-        Description = CliCommandStrings.FromCacheOptionDescription,
-        HelpName = CliCommandStrings.FromCacheOptionArgumentName,
-        Hidden = true
-    };
-
-    public static readonly Option<bool> IncludePreviewOption =
-    new("--include-previews")
-    {
-        Description = CliCommandStrings.IncludePreviewOptionDescription
-    };
-
-    public static readonly Option<string> DownloadToCacheOption = new("--download-to-cache")
-    {
-        Description = CliCommandStrings.DownloadToCacheOptionDescription,
-        HelpName = CliCommandStrings.DownloadToCacheOptionArgumentName,
-        Hidden = true
-    };
-
-    public static readonly Option<string> VersionOption = new("--sdk-version")
-    {
-        Description = CliCommandStrings.WorkloadInstallVersionOptionDescription,
-        HelpName = CliCommandStrings.WorkloadInstallVersionOptionName,
-        Hidden = true
-    };
-
-    public static readonly Option<string> FromRollbackFileOption = new("--from-rollback-file")
-    {
-        Description = CliCommandStrings.FromRollbackDefinitionOptionDescription,
-        Hidden = true
-    };
-
-    public static readonly Option<string> ConfigOption = new("--configfile")
-    {
-        Description = CliCommandStrings.WorkloadInstallConfigFileOptionDescription,
-        HelpName = CliCommandStrings.WorkloadInstallConfigFileOptionName
-    };
-
-    public static readonly Option<string[]> SourceOption = new Option<string[]>("--source", "-s")
-    {
-        Description = CliCommandStrings.WorkloadInstallSourceOptionDescription,
-        HelpName = CliCommandStrings.WorkloadInstallSourceOptionName
-    }.AllowSingleArgPerToken();
-
-    internal static void AddWorkloadInstallCommandOptions(Command command)
-    {
-        command.Options.Add(VersionOption);
-        command.Options.Add(ConfigOption);
-        command.Options.Add(SourceOption);
-        command.Options.Add(PrintDownloadLinkOnlyOption);
-        command.Options.Add(FromCacheOption);
-        command.Options.Add(DownloadToCacheOption);
-        command.Options.Add(IncludePreviewOption);
-        command.Options.Add(FromRollbackFileOption);
     }
 }

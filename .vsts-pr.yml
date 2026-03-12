@@ -9,12 +9,21 @@ pr:
     - release/*
     - internal/release/*
   paths:
+    include:
+    - eng
+    - build
+    - src
+    - test
+    - '*.yml'
+    - '*.props'
+    - '*.targets'
     exclude:
     - documentation/*
     - README.md
     - CODEOWNERS
     - .vsts-dnup-ci.yml
     - .vsts-dnup-pr.yml
+    - dotnetup.slnf
     - /eng/pipelines/templates/jobs/dotnetup/*
     - src/Installer/*
     - test/dotnetup.Tests/*
@@ -74,7 +83,7 @@ stages:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.13.arm64.open
+        helixTargetQueue: osx.15.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
           targetArchitecture: arm64

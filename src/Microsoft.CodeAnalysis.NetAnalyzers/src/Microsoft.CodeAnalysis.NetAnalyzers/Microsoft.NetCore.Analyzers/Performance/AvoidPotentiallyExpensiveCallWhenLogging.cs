@@ -1,10 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.Lightup;
@@ -24,24 +22,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
     {
         private const string RuleId = "CA1873";
 
-        private const string Level = nameof(Level);
-        private const string LogLevel = nameof(LogLevel);
-
-        private const string Log = nameof(Log);
-        private const string IsEnabled = nameof(IsEnabled);
-        private const string LogTrace = nameof(LogTrace);
-        private const string LogDebug = nameof(LogDebug);
-        private const string LogInformation = nameof(LogInformation);
-        private const string LogWarning = nameof(LogWarning);
-        private const string LogError = nameof(LogError);
-        private const string LogCritical = nameof(LogCritical);
-
-        private const int LogLevelTrace = 0;
-        private const int LogLevelDebug = 1;
-        private const int LogLevelInformation = 2;
-        private const int LogLevelWarning = 3;
-        private const int LogLevelError = 4;
-        private const int LogLevelCritical = 5;
+        private const int LogLevelTrace = 0; // LogLevel.Trace
+        private const int LogLevelDebug = 1; // LogLevel.Debug
+        private const int LogLevelInformation = 2; // LogLevel.Information
+        private const int LogLevelWarning = 3; // LogLevel.Warning
+        private const int LogLevelError = 4; // LogLevel.Error
+        private const int LogLevelCritical = 5; // LogLevel.Critical
         private const int LogLevelPassedAsParameter = int.MinValue;
 
         private static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
@@ -54,6 +40,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
+        private static readonly Dictionary<string, int> s_logLevelsByName = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["trace"] = LogLevelTrace,
+            ["debug"] = LogLevelDebug,
+            ["information"] = LogLevelInformation,
+            ["warning"] = LogLevelWarning,
+            ["error"] = LogLevelError,
+            ["critical"] = LogLevelCritical,
+        };
+
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public sealed override void Initialize(AnalysisContext context)
@@ -65,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            if (!RequiredSymbols.TryGetSymbols(context.Compilation, out var symbols))
+            if (RequiredSymbols.GetSymbols(context.Compilation) is not { } symbols)
             {
                 return;
             }
@@ -84,180 +80,224 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                var arguments = invocation.Arguments.Skip(invocation.IsExtensionMethodAndHasNoInstance() ? 1 : 0);
+                // Check if the log level exceeds the configured maximum threshold.
+                if (logLevel != LogLevelPassedAsParameter &&
+                    logLevel < LogLevelCritical &&
+                    logLevel > ParseLogLevel(context.Options.GetStringOptionValue(EditorConfigOptionNames.MaxLogLevel, Rule, invocation.Syntax.SyntaxTree, context.Compilation)))
+                {
+                    return;
+                }
 
                 // Check each argument if it is potentially expensive to evaluate and raise a diagnostic if it is.
-                foreach (var argument in arguments)
+                foreach (var argument in invocation.Arguments.Skip(invocation.IsExtensionMethodAndHasNoInstance() ? 1 : 0))
                 {
-                    if (IsPotentiallyExpensive(argument.Value))
+                    if (GetExpenseReason(argument.Value) is { } reason)
                     {
-                        context.ReportDiagnostic(argument.CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(argument.CreateDiagnostic(Rule, reason));
                     }
                 }
+
+                static int ParseLogLevel(string? logLevelString) =>
+                    logLevelString is not null && s_logLevelsByName.TryGetValue(logLevelString, out var level) ? level :
+                    LogLevelInformation; // Default to Information if invalid
             }
         }
 
-        private static bool IsPotentiallyExpensive(IOperation? operation)
+        private static string? GetExpenseReason(IOperation? operation)
         {
             if (operation is null)
             {
-                return false;
+                return null;
             }
 
-            if (ICollectionExpressionOperationWrapper.IsInstance(operation) ||
-                operation is IAnonymousObjectCreationOperation or
-                IAwaitOperation or
-                IInvocationOperation or
-                IObjectCreationOperation { Type.IsReferenceType: true } or
-                IWithOperation)
+            if (ICollectionExpressionOperationWrapper.IsInstance(operation))
             {
-                return true;
+                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression;
+            }
+
+            if (operation is IAnonymousObjectCreationOperation)
+            {
+                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation;
+            }
+
+            if (operation is IAwaitOperation)
+            {
+                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression;
+            }
+
+            if (operation is IWithOperation)
+            {
+                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression;
+            }
+
+            if (operation is IInvocationOperation invocationOperation)
+            {
+                return !IsTrivialInvocation(invocationOperation)
+                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation
+                    : null;
+            }
+
+            if (operation is IObjectCreationOperation { Type.IsReferenceType: true })
+            {
+                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation;
             }
 
             if (operation is IArrayCreationOperation arrayCreationOperation)
             {
-                return !IsEmptyImplicitParamsArrayCreation(arrayCreationOperation);
+                return !IsEmptyImplicitParamsArrayCreation(arrayCreationOperation)
+                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation
+                    : null;
             }
 
             if (operation is IConversionOperation conversionOperation)
             {
-                return IsBoxing(conversionOperation) || IsPotentiallyExpensive(conversionOperation.Operand);
+                return IsBoxing(conversionOperation)
+                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion
+                    : GetExpenseReason(conversionOperation.Operand);
             }
 
             if (operation is IArrayElementReferenceOperation arrayElementReferenceOperation)
             {
-                return IsPotentiallyExpensive(arrayElementReferenceOperation.ArrayReference) ||
-                    arrayElementReferenceOperation.Indices.Any(IsPotentiallyExpensive);
+                return GetExpenseReason(arrayElementReferenceOperation.ArrayReference) ??
+                       arrayElementReferenceOperation.Indices.Select(GetExpenseReason).FirstOrDefault(r => r is not null);
             }
 
             if (operation is IBinaryOperation binaryOperation)
             {
-                return IsPotentiallyExpensive(binaryOperation.LeftOperand) ||
-                    IsPotentiallyExpensive(binaryOperation.RightOperand);
+                return GetExpenseReason(binaryOperation.LeftOperand) ??
+                       GetExpenseReason(binaryOperation.RightOperand);
             }
 
             if (operation is ICoalesceOperation coalesceOperation)
             {
-                return IsPotentiallyExpensive(coalesceOperation.Value) ||
-                    IsPotentiallyExpensive(coalesceOperation.WhenNull);
+                return GetExpenseReason(coalesceOperation.Value) ??
+                       GetExpenseReason(coalesceOperation.WhenNull);
             }
 
             if (operation is IConditionalAccessOperation conditionalAccessOperation)
             {
-                return IsPotentiallyExpensive(conditionalAccessOperation.WhenNotNull);
+                return GetExpenseReason(conditionalAccessOperation.WhenNotNull);
             }
 
             if (operation is IIncrementOrDecrementOperation incrementOrDecrementOperation)
             {
-                return IsPotentiallyExpensive(incrementOrDecrementOperation.Target);
+                return GetExpenseReason(incrementOrDecrementOperation.Target);
             }
 
             if (operation is IInterpolatedStringOperation interpolatedStringOperation)
             {
                 return interpolatedStringOperation.Parts.Any(p => p is
                     IInterpolationOperation { Expression.ConstantValue.HasValue: false } or
-                    IInterpolatedStringTextOperation { Text.ConstantValue.HasValue: false });
+                    IInterpolatedStringTextOperation { Text.ConstantValue.HasValue: false })
+                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation
+                    : null;
             }
 
             if (operation is IMemberReferenceOperation memberReferenceOperation)
             {
-                if (IsPotentiallyExpensive(memberReferenceOperation.Instance))
+                var instanceReason = GetExpenseReason(memberReferenceOperation.Instance);
+                if (instanceReason is not null)
                 {
-                    return true;
+                    return instanceReason;
                 }
 
-                if (memberReferenceOperation is IPropertyReferenceOperation { Arguments.IsEmpty: false } indexerReferenceOperation)
+                if (memberReferenceOperation is IPropertyReferenceOperation propertyReferenceOperation)
                 {
-                    return indexerReferenceOperation.Arguments.Any(a => IsPotentiallyExpensive(a.Value));
+                    // We assume simple property accesses are cheap. For properties with arguments (indexers),
+                    // we do still need to validate the arguments.
+                    return propertyReferenceOperation.Arguments.Select(static a => GetExpenseReason(a.Value)).FirstOrDefault(r => r is not null);
                 }
             }
 
             if (operation is IUnaryOperation unaryOperation)
             {
-                return IsPotentiallyExpensive(unaryOperation.Operand);
+                return GetExpenseReason(unaryOperation.Operand);
             }
 
-            return false;
+            return null;
 
-            static bool IsBoxing(IConversionOperation conversionOperation)
+            static bool IsTrivialInvocation(IInvocationOperation invocationOperation)
             {
-                var targetIsReferenceType = conversionOperation.Type?.IsReferenceType ?? false;
-                var operandIsValueType = conversionOperation.Operand.Type?.IsValueType ?? false;
+                var method = invocationOperation.TargetMethod;
 
-                return targetIsReferenceType && operandIsValueType;
+                // Special-case methods that are cheap enough we don't need to warn and
+                // that are reasonably common as arguments to logging methods.
+
+                // object.GetType / object.GetHashCode
+                if (method.ContainingType?.SpecialType == SpecialType.System_Object &&
+                    method.Parameters.IsEmpty &&
+                    (method.Name is nameof(GetType) or nameof(GetHashCode)))
+                {
+                    return true;
+                }
+
+                // Stopwatch.GetTimestamp
+                if (method.Name == nameof(Stopwatch.GetTimestamp) &&
+                    method.IsStatic &&
+                    method.Parameters.IsEmpty &&
+                    method.ContainingType?.ToDisplayString() == "System.Diagnostics.Stopwatch")
+                {
+                    return true;
+                }
+
+                return false;
             }
 
-            static bool IsEmptyImplicitParamsArrayCreation(IArrayCreationOperation arrayCreationOperation)
-            {
-                return arrayCreationOperation.IsImplicit &&
-                    arrayCreationOperation.DimensionSizes.Length == 1 &&
-                    arrayCreationOperation.DimensionSizes[0].ConstantValue.HasValue &&
-                    arrayCreationOperation.DimensionSizes[0].ConstantValue.Value is int size &&
-                    size == 0;
-            }
+            static bool IsBoxing(IConversionOperation conversionOperation) =>
+                conversionOperation.Type?.IsReferenceType is true &&
+                conversionOperation.Operand.Type?.IsValueType is true;
+
+            static bool IsEmptyImplicitParamsArrayCreation(IArrayCreationOperation arrayCreationOperation) =>
+                arrayCreationOperation.IsImplicit &&
+                arrayCreationOperation.DimensionSizes.Length == 1 &&
+                arrayCreationOperation.DimensionSizes[0].ConstantValue.HasValue &&
+                arrayCreationOperation.DimensionSizes[0].ConstantValue.Value is int size &&
+                size == 0;
         }
 
-        internal sealed class RequiredSymbols
+        internal sealed class RequiredSymbols(
+            IMethodSymbol logMethod,
+            IMethodSymbol isEnabledMethod,
+            Dictionary<IMethodSymbol, int> logExtensionsMethodsAndLevel,
+            INamedTypeSymbol? loggerMessageAttributeType)
         {
-            private RequiredSymbols(
-                IMethodSymbol logMethod,
-                IMethodSymbol isEnabledMethod,
-                ImmutableDictionary<IMethodSymbol, int> logExtensionsMethodsAndLevel,
-                INamedTypeSymbol? loggerMessageAttributeType)
+            private readonly IMethodSymbol _logMethod = logMethod;
+            private readonly IMethodSymbol _isEnabledMethod = isEnabledMethod;
+            private readonly Dictionary<IMethodSymbol, int> _logExtensionsMethodsAndLevel = logExtensionsMethodsAndLevel;
+            private readonly INamedTypeSymbol? _loggerMessageAttributeType = loggerMessageAttributeType;
+
+            public static RequiredSymbols? GetSymbols(Compilation compilation)
             {
-                _logMethod = logMethod;
-                _isEnabledMethod = isEnabledMethod;
-                _logExtensionsMethodsAndLevel = logExtensionsMethodsAndLevel;
-                _loggerMessageAttributeType = loggerMessageAttributeType;
-            }
-
-            public static bool TryGetSymbols(Compilation compilation, [NotNullWhen(true)] out RequiredSymbols? symbols)
-            {
-                symbols = default;
-
-                var iLoggerType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingILogger);
-
-                if (iLoggerType is null)
+                if (compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingILogger) is not { } iLoggerType ||
+                    iLoggerType.GetMembers("Log").OfType<IMethodSymbol>().FirstOrDefault() is not { } logMethod ||
+                    iLoggerType.GetMembers("IsEnabled").OfType<IMethodSymbol>().FirstOrDefault() is not { } isEnabledMethod)
                 {
-                    return false;
+                    return null;
                 }
 
-                var logMethod = iLoggerType.GetMembers(Log)
-                    .OfType<IMethodSymbol>()
-                    .FirstOrDefault();
-
-                var isEnabledMethod = iLoggerType.GetMembers(IsEnabled)
-                    .OfType<IMethodSymbol>()
-                    .FirstOrDefault();
-
-                if (logMethod is null || isEnabledMethod is null)
+                Dictionary<IMethodSymbol, int> logExtensionsMethods = new(SymbolEqualityComparer.Default);
+                if (compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingLoggerExtensions) is { } loggerExtensionsType)
                 {
-                    return false;
-                }
-
-                var loggerExtensionsType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingLoggerExtensions);
-                var logExtensionsMethodsBuilder = ImmutableDictionary.CreateBuilder<IMethodSymbol, int>(SymbolEqualityComparer.Default);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogTrace).OfType<IMethodSymbol>(), LogLevelTrace);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogDebug).OfType<IMethodSymbol>(), LogLevelDebug);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogInformation).OfType<IMethodSymbol>(), LogLevelInformation);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogWarning).OfType<IMethodSymbol>(), LogLevelWarning);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogError).OfType<IMethodSymbol>(), LogLevelError);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(LogCritical).OfType<IMethodSymbol>(), LogLevelCritical);
-                AddRangeIfNotNull(logExtensionsMethodsBuilder, loggerExtensionsType?.GetMembers(Log).OfType<IMethodSymbol>(), LogLevelPassedAsParameter);
-
-                var loggerMessageAttributeType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingLoggerMessageAttribute);
-
-                symbols = new RequiredSymbols(logMethod, isEnabledMethod, logExtensionsMethodsBuilder.ToImmutable(), loggerMessageAttributeType);
-
-                return true;
-
-                void AddRangeIfNotNull(ImmutableDictionary<IMethodSymbol, int>.Builder builder, IEnumerable<IMethodSymbol>? range, int value)
-                {
-                    if (range is not null)
+                    foreach (var m in loggerExtensionsType.GetMembers().OfType<IMethodSymbol>())
                     {
-                        builder.AddRange(range.Select(s => new KeyValuePair<IMethodSymbol, int>(s, value)));
+                        switch (m.Name)
+                        {
+                            case "LogTrace": logExtensionsMethods[m] = LogLevelTrace; break;
+                            case "LogDebug": logExtensionsMethods[m] = LogLevelDebug; break;
+                            case "LogInformation": logExtensionsMethods[m] = LogLevelInformation; break;
+                            case "LogWarning": logExtensionsMethods[m] = LogLevelWarning; break;
+                            case "LogError": logExtensionsMethods[m] = LogLevelError; break;
+                            case "LogCritical": logExtensionsMethods[m] = LogLevelCritical; break;
+                            case "Log": logExtensionsMethods[m] = LogLevelPassedAsParameter; break;
+                        }
                     }
                 }
+
+                return new RequiredSymbols(
+                    logMethod,
+                    isEnabledMethod,
+                    logExtensionsMethods,
+                    compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingLoggerMessageAttribute));
             }
 
             public bool IsLogInvocation(IInvocationOperation invocation, out int logLevel, out IArgumentOperation? logLevelArgumentOperation)
@@ -273,6 +313,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     logLevelArgumentOperation = invocation.Arguments.GetArgumentForParameterAtIndex(0);
 
+                    if (logLevelArgumentOperation?.Value.ConstantValue.HasValue == true)
+                    {
+                        logLevel = (int)logLevelArgumentOperation.Value.ConstantValue.Value!;
+                    }
+
                     return true;
                 }
 
@@ -283,32 +328,40 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (logLevel == LogLevelPassedAsParameter)
                     {
                         logLevelArgumentOperation = invocation.Arguments.GetArgumentForParameterAtIndex(invocation.IsExtensionMethodAndHasNoInstance() ? 1 : 0);
+
+                        if (logLevelArgumentOperation?.Value.ConstantValue.HasValue == true)
+                        {
+                            logLevel = (int)logLevelArgumentOperation.Value.ConstantValue.Value!;
+                        }
                     }
 
                     return true;
                 }
 
-                var loggerMessageAttribute = method.GetAttribute(_loggerMessageAttributeType);
-
-                if (loggerMessageAttribute is null)
+                if (method.GetAttribute(_loggerMessageAttributeType) is not { } loggerMessageAttribute)
                 {
                     return false;
                 }
 
                 // Try to get the log level from the attribute arguments.
                 logLevel = loggerMessageAttribute.NamedArguments
-                    .FirstOrDefault(p => p.Key.Equals(Level, StringComparison.Ordinal))
+                    .FirstOrDefault(p => p.Key.Equals("Level", StringComparison.Ordinal))
                     .Value.Value as int?
                     ?? LogLevelPassedAsParameter;
 
                 if (logLevel == LogLevelPassedAsParameter)
                 {
                     logLevelArgumentOperation = invocation.Arguments
-                        .FirstOrDefault(a => a.Value.Type?.Name.Equals(LogLevel, StringComparison.Ordinal) ?? false);
+                        .FirstOrDefault(a => a.Value.Type?.Name.Equals("LogLevel", StringComparison.Ordinal) ?? false);
 
                     if (logLevelArgumentOperation is null)
                     {
                         return false;
+                    }
+
+                    if (logLevelArgumentOperation.Value.ConstantValue.HasValue)
+                    {
+                        logLevel = (int)logLevelArgumentOperation.Value.ConstantValue.Value!;
                     }
                 }
 
@@ -410,11 +463,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         logLevelArgumentOperation?.Value.GetReferencedMemberOrLocalOrParameter());
                 }
             }
-
-            private readonly IMethodSymbol _logMethod;
-            private readonly IMethodSymbol _isEnabledMethod;
-            private readonly ImmutableDictionary<IMethodSymbol, int> _logExtensionsMethodsAndLevel;
-            private readonly INamedTypeSymbol? _loggerMessageAttributeType;
         }
     }
 }

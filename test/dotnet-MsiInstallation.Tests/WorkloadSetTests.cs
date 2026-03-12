@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
 
             //  Get workload set feature band
-            var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion2);
+            var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(WorkloadSetVersion2);
 
             string workloadSet2Path = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
 
@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             UpdateWithWorkloadSets();
 
-            var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion2);
+            var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(WorkloadSetVersion2);
 
             string workloadSetPath = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
 

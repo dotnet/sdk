@@ -58,7 +58,7 @@ internal static class WorkloadFileBasedInstall
         {
             try
             {
-                var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                var historyRecord = JsonSerializer.Deserialize(File.ReadAllText(file), WorkloadHistoryJsonSerializerContext.Default.WorkloadHistoryRecord);
                 if (historyRecord is not null)
                 {
                     historyRecords.Add(historyRecord);

@@ -1,16 +1,45 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
-
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class ChannelVersionResolver
 {
-    private ReleaseManifest _releaseManifest = new();
+    /// <summary>
+    /// Channel keyword for the latest stable release.
+    /// </summary>
+    public const string LatestChannel = "latest";
+
+    /// <summary>
+    /// Channel keyword for the latest preview release.
+    /// </summary>
+    public const string PreviewChannel = "preview";
+
+    /// <summary>
+    /// Channel keyword for the latest Long Term Support (LTS) release.
+    /// </summary>
+    public const string LtsChannel = "lts";
+
+    /// <summary>
+    /// Channel keyword for the latest Standard Term Support (STS) release.
+    /// </summary>
+    public const string StsChannel = "sts";
+
+    /// <summary>
+    /// Known channel keywords that are always valid.
+    /// </summary>
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, StsChannel];
+
+    /// <summary>
+    /// Maximum reasonable major version number. .NET versions are currently single-digit;
+    /// anything above 99 is clearly invalid input (e.g., typos, random numbers).
+    /// </summary>
+    internal const int MaxReasonableMajorVersion = 99;
+
+    private readonly ReleaseManifest _releaseManifest = new();
 
     public ChannelVersionResolver()
     {
@@ -22,18 +51,23 @@ internal class ChannelVersionResolver
         _releaseManifest = releaseManifest;
     }
 
-    public IEnumerable<string> GetSupportedChannels()
+    public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
         var productIndex = _releaseManifest.GetReleasesIndex();
-        return ["latest", "preview", "lts", "sts",
+        return [..KnownChannelKeywords,
             ..productIndex
                 .Where(p => p.IsSupported)
                 .OrderByDescending(p => p.LatestReleaseVersion)
-                .SelectMany(GetChannelsForProduct)
+                .SelectMany(p => GetChannelsForProduct(p, includeFeatureBands))
         ];
 
-        static IEnumerable<string> GetChannelsForProduct(Product product)
+        static IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
         {
+            if (!includeFeatureBands)
+            {
+                return [product.ProductVersion];
+            }
+
             return [product.ProductVersion,
                 ..product.GetReleasesAsync().GetAwaiter().GetResult()
                     .SelectMany(r => r.Sdks)
@@ -53,11 +87,94 @@ internal class ChannelVersionResolver
     }
 
     /// <summary>
+    /// Checks if a channel string looks like a valid .NET version/channel format.
+    /// This is a preliminary validation before attempting resolution.
+    /// </summary>
+    /// <param name="channel">The channel string to validate</param>
+    /// <returns>True if the format appears valid, false if clearly invalid</returns>
+    public static bool IsValidChannelFormat(string channel)
+    {
+        if (string.IsNullOrWhiteSpace(channel))
+        {
+            return false;
+        }
+
+        // Known keywords are always valid
+        if (KnownChannelKeywords.Any(k => string.Equals(k, channel, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        // Check for prerelease suffix (e.g., "10.0.100-preview.1.32640")
+        var dashIndex = channel.IndexOf('-');
+        var hasPrerelease = dashIndex >= 0;
+        var versionPart = hasPrerelease ? channel.Substring(0, dashIndex) : channel;
+
+        // Try to parse as a version-like string
+        var parts = versionPart.Split('.');
+        if (parts.Length is 0 or > 4)
+        {
+            return false;
+        }
+
+        // First part must be a valid major version
+        if (!int.TryParse(parts[0], out var major) || major < 0 || major > MaxReasonableMajorVersion)
+        {
+            return false;
+        }
+
+        // If there are more parts, validate them
+        if (parts.Length >= 2)
+        {
+            if (!int.TryParse(parts[1], out var minor) || minor < 0)
+            {
+                return false;
+            }
+        }
+
+        if (parts.Length >= 3)
+        {
+            var patch = parts[2];
+            if (string.IsNullOrEmpty(patch))
+            {
+                return false;
+            }
+
+            // Allow either:
+            //  - a fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix, or
+            //  - a feature band pattern with a numeric prefix and "xx" suffix (e.g., "1xx", "101xx"),
+            //    but NOT with a prerelease suffix (wildcards with prerelease not supported).
+            if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
+            {
+                if (hasPrerelease)
+                {
+                    return false;
+                }
+
+                var prefix = patch.Substring(0, patch.Length - 2);
+                if (prefix.Length == 0 || !int.TryParse(prefix, out _))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!int.TryParse(patch, out var numericPatch) || numericPatch < 0)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Parses a version channel string into its components.
     /// </summary>
     /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
     /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
-    private (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
+    private static (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
     {
         var parts = channel.Name.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
@@ -92,18 +209,18 @@ internal class ChannelVersionResolver
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, StsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
+            var releaseType = string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
-        else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
-        else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);
@@ -141,7 +258,7 @@ internal class ChannelVersionResolver
         return null;
     }
 
-    private IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
+    private static IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
     {
         var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}."));
         return validProducts;
@@ -150,7 +267,7 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Gets the latest version for a major-only channel (e.g., "9").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
+    private static ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
     {
         // Assumption: The manifest is designed so that the first product for a major version will always be latest.
         Product? latestProductWithMajor = GetProductsInMajorOrMajorMinor(index, major, minor).FirstOrDefault();
@@ -176,7 +293,7 @@ internal class ChannelVersionResolver
     /// <param name="index">The product collection to search</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest preview or GoLive version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
+    private static ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
     {
         ReleaseVersion? latestPreviewVersion = GetLatestVersionBySupportPhase(index, component, [SupportPhase.Preview, SupportPhase.GoLive]);
         if (latestPreviewVersion is not null)
@@ -235,14 +352,13 @@ internal class ChannelVersionResolver
             .Replace("x", "0")
             .PadRight(3, '0')
             .Substring(0, 3);
-        return int.Parse(bandString);
+        return int.Parse(bandString, CultureInfo.InvariantCulture);
     }
-
 
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
         if (component != InstallComponent.SDK)
         {
