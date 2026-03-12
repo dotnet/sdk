@@ -143,7 +143,7 @@ internal static class InstallationLister
                 writer.WriteLine(Indent(1, rootPath));
 
                 var specs = listData.InstallSpecs.Where(s => s.InstallRoot == rootPath).ToList();
-                DisplayInstallRoots(writer, console, specs);
+                DisplayInstallSpecs(writer, console, specs);
 
                 var installs = listData.Installations.Where(i => i.InstallRoot == rootPath).ToList();
                 DisplayInstallations(writer, console, installs);
@@ -155,7 +155,7 @@ internal static class InstallationLister
         writer.WriteLine($"{Strings.ListTotal}: {listData.Installations.Count}");
     }
 
-    private static void DisplayInstallRoots(TextWriter writer, IAnsiConsole console, List<InstallSpecInfo> specs)
+    private static void DisplayInstallSpecs(TextWriter writer, IAnsiConsole console, List<InstallSpecInfo> specs)
     {
         if (specs.Count > 0)
         {
