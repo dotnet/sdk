@@ -23,13 +23,13 @@ internal static class GarbageCollectionRunner
     public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, bool showEmptyMessage = false)
     {
         Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
+        AnsiConsole.WriteLine("Removing unused installations...");
 
         var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
         var deleted = gc.Collect(installRoot);
 
         if (deleted.Count > 0)
         {
-            AnsiConsole.WriteLine("Removing unused installations...");
             foreach (var d in deleted)
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
@@ -37,7 +37,7 @@ internal static class GarbageCollectionRunner
         }
         else if (showEmptyMessage)
         {
-            AnsiConsole.MarkupLine("[dim]No files were removed because they are still in use by other tracked installations.[/]");
+            AnsiConsole.MarkupLine("[dim]No files were removed.[/]");
         }
 
         return deleted;
