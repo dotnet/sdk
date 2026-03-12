@@ -50,6 +50,7 @@ jobs:
       - powershell: |
           & .\restore.cmd -projects dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Windows)
+        timeoutInMinutes: 10
       - powershell: |
           & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
         displayName: ♻️ Restore dotnetup tests (Windows)
@@ -69,10 +70,7 @@ jobs:
       - script: |
           ./restore.sh -projects $(Build.SourcesDirectory)/dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Unix)
-      - script: |
-          # Free disk space by clearing the NuGet HTTP cache after restore.
-          ./.dotnet/dotnet nuget locals http-cache --clear 2>/dev/null || true
-        displayName: 🧹 Free disk space
+        timeoutInMinutes: 10
       - script: |
           ./.dotnet/dotnet restore test/dotnetup.Tests/dotnetup.Tests.csproj
         displayName: ♻️ Restore dotnetup tests (Unix)

@@ -56,10 +56,15 @@ jobs:
     - checkout: self
       fetchDepth: 1
 
+    - template: /eng/pipelines/templates/steps/strip-global-json-runtimes.yml
+      parameters:
+        os: ${{ parameters.pool.os }}
+
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
           & .\restore.cmd -projects dotnetup.slnf $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
+        timeoutInMinutes: 10
         env:
           DOTNET_INSTALL_TEST_RUNTIMES: false
       - powershell: |
@@ -74,6 +79,7 @@ jobs:
       - script: |
           ./restore.sh -projects $(Build.SourcesDirectory)/src/Installer/dotnetup/dotnetup.csproj $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Unix)
+        timeoutInMinutes: 10
         env:
           DOTNET_INSTALL_TEST_RUNTIMES: false
       - script: |
@@ -82,13 +88,6 @@ jobs:
           ./.dotnet/dotnet nuget locals http-cache --clear 2>/dev/null || true
           # 2. Delete source trees not needed for the dotnetup publish.
           rm -rf test/ template_feed/ documentation/ benchmarks/ .github/ .claude/
-          rm -rf src/Microsoft.CodeAnalysis.NetAnalyzers src/Cli src/Tasks src/WebSdk
-          rm -rf src/Layout src/BuiltInTools src/Compatibility src/Containers
-          rm -rf src/StaticWebAssetsSdk src/RazorSdk src/Workloads src/BlazorWasmSdk
-          rm -rf src/WasmSdk src/Microsoft.DotNet.ProjectTools src/Microsoft.Win32.Msi
-          rm -rf src/Microsoft.DotNet.TemplateLocator src/Microsoft.Net.Sdk.Compilers.Toolset
-          rm -rf src/Microsoft.Extensions.Logging.MSBuild src/Common
-          rm -rf src/System.CommandLine.StaticCompletions
           echo "Disk usage after cleanup:"
           df -h / || true
         displayName: 🧹 Free disk space
