@@ -168,20 +168,9 @@ internal class UpdateWorkflow
     /// </summary>
     private static void UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        string? currentVersionString = null;
-        try
+        var modifier = new GlobalJsonModifier();
+        if (modifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
-            var json = File.ReadAllText(globalJsonPath);
-            var contents = System.Text.Json.JsonSerializer.Deserialize(json, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-            currentVersionString = contents?.Sdk?.Version;
-        }
-        catch { }
-
-        if (currentVersionString is null
-            || !ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
-            || latestVersion > currentVersion)
-        {
-            new DotnetInstallManager().UpdateGlobalJson(globalJsonPath, latestVersion.ToString());
             AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{globalJsonPath}[/] to {latestVersion}.");
         }
     }
