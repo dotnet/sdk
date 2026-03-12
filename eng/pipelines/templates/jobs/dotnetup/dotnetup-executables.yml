@@ -56,6 +56,8 @@ jobs:
       - powershell: |
           & .\restore.cmd -projects dotnetup.slnf $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
+        env:
+          DOTNET_INSTALL_TEST_RUNTIMES: false
       - powershell: |
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
@@ -68,6 +70,8 @@ jobs:
       - script: |
           ./restore.sh -projects $(Build.SourcesDirectory)/src/Installer/dotnetup/dotnetup.csproj $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Unix)
+        env:
+          DOTNET_INSTALL_TEST_RUNTIMES: false
       - script: |
           # Free disk space in cross-build containers by clearing the NuGet HTTP cache.
           # Restored packages remain in the global-packages cache; only the HTTP cache is disposable.
