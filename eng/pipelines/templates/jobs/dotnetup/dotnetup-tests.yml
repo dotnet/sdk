@@ -58,7 +58,7 @@ jobs:
           & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release --no-restore -p:TreatWarningsAsErrors=false
         displayName: 💻 Build Windows
       - powershell: |
-          & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release --self-contained -p:EnforceCodeStyleInBuild=false
+          & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Windows)
       - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
@@ -78,7 +78,7 @@ jobs:
           ./.dotnet/dotnet build test/dotnetup.Tests/dotnetup.Tests.csproj -c Release --no-restore -p:TreatWarningsAsErrors=false
         displayName: 🐧 Build (Unix)
       - script: |
-          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release --self-contained -p:EnforceCodeStyleInBuild=false
+          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Unix)
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
