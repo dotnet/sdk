@@ -190,13 +190,15 @@ extends:
               image: 1es-windows-2022
               os: windows
 
-      ### Executables ###
-      - stage: executables
-        displayName: 🏗️ Build dotnetup executables
+      ############### Executables ###############
+      # Each RID gets its own stage so that the 1ES-injected Guardian/autobaseline
+      # artifact names (which are stage-scoped, not job-scoped) don't collide.
+
+      ### win-x64 ###
+      - stage: executable_win_x64
+        displayName: 🪟 dotnetup win-x64
         dependsOn: []
         jobs:
-        ############### WINDOWS ###############
-        ### win-x64 ###
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: win-x64
@@ -211,7 +213,12 @@ extends:
             preSteps:
             - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
               displayName: Create artifacts/bin directory
-        ### win-arm64 ###
+
+      ### win-arm64 ###
+      - stage: executable_win_arm64
+        displayName: 💪 dotnetup win-arm64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: win-arm64
@@ -227,8 +234,11 @@ extends:
             - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
               displayName: Create artifacts/bin directory
 
-        ############### LINUX ###############
-        ### linux-x64 ###
+      ### linux-x64 ###
+      - stage: executable_linux_x64
+        displayName: 🐧 dotnetup linux-x64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-x64
@@ -241,7 +251,12 @@ extends:
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
-        ### linux-arm64 ###
+
+      ### linux-arm64 ###
+      - stage: executable_linux_arm64
+        displayName: 💪 dotnetup linux-arm64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-arm64
@@ -254,7 +269,12 @@ extends:
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
-        ### linux-musl-x64 ###
+
+      ### linux-musl-x64 ###
+      - stage: executable_linux_musl_x64
+        displayName: 🏔️ dotnetup linux-musl-x64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-musl-x64
@@ -268,7 +288,12 @@ extends:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
             enableSbom: false
-        ### linux-musl-arm64 ###
+
+      ### linux-musl-arm64 ###
+      - stage: executable_linux_musl_arm64
+        displayName: 🏔️ dotnetup linux-musl-arm64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: linux-musl-arm64
@@ -283,8 +308,11 @@ extends:
               publishTaskPrefix: 1ES.
             enableSbom: false
 
-        ############### MACOS ###############
-        ### osx-x64 ###
+      ### osx-x64 ###
+      - stage: executable_osx_x64
+        displayName: 🍎 dotnetup osx-x64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: osx-x64
@@ -296,7 +324,12 @@ extends:
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
-        ### osx-arm64 ###
+
+      ### osx-arm64 ###
+      - stage: executable_osx_arm64
+        displayName: 💪 dotnetup osx-arm64
+        dependsOn: []
+        jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
           parameters:
             rid: osx-arm64
