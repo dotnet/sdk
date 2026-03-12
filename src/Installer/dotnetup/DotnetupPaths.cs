@@ -35,7 +35,7 @@ internal static class DotnetupPaths
             var overrideDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
             if (!string.IsNullOrEmpty(overrideDir))
             {
-                return Path.GetFullPath(overrideDir);
+                return overrideDir;
             }
 
             if (s_dataDirectory is not null)
@@ -68,7 +68,7 @@ internal static class DotnetupPaths
             var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
             if (!string.IsNullOrEmpty(overridePath))
             {
-                return Path.GetFullPath(overridePath);
+                return overridePath;
             }
 
             return Path.Combine(DataDirectory, ManifestFileName);

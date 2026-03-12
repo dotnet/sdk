@@ -582,6 +582,24 @@ public class ReuseAndErrorTests
         exitCode.Should().Be(0, $"Second install failed. Output:\n{output}");
         output.Should().Contain("is already installed",
             "Re-installing the same component should detect it is already installed and skip the download");
+
+        // Step 3: Verify the install spec is still recorded despite the install being short-circuited.
+        // The orchestrator should call RecordInstallSpec even when the version is already installed,
+        // so the user's requested channel is tracked in the manifest.
+        List<InstallSpec> installSpecs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        var expectedComponent = componentType.Contains('@') ? InstallComponent.Runtime : InstallComponent.SDK;
+        installSpecs.Should().ContainSingle(s => s.Component == expectedComponent,
+            "Install spec should be recorded in the manifest even when the version was already installed");
     }
 }
 
@@ -874,5 +892,177 @@ public class LifecycleEndToEndTests
         var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App");
         Directory.Exists(runtimeDir).Should().BeTrue(
             "shared/Microsoft.NETCore.App directory should remain for explicitly installed runtime");
+    }
+
+    [Fact]
+    public void MultipleGlobalJson_UpdateRetainsOlderPinnedVersion()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // project-a: uses default rollForward (latestPatch), so dotnetup derives channel "9.0.1xx".
+        // This spec IS updatable because "9.0.1xx" is not a fully-specified version.
+        string projectADir = Path.Combine(testEnv.TempRoot, "project-a");
+        Directory.CreateDirectory(projectADir);
+        string globalJsonA = Path.Combine(projectADir, "global.json");
+        File.WriteAllText(globalJsonA, """
+            {
+              "sdk": {
+                "version": "9.0.100"
+              }
+            }
+            """);
+
+        // project-b: uses rollForward "disable", so dotnetup stores exact version "9.0.100".
+        // This spec is NOT updatable because "9.0.100" is a fully-specified version.
+        string projectBDir = Path.Combine(testEnv.TempRoot, "project-b");
+        Directory.CreateDirectory(projectBDir);
+        string globalJsonB = Path.Combine(projectBDir, "global.json");
+        File.WriteAllText(globalJsonB, """
+            {
+              "sdk": {
+                "version": "9.0.100",
+                "rollForward": "disable"
+              }
+            }
+            """);
+
+        // Step 1: Install SDK from project-a's global.json
+        var installArgsA = new List<string>(["sdk", "install",
+            "--install-path", testEnv.InstallPath,
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            installArgsA.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. installArgsA], captureOutput: true, workingDirectory: projectADir);
+        exitCode.Should().Be(0, $"SDK install from project-a global.json failed. Output:\n{output}");
+
+        // Step 2: Install SDK from project-b's global.json
+        var installArgsB = new List<string>(["sdk", "install",
+            "--install-path", testEnv.InstallPath,
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            installArgsB.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. installArgsB], captureOutput: true, workingDirectory: projectBDir);
+        exitCode.Should().Be(0, $"SDK install from project-b global.json failed. Output:\n{output}");
+
+        // Step 3: Verify both install specs are in the manifest with correct sources/channels
+        List<InstallSpec> specsBefore;
+        List<Installation> installsBefore;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsBefore = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsBefore = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        // Both should be GlobalJson-sourced
+        specsBefore.Should().HaveCount(2, "should have two install specs from two global.json files");
+        specsBefore.Should().OnlyContain(s => s.InstallSource == InstallSource.GlobalJson,
+            "both specs should have GlobalJson source");
+
+        // project-a (default rollForward) should have channel-style VersionOrChannel (e.g., "9.0.1xx")
+        var specA = specsBefore.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonA));
+        specA.Should().NotBeNull("should find spec for project-a global.json");
+        specA!.VersionOrChannel.Should().Be("9.0.1xx",
+            "default rollForward should derive feature band channel from 9.0.100");
+
+        // project-b (rollForward: disable) should have exact version
+        var specB = specsBefore.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonB));
+        specB.Should().NotBeNull("should find spec for project-b global.json");
+        specB!.VersionOrChannel.Should().Be("9.0.100",
+            "rollForward: disable should store exact version");
+
+        // SDK 9.0.100 should be installed (both global.json files required it)
+        installsBefore.Should().Contain(i => i.Component == InstallComponent.SDK && i.Version == "9.0.100",
+            "SDK 9.0.100 should be installed from the initial global.json installs");
+
+        // Step 4: Run update — should update the 9.0.1xx spec but skip the pinned 9.0.100 spec
+        var updateArgs = DotnetupTestUtilities.BuildSdkUpdateArguments(
+            testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            updateArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK update failed. Output:\n{output}");
+
+        // Step 5: Verify manifest state after update
+        List<InstallSpec> specsAfter;
+        List<Installation> installsAfter;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsAfter = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsAfter = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        // Both specs should still be present
+        specsAfter.Should().HaveCount(2, "both global.json specs should be retained after update");
+
+        // The pinned spec (project-b, "9.0.100") should be unchanged
+        var specBAfter = specsAfter.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonB));
+        specBAfter.Should().NotBeNull("project-b spec should survive update");
+        specBAfter!.VersionOrChannel.Should().Be("9.0.100",
+            "pinned spec should not be modified by update");
+
+        // The updatable spec (project-a, "9.0.1xx") should still reference the feature band
+        var specAAfter = specsAfter.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonA));
+        specAAfter.Should().NotBeNull("project-a spec should survive update");
+        specAAfter!.VersionOrChannel.Should().Be("9.0.1xx",
+            "feature band channel should not change after update");
+
+        // SDK 9.0.100 must still be installed (project-b's pinned spec keeps it alive)
+        installsAfter.Should().Contain(i => i.Component == InstallComponent.SDK && i.Version == "9.0.100",
+            "pinned SDK 9.0.100 should be retained because project-b's spec still references it");
+
+        // Resolve what the latest version in 9.0.1xx should be
+        var latestInBand = new ChannelVersionResolver().GetLatestVersionForChannel(
+            new UpdateChannel("9.0.1xx"), InstallComponent.SDK);
+        latestInBand.Should().NotBeNull("9.0.1xx channel should resolve to a valid version");
+
+        // If update actually installed a newer version, verify it exists
+        if (latestInBand!.ToString() != "9.0.100")
+        {
+            installsAfter.Should().Contain(
+                i => i.Component == InstallComponent.SDK && i.Version == latestInBand.ToString(),
+                $"updated SDK version {latestInBand} should be installed for the 9.0.1xx channel");
+
+            // Verify the SDK directory for the updated version exists on disk
+            var updatedSdkDir = Path.Combine(testEnv.InstallPath, "sdk", latestInBand.ToString()!);
+            Directory.Exists(updatedSdkDir).Should().BeTrue(
+                $"SDK {latestInBand} directory should exist on disk after update");
+        }
+
+        // Verify the SDK directory for the pinned version still exists on disk
+        var pinnedSdkDir = Path.Combine(testEnv.InstallPath, "sdk", "9.0.100");
+        Directory.Exists(pinnedSdkDir).Should().BeTrue(
+            "SDK 9.0.100 directory should still exist on disk (kept by project-b's pinned spec)");
+
+        // Step 6: Verify via list output that both installations are visible
+        var listArgs = DotnetupTestUtilities.BuildListArguments(
+            testEnv.InstallPath, testEnv.ManifestPath, format: "Json");
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            listArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"List command failed. Output:\n{output}");
+        output.Should().Contain("9.0.100", "List output should show the pinned SDK version");
+        output.Should().Contain("GlobalJson", "List output should show GlobalJson source");
     }
 }

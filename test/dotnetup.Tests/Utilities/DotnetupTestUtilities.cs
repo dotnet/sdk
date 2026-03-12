@@ -85,6 +85,51 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
+    /// Builds command line arguments for dotnetup update (root-level, updates all components).
+    /// </summary>
+    public static string[] BuildUpdateArguments(string installPath, string? manifestPath = null, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup sdk update.
+    /// </summary>
+    public static string[] BuildSdkUpdateArguments(string installPath, string? manifestPath = null, bool updateAll = false, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["sdk", "update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateAll)
+        {
+            commandArgs.Add("--all");
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
     /// Builds command line arguments for dotnetup list
     /// </summary>
     public static string[] BuildListArguments(string installPath, string? manifestPath = null, string? format = null)

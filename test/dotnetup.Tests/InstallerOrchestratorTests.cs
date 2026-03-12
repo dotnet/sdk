@@ -15,13 +15,16 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class InstallerOrchestratorTests
 {
+    private static readonly string TestRoot = OperatingSystem.IsWindows() ? @"C:\dotnet" : "/dotnet";
+    private static readonly string TestAltRoot = OperatingSystem.IsWindows() ? @"C:\other-dotnet" : "/other-dotnet";
+
     #region InstallAlreadyExists
 
     [Fact]
     public void InstallAlreadyExists_ReturnsTrueForDuplicateInstall()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall("C:\\dotnet", "10.0.100", InstallComponent.SDK);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
 
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeTrue();
     }
@@ -29,8 +32,8 @@ public class InstallerOrchestratorTests
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentVersion()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall("C:\\dotnet", "10.0.101", InstallComponent.SDK);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(TestRoot, "10.0.101", InstallComponent.SDK);
 
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
     }
@@ -38,8 +41,8 @@ public class InstallerOrchestratorTests
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentComponent()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall("C:\\dotnet", "10.0.100", InstallComponent.Runtime);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.Runtime);
 
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
     }
@@ -47,8 +50,8 @@ public class InstallerOrchestratorTests
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentRoot()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall("C:\\other-dotnet", "10.0.100", InstallComponent.SDK);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(TestAltRoot, "10.0.100", InstallComponent.SDK);
 
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
     }
@@ -57,7 +60,7 @@ public class InstallerOrchestratorTests
     public void InstallAlreadyExists_ReturnsFalseForEmptyManifest()
     {
         var manifestData = new DotnetupManifestData();
-        var install = MakeInstall("C:\\dotnet", "10.0.100", InstallComponent.SDK);
+        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
 
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
     }
@@ -71,7 +74,7 @@ public class InstallerOrchestratorTests
             [
                 new DotnetRootEntry
                 {
-                    Path = "C:\\dotnet",
+                    Path = TestRoot,
                     Architecture = InstallArchitecture.x64,
                     Installations =
                     [
@@ -83,7 +86,7 @@ public class InstallerOrchestratorTests
             ]
         };
 
-        var install = MakeInstall("C:\\dotnet", "10.0.100", InstallComponent.SDK);
+        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
         InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeTrue();
     }
 
@@ -94,8 +97,8 @@ public class InstallerOrchestratorTests
     [Fact]
     public void IsRootInManifest_ReturnsTrueWhenRootExists()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var root = new DotnetInstallRoot("C:\\dotnet", InstallArchitecture.x64);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
 
         InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeTrue();
     }
@@ -103,8 +106,8 @@ public class InstallerOrchestratorTests
     [Fact]
     public void IsRootInManifest_ReturnsFalseWhenRootDoesNotExist()
     {
-        var manifestData = ManifestWithInstallation("C:\\dotnet", InstallComponent.SDK, "10.0.100");
-        var root = new DotnetInstallRoot("C:\\other-dotnet", InstallArchitecture.x64);
+        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(TestAltRoot, InstallArchitecture.x64);
 
         InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeFalse();
     }
@@ -113,7 +116,7 @@ public class InstallerOrchestratorTests
     public void IsRootInManifest_ReturnsFalseForEmptyManifest()
     {
         var manifestData = new DotnetupManifestData();
-        var root = new DotnetInstallRoot("C:\\dotnet", InstallArchitecture.x64);
+        var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
 
         InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeFalse();
     }
