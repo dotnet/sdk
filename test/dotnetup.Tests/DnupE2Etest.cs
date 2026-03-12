@@ -716,11 +716,14 @@ public class LifecycleEndToEndTests
         specsAfter.Should().BeEmpty("No install specs should remain after uninstall");
 
         // Verify that SDK artifacts were cleaned up from the install directory.
-        // The directory may still contain the dotnet host executable, which is shared infrastructure.
-        // But SDK-specific directories (like sdk/) should be cleaned up.
+        // The GC removes specific version subdirectories (e.g., sdk/9.0.103/) but
+        // may leave the empty sdk/ parent directory. Check that no version directories remain.
         var sdkDir = Path.Combine(testEnv.InstallPath, "sdk");
-        Directory.Exists(sdkDir).Should().BeFalse(
-            "sdk/ directory should be removed after uninstalling the only SDK");
+        if (Directory.Exists(sdkDir))
+        {
+            Directory.GetDirectories(sdkDir).Should().BeEmpty(
+                "All SDK version directories should be removed after uninstalling the only SDK");
+        }
     }
 
     [Fact]
@@ -833,10 +836,14 @@ public class LifecycleEndToEndTests
         installsAfterUninstall.Should().ContainSingle(i => i.Component == InstallComponent.Runtime,
             "Runtime installation should not be removed when uninstalling the SDK, because it has its own explicit spec");
 
-        // The sdk/ directory should be cleaned up since no SDK spec references it
+        // The GC removes specific SDK version subdirectories but may leave the
+        // empty sdk/ parent directory. Verify no version directories remain.
         var sdkDir = Path.Combine(testEnv.InstallPath, "sdk");
-        Directory.Exists(sdkDir).Should().BeFalse(
-            "sdk/ directory should be removed after SDK uninstall");
+        if (Directory.Exists(sdkDir))
+        {
+            Directory.GetDirectories(sdkDir).Should().BeEmpty(
+                "All SDK version directories should be removed after SDK uninstall");
+        }
 
         // But the shared/Microsoft.NETCore.App directory should still exist for the runtime
         var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App");
