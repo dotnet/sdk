@@ -18,7 +18,9 @@
   <PropertyGroup>
     <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and
                                        '$(PrereleaseVersionLabel)' != 'rtm' and
-                                       '$(PrereleaseVersionLabel)' != 'servicing'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
+                                       '$(PrereleaseVersionLabel)' != 'servicing'">-$(PreReleaseVersionLabel)</_workloadVersionSuffix>
+    <!-- Append the version iteration if it's not empty -->
+    <_workloadVersionSuffix Condition="'$(_workloadVersionSuffix)' != '' and '$(PrereleaseVersionIteration)' != ''">$(_workloadVersionSuffix).$(PrereleaseVersionIteration)</_workloadVersionSuffix>
     <PackageId>$(MSBuildProjectName)-$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)</PackageId>
     <PackageId Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">Microsoft.NET.Workload.Emscripten.Current.Manifest-$(BuiltinWorkloadFeatureBand).Transport</PackageId>
   </PropertyGroup>
