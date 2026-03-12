@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -144,7 +145,7 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("delete-orphaned-subcomponents");
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("gc.delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
 

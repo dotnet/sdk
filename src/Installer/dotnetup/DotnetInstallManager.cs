@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public class DotnetInstallManager : IDotnetInstallManager
 {
     private readonly IEnvironmentProvider _environmentProvider;
-    private readonly GlobalJsonModifier _globalJsonModifier = new();
 
     public DotnetInstallManager(IEnvironmentProvider? environmentProvider = null)
     {
@@ -73,7 +72,7 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
     {
-        return _globalJsonModifier.GetGlobalJsonInfo(initialDirectory);
+        return GlobalJsonModifier.GetGlobalJsonInfo(initialDirectory);
     }
 
     public string? GetLatestInstalledAdminVersion()
@@ -105,7 +104,7 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
-        _globalJsonModifier.UpdateGlobalJson(globalJsonPath, sdkVersion);
+        GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, sdkVersion);
     }
 
     internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)

@@ -168,8 +168,7 @@ internal class UpdateWorkflow
     /// </summary>
     private static void UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        var modifier = new GlobalJsonModifier();
-        if (modifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
+        if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
             AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{globalJsonPath}[/] to {latestVersion}.");
         }

@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// including walking the directory tree, parsing SDK version info, and
 /// updating the version string while preserving formatting and encoding.
 /// </summary>
-public class GlobalJsonModifier
+public static class GlobalJsonModifier
 {
     /// <summary>
     /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
     /// and walking up the directory tree. Returns the parsed contents and path if found.
     /// </summary>
-    public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
     {
         string? directory = initialDirectory;
         while (!string.IsNullOrEmpty(directory))
@@ -52,7 +52,7 @@ public class GlobalJsonModifier
     /// Updates the SDK version in a global.json file. Does nothing if
     /// <paramref name="sdkVersion"/> is null or the file does not exist.
     /// </summary>
-    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
+    public static void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
         if (sdkVersion is null)
         {
@@ -78,7 +78,7 @@ public class GlobalJsonModifier
     /// recorded in the file (or when the current version cannot be parsed).
     /// </summary>
     /// <returns><see langword="true"/> if the file was updated; otherwise <see langword="false"/>.</returns>
-    public bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
+    public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
     {
         string? currentVersionString = null;
         try
@@ -108,7 +108,7 @@ public class GlobalJsonModifier
     /// preserving all existing formatting. Uses <see cref="Utf8JsonReader"/> to find
     /// exact token positions.
     /// </summary>
-    internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
+    public static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
     {
         var bytes = System.Text.Encoding.UTF8.GetBytes(jsonText);
         var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
