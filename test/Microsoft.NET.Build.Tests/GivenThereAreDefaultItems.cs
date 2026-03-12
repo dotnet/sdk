@@ -854,6 +854,35 @@ public class Class1
                 .BeEmpty();
         }
 
+        [Fact]
+        public void It_excludes_items_in_publish_directory()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                // Create a PublishDir with a JSON file (simulating a previous publish)
+                string publishDir = Path.Combine(getValuesCommand.ProjectRootPath, "artifacts", "TestLibrary");
+                WriteFile(Path.Combine(publishDir, "appsettings.json"),
+                    "{ \"Setting\": \"Value\" }");
+
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                propertyGroup.Add(new XElement(ns + "PublishDir", "artifacts\\TestLibrary\\"));
+            };
+
+            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "None", setup, projectChanges: projectChanges);
+
+            // The appsettings.json file in the PublishDir should not be included in None items
+            noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
+        }
+
         void RemoveGeneratedCompileItems(List<string> compileItems)
         {
             //  Remove auto-generated compile items.

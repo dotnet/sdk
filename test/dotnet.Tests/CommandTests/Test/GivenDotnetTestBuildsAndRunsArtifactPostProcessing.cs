@@ -89,6 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetVSTestCommand(Log)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
+                                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "1")
                                     .Execute(
                                         Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
                                         Directory.GetFiles(testInstance.Path, "test2.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),

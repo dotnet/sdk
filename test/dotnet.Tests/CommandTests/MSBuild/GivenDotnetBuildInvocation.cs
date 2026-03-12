@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
+        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         public static string[] RestoreExpectedPrefixForImplicitRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
         public static string[] RestoreExpectedPrefixForSeparateRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--property:{kvp.Key}={kvp.Value}")];
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
             new string[] { "--property:TargetFramework=tfm", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
         [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
-            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "-nologo", "--verbosity:quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--nologo", "--verbosity:quiet" },
             new string[] { "--property:TargetFramework=tfm", "--getItem:Compile", "--getProperty:TargetFramework", "--getTargetResult:Build" })]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,

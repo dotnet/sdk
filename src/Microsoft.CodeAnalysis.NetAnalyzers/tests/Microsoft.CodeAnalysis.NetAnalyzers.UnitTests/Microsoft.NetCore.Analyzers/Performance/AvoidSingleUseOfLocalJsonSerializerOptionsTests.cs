@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -820,6 +821,81 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     End Function
                 End Class
                 """);
+
+        [Fact]
+        public Task CS_TopLevelStatements_UseNewOptionsAsArgument_NoWarn()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
+                        """
+                        using System.Text.Json;
+
+                        string json = JsonSerializer.Serialize(new[] { 1, 2, 3 }, new JsonSerializerOptions { AllowTrailingCommas = true });
+                        """
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task CS_TopLevelStatements_UseNewLocalOptionsAsArgument_NoWarn()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
+                        """
+                        using System.Text.Json;
+
+                        JsonSerializerOptions options = new()
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            ReadCommentHandling = JsonCommentHandling.Skip
+                        };
+
+                        var output = JsonSerializer.Deserialize<int[]>("[1,2,3]", options);
+                        """
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task CS_TopLevelStatements_UseNewLocalOptionsAsArgument_Assignment_NoWarn()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
+                        """
+                        using System.Text.Json;
+
+                        JsonSerializerOptions options;
+                        options = new JsonSerializerOptions();
+
+                        var output = JsonSerializer.Deserialize<int[]>("[1,2,3]", options);
+                        """
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            return test.RunAsync();
+        }
         #endregion
     }
 }
