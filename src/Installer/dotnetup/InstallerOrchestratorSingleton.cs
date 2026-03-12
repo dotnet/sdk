@@ -176,22 +176,22 @@ internal class InstallerOrchestratorSingleton
         });
     }
 
-    private static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
+    internal static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
     {
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
-            string.Equals(Path.GetFullPath(r.Path), Path.GetFullPath(install.InstallRoot.Path!), StringComparison.OrdinalIgnoreCase));
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
         return root?.Installations.Any(existing =>
             existing.Version == install.Version.ToString() &&
             existing.Component == install.Component) ?? false;
     }
 
-    private static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
+    internal static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
     {
         return manifestData.DotnetRoots.Any(root =>
-            string.Equals(Path.GetFullPath(root.Path), Path.GetFullPath(installRoot.Path), StringComparison.OrdinalIgnoreCase));
+            DotnetupUtilities.PathsEqual(root.Path, installRoot.Path));
     }
 
-    private static bool HasDotnetArtifacts(string? path)
+    internal static bool HasDotnetArtifacts(string? path)
     {
         if (path is null || !Directory.Exists(path))
         {
@@ -199,8 +199,7 @@ internal class InstallerOrchestratorSingleton
         }
 
         // Check for common .NET installation markers
-        string dotnetExe = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        return File.Exists(Path.Combine(path, dotnetExe))
+        return File.Exists(Path.Combine(path, DotnetupUtilities.GetDotnetExeName()))
             || Directory.Exists(Path.Combine(path, "sdk"))
             || Directory.Exists(Path.Combine(path, "shared"));
     }

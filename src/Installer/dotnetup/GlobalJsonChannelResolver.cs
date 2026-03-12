@@ -37,8 +37,8 @@ internal static class GlobalJsonChannelResolver
 
         try
         {
-            var json = File.ReadAllText(globalJsonPath);
-            var contents = JsonSerializer.Deserialize(json, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
+            var contents = JsonSerializer.Deserialize(stream, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
 
             if (contents?.Sdk?.Version is not { } versionString || string.IsNullOrWhiteSpace(versionString))
             {
