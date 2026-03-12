@@ -24,9 +24,8 @@ public class ScopedMutex : IDisposable
     public ScopedMutex(string name)
     {
         Name = name;
-#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
-        var held = s_heldMutexCounts.Value ??= new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore IDE0028
+
+        var held = s_heldMutexCounts.Value ??= [with(StringComparer.OrdinalIgnoreCase)];
 
         if (held.TryGetValue(name, out var state))
         {
@@ -76,9 +75,7 @@ public class ScopedMutex : IDisposable
         if (_isReentrant)
         {
             // Re-entrant: just decrement the hold count
-#pragma warning disable IDE0028 // Collection expression not applicable with IEqualityComparer ctor
-            var held = s_heldMutexCounts.Value ??= new Dictionary<string, MutexState>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore IDE0028
+            var held = s_heldMutexCounts.Value ??= [with(StringComparer.OrdinalIgnoreCase)];
             if (held.TryGetValue(Name, out var state))
             {
                 state.HoldCount--;
