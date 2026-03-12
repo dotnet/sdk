@@ -684,31 +684,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
 
-    <!-- Filter the current project's own grouped assets after the build manifest has been written.
-         This ensures the build manifest retains all variants (for consumers) while the endpoints
-         manifest and dev manifest only include the variant selected by the project's groups. -->
+    <!-- Filter ALL grouped assets (both project-owned and deferred/consumer) after the build
+         manifest has been written. The build manifest retains all variants so consumers can
+         select at restore time. The endpoints manifest and dev manifest only include the
+         variant selected by the project's groups. -->
     <FilterStaticWebAssetGroups
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      StaticWebAssetGroups="@(StaticWebAssetGroup)"
-      Source="$(PackageId)"
-      SkipDeferred="true">
+      StaticWebAssetGroups="@(StaticWebAssetGroup)">
       <Output TaskParameter="FilteredAssets" ItemName="_CurrentProjectFilteredAssets" />
       <Output TaskParameter="FilteredEndpoints" ItemName="_CurrentProjectFilteredEndpoints" />
     </FilterStaticWebAssetGroups>
 
-    <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" />
-      <StaticWebAsset Include="@(_CurrentProjectFilteredAssets)" />
-      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
-      <StaticWebAssetEndpoint Include="@(_CurrentProjectFilteredEndpoints)" />
-    </ItemGroup>
-
     <GenerateStaticWebAssetEndpointsManifest
       Source="$(PackageId)"
       ManifestType="Build"
-      Assets="@(StaticWebAsset)"
-      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_CurrentProjectFilteredAssets)"
+      Endpoints="@(_CurrentProjectFilteredEndpoints)"
       ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
       CacheFilePath="$(StaticWebAssetBuildManifestPath)"
       ExclusionPatterns="$(StaticWebAssetEndpointExclusionPattern)"
@@ -717,7 +709,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
-      Assets="@(StaticWebAsset)"
+      Assets="@(_CurrentProjectFilteredAssets)"
       Source="$(PackageId)"
       ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
       CacheFilePath="$(StaticWebAssetBuildManifestPath)">
@@ -745,20 +737,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
 
   <Target Name="FilterDeferredStaticWebAssetGroups" DependsOnTargets="$(FilterDeferredStaticWebAssetGroupsDependsOn)">
-    <FilterStaticWebAssetGroups
-      Assets="@(StaticWebAsset)"
-      Endpoints="@(StaticWebAssetEndpoint)"
-      StaticWebAssetGroups="@(StaticWebAssetGroup)">
-      <Output TaskParameter="FilteredAssets" ItemName="_FilteredDeferredAssets" />
-      <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredDeferredEndpoints" />
-    </FilterStaticWebAssetGroups>
-
-    <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" />
-      <StaticWebAsset Include="@(_FilteredDeferredAssets)" />
-      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
-      <StaticWebAssetEndpoint Include="@(_FilteredDeferredEndpoints)" />
-    </ItemGroup>
+    <!-- This target is intentionally a no-op for the global item lists.
+         Filtering is applied only when generating the dev and endpoints manifests
+         inside GenerateStaticWebAssetsManifest. The build manifest and pack targets
+         use the full unfiltered set so ALL group variants ship in the nupkg. -->
   </Target>
 
   <Target Name="ResolveBuildRelatedStaticWebAssets" DependsOnTargets="$(ResolveBuildRelatedStaticWebAssetsDependsOn)" />

@@ -158,6 +158,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ItemGroup>
 
+    <!-- @(StaticWebAsset) is unfiltered at this point — group filtering is only applied to
+         the dev and endpoints manifests. All group variants ship in the nupkg so consumers
+         can select at restore time. -->
     <ItemGroup>
       <_PackStaticWebAssetCandidates Include="@(StaticWebAsset)" Exclude="@(_StaticWebAssetExcludedFromPack)" />
     </ItemGroup>
@@ -212,9 +215,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- This is similar to what we do when providing assets as reference. We use _PackStaticWebAssets as ComputeEndpointsForReferenceStaticWebAssets
       discards any endpoint that doesn't have a matching asset, which acts as a filter to ensure we only provide the relevant endpoints.
     -->
+    <ItemGroup>
+      <_PackEndpointCandidates Include="@(StaticWebAssetEndpoint)" />
+    </ItemGroup>
+
     <ComputeEndpointsForReferenceStaticWebAssets
       Assets="@(_PackStaticWebAssets)"
-      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateEndpoints="@(_PackEndpointCandidates)"
     >
       <Output TaskParameter="Endpoints" ItemName="_PackStaticWebAssetEndpoints" />
     </ComputeEndpointsForReferenceStaticWebAssets>

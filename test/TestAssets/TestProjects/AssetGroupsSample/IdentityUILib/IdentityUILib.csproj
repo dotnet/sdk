@@ -20,12 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V5" Order="0" IncludePattern="V5/**" RelativePathPattern="V5/**" />
-    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V4" Order="1" IncludePattern="V4/**" RelativePathPattern="V4/**" />
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V5" Order="0" IncludePattern="V5/**" RelativePathPattern="V5/**" RelativePathPrefix="#[{BootstrapVersion}]~/" ContentRootSuffix="V5" />
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V4" Order="1" IncludePattern="V4/**" RelativePathPattern="V4/**" RelativePathPrefix="#[{BootstrapVersion}]~/" ContentRootSuffix="V4" />
   </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
+  <Import Project="StaticWebAssets.Groups.targets" />
 
 </Project>

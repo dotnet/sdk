@@ -86,7 +86,8 @@ public class ReadPackageAssetsManifest : Task
                     continue;
                 }
 
-                if (asset.MatchesGroups(groupLookup, skipDeferred: true))
+                var matches = asset.MatchesGroups(groupLookup, skipDeferred: true);
+                if (matches)
                 {
                     includedAssets.Add(asset);
                 }

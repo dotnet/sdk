@@ -27,17 +27,16 @@ public class ComputeStaticWebAssetsTargetPaths : Task
         {
             Log.LogMessage(MessageImportance.Low, "Using path prefix '{0}'", PathPrefix);
             AssetsWithTargetPath = new ITaskItem[Assets.Length];
+            var separator = UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar;
 
             for (var i = 0; i < Assets.Length; i++)
             {
                 var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
                 var result = staticWebAsset.ToTaskItem();
 
-                // The ~group token in RelativePath resolves to the directory prefix automatically
-                // via ComputeTargetPath with token resolver, so no separate group prefix is needed.
                 var targetPath = staticWebAsset.ComputeTargetPath(
                     PathPrefix,
-                    UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance);
+                    separator, StaticWebAssetTokenResolver.Instance);
 
                 if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                 {

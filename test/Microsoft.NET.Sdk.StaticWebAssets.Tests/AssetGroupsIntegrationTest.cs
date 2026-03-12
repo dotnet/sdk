@@ -11,6 +11,16 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class AssetGroupsIntegrationTest(ITestOutputHelper log)
         : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(AssetGroupsIntegrationTest))
     {
+        // Clear the cached package so NuGet re-extracts from the freshly-packed nupkg.
+        private void ClearCachedPackage(string packageId)
+        {
+            var cached = Path.Combine(GetNuGetCachePath(), packageId);
+            if (Directory.Exists(cached))
+            {
+                Directory.Delete(cached, recursive: true);
+            }
+        }
+
         [Fact]
         public void Pack_NupkgContains_GroupedStaticWebAssets()
         {
@@ -35,10 +45,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "V4", "js", "site.js"),
                     Path.Combine("staticwebassets", "V5", "css", "site.css"),
                     Path.Combine("staticwebassets", "V5", "js", "site.js"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "IdentityUILib.props"),
-                    Path.Combine("buildMultiTargeting", "IdentityUILib.props"),
-                    Path.Combine("buildTransitive", "IdentityUILib.props"),
+                    Path.Combine("build", "IdentityUILib.PackageAssets.json"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "StaticWebAssets.Groups.targets"),
+                    Path.Combine("build", "IdentityUILib.targets"),
+                    Path.Combine("buildMultiTargeting", "IdentityUILib.targets"),
+                    Path.Combine("buildTransitive", "IdentityUILib.targets"),
                 });
         }
 
@@ -59,21 +71,21 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(packagePath).Should().Exist();
 
             using var archive = ZipFile.OpenRead(packagePath);
-            var propsEntry = archive.Entries.FirstOrDefault(
-                e => e.FullName.Equals("build/Microsoft.AspNetCore.StaticWebAssets.props", StringComparison.OrdinalIgnoreCase));
+            var manifestEntry = archive.Entries.FirstOrDefault(
+                e => e.FullName.Equals("build/IdentityUILib.PackageAssets.json", StringComparison.OrdinalIgnoreCase));
 
-            propsEntry.Should().NotBeNull("the nupkg should contain a StaticWebAssets.props file");
+            manifestEntry.Should().NotBeNull("the nupkg should contain a PackageAssets.json manifest file");
 
-            using var stream = propsEntry.Open();
+            using var stream = manifestEntry.Open();
             using var reader = new StreamReader(stream);
-            var propsContent = reader.ReadToEnd();
+            var manifestContent = reader.ReadToEnd();
 
             // V5 assets should carry AssetGroups metadata containing BootstrapVersion=V5
-            propsContent.Should().Contain("BootstrapVersion=V5",
+            manifestContent.Should().Contain("BootstrapVersion=V5",
                 "V5 assets should have AssetGroups metadata with BootstrapVersion=V5");
 
             // V4 assets should carry AssetGroups metadata containing BootstrapVersion=V4
-            propsContent.Should().Contain("BootstrapVersion=V4",
+            manifestContent.Should().Contain("BootstrapVersion=V4",
                 "V4 assets should have AssetGroups metadata with BootstrapVersion=V4");
         }
 
@@ -86,6 +98,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             ExecuteCommand(pack).Should().Pass();
+            ClearCachedPackage("identityuilib");
 
             // Restore and build the default consumer (no explicit group override)
             var restore = CreateRestoreCommand(ProjectDirectory, "IdentityUIConsumer");
@@ -126,6 +139,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             ExecuteCommand(pack).Should().Pass();
+            ClearCachedPackage("identityuilib");
 
             // Restore and build the V4 consumer
             var restore = CreateRestoreCommand(ProjectDirectory, "IdentityUIConsumerV4");
@@ -139,15 +153,20 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(manifestPath).Should().Exist();
 
+            var manifestContent = File.ReadAllText(manifestPath);
+
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
             manifest.Should().NotBeNull();
+
+            var assetDump = string.Join("\n", (manifest.Assets ?? []).Select(a =>
+                $"  Asset: Identity={a.Identity}, SourceId={a.SourceId}, AssetGroups={a.AssetGroups}, AssetRole={a.AssetRole}, RelativePath={a.RelativePath}, SourceType={a.SourceType}"));
 
             // V4 assets should be included since the consumer set IdentityUIFrameworkVersion=V4
             var v4Assets = manifest.Assets
                 .Where(a => (a.AssetGroups ?? "").Contains("V4") && a.AssetRole == "Primary")
                 .ToList();
 
-            v4Assets.Should().NotBeEmpty("V4 assets should be included when consumer sets IdentityUIFrameworkVersion=V4");
+            v4Assets.Should().NotBeEmpty($"V4 assets should be included when consumer sets IdentityUIFrameworkVersion=V4. All assets in manifest ({manifest.Assets?.Length ?? 0}):\n{assetDump}");
 
             // V5 assets should be excluded (consumer only selected V4)
             var v5Assets = manifest.Assets
@@ -176,6 +195,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Pack the library first
             var pack = CreatePackCommand(ProjectDirectory, "IdentityUILib");
             ExecuteCommand(pack).Should().Pass();
+            ClearCachedPackage("identityuilib");
 
             // Restore and build the V5 consumer
             var restore = CreateRestoreCommand(ProjectDirectory, "IdentityUIConsumerV5");
