@@ -6,7 +6,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -34,9 +33,9 @@ public class ReadPackageAssetsManifest : Task
 
     public override bool Execute()
     {
-        var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
-        var allAssets = new List<ITaskItem>();
-        var allEndpoints = new List<ITaskItem>();
+        var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
+        var allAssets = new List<StaticWebAsset>();
+        var allEndpoints = new List<StaticWebAssetEndpoint>();
 
         foreach (var manifestItem in PackageManifests)
         {
@@ -70,109 +69,82 @@ public class ReadPackageAssetsManifest : Task
                 return false;
             }
 
-            // Phase 1: Group filtering on assets
-            var includedAssets = new List<PackageManifestAsset>();
-            var excludedAssetPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var resolvedManifestAssets = ResolveManifestAssets(manifest.Assets, sourceId, contentRoot, packageRoot);
 
-            foreach (var asset in manifest.Assets)
+            // Group filtering + cascading exclusion.
+            // Assets are sorted so parents appear before dependents, enabling a single-pass
+            // cascade: if a parent was excluded, skip its children without evaluating groups.
+            var sortedAssets = StaticWebAsset.SortByRelatedAsset(resolvedManifestAssets);
+            var includedAssets = new List<StaticWebAsset>(sortedAssets.Length);
+            var excludedAssetPaths = new HashSet<string>(OSPath.PathComparer);
+
+            foreach (var asset in sortedAssets)
             {
-                if (StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, sourceId, groups))
+                if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetPaths.Contains(asset.RelatedAsset))
+                {
+                    excludedAssetPaths.Add(asset.Identity);
+                    continue;
+                }
+
+                if (asset.MatchesGroups(groupLookup, skipDeferred: true))
                 {
                     includedAssets.Add(asset);
                 }
                 else
                 {
-                    // Track the package-relative path that we would have resolved for this asset
-                    var resolvedPath = ResolveAssetPath(asset, packageRoot);
-                    excludedAssetPaths.Add(resolvedPath);
-                    Log.LogMessage(MessageImportance.Low,
-                        "Excluding package asset '{0}' from '{1}' by group filtering.", resolvedPath, sourceId);
+                    excludedAssetPaths.Add(asset.Identity);
                 }
             }
 
-            // Phase 2: Cascading exclusion of related assets
-            StaticWebAssetGroupFilter.CascadeExclusions(
-                includedAssets,
-                excludedAssetPaths,
-                a => ResolveAssetPath(a, packageRoot),
-                a => string.IsNullOrEmpty(a.RelatedAsset) ? null : ResolvePath(packageRoot, a.RelatedAsset));
-
-            // Phase 3: Emit MSBuild items for included assets
-            var assetMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            // Emit MSBuild items for included assets
+            var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
             foreach (var asset in includedAssets)
             {
-                var resolvedIdentity = ResolveAssetPath(asset, packageRoot);
-
-                var identity = resolvedIdentity;
-                var emittedSourceType = asset.SourceType;
-                var emittedSourceId = sourceId;
-                var emittedContentRoot = contentRoot;
-                var emittedBasePath = asset.BasePath;
-                var emittedAssetMode = asset.AssetMode;
-
                 if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
                 {
                     var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
                     var resolvedRelativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
                     var destPath = Path.GetFullPath(Path.Combine(fxDir, resolvedRelativePath));
 
-                    if (!File.Exists(resolvedIdentity))
+                    if (!File.Exists(asset.Identity))
                     {
-                        Log.LogError("Source file '{0}' does not exist for framework asset materialization.", resolvedIdentity);
+                        Log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
                         return false;
                     }
 
                     Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 
-                    if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(resolvedIdentity) > File.GetLastWriteTimeUtc(destPath))
+                    if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(asset.Identity) > File.GetLastWriteTimeUtc(destPath))
                     {
-                        File.Copy(resolvedIdentity, destPath, overwrite: true);
+                        File.Copy(asset.Identity, destPath, overwrite: true);
                     }
 
-                    assetMapping[resolvedIdentity] = destPath;
-                    identity = destPath;
-                    emittedSourceType = StaticWebAsset.SourceTypes.Discovered;
-                    emittedSourceId = ProjectPackageId;
-                    emittedContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
-                    emittedBasePath = ProjectBasePath;
-                    emittedAssetMode = StaticWebAsset.AssetModes.CurrentProject;
+                    assetMapping[asset.Identity] = destPath;
+                    asset.Identity = destPath;
+                    asset.OriginalItemSpec = destPath;
+                    asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
+                    asset.SourceId = ProjectPackageId;
+                    asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
+                    asset.BasePath = ProjectBasePath;
+                    asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
                 }
 
-                var taskItem = new TaskItem(identity);
-                taskItem.SetMetadata("SourceType", emittedSourceType);
-                taskItem.SetMetadata("SourceId", emittedSourceId);
-                taskItem.SetMetadata("ContentRoot", emittedContentRoot);
-                taskItem.SetMetadata("BasePath", emittedBasePath);
-                taskItem.SetMetadata("RelativePath", asset.RelativePath);
-                taskItem.SetMetadata("AssetKind", asset.AssetKind);
-                taskItem.SetMetadata("AssetMode", emittedAssetMode);
-                taskItem.SetMetadata("AssetRole", asset.AssetRole);
-                taskItem.SetMetadata("AssetTraitName", asset.AssetTraitName);
-                taskItem.SetMetadata("AssetTraitValue", asset.AssetTraitValue);
-                taskItem.SetMetadata("AssetGroups", asset.AssetGroups);
-                taskItem.SetMetadata("Fingerprint", asset.Fingerprint);
-                taskItem.SetMetadata("Integrity", asset.Integrity);
-                taskItem.SetMetadata("CopyToOutputDirectory", asset.CopyToOutputDirectory);
-                taskItem.SetMetadata("CopyToPublishDirectory", asset.CopyToPublishDirectory);
-                taskItem.SetMetadata("FileLength", asset.FileLength);
-                taskItem.SetMetadata("LastWriteTime", asset.LastWriteTime);
-                taskItem.SetMetadata("OriginalItemSpec", identity);
+                allAssets.Add(asset);
+            }
 
-                // Remap RelatedAsset to resolved absolute path
-                if (!string.IsNullOrEmpty(asset.RelatedAsset))
+            if (assetMapping.Count > 0)
+            {
+                foreach (var asset in allAssets)
                 {
-                    taskItem.SetMetadata("RelatedAsset", ResolvePath(packageRoot, asset.RelatedAsset));
+                    if (!string.IsNullOrEmpty(asset.RelatedAsset) && assetMapping.TryGetValue(asset.RelatedAsset, out var remappedRelatedAsset))
+                    {
+                        asset.RelatedAsset = remappedRelatedAsset;
+                    }
                 }
-                else
-                {
-                    taskItem.SetMetadata("RelatedAsset", "");
-                }
-
-                allAssets.Add(taskItem);
             }
 
             // Phase 4: Emit endpoints, filtering out those for excluded assets
-            foreach (var endpoint in manifest.Endpoints)
+            foreach (var endpoint in manifest.Endpoints ?? [])
             {
                 var resolvedAssetFile = ResolvePath(packageRoot, endpoint.AssetFile);
                 if (excludedAssetPaths.Contains(resolvedAssetFile))
@@ -188,32 +160,100 @@ public class ReadPackageAssetsManifest : Task
                     resolvedAssetFile = remappedAssetFile;
                 }
 
-                var taskItem = new TaskItem(endpoint.Route);
-                taskItem.SetMetadata("AssetFile", resolvedAssetFile);
-
-                // Serialize selectors, properties, headers as JSON strings for MSBuild metadata
-                taskItem.SetMetadata("Selectors",
-                    JsonSerializer.Serialize(endpoint.Selectors, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointSelectorArray));
-                taskItem.SetMetadata("EndpointProperties",
-                    JsonSerializer.Serialize(endpoint.EndpointProperties, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointPropertyArray));
-                taskItem.SetMetadata("ResponseHeaders",
-                    JsonSerializer.Serialize(endpoint.ResponseHeaders, StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointResponseHeaderArray));
-
-                allEndpoints.Add(taskItem);
+                endpoint.AssetFile = resolvedAssetFile;
+                allEndpoints.Add(endpoint);
             }
         }
 
-        Assets = allAssets.ToArray();
-        Endpoints = allEndpoints.ToArray();
+        Assets = allAssets.Select(asset => asset.ToTaskItem()).ToArray();
+        Endpoints = StaticWebAssetEndpoint.ToTaskItems(allEndpoints);
 
         return !Log.HasLoggedErrors;
     }
 
-    private static string ResolveAssetPath(PackageManifestAsset asset, string packageRoot)
+    private static List<StaticWebAsset> ResolveManifestAssets(
+        Dictionary<string, StaticWebAsset> manifestAssets,
+        string sourceId,
+        string contentRoot,
+        string packageRoot)
     {
-        // PackagePath is the pre-computed resolved package-relative path (e.g. "staticwebassets/css/site.css").
-        // Resolve it against PackageRoot to get the absolute Identity path.
-        return ResolvePath(packageRoot, asset.PackagePath);
+        if (manifestAssets == null || manifestAssets.Count == 0)
+        {
+            return new List<StaticWebAsset>();
+        }
+
+        // Resolve paths, build an identity-keyed index, and eagerly add assets
+        // whose dependencies are already satisfied (no related asset, or parent
+        // already processed). Deferred assets are resolved in a second pass.
+        var byIdentity = new Dictionary<string, StaticWebAsset>(manifestAssets.Count, OSPath.PathComparer);
+        var result = new List<StaticWebAsset>(manifestAssets.Count);
+        var processed = new HashSet<string>(OSPath.PathComparer);
+        var deferred = new List<StaticWebAsset>();
+
+        foreach (var assetEntry in manifestAssets)
+        {
+            var packagePath = assetEntry.Key;
+            var asset = new StaticWebAsset(assetEntry.Value)
+            {
+                Identity = ResolvePath(packageRoot, packagePath),
+                OriginalItemSpec = ResolvePath(packageRoot, packagePath)
+            };
+
+            if (string.IsNullOrEmpty(asset.SourceId))
+            {
+                asset.SourceId = sourceId;
+            }
+
+            if (!string.IsNullOrEmpty(contentRoot))
+            {
+                asset.ContentRoot = contentRoot;
+            }
+
+            if (!string.IsNullOrEmpty(asset.RelatedAsset))
+            {
+                asset.RelatedAsset = ResolvePath(packageRoot, asset.RelatedAsset);
+            }
+
+            byIdentity[asset.Identity] = asset;
+
+            // Eagerly add if no parent, or parent already processed.
+            if (string.IsNullOrEmpty(asset.RelatedAsset) || processed.Contains(asset.RelatedAsset))
+            {
+                processed.Add(asset.Identity);
+                result.Add(asset);
+            }
+            else
+            {
+                deferred.Add(asset);
+            }
+        }
+
+        // Second pass: only needed for assets whose parent appeared later in the dictionary.
+        for (var i = 0; i < deferred.Count; i++)
+        {
+            AddWithDependencies(deferred[i], byIdentity, processed, result);
+        }
+
+        return result;
+    }
+
+    private static void AddWithDependencies(
+        StaticWebAsset asset,
+        Dictionary<string, StaticWebAsset> byIdentity,
+        HashSet<string> processed,
+        List<StaticWebAsset> result)
+    {
+        if (!processed.Add(asset.Identity))
+        {
+            return;
+        }
+
+        if (byIdentity.TryGetValue(asset.RelatedAsset, out var parent))
+        {
+            AddWithDependencies(parent, byIdentity, processed, result);
+        }
+
+        result.Add(asset);
     }
 
     private static string ResolvePath(string packageRoot, string relativePath)

@@ -11,44 +11,9 @@ public class StaticWebAssetPackageManifest
 
     public string ManifestType { get; set; } = "Package";
 
-    public PackageManifestAsset[] Assets { get; set; } = [];
+    // Key: package-relative path (for example, staticwebassets/css/site.css)
+    // Value: static web asset metadata.
+    public Dictionary<string, StaticWebAsset> Assets { get; set; } = [];
 
     public StaticWebAssetEndpoint[] Endpoints { get; set; } = [];
-}
-
-public class PackageManifestAsset
-{
-    public string PackagePath { get; set; }
-
-    public string RelativePath { get; set; }
-
-    public string BasePath { get; set; }
-
-    public string SourceType { get; set; }
-
-    public string AssetKind { get; set; }
-
-    public string AssetMode { get; set; }
-
-    public string AssetRole { get; set; }
-
-    public string RelatedAsset { get; set; }
-
-    public string AssetTraitName { get; set; }
-
-    public string AssetTraitValue { get; set; }
-
-    public string AssetGroups { get; set; }
-
-    public string Fingerprint { get; set; }
-
-    public string Integrity { get; set; }
-
-    public string CopyToOutputDirectory { get; set; }
-
-    public string CopyToPublishDirectory { get; set; }
-
-    public string FileLength { get; set; }
-
-    public string LastWriteTime { get; set; }
 }

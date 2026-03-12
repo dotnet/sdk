@@ -44,26 +44,8 @@ public class ReadPackageAssetsManifestTest : IDisposable
     [Fact]
     public void ReadsValidManifest_EmitsAssetsAsTaskItems()
     {
-        var packageRoot = SetupPackageRoot("MyLib", new PackageManifestAsset
-        {
-            PackagePath = "staticwebassets/css/site.css",
-            RelativePath = "css/site.css",
-            BasePath = "_content/mylib",
-            SourceType = "Package",
-            AssetKind = "All",
-            AssetMode = "All",
-            AssetRole = "Primary",
-            RelatedAsset = "",
-            AssetTraitName = "",
-            AssetTraitValue = "",
-            AssetGroups = "",
-            Fingerprint = "abc",
-            Integrity = "sha256-test",
-            CopyToOutputDirectory = "Never",
-            CopyToPublishDirectory = "PreserveNewest",
-            FileLength = "6",
-            LastWriteTime = "Mon, 15 Nov 1990 00:00:00 GMT",
-        });
+        var packageRoot = SetupPackageRoot("MyLib",
+            CreateManifestAsset("staticwebassets/css/site.css", "css/site.css", "_content/mylib", ""));
 
         var manifestItem = CreateManifestItem(packageRoot, "MyLib");
 
@@ -86,32 +68,14 @@ public class ReadPackageAssetsManifestTest : IDisposable
         emitted.GetMetadata("SourceId").Should().Be("MyLib");
         emitted.GetMetadata("BasePath").Should().Be("_content/mylib");
         emitted.GetMetadata("RelativePath").Should().Be("css/site.css");
-        emitted.GetMetadata("Fingerprint").Should().Be("abc");
+        emitted.GetMetadata("Fingerprint").Should().Be("test");
     }
 
     [Fact]
     public void UngroupedAssets_AlwaysIncluded()
     {
-        var packageRoot = SetupPackageRoot("MyLib", new PackageManifestAsset
-        {
-            PackagePath = "staticwebassets/app.js",
-            RelativePath = "app.js",
-            BasePath = "_content/mylib",
-            SourceType = "Package",
-            AssetKind = "All",
-            AssetMode = "All",
-            AssetRole = "Primary",
-            RelatedAsset = "",
-            AssetTraitName = "",
-            AssetTraitValue = "",
-            AssetGroups = "",
-            Fingerprint = "abc",
-            Integrity = "sha256-test",
-            CopyToOutputDirectory = "Never",
-            CopyToPublishDirectory = "PreserveNewest",
-            FileLength = "6",
-            LastWriteTime = "Mon, 15 Nov 1990 00:00:00 GMT",
-        });
+        var packageRoot = SetupPackageRoot("MyLib",
+            CreateManifestAsset("staticwebassets/app.js", "app.js", "_content/mylib", ""));
 
         var manifestItem = CreateManifestItem(packageRoot, "MyLib");
 
@@ -233,10 +197,10 @@ public class ReadPackageAssetsManifestTest : IDisposable
             "staticwebassets/css/site.css", "css/site.css", "_content/id", "BootstrapVersion=V5");
         var relatedAsset = CreateManifestAsset(
             "staticwebassets/css/site.css.gz", "css/site.css.gz", "_content/id", "");
-        relatedAsset.AssetRole = "Alternative";
-        relatedAsset.AssetTraitName = "Content-Encoding";
-        relatedAsset.AssetTraitValue = "gzip";
-        relatedAsset.RelatedAsset = "staticwebassets/css/site.css";
+        relatedAsset.Value.AssetRole = "Alternative";
+        relatedAsset.Value.AssetTraitName = "Content-Encoding";
+        relatedAsset.Value.AssetTraitValue = "gzip";
+        relatedAsset.Value.RelatedAsset = "staticwebassets/css/site.css";
 
         var packageRoot = SetupPackageRoot("IdentityUI", primaryAsset, relatedAsset);
         var manifestItem = CreateManifestItem(packageRoot, "IdentityUI");
@@ -344,26 +308,8 @@ public class ReadPackageAssetsManifestTest : IDisposable
     [Fact]
     public void FrameworkAssets_MaterializedToIntermediateDirectory()
     {
-        var packageRoot = SetupPackageRoot("MyLib", new PackageManifestAsset
-        {
-            PackagePath = "staticwebassets/js/framework.js",
-            RelativePath = "js/framework.js",
-            BasePath = "_content/mylib",
-            SourceType = "Framework",
-            AssetKind = "All",
-            AssetMode = "All",
-            AssetRole = "Primary",
-            RelatedAsset = "",
-            AssetTraitName = "",
-            AssetTraitValue = "",
-            AssetGroups = "",
-            Fingerprint = "abc",
-            Integrity = "sha256-test",
-            CopyToOutputDirectory = "Never",
-            CopyToPublishDirectory = "PreserveNewest",
-            FileLength = "6",
-            LastWriteTime = "Mon, 15 Nov 1990 00:00:00 GMT",
-        });
+        var packageRoot = SetupPackageRoot("MyLib",
+            CreateManifestAsset("staticwebassets/js/framework.js", "js/framework.js", "_content/mylib", "", "Framework"));
 
         var manifestItem = CreateManifestItem(packageRoot, "MyLib");
         var intermediateOutput = Path.Combine(_tempDir, "obj");
@@ -404,7 +350,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         var swDir = Path.Combine(packageDir, "staticwebassets");
         Directory.CreateDirectory(swDir);
 
-        var badManifest = new { Version = 2, ManifestType = "Package", Assets = Array.Empty<object>(), Endpoints = Array.Empty<object>() };
+        var badManifest = new { Version = 2, ManifestType = "Package", Assets = new Dictionary<string, object>(), Endpoints = Array.Empty<object>() };
         var manifestPath = Path.Combine(buildDir, "BadLib.PackageAssets.json");
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(badManifest));
 
@@ -432,12 +378,12 @@ public class ReadPackageAssetsManifestTest : IDisposable
 
     // Helpers
 
-    private string SetupPackageRoot(string packageId, params PackageManifestAsset[] assets)
+    private string SetupPackageRoot(string packageId, params KeyValuePair<string, StaticWebAsset>[] assets)
     {
         return SetupPackageRootWithEndpoints(packageId, assets, Array.Empty<StaticWebAssetEndpoint>());
     }
 
-    private string SetupPackageRootWithEndpoints(string packageId, PackageManifestAsset[] assets, StaticWebAssetEndpoint[] endpoints)
+    private string SetupPackageRootWithEndpoints(string packageId, KeyValuePair<string, StaticWebAsset>[] assets, StaticWebAssetEndpoint[] endpoints)
     {
         var packageDir = Path.Combine(_tempDir, "packages", packageId);
         var buildDir = Path.Combine(packageDir, "build");
@@ -446,16 +392,16 @@ public class ReadPackageAssetsManifestTest : IDisposable
         // Create actual files for each asset
         foreach (var asset in assets)
         {
-            var filePath = Path.Combine(packageDir, asset.PackagePath.Replace('/', Path.DirectorySeparatorChar));
+            var filePath = Path.Combine(packageDir, asset.Key.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            File.WriteAllText(filePath, "content-" + asset.PackagePath);
+            File.WriteAllText(filePath, "content-" + asset.Key);
         }
 
         var manifest = new StaticWebAssetPackageManifest
         {
             Version = 1,
             ManifestType = "Package",
-            Assets = assets,
+            Assets = assets.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase),
             Endpoints = endpoints,
         };
 
@@ -481,15 +427,15 @@ public class ReadPackageAssetsManifestTest : IDisposable
         });
     }
 
-    private static PackageManifestAsset CreateManifestAsset(
-        string packagePath, string relativePath, string basePath, string assetGroups)
+    private static KeyValuePair<string, StaticWebAsset> CreateManifestAsset(
+        string packagePath, string relativePath, string basePath, string assetGroups, string sourceType = "Package")
     {
-        return new PackageManifestAsset
+        var asset = new StaticWebAsset
         {
-            PackagePath = packagePath,
+            Identity = packagePath,
             RelativePath = relativePath,
             BasePath = basePath,
-            SourceType = "Package",
+            SourceType = sourceType,
             AssetKind = "All",
             AssetMode = "All",
             AssetRole = "Primary",
@@ -501,9 +447,11 @@ public class ReadPackageAssetsManifestTest : IDisposable
             Integrity = "sha256-test",
             CopyToOutputDirectory = "Never",
             CopyToPublishDirectory = "PreserveNewest",
-            FileLength = "6",
-            LastWriteTime = "Mon, 15 Nov 1990 00:00:00 GMT",
+            FileLength = 6,
+            LastWriteTime = new DateTimeOffset(1990, 11, 15, 0, 0, 0, TimeSpan.Zero),
         };
+
+        return new KeyValuePair<string, StaticWebAsset>(packagePath, asset);
     }
 
     // Scenario 6: Custom .targets author override

@@ -6,7 +6,6 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using static Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils.StaticWebAssetGroupFilter;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -41,22 +40,23 @@ public class UpdatePackageStaticWebAssets : Task
     {
         try
         {
-            var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
+            var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
             var originalAssets = new List<ITaskItem>();
-            var updatedAssets = new List<ITaskItem>();
+            var updatedAssets = new List<StaticWebAsset>();
             var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
             var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
 
             for (var i = 0; i < Assets.Length; i++)
             {
                 var candidate = Assets[i];
-                var sourceType = candidate.GetMetadata(nameof(StaticWebAsset.SourceType));
+                var candidateAsset = StaticWebAsset.FromV1TaskItem(candidate);
+                var sourceType = candidateAsset.SourceType;
 
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), groups))
+                    if (!candidateAsset.MatchesGroups(groupLookup, skipDeferred: true))
                     {
-                        excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        excludedAssetFiles.Add(candidateAsset.Identity);
                         // Add to originalAssets so the target removes it from @(StaticWebAsset),
                         // but do NOT add to updatedAssets so it doesn't get re-added.
                         originalAssets.Add(candidate);
@@ -64,13 +64,13 @@ public class UpdatePackageStaticWebAssets : Task
                     }
 
                     originalAssets.Add(candidate);
-                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
+                    updatedAssets.Add(candidateAsset);
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
-                    if (!IsAssetIncludedByGroups(candidate.GetMetadata("AssetGroups"), candidate.GetMetadata(nameof(StaticWebAsset.SourceId)), groups))
+                    if (!candidateAsset.MatchesGroups(groupLookup, skipDeferred: true))
                     {
-                        excludedAssetFiles.Add(candidate.GetMetadata("FullPath"));
+                        excludedAssetFiles.Add(candidateAsset.Identity);
                         originalAssets.Add(candidate);
                         continue;
                     }
@@ -79,21 +79,34 @@ public class UpdatePackageStaticWebAssets : Task
                     var (transformed, oldPath) = MaterializeFrameworkAsset(candidate);
                     if (transformed != null)
                     {
-                        updatedAssets.Add(transformed.ToTaskItem());
+                        updatedAssets.Add(transformed);
                         assetMapping[oldPath] = transformed.Identity;
                     }
                 }
             }
 
-            // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
-            CascadeExclusions(
-                updatedAssets,
-                excludedAssetFiles,
-                item => item.GetMetadata("FullPath"),
-                item => item.GetMetadata(nameof(StaticWebAsset.RelatedAsset)));
+            // Cascading exclusion: sort ensures parents before dependents,
+            // then a single pass removes related assets whose primary was excluded.
+            var sortedUpdatedAssets = StaticWebAsset.SortByRelatedAsset(updatedAssets);
+            updatedAssets.Clear();
+            foreach (var asset in sortedUpdatedAssets)
+            {
+                if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
+                {
+                    excludedAssetFiles.Add(asset.Identity);
+                    continue;
+                }
+
+                if (excludedAssetFiles.Contains(asset.Identity))
+                {
+                    continue;
+                }
+
+                updatedAssets.Add(asset);
+            }
 
             OriginalAssets = [.. originalAssets];
-            UpdatedAssets = [.. updatedAssets];
+            UpdatedAssets = updatedAssets.Select(asset => asset.ToTaskItem()).ToArray();
 
             if (Endpoints != null && (assetMapping.Count > 0 || excludedAssetFiles.Count > 0))
             {

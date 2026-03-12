@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // path of the assets and so on.
 public partial class DefineStaticWebAssets : Task
 {
+    private static readonly char[] GroupPatternSeparator = [';'];
+
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
@@ -686,7 +688,7 @@ public partial class DefineStaticWebAssets : Task
             if (!string.IsNullOrEmpty(includePattern))
             {
                 includeMatcher = new StaticWebAssetGlobMatcherBuilder()
-                    .AddIncludePatterns(includePattern.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    .AddIncludePatterns(includePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
                     .Build();
             }
 
@@ -694,7 +696,7 @@ public partial class DefineStaticWebAssets : Task
             if (!string.IsNullOrEmpty(excludePattern))
             {
                 excludeMatcher = new StaticWebAssetGlobMatcherBuilder()
-                    .AddIncludePatterns(excludePattern.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    .AddIncludePatterns(excludePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
                     .Build();
             }
 
@@ -736,6 +738,7 @@ public partial class DefineStaticWebAssets : Task
         var currentRelativePath = asset.RelativePath;
         var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
         var groupEntries = new List<string>();
+        var groupValues = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var def in definitions)
         {
@@ -764,10 +767,8 @@ public partial class DefineStaticWebAssets : Task
                 }
             }
 
-            var existingEntry = groupEntries.Find(e => e.StartsWith(def.Name + "=", StringComparison.Ordinal));
-            if (existingEntry != null)
+            if (groupValues.TryGetValue(def.Name, out var existingValue))
             {
-                var existingValue = existingEntry.Substring(def.Name.Length + 1);
                 if (!string.Equals(existingValue, def.Value, StringComparison.Ordinal))
                 {
                     Log.LogError("Asset '{0}' matched group definitions for '{1}' with conflicting values '{2}' and '{3}'. Glob patterns must be non-overlapping for the same group name with different values.",
@@ -777,27 +778,22 @@ public partial class DefineStaticWebAssets : Task
                 continue;
             }
 
+            groupValues.Add(def.Name, def.Value);
+            groupEntries.Add(def.Name + "=" + def.Value);
+            Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, def.Name, def.Value);
+
             if (def.RelativePathMatcher != null)
             {
                 matchContext.SetPathAndReinitialize(pathWithoutTokens);
                 var rpMatch = def.RelativePathMatcher.Match(matchContext);
                 if (rpMatch.IsMatch)
                 {
-                    var strippedPrefix = pathWithoutTokens.Substring(0, pathWithoutTokens.Length - rpMatch.Stem.Length);
-                    var newRelativePath = StaticWebAsset.Normalize(currentRelativePath.Substring(strippedPrefix.Length));
-
-                    groupEntries.Add(def.Name + "=" + strippedPrefix.TrimEnd('/'));
-                    Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, def.Name, strippedPrefix.TrimEnd('/'));
+                    var newRelativePath = StaticWebAsset.Normalize(rpMatch.Stem);
 
                     if (!string.IsNullOrEmpty(def.RelativePathPrefix))
                     {
                         newRelativePath = def.RelativePathPrefix + newRelativePath;
                         Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
-                    }
-
-                    if (!string.IsNullOrEmpty(def.ContentRootSuffix))
-                    {
-                        ApplyContentRootSuffix(ref asset, def.ContentRootSuffix, def.Name);
                     }
 
                     Log.LogMessage(MessageImportance.Low, "Group '{0}' transformed RelativePath from '{1}' to '{2}'.",
@@ -807,22 +803,17 @@ public partial class DefineStaticWebAssets : Task
                     pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
                 }
             }
-            else
+
+            if (!string.IsNullOrEmpty(def.RelativePathPrefix) && def.RelativePathMatcher == null)
             {
-                groupEntries.Add(def.Name + "=" + def.Value);
-                Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, def.Name, def.Value);
+                currentRelativePath = def.RelativePathPrefix + currentRelativePath;
+                pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
+                Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
+            }
 
-                if (!string.IsNullOrEmpty(def.RelativePathPrefix))
-                {
-                    currentRelativePath = def.RelativePathPrefix + currentRelativePath;
-                    pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
-                    Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
-                }
-
-                if (!string.IsNullOrEmpty(def.ContentRootSuffix))
-                {
-                    ApplyContentRootSuffix(ref asset, def.ContentRootSuffix, def.Name);
-                }
+            if (!string.IsNullOrEmpty(def.ContentRootSuffix))
+            {
+                ApplyContentRootSuffix(ref asset, def.ContentRootSuffix, def.Name);
             }
         }
 
@@ -831,12 +822,9 @@ public partial class DefineStaticWebAssets : Task
 
     private void ApplyContentRootSuffix(ref StaticWebAsset asset, string contentRootSuffix, string groupName)
     {
-        var suffix = contentRootSuffix.Replace('/', Path.DirectorySeparatorChar);
-        if (!suffix.EndsWith(Path.DirectorySeparatorChar.ToString()))
-        {
-            suffix += Path.DirectorySeparatorChar;
-        }
-        asset.ContentRoot = asset.ContentRoot + suffix;
+        var normalizedContentRoot = asset.ContentRoot.TrimEnd('/', '\\');
+        var normalizedSuffix = contentRootSuffix.Trim('/', '\\');
+        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(normalizedContentRoot + "/" + normalizedSuffix);
         Log.LogMessage(MessageImportance.Low,
             "Group '{0}' adjusted ContentRoot to '{1}' via ContentRootSuffix.",
             groupName, asset.ContentRoot);

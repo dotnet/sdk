@@ -40,7 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Endpoints="@(StaticWebAssetEndpoint)"
       StaticWebAssetGroups="@(StaticWebAssetGroup)"
       Source="$(PackageId)"
-      DeferredOnly="false">
+      SkipDeferred="true">
       <Output TaskParameter="FilteredAssets" ItemName="_FilteredPublishAssets" />
       <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredPublishEndpoints" />
     </FilterStaticWebAssetGroups>

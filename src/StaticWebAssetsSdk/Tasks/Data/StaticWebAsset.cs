@@ -38,6 +38,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private string _assetTraitName;
     private string _assetTraitValue;
     private string _assetGroups;
+    private Dictionary<string, string> _assetGroupValues;
     private string _fingerprint;
     private string _integrity;
     private string _copyToOutputDirectory;
@@ -236,7 +237,140 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             _modified = true;
             _assetGroups = value;
+            _assetGroupValues = null;
         }
+    }
+
+    internal IReadOnlyDictionary<string, string> GetAssetGroupValues()
+    {
+        _assetGroupValues ??= ParseAssetGroupValues(AssetGroups);
+        return _assetGroupValues;
+    }
+
+    // Returns true if the asset's group requirements are all satisfied by the declared groups.
+    // When skipDeferred is true, groups marked Deferred are treated as provisionally satisfied.
+    internal bool MatchesGroups(Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups, bool skipDeferred = false)
+    {
+        var requirements = GetAssetGroupValues();
+        if (requirements.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var requirement in requirements)
+        {
+            if (!groups.TryGetValue((SourceId, requirement.Key), out var group))
+            {
+                return false;
+            }
+
+            if (skipDeferred && group.Deferred)
+            {
+                continue;
+            }
+
+            if (!string.Equals(group.Value, requirement.Value, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Partially sorts assets so that parents (RelatedAsset targets) appear before their
+    // dependents. Assets without a RelatedAsset are emitted first, then assets whose parent
+    // has already been emitted. A single pass handles the common case where assets are
+    // already nearly sorted; a fallback drains remaining out-of-order assets.
+    internal static StaticWebAsset[] SortByRelatedAsset(IReadOnlyList<StaticWebAsset> assets)
+    {
+        if (assets.Count <= 1)
+        {
+            if (assets is StaticWebAsset[] arr)
+            {
+                return arr;
+            }
+            return assets.Count == 0 ? [] : [assets[0]];
+        }
+
+        var result = new StaticWebAsset[assets.Count];
+        var index = 0;
+        var emitted = new HashSet<string>(assets.Count, OSPath.PathComparer);
+        var deferred = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+
+        // First pass: emit assets whose parent is already emitted or that have no parent.
+        foreach (var asset in assets)
+        {
+            if (string.IsNullOrEmpty(asset.RelatedAsset) || emitted.Contains(asset.RelatedAsset))
+            {
+                result[index++] = asset;
+                emitted.Add(asset.Identity);
+            }
+            else
+            {
+                deferred[asset.Identity] = asset;
+            }
+        }
+
+        // Drain deferred assets recursively: visit the parent chain first so that
+        // parents always appear before their dependents in the result array.
+        void Visit(StaticWebAsset asset)
+        {
+            if (!emitted.Add(asset.Identity))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && deferred.TryGetValue(asset.RelatedAsset, out var parent))
+            {
+                Visit(parent);
+            }
+
+            result[index++] = asset;
+        }
+
+        foreach (var asset in deferred.Values)
+        {
+            Visit(asset);
+        }
+
+        return result;
+    }
+
+    internal bool TryGetAssetGroupValue(string key, out string value)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            value = null;
+            return false;
+        }
+
+        return GetAssetGroupValues().TryGetValue(key, out value);
+    }
+
+    private static Dictionary<string, string> ParseAssetGroupValues(string assetGroups)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (string.IsNullOrEmpty(assetGroups))
+        {
+            return result;
+        }
+
+        var requirements = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var requirement in requirements)
+        {
+            var eqIdx = requirement.IndexOf('=');
+            if (eqIdx <= 0 || eqIdx == requirement.Length - 1)
+            {
+                continue;
+            }
+
+            var reqName = requirement.Substring(0, eqIdx);
+            var reqValue = requirement.Substring(eqIdx + 1);
+            result[reqName] = reqValue;
+        }
+
+        return result;
     }
 
     public string Fingerprint

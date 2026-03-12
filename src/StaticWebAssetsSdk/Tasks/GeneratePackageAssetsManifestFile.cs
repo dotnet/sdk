@@ -31,10 +31,6 @@ public class GeneratePackageAssetsManifestFile : Task
     {
         if (StaticWebAssets.Length == 0)
         {
-            // Write an empty manifest
-            var emptyManifest = new StaticWebAssetPackageManifest();
-            this.PersistFileIfChanged(emptyManifest, TargetManifestPath,
-                StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetPackageManifest);
             return !Log.HasLoggedErrors;
         }
 
@@ -66,7 +62,7 @@ public class GeneratePackageAssetsManifestFile : Task
         }
 
         // Build manifest assets
-        var assets = new List<PackageManifestAsset>();
+        var assets = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
         var orderedAssets = StaticWebAssets
             .OrderBy(e => e.GetMetadata("BasePath"), StringComparer.OrdinalIgnoreCase)
             .ThenBy(e => e.GetMetadata("RelativePath"), StringComparer.OrdinalIgnoreCase);
@@ -101,26 +97,14 @@ public class GeneratePackageAssetsManifestFile : Task
                 relatedAssetValue = "";
             }
 
-            assets.Add(new PackageManifestAsset
+            var manifestAsset = new StaticWebAsset(asset)
             {
-                PackagePath = packagePath,
-                RelativePath = relativePath,
-                BasePath = element.GetMetadata("BasePath"),
+                Identity = packagePath,
                 SourceType = emittedSourceType,
-                AssetKind = element.GetMetadata("AssetKind"),
-                AssetMode = element.GetMetadata("AssetMode"),
-                AssetRole = element.GetMetadata("AssetRole"),
-                RelatedAsset = relatedAssetValue,
-                AssetTraitName = element.GetMetadata("AssetTraitName"),
-                AssetTraitValue = element.GetMetadata("AssetTraitValue"),
-                AssetGroups = element.GetMetadata("AssetGroups") ?? "",
-                Fingerprint = element.GetMetadata("Fingerprint"),
-                Integrity = element.GetMetadata("Integrity"),
-                CopyToOutputDirectory = element.GetMetadata("CopyToOutputDirectory"),
-                CopyToPublishDirectory = element.GetMetadata("CopyToPublishDirectory"),
-                FileLength = element.GetMetadata("FileLength"),
-                LastWriteTime = element.GetMetadata("LastWriteTime"),
-            });
+                RelatedAsset = relatedAssetValue
+            };
+
+            assets[packagePath] = manifestAsset;
         }
 
         // Build manifest endpoints — reuse identityToPackagePath for AssetFile remapping
@@ -141,7 +125,7 @@ public class GeneratePackageAssetsManifestFile : Task
         {
             Version = 1,
             ManifestType = "Package",
-            Assets = assets.ToArray(),
+            Assets = assets,
             Endpoints = manifestEndpoints.ToArray(),
         };
 

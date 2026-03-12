@@ -45,20 +45,33 @@ internal class StaticWebAssetGroup
 
     public static StaticWebAssetGroup FromTaskItem(ITaskItem item)
     {
-        return new StaticWebAssetGroup { _originalItem = item };
+        var group = new StaticWebAssetGroup { _originalItem = item };
+
+        if (string.IsNullOrEmpty(group.Name))
+        {
+            throw new InvalidOperationException("A StaticWebAssetGroup is missing a required Name.");
+        }
+
+        if (string.IsNullOrEmpty(group.SourceId))
+        {
+            throw new InvalidOperationException($"Group '{group.Name}' is missing a required SourceId.");
+        }
+
+        return group;
     }
 
-    public static StaticWebAssetGroup[] FromItemGroup(ITaskItem[] items)
+    public static Dictionary<(string SourceId, string Name), StaticWebAssetGroup> FromItemGroup(ITaskItem[] items)
     {
         if (items == null || items.Length == 0)
         {
-            return [];
+            return new();
         }
 
-        var result = new StaticWebAssetGroup[items.Length];
+        var result = new Dictionary<(string SourceId, string Name), StaticWebAssetGroup>(items.Length);
         for (var i = 0; i < items.Length; i++)
         {
-            result[i] = FromTaskItem(items[i]);
+            var group = FromTaskItem(items[i]);
+            result[(group.SourceId, group.Name)] = group;
         }
 
         return result;

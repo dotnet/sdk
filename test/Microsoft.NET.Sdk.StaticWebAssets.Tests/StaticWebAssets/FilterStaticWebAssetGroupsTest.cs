@@ -39,7 +39,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
     }
 
     [Fact]
-    public void NoDeferredGroups_Passthrough()
+    public void ConcreteGroupSatisfied_AssetIncluded()
     {
         var asset1 = CreateAssetItem("app.js", "MyLib", "");
         var asset2 = CreateAssetItem("site.css", "MyLib", "BootstrapVersion=V5");
@@ -52,14 +52,12 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset1, asset2 },
             Endpoints = new[] { endpoint1, endpoint2 },
-            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("BootstrapVersion", new Dictionary<string, string>
                 {
                     ["Value"] = "V5",
                     ["SourceId"] = "MyLib"
-                    // No Deferred metadata
                 })
             }
         };
@@ -67,15 +65,14 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(2, "all assets should pass through when no groups are deferred");
+        task.FilteredAssets.Should().HaveCount(2, "all assets should pass through when groups are satisfied");
         task.FilteredEndpoints.Should().HaveCount(2);
     }
 
     [Fact]
-    public void DeferredGroupSatisfied_AssetIncluded()
+    public void ConcreteGroupUnsatisfied_AssetExcluded()
     {
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
-
         var endpoint = CreateEndpointItem("server.js", asset.ItemSpec);
 
         var task = new FilterStaticWebAssetGroups
@@ -83,7 +80,35 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
-            DeferredOnly = true,
+            StaticWebAssetGroups = new ITaskItem[]
+            {
+                new TaskItem("ServerRendering", new Dictionary<string, string>
+                {
+                    ["Value"] = "false",  // Value doesn't match
+                    ["SourceId"] = "MyLib"
+                })
+            }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.FilteredAssets.Should().HaveCount(0, "asset with unsatisfied group should be excluded");
+        task.FilteredEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
+    }
+
+    [Fact]
+    public void DeferredGroupInFinalPass_Errors()
+    {
+        var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
+        var endpoint = CreateEndpointItem("server.js", asset.ItemSpec);
+
+        var task = new FilterStaticWebAssetGroups
+        {
+            BuildEngine = _buildEngine.Object,
+            Assets = new[] { asset },
+            Endpoints = new[] { endpoint },
+            // SkipDeferred defaults to false (final pass)
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
@@ -97,13 +122,13 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         var result = task.Execute();
 
-        result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(1);
-        task.FilteredEndpoints.Should().HaveCount(1);
+        result.Should().BeFalse("deferred groups in the final pass should produce an error");
+        _errorMessages.Should().ContainSingle()
+            .Which.Should().Contain("Deferred");
     }
 
     [Fact]
-    public void DeferredGroupUnsatisfied_AssetExcluded()
+    public void SkipDeferred_DeferredGroupsSkipped_AssetPassesThrough()
     {
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
         var endpoint = CreateEndpointItem("server.js", asset.ItemSpec);
@@ -113,12 +138,12 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
-            DeferredOnly = true,
+            SkipDeferred = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
                 {
-                    ["Value"] = "false",  // Value doesn't match
+                    ["Value"] = "false",  // Would fail if evaluated
                     ["SourceId"] = "MyLib",
                     ["Deferred"] = "true"
                 })
@@ -128,8 +153,8 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(0, "asset with unsatisfied deferred group should be excluded");
-        task.FilteredEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
+        task.FilteredAssets.Should().HaveCount(1, "deferred groups should be skipped during pre-filter");
+        task.FilteredEndpoints.Should().HaveCount(1);
     }
 
     [Fact]
@@ -170,14 +195,12 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { primary, related },
             Endpoints = new[] { primaryEndpoint, relatedEndpoint },
-            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
                 {
                     ["Value"] = "false",  // Not satisfied
-                    ["SourceId"] = "MyLib",
-                    ["Deferred"] = "true"
+                    ["SourceId"] = "MyLib"
                 })
             }
         };
@@ -203,14 +226,12 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { includedAsset, excludedAsset },
             Endpoints = new[] { includedEndpoint, excludedEndpoint },
-            DeferredOnly = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("ServerRendering", new Dictionary<string, string>
                 {
                     ["Value"] = "false",
-                    ["SourceId"] = "MyLib",
-                    ["Deferred"] = "true"
+                    ["SourceId"] = "MyLib"
                 })
             }
         };
@@ -225,10 +246,10 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
     }
 
     [Fact]
-    public void NonDeferredGroupRequirements_NotEvaluated()
+    public void SkipDeferred_NonDeferredGroupsStillEvaluated()
     {
-        // An asset has both a non-deferred group (already resolved) and a deferred group.
-        // The deferred filter should only evaluate the deferred one.
+        // An asset has both a non-deferred group requirement and a deferred group requirement.
+        // In SkipDeferred mode, only the non-deferred group is evaluated.
         var asset = CreateAssetItem("site.css", "MyLib", "BootstrapVersion=V5;ServerRendering=true");
 
         var endpoint = CreateEndpointItem("site.css", asset.ItemSpec);
@@ -238,14 +259,13 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
-            DeferredOnly = true,
+            SkipDeferred = true,
             StaticWebAssetGroups = new ITaskItem[]
             {
                 new TaskItem("BootstrapVersion", new Dictionary<string, string>
                 {
                     ["Value"] = "V5",
                     ["SourceId"] = "MyLib"
-                    // NOT deferred — already resolved in eager phase
                 }),
                 new TaskItem("ServerRendering", new Dictionary<string, string>
                 {
@@ -260,7 +280,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(1,
-            "non-deferred BootstrapVersion should not be re-evaluated; only deferred ServerRendering is checked");
+            "non-deferred BootstrapVersion is satisfied; deferred ServerRendering is skipped");
     }
 
     [Fact]
@@ -274,7 +294,6 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             BuildEngine = _buildEngine.Object,
             Assets = new[] { asset },
             Endpoints = new[] { endpoint },
-            DeferredOnly = true,
             StaticWebAssetGroups = null,
         };
 

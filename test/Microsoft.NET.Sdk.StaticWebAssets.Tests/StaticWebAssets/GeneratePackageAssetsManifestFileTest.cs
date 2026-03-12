@@ -37,7 +37,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
     }
 
     [Fact]
-    public void EmptyAssets_ProducesEmptyManifest()
+    public void EmptyAssets_DoesNotGenerateManifestFile()
     {
         var manifestPath = Path.Combine(_tempDir, "empty.json");
 
@@ -52,15 +52,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        File.Exists(manifestPath).Should().BeTrue();
-
-        var manifest = JsonSerializer.Deserialize(
-            File.ReadAllBytes(manifestPath),
-            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
-
-        manifest.Version.Should().Be(1);
-        manifest.Assets.Should().BeEmpty();
-        manifest.Endpoints.Should().BeEmpty();
+        File.Exists(manifestPath).Should().BeFalse();
     }
 
     [Fact]
@@ -112,11 +104,12 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
             StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
 
         manifest.Assets.Should().HaveCount(1);
-        var manifestAsset = manifest.Assets[0];
+        var manifestAsset = manifest.Assets.Values.Single();
+        var packagePath = manifest.Assets.Keys.Single();
 
         // Discovered assets don't include BasePath in the target path
-        manifestAsset.PackagePath.Should().Contain("css");
-        manifestAsset.PackagePath.Should().Contain("site");
+        packagePath.Should().Contain("css");
+        packagePath.Should().Contain("site");
         manifestAsset.RelativePath.Should().Be("css/site#[.{fingerprint}]?.css");
         manifestAsset.AssetRole.Should().Be("Primary");
     }
@@ -197,13 +190,13 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
 
         manifest.Assets.Should().HaveCount(2);
 
-        var relatedAsset = manifest.Assets.First(a => a.AssetRole == "Alternative");
+        var relatedAsset = manifest.Assets.Values.First(a => a.AssetRole == "Alternative");
         // The RelatedAsset should be remapped from the absolute path to a package-relative path
         relatedAsset.RelatedAsset.Should().NotBe(primaryFile);
         relatedAsset.RelatedAsset.Should().NotBeNullOrEmpty();
         // It should match the primary's PackagePath
-        var primaryAsset = manifest.Assets.First(a => a.AssetRole == "Primary");
-        relatedAsset.RelatedAsset.Should().Be(primaryAsset.PackagePath);
+        var primaryAssetPath = manifest.Assets.First(kvp => kvp.Value.AssetRole == "Primary").Key;
+        relatedAsset.RelatedAsset.Should().Be(primaryAssetPath);
     }
 
     [Fact]
@@ -267,7 +260,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         var ep = manifest.Endpoints[0];
         // AssetFile should be remapped from absolute to package-relative
         ep.AssetFile.Should().NotBe(file);
-        ep.AssetFile.Should().Be(manifest.Assets[0].PackagePath);
+        ep.AssetFile.Should().Be(manifest.Assets.Keys.Single());
     }
 
     [Fact]
@@ -300,10 +293,10 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
 
         manifest.Assets.Should().HaveCount(2);
 
-        var fwManifestAsset = manifest.Assets.First(a => a.RelativePath == "js/framework.js");
+        var fwManifestAsset = manifest.Assets.Values.First(a => a.RelativePath == "js/framework.js");
         fwManifestAsset.SourceType.Should().Be("Framework");
 
-        var nonFwManifestAsset = manifest.Assets.First(a => a.RelativePath == "js/app.js");
+        var nonFwManifestAsset = manifest.Assets.Values.First(a => a.RelativePath == "js/app.js");
         nonFwManifestAsset.SourceType.Should().Be("Package");
     }
 
@@ -334,7 +327,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
             StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
 
         manifest.Assets.Should().HaveCount(1);
-        manifest.Assets[0].AssetGroups.Should().Be("BootstrapVersion=V5");
+        manifest.Assets.Values.Single().AssetGroups.Should().Be("BootstrapVersion=V5");
     }
 
     // Helpers

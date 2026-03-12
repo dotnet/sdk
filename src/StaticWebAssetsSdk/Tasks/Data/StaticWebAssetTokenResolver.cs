@@ -21,24 +21,9 @@ public class StaticWebAssetTokenResolver(IReadOnlyDictionary<string, string> tok
             return true;
         }
 
-        // Check AssetGroups for group-based tokens.
-        // AssetGroups is a semicolon-delimited list of "name=value" pairs.
-        var assetGroups = asset.AssetGroups;
-        if (!string.IsNullOrEmpty(assetGroups))
+        if (asset.TryGetAssetGroupValue(key, out value))
         {
-            foreach (var entry in assetGroups.Split(';'))
-            {
-                var eqIndex = entry.IndexOf('=');
-                if (eqIndex > 0)
-                {
-                    var name = entry.Substring(0, eqIndex);
-                    if (string.Equals(name, key, StringComparison.Ordinal))
-                    {
-                        value = entry.Substring(eqIndex + 1);
-                        return true;
-                    }
-                }
-            }
+            return true;
         }
 
         if (tokens == null)

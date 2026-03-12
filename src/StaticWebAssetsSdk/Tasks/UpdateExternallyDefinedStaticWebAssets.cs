@@ -40,7 +40,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
     {
         var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
-        var groups = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
+        var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var endpointByAsset = endpoints
             .GroupBy(e => e.AssetFile, OSPath.PathComparer)
             .ToDictionary(e => e.Key, e => e.ToArray(), OSPath.PathComparer);
@@ -67,30 +67,29 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        // Group filtering: exclude assets whose AssetGroups requirements are not satisfied
-        // by the consumer's StaticWebAssetGroup declarations.
+        // Group filtering + cascading exclusion.
+        // Sort ensures parents appear before dependents so one pass suffices.
+        var sortedAssets = StaticWebAsset.SortByRelatedAsset(assets);
         var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
-        var filteredAssets = new List<StaticWebAsset>(assets.Length);
-        foreach (var asset in assets)
+        var filteredAssets = new List<StaticWebAsset>(sortedAssets.Length);
+
+        foreach (var asset in sortedAssets)
         {
-            if (!StaticWebAssetGroupFilter.IsAssetIncludedByGroups(asset.AssetGroups, asset.SourceId, groups))
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
             {
                 excludedAssetFiles.Add(asset.Identity);
-                Log.LogMessage(MessageImportance.Low,
-                    "Excluding project-reference asset '{0}' by group filtering.", asset.Identity);
+                continue;
             }
-            else
+
+            if (asset.MatchesGroups(groupLookup, skipDeferred: true))
             {
                 filteredAssets.Add(asset);
             }
+            else
+            {
+                excludedAssetFiles.Add(asset.Identity);
+            }
         }
-
-        // Cascading exclusion: exclude related/alternative assets whose primary was excluded.
-        StaticWebAssetGroupFilter.CascadeExclusions(
-            filteredAssets,
-            excludedAssetFiles,
-            a => a.Identity,
-            a => a.RelatedAsset);
 
         UpdatedAssets = filteredAssets.Select(a => a.ToTaskItem()).ToArray();
 

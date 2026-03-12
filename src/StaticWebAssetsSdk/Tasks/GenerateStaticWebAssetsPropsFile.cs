@@ -76,19 +76,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
         var hasFrameworkMatcher = frameworkMatcher != null;
         var matchContext = hasFrameworkMatcher ? StaticWebAssetGlobMatcher.CreateMatchContext() : default;
 
-        // Pre-compute a mapping from original asset Identity to package-relative path expression.
-        // This is needed so that RelatedAsset references (e.g. from compressed alternatives pointing
-        // to their primary) use the consumer-resolvable package path instead of the raw build-time
-        // absolute path, which would break cascading group exclusion.
-        var identityToPackagePath = new Dictionary<string, string>(Utils.OSPath.PathComparer);
-        foreach (var element in StaticWebAssets)
-        {
-            var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
-            var fullPathExpr = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
-            identityToPackagePath[element.ItemSpec] = fullPathExpr;
-        }
-
         var itemGroup = new XElement("ItemGroup");
         var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
             .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
@@ -123,15 +110,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
             var assetGroupsValue = element.GetMetadata("AssetGroups") ?? "";
 
-            // Remap RelatedAsset from build-time absolute path to package-relative expression
-            // so the consumer can resolve it to the same path as the related asset's Identity.
-            var relatedAssetValue = element.GetMetadata(RelatedAsset);
-            if (!string.IsNullOrEmpty(relatedAssetValue) &&
-                identityToPackagePath.TryGetValue(relatedAssetValue, out var remappedRelatedAsset))
-            {
-                relatedAssetValue = remappedRelatedAsset;
-            }
-
             itemGroup.Add(new XElement("StaticWebAsset",
                 new XAttribute("Include", fullPathExpression),
                 new XElement(SourceType, emittedSourceType),
@@ -142,7 +120,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XElement(AssetKind, element.GetMetadata(AssetKind)),
                 new XElement(AssetMode, element.GetMetadata(AssetMode)),
                 new XElement(AssetRole, element.GetMetadata(AssetRole)),
-                new XElement(RelatedAsset, relatedAssetValue),
+                new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
                 new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                 new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
                 new XElement("AssetGroups", assetGroupsValue),
