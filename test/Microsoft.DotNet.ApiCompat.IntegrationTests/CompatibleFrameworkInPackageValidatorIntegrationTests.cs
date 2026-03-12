@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
@@ -25,12 +27,12 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
                 new ApiCompatRunner(log,
                     new SuppressionEngine(),
                     new ApiComparerFactory(new RuleFactory(log)),
-                    new AssemblySymbolLoaderFactory()));
+                    new AssemblySymbolLoaderFactory(log)));
 
             return (log, validator);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void CompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
@@ -67,7 +69,7 @@ namespace PackageValidationTests
             Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void MultipleCompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());

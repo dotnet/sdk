@@ -21,9 +21,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Options.Add(AddSourceOption);
         }
 
-        internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
+        internal virtual Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
 
-        internal virtual CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
+        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
 
         protected NewCommand ParentCommand { get; }
 

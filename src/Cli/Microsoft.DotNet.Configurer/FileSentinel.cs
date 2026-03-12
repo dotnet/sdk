@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
         {
         }
 
-        internal FileSentinel(FilePath file, IFileSystem fileSystem)
+        internal FileSentinel(FilePath file, IFileSystem? fileSystem)
         {
             _file = file;
             _fileSystem = fileSystem ?? FileSystemWrapper.Default;

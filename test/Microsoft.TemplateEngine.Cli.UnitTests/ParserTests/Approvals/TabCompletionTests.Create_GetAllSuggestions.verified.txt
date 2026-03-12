@@ -35,6 +35,13 @@
     Documentation: Creates an .editorconfig file for configuring code style preferences.
   },
   {
+    Label: gitattributes,
+    Kind: Value,
+    SortText: gitattributes,
+    InsertText: gitattributes,
+    Documentation: Creates a gitattributes file for a dotnet project.
+  },
+  {
     Label: gitignore,
     Kind: Value,
     SortText: gitignore,

@@ -1,9 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- 7.0.0 produced improperly versioned runtime assets because the OfficialBuildId
-         was not set correctly.  This is the actual shipping version that it should have been -->
-    <NonshippingRuntimeVersionFor700>7.0.4-servicing.23107.6</NonshippingRuntimeVersionFor700>
-    
-    <MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETCoreTestHostVersion>
-  </PropertyGroup>
-</Project>

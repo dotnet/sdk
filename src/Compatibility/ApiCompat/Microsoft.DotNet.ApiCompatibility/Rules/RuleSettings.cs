@@ -43,10 +43,5 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// which are compared, should not differ.
         /// </summary>
         bool StrictMode { get; }
-
-        /// <summary>
-        /// If true, references are available. Necessary to know for following type forwards.
-        /// </summary>
-        bool WithReferences { get; }
     }
 }

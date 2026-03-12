@@ -1,7 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ToolsetTargetFramework)</TargetFrameworks>
+    <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass. -->
+    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(ToolsetTargetFramework)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
@@ -25,4 +29,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>

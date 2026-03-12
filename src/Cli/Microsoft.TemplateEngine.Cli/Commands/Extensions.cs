@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal static class Extensions
     {
-        internal static string? GetValueForOptionOrNull(this ParseResult parseResult, CliOption option)
+        internal static string? GetValueForOptionOrNull(this ParseResult parseResult, Option option)
         {
             OptionResult? result = parseResult.GetResult(option);
             if (result == null)
@@ -25,21 +25,21 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// <summary>
         /// Checks if <paramref name="parseResult"/> contains an error for <paramref name="option"/>.
         /// </summary>
-        internal static bool HasErrorFor(this ParseResult parseResult, CliOption option, [NotNullWhen(true)] out ParseError? error)
+        internal static bool HasErrorFor(this ParseResult parseResult, Option option, [NotNullWhen(true)] out ParseError? error)
         {
             error = parseResult.Errors.FirstOrDefault(e => IsOptionResult(e.SymbolResult, option)
                 || IsOptionResult(e.SymbolResult?.Parent, option));
 
             return error is not null;
 
-            static bool IsOptionResult(SymbolResult? symbolResult, CliOption option)
+            static bool IsOptionResult(SymbolResult? symbolResult, Option option)
                 => symbolResult is OptionResult optionResult && optionResult.Option == option;
         }
 
         /// <summary>
-        /// Case insensitive version for <see cref="System.CommandLine.CliOption{TOption}.AcceptOnlyFromAmong(string[])"/>.
+        /// Case insensitive version for <see cref="System.CommandLine.Option{TOption}.AcceptOnlyFromAmong(string[])"/>.
         /// </summary>
-        internal static void FromAmongCaseInsensitive(this CliOption<string> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
+        internal static void FromAmongCaseInsensitive(this Option<string> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
             allowedValues ??= Array.Empty<string>();
             option.Validators.Add(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));

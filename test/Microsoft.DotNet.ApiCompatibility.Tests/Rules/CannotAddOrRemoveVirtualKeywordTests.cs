@@ -43,6 +43,20 @@ namespace CompatTests {{
                 false,
                 CreateDifferences((DifferenceType.Removed, "M:CompatTests.First.F")),
             };
+            // remove abstract from member
+            yield return new object[] {
+                CreateType(" abstract class", " public abstract void F();"),
+                CreateType(" abstract class", " public void F() {}"),
+                false,
+                CreateDifferences((DifferenceType.Removed, "M:CompatTests.First.F")),
+            };
+            // replace abstract with virtual (no diffs expected)
+            yield return new object[] {
+                CreateType(" abstract class", " public abstract void F();"),
+                CreateType(" abstract class", " public virtual void F() {}"),
+                false,
+                CreateDifferences()
+            };
             // properties
             yield return new object[] {
                 CreateType(" class", " public virtual int F { get; }"),
@@ -124,6 +138,13 @@ namespace CompatTests {{
                 CreateType(" class", " public virtual void F() {}"),
                 true,
                 CreateDifferences((DifferenceType.Added,"M:CompatTests.First.F" )),
+            };
+            // remove abstract from member
+            yield return new object[] {
+                CreateType(" abstract class", " public abstract void F();"),
+                CreateType(" abstract class", " public void F() {}"),
+                true,
+                CreateDifferences((DifferenceType.Removed, "M:CompatTests.First.F")),
             };
             // abstract -> virtual
             yield return new object[] {

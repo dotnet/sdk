@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="NonWindows" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="TestProject/TestProject.csproj" />
+  <Project Path="OtherTestProject/OtherTestProject.csproj">
+    <Build Solution="*|NonWindows" Project="false" />
+  </Project>
+</Solution>

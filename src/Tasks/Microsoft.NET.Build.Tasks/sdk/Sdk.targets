@@ -46,15 +46,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Import targets from NuGet.Build.Tasks.Pack package/Sdk -->
   <PropertyGroup Condition="'$(NuGetBuildTasksPackTargets)' == '' AND '$(ImportNuGetBuildTasksPackTargetsFromSdk)' != 'false'">
-    <NuGetBuildTasksPackTargets Condition="'$(IsCrossTargetingBuild)' == 'true'">$(MSBuildThisFileDirectory)..\..\NuGet.Build.Tasks.Pack\buildCrossTargeting\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
-    <NuGetBuildTasksPackTargets Condition="'$(IsCrossTargetingBuild)' != 'true'">$(MSBuildThisFileDirectory)..\..\NuGet.Build.Tasks.Pack\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackTargets>$(MSBuildThisFileDirectory)..\..\..\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <ImportNuGetBuildTasksPackTargetsFromSdk>true</ImportNuGetBuildTasksPackTargetsFromSdk>
   </PropertyGroup>
 
   <Import Project="$(NuGetBuildTasksPackTargets)"
           Condition="Exists('$(NuGetBuildTasksPackTargets)') AND '$(ImportNuGetBuildTasksPackTargetsFromSdk)' == 'true'"/>
 
-  <!-- Import targets from Microdoft.NET.Build.Container.targets -->
+  <!-- Import targets from Microsoft.NET.Build.Container.targets -->
   <PropertyGroup>
     <_IsNotSetContainersTargetsDir>false</_IsNotSetContainersTargetsDir>
     <_IsNotSetContainersTargetsDir Condition=" '$(_ContainersTargetsDir)'=='' ">true</_IsNotSetContainersTargetsDir>

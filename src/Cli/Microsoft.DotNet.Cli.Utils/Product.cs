@@ -3,21 +3,34 @@
 
 using System.Reflection;
 
-namespace Microsoft.DotNet.Cli.Utils
-{
-    public class Product
-    {
-        public static string LongName => LocalizableStrings.DotNetSdkInfo;
-        public static readonly string Version = GetProductVersion();
+namespace Microsoft.DotNet.Cli.Utils;
 
-        private static string GetProductVersion()
+public static class Product
+{
+    public static string LongName => LocalizableStrings.DotNetSdkInfo;
+    public static readonly string Version;
+    public static readonly string TargetFrameworkVersion;
+
+    static Product()
+    {
+        DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
+        Version = versionFile.BuildNumber ??
+                System.Diagnostics.FileVersionInfo.GetVersionInfo(
+                        typeof(Product).GetTypeInfo().Assembly.Location)
+                    .ProductVersion ??
+                string.Empty;
+
+        int firstDotIndex = Version.IndexOf('.');
+        if (firstDotIndex >= 0)
         {
-            DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
-            return versionFile.BuildNumber ??
-                   System.Diagnostics.FileVersionInfo.GetVersionInfo(
-                           typeof(Product).GetTypeInfo().Assembly.Location)
-                       .ProductVersion ??
-                   string.Empty;
+            int secondDotIndex = Version.IndexOf('.', firstDotIndex + 1);
+            TargetFrameworkVersion = secondDotIndex >= 0
+                ? Version.Substring(0, secondDotIndex)
+                : Version;
+        }
+        else
+        {
+            TargetFrameworkVersion = string.Empty;
         }
     }
 }

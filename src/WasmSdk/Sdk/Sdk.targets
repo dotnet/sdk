@@ -12,8 +12,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <!-- For browser-wasm, we want to import StaticWebAssets SDK which imports SDK. -->
   <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
-  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' != 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
+
+  <PropertyGroup>
+    <!-- Implicit HotReload package reference for .NET 10+ if not explicitly turned off -->
+    <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
+    <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
+    <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">true</_WasmEnableHotReload>
+  </PropertyGroup>
+  <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
+    <ItemGroup Condition="'$(_WasmEnableHotReload)' == 'true'">
+      <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" Version="$(NETCoreSdkVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
+  </Target>
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
