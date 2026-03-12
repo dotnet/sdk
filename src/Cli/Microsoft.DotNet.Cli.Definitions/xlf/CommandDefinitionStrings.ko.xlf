@@ -1549,6 +1549,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">파일 기반 프로그램을 프로젝트 기반 프로그램으로 변환합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="translated">변환 후 모든 원본 파일을 삭제</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">파일 시스템을 실제로 수정하지 않고 변경 내용을 결정합니다.</target>
