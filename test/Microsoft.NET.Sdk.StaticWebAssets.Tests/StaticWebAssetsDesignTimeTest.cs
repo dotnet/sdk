@@ -123,6 +123,40 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
+    [Fact]
+    public void CollectUpToDateCheckInputOutputsDesignTime_IncludesReferencedProjectsManifests_WithCleanObjFolder()
+    {
+        // Arrange - this test validates the fix for dotnet/aspnetcore#65738.
+        // The design-time target must resolve referenced project manifests even
+        // when no prior build has run (clean obj folder), because VS evaluates
+        // FUTDC inputs on initial project load before any build occurs.
+        var testAsset = "RazorAppWithP2PReference";
+        ProjectDirectory = AddIntrospection(CreateAspNetSdkTestAsset(testAsset));
+
+        // Do NOT run a build first - go straight to design-time targets on a clean obj folder.
+        var msbuild = CreateMSBuildCommand(
+            ProjectDirectory,
+            "AppWithP2PReference",
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssetsConfiguration;CollectStaticWebAssetInputsDesignTime;CollectStaticWebAssetOutputsDesignTime");
+
+        msbuild.ExecuteWithoutRestore("/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true", "/bl:design.binlog").Should().Pass();
+
+        var intermediateDir = Path.Combine(ProjectDirectory.Path, "AppWithP2PReference", "obj", "Debug", DefaultTfm);
+
+        // The referenced project's manifest path should be included as a FUTDC input
+        // even though no prior build has created the references upToDateCheck file.
+        var inputFilePath = Path.Combine(intermediateDir, "StaticWebAssetsUTDCInput.txt");
+        new FileInfo(inputFilePath).Should().Exist();
+        var inputFiles = File.ReadAllLines(inputFilePath);
+        inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.json"));
+
+        var outputFilePath = Path.Combine(intermediateDir, "StaticWebAssetsUTDCOutput.txt");
+        new FileInfo(outputFilePath).Should().Exist();
+        var outputFiles = File.ReadAllLines(outputFilePath);
+        outputFiles.Should().ContainSingle();
+        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+    }
+
     private static MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)
     {
         return (MSBuildCommand)new MSBuildCommand(testAsset.Log, targets, testAsset.TestRoot, relativeProjectPath)
