@@ -31,16 +31,12 @@ public class FilterStaticWebAssetGroups : Task
     [Output]
     public ITaskItem[] FilteredAssets { get; set; }
 
-    [Output]
-    public ITaskItem[] FilteredEndpoints { get; set; }
-
     // Endpoints whose asset was excluded by group filtering.
     [Output]
     public ITaskItem[] RemovedEndpoints { get; set; }
 
-    // Endpoints that share a route with a removed endpoint but belong to a
-    // non-excluded asset.  MSBuild Remove operations match by ItemSpec (Route),
-    // so callers that remove by ItemSpec must re-add surviving endpoints.
+    // All endpoints that survived group filtering (unaffected groups +
+    // endpoints from affected groups whose asset was not excluded).
     [Output]
     public ITaskItem[] SurvivingEndpoints { get; set; }
 
@@ -51,9 +47,8 @@ public class FilterStaticWebAssetGroups : Task
         if (groups.Count == 0)
         {
             FilteredAssets = Assets;
-            FilteredEndpoints = Endpoints;
             RemovedEndpoints = [];
-            SurvivingEndpoints = [];
+            SurvivingEndpoints = Endpoints;
             return true;
         }
 
@@ -110,31 +105,20 @@ public class FilterStaticWebAssetGroups : Task
             var (removedEndpoints, survivingEndpoints) =
                 StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedAssetFiles);
 
-            var removedSet = new HashSet<StaticWebAssetEndpoint>(
-                removedEndpoints, StaticWebAssetEndpoint.RouteAndAssetComparer);
-
-            var filteredEndpoints = new List<StaticWebAssetEndpoint>(parsedEndpoints.Length);
-            foreach (var endpoint in parsedEndpoints)
+            foreach (var endpoint in removedEndpoints)
             {
-                if (removedSet.Contains(endpoint))
-                {
-                    Log.LogMessage(MessageImportance.Low,
-                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
-                        endpoint.Route, endpoint.AssetFile);
-                    continue;
-                }
-                filteredEndpoints.Add(endpoint);
+                Log.LogMessage(MessageImportance.Low,
+                    "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
+                    endpoint.Route, endpoint.AssetFile);
             }
 
-            FilteredEndpoints = StaticWebAssetEndpoint.ToTaskItems(filteredEndpoints);
             RemovedEndpoints = StaticWebAssetEndpoint.ToTaskItems(removedEndpoints);
             SurvivingEndpoints = StaticWebAssetEndpoint.ToTaskItems(survivingEndpoints);
         }
         else
         {
-            FilteredEndpoints = StaticWebAssetEndpoint.ToTaskItems(parsedEndpoints);
             RemovedEndpoints = [];
-            SurvivingEndpoints = [];
+            SurvivingEndpoints = StaticWebAssetEndpoint.ToTaskItems(parsedEndpoints);
         }
 
         return !Log.HasLoggedErrors;

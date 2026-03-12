@@ -42,7 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Source="$(PackageId)"
       SkipDeferred="true">
       <Output TaskParameter="FilteredAssets" ItemName="_FilteredPublishAssets" />
-      <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredPublishEndpoints" />
+      <Output TaskParameter="SurvivingEndpoints" ItemName="_FilteredPublishEndpoints" />
     </FilterStaticWebAssetGroups>
 
     <ItemGroup>

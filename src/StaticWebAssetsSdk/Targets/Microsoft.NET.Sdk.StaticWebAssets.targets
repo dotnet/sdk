@@ -693,7 +693,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Endpoints="@(StaticWebAssetEndpoint)"
       StaticWebAssetGroups="@(StaticWebAssetGroup)">
       <Output TaskParameter="FilteredAssets" ItemName="_CurrentProjectFilteredAssets" />
-      <Output TaskParameter="FilteredEndpoints" ItemName="_CurrentProjectFilteredEndpoints" />
+      <Output TaskParameter="SurvivingEndpoints" ItemName="_CurrentProjectFilteredEndpoints" />
     </FilterStaticWebAssetGroups>
 
     <GenerateStaticWebAssetEndpointsManifest

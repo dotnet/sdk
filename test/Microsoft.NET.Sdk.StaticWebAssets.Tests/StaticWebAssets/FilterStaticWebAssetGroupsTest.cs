@@ -66,7 +66,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(2, "all assets should pass through when groups are satisfied");
-        task.FilteredEndpoints.Should().HaveCount(2);
+        task.SurvivingEndpoints.Should().HaveCount(2);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(0, "asset with unsatisfied group should be excluded");
-        task.FilteredEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
+        task.SurvivingEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(1, "deferred groups should be skipped during pre-filter");
-        task.FilteredEndpoints.Should().HaveCount(1);
+        task.SurvivingEndpoints.Should().HaveCount(1);
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(0, "both primary and related should be excluded via cascading");
-        task.FilteredEndpoints.Should().HaveCount(0, "endpoints for both excluded assets should be removed");
+        task.SurvivingEndpoints.Should().HaveCount(0, "endpoints for both excluded assets should be removed");
     }
 
     [Fact]
@@ -241,8 +241,8 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(1);
         task.FilteredAssets[0].ItemSpec.Should().Be(includedAsset.ItemSpec);
-        task.FilteredEndpoints.Should().HaveCount(1);
-        task.FilteredEndpoints[0].ItemSpec.Should().Be("app.js");
+        task.SurvivingEndpoints.Should().HaveCount(1);
+        task.SurvivingEndpoints[0].ItemSpec.Should().Be("app.js");
     }
 
     [Fact]
@@ -301,7 +301,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
 
         result.Should().BeTrue();
         task.FilteredAssets.Should().HaveCount(1);
-        task.FilteredEndpoints.Should().HaveCount(1);
+        task.SurvivingEndpoints.Should().HaveCount(1);
     }
 
     // Helpers

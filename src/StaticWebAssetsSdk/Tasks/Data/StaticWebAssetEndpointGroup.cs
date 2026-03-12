@@ -40,10 +40,10 @@ internal class StaticWebAssetEndpointGroup
         return groups;
     }
 
-    // Iterates over endpoint groups and computes which endpoints should be removed
-    // and which are "surviving" — endpoints that share a route with a removed endpoint
-    // but belong to a non-excluded asset and must be preserved.
-    // Returns (removedEndpoints, survivingEndpoints).
+    // Iterates over all endpoint groups and classifies each endpoint:
+    //  - removed:   endpoints whose asset was excluded
+    //  - surviving: all endpoints that survived filtering (unaffected groups +
+    //               endpoints from affected groups whose asset was not excluded)
     internal static (List<StaticWebAssetEndpoint> removed, List<StaticWebAssetEndpoint> surviving)
         ComputeFilteredEndpoints(
             Dictionary<string, StaticWebAssetEndpointGroup> groups,
@@ -54,22 +54,6 @@ internal class StaticWebAssetEndpointGroup
 
         foreach (var group in groups.Values)
         {
-            var hasRemovedAsset = false;
-            foreach (var item in group.Items)
-            {
-                if (!string.IsNullOrEmpty(item.AssetFile) && excludedAssetFiles.Contains(item.AssetFile))
-                {
-                    hasRemovedAsset = true;
-                    break;
-                }
-            }
-
-            if (!hasRemovedAsset)
-            {
-                // No removed assets in this group — nothing to do.
-                continue;
-            }
-
             foreach (var item in group.Items)
             {
                 if (!string.IsNullOrEmpty(item.AssetFile) && excludedAssetFiles.Contains(item.AssetFile))
