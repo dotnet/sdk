@@ -90,7 +90,7 @@ Commands:
         public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
         {
             const string testAsset = "TestAppSimple";
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource().Path;
 
