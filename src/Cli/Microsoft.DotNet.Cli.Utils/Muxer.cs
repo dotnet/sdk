@@ -38,46 +38,58 @@ public class Muxer
     {
         string muxerFileName = MuxerName + Constants.ExeSuffix;
 
-        // Most scenarios are running dotnet.dll as the app
-        // Root directory with muxer should be two above app base: <root>/sdk/<version>
-        string? rootPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)));
-        if (rootPath is not null)
+        // Check environment variables first to allow package managers and
+        // other tools to explicitly set the dotnet root.  This is needed
+        // when the SDK is installed via symlinks (e.g. Nix, Guix) where
+        // the directory-traversal heuristic below would resolve symlinks
+        // and find the wrong root directory.
+        string? dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (dotnetHostPath is not null && File.Exists(dotnetHostPath))
         {
-            string muxerPathMaybe = Path.Combine(rootPath, muxerFileName);
-            if (File.Exists(muxerPathMaybe))
+            _muxerPath = dotnetHostPath;
+        }
+
+        if (_muxerPath is null)
+        {
+            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            if (dotnetRoot is not null)
             {
-                _muxerPath = muxerPathMaybe;
+                string rootMuxer = Path.Combine(dotnetRoot, muxerFileName);
+                if (File.Exists(rootMuxer))
+                {
+                    _muxerPath = rootMuxer;
+                }
             }
         }
 
         if (_muxerPath is null)
         {
-            // Best-effort search for muxer.
-            // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
+            // Most scenarios are running dotnet.dll as the app
+            // Root directory with muxer should be two above app base: <root>/sdk/<version>
+            string? rootPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)));
+            if (rootPath is not null)
+            {
+                string muxerPathMaybe = Path.Combine(rootPath, muxerFileName);
+                if (File.Exists(muxerPathMaybe))
+                {
+                    _muxerPath = muxerPathMaybe;
+                }
+            }
+        }
+
+        if (_muxerPath is null)
+        {
+            // Last resort: if the current process is the dotnet muxer itself, use its path.
 #if NET6_0_OR_GREATER
             string? processPath = Environment.ProcessPath;
 #else
             string processPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
 
-            // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost.
-            // Use GetFileName (not GetFileNameWithoutExtension) to avoid false matches with dotnet-prefixed names like "dotnet.Tests".
-            if (processPath is not null && !Path.GetFileName(processPath).Equals(muxerFileName, StringComparison.OrdinalIgnoreCase))
+            if (processPath is not null && Path.GetFileName(processPath).Equals(muxerFileName, StringComparison.OrdinalIgnoreCase))
             {
-                // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
-                processPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
-                if (processPath is null)
-                {
-                    // fallback to DOTNET_ROOT which typically holds some dotnet executable
-                    var root = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                    if (root is not null)
-                    {
-                        processPath = Path.Combine(root, muxerFileName);
-                    }
-                }
+                _muxerPath = processPath;
             }
-
-            _muxerPath = processPath;
         }
     }
 
