@@ -45,19 +45,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""version"": ""1.0.53"",
       ""commands"": [
         ""t-rex""
-      ]
+      ],
+      ""rollForward"": false
     },
     ""dotnetsay"": {
       ""version"": ""2.1.4"",
       ""commands"": [
         ""dotnetsay""
-      ]
+      ],
+      ""rollForward"": false
     },
     ""new-tool"": {
       ""version"": ""3.0.0"",
       ""commands"": [
         ""newtool""
-      ]
+      ],
+      ""rollForward"": false
     }
   }
 }");
@@ -84,7 +87,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""version"": ""3.0.0"",
       ""commands"": [
         ""newtool""
-      ]
+      ],
+      ""rollForward"": false
     }
   }
 }");
@@ -196,7 +200,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""version"": ""1.0.53"",
       ""commands"": [
         ""t-rex""
-      ]
+      ],
+      ""rollForward"": false
     }
   }
 }");
@@ -282,13 +287,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""version"": ""3.0.0"",
       ""commands"": [
         ""t-rex3""
-      ]
+      ],
+      ""rollForward"": false
     },
     ""dotnetsay"": {
       ""version"": ""2.1.4"",
       ""commands"": [
         ""dotnetsay""
-      ]
+      ],
+      ""rollForward"": false
     }
   }
 }", "And original tools entry order is preserved.");
@@ -296,22 +303,24 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private string _jsonContent =
             @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""t-rex"":{
-         ""version"":""1.0.53"",
-         ""commands"":[
-            ""t-rex""
-         ]
-      },
-      ""dotnetsay"":{
-         ""version"":""2.1.4"",
-         ""commands"":[
-            ""dotnetsay""
-         ]
-      }
-   }
+  ""version"": 1,
+  ""isRoot"": true,
+  ""tools"": {
+    ""t-rex"": {
+      ""version"": ""1.0.53"",
+      ""commands"": [
+        ""t-rex""
+      ],
+      ""rollForward"": false
+    },
+    ""dotnetsay"": {
+      ""version"": ""2.1.4"",
+      ""commands"": [
+        ""dotnetsay""
+      ],
+      ""rollForward"": false
+    }
+  }
 }";
 
         private string _jsonContentWithoutToolsEntry =

@@ -174,5 +174,25 @@ namespace Microsoft.DotNet.Cli.Utils
             using RegistryKey providerKey = BaseKey.OpenSubKey(ProviderKeyPath);
             return providerKey?.GetValue(null) as string ?? null;
         }
+
+        public override string ToString() => ProviderKeyName;
+
+        public static DependencyProvider GetFromProductCode(string productCode, bool allUsers = true)
+        {
+            var baseKey = allUsers ? Registry.LocalMachine : Registry.CurrentUser;
+            using RegistryKey dependenciesKey = baseKey.OpenSubKey(DependenciesKeyRelativePath);
+
+            foreach (var providerKeyName in dependenciesKey.GetSubKeyNames())
+            {
+                using RegistryKey providerKey = dependenciesKey.OpenSubKey(providerKeyName);
+                var thisProductCode = providerKey?.GetValue(null) as string ?? null;
+                if (string.Equals(thisProductCode, productCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new DependencyProvider(providerKeyName, allUsers);
+                }
+            }
+
+            return null;
+        }
     }
 }

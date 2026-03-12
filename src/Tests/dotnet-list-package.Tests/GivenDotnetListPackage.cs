@@ -345,5 +345,78 @@ class Program
                 .Should()
                 .Pass();
         }
+
+        [Fact]
+        public void ItRecognizesRelativePathsForAProject()
+        {
+            var testAssetName = "TestAppSimple";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+
+            new RestoreCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            new ListPackageCommand(Log)
+                .WithProject("TestAppSimple.csproj")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void ItRecognizesRelativePathsForASolution()
+        {
+            var sln = "TestAppWithSlnAndSolutionFolders";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(sln)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+
+            new RestoreCommand(testAsset, "App.sln")
+                .Execute()
+                .Should()
+                .Pass();
+
+            new ListPackageCommand(Log)
+                .WithProject("App.sln")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void ItRecognizesRelativePathsForASolutionFromSubFolder()
+        {
+            var sln = "TestAppWithSlnAndSolutionFolders";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(sln)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+
+            string subFolderName = "subFolder";
+            var subFolderPath = Path.Combine(projectDirectory, subFolderName);
+            Directory.CreateDirectory(subFolderPath);
+
+            new RestoreCommand(testAsset, "App.sln")
+                .Execute()
+                .Should()
+                .Pass();
+
+            new ListPackageCommand(Log)
+                .WithProject("../App.sln")
+                .WithWorkingDirectory(subFolderPath)
+                .Execute()
+                .Should()
+                .Pass();
+        }
     }
 }

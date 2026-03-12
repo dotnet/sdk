@@ -211,7 +211,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""version"": ""1.0.53"",
       ""commands"": [
         ""t-rex""
-      ]
+      ],
+      ""rollForward"": false
     }
   }
 }";

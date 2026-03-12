@@ -21,13 +21,5 @@ namespace Microsoft.DotNet.Installer.Windows
         /// The package is not installed.
         /// </summary>
         Absent = 2,
-        /// <summary>
-        /// A newer version of the package is already installed.
-        /// </summary>
-        Superseded = 3,
-        /// <summary>
-        /// The installed package is older than the new package.
-        /// </summary>
-        Obsolete = 4,
     }
 }

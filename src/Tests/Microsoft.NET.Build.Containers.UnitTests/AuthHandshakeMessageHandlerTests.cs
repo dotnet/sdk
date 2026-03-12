@@ -6,9 +6,9 @@ namespace Microsoft.NET.Build.Containers.UnitTests
     {
         [Theory]
         [InlineData("SDK_CONTAINER_REGISTRY_UNAME", "SDK_CONTAINER_REGISTRY_PWORD", (int)RegistryMode.Push)]
-        [InlineData("SDK_CONTAINER_PUSH_REGISTRY_UNAME", "SDK_CONTAINER_PUSH_REGISTRY_PWORD", (int)RegistryMode.Push)]
-        [InlineData("SDK_CONTAINER_PULL_REGISTRY_UNAME", "SDK_CONTAINER_PULL_REGISTRY_PWORD", (int)RegistryMode.Pull)]
-        [InlineData("SDK_CONTAINER_PULL_REGISTRY_UNAME", "SDK_CONTAINER_PULL_REGISTRY_PWORD", (int)RegistryMode.PullFromOutput)]
+        [InlineData("DOTNET_CONTAINER_PUSH_REGISTRY_UNAME", "DOTNET_CONTAINER_PUSH_REGISTRY_PWORD", (int)RegistryMode.Push)]
+        [InlineData("DOTNET_CONTAINER_PULL_REGISTRY_UNAME", "DOTNET_CONTAINER_PULL_REGISTRY_PWORD", (int)RegistryMode.Pull)]
+        [InlineData("DOTNET_CONTAINER_PULL_REGISTRY_UNAME", "DOTNET_CONTAINER_PULL_REGISTRY_PWORD", (int)RegistryMode.PullFromOutput)]
         [InlineData("SDK_CONTAINER_REGISTRY_UNAME", "SDK_CONTAINER_REGISTRY_PWORD", (int)RegistryMode.PullFromOutput)]
         public void GetDockerCredentialsFromEnvironment_ReturnsCorrectValues(string unameVarName, string pwordVarName, int mode)
         {
@@ -18,10 +18,16 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             Environment.SetEnvironmentVariable(unameVarName, "uname");
             Environment.SetEnvironmentVariable(pwordVarName, "pword");
 
-            (string? credU, string? credP) = AuthHandshakeMessageHandler.GetDockerCredentialsFromEnvironment((RegistryMode)mode);
+            if (AuthHandshakeMessageHandler.GetDockerCredentialsFromEnvironment((RegistryMode)mode) is (string credU, string credP))
+            {
+                Assert.Equal("uname", credU);
+                Assert.Equal("pword", credP);
+            }
+            else 
+            {
+                Assert.Fail("Should have parsed credentials from environment");
+            }
 
-            Assert.Equal("uname", credU);
-            Assert.Equal("pword", credP);
 
             // restore env variable values
             Environment.SetEnvironmentVariable(unameVarName, originalUnameValue);

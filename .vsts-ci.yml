@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
     - main
-    - release/8.0.1xx
+    - release/8.0.4xx
     - internal/release/*
     - exp/*
 
@@ -118,12 +118,6 @@ extends:
               value: real
             - name: _Test
               value: ''
-      - template: /eng/common/templates-official/job/source-build.yml@self
-        parameters:
-          enableInternalSources: true
-          platform:
-            name: 'Managed'
-            container: sourceBuildManagedContainer
       - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/build.yml@self
           parameters:
@@ -299,7 +293,6 @@ extends:
             publishAssetsImmediately: true
             dependsOn:
               - Windows_NT
-              - Source_Build_Managed
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

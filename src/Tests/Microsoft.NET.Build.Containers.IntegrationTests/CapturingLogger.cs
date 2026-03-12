@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 public class CapturingLogger : ILogger
 {
     public LoggerVerbosity Verbosity { get => LoggerVerbosity.Diagnostic; set { } }
-    public string Parameters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public string? Parameters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     private List<BuildMessageEventArgs> _messages = new();
     public IReadOnlyList<BuildMessageEventArgs> Messages {get  { return _messages; } }
