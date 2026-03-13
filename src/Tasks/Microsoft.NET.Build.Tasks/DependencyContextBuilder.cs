@@ -535,9 +535,12 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            var projectLibraryName = GetUniqueLibraryName(_mainProjectInfo.Name, "Project");
+            _usedLibraryNames.Add(projectLibraryName);
+
             return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                 type: "project",
-                name: GetUniqueLibraryName(_mainProjectInfo.Name, "Project"),
+                name: projectLibraryName,
                 version: _mainProjectInfo.Version,
                 hash: string.Empty,
                 runtimeAssemblyGroups: runtimeAssemblyGroups,
