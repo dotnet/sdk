@@ -52,7 +52,7 @@ steps:
     ./eng/vmr-sync.sh
     --vmr ${{ parameters.vmrPath }}
     --tmp $(Agent.TempDirectory)
-    --azdev-pat '$(dn-bot-all-orgs-code-r)'
+    --azdev-pat '$(AzdoToken)'
     --branch ${{ parameters.vmrBranch }}
     --repository "sdk:${{ parameters.targetRef }}"
     --recursive
@@ -74,7 +74,7 @@ steps:
     ./eng/vmr-sync.ps1 `
     -vmr ${{ parameters.vmrPath }} `
     -tmp $(Agent.TempDirectory) `
-    -azdevPat '$(dn-bot-all-orgs-code-r)' `
+    -azdevPat '$(AzdoToken)' `
     -branch ${{ parameters.vmrBranch }} `
     -repository "sdk:${{ parameters.targetRef }}" `
     -recursive `
