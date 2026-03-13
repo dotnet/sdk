@@ -27,8 +27,9 @@ public interface IEnvShellProvider
     /// Generates a shell-specific script that configures PATH and DOTNET_ROOT.
     /// </summary>
     /// <param name="dotnetInstallPath">The path to the .NET installation directory</param>
+    /// <param name="dotnetupDir">The directory containing the dotnetup binary, or null to omit</param>
     /// <returns>A shell script that can be sourced to configure the environment</returns>
-    string GenerateEnvScript(string dotnetInstallPath);
+    string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null);
 
     /// <summary>
     /// Returns the profile file paths that should be modified for this shell.
