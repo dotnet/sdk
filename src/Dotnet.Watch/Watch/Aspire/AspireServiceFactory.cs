@@ -76,6 +76,16 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
             _isDisposed = true;
 
             // wait for all in-flight process initialization to complete:
+            // If no session initialization is in-flight (_pendingSessionInitializationCount == 0),
+            // the semaphore will never be released by StartProjectAsync's finally block.
+            // Release it here to prevent a deadlock. Protect against the race where
+            // StartProjectAsync's finally block releases concurrently.
+            if (Volatile.Read(ref _pendingSessionInitializationCount) == 0)
+            {
+                try { _postDisposalSessionInitializationCompleted.Release(); }
+                catch (SemaphoreFullException) { }
+            }
+
             await _postDisposalSessionInitializationCompleted.WaitAsync(CancellationToken.None);
 
             // terminate all active sessions:
@@ -174,7 +184,10 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
             {
                 if (Interlocked.Decrement(ref _pendingSessionInitializationCount) == 0 && _isDisposed)
                 {
-                    _postDisposalSessionInitializationCompleted.Release();
+                    // Guard against double-release: DisposeAsync may have already released
+                    // the semaphore if it observed count==0 before we decremented.
+                    try { _postDisposalSessionInitializationCompleted.Release(); }
+                    catch (SemaphoreFullException) { }
                 }
             }
 
