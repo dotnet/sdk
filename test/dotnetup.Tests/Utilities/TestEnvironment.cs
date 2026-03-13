@@ -22,8 +22,9 @@ internal class TestEnvironment : IDisposable
     /// Creates a test environment with isolated temporary directories.
     /// </summary>
     /// <param name="configureEnvironment">
-    /// When true, sets <c>DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH</c> and changes the current directory
-    /// to the temp root to avoid picking up the repository's global.json. These are restored on Dispose.
+    /// When true, sets <c>DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH</c> and <c>DOTNET_TESTHOOK_MANIFEST_PATH</c>,
+    /// and changes the current directory to the temp root to avoid picking up the repository's global.json.
+    /// These are restored on Dispose.
     /// </param>
     public TestEnvironment(bool configureEnvironment = false)
     {
@@ -50,9 +51,10 @@ internal class TestEnvironment : IDisposable
                 Console.WriteLine($"Warning: Could not get current directory: {ex.Message}. Using temp directory as fallback.");
             }
 
-            // Set default install path as environment variable
-            // This is required for cases where the install path is needed but not explicitly provided
+            // Set default install path and manifest path as environment variables
+            // so tests are fully isolated from each other and from the real installation.
             Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", InstallPath);
+            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", ManifestPath);
 
             // Change current directory to the temp directory to avoid global.json in repository root
             Environment.CurrentDirectory = TempRoot;
@@ -73,8 +75,9 @@ internal class TestEnvironment : IDisposable
                 Console.WriteLine($"Warning: Could not restore current directory: {ex.Message}");
             }
 
-            // Clear the environment variable we set
+            // Clear the environment variables we set
             Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", null);
+            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", null);
         }
 
         // Clean up
