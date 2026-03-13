@@ -7,7 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-internal class StaticWebAssetGroup
+internal sealed class StaticWebAssetGroup
 {
     private ITaskItem _originalItem;
     private string _name;
