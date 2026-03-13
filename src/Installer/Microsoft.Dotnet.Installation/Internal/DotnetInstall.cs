@@ -21,7 +21,15 @@ internal record DotnetInstallRequest(
     DotnetInstallRoot InstallRoot,
     UpdateChannel Channel,
     InstallComponent Component,
-    InstallRequestOptions Options);
+    InstallRequestOptions Options)
+{
+    /// <summary>
+    /// Optional pre-resolved version. When set, the orchestrator uses this directly
+    /// instead of resolving the channel again. The Channel is still needed for
+    /// recording the install spec in the manifest.
+    /// </summary>
+    public ReleaseVersion? ResolvedVersion { get; init; }
+}
 
 internal record InstallRequestOptions()
 {
@@ -33,4 +41,37 @@ internal record InstallRequestOptions()
     /// If false (default), a warning is displayed but installation continues.
     /// </summary>
     public bool RequireMuxerUpdate { get; init; }
+
+    /// <summary>
+    /// The source of this install request.
+    /// Used when recording install specs in the manifest.
+    /// </summary>
+    public InstallRequestSource InstallSource { get; init; } = InstallRequestSource.Explicit;
+
+    /// <summary>
+    /// The path to the global.json file that triggered this install, if applicable.
+    /// </summary>
+    public string? GlobalJsonPath { get; init; }
+
+    /// <summary>
+    /// If true, the installation will not be recorded in the dotnetup manifest
+    /// and the untracked-installation guard will be bypassed.
+    /// </summary>
+    public bool Untracked { get; init; }
+
+    /// <summary>
+    /// If true, the install spec will not be recorded in the manifest.
+    /// The installation itself is still recorded. Use this when the install spec
+    /// already exists (e.g., during updates) to avoid creating duplicates.
+    /// </summary>
+    public bool SkipInstallSpecRecording { get; init; }
+}
+
+/// <summary>
+/// The source that triggered an install request.
+/// </summary>
+internal enum InstallRequestSource
+{
+    Explicit,
+    GlobalJson,
 }

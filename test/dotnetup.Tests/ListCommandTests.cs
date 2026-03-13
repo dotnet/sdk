@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
@@ -30,22 +32,22 @@ public class ListCommandTests
     public void InstallationLister_GetInstallations_ShouldReturnList()
     {
         // Act
-        var installations = InstallationLister.GetInstallations(verify: false);
+        var listData = InstallationLister.GetListData(verify: false);
 
         // Assert
-        installations.Should().NotBeNull();
-        installations.Should().BeOfType<List<InstallationInfo>>();
+        listData.Installations.Should().NotBeNull();
+        listData.Installations.Should().BeOfType<List<InstallationInfo>>();
     }
 
     [Fact]
     public void InstallationLister_WriteHumanReadable_ShouldOutputHeader()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteHumanReadable(sw, installations);
+        InstallationLister.WriteHumanReadable(sw, listData);
         var output = sw.ToString();
 
         // Assert
@@ -61,15 +63,18 @@ public class ListCommandTests
         try
         {
             var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
-            var installations = new List<InstallationInfo>
+            var listData = new ListData
             {
-                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
-                new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 },
+                    new() { Component = InstallComponent.Runtime, Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
+                }
             };
             using var sw = new StringWriter();
 
             // Act
-            InstallationLister.WriteHumanReadable(sw, installations);
+            InstallationLister.WriteHumanReadable(sw, listData);
             var output = sw.ToString();
 
             // Assert - should use shorter, punchier display names per @baronfel's suggestion
@@ -90,11 +95,11 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_ShouldOutputValidJson()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteJson(sw, installations);
+        InstallationLister.WriteJson(sw, listData);
         var output = sw.ToString();
 
         // Assert
@@ -110,14 +115,17 @@ public class ListCommandTests
         try
         {
             var testInstallRoot = tempDir.FullName;
-            var installations = new List<InstallationInfo>
+            var listData = new ListData
             {
-                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
+                }
             };
             using var sw = new StringWriter();
 
             // Act
-            InstallationLister.WriteJson(sw, installations);
+            InstallationLister.WriteJson(sw, listData);
             var output = sw.ToString();
 
             // Assert
@@ -128,7 +136,7 @@ public class ListCommandTests
             installationsArray.GetArrayLength().Should().Be(1);
 
             var firstInstall = installationsArray[0];
-            firstInstall.GetProperty("component").GetString().Should().Be("sdk");
+            firstInstall.GetProperty("component").GetString().Should().Be("SDK");
             firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
             firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
             firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
@@ -143,11 +151,11 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
     {
         // Arrange
-        var installations = new List<InstallationInfo>();
+        var listData = new ListData();
         using var sw = new StringWriter();
 
         // Act
-        InstallationLister.WriteJson(sw, installations);
+        InstallationLister.WriteJson(sw, listData);
         var output = sw.ToString();
 
         // Assert

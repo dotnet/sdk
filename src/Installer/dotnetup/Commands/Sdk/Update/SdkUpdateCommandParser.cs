@@ -10,7 +10,7 @@ internal static class SdkUpdateCommandParser
 
     public static readonly Option<bool> UpdateAllOption = new("--all")
     {
-        Description = "Update all installed SDKs",
+        Description = "Update all installed components, including runtimes and SDKs.",
         Arity = ArgumentArity.Zero
     };
 
@@ -20,9 +20,6 @@ internal static class SdkUpdateCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-
     private static readonly Command s_sdkUpdateCommand = ConstructCommand();
 
     public static Command GetSdkUpdateCommand()
@@ -30,9 +27,9 @@ internal static class SdkUpdateCommandParser
         return s_sdkUpdateCommand;
     }
 
-    //  Trying to use the same command object for both "dotnetup udpate" and "dotnetup sdk update" causes an InvalidOperationException
+    //  Trying to use the same command object for both "dotnetup update" and "dotnetup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
-    private static readonly Command s_rootUpdateCommand = ConstructCommand();
+    private static readonly Command s_rootUpdateCommand = ConstructRootCommand();
 
     public static Command GetRootUpdateCommand()
     {
@@ -41,15 +38,33 @@ internal static class SdkUpdateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("update", "Updates the .NET SDK");
+        Command command = new("update", "Updates the .NET SDK to the latest version matching each install spec");
 
         command.Options.Add(UpdateAllOption);
         command.Options.Add(UpdateGlobalJsonOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
 
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoProgressOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
 
-        command.SetAction(parseResult => 0);
+        command.SetAction(parseResult => new SdkUpdateCommand(parseResult).Execute());
+
+        return command;
+    }
+
+    private static Command ConstructRootCommand()
+    {
+        Command command = new("update", "Updates all tracked .NET installations to the latest versions");
+
+        command.Options.Add(UpdateGlobalJsonOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
+
+        command.SetAction(parseResult => new SdkUpdateCommand(parseResult, updateAllOverride: true).Execute());
 
         return command;
     }

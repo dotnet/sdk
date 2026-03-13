@@ -7,17 +7,15 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class DotnetReleaseInfoProvider : IDotnetReleaseInfoProvider
 {
+    private readonly ChannelVersionResolver _resolver = new();
+
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
-        var releaseManifest = new ChannelVersionResolver();
-        return releaseManifest.GetSupportedChannels(includeFeatureBands);
+        return _resolver.GetSupportedChannels(includeFeatureBands);
     }
     public ReleaseVersion? GetLatestVersion(InstallComponent component, string channel)
     {
-        var releaseManifest = new ChannelVersionResolver();
-        var release = releaseManifest.GetLatestVersionForChannel(new UpdateChannel(channel), component);
-
-        return release;
+        return _resolver.GetLatestVersionForChannel(new UpdateChannel(channel), component);
     }
     public SupportType GetSupportType(InstallComponent component, ReleaseVersion version) => throw new NotImplementedException();
 }

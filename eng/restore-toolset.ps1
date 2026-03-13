@@ -16,6 +16,10 @@ function InitializeCustomSDKToolset {
 
     $cli = InitializeDotnetCli -install:$true
 
+    # Redirect dotnetup data directory under artifacts so build scripts
+    # don't read/write the user's home-folder manifest.
+    $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir ".dotnetup"
+
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     # dotnetup is only built when test runtimes are needed (it's the install tool).
@@ -154,7 +158,7 @@ function InstallDotNetSharedFramework([string]$version) {
     if (!(Test-Path $fxDir)) {
         $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
 
-        & $dotnetupExe runtime install "$version" --install-path $dotnetRoot --no-progress --set-default-install false
+        & $dotnetupExe runtime install "$version" --install-path $dotnetRoot --no-progress --set-default-install false --untracked
 
         if ($lastExitCode -ne 0) {
             throw "Failed to install shared Framework $version to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."

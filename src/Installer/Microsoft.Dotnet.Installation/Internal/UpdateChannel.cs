@@ -7,7 +7,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class UpdateChannel
 {
-    public string Name { get; set; }
+    public string Name { get; }
 
     public UpdateChannel(string name)
     {
@@ -52,6 +52,74 @@ internal class UpdateChannel
         if (int.TryParse(thirdPart, out int patch) && patch >= 100)
         {
             return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the given version matches this channel pattern.
+    /// Supports exact versions, named channels (latest, lts, sts, preview),
+    /// major-only, major.minor, and feature band patterns.
+    /// </summary>
+    public bool Matches(ReleaseVersion version)
+    {
+        if (string.IsNullOrEmpty(Name))
+        {
+            return false;
+        }
+
+        // Exact version match
+        if (string.Equals(version.ToString(), Name, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Named channels
+        if (Name.Equals("lts", StringComparison.OrdinalIgnoreCase))
+        {
+            // LTS releases are even major versions
+            return version.Major % 2 == 0;
+        }
+
+        // These channels match any version. The "preview" channel may resolve to a stable version
+        // when no preview exists yet (e.g., after a major release before the next preview).
+        // The "sts" channel includes both STS and LTS releases, since users on this channel want
+        // newer versions quickly regardless of support lifecycle. GC still keeps only the latest
+        // version per channel, so broad matching here doesn't prevent cleanup.
+        if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase) ||
+            Name.Equals("sts", StringComparison.OrdinalIgnoreCase) ||
+            Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Major version match (e.g., "10" matches "10.0.103")
+        if (int.TryParse(Name, out var major))
+        {
+            return version.Major == major;
+        }
+
+        var parts = Name.Split('.');
+
+        // Major.Minor match (e.g., "10.0" matches "10.0.103")
+        if (parts.Length == 2 && int.TryParse(parts[0], out var specMajor) && int.TryParse(parts[1], out var specMinor))
+        {
+            return version.Major == specMajor && version.Minor == specMinor;
+        }
+
+        // Feature band match (e.g., "10.0.1xx" matches "10.0.103")
+        if (parts.Length == 3 && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
+        {
+            if (int.TryParse(parts[0], out var fbMajor) && int.TryParse(parts[1], out var fbMinor))
+            {
+                var bandPrefix = parts[2].Substring(0, parts[2].Length - 2);
+                if (int.TryParse(bandPrefix, out var band))
+                {
+                    return version.Major == fbMajor && version.Minor == fbMinor &&
+                           version.Patch / 100 == band;
+                }
+            }
         }
 
         return false;

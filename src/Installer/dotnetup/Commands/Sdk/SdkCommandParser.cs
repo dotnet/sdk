@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
@@ -18,9 +19,11 @@ internal class SdkCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("sdk", "Manage sdk installations");
+        Command command = new("sdk", "Manage SDK installations");
         command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
         command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
+
+        command.Subcommands.Add(SdkUninstallCommandParser.GetSdkUninstallCommand());
 
         //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

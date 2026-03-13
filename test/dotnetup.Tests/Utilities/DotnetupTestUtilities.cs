@@ -20,21 +20,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 internal static class DotnetupTestUtilities
 {
     /// <summary>
-    /// Creates a test environment with proper temporary directories
+    /// Creates a test environment with proper temporary directories and environment configuration.
     /// </summary>
     public static TestEnvironment CreateTestEnvironment()
-    {
-        string tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-e2e", Guid.NewGuid().ToString("N"));
-        string installPath = Path.Combine(tempRoot, "dotnet-root");
-        string manifestPath = Path.Combine(tempRoot, "dotnetup_manifest.json");
-
-        // Create necessary directories
-        Directory.CreateDirectory(tempRoot);
-        Directory.CreateDirectory(installPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
-
-        return new TestEnvironment(tempRoot, installPath, manifestPath);
-    }
+        => new(configureEnvironment: true);
 
     /// <summary>
     /// Builds command line arguments for SDK install
@@ -54,6 +43,111 @@ internal static class DotnetupTestUtilities
     /// </summary>
     public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
         => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
+
+    /// <summary>
+    /// Builds command line arguments for SDK uninstall
+    /// </summary>
+    public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for runtime uninstall using component@version syntax
+    /// </summary>
+    public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup update (root-level, updates all components).
+    /// </summary>
+    public static string[] BuildUpdateArguments(string installPath, string? manifestPath = null, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup sdk update.
+    /// </summary>
+    public static string[] BuildSdkUpdateArguments(string installPath, string? manifestPath = null, bool updateAll = false, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["sdk", "update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateAll)
+        {
+            commandArgs.Add("--all");
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup list
+    /// </summary>
+    public static string[] BuildListArguments(string installPath, string? manifestPath = null, string? format = null)
+    {
+        var commandArgs = new List<string>(["list", "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            commandArgs.AddRange(["--format", format]);
+        }
+
+        return [.. commandArgs];
+    }
 
     /// <summary>
     /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
@@ -214,6 +308,10 @@ internal static class DotnetupTestUtilities
 
         // Suppress the .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        process.StartInfo.Environment["NO_COLOR"] = "1";
 
         // Apply any additional environment variables
         if (environmentVariables != null)

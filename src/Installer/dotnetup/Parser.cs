@@ -12,6 +12,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -52,6 +53,7 @@ internal class Parser
         rootCommand.Subcommands.Add(RuntimeCommandParser.GetCommand());
         rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
         rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
+        rootCommand.Subcommands.Add(SdkUninstallCommandParser.GetRootUninstallCommand());
         rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
         rootCommand.Subcommands.Add(PrintEnvScriptCommandParser.GetCommand());

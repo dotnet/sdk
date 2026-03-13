@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -13,7 +14,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public DotnetupSharedManifest(string? manifestPath = null)
     {
-        _customManifestPath = manifestPath;
+        _customManifestPath = manifestPath is not null ? Path.GetFullPath(manifestPath) : null;
         EnsureManifestExists();
     }
 
@@ -21,7 +22,14 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     {
         if (!File.Exists(ManifestPath))
         {
-            var json = JsonSerializer.Serialize((List<DotnetInstall>)[], DotnetupManifestJsonContext.Default.ListDotnetInstall);
+            var directory = Path.GetDirectoryName(ManifestPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var emptyManifest = new DotnetupManifestData();
+            var json = JsonSerializer.Serialize(emptyManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
             WriteManifestWithChecksum(json);
         }
     }
@@ -52,7 +60,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
     }
 
-    public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)
+    internal DotnetupManifestData ReadManifest()
     {
         AssertHasFinalizationMutex();
         EnsureManifestExists();
@@ -65,7 +73,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         catch (FileNotFoundException)
         {
             // Manifest doesn't exist yet - return empty list
-            return [];
+            return new();
         }
         catch (IOException ex)
         {
@@ -77,23 +85,32 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
         try
         {
-            var installs = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-            var validInstalls = installs ?? [];
-
-            if (validator is not null)
+            // Try new format first
+            var manifest = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+            if (manifest is not null)
             {
-                var invalids = validInstalls.Where(i => !validator.Validate(i)).ToList();
-                if (invalids.Count > 0)
+                // Only validate field values if the checksum doesn't match — if we wrote
+                // the file ourselves the data is trusted; validation is only needed to
+                // catch external / manual edits.
+                if (!VerifyChecksumMatches(json))
                 {
-                    validInstalls = validInstalls.Except(invalids).ToList();
-                    var newJson = JsonSerializer.Serialize(validInstalls, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-                    WriteManifestWithChecksum(newJson);
+                    ValidateManifestData(manifest);
                 }
+
+                return manifest;
             }
-            return validInstalls;
         }
         catch (JsonException ex)
         {
+            // Check if it's a legacy format (JSON array of DotnetInstall objects)
+            if (json.TrimStart().StartsWith('['))
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.LocalManifestCorrupted,
+                    $"The dotnetup manifest at {ManifestPath} uses a legacy format that is no longer supported. " +
+                    "Delete the manifest file and reinstall any SDKs/runtimes that were in this dotnet root.");
+            }
+
             // Check whether dotnetup last wrote the file. If the checksum matches,
             // we produced invalid JSON ourselves (product bug). If it doesn't match,
             // an external edit broke the file (user error).
@@ -110,44 +127,46 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.{suffix}",
                 ex);
         }
+
+        // Deserialization returned null — treat as empty manifest
+        return new();
     }
 
-    /// <summary>
-    /// Gets installed versions filtered by a specific muxer directory.
-    /// </summary>
-    /// <param name="installRoot">Directory to filter by (must match the InstallRoot property)</param>
-    /// <param name="validator">Optional validator to check installation validity</param>
-    /// <returns>Installations that match the specified directory</returns>
-    public IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null)
-    {
-        // TODO: Manifest read operations should protect against data structure changes and be able to reformat an old manifest version.
-        var installedVersions = GetInstalledVersions(validator);
-        var expectedInstallRootPath = Path.GetFullPath(installRoot.Path);
-        var installedVersionsInRoot = installedVersions
-            .Where(install => DotnetupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
-        return installedVersionsInRoot;
-    }
-
-    public void AddInstalledVersion(DotnetInstall version)
+    internal void WriteManifest(DotnetupManifestData manifest)
     {
         AssertHasFinalizationMutex();
-        EnsureManifestExists();
-
-        var installs = GetInstalledVersions().ToList();
-        installs.Add(version);
-        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
+        var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
         WriteManifestWithChecksum(json);
     }
 
-    public void RemoveInstalledVersion(DotnetInstall version)
+    private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
     {
-        AssertHasFinalizationMutex();
-        EnsureManifestExists();
+        var existing = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture == architecture);
 
-        var installs = GetInstalledVersions().ToList();
-        installs.RemoveAll(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, version.InstallRoot.Path) && i.Version.Equals(version.Version));
-        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
-        WriteManifestWithChecksum(json);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        // Check for conflict: same path but different architecture
+        var conflicting = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture != architecture);
+        if (conflicting is not null)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestError,
+                $"The dotnet root at '{path}' is already tracked with architecture '{conflicting.Architecture}'. " +
+                $"Cannot add it again with architecture '{architecture}'.");
+        }
+
+        var newRoot = new DotnetRootEntry
+        {
+            Path = path,
+            Architecture = architecture
+        };
+        manifest.DotnetRoots.Add(newRoot);
+        return newRoot;
     }
 
     /// <summary>
@@ -200,4 +219,157 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash);
     }
+
+    /// <summary>
+    /// Validates manifest data after deserialization when the checksum does not match
+    /// (i.e., the file was modified outside of dotnetup). Checks that version strings
+    /// in installation records are valid <see cref="ReleaseVersion"/> values and
+    /// that required fields are non-empty.
+    /// </summary>
+    private void ValidateManifestData(DotnetupManifestData manifest)
+    {
+        var errors = new List<string>();
+
+        foreach (var root in manifest.DotnetRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root.Path))
+            {
+                errors.Add("A dotnet root entry has an empty path.");
+            }
+
+            foreach (var installation in root.Installations)
+            {
+                if (!Enum.IsDefined(installation.Component))
+                {
+                    errors.Add($"Unknown component type '{(int)installation.Component}' in an installation record in root '{root.Path}'.");
+                }
+
+                if (string.IsNullOrWhiteSpace(installation.Version))
+                {
+                    errors.Add($"An installation record for {installation.Component} in root '{root.Path}' has an empty version.");
+                    continue;
+                }
+
+                if (!ReleaseVersion.TryParse(installation.Version, out _))
+                {
+                    errors.Add($"Invalid version '{installation.Version}' for {installation.Component} in root '{root.Path}'.");
+                }
+            }
+
+            foreach (var spec in root.InstallSpecs)
+            {
+                if (!Enum.IsDefined(spec.Component))
+                {
+                    errors.Add($"Unknown component type '{(int)spec.Component}' in an install spec in root '{root.Path}'.");
+                }
+
+                if (string.IsNullOrWhiteSpace(spec.VersionOrChannel))
+                {
+                    errors.Add($"An install spec for {spec.Component} in root '{root.Path}' has an empty version/channel.");
+                }
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestUserCorrupted,
+                $"The dotnetup manifest at {ManifestPath} contains invalid data: {string.Join("; ", errors)}. " +
+                $"The file appears to have been modified outside of dotnetup. Consider deleting it and re-running the install.");
+        }
+    }
+
+    // --- Install Spec operations ---
+
+    public IEnumerable<InstallSpec> GetInstallSpecs(DotnetInstallRoot installRoot)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        return root?.InstallSpecs ?? [];
+    }
+
+    public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
+    {
+        if (spec.InstallSource == InstallSource.All)
+        {
+            throw new ArgumentException("InstallSource.All cannot be used in manifest data. It is only valid as a filter.", nameof(spec));
+        }
+
+        var manifest = ReadManifest();
+        var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
+
+        // Don't add duplicate install specs
+        if (!root.InstallSpecs.Any(s =>
+            s.Component == spec.Component &&
+            s.VersionOrChannel == spec.VersionOrChannel &&
+            s.InstallSource == spec.InstallSource &&
+            s.GlobalJsonPath == spec.GlobalJsonPath))
+        {
+            root.InstallSpecs.Add(spec);
+        }
+
+        WriteManifest(manifest);
+    }
+
+    public void RemoveInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+
+        if (root is null)
+        {
+            return;
+        }
+
+        root.InstallSpecs.RemoveAll(s =>
+            s.Component == spec.Component &&
+            s.VersionOrChannel == spec.VersionOrChannel &&
+            s.InstallSource == spec.InstallSource &&
+            s.GlobalJsonPath == spec.GlobalJsonPath);
+
+        WriteManifest(manifest);
+    }
+
+    // --- Installation operations ---
+
+    public IEnumerable<Installation> GetInstallations(DotnetInstallRoot installRoot)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        return root?.Installations ?? [];
+    }
+
+    public void AddInstallation(DotnetInstallRoot installRoot, Installation installation)
+    {
+        var manifest = ReadManifest();
+        var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
+
+        // Don't add duplicate installations
+        if (!root.Installations.Any(i => i.Component == installation.Component && i.Version == installation.Version))
+        {
+            root.Installations.Add(installation);
+        }
+
+        WriteManifest(manifest);
+    }
+
+    public void RemoveInstallation(DotnetInstallRoot installRoot, Installation installation)
+    {
+        var manifest = ReadManifest();
+        var root = manifest.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+
+        if (root is null)
+        {
+            return;
+        }
+
+        root.Installations.RemoveAll(i => i.Component == installation.Component && i.Version == installation.Version);
+
+        WriteManifest(manifest);
+    }
+
 }

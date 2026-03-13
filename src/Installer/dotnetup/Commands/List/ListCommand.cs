@@ -13,26 +13,30 @@ internal class ListCommand : CommandBase
 {
     private readonly OutputFormat _format;
     private readonly bool _skipVerification;
+    private readonly string? _manifestPath;
+    private readonly string? _installPath;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
+        _manifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
+        _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
     }
 
     protected override string GetCommandName() => "list";
 
     protected override int ExecuteCore()
     {
-        var installations = InstallationLister.GetInstallations(verify: !_skipVerification);
+        var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath, installPath: _installPath);
 
         if (_format == OutputFormat.Json)
         {
-            InstallationLister.WriteJson(Console.Out, installations);
+            InstallationLister.WriteJson(Console.Out, listData);
         }
         else
         {
-            InstallationLister.WriteHumanReadable(Console.Out, installations);
+            InstallationLister.WriteHumanReadable(Console.Out, listData);
         }
 
         return 0;
@@ -44,125 +48,249 @@ internal class ListCommand : CommandBase
 /// </summary>
 internal static class InstallationLister
 {
-    public static List<InstallationInfo> GetInstallations(bool verify = false)
+    /// <summary>
+    /// Gets both install specs and installations from the manifest.
+    /// </summary>
+    public static ListData GetListData(bool verify = false, string? manifestPath = null, string? installPath = null)
     {
+        var installSpecs = new List<InstallSpecInfo>();
         var installations = new List<InstallationInfo>();
 
-        try
+        DotnetupManifestData manifestData;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-            var manifest = new DotnetupSharedManifest();
-            IInstallationValidator? validator = verify ? new ArchiveInstallationValidator() : null;
-            var installs = manifest.GetInstalledVersions(validator);
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            manifestData = manifest.ReadManifest();
+        }
 
-            foreach (var install in installs)
+        var validator = new ArchiveInstallationValidator();
+
+        var roots = installPath is not null
+            ? manifestData.DotnetRoots.Where(r => string.Equals(
+                Path.GetFullPath(r.Path), Path.GetFullPath(installPath), StringComparison.OrdinalIgnoreCase))
+            : manifestData.DotnetRoots;
+
+        foreach (var root in roots)
+        {
+            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+            // Collect install specs
+            foreach (var spec in root.InstallSpecs)
             {
+                installSpecs.Add(new InstallSpecInfo
+                {
+                    Component = spec.Component,
+                    VersionOrChannel = spec.VersionOrChannel,
+                    Source = spec.InstallSource,
+                    GlobalJsonPath = spec.GlobalJsonPath,
+                    InstallRoot = root.Path,
+                    Architecture = root.Architecture
+                });
+            }
+
+            // Collect installations
+            foreach (var installation in root.Installations)
+            {
+                bool? isValid = null;
+                string? validationFailure = null;
+
+                if (verify)
+                {
+                    var dotnetInstall = new DotnetInstall(
+                        installRoot,
+                        new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
+                        installation.Component);
+                    isValid = validator.Validate(dotnetInstall, out validationFailure);
+                }
+
                 installations.Add(new InstallationInfo
                 {
-                    Component = install.Component.ToString().ToLowerInvariant(),
-                    Version = install.Version.ToString(),
-                    InstallRoot = install.InstallRoot.Path,
-                    Architecture = install.InstallRoot.Architecture.ToString().ToLowerInvariant()
+                    Component = installation.Component,
+                    Version = installation.Version,
+                    InstallRoot = root.Path,
+                    Architecture = root.Architecture,
+                    IsValid = isValid,
+                    ValidationFailure = validationFailure
                 });
             }
         }
-        catch (FileNotFoundException)
-        {
-            // Manifest doesn't exist - return empty list
-        }
 
-        return installations;
+        return new ListData { InstallSpecs = installSpecs, Installations = installations };
     }
 
-    public static void WriteHumanReadable(TextWriter writer, List<InstallationInfo> installations)
+    private const int IndentSize = 2;
+
+    private static string Indent(int level, string text) => $"{new string(' ', level * IndentSize)}{text}";
+
+    public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
         writer.WriteLine();
         writer.WriteLine(Strings.ListHeader);
         writer.WriteLine();
 
-        if (installations.Count == 0)
+        if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
         {
-            writer.WriteLine($"  {Strings.ListNoInstallations}");
+            writer.WriteLine(Indent(1, Strings.ListNoInstallations));
         }
         else
         {
-            // Group by install root for cleaner display
-            var grouped = installations.GroupBy(i => i.InstallRoot);
-
             // Create an AnsiConsole that writes to our TextWriter
             var console = AnsiConsole.Create(new AnsiConsoleSettings
             {
                 Out = new AnsiConsoleOutput(writer)
             });
 
-            foreach (var group in grouped)
+            // Group by install root for cleaner display
+            var allRoots = listData.InstallSpecs.Select(s => s.InstallRoot)
+                .Union(listData.Installations.Select(i => i.InstallRoot))
+                .Distinct();
+
+            foreach (var rootPath in allRoots)
             {
-                writer.WriteLine($"  {group.Key}");
+                writer.WriteLine(Indent(1, rootPath));
 
-                var grid = new Grid();
-                grid.AddColumn(new GridColumn().PadLeft(4).NoWrap());
-                grid.AddColumn(new GridColumn().NoWrap());
-                grid.AddColumn(new GridColumn().NoWrap());
+                var specs = listData.InstallSpecs.Where(s => s.InstallRoot == rootPath).ToList();
+                DisplayInstallSpecs(writer, console, specs);
 
-                foreach (var install in group.OrderBy(i => i.Component).ThenBy(i => i.Version))
-                {
-                    grid.AddRow(
-                        install.ComponentDisplayName,
-                        install.Version,
-                        $"({install.Architecture})"
-                    );
-                }
+                var installs = listData.Installations.Where(i => i.InstallRoot == rootPath).ToList();
+                DisplayInstallations(writer, console, installs);
 
-                console.Write(grid);
                 writer.WriteLine();
             }
         }
 
-        writer.WriteLine($"{Strings.ListTotal}: {installations.Count}");
+        writer.WriteLine($"{Strings.ListTotal}: {listData.Installations.Count}");
     }
 
-    public static void WriteJson(TextWriter writer, List<InstallationInfo> installations)
+    private static void DisplayInstallSpecs(TextWriter writer, IAnsiConsole console, List<InstallSpecInfo> specs)
     {
-        var output = new InstallationListOutput
+        if (specs.Count > 0)
         {
-            Installations = installations
-        };
-        writer.WriteLine(JsonSerializer.Serialize(output, InstallationListJsonContext.Default.InstallationListOutput));
+            writer.WriteLine();
+            writer.WriteLine(Indent(2, "Tracked channels:"));
+
+            var specGrid = CreateIndentedGrid();
+
+            foreach (var spec in specs.OrderBy(s => s.Component).ThenBy(s => s.VersionOrChannel))
+            {
+                string sourceDisplay = spec.Source == InstallSource.GlobalJson && spec.GlobalJsonPath is not null
+                    ? spec.GlobalJsonPath
+                    : spec.Source.ToString().ToLowerInvariant();
+
+                specGrid.AddRow(
+                    spec.Component.GetDisplayName(),
+                    spec.VersionOrChannel,
+                    $"[dim](source: {sourceDisplay})[/]"
+                );
+            }
+
+            console.Write(specGrid);
+        }
+    }
+
+    private static void DisplayInstallations(TextWriter writer, IAnsiConsole console, List<InstallationInfo> installs)
+    {
+        if (installs.Count > 0)
+        {
+            writer.WriteLine();
+            writer.WriteLine(Indent(2, "Installed versions:"));
+
+            var installGrid = CreateIndentedGrid();
+
+            foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
+            {
+                string status = install.IsValid == false
+                    ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
+                    : $"({install.Architecture})";
+
+                installGrid.AddRow(
+                    install.Component.GetDisplayName(),
+                    install.Version,
+                    status
+                );
+            }
+
+            console.Write(installGrid);
+        }
+    }
+
+    private static Grid CreateIndentedGrid()
+    {
+        var grid = new Grid();
+        grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
+        grid.AddColumn(new GridColumn().PadRight(IndentSize).NoWrap());
+        grid.AddColumn(new GridColumn().NoWrap());
+        return grid;
+    }
+
+    public static void WriteJson(TextWriter writer, ListData listData)
+    {
+        writer.WriteLine(JsonSerializer.Serialize(listData, InstallationListJsonContext.Default.ListData));
     }
 }
 
+/// <summary>
+/// Represents an install spec (tracked channel) in the list output.
+/// This type defines part of the JSON output contract — changes to property names,
+/// types, or structure are breaking changes for consumers.
+/// </summary>
+internal class InstallSpecInfo
+{
+    public InstallComponent Component { get; set; }
+    public string VersionOrChannel { get; set; } = string.Empty;
+    public InstallSource Source { get; set; }
+    public string? GlobalJsonPath { get; set; }
+    public string InstallRoot { get; set; } = string.Empty;
+    public InstallArchitecture Architecture { get; set; }
+}
+
+/// <summary>
+/// Represents an installed .NET component in the list output.
+/// This type defines part of the JSON output contract — changes to property names,
+/// types, or structure are breaking changes for consumers.
+/// </summary>
 internal class InstallationInfo
 {
-    public string Component { get; set; } = string.Empty;
+    public InstallComponent Component { get; set; }
     public string Version { get; set; } = string.Empty;
     public string InstallRoot { get; set; } = string.Empty;
-    public string Architecture { get; set; } = string.Empty;
+    public InstallArchitecture Architecture { get; set; }
+
+    /// <summary>
+    /// Validation status — null if not verified, true if valid, false if invalid.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IsValid { get; set; }
+
+    /// <summary>
+    /// Validation failure reason, if IsValid is false.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValidationFailure { get; set; }
 
     /// <summary>
     /// Gets the official framework name for JSON output (e.g., "Microsoft.NETCore.App").
     /// </summary>
-    public string FrameworkName => ParseComponent().GetFrameworkName();
-
-    /// <summary>
-    /// Gets the human-readable display name for this component (e.g., "dotnet (runtime)").
-    /// Not serialized to JSON.
-    /// </summary>
-    [JsonIgnore]
-    public string ComponentDisplayName => ParseComponent().GetDisplayName();
-
-    private InstallComponent ParseComponent() =>
-        Enum.Parse<InstallComponent>(Component, ignoreCase: true);
+    public string FrameworkName => Component.GetFrameworkName();
 }
 
-internal class InstallationListOutput
+/// <summary>
+/// Root data type for the list command output.
+/// This type defines the JSON output contract — changes to property names,
+/// types, or structure are breaking changes for consumers.
+/// </summary>
+internal class ListData
 {
+    public List<InstallSpecInfo> InstallSpecs { get; set; } = [];
     public List<InstallationInfo> Installations { get; set; } = [];
 }
 
-[JsonSerializable(typeof(InstallationListOutput))]
+[JsonSerializable(typeof(ListData))]
 [JsonSerializable(typeof(InstallationInfo))]
+[JsonSerializable(typeof(InstallSpecInfo))]
 [JsonSerializable(typeof(List<InstallationInfo>))]
-[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(List<InstallSpecInfo>))]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, UseStringEnumConverter = true)]
 internal partial class InstallationListJsonContext : JsonSerializerContext
 {
 }

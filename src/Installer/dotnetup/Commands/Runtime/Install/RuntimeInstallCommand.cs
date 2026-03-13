@@ -16,6 +16,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
+    private readonly bool _untracked = result.GetValue(CommonOptions.UntrackedOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new();
@@ -36,12 +37,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     protected override int ExecuteCore()
     {
         // Parse the component spec to determine runtime type and version
-        var (component, versionOrChannel, errorMessage) = ParseComponentSpec(_componentSpec);
-
-        if (errorMessage != null)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidChannel, errorMessage);
-        }
+        var (component, versionOrChannel) = ParseComponentSpec(_componentSpec);
 
         // Windows Desktop Runtime is only available on Windows
         if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
@@ -74,7 +70,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             _noProgress,
             component,
             componentDescription,
-            RequireMuxerUpdate: _requireMuxerUpdate);
+            RequireMuxerUpdate: _requireMuxerUpdate,
+            Untracked: _untracked);
 
         workflow.Execute(options);
         return 0;
@@ -88,16 +85,22 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     ///   - "aspnetcore@10.0.1": ASP.NET Core runtime with specified version
     ///   - "windowsdesktop@9.0": Windows Desktop runtime with specified channel
     /// </summary>
-    internal static (InstallComponent Component, string? VersionOrChannel, string? ErrorMessage) ParseComponentSpec(string? spec)
+    internal static (InstallComponent Component, string? VersionOrChannel) ParseComponentSpec(string? spec)
     {
         // Default: install latest core runtime
         if (string.IsNullOrWhiteSpace(spec))
         {
-            return (InstallComponent.Runtime, null, null);
+            return (InstallComponent.Runtime, null);
         }
 
         // Check for component@version syntax
         int atIndex = spec.IndexOf('@');
+        if (atIndex == 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"Error: Invalid component specification '{spec}'. Component name is required before '@'.");
+        }
         if (atIndex > 0)
         {
             string componentName = spec[..atIndex];
@@ -105,19 +108,23 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
             if (string.IsNullOrWhiteSpace(versionPart))
             {
-                return (default, null, $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InvalidChannel,
+                    $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
             }
 
             if (!s_runtimeTypeMap.TryGetValue(componentName, out var component))
             {
-                return (default, null, $"Error: Unknown component type '{componentName}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InvalidChannel,
+                    $"Error: Unknown component type '{componentName}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
             }
 
-            return (component, versionPart, null);
+            return (component, versionPart);
         }
 
         // No '@' - treat as version/channel for core runtime
-        return (InstallComponent.Runtime, spec, null);
+        return (InstallComponent.Runtime, spec);
     }
 
     /// <summary>

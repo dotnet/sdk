@@ -33,7 +33,7 @@ public class SpectreProgressTarget : IProgressTarget
 
         public void Dispose()
         {
-            _overallTask.SetResult();
+            _overallTask.TrySetResult();
         }
     }
 

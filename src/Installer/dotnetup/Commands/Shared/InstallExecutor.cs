@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -31,6 +32,9 @@ internal class InstallExecutor
     /// <param name="manifestPath">Optional manifest path for tracking installations.</param>
     /// <param name="channelVersionResolver">The resolver to use for version resolution.</param>
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
+    /// <param name="installSource">The source of this install request.</param>
+    /// <param name="globalJsonPath">The path to the global.json that triggered this install.</param>
+    /// <param name="untracked">If true, install without recording in the manifest.</param>
     /// <returns>The resolved install request with version information.</returns>
     public static ResolvedInstallRequest CreateAndResolveRequest(
         string installPath,
@@ -38,7 +42,10 @@ internal class InstallExecutor
         InstallComponent component,
         string? manifestPath,
         ChannelVersionResolver channelVersionResolver,
-        bool requireMuxerUpdate = false)
+        bool requireMuxerUpdate = false,
+        InstallRequestSource installSource = InstallRequestSource.Explicit,
+        string? globalJsonPath = null,
+        bool untracked = false)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -49,7 +56,10 @@ internal class InstallExecutor
             new InstallRequestOptions
             {
                 ManifestPath = manifestPath,
-                RequireMuxerUpdate = requireMuxerUpdate
+                RequireMuxerUpdate = requireMuxerUpdate,
+                InstallSource = installSource,
+                GlobalJsonPath = globalJsonPath,
+                Untracked = untracked
             });
 
         var resolvedVersion = channelVersionResolver.Resolve(request);
@@ -75,18 +85,18 @@ internal class InstallExecutor
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
 #pragma warning restore CA1305
 
-        var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+        var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
-        if (installResult.WasAlreadyInstalled)
+        if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLine($"[green]{componentDescription} {installResult.Install.Version} is already installed at {installResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
         }
 
-        return new InstallResult(installResult.Install, installResult.WasAlreadyInstalled);
+        return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
     }
 
     /// <summary>
@@ -123,15 +133,15 @@ internal class InstallExecutor
                     RequireMuxerUpdate = requireMuxerUpdate
                 });
 
-            var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-            if (additionalResult.Install == null)
+            try
             {
-                SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
-                allSucceeded = false;
+                var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
             }
-            else
+            catch (DotnetInstallException)
             {
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
+                allSucceeded = false;
             }
         }
 
@@ -177,14 +187,8 @@ internal class InstallExecutor
             var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-            // Check for C:\Program Files\dotnet or C:\Program Files (x86)\dotnet
-            if (!string.IsNullOrEmpty(programFiles) &&
-                fullPath.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            if (!string.IsNullOrEmpty(programFilesX86) &&
-                fullPath.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            if ((!string.IsNullOrEmpty(programFiles) && IsOrIsUnder(fullPath, Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(programFilesX86) && IsOrIsUnder(fullPath, Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
@@ -192,15 +196,24 @@ internal class InstallExecutor
         else
         {
             // Standard admin/package-manager locations on Linux and macOS
-            if (fullPath.StartsWith("/usr/share/dotnet", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/usr/lib/dotnet", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/usr/local/share/dotnet", StringComparison.Ordinal))
+            if (IsOrIsUnder(fullPath, "/usr/share/dotnet", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/usr/lib/dotnet", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/usr/local/share/dotnet", StringComparison.Ordinal))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    // Checks whether fullPath equals adminPath or is a child directory of it.
+    // A separate equality check prevents false matches on path prefixes
+    // (e.g. "C:\Program Files\dotnet is cool" matching "C:\Program Files\dotnet").
+    private static bool IsOrIsUnder(string fullPath, string adminPath, StringComparison comparison)
+    {
+        return string.Equals(fullPath, adminPath, comparison) ||
+               fullPath.StartsWith(adminPath + Path.DirectorySeparatorChar, comparison);
     }
 
     /// <summary>

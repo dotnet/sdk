@@ -17,6 +17,6 @@ internal static class Constants
         /// Mutex used during the final installation phase to protect the manifest file and extracting folder(s).
         /// Mutex names MUST be valid file names on Unix. https://learn.microsoft.com/dotnet/api/system.threading.mutex.openexisting?view=net-9.0
         /// </summary>
-        public const string ModifyInstallationStates = "Global\\DotnetupFinalize";
+        public const string ModifyInstallationStates = "Global\\DotnetupManifest";
     }
 }
