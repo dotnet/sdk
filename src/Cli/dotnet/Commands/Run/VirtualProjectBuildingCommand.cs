@@ -1211,6 +1211,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 /// <summary>
 /// Loaded via reflection by NuGet XPlat CLI. Needs to be <see langword="public"/>.
 /// </summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
 public sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 {
     public bool IsValidEntryPointPath(string entryPointFilePath) => VirtualProjectBuilder.IsValidEntryPointPath(entryPointFilePath);
