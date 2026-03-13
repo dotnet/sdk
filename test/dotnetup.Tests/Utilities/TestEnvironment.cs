@@ -28,7 +28,17 @@ internal class TestEnvironment : IDisposable
     /// </param>
     public TestEnvironment(bool configureEnvironment = false)
     {
-        TempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-tests", Guid.NewGuid().ToString("N"));
+        var tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-tests", Guid.NewGuid().ToString("N"));
+
+        // On macOS, Path.GetTempPath() returns paths through /var which is a symlink to /private/var.
+        // Child processes resolve this via getcwd(), causing path mismatches in assertions that compare
+        // paths from the test process against paths stored by the child process.
+        if (OperatingSystem.IsMacOS() && tempRoot.StartsWith("/var/", StringComparison.Ordinal))
+        {
+            tempRoot = "/private" + tempRoot;
+        }
+
+        TempRoot = tempRoot;
         InstallPath = Path.Combine(TempRoot, "dotnet");
         var dotnetupDir = Path.Combine(TempRoot, "dotnetup");
         Directory.CreateDirectory(InstallPath);
