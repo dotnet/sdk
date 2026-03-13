@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization;
-using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-[JsonSourceGenerationOptions(WriteIndented = false, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true,
     Converters = new[] { typeof(ReleaseVersionJsonConverter) })]
-[JsonSerializable(typeof(List<DotnetInstall>))]
+[JsonSerializable(typeof(DotnetupManifestData))]
+[JsonSerializable(typeof(DotnetRootEntry))]
+[JsonSerializable(typeof(InstallSpec))]
+[JsonSerializable(typeof(Installation))]
+[JsonSerializable(typeof(InstallSource))]
 [JsonSerializable(typeof(InstallComponent))]
 [JsonSerializable(typeof(InstallArchitecture))]
 [JsonSerializable(typeof(InstallType))]

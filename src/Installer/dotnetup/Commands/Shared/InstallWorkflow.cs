@@ -35,7 +35,8 @@ internal class InstallWorkflow
         string ComponentDescription,
         bool? UpdateGlobalJson = null,
         Func<string, string?>? ResolveChannelFromGlobalJson = null,
-        bool RequireMuxerUpdate = false);
+        bool RequireMuxerUpdate = false,
+        bool Untracked = false);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -146,10 +147,10 @@ internal class InstallWorkflow
             installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
 
         // Classify how the version/channel was determined for telemetry
-        string requestSource = channelFromGlobalJson is not null
-            ? "default-globaljson"
-            : options.VersionOrChannel is not null
-                ? "explicit"
+        string requestSource = options.VersionOrChannel is not null
+            ? "explicit"
+            : channelFromGlobalJson is not null
+                ? "default-globaljson"
                 : "default-latest";
 
         return new WorkflowContext(
@@ -168,13 +169,22 @@ internal class InstallWorkflow
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
     {
+        // Only tag as GlobalJson source if the channel/version actually came from global.json,
+        // not just because a global.json file exists in the directory.
+        var installSource = context.RequestSource == "default-globaljson"
+            ? InstallRequestSource.GlobalJson
+            : InstallRequestSource.Explicit;
+
         return InstallExecutor.CreateAndResolveRequest(
             context.InstallPath,
             context.Channel,
             context.Options.Component,
             context.Options.ManifestPath,
             _channelVersionResolver,
-            context.Options.RequireMuxerUpdate);
+            context.Options.RequireMuxerUpdate,
+            installSource,
+            installSource == InstallRequestSource.GlobalJson ? context.GlobalJson?.GlobalJsonPath : null,
+            context.Options.Untracked);
     }
 
     private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
@@ -212,9 +222,7 @@ internal class InstallWorkflow
         {
             _dotnetInstaller.UpdateGlobalJson(
                 context.GlobalJson.GlobalJsonPath,
-                resolved.ResolvedVersion!.ToString(),
-                context.GlobalJson.AllowPrerelease,
-                context.GlobalJson.RollForward);
+                resolved.ResolvedVersion!.ToString());
         }
     }
 

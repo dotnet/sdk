@@ -7,19 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-    public static readonly Argument<string?> ChannelArgument = new("channel")
-    {
-        HelpName = "CHANNEL",
-        Description = "The channel of the .NET SDK to install.  For example: latest, 10, or 9.0.3xx.  A specific version (for example 9.0.304) can also be specified.",
-        Arity = ArgumentArity.ZeroOrOne,
-    };
-
-    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
-    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
-    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-    public static readonly Option<bool> RequireMuxerUpdateOption = CommonOptions.RequireMuxerUpdateOption;
+    public static readonly Argument<string?> ChannelArgument =
+        CommonOptions.CreateSdkChannelArgument(required: false, actionVerb: "install");
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
@@ -51,14 +40,15 @@ internal static class SdkInstallCommandParser
 
         command.Arguments.Add(ChannelArgument);
 
-        command.Options.Add(InstallPathOption);
-        command.Options.Add(SetDefaultInstallOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(UpdateGlobalJsonOption);
-        command.Options.Add(ManifestPathOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
 
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoProgressOption);
-        command.Options.Add(RequireMuxerUpdateOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
+        command.Options.Add(CommonOptions.UntrackedOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

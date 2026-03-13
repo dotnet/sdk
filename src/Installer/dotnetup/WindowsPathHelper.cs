@@ -141,7 +141,8 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         // Read from registry to find actual dotnet installations
         // Use 32-bit registry hive to ensure we get the correct view
-        using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
         if (key != null)
         {
             foreach (var archName in key.GetSubKeyNames())
@@ -168,7 +169,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     public static List<string> SplitPath(string path)
     {
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
-        return envProvider.SplitPaths(path).ToList();
+        return [.. envProvider.SplitPaths(path)];
     }
 
     /// <summary>

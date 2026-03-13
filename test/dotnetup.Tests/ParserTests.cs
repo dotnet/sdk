@@ -284,4 +284,56 @@ public class ParserTests
     }
 
     #endregion
+
+    #region Untracked Option Parser Tests
+
+    [Fact]
+    public void Parser_ShouldParseSdkInstallWithUntracked()
+    {
+        var args = new[] { "sdk", "install", "9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseSdkInstallWithoutUntracked()
+    {
+        var args = new[] { "sdk", "install", "9.0" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithUntracked()
+    {
+        var args = new[] { "runtime", "install", "aspnetcore@9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRootInstallWithUntracked()
+    {
+        var args = new[] { "install", "9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    #endregion
 }

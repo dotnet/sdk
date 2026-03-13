@@ -7,7 +7,10 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal static class DotnetupUtilities
 {
-    public static string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+    public static readonly string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+
+    public static readonly StringComparison PathComparison =
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     public static string GetDotnetExeName()
     {
@@ -26,8 +29,8 @@ internal static class DotnetupUtilities
         }
 
         return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                                Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                                StringComparison.OrdinalIgnoreCase);
+                             Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                             PathComparison);
     }
 
     public static void ForceReplaceFile(string sourcePath, string destPath)
