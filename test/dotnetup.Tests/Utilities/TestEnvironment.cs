@@ -29,16 +29,11 @@ internal class TestEnvironment : IDisposable
     public TestEnvironment(bool configureEnvironment = false)
     {
         var tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
 
-        // On macOS, Path.GetTempPath() returns paths through /var which is a symlink to /private/var.
-        // Child processes resolve this via getcwd(), causing path mismatches in assertions that compare
-        // paths from the test process against paths stored by the child process.
-        if (OperatingSystem.IsMacOS() && tempRoot.StartsWith("/var/", StringComparison.Ordinal))
-        {
-            tempRoot = "/private" + tempRoot;
-        }
-
-        TempRoot = tempRoot;
+        // Resolve symlinks in the temp path (e.g. on macOS /var -> /private/var).
+        // Child processes resolve these via getcwd(), so test paths must match.
+        TempRoot = ResolveRealPath(tempRoot);
         InstallPath = Path.Combine(TempRoot, "dotnet");
         var dotnetupDir = Path.Combine(TempRoot, "dotnetup");
         Directory.CreateDirectory(InstallPath);
@@ -103,5 +98,28 @@ internal class TestEnvironment : IDisposable
                 Console.WriteLine($"Warning: Could not clean up temp directory: {TempRoot}");
             }
         }
+    }
+
+    /// <summary>
+    /// Resolves all symlinks in a directory path by walking each component.
+    /// For example, on macOS this resolves /var/folders/... to /private/var/folders/...
+    /// </summary>
+    private static string ResolveRealPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var root = Path.GetPathRoot(fullPath)!;
+        var resolved = root;
+
+        foreach (var component in fullPath[root.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+        {
+            resolved = Path.Combine(resolved, component);
+            var target = Directory.ResolveLinkTarget(resolved, returnFinalTarget: true);
+            if (target != null)
+            {
+                resolved = target.FullName;
+            }
+        }
+
+        return resolved;
     }
 }
