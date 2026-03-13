@@ -5523,6 +5523,63 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after a full MSBuild build,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void MSBuild_WritesCscRsp()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:property Configuration=Release
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // A build directive forces a full MSBuild build.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello");
+
+        // csc.rsp should be written to disk after a full MSBuild build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after a full MSBuild build");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
+    }
+
+    /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after <c>dotnet build file.cs</c>,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void DotnetBuild_WritesCscRsp()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // csc.rsp should be written to disk after dotnet build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after dotnet build file.cs");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
+    }
+
+    /// <summary>
     /// Testing <see cref="CscOnly"/> optimization when the NuGet cache is cleared between builds.
     /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
     /// </summary>
