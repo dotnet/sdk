@@ -1,4 +1,21 @@
 <!-- Prevent test asset projects from picking up the repo's root Directory.Build.targets. -->
 <Project>
 
+  <!-- For packable Exe projects (DotNetCliToolReference tools targeting netcoreapp2.2),
+       include the auto-generated runtimeconfig.json in the NuGet package so the dotnet
+       host can find it adjacent to the DLL. This enables RollForward=LatestMajor to
+       work correctly, allowing tools to run on machines that only have .NET 6.0+
+       installed (common on Helix CI agents that lack .NET Core 2.2). Without this,
+       tools fail with FrameworkMissingFailure (exit code 0x80008096) because the host
+       cannot roll forward from 2.2.0 without a runtimeconfig.json specifying the
+       rollForward policy. -->
+  <Target Name="IncludeRuntimeConfigInPackage"
+          AfterTargets="Build"
+          Condition="'$(OutputType)' == 'Exe' AND '$(IsPackable)' == 'true' AND '$(GenerateRuntimeConfigurationFiles)' != 'false'">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(ProjectRuntimeConfigFilePath)"
+                            Condition="'$(ProjectRuntimeConfigFilePath)' != '' AND Exists('$(ProjectRuntimeConfigFilePath)')" />
+    </ItemGroup>
+  </Target>
+
 </Project>
