@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../CliCommandStrings.resx">
     <body>
@@ -2386,21 +2386,43 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Contesto progetto</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Eliminare tutti i file di origine dopo la conversione?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Converti un programma basato su file in un programma basato su progetto.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Specificare la directory di output (premere INVIO per impostazione predefinita: '{0}', la directory non deve esistere):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">No: mantenere tutti i file di origine</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Sì: eliminare tutti i file di origine</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">File di origine eliminato: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Determina le modifiche senza modificare effettivamente il file system</target>
         <note />
       </trans-unit>
+
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
         <target state="translated">Esecuzione di prova: rimuoverebbe le direttive a livello di file dal file: {0}</target>
@@ -2421,6 +2443,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Esecuzione di prova: creerebbe il file: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Esecuzione di prova: eliminerebbe il file di origine {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
         <target state="translated">Esecuzione di prova: eliminerebbe il file: {0}</target>
@@ -2440,6 +2467,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <source>The XML file that contains the list of packages to be stored.</source>
         <target state="translated">File XML che contiene l'elenco di pacchetti da archiviare.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>

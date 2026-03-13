@@ -1546,6 +1546,24 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Dry run: would create file: {0}</value>
     <comment>{0} is the file full path.</comment>
   </data>
+  <data name="ProjectConvertAskDeleteSource" xml:space="preserve">
+    <value>Delete all source files after conversion?</value>
+    <comment>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</comment>
+  </data>
+  <data name="ProjectConvertDeletedSourceFile" xml:space="preserve">
+    <value>Deleted source file: {0}</value>
+    <comment>{0} is the source file path.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteSourceFile" xml:space="preserve">
+    <value>Dry run: would delete source file: {0}</value>
+    <comment>{0} is the source file path.</comment>
+  </data>
+  <data name="ProjectConvertDeleteSourceChoiceYes" xml:space="preserve">
+    <value>Yes - delete all source files</value>
+  </data>
+  <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
+    <value>No - keep all source files</value>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>

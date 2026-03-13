@@ -29,8 +29,29 @@ internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
 
-    private sealed class WindowsProcessReaper(Process process) : ProcessReaper(process)
+    private sealed class WindowsProcessReaper : ProcessReaper
     {
+        public WindowsProcessReaper(Process process) : base(process)
+        {
+            // Ensure Ctrl+C handling is enabled in this process.
+            //
+            // When a parent process (e.g. dotnet-watch) launches us with CREATE_NEW_PROCESS_GROUP,
+            // Ctrl+C handlers are disabled in the new process group. We re-enable them so that
+            // HandleCancelKeyPress fires when the parent sends CTRL_C_EVENT.
+            // This is safe to call unconditionally — it's a no-op if Ctrl+C is already enabled.
+            //
+            // See https://learn.microsoft.com/windows/console/setconsolectrlhandler
+            EnableWindowsCtrlCHandling();
+        }
+
+        private static void EnableWindowsCtrlCHandling()
+        {
+            SetConsoleCtrlHandler(null, false);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
+        }
+
 #if !DOTNET_BUILDSOURCEONLY
         private SafeWaitHandle? _job;
 
@@ -202,9 +223,21 @@ internal class ProcessReaper : IDisposable
         Console.CancelKeyPress -= HandleCancelKeyPress;
     }
 
-    private static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         // Ignore SIGINT/SIGQUIT so that the process can handle the signal
         e.Cancel = true;
+
+        // For WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C,
+        // CloseMainWindow() posts WM_CLOSE to gracefully shut them down.
+        // For console apps this is a no-op (returns false) since they have no main window.
+        try
+        {
+            _process.CloseMainWindow();
+        }
+        catch (InvalidOperationException)
+        {
+            // The process hasn't started yet or has already exited; nothing to signal
+        }
     }
 }
