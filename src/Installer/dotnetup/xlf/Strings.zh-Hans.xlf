@@ -7,6 +7,31 @@
         <target state="new">Allows the command to stop and wait for user input or action.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetCommandDescription">
+        <source>Run a command using the dotnetup-managed dotnet installation.</source>
+        <target state="new">Run a command using the dotnetup-managed dotnet installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetNotFound">
+        <source>Error: dotnet executable not found at '{0}'.</source>
+        <target state="new">Error: dotnet executable not found at '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetStartFailed">
+        <source>Error: Failed to start the dotnet process.</source>
+        <target state="new">Error: Failed to start the dotnet process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandForwardedArgsDescription">
+        <source>Arguments to forward to dotnet.</source>
+        <target state="new">Arguments to forward to dotnet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandInstallFirst">
+        <source>Run 'dotnetup install' to install a .NET SDK first.</source>
+        <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatOptionDescription">
         <source>Output format (text or json).</source>
         <target state="new">Output format (text or json).</target>
