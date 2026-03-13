@@ -81,7 +81,7 @@ namespace Microsoft.TemplateSearch.Common
         private static bool TryReadVersion(ILogger logger, JsonObject cacheObject, out string? version)
         {
             logger.LogDebug($"Reading template metadata version");
-            if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.Version), out JsonNode? value))
+            if (cacheObject.TryGetValueCaseInsensitive(nameof(TemplateDiscoveryMetadata.Version), out JsonNode? value))
             {
                 version = value?.ToString();
                 logger.LogDebug($"Version: {version}.");
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateSearch.Common
             try
             {
                 // This is lifted from TemplateCache.ParseCacheContent - almost identical
-                if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.TemplateCache), out JsonNode? templateInfoToken))
+                if (cacheObject.TryGetValueCaseInsensitive(nameof(TemplateDiscoveryMetadata.TemplateCache), out JsonNode? templateInfoToken))
                 {
                     List<ITemplateInfo> buildingTemplateList = new List<ITemplateInfo>();
 
@@ -184,7 +184,7 @@ namespace Microsoft.TemplateSearch.Common
                             }
 
                             workingPackToTemplateMap[packName] = new PackToTemplateEntry(version, templatesInPack);
-                            if (entryValue.TryGetValue(nameof(PackToTemplateEntry.TotalDownloads), out JsonNode? totalDownloadsNode)
+                            if (entryValue.TryGetValueCaseInsensitive(nameof(PackToTemplateEntry.TotalDownloads), out JsonNode? totalDownloadsNode)
                                 && long.TryParse(totalDownloadsNode?.ToString(), out long totalDownloads))
                             {
                                 workingPackToTemplateMap[packName].TotalDownloads = totalDownloads;

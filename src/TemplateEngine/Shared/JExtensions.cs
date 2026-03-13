@@ -436,6 +436,15 @@ namespace Microsoft.TemplateEngine
         }
 
         /// <summary>
+        /// Tries to get a property value from a <see cref="JsonObject"/> using case-insensitive key matching.
+        /// </summary>
+        internal static bool TryGetValueCaseInsensitive(this JsonObject obj, string key, out JsonNode? result)
+        {
+            result = GetPropertyCaseInsensitive(obj, key);
+            return result != null;
+        }
+
+        /// <summary>
         /// Gets a property from a JsonObject with case-insensitive key matching.
         /// </summary>
         internal static JsonNode? GetPropertyCaseInsensitive(JsonObject obj, string key)

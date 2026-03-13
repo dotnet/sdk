@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public TemplateCache(JsonObject? contentJObject)
         {
-            if (contentJObject != null && contentJObject.TryGetValue(nameof(Version), out JsonNode? versionToken))
+            if (contentJObject != null && contentJObject.TryGetValueCaseInsensitive(nameof(Version), out JsonNode? versionToken))
             {
                 Version = versionToken!.ToJsonString().Trim('"');
             }
@@ -86,13 +86,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            Locale = contentJObject.TryGetValue(nameof(Locale), out JsonNode? localeToken)
+            Locale = contentJObject.TryGetValueCaseInsensitive(nameof(Locale), out JsonNode? localeToken)
                 ? localeToken!.GetValue<string>()
                 : string.Empty;
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJObject.TryGetValue(nameof(MountPointsInfo), out JsonNode? mountPointInfoToken) && mountPointInfoToken is JsonObject mountPointInfoObj)
+            if (contentJObject.TryGetValueCaseInsensitive(nameof(MountPointsInfo), out JsonNode? mountPointInfoToken) && mountPointInfoToken is JsonObject mountPointInfoObj)
             {
                 foreach (var entry in mountPointInfoObj)
                 {
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJObject.TryGetValue(nameof(TemplateInfo), out JsonNode? templateInfoToken) && templateInfoToken is JsonArray arr)
+            if (contentJObject.TryGetValueCaseInsensitive(nameof(TemplateInfo), out JsonNode? templateInfoToken) && templateInfoToken is JsonArray arr)
             {
                 foreach (JsonNode? entry in arr)
                 {

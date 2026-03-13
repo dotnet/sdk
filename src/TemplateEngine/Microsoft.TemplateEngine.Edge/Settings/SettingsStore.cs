@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), out JsonNode? componentGuidToAssemblyQualifiedNameToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ComponentGuidToAssemblyQualifiedName), out JsonNode? componentGuidToAssemblyQualifiedNameToken))
             {
                 if (componentGuidToAssemblyQualifiedNameToken is JsonObject componentGuidToAssemblyQualifiedNameObject)
                 {
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            if (obj.TryGetValue(nameof(ProbingPaths), out JsonNode? probingPathsToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ProbingPaths), out JsonNode? probingPathsToken))
             {
                 if (probingPathsToken is JsonArray probingPathsArray)
                 {
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), out JsonNode? componentTypeToGuidListToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ComponentTypeToGuidList), out JsonNode? componentTypeToGuidListToken))
             {
                 if (componentTypeToGuidListToken is JsonObject componentTypeToGuidListObject)
                 {
