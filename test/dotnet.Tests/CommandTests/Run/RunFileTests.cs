@@ -2296,6 +2296,95 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Run_MultiTarget_PropertyReferenceInTargetFrameworks()
+    {
+        // Regression test: TargetFrameworks with property references like $(MyTfm) should be evaluated
+        // correctly for interactive TFM selection, not passed as raw unexpanded strings.
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property MyTfm=net9.0
+            #:property TargetFrameworks=$(MyTfm);{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello MultiTFM");
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // Running without --framework should fail with the "specify framework" error,
+        // and should list the evaluated framework names (not the unexpanded $(MyTfm)).
+        var result = new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
+            .And.HaveStdErrContaining("net9.0")
+            .And.NotHaveStdErrContaining("$(MyTfm)");
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello MultiTFM");
+    }
+
+    [Fact]
+    public void Run_MultiTarget_TargetFrameworksInIncludedFile()
+    {
+        // Regression test: TargetFrameworks defined in a #:include'd file should be detected
+        // correctly for interactive TFM selection, not missed by a fast-path that only checks
+        // the entry-point file's directives.
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        var includedFile = Path.Join(testInstance.Path, "build-config.cs");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(includedFile, $"""
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=net9.0;{ToolsetInfo.CurrentTargetFramework}
+            """);
+
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:include build-config.cs
+            Console.WriteLine("Hello MultiTFM Include");
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // Running without --framework should fail with the "specify framework" error,
+        // listing the frameworks defined in the included file.
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--no-interactive")
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
+            .And.HaveStdErrContaining("net9.0");
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello MultiTFM Include");
+    }
+
+    [Fact]
     public void Build_AppContainerExe()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
