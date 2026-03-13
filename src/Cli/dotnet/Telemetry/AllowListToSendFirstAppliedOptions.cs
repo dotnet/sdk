@@ -14,7 +14,7 @@ internal class AllowListToSendFirstAppliedOptions(
 {
     private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
     {
         var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
         var result = new List<ApplicationInsightsEntryFormat>();
@@ -29,10 +29,9 @@ internal class AllowListToSendFirstAppliedOptions(
                     "sublevelparser/command",
                     new Dictionary<string, string>
                     {
-                        { "verb", topLevelCommandNameFromParse},
+                        {"verb", topLevelCommandNameFromParse},
                         {"argument", firstOption}
-                    },
-                    measurements));
+                    }));
             }
         }
         return result;

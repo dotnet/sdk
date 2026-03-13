@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Extensions;
@@ -11,14 +9,12 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TopLevelCommandNameAndOptionToLog(
-    HashSet<string> topLevelCommandName,
-    HashSet<string> optionsToLog) : IParseResultLogRule
+internal class TopLevelCommandNameAndOptionToLog(HashSet<string> topLevelCommandName, HashSet<string> optionsToLog) : IParseResultLogRule
 {
     private HashSet<string> _topLevelCommandName { get; } = topLevelCommandName;
     private HashSet<string> _optionsToLog { get; } = optionsToLog;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
     {
         var topLevelCommandName = parseResult.RootSubCommandResult();
         var result = new List<ApplicationInsightsEntryFormat>();
@@ -32,12 +28,11 @@ internal class TopLevelCommandNameAndOptionToLog(
             {
                 result.Add(new ApplicationInsightsEntryFormat(
                     "sublevelparser/command",
-                    new Dictionary<string, string>
+                    new Dictionary<string, string?>
                     {
                         { "verb", topLevelCommandName},
                         { optionName.RemovePrefix(), Stringify(optionValue) }
-                    },
-                    measurements));
+                    }));
             }
         }
         return result;
@@ -46,7 +41,7 @@ internal class TopLevelCommandNameAndOptionToLog(
     /// <summary>
     /// We're dealing with untyped payloads here, so we need to handle arrays vs non-array values
     /// </summary>
-    private static string Stringify(object value)
+    private static string? Stringify(object value)
     {
         if (value is null)
         {

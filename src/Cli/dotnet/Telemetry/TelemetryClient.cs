@@ -152,7 +152,7 @@ public class TelemetryClient : ITelemetryClient
         }
     }
 
-    public void TrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
+    public void TrackEvent(string? eventName, IDictionary<string, string?>? properties)
     {
         if (!Enabled || eventName is null)
         {
@@ -161,28 +161,27 @@ public class TelemetryClient : ITelemetryClient
 
         // Continue the task in different threads.
         _trackEventTask = _trackEventTask == null
-            ? Task.Run(() => TrackEventTask(eventName, properties, measurements))
-            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, measurements));
+            ? Task.Run(() => TrackEventTask(eventName, properties))
+            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
     }
 
-    public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
+    public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties)
     {
         if (!Enabled || eventName is null)
         {
             return;
         }
 
-        TrackEventTask(eventName, properties, measurements);
+        TrackEventTask(eventName, properties);
     }
 
-    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
+    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)
     {
         try
         {
             properties ??= new Dictionary<string, string?>();
             properties.Add("event id", Guid.NewGuid().ToString());
-            measurements ??= new Dictionary<string, double>();
-            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties, measurements));
+            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties));
             Activity.Current?.AddEvent(@event);
         }
         catch (Exception e)
@@ -191,7 +190,7 @@ public class TelemetryClient : ITelemetryClient
         }
     }
 
-    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties, IDictionary<string, double> eventMeasurements)
+    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties)
     {
         var common = s_commonProperties
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
@@ -199,9 +198,6 @@ public class TelemetryClient : ITelemetryClient
             .Where(p => p.Value is not null)
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
             .OrderBy(p => p.Key);
-        var measurements = eventMeasurements
-            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
-            .OrderBy(p => p.Key);
-        return [.. common, .. properties, .. measurements];
+        return [.. common, .. properties];
     }
 }

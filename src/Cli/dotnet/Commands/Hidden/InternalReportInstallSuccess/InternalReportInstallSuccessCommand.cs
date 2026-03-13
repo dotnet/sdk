@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -30,7 +31,7 @@ public class InternalReportInstallSuccessCommand
         var filter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         foreach (var e in filter.Filter(new InstallerSuccessReport(exeName)))
         {
-            telemetry.TrackEvent(e.EventName, e.Properties, null);
+            telemetry.TrackEvent(e.EventName, e.Properties);
         }
     }
 
@@ -46,14 +47,9 @@ public class InternalReportInstallSuccessCommand
 
         public bool Enabled => _telemetry.Enabled;
 
-        public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
+        public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
         {
-            _telemetry.ThreadBlockingTrackEvent(eventName, properties, measurements);
+            _telemetry.ThreadBlockingTrackEvent(eventName, properties);
         }
     }
-}
-
-internal class InstallerSuccessReport(string? exeName)
-{
-    public string ExeName { get; } = exeName ?? throw new ArgumentNullException(nameof(exeName));
 }

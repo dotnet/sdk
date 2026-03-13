@@ -127,7 +127,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
 
-            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
+            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: []);
             _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
         }
 
@@ -135,7 +135,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
 
-            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
+            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: []);
             _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
         }
     }
@@ -185,14 +185,13 @@ public sealed class MSBuildLogger : INodeLogger
                 break;
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
-                    toBeHashed: ["ProjectPath", "BuildTarget"],
-                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]
+                    toBeHashed: ["ProjectPath", "BuildTarget"]
                 );
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: [],
-                    toBeMeasured: []);
+                    toBeHashed: []
+                );
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
@@ -200,14 +199,11 @@ public sealed class MSBuildLogger : INodeLogger
                 );
                 break;
             case BuildcheckRunEventName:
-                TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
-                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
-                );
+                TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties);
                 break;
             case BuildcheckRuleStatsEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
-                    toBeHashed: ["RuleId", "CheckFriendlyName"],
-                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
+                    toBeHashed: ["RuleId", "CheckFriendlyName"]
                 );
                 break;
             // Pass through events that don't need special handling
@@ -226,7 +222,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetryClient? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null, string[]? toBeMeasured = null)
+    private static void TrackEvent(ITelemetryClient? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null)
     {
         if (telemetry == null || !telemetry.Enabled)
         {
@@ -234,7 +230,6 @@ public sealed class MSBuildLogger : INodeLogger
         }
 
         Dictionary<string, string?>? properties = null;
-        Dictionary<string, double>? measurements = null;
 
         if (toBeHashed is not null)
         {
@@ -249,26 +244,7 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        if (toBeMeasured is not null)
-        {
-            foreach (var propertyToBeMeasured in toBeMeasured)
-            {
-                if (eventProperties.TryGetValue(propertyToBeMeasured, out var value))
-                {
-                    // Lets lazy allocate in case there is tons of telemetry
-                    properties ??= new(eventProperties);
-                    properties.Remove(propertyToBeMeasured);
-                    if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
-                    {
-                        // Lets lazy allocate in case there is tons of telemetry
-                        measurements ??= [];
-                        measurements[propertyToBeMeasured] = realValue;
-                    }
-                }
-            }
-        }
-
-        telemetry?.TrackEvent(eventName, properties ?? eventProperties, measurements);
+        telemetry?.TrackEvent(eventName, properties ?? eventProperties);
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)

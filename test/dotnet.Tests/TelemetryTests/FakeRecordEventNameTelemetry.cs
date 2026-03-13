@@ -13,13 +13,11 @@ public class FakeRecordEventNameTelemetry : ITelemetryClient
     public string? EventName { get; set; }
 
     public void TrackEvent(string eventName,
-        IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
+        IDictionary<string, string?>? properties)
     {
         LogEntries.Add(new LogEntry
         {
             EventName = eventName,
-            Measurement = measurements ?? new Dictionary<string, double>(),
             Properties = properties ?? new Dictionary<string, string?>()
         });
     }
@@ -30,6 +28,5 @@ public class FakeRecordEventNameTelemetry : ITelemetryClient
     {
         public string? EventName { get; set; }
         public IDictionary<string, string?> Properties { get; set; } = new Dictionary<string, string?>();
-        public IDictionary<string, double> Measurement { get; set; } = new Dictionary<string, double>();
     }
 }

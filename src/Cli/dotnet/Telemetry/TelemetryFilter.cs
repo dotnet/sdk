@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -16,85 +15,82 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
     private const string ExceptionEventName = "mainCatchException/exception";
     private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
+    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResult parseResult) =>
+        Hash(FilterImpl(parseResult, globalJsonState: null));
+
+    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) =>
+        Hash(FilterImpl(parseData.ParseResult, parseData.GlobalJsonState));
+
+    public IEnumerable<ApplicationInsightsEntryFormat> Filter(InstallerSuccessReport report)
     {
-        var result = new List<ApplicationInsightsEntryFormat>();
-        Dictionary<string, double>? measurements = null;
-        string globalJsonState = string.Empty;
-        if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
+        var reportProperties = new Dictionary<string, string?>
         {
-            objectToFilter = parseResultWithMeasurements.Item1;
-            measurements = parseResultWithMeasurements.Item2;
-            measurements = RemoveZeroTimes(measurements);
-        }
-        else if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>, string> parseResultWithMeasurementsAndGlobalJsonState)
-        {
-            objectToFilter = parseResultWithMeasurementsAndGlobalJsonState.Item1;
-            measurements = parseResultWithMeasurementsAndGlobalJsonState.Item2;
-            measurements = RemoveZeroTimes(measurements);
-            globalJsonState = parseResultWithMeasurementsAndGlobalJsonState.Item3;
-        }
-
-        if (objectToFilter is ParseResult parseResult)
-        {
-            var topLevelCommandName = parseResult.RootSubCommandResult();
-            if (topLevelCommandName != null)
-            {
-                Dictionary<string, string?> properties = new()
-                {
-                    ["verb"] = topLevelCommandName
-                };
-                if (!string.IsNullOrEmpty(globalJsonState))
-                {
-                    properties["globalJson"] = globalJsonState;
-                }
-
-                result.Add(new ApplicationInsightsEntryFormat(
-                    "toplevelparser/command",
-                    properties,
-                    measurements
-                ));
-
-                LogVerbosityForAllTopLevelCommand(result, parseResult, topLevelCommandName, measurements);
-                LogVulnerableOptionForPackageUpdateCommand(result, parseResult, topLevelCommandName, measurements);
-
-                foreach (IParseResultLogRule rule in ParseResultLogRules)
-                {
-                    result.AddRange(rule.AllowList(parseResult, measurements));
-                }
-            }
-        }
-        else if (objectToFilter is InstallerSuccessReport installerSuccessReport)
-        {
-            result.Add(new ApplicationInsightsEntryFormat(
-                "install/reportsuccess",
-                new Dictionary<string, string?> { { "exeName", installerSuccessReport.ExeName } }
-            ));
-        }
-        else if (objectToFilter is Exception exception)
-        {
-            result.Add(new ApplicationInsightsEntryFormat(
-                ExceptionEventName,
-                new Dictionary<string, string?>
-                {
-                    {"exceptionType", exception.GetType().ToString()},
-                    {"detail", ExceptionToStringWithoutMessage(exception) }
-                }
-            ));
-        }
-
-        return [.. result.Select(r =>
-        {
-            if (r.EventName == ExceptionEventName)
-            {
-                return r;
-            }
-            else
-            {
-                return r.WithAppliedToPropertiesValue(_hash);
-            }
-        })];
+            { "exeName", report.ExeName }
+        };
+        return Hash([new ApplicationInsightsEntryFormat("install/reportsuccess", reportProperties)]);
     }
+
+    public IEnumerable<ApplicationInsightsEntryFormat> Filter(Exception exception)
+    {
+        var exceptionProperties = new Dictionary<string, string?>
+        {
+            { "exceptionType", exception.GetType().ToString() },
+            { "detail", ExceptionToStringWithoutMessage(exception) }
+        };
+        return Hash([new ApplicationInsightsEntryFormat(ExceptionEventName, exceptionProperties)]);
+    }
+
+    private static IEnumerable<ApplicationInsightsEntryFormat> FilterImpl(ParseResult parseResult, string? globalJsonState)
+    {
+        var topLevelCommandName = parseResult.RootSubCommandResult();
+        if (topLevelCommandName is null)
+        {
+            yield break;
+        }
+
+        Dictionary<string, string?> properties = new() { ["verb"] = topLevelCommandName };
+        if (!string.IsNullOrEmpty(globalJsonState))
+        {
+            properties["globalJson"] = globalJsonState;
+        }
+
+        yield return new ApplicationInsightsEntryFormat("toplevelparser/command", properties);
+
+        if (parseResult.IsDotnetBuiltInCommand() &&
+            parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
+        {
+            var verbosityProperties = new Dictionary<string, string?>()
+            {
+                { "verb", topLevelCommandName},
+                { "verbosity", Enum.GetName(verbosity)}
+            };
+            yield return new ApplicationInsightsEntryFormat("sublevelparser/command", verbosityProperties);
+        }
+
+        if (topLevelCommandName == "package" &&
+            parseResult.CommandResult.Command != null &&
+            parseResult.CommandResult.Command.Name == "update")
+        {
+            var hasVulnerableOption = parseResult.HasOption("--vulnerable");
+            var vulnerableProperties = new Dictionary<string, string?>()
+            {
+                { "verb", "package update" },
+                { "vulnerable", hasVulnerableOption.ToString()}
+            };
+            yield return new ApplicationInsightsEntryFormat("sublevelparser/command", vulnerableProperties);
+        }
+
+        foreach (IParseResultLogRule rule in ParseResultLogRules)
+        {
+            foreach (ApplicationInsightsEntryFormat allowList in rule.AllowList(parseResult))
+            {
+                yield return allowList;
+            }
+        }
+    }
+
+    public IEnumerable<ApplicationInsightsEntryFormat> Hash(IEnumerable<ApplicationInsightsEntryFormat> entries) =>
+        entries.Select(entry => entry.EventName == ExceptionEventName ? entry : entry.WithAppliedToPropertiesValue(_hash));
 
     private static List<IParseResultLogRule> ParseResultLogRules =>
     [
@@ -128,47 +124,6 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];
 
-    private static void LogVulnerableOptionForPackageUpdateCommand(
-        ICollection<ApplicationInsightsEntryFormat> result,
-        ParseResult parseResult,
-        string topLevelCommandName,
-        Dictionary<string, double>? measurements = null)
-    {
-        if (topLevelCommandName == "package" && parseResult.CommandResult.Command != null && parseResult.CommandResult.Command.Name == "update")
-        {
-            var hasVulnerableOption = parseResult.HasOption("--vulnerable");
-
-            result.Add(new ApplicationInsightsEntryFormat(
-                "sublevelparser/command",
-                new Dictionary<string, string?>()
-                {
-                    { "verb", "package update" },
-                    { "vulnerable", hasVulnerableOption.ToString()}
-                },
-                measurements));
-        }
-    }
-
-    private static void LogVerbosityForAllTopLevelCommand(
-        ICollection<ApplicationInsightsEntryFormat> result,
-        ParseResult parseResult,
-        string topLevelCommandName,
-        Dictionary<string, double>? measurements = null)
-    {
-        if (parseResult.IsDotnetBuiltInCommand() &&
-            parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
-        {
-            result.Add(new ApplicationInsightsEntryFormat(
-                "sublevelparser/command",
-                new Dictionary<string, string?>()
-                {
-                    { "verb", topLevelCommandName},
-                    { "verbosity", Enum.GetName(verbosity)}
-                },
-                measurements));
-        }
-    }
-
     private static string ExceptionToStringWithoutMessage(Exception e)
     {
         const string AggregateException_ToString = "{0}{1}---> (Inner Exception #{2}) {3}{4}{5}";
@@ -201,42 +156,18 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
         string s;
         const string Exception_EndOfInnerExceptionStack = "--- End of inner exception stack trace ---";
 
-
         s = e.GetType().ToString();
-
         if (e.InnerException != null)
         {
             s = s + " ---> " + ExceptionToStringWithoutMessage(e.InnerException) + Environment.NewLine +
             "   " + Exception_EndOfInnerExceptionStack;
-
         }
 
         var stackTrace = e.StackTrace;
-
         if (stackTrace != null)
         {
             s += Environment.NewLine + stackTrace;
         }
-
         return s;
-    }
-
-    private static Dictionary<string, double>? RemoveZeroTimes(Dictionary<string, double>? measurements)
-    {
-        if (measurements != null)
-        {
-            foreach (var measurement in measurements)
-            {
-                if (measurement.Value == 0)
-                {
-                    measurements.Remove(measurement.Key);
-                }
-            }
-            if (measurements.Count == 0)
-            {
-                measurements = null;
-            }
-        }
-        return measurements;
     }
 }

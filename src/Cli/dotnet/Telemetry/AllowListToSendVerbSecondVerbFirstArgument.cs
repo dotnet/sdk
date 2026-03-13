@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Extensions;
@@ -10,12 +8,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class AllowListToSendVerbSecondVerbFirstArgument(
-    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
+internal class AllowListToSendVerbSecondVerbFirstArgument(HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
     private HashSet<string> TopLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
     {
         var result = new List<ApplicationInsightsEntryFormat>();
         var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
@@ -31,13 +28,12 @@ internal class AllowListToSendVerbSecondVerbFirstArgument(
                 {
                     result.Add(new ApplicationInsightsEntryFormat(
                         "sublevelparser/command",
-                        new Dictionary<string, string>
+                        new Dictionary<string, string?>
                         {
                             {"verb", topLevelCommandNameFromParse},
                             {"subcommand", secondVerb},
                             {"argument", firstArgument}
-                        },
-                        measurements));
+                        }));
                 }
             }
         }

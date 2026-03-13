@@ -24,9 +24,6 @@ namespace Microsoft.DotNet.Cli;
 
 public class Program
 {
-    // TODO: This is not used anymore, but required for the TelemetryFilter to parse the data including the globalJsonState.
-    // To fix, the code and the tests for Filter in TelemetryFilter would need to be updated.
-    private static readonly Dictionary<string, double> s_performanceData = [];
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
     private static readonly Activity? s_mainActivity;
@@ -44,6 +41,12 @@ public class Program
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
 
+        // Note: This TelemetryClient instance needs to be created prior to calculating ActivityKind and ParentActivityContext,
+        // used in the main activity creation below.
+        TelemetryInstance = new TelemetryClient();
+        TelemetryEventEntry.Subscribe(TelemetryInstance.TrackEvent);
+        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
         s_mainActivity = Activities.Source.CreateActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
         s_mainActivity
             ?.Start()
@@ -51,9 +54,6 @@ public class Program
             ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
             ?.AddTag("process.executable.name", "dotnet");
 
-        TelemetryInstance = new TelemetryClient();
-        TelemetryEventEntry.Subscribe(TelemetryInstance.TrackEvent);
-        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         if (CommandLoggingContext.IsVerbose)
         {
             Console.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
@@ -130,7 +130,7 @@ public class Program
         }
         finally
         {
-            TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } }, null);
+            TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
 
             Shutdown(default!);
 
@@ -158,7 +158,7 @@ public class Program
             SetupDotnetFirstRun(parseResult);
         }
 
-        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, s_performanceData, s_globalJsonState));
+        TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
 
         if (parseResult.CanBeInvoked())
         {

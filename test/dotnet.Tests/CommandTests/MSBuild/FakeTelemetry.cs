@@ -11,9 +11,9 @@ public class FakeTelemetry : ITelemetryClient
 
     private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
-    public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
-        var entry = new LogEntry { EventName = eventName, Properties = properties, Measurement = measurements };
+        var entry = new LogEntry { EventName = eventName, Properties = properties };
         _logEntries.Add(entry);
     }
 

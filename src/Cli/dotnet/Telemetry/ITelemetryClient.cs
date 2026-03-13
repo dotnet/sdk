@@ -7,5 +7,5 @@ public interface ITelemetryClient
 {
     bool Enabled { get; }
 
-    void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements);
+    void TrackEvent(string eventName, IDictionary<string, string?>? properties);
 }
