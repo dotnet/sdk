@@ -153,6 +153,21 @@
   <data name="RootCommandDescription" xml:space="preserve">
     <value>.NET installation manager for user level installs.</value>
   </data>
+  <data name="DotnetCommandDescription" xml:space="preserve">
+    <value>Run a command using the dotnetup-managed dotnet installation.</value>
+  </data>
+  <data name="DotnetCommandForwardedArgsDescription" xml:space="preserve">
+    <value>Arguments to forward to dotnet.</value>
+  </data>
+  <data name="DotnetCommandDotnetNotFound" xml:space="preserve">
+    <value>Error: dotnet executable not found at '{0}'.</value>
+  </data>
+  <data name="DotnetCommandInstallFirst" xml:space="preserve">
+    <value>Run 'dotnetup install' to install a .NET SDK first.</value>
+  </data>
+  <data name="DotnetCommandDotnetStartFailed" xml:space="preserve">
+    <value>Error: Failed to start the dotnet process.</value>
+  </data>
   <data name="TelemetryNotice" xml:space="preserve">
     <value>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</value>
   </data>

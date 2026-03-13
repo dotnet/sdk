@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.Reflection;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
@@ -58,6 +59,8 @@ internal class Parser
         rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
         rootCommand.Subcommands.Add(PrintEnvScriptCommandParser.GetCommand());
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(DotnetCommandParser.GetAliasCommand());
 
         rootCommand.SetAction(parseResult =>
         {
