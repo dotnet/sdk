@@ -41,8 +41,6 @@ internal partial class MicrosoftTestingPlatformTestCommand
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
-
-        bool filterModeEnabled = parseResult.HasOption(definition.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;
         if (buildOptions.PathOptions.TestModules is not null)
         {

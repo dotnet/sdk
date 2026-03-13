@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -306,12 +306,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             using (var stream = File.OpenRead(tagHelperManifest))
             {
-                var reader = new JsonTextReader(new StreamReader(stream));
-
-                var serializer = new JsonSerializer();
-                serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
-
-                var tagHelpers = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+                var tagHelpers = JsonSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(stream, TagHelperDescriptorJsonConverter.SerializerOptions);
 
                 return TagHelperCollection.Create(tagHelpers);
             }

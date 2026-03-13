@@ -424,26 +424,5 @@ namespace Microsoft.DotNet.NativeWrapper
 #endif
             string? exeDir,
             hostfxr_get_available_sdks_result_fn result);
-
-#if NET
-        public static partial class Unix
-        {
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial nint realpath(string path, nint buffer);
-
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial void free(nint ptr);
-
-            public static string? realpath(string path)
-            {
-                nint ptr = realpath(path, nint.Zero);
-                string? result = Marshal.PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
-        }
-#endif
     }
 }

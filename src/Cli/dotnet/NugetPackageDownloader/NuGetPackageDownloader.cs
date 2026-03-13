@@ -371,6 +371,25 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     }
 
+    private void ValidateSourceMappingCompatibility(PackageSourceLocation sourceLocation, PackageSourceMapping mapping)
+    {
+        // When mapping feature is active and user specified extra feeds via CLI, this creates a conflict
+        // because the extra feeds won't be in the mapping configuration
+        if (mapping?.IsEnabled != true)
+        {
+            return;
+        }
+
+        var extraFeeds = sourceLocation?.AdditionalSourceFeed;
+        if (extraFeeds == null || extraFeeds.Length == 0)
+        {
+            return;
+        }
+
+        // Found both mapping and CLI-added feeds - this combination won't work
+        throw new NuGetPackageInstallerException(CliStrings.CannotUseAddSourceWithSourceMapping);
+    }
+
     private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
         List<PackageSource> defaultSources = [];
@@ -394,6 +413,12 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         defaultSources = [.. packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled)];
 
         packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
+
+        // Ensure compatibility between source mapping configuration and CLI options
+        if (_shouldUsePackageSourceMapping)
+        {
+            ValidateSourceMappingCompatibility(packageSourceLocation, packageSourceMapping);
+        }
 
         // filter package patterns if enabled
         if (_shouldUsePackageSourceMapping && packageSourceMapping?.IsEnabled == true)
@@ -446,6 +471,44 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
             LoadOverrideSources(packageSourceLocation) :
             LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);
+
+        // When using override sources, additional sources should still be appended
+        if ((packageSourceLocation?.SourceFeedOverrides.Any() ?? false) && 
+            (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false))
+        {
+            var sourceList = sources.ToList();
+            var existingUris = new HashSet<Uri>(sourceList.Where(s => s.SourceUri != null).Select(s => s.SourceUri));
+            
+            foreach (string additionalSource in packageSourceLocation.AdditionalSourceFeed)
+            {
+                if (string.IsNullOrWhiteSpace(additionalSource))
+                {
+                    continue;
+                }
+
+                PackageSource newSource = new(additionalSource);
+                if (newSource.TrySourceAsUri == null)
+                {
+                    _verboseLogger.LogWarning(string.Format(
+                        CliStrings.FailedToLoadNuGetSource,
+                        additionalSource));
+                    continue;
+                }
+
+                // Skip if already present (matches existing pattern in LoadDefaultSources)
+                if (newSource.SourceUri != null && existingUris.Contains(newSource.SourceUri))
+                {
+                    continue;
+                }
+
+                sourceList.Add(newSource);
+                if (newSource.SourceUri != null)
+                {
+                    existingUris.Add(newSource.SourceUri);
+                }
+            }
+            sources = sourceList;
+        }
 
         if (!sources.Any())
         {

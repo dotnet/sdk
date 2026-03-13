@@ -259,6 +259,7 @@ public class RunCommand
         {
             globalProperties["Device"] = Device;
             var properties = new Dictionary<string, string> { { "Device", Device } };
+            selector.InvalidateGlobalProperties(properties);
             var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
@@ -319,6 +320,8 @@ public class RunCommand
                     _restoreDoneForDeviceSelection = false;
                 }
 
+                // Update the selector's global properties so DeployToDevice and other targets see the Device
+                selector.InvalidateGlobalProperties(properties);
                 var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
                 MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
             }
@@ -480,7 +483,7 @@ public class RunCommand
             projectBuilder = CreateProjectBuilder();
             buildResult = projectBuilder.Execute();
             projectFactory = CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
-            cachedRunProperties = projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
+            cachedRunProperties = projectBuilder.LastRunProperties ?? projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
@@ -1038,7 +1041,18 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath, Sha256Hasher.Hash);
 
-        var directives = projectBuilder.Directives;
+        var directives = projectBuilder.EvaluatedDirectives;
+
+        if (directives.IsDefault)
+        {
+            directives = projectBuilder.Directives;
+        }
+
+        if (directives.IsDefault)
+        {
+            directives = [];
+        }
+
         var sdkCount = RunTelemetry.CountSdks(directives);
         var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
         var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);
