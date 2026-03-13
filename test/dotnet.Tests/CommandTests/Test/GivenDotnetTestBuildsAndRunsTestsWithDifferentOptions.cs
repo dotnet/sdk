@@ -479,7 +479,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Output looks similar to the following
             /*
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
-                Get projects properties with MSBuild didn't execute properly with exit code: 1.
+                Build failed with exit code: 1.
             */
             if (!SdkTestContext.IsLocalized())
             {
@@ -594,13 +594,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterAsFirstUnmatchedToken_ShouldWork(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
-
             string testSolutionFilterPath = "TestProjectsWithShared.slnf";
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(testSolutionFilterPath,
+                                    "--configuration", configuration);
+
+            result.StdOut.Should().Contain("TestProject.dll");
+            result.StdOut.Should().NotContain("OtherTestProject.dll");
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public void RunWithDirectoryOrProjectAsFirstUnmatchedToken_ShouldWork(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("TestProject", "./TestProject", "TestProject/TestProject.csproj", "./TestProject/TestProject.csproj")] string positionalArgument)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(positionalArgument,
                                     "--configuration", configuration);
 
             result.StdOut.Should().Contain("TestProject.dll");

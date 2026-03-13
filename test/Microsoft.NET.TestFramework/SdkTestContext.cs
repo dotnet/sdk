@@ -164,7 +164,7 @@ namespace Microsoft.NET.TestFramework
             return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
         }
 
-        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
+        public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
             if(NuGetCachePath is not null)

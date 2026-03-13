@@ -156,7 +156,7 @@ public class RunCommand
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
             using var selector = ProjectFileFullPath is not null
-                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, logger)
+                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, EnvironmentVariables, logger)
                 : null;
             if (selector is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(selector))
             {
@@ -186,7 +186,7 @@ public class RunCommand
                     Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
                 }
 
-                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder);
+                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
@@ -259,6 +259,7 @@ public class RunCommand
         {
             globalProperties["Device"] = Device;
             var properties = new Dictionary<string, string> { { "Device", Device } };
+            selector.InvalidateGlobalProperties(properties);
             var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
@@ -319,6 +320,8 @@ public class RunCommand
                     _restoreDoneForDeviceSelection = false;
                 }
 
+                // Update the selector's global properties so DeployToDevice and other targets see the Device
+                selector.InvalidateGlobalProperties(properties);
                 var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
                 MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
             }
@@ -472,7 +475,7 @@ public class RunCommand
         return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder)
+    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
@@ -480,7 +483,7 @@ public class RunCommand
             projectBuilder = CreateProjectBuilder();
             buildResult = projectBuilder.Execute();
             projectFactory = CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
-            cachedRunProperties = projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
+            cachedRunProperties = projectBuilder.LastRunProperties ?? projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
@@ -489,11 +492,28 @@ public class RunCommand
             projectFactory = null;
             cachedRunProperties = null;
             projectBuilder = null;
-            buildResult = new RestoringCommand(
-                MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
-                NoRestore || _restoreDoneForDeviceSelection,
-                advertiseWorkloadUpdates: false
-            ).Execute();
+
+            // Create temporary props file for environment variables only if the project has opted in.
+            // This avoids invalidating incremental builds for projects that don't consume the items.
+            // Use IntermediateOutputPath from earlier project evaluation (via RunCommandSelector), defaulting to "obj" if not available.
+            string? envPropsFile = hasRuntimeEnvironmentVariableSupport
+                ? EnvironmentVariablesToMSBuild.CreatePropsFile(ProjectFileFullPath, EnvironmentVariables, intermediateOutputPath)
+                : null;
+            try
+            {
+                var buildArgs = MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]);
+                buildArgs = EnvironmentVariablesToMSBuild.AddPropsFileToArgs(buildArgs, envPropsFile);
+                buildResult = new RestoringCommand(
+                    buildArgs,
+                    NoRestore || _restoreDoneForDeviceSelection,
+                    advertiseWorkloadUpdates: false
+                ).Execute();
+            }
+            finally
+            {
+                // Clean up temporary props file
+                EnvironmentVariablesToMSBuild.DeletePropsFile(envPropsFile);
+            }
         }
 
         if (buildResult != 0)
@@ -578,7 +598,7 @@ public class RunCommand
             {
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
-                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
+                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
             }
             finally
             {
@@ -670,8 +690,15 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
+            // Only add environment variables as MSBuild items if the project has opted in via capability
+            if (project.GetItems(Constants.ProjectCapability)
+                .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase)))
+            {
+                EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
+            }
+
             List<ILogger> loggersForBuild = [
                 CommonRunHelpers.GetConsoleLogger(
                     buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
@@ -1014,7 +1041,18 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath, Sha256Hasher.Hash);
 
-        var directives = projectBuilder.Directives;
+        var directives = projectBuilder.EvaluatedDirectives;
+
+        if (directives.IsDefault)
+        {
+            directives = projectBuilder.Directives;
+        }
+
+        if (directives.IsDefault)
+        {
+            directives = [];
+        }
+
         var sdkCount = RunTelemetry.CountSdks(directives);
         var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
         var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);

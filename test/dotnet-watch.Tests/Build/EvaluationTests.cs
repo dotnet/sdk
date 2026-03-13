@@ -10,9 +10,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly TestLogger _logger = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
-        private static string MuxerPath
-            => SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
-
         private static string InspectPath(string path, string rootDir)
             => path.Substring(rootDir.Length + 1).Replace("\\", "/");
 
@@ -141,7 +138,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 },
             };
 
-            var testAsset = _testAssets.CreateTestProject(project, identifier: enableStaticWebAssets.ToString());
+            var testAsset = _testAssets.CreateTestProject(project, identifier: $"{isWeb}_{enableStaticWebAssets}");
 
             await VerifyEvaluation(testAsset,
                 isWeb && enableStaticWebAssets != false ?
@@ -442,11 +439,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 .Path;
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
-            var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
+            var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, _logger, options);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
@@ -507,11 +503,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = _testAssets.CreateTestProject(project1);
             var project1Path = GetTestProjectPath(testAsset);
 
-            var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
+            var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
+            var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, _logger, options);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
@@ -545,11 +540,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             async Task VerifyTargetsEvaluation()
             {
-                var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
+                var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir) with { TestOutput = testDir };
                 var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
-                var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
+                var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, _logger, options);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);
 
@@ -562,7 +556,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 // Needs to be executed in dotnet-watch process in order for msbuild to load from the correct location.
 
-                using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
+                await using var watchableApp = WatchableApp.CreateDotnetWatchApp(output);
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
 
                 if (suppressStaticWebAssets)

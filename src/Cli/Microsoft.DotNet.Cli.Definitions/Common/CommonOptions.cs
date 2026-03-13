@@ -12,11 +12,12 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static Option<bool> CreateYesOption() => new("--yes", "-y")
+    public static Option<bool> CreateYesOption(bool hidden = false) => new("--yes", "-y")
     {
         Description = CommandDefinitionStrings.YesOptionDescription,
         Arity = ArgumentArity.Zero,
-        IsDynamic = true
+        IsDynamic = true,
+        Hidden = hidden
     };
 
     public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption() =>
@@ -277,9 +278,11 @@ internal static class CommonOptions
     public static Option<bool> CreateSelfContainedOption() =>
         new Option<bool>("--self-contained", "--sc")
         {
-            Description = CommandDefinitionStrings.SelfContainedOptionDescription
+            Description = CommandDefinitionStrings.SelfContainedOptionDescription,
+            Arity = ArgumentArity.ZeroOrOne
         }
-        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
+        .ForwardAsMany(o => [$"--property:SelfContained={(o ? "true" : "false")}", "--property:_CommandLineDefinedSelfContained=true"])
+        .IfExplicitlyProvided();
 
     public static Option<bool> CreateNoSelfContainedOption() =>
         new Option<bool>("--no-self-contained")

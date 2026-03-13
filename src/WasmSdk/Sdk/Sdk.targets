@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' != 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
+  <Import Project="TargetFrameworks.props" />
 
   <PropertyGroup>
     <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
@@ -22,14 +23,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <Target Name="_WasmImplicitlyReferenceHotReload" BeforeTargets="ResolveProjectStaticWebAssets" AfterTargets="ResolveStaticWebAssetsConfiguration" Condition="'$(_WasmEnableHotReload)' == 'true'">
     <PropertyGroup>
-      <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadTfm>
+      <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">$(WasmAgentTargetFrameworkV10)</_WasmHotReloadTfm>
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
       <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
     </PropertyGroup>
 
     <!-- Copy the JS module to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
-      SourceFiles="$(_WasmHotReloadPath)wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
+      SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
       DestinationFolder="$(_WasmHotReloadIntermediatePath)"
       SkipUnchangedFiles="true"
       Condition="'$(_WasmHotReloadPath)' != ''" />

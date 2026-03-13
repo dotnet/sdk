@@ -14,8 +14,8 @@
       Setting ExcludeAssets and Private ensures that no assemblies that have public types that are or depend on msbuild types are present in the output directory of the project.
       See TestUtilities/ModuleInitializer.cs.
     -->
-    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ExcludeAssets="Runtime" />
-    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
+    <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\dotnet-watch\dotnet-watch.csproj" ExcludeAssets="Runtime" />
+    <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
     <ProjectReference Include="..\dotnet-watch-test-browser\dotnet-watch-test-browser.csproj" ReferenceOutputAssembly="false" OutputItemType="TestBrowserOutput" />
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
@@ -37,5 +37,5 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="..\..\src\BuiltInTools\Watch\RuntimeDependencies.props" />
+  <Import Project="..\..\src\Dotnet.Watch\Watch\RuntimeDependencies.props" />
 </Project>

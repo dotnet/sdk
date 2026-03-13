@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Projektmappenfilterdatei",
+  "description": "Eine Projektmappenfilterdatei erstellen, die auf eine übergeordnete Projektmappe verweist.",
+  "symbols/ParentSolution/displayName": "Übergeordnete Projektmappendatei",
+  "symbols/ParentSolution/description": "Die übergeordnete Projektmappendatei (sln oder slnx), auf die dieser Filter verweist (Standard: derselbe Name mit der .slnx-Erweiterung)."
+}

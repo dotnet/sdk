@@ -41,8 +41,6 @@ internal partial class MicrosoftTestingPlatformTestCommand
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
-
-        bool filterModeEnabled = parseResult.HasOption(definition.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;
         if (buildOptions.PathOptions.TestModules is not null)
         {
@@ -70,10 +68,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             // be slowing us down unnecessarily.
             // Alternatively, if we can enqueue right after every project evaluation without waiting all evaluations to be done, we can enqueue early.
             actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
-            if (!msBuildHandler.EnqueueTestApplications(actionQueue))
-            {
-                return ExitCode.GenericFailure;
-            }
+            msBuildHandler.EnqueueTestApplications(actionQueue);
         }
 
         actionQueue.EnqueueCompleted();
