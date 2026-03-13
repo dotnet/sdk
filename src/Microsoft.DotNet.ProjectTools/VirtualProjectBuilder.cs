@@ -47,14 +47,15 @@ public sealed class VirtualProjectBuilder
         string targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null,
-        SourceText? sourceText = null)
+        SourceText? sourceText = null,
+        string outputType = "Exe")
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFramework);
+        _defaultProperties = GetDefaultProperties(targetFramework, outputType);
 
         if (sourceText != null)
         {
@@ -65,9 +66,9 @@ public sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework, string outputType = "Exe") =>
     [
-        ("OutputType", "Exe"),
+        ("OutputType", outputType),
         ("TargetFramework", targetFramework),
         ("ImplicitUsings", "enable"),
         ("Nullable", "enable"),
@@ -175,7 +176,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude or CSharpDirective.Ref))
         {
             return directives;
         }
@@ -193,6 +194,13 @@ public sealed class VirtualProjectBuilder
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
+                    break;
+
+                case CSharpDirective.Ref refDirective:
+                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), CSharpDirective.Ref.NameKind.Expanded);
+                    refDirective = refDirective.EnsureResolvedPath(reportError);
+
+                    builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
@@ -462,6 +470,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var refDirectives = directives.OfType<CSharpDirective.Ref>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -708,7 +717,7 @@ public sealed class VirtualProjectBuilder
                 """);
         }
 
-        if (projectDirectives.Any())
+        if (projectDirectives.Any() || refDirectives.Any())
         {
             writer.WriteLine("""
                   <ItemGroup>
@@ -719,6 +728,19 @@ public sealed class VirtualProjectBuilder
                 writer.WriteLine($"""
                         <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
                     """);
+
+                processedDirectives++;
+            }
+
+            foreach (var refDirective in refDirectives)
+            {
+                if (refDirective.ResolvedPath is not null)
+                {
+                    var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
+                    writer.WriteLine($"""
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" SkipGetTargetFrameworkProperties="true" />
+                        """);
+                }
 
                 processedDirectives++;
             }

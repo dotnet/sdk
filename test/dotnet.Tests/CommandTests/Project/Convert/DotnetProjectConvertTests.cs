@@ -204,6 +204,45 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        var expectedOutput = "Hello, World!";
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // #:ref lib.cs should become a ProjectReference to ../lib/lib.csproj
+        File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
+            .Should().Contain($"""
+                <ProjectReference Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj" />
+                """);
+    }
+
+    [Fact]
     public void ProjectReference_FullPath_WithVars()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
