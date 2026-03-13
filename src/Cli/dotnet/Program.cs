@@ -226,8 +226,7 @@ public class Program
     {
         // If we didn't match any built-in commands, and a C# file path is the first argument,
         // parse as `dotnet run file.cs ..rest_of_args` instead.
-        if (parseResult.CommandResult.Command is RootCommand
-            && parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+        if (parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
             && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
         {
             List<string> otherTokens = new(parseResult.Tokens.Count - 1);
