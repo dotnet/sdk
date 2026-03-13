@@ -23,7 +23,7 @@ internal class DotnetCommand : CommandBase
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
 
         // Collect all unmatched/forwarded tokens after the "dotnet" or "do" subcommand.
-        _forwardedArgs = parseResult.UnmatchedTokens.ToArray();
+        _forwardedArgs = [.. parseResult.UnmatchedTokens];
     }
 
     protected override string GetCommandName() => "dotnet";

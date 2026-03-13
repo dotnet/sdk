@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Text;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using DotnetForwardCommand = Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet.DotnetCommand;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -288,6 +292,134 @@ public class DotnetCommandTests
         }
     }
 
+    // ── Stdin forwarding (interactivity) tests ───────────────────────────
+
+    /// <summary>
+    /// Verifies that interactive stdin data is properly forwarded from the
+    /// parent process through dotnetup to the child dotnet process.
+    /// This is critical for commands like <c>dotnet nuget push --interactive</c>
+    /// or <c>dotnet new</c> that prompt for user input.
+    ///
+    /// The test launches dotnetup as a real process, redirects its stdin,
+    /// writes test data, and verifies the child process echoes it back
+    /// through stdout — proving the full stdin forwarding pipeline works.
+    /// </summary>
+    [Fact]
+    public void DotnetCommand_ForwardsStdinToChildProcess()
+    {
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdin-test");
+        try
+        {
+            CreateStdinEchoFakeDotnet(tempDir.FullName);
+
+            string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
+            string testInput = "HelloInteractive_" + Guid.NewGuid().ToString("N")[..8];
+
+            using var process = new Process();
+            process.StartInfo.FileName = dotnetupPath;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+
+            // Prepend our temp dir to PATH so dotnetup resolves our fake dotnet
+            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
+            process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+            process.StartInfo.Environment["NO_COLOR"] = "1";
+
+            if (OperatingSystem.IsWindows())
+            {
+                // Fake dotnet.exe is cmd.exe; forward /c "findstr /r ." to echo stdin.
+                // findstr reads from stdin and echoes lines matching regex "." (non-empty).
+                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                    ["dotnet", "/c", "findstr /r ."]);
+            }
+            else
+            {
+                // Fake dotnet is a shell script that cats stdin to stdout.
+                process.StartInfo.Arguments = "dotnet";
+            }
+
+            process.Start();
+
+            // Write test data to dotnetup's stdin; the child process inherits this
+            // stdin handle because DotnetCommand uses RedirectStandardInput = false.
+            process.StandardInput.WriteLine(testInput);
+            process.StandardInput.Close();
+
+            string output = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            // The child process should have received and echoed our input
+            output.Should().Contain(testInput,
+                because: "stdin data should be forwarded to the child dotnet process for interactive commands");
+        }
+        finally
+        {
+            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
+        }
+    }
+
+    /// <summary>
+    /// Verifies that stdout from the child process is properly forwarded
+    /// back through dotnetup to the parent process. This ensures interactive
+    /// prompts and output are visible to the user.
+    /// </summary>
+    [Fact]
+    public void DotnetCommand_ForwardsStdoutFromChildProcess()
+    {
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdout-test");
+        try
+        {
+            CreateStdinEchoFakeDotnet(tempDir.FullName);
+
+            string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
+            string marker = "MARKER_" + Guid.NewGuid().ToString("N")[..8];
+
+            using var process = new Process();
+            process.StartInfo.FileName = dotnetupPath;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+
+            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
+            process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+            process.StartInfo.Environment["NO_COLOR"] = "1";
+
+            if (OperatingSystem.IsWindows())
+            {
+                // Use cmd.exe /c echo to produce known stdout output
+                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                    ["dotnet", "/c", $"echo {marker}"]);
+            }
+            else
+            {
+                // Pass marker as argument; the fake dotnet script echoes args then cats stdin
+                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                    ["dotnet", marker]);
+            }
+
+            process.Start();
+            process.StandardInput.Close();
+
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            output.Should().Contain(marker,
+                because: "stdout from the child dotnet process should be visible to the caller");
+        }
+        finally
+        {
+            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     /// <summary>
@@ -322,6 +454,32 @@ public class DotnetCommandTests
     }
 
     /// <summary>
+    /// Creates a fake dotnet executable that echoes stdin to stdout, for testing
+    /// interactive stdin/stdout forwarding.
+    /// On Windows, copies cmd.exe as dotnet.exe (caller passes /c "findstr /r ." to echo stdin).
+    /// On Unix, creates a shell script that cats stdin to stdout.
+    /// </summary>
+    private static void CreateStdinEchoFakeDotnet(string directory)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            // Copy cmd.exe as dotnet.exe; the test controls behavior via forwarded args
+            var exePath = Path.Combine(directory, "dotnet.exe");
+            File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), exePath, overwrite: true);
+        }
+        else
+        {
+            // Shell script that echoes all args then cats stdin to stdout
+            var scriptPath = Path.Combine(directory, "dotnet");
+            File.WriteAllText(scriptPath, "#!/bin/sh\nfor arg in \"$@\"; do echo \"$arg\"; done\ncat\n");
+            File.SetUnixFileMode(scriptPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+    }
+
+    /// <summary>
     /// Minimal mock of <see cref="IDotnetInstallManager"/> for DotnetCommand tests.
     /// Only implements <see cref="GetDefaultDotnetInstallPath"/> and <see cref="GetConfiguredInstallType"/>.
     /// </summary>
@@ -343,7 +501,7 @@ public class DotnetCommandTests
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory) => throw new NotImplementedException();
         public string? GetLatestInstalledAdminVersion() => throw new NotImplementedException();
         public void InstallSdks(DotnetInstallRoot dotnetRoot, Spectre.Console.ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
-        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
+        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null) => throw new NotImplementedException();
         public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
     }
 }
