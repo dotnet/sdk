@@ -48,12 +48,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
       <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(BuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.BuildManifestPath)' != ''" />
+      <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(EndpointsBuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.EndpointsBuildManifestPath)' != ''" />
     </ItemGroup>
 
     <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)' == 'true'"
       File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
       Lines="@(_ReferenceManifestPath)"
-      Overwrite="false"
+      Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
     <MergeConfigurationProperties
@@ -97,6 +98,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           <AdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove)</AdditionalPublishPropertiesToRemove>
           <!-- Build manifest -->
           <BuildManifestPath>$([System.IO.Path]::GetFullPath('$(StaticWebAssetBuildManifestPath)'))</BuildManifestPath>
+          <EndpointsBuildManifestPath>$([System.IO.Path]::GetFullPath('$(StaticWebAssetEndpointsBuildManifestPath)'))</EndpointsBuildManifestPath>
         </_StaticWebAssetThisProjectConfiguration>
       </ItemGroup>
   </Target>

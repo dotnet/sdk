@@ -51,8 +51,9 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     [Fact]
@@ -86,8 +87,9 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     [Fact]
@@ -113,14 +115,16 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var inputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCInput.txt");
         new FileInfo(inputFilePath).Should().Exist();
         var inputFiles = File.ReadAllLines(inputFilePath);
-        inputFiles.Should().HaveCount(1);
+        inputFiles.Should().HaveCount(2);
         inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.json"));
+        inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.endpoints.json"));
 
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     private static MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)
