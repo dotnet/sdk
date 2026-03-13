@@ -793,9 +793,12 @@ public class LifecycleEndToEndTests
             args, captureOutput: true, workingDirectory: testEnv.TempRoot);
 
         exitCode.Should().NotBe(0, "Should fail when manifest uses legacy format");
-        output.Should().Contain("legacy format",
+
+        // Collapse newlines so that assertions aren't broken by console line wrapping
+        var normalizedOutput = output.ReplaceLineEndings(" ");
+        normalizedOutput.Should().Contain("legacy format",
             "Error message should mention the legacy format");
-        output.Should().Contain("no longer supported",
+        normalizedOutput.Should().Contain("no longer supported",
             "Error message should indicate the format is no longer supported");
     }
 
