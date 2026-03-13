@@ -205,15 +205,24 @@ internal sealed partial class CSharpCompilerCommand
         }
     }
 
+    internal static string WriteCscRspFile(string artifactsPath, ImmutableArray<string> cscArguments)
+    {
+        string rspPath = GetCscRspPath(artifactsPath);
+        File.WriteAllLines(rspPath, cscArguments);
+        return rspPath;
+    }
+
+    private static string GetCscRspPath(string artifactsPath) => Path.Join(artifactsPath, "csc.rsp");
+
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
-
         if (!CscArguments.IsDefaultOrEmpty)
         {
-            File.WriteAllLines(rspPath, CscArguments);
+            rspPath = WriteCscRspFile(ArtifactsPath, CscArguments);
             return;
         }
+
+        rspPath = GetCscRspPath(ArtifactsPath);
 
         // Note that Release builds won't go through this optimized code path because `-c Release` translates to global property `Configuration=Release`
         // and customizing global properties triggers a full MSBuild run.

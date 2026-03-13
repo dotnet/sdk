@@ -315,9 +315,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // Then do a build.
             if (exitCode == 0 && !NoBuild && !evalOnly)
             {
+                var effectiveTargets = Builder.RequestedTargets is { Length: > 0 } requestedTargets
+                    ? requestedTargets
+                    : [Constants.Build, Constants.CoreCompile];
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
+                    targetsToBuild: effectiveTargets,
+                    hostServices: null,
+                    // SkipNonexistentTargets: CoreCompile doesn't exist in the outer build of multi-target projects.
+                    BuildRequestDataFlags.SkipNonexistentTargets);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
@@ -339,6 +345,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         cache.CurrentEntry.Run = LastRunProperties;
 
                         CacheCscArguments(cache, buildResult);
+                        WriteCscRsp(cache);
                         CollectAdditionalSources(cache, buildRequest.ProjectInstance);
 
                         MarkBuildSuccess(cache);
@@ -487,6 +494,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     cache.CurrentEntry.AdditionalSources.Add(file);
                 }
             }
+        }
+
+        void WriteCscRsp(CacheInfo cache)
+        {
+            if (cache.CurrentEntry.CscArguments.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            string rspPath = CSharpCompilerCommand.WriteCscRspFile(Builder.ArtifactsPath, cache.CurrentEntry.CscArguments);
+            Reporter.Verbose.WriteLine($"Wrote '{rspPath}'.");
         }
 
         bool CanSaveCache(ProjectInstance projectInstance)
