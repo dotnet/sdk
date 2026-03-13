@@ -49,6 +49,9 @@ namespace Microsoft.DotNet.NativeWrapper
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
 #if NET
@@ -75,14 +78,6 @@ namespace Microsoft.DotNet.NativeWrapper
 
         // lpFileName passed to LoadLibraryEx must be a full path.
         private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
-
-#if NET
-        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial nint LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
-#else
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
-#endif
 
         /// <summary>
         ///  Flags that control SDK resolution behavior in <see cref="hostfxr_resolve_sdk2"/>.
