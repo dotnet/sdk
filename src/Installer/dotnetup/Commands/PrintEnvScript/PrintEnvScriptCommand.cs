@@ -9,6 +9,7 @@ internal class PrintEnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
+    private readonly bool _dotnetupOnly;
     private readonly IDotnetInstallManager _dotnetInstaller;
 
     public PrintEnvScriptCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
@@ -16,6 +17,7 @@ internal class PrintEnvScriptCommand : CommandBase
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
         _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
+        _dotnetupOnly = result.GetValue(PrintEnvScriptCommandParser.DotnetupOnlyOption);
     }
 
     protected override string GetCommandName() => "print-env-script";
@@ -50,7 +52,8 @@ internal class PrintEnvScriptCommand : CommandBase
             string? dotnetupDir = Path.GetDirectoryName(Environment.ProcessPath);
 
             // Generate the shell script
-            string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir);
+            bool includeDotnet = !_dotnetupOnly;
+            string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
 
             // Output the script to stdout
             Console.WriteLine(script);

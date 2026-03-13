@@ -15,16 +15,37 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public override string ToString() => ArgumentName;
 
-    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null)
+    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true)
     {
-        // Escape single quotes in the path for bash by replacing ' with '\''
         var escapedPath = dotnetInstallPath.Replace("'", "'\\''");
-        var pathExport = $"export PATH='{escapedPath}':$PATH";
+        var escapedDotnetupDir = dotnetupDir?.Replace("'", "'\\''");
 
-        if (dotnetupDir is not null)
+        string pathExport;
+        if (includeDotnet && escapedDotnetupDir is not null)
         {
-            var escapedDotnetupDir = dotnetupDir.Replace("'", "'\\''");
             pathExport = $"export PATH='{escapedDotnetupDir}':'{escapedPath}':$PATH";
+        }
+        else if (includeDotnet)
+        {
+            pathExport = $"export PATH='{escapedPath}':$PATH";
+        }
+        else if (escapedDotnetupDir is not null)
+        {
+            pathExport = $"export PATH='{escapedDotnetupDir}':$PATH";
+        }
+        else
+        {
+            pathExport = "";
+        }
+
+        if (!includeDotnet)
+        {
+            return
+                $"""
+                #!/usr/bin/env bash
+                # This script adds dotnetup to your PATH
+                {pathExport}
+                """;
         }
 
         return
@@ -65,15 +86,17 @@ public class BashEnvShellProvider : IEnvShellProvider
         return paths;
     }
 
-    public string GenerateProfileEntry(string dotnetupPath)
+    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''");
-        return $"{MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash)\"";
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        return $"{MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath)
+    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''");
-        return $"eval \"$('{escapedPath}' print-env-script --shell bash)\"";
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        return $"eval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
     }
 }

@@ -96,7 +96,36 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the admin install root is only supported on Windows.");
+            // On Unix, switching to admin means the system manages dotnet.
+            // Replace profile entries with dotnetup-only (keeps dotnetup on PATH but removes DOTNET_ROOT and dotnet PATH).
+            var dotnetupPath = Environment.ProcessPath
+                ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
+
+            IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
+            if (shellProvider is null)
+            {
+                var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PlatformNotSupported,
+                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+            }
+
+            var modifiedFiles = ShellProfileManager.ReplaceProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
+
+            if (modifiedFiles.Count == 0)
+            {
+                Console.WriteLine("Shell profile is already configured.");
+            }
+            else
+            {
+                Console.WriteLine("Updated shell profile files (dotnetup only, no DOTNET_ROOT or dotnet PATH):");
+                foreach (var file in modifiedFiles)
+                {
+                    Console.WriteLine($"  {file}");
+                }
+            }
+
+            return 0;
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();

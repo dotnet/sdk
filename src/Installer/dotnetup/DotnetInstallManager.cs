@@ -195,6 +195,14 @@ public class DotnetInstallManager : IDotnetInstallManager
                     pathEntries.Insert(0, dotnetRoot);
                     // Unset DOTNET_ROOT
                     Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+
+                    // Replace shell profile entries with dotnetup-only (no DOTNET_ROOT or dotnet PATH)
+                    var adminDotnetupPath = Environment.ProcessPath;
+                    var adminShellProvider = ShellDetection.GetCurrentShellProvider();
+                    if (adminDotnetupPath is not null && adminShellProvider is not null)
+                    {
+                        ShellProfileManager.ReplaceProfileEntries(adminShellProvider, adminDotnetupPath, dotnetupOnly: true);
+                    }
                     break;
                 default:
                     throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));

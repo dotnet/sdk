@@ -15,16 +15,36 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
 
     public override string ToString() => ArgumentName;
 
-    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null)
+    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true)
     {
-        // Escape single quotes in the path for PowerShell by replacing ' with ''
         var escapedPath = dotnetInstallPath.Replace("'", "''");
-        var pathExport = $"$env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+        var escapedDotnetupDir = dotnetupDir?.Replace("'", "''");
 
-        if (dotnetupDir is not null)
+        string pathExport;
+        if (includeDotnet && escapedDotnetupDir is not null)
         {
-            var escapedDotnetupDir = dotnetupDir.Replace("'", "''");
             pathExport = $"$env:PATH = '{escapedDotnetupDir}' + [IO.Path]::PathSeparator + '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+        }
+        else if (includeDotnet)
+        {
+            pathExport = $"$env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+        }
+        else if (escapedDotnetupDir is not null)
+        {
+            pathExport = $"$env:PATH = '{escapedDotnetupDir}' + [IO.Path]::PathSeparator + $env:PATH";
+        }
+        else
+        {
+            pathExport = "";
+        }
+
+        if (!includeDotnet)
+        {
+            return
+                $"""
+                # This script adds dotnetup to your PATH
+                {pathExport}
+                """;
         }
 
         return
@@ -44,15 +64,17 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         return [Path.Combine(home, ".config", "powershell", "Microsoft.PowerShell_profile.ps1")];
     }
 
-    public string GenerateProfileEntry(string dotnetupPath)
+    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
     {
         var escapedPath = dotnetupPath.Replace("'", "''");
-        return $"{MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh | Invoke-Expression";
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        return $"{MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath)
+    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
     {
         var escapedPath = dotnetupPath.Replace("'", "''");
-        return $"& '{escapedPath}' print-env-script --shell pwsh | Invoke-Expression";
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        return $"& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
     }
 }
