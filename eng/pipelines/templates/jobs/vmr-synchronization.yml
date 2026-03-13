@@ -35,8 +35,6 @@ jobs:
       - name: vmrPublicUrl
         value: https://github.com/dotnet/dotnet
     - ${{ if and( eq(variables['System.TeamProject'], 'internal'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/')) }}:
-      # https://dev.azure.com/dnceng/internal/_library?itemType=VariableGroups&view=VariableGroupView&variableGroupId=172&path=DotNetBot-AzDO-PAT
-      - group: DotNetBot-AzDO-PAT
       - name: vmrInternalUrl
         value: https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-dotnet
 
@@ -54,6 +52,12 @@ jobs:
   - template: ../steps/vmr-prepare.yml
     parameters:
       vmrBranch: ${{ parameters.vmrBranch }}
+
+  - ${{ if and(not(parameters.noPush), eq(variables['System.TeamProject'], 'internal'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/')) }}:
+    - template: ./eng/common/templates-official/steps/get-federated-access-token.yml
+      parameters:
+        federatedServiceConnection: VmrSyncPipeline
+        outputVariableName: AzdoToken
 
   - template: ../steps/vmr-pull-updates.yml
     parameters:
