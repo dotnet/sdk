@@ -36,7 +36,7 @@ public struct StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEn
 
     public override int GetHashCode()
     {
-#if NET472_OR_GREATER
+#if NETFRAMEWORK
         var hashCode = -244751520;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Value);

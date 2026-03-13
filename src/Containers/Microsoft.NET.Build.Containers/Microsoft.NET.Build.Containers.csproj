@@ -77,7 +77,7 @@
     <Compile Include="Tasks/CreateNewImageToolTask.cs" />
     <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
     <Compile Include="ContainerHelpers.cs" />
-    <Compile Include="net472Definitions.cs" />
+    <Compile Include="netframeworkDefinitions.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\Strings.Designer.cs" />
@@ -87,7 +87,7 @@
   <!-- core remove files specific to net472 workarounds -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
-    <Compile Remove="net472Definitions.cs" />
+    <Compile Remove="netframeworkDefinitions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Strings.Designer.cs">
