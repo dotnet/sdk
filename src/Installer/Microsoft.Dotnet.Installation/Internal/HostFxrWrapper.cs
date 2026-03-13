@@ -52,6 +52,7 @@ internal partial class HostFxrWrapper
     private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvStdcall)])]
     private static partial IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
 
     private static void PreloadHostFxrLibrary(string dotnetExeDirectory)

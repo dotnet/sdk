@@ -74,6 +74,24 @@ extends:
     containers:
       azureLinux30Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+      # Cross-build containers for NAOT executables (link against older glibc/musl sysroots).
+      # See: https://github.com/dotnet/runtime/blob/main/docs/workflow/using-docker.md
+      crossBuildLinuxX64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
+        env:
+          ROOTFS_DIR: /crossrootfs/x64
+      crossBuildLinuxArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
+      crossBuildMuslX64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
+        env:
+          ROOTFS_DIR: /crossrootfs/x64
+      crossBuildMuslArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
 
     sdl:
       sourceAnalysisPool:
@@ -92,8 +110,43 @@ extends:
           ignoreDirectories: artifacts, .packages
 
     stages:
+      - stage: style_check
+        displayName: 📏 Style check
+        jobs:
+        - template: /eng/common/templates-official/job/job.yml@self
+          parameters:
+            displayName: '📏 dotnetup style check'
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+            helixRepo: dotnet/sdk
+            timeoutInMinutes: 15
+            enableMicrobuild: false
+            enablePublishBuildAssets: false
+            enableTelemetry: true
+            enableSbom: false
+            steps:
+            - powershell: |
+                & .\restore.cmd
+              displayName: 🍱 Bootstrap toolset
+            - powershell: |
+                & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
+              displayName: ♻️ Restore
+            - powershell: |
+                $failed = $false
+                & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
+                if ($LASTEXITCODE -ne 0) { $failed = $true }
+                & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
+                if ($LASTEXITCODE -ne 0) { $failed = $true }
+                & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
+                if ($LASTEXITCODE -ne 0) { $failed = $true }
+                if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
+              displayName: 🔨 Build with -warnaserror
+
       - stage: tests
         displayName: 🧪 dotnetup tests
+        dependsOn: []
         jobs:
         ### Windows ###
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
@@ -136,3 +189,155 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+      ############### Executables ###############
+      # Each RID gets its own stage so that the 1ES-injected Guardian/autobaseline
+      # artifact names (which are stage-scoped, not job-scoped) don't collide.
+
+      ### win-x64 ###
+      - stage: executable_win_x64
+        displayName: 🪟 dotnetup win-x64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: win-x64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2022.amd64
+              os: windows
+              emoji: 🪟
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            preSteps:
+            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+              displayName: Create artifacts/bin directory
+
+      ### win-arm64 ###
+      - stage: executable_win_arm64
+        displayName: 💪 dotnetup win-arm64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: win-arm64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2022.amd64
+              os: windows
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            preSteps:
+            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+              displayName: Create artifacts/bin directory
+
+      ### linux-x64 ###
+      - stage: executable_linux_x64
+        displayName: 🐧 dotnetup linux-x64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-x64
+            container: crossBuildLinuxX64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🐧
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+
+      ### linux-arm64 ###
+      - stage: executable_linux_arm64
+        displayName: 💪 dotnetup linux-arm64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-arm64
+            container: crossBuildLinuxArm64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+
+      ### linux-musl-x64 ###
+      - stage: executable_linux_musl_x64
+        displayName: 🏔️ dotnetup linux-musl-x64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-musl-x64
+            container: crossBuildMuslX64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🏔️
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            enableSbom: false
+
+      ### linux-musl-arm64 ###
+      - stage: executable_linux_musl_arm64
+        displayName: 🏔️ dotnetup linux-musl-arm64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: linux-musl-arm64
+            container: crossBuildMuslArm64
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-ubuntu-2204
+              os: linux
+              emoji: 🏔️
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            enableSbom: false
+
+      ### osx-x64 ###
+      - stage: executable_osx_x64
+        displayName: 🍎 dotnetup osx-x64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: osx-x64
+            pool:
+              name: Azure Pipelines
+              image: macOS-latest
+              os: macOS
+              emoji: 🍎
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+
+      ### osx-arm64 ###
+      - stage: executable_osx_arm64
+        displayName: 💪 dotnetup osx-arm64
+        dependsOn: []
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+          parameters:
+            rid: osx-arm64
+            pool:
+              name: Azure Pipelines
+              image: macOS-15-arm64
+              os: macOS
+              emoji: 💪
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.

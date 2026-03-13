@@ -19,9 +19,7 @@ internal static class TelemetryCommonProperties
     /// <summary>
     /// Environment variable to mark telemetry as coming from a dev build.
     /// </summary>
-#pragma warning disable IDE0051, CA1823 // Referenced in #else branch (Release builds only)
     private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
-#pragma warning restore IDE0051, CA1823
 
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
@@ -117,14 +115,16 @@ internal static class TelemetryCommonProperties
 
     private static bool DetectDevBuild()
     {
-        // Debug builds are always considered dev builds
+        // Check for DOTNETUP_DEV_BUILD environment variable
+        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
+        var isEnvSet = string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
+                       string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
 #if DEBUG
+        // Debug builds are always considered dev builds
+        _ = isEnvSet; // suppress unused warning in debug
         return true;
 #else
-        // Check for DOTNETUP_DEV_BUILD environment variable (for release builds in dev scenarios)
-        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
-        return string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
-               string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
+        return isEnvSet;
 #endif
     }
 

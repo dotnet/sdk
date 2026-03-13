@@ -40,18 +40,18 @@ stages:
       enableSbom: false
       steps:
       - powershell: |
-          & .\restore.cmd
+          & .\restore.cmd -projects dotnetup.slnf
         displayName: 🍱 Bootstrap toolset
       - powershell: |
           & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
         displayName: ♻️ Restore
       - powershell: |
           $failed = $false
-          & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
+          & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
-          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
+          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
-          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
           if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
         displayName: 🔨 Build with -warnaserror
@@ -92,9 +92,23 @@ stages:
       parameters:
         pool:
           name: Azure Pipelines
-          vmImage: macOS-latest
+          vmImage: macOS-15-arm64
           os: macOS
           emoji: 💪
         helixTargetQueue: osx.13.arm64.open
+
+- stage: executables
+  displayName: 🏗️ Build dotnetup executables
+  dependsOn: []
+  jobs:
+  ### Build a single platform executable for PR validation ###
+  - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+    parameters:
+      rid: linux-x64
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        os: linux
+        emoji: 🐧
 
 

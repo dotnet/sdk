@@ -14,6 +14,12 @@
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
 
+    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
+         EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.
+         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors. -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+
     <!-- dotnetup versioning -->
     <VersionPrefix>0.1.1</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>

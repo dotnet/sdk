@@ -73,8 +73,10 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 #endif
 
+#if NETFRAMEWORK
         // lpFileName passed to LoadLibraryEx must be a full path.
         private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
+#endif
 
 #if NET
         [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
@@ -426,7 +428,7 @@ namespace Microsoft.DotNet.NativeWrapper
             hostfxr_get_available_sdks_result_fn result);
 
 #if NET
-        public static partial class Unix
+        internal static partial class Unix
         {
             [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
             [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

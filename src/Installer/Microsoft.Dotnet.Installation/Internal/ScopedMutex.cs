@@ -12,9 +12,10 @@ public class ScopedMutex : IDisposable
     private static readonly AsyncLocal<Dictionary<string, MutexState>> s_heldMutexCounts = new();
 
     /// <summary>
-    /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
+    /// Timeout in seconds for mutex acquisition. Default is 10 minutes.
+    /// CI agents (especially Helix) can be very slow, so this must be generous.
     /// </summary>
-    public static int TimeoutSeconds { get; set; } = 300;
+    public static int TimeoutSeconds { get; set; } = 600;
 
     /// <summary>
     /// Optional callback invoked when we need to wait for the mutex (another process holds it).
@@ -48,18 +49,26 @@ public class ScopedMutex : IDisposable
 
         _mutex = new Mutex(false, mutexName);
 
-        // First try immediate acquisition to see if we need to wait
-        if (!_mutex.WaitOne(0, false))
+        try
         {
-            // Another process holds the mutex - notify caller before blocking
-            OnWaitingForMutex?.Invoke();
-
-            // Now wait for the full timeout
-            if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+            // First try immediate acquisition to see if we need to wait
+            if (!_mutex.WaitOne(0, false))
             {
-                _mutex.Dispose();
-                throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                // Another process holds the mutex - notify caller before blocking
+                OnWaitingForMutex?.Invoke();
+
+                // Now wait for the full timeout
+                if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+                {
+                    _mutex.Dispose();
+                    throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                }
             }
+        }
+        catch (AbandonedMutexException)
+        {
+            // A previous process holding the mutex exited without releasing it.
+            // The OS still grants ownership to this thread, so we can proceed safely.
         }
 
         held[name] = new MutexState { Mutex = _mutex, HoldCount = 1 };
