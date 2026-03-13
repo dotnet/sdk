@@ -81,12 +81,12 @@ public class InstallEndToEndTests
         {
             if (!updateChannel.IsFullySpecifiedVersion())
             {
-                install.Version.ToString().Should().Be(expectedVersion!.ToString(),
+                install.Version.Should().Be(expectedVersion!.ToString(),
                     $"Installed version should match resolved version for channel {channel}");
             }
             else
             {
-                install.Version.ToString().Should().Be(channel);
+                install.Version.Should().Be(channel);
             }
         });
 
@@ -117,7 +117,7 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         // Parse the component spec to get the channel for version resolution (using production code)
-        var (_, channel, _) = RuntimeInstallCommand.ParseComponentSpec(componentSpec);
+        var (_, channel) = RuntimeInstallCommand.ParseComponentSpec(componentSpec);
         var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel ?? "latest"), expectedComponent);
         expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid {expectedComponent} version");
         Console.WriteLine($"Component spec '{componentSpec}' resolved to version: {expectedVersion}");
@@ -355,24 +355,27 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         dotnetRootValue.Should().Be(installPath, $"DOTNET_ROOT should be set to the install path for {shell}");
     }
 
-    private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<DotnetInstall>? additionalAssertions = null)
+    private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<Installation>? additionalAssertions = null)
     {
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
-        List<DotnetInstall> installs;
+        List<Installation> installs;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            installs = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
 
         installs.Should().NotBeEmpty();
-        var matchingInstalls = installs.Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
-        matchingInstalls.Should().ContainSingle();
-        matchingInstalls[0].Component.Should().Be(expectedComponent);
+        installs.Should().ContainSingle(i => i.Component == expectedComponent);
+        var matchingInstall = installs.First(i => i.Component == expectedComponent);
 
-        additionalAssertions?.Invoke(matchingInstalls[0]);
+        additionalAssertions?.Invoke(matchingInstall);
     }
 
     /// <summary>
@@ -432,16 +435,20 @@ public class ConcurrentInstallationTests
         results[1].exitCode.Should().Be(0,
             $"Second concurrent install failed with exit code {results[1].exitCode}. Output:\n{results[1].output}");
 
-        var finalInstalls = new List<DotnetInstall>();
+        var finalInstalls = new List<Installation>();
 
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            finalInstalls = manifest.GetInstalledVersions().Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
+            var manifestData = manifest.ReadManifest();
+            finalInstalls = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
 
         finalInstalls.Should().ContainSingle();
-        finalInstalls[0].Version.ToString().Should().Be(channel);
+        finalInstalls[0].Version.Should().Be(channel);
     }
 }
 
@@ -451,31 +458,6 @@ public class ConcurrentInstallationTests
 [Collection("DotnetupReuseCollection")]
 public class ReuseAndErrorTests
 {
-    public static IEnumerable<object?[]> ReuseTestData => new List<object?[]>
-    {
-        new object?[] { "sdk", "9.0.103" },
-        new object?[] { "runtime", "9.0" },  // Uses new component@version syntax (plain version = core runtime)
-    };
-
-    [Theory]
-    [MemberData(nameof(ReuseTestData))]
-    public void Install_ReusesExistingInstall(string componentType, string channelOrSpec)
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = componentType == "sdk"
-            ? DotnetupTestUtilities.BuildSdkArguments(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath)
-            : DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath);
-
-        // First install
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"First installation failed. Output:\n{output}");
-
-        // Second install should be skipped
-        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"Second installation failed. Output:\n{output}");
-        output.Should().Contain("is already installed, skipping installation");
-    }
-
     [Fact]
     public void RuntimeInstall_FeatureBand_ReturnsError()
     {
@@ -518,10 +500,10 @@ public class ReuseAndErrorTests
     }
 
     [Theory]
-    [InlineData("runtime@9.0", InstallComponent.Runtime, true)] // SDK includes core runtime (using explicit "runtime@version" syntax)
-    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
-    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop (Windows only)
-    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent, bool shouldSkipDownload)
+    [InlineData("runtime@9.0", InstallComponent.Runtime)] // SDK includes core runtime (using explicit "runtime@version" syntax)
+    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore)] // SDK also includes aspnetcore runtime
+    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop)] // SDK does include windowsdesktop (Windows only)
+    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent)
     {
         // Windows Desktop Runtime is only available on Windows - skip this test case on non-Windows
         if (componentSpec.StartsWith("windowsdesktop") && !OperatingSystem.IsWindows())
@@ -532,7 +514,6 @@ public class ReuseAndErrorTests
         // This test verifies that:
         // 1. SDK install completes and is tracked in manifest
         // 2. Runtime install for same version succeeds and is tracked separately
-        // 3. Runtime reuses files from SDK if already present (no download)
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
@@ -542,11 +523,14 @@ public class ReuseAndErrorTests
         exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
 
         // Verify SDK is in manifest
-        List<DotnetInstall> installsAfterSdk;
+        List<Installation> installsAfterSdk;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            installsAfterSdk = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            installsAfterSdk = manifestData.DotnetRoots
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
         installsAfterSdk.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
         // Verify target runtime is NOT in manifest yet
@@ -559,23 +543,526 @@ public class ReuseAndErrorTests
         exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
 
         // Step 3: Verify both SDK and Runtime are in manifest
-        List<DotnetInstall> finalInstalls;
+        List<Installation> finalInstalls;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            finalInstalls = manifest.GetInstalledVersions().ToList();
+            var manifestData = manifest.ReadManifest();
+            finalInstalls = manifestData.DotnetRoots
+                .SelectMany(r => r.Installations)
+                .ToList();
         }
         finalInstalls.Should().HaveCount(2, $"both SDK and {expectedComponent} should be tracked");
         finalInstalls.Should().Contain(i => i.Component == InstallComponent.SDK);
         finalInstalls.Should().Contain(i => i.Component == expectedComponent);
 
-        // Step 4: Verify correct behavior based on whether SDK included this runtime
-        if (shouldSkipDownload)
+        // Step 4: Verify subcomponent-level skip - the runtime install should detect that
+        // shared framework files already exist on disk from the SDK install
+        output.Should().Contain("already exists on disk, skipping extraction",
+            "Runtime install should skip extracting subcomponents that were already laid down by the SDK install");
+    }
+
+    [Theory]
+    [InlineData("sdk", "9.0")]
+    [InlineData("runtime@9.0", null)]
+    public void Install_ReusesExistingInstall(string componentType, string? channel)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Step 1: First install
+        string[] firstArgs = componentType.Contains('@')
+            ? DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentType, testEnv.InstallPath, testEnv.ManifestPath)
+            : DotnetupTestUtilities.BuildSdkArguments(channel!, testEnv.InstallPath, testEnv.ManifestPath);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"First install failed. Output:\n{output}");
+
+        // Step 2: Same install again - should be short-circuited via manifest
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Second install failed. Output:\n{output}");
+        output.Should().Contain("is already installed",
+            "Re-installing the same component should detect it is already installed and skip the download");
+
+        // Step 3: Verify the install spec is still recorded despite the install being short-circuited.
+        // The orchestrator should call RecordInstallSpec even when the version is already installed,
+        // so the user's requested channel is tracked in the manifest.
+        List<InstallSpec> installSpecs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            output.Should().Contain("files already exist", "Should detect files already exist from SDK");
-            output.Should().NotContain("Downloading", "Should not download when files already exist from SDK");
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        var expectedComponent = componentType.Contains('@') ? InstallComponent.Runtime : InstallComponent.SDK;
+        installSpecs.Should().ContainSingle(s => s.Component == expectedComponent,
+            "Install spec should be recorded in the manifest even when the version was already installed");
+    }
+}
+
+/// <summary>
+/// Tests for install/uninstall lifecycle, global.json-based installs, and manifest error handling.
+/// </summary>
+[Collection("DotnetupLifecycleCollection")]
+public class LifecycleEndToEndTests
+{
+    [Fact]
+    public void InstallViaGlobalJson_SdkUsesGlobalJsonSource()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Create a global.json with a pinned SDK version in the test working directory
+        string globalJsonPath = Path.Combine(testEnv.TempRoot, "global.json");
+        string globalJsonContent = """
+            {
+              "sdk": {
+                "version": "9.0.103",
+                "rollForward": "disable"
+              }
+            }
+            """;
+        File.WriteAllText(globalJsonPath, globalJsonContent);
+
+        // Install SDK without specifying a version on the command line.
+        // When no channel argument is provided, dotnetup should pick up global.json.
+        // The sdk install command's channel argument is optional when global.json is present.
+        var sdkArgs = new List<string>(["sdk", "install",
+            "--install-path", testEnv.InstallPath,
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            sdkArgs.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. sdkArgs], captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK install via global.json failed. Output:\n{output}");
+
+        // Verify the manifest has an SDK install spec with GlobalJson source
+        List<InstallSpec> installSpecs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        installSpecs.Should().ContainSingle(s => s.Component == InstallComponent.SDK,
+            "SDK should be tracked in manifest");
+        var sdkSpec = installSpecs.First(s => s.Component == InstallComponent.SDK);
+        sdkSpec.InstallSource.Should().Be(InstallSource.GlobalJson,
+            "SDK installed via global.json should have GlobalJson source");
+        sdkSpec.GlobalJsonPath.Should().NotBeNullOrEmpty(
+            "SDK install spec should record the global.json path");
+
+        // Now install a runtime explicitly (global.json doesn't specify runtimes)
+        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(
+            "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            runtimeArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Runtime install failed. Output:\n{output}");
+
+        // Verify install sources differ between SDK (global.json) and runtime (explicit)
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        installSpecs.Should().HaveCount(2, "should have both SDK and runtime specs");
+        var sdkSpecAfter = installSpecs.First(s => s.Component == InstallComponent.SDK);
+        var runtimeSpec = installSpecs.First(s => s.Component == InstallComponent.Runtime);
+
+        sdkSpecAfter.InstallSource.Should().Be(InstallSource.GlobalJson,
+            "SDK source should still be GlobalJson");
+        runtimeSpec.InstallSource.Should().Be(InstallSource.Explicit,
+            "Runtime source should be Explicit since it was installed on the command line");
+
+        // Verify via machine-readable list output (JSON format)
+        var listArgs = DotnetupTestUtilities.BuildListArguments(
+            testEnv.InstallPath, testEnv.ManifestPath, format: "Json");
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            listArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"List command failed. Output:\n{output}");
+        output.Should().Contain("GlobalJson", "JSON list output should include GlobalJson source for SDK");
+        output.Should().Contain("Explicit", "JSON list output should include Explicit source for runtime");
+    }
+
+    [Fact]
+    public void InstallThenUninstall_FolderIsCleanedUp()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Verify install directory is initially empty (just created by TestEnvironment)
+        Directory.GetFileSystemEntries(testEnv.InstallPath).Should().BeEmpty(
+            "Install directory should be empty before installation");
+
+        // Step 1: Install SDK
+        var installArgs = DotnetupTestUtilities.BuildSdkArguments(
+            "9.0.103", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            installArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
+
+        // Verify the SDK was installed (directory is no longer empty)
+        Directory.GetFileSystemEntries(testEnv.InstallPath).Should().NotBeEmpty(
+            "Install directory should contain SDK files after installation");
+
+        // Verify manifest has the SDK
+        List<Installation> installsBefore;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installsBefore = manifestData.DotnetRoots
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+        installsBefore.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
+
+        // Step 2: Uninstall SDK
+        var uninstallArgs = DotnetupTestUtilities.BuildSdkUninstallArguments(
+            "9.0.103", testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            uninstallArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK uninstall failed. Output:\n{output}");
+
+        // Verify manifest no longer has the SDK
+        List<Installation> installsAfter;
+        List<InstallSpec> specsAfter;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installsAfter = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+            specsAfter = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        installsAfter.Should().BeEmpty("No installations should remain after uninstall");
+        specsAfter.Should().BeEmpty("No install specs should remain after uninstall");
+
+        // Verify that SDK artifacts were cleaned up from the install directory.
+        // The GC removes specific version subdirectories (e.g., sdk/9.0.103/) but
+        // may leave the empty sdk/ parent directory. Check that no version directories remain.
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk");
+        if (Directory.Exists(sdkDir))
+        {
+            Directory.GetDirectories(sdkDir).Should().BeEmpty(
+                "All SDK version directories should be removed after uninstalling the only SDK");
         }
     }
 
-    /// <summary>
+    [Fact]
+    public void OutOfSupportManifestVersion_ReturnsError()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Write a legacy-format manifest (JSON array, which is the old format)
+        string legacyManifest = """
+            [
+              {
+                "Component": "SDK",
+                "Version": "9.0.100",
+                "Channel": "9.0"
+              }
+            ]
+            """;
+        File.WriteAllText(testEnv.ManifestPath, legacyManifest);
+
+        // Try to install — should fail with a legacy format error
+        var args = DotnetupTestUtilities.BuildSdkArguments(
+            "9.0.103", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+
+        exitCode.Should().NotBe(0, "Should fail when manifest uses legacy format");
+        output.Should().Contain("legacy format",
+            "Error message should mention the legacy format");
+        output.Should().Contain("no longer supported",
+            "Error message should indicate the format is no longer supported");
+    }
+
+    [Fact]
+    public void SdkUninstall_DoesNotRemoveExplicitlyInstalledRuntime()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Step 1: Install SDK
+        var sdkInstallArgs = DotnetupTestUtilities.BuildSdkArguments(
+            "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            sdkInstallArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
+
+        // Verify SDK is in manifest
+        List<Installation> installsAfterSdk;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installsAfterSdk = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+        installsAfterSdk.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
+
+        // Step 2: Install the core runtime separately (explicitly)
+        var runtimeInstallArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(
+            "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            runtimeInstallArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
+
+        // Verify both SDK and Runtime are tracked in the manifest
+        List<InstallSpec> specsAfterBoth;
+        List<Installation> installsAfterBoth;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsAfterBoth = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsAfterBoth = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        specsAfterBoth.Should().HaveCount(2, "should have both SDK and runtime install specs");
+        specsAfterBoth.Should().Contain(s => s.Component == InstallComponent.SDK);
+        specsAfterBoth.Should().Contain(s => s.Component == InstallComponent.Runtime);
+
+        // Step 3: Uninstall the SDK
+        var sdkUninstallArgs = DotnetupTestUtilities.BuildSdkUninstallArguments(
+            "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            sdkUninstallArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK uninstall failed. Output:\n{output}");
+
+        // Step 4: Verify the runtime is still tracked but SDK is removed
+        List<InstallSpec> specsAfterUninstall;
+        List<Installation> installsAfterUninstall;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsAfterUninstall = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsAfterUninstall = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        specsAfterUninstall.Should().NotContain(s => s.Component == InstallComponent.SDK,
+            "SDK install spec should be removed after uninstall");
+        specsAfterUninstall.Should().ContainSingle(s => s.Component == InstallComponent.Runtime,
+            "Runtime install spec should still be tracked since it was explicitly installed");
+
+        // The runtime installation itself should still be present
+        installsAfterUninstall.Should().ContainSingle(i => i.Component == InstallComponent.Runtime,
+            "Runtime installation should not be removed when uninstalling the SDK, because it has its own explicit spec");
+
+        // The GC removes specific SDK version subdirectories but may leave the
+        // empty sdk/ parent directory. Verify no version directories remain.
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk");
+        if (Directory.Exists(sdkDir))
+        {
+            Directory.GetDirectories(sdkDir).Should().BeEmpty(
+                "All SDK version directories should be removed after SDK uninstall");
+        }
+
+        // But the shared/Microsoft.NETCore.App directory should still exist for the runtime
+        var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App");
+        Directory.Exists(runtimeDir).Should().BeTrue(
+            "shared/Microsoft.NETCore.App directory should remain for explicitly installed runtime");
+    }
+
+    [Fact]
+    public void MultipleGlobalJson_UpdateRetainsOlderPinnedVersion()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // project-a: uses default rollForward (latestPatch), so dotnetup derives channel "9.0.1xx".
+        // This spec IS updatable because "9.0.1xx" is not a fully-specified version.
+        string projectADir = Path.Combine(testEnv.TempRoot, "project-a");
+        Directory.CreateDirectory(projectADir);
+        string globalJsonA = Path.Combine(projectADir, "global.json");
+        File.WriteAllText(globalJsonA, """
+            {
+              "sdk": {
+                "version": "9.0.100"
+              }
+            }
+            """);
+
+        // project-b: uses rollForward "disable", so dotnetup stores exact version "9.0.100".
+        // This spec is NOT updatable because "9.0.100" is a fully-specified version.
+        string projectBDir = Path.Combine(testEnv.TempRoot, "project-b");
+        Directory.CreateDirectory(projectBDir);
+        string globalJsonB = Path.Combine(projectBDir, "global.json");
+        File.WriteAllText(globalJsonB, """
+            {
+              "sdk": {
+                "version": "9.0.100",
+                "rollForward": "disable"
+              }
+            }
+            """);
+
+        // Step 1: Install SDK from project-a's global.json
+        var installArgsA = new List<string>(["sdk", "install",
+            "--install-path", testEnv.InstallPath,
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            installArgsA.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. installArgsA], captureOutput: true, workingDirectory: projectADir);
+        exitCode.Should().Be(0, $"SDK install from project-a global.json failed. Output:\n{output}");
+
+        // Step 2: Install SDK from project-b's global.json
+        var installArgsB = new List<string>(["sdk", "install",
+            "--install-path", testEnv.InstallPath,
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            installArgsB.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. installArgsB], captureOutput: true, workingDirectory: projectBDir);
+        exitCode.Should().Be(0, $"SDK install from project-b global.json failed. Output:\n{output}");
+
+        // Step 3: Verify both install specs are in the manifest with correct sources/channels
+        List<InstallSpec> specsBefore;
+        List<Installation> installsBefore;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsBefore = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsBefore = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        // Both should be GlobalJson-sourced
+        specsBefore.Should().HaveCount(2, "should have two install specs from two global.json files");
+        specsBefore.Should().OnlyContain(s => s.InstallSource == InstallSource.GlobalJson,
+            "both specs should have GlobalJson source");
+
+        // project-a (default rollForward) should have channel-style VersionOrChannel (e.g., "9.0.1xx")
+        var specA = specsBefore.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonA));
+        specA.Should().NotBeNull("should find spec for project-a global.json");
+        specA!.VersionOrChannel.Should().Be("9.0.1xx",
+            "default rollForward should derive feature band channel from 9.0.100");
+
+        // project-b (rollForward: disable) should have exact version
+        var specB = specsBefore.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonB));
+        specB.Should().NotBeNull("should find spec for project-b global.json");
+        specB!.VersionOrChannel.Should().Be("9.0.100",
+            "rollForward: disable should store exact version");
+
+        // SDK 9.0.100 should be installed (both global.json files required it)
+        installsBefore.Should().Contain(i => i.Component == InstallComponent.SDK && i.Version == "9.0.100",
+            "SDK 9.0.100 should be installed from the initial global.json installs");
+
+        // Step 4: Run update — should update the 9.0.1xx spec but skip the pinned 9.0.100 spec
+        var updateArgs = DotnetupTestUtilities.BuildSdkUpdateArguments(
+            testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            updateArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK update failed. Output:\n{output}");
+
+        // Step 5: Verify manifest state after update
+        List<InstallSpec> specsAfter;
+        List<Installation> installsAfter;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .ToList();
+            specsAfter = root.SelectMany(r => r.InstallSpecs).ToList();
+            installsAfter = root.SelectMany(r => r.Installations).ToList();
+        }
+
+        // Both specs should still be present
+        specsAfter.Should().HaveCount(2, "both global.json specs should be retained after update");
+
+        // The pinned spec (project-b, "9.0.100") should be unchanged
+        var specBAfter = specsAfter.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonB));
+        specBAfter.Should().NotBeNull("project-b spec should survive update");
+        specBAfter!.VersionOrChannel.Should().Be("9.0.100",
+            "pinned spec should not be modified by update");
+
+        // The updatable spec (project-a, "9.0.1xx") should still reference the feature band
+        var specAAfter = specsAfter.FirstOrDefault(s =>
+            s.GlobalJsonPath != null && DotnetupUtilities.PathsEqual(s.GlobalJsonPath, globalJsonA));
+        specAAfter.Should().NotBeNull("project-a spec should survive update");
+        specAAfter!.VersionOrChannel.Should().Be("9.0.1xx",
+            "feature band channel should not change after update");
+
+        // SDK 9.0.100 must still be installed (project-b's pinned spec keeps it alive)
+        installsAfter.Should().Contain(i => i.Component == InstallComponent.SDK && i.Version == "9.0.100",
+            "pinned SDK 9.0.100 should be retained because project-b's spec still references it");
+
+        // Resolve what the latest version in 9.0.1xx should be
+        var latestInBand = new ChannelVersionResolver().GetLatestVersionForChannel(
+            new UpdateChannel("9.0.1xx"), InstallComponent.SDK);
+        latestInBand.Should().NotBeNull("9.0.1xx channel should resolve to a valid version");
+
+        // If update actually installed a newer version, verify it exists
+        if (latestInBand!.ToString() != "9.0.100")
+        {
+            installsAfter.Should().Contain(
+                i => i.Component == InstallComponent.SDK && i.Version == latestInBand.ToString(),
+                $"updated SDK version {latestInBand} should be installed for the 9.0.1xx channel");
+
+            // Verify the SDK directory for the updated version exists on disk
+            var updatedSdkDir = Path.Combine(testEnv.InstallPath, "sdk", latestInBand.ToString()!);
+            Directory.Exists(updatedSdkDir).Should().BeTrue(
+                $"SDK {latestInBand} directory should exist on disk after update");
+        }
+
+        // Verify the SDK directory for the pinned version still exists on disk
+        var pinnedSdkDir = Path.Combine(testEnv.InstallPath, "sdk", "9.0.100");
+        Directory.Exists(pinnedSdkDir).Should().BeTrue(
+            "SDK 9.0.100 directory should still exist on disk (kept by project-b's pinned spec)");
+
+        // Step 6: Verify via list output that both installations are visible
+        var listArgs = DotnetupTestUtilities.BuildListArguments(
+            testEnv.InstallPath, testEnv.ManifestPath, format: "Json");
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            listArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"List command failed. Output:\n{output}");
+        output.Should().Contain("9.0.100", "List output should show the pinned SDK version");
+        output.Should().Contain("GlobalJson", "List output should show GlobalJson source");
+    }
 }

@@ -92,15 +92,16 @@ internal class InstallWalkthrough
         string? globalJsonPath,
         string defaultChannel = "latest")
     {
+        // Explicit version/channel from the user always takes priority
+        if (_options.VersionOrChannel is not null)
+        {
+            return _options.VersionOrChannel;
+        }
+
         if (channelFromGlobalJson is not null)
         {
             SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
             return channelFromGlobalJson;
-        }
-
-        if (_options.VersionOrChannel is not null)
-        {
-            return _options.VersionOrChannel;
         }
 
         if (_options.Interactive)

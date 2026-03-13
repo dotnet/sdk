@@ -424,6 +424,9 @@ dotnet_diagnostic.IDE0019.severity = warning
 # IDE0028: Use collection initializers
 dotnet_diagnostic.IDE0028.severity = warning
 
+# IDE0305: Collection expression can be simplified
+dotnet_diagnostic.IDE0305.severity = warning
+
 # IDE0032: Use auto-property
 dotnet_diagnostic.IDE0032.severity = warning
 

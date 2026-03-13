@@ -76,6 +76,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The requested feature is not supported on the current platform.</summary>
     PlatformNotSupported,
+
+    /// <summary>The uninstall target (install spec or tracked root) was not found.</summary>
+    UninstallTargetNotFound,
 }
 
 /// <summary>

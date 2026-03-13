@@ -254,7 +254,7 @@ public class ApplyErrorTagsTests
     [Fact]
     public void ApplyErrorTags_SetsAllRequiredTags()
     {
-        using var listener = CreateTestListener(out var captured);
+        using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.1");
 
         using var source = new ActivitySource("ApplyErrorTags.Test.1");
         using (var activity = source.StartActivity("test"))
@@ -283,7 +283,7 @@ public class ApplyErrorTagsTests
     [Fact]
     public void ApplyErrorTags_WithErrorCode_SetsErrorCodeTag()
     {
-        using var listener = CreateTestListener(out var captured);
+        using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.2");
 
         using var source = new ActivitySource("ApplyErrorTags.Test.2");
         using (var activity = source.StartActivity("test"))
@@ -329,7 +329,7 @@ public class ApplyErrorTagsTests
     [Fact]
     public void ApplyErrorTags_NullOptionalFields_DoesNotSetOptionalTags()
     {
-        using var listener = CreateTestListener(out var captured);
+        using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.3");
 
         using var source = new ActivitySource("ApplyErrorTags.Test.3");
         using (var activity = source.StartActivity("test"))
@@ -361,7 +361,7 @@ public class ApplyErrorTagsTests
     [Fact]
     public void ApplyErrorTags_SetsActivityStatusToError()
     {
-        using var listener = CreateTestListener(out var captured);
+        using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.4");
 
         using var source = new ActivitySource("ApplyErrorTags.Test.4");
         using (var activity = source.StartActivity("test"))
@@ -384,13 +384,13 @@ public class ApplyErrorTagsTests
         Assert.Equal("TestError", a.StatusDescription);
     }
 
-    private static ActivityListener CreateTestListener(out List<Activity> captured)
+    private static ActivityListener CreateTestListener(out List<Activity> captured, string? sourceName = null)
     {
         var list = new List<Activity>();
         captured = list;
         var listener = new ActivityListener
         {
-            ShouldListenTo = _ => true,
+            ShouldListenTo = source => sourceName is null || source.Name == sourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity => list.Add(activity)
         };

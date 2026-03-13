@@ -1,7 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -72,31 +72,7 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
     {
-        string? directory = initialDirectory;
-        while (!string.IsNullOrEmpty(directory))
-        {
-            string globalJsonPath = Path.Combine(directory, "global.json");
-            if (File.Exists(globalJsonPath))
-            {
-                using var stream = File.OpenRead(globalJsonPath);
-                var contents = JsonSerializer.Deserialize(
-                    stream,
-                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-                return new GlobalJsonInfo
-                {
-                    GlobalJsonPath = globalJsonPath,
-                    GlobalJsonContents = contents
-                };
-            }
-            var parent = Directory.GetParent(directory);
-            if (parent == null)
-            {
-                break;
-            }
-
-            directory = parent.FullName;
-        }
-        return new GlobalJsonInfo();
+        return GlobalJsonModifier.GetGlobalJsonInfo(initialDirectory);
     }
 
     public string? GetLatestInstalledAdminVersion()
@@ -123,17 +99,18 @@ public class DotnetInstallManager : IDotnetInstallManager
         );
 
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
-        if (installResult.Install == null)
-        {
-            throw new InvalidOperationException($"Failed to install .NET SDK {channel.Name}");
-        }
-        else
-        {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
-        }
+        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
     }
 
-    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
+    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
+    {
+        GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, sdkVersion);
+    }
+
+    internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
+    {
+        return GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(jsonText, newVersion);
+    }
 
     public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
     {
@@ -187,7 +164,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
             string exeName = "dotnet";
             // Remove only actual dotnet installation folders from PATH
-            pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
+            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
 
             switch (installType)
             {

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -14,6 +15,13 @@ internal class DotnetupProgram
         // Handle --debug flag using the standard .NET SDK pattern
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Disable Spectre.Console line wrapping when output is redirected (piped),
+        // since wrapping is not useful for non-interactive consumers.
+        if (Console.IsOutputRedirected)
+        {
+            AnsiConsole.Profile.Width = int.MaxValue;
+        }
 
         // Set up callback to notify user when waiting for another dotnetup process
         ScopedMutex.OnWaitingForMutex = () =>
