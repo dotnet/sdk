@@ -7,25 +7,10 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseUpdateCommand : BaseCommand<UpdateCommandArgs>
+    internal abstract class BaseUpdateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition.Update definition)
+        : BaseCommand<UpdateCommandArgs>(hostBuilder, definition)
     {
-        internal BaseUpdateCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName,
-            string description)
-            : base(hostBuilder, commandName, description)
-        {
-            ParentCommand = parentCommand;
-            Options.Add(InteractiveOption);
-            Options.Add(AddSourceOption);
-        }
-
-        internal virtual Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
-
-        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
-
-        protected NewCommand ParentCommand { get; }
+        public CommandDefinition.Update Definition => definition;
 
         protected override Task<NewCommandStatus> ExecuteAsync(
             UpdateCommandArgs args,
