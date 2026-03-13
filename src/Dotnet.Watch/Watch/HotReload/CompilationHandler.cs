@@ -1010,8 +1010,27 @@ namespace Microsoft.DotNet.Watch
 
         public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
         {
-            var solution = await Workspace.UpdateFileContentAsync(changedFiles.Select(static f => (f.Item.FilePath, f.Kind.Convert())), cancellationToken);
-            await SolutionUpdatedAsync(solution, "document update", cancellationToken);
+            // Retry on IOException: the file may be transiently locked by a process that is being
+            // relaunched (e.g. a crashed service whose process hasn't fully exited yet, or MSBuild
+            // design-time build reading the same source file). The lock is short-lived, so a brief
+            // backoff is sufficient.
+            const int maxRetries = 5;
+            const int baseDelayMs = 100;
+
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    var solution = await Workspace.UpdateFileContentAsync(changedFiles.Select(static f => (f.Item.FilePath, f.Kind.Convert())), cancellationToken);
+                    await SolutionUpdatedAsync(solution, "document update", cancellationToken);
+                    return;
+                }
+                catch (IOException) when (attempt < maxRetries)
+                {
+                    Logger.LogWarning("File is locked (attempt {Attempt}/{MaxRetries}), retrying...", attempt + 1, maxRetries);
+                    await Task.Delay(baseDelayMs * (1 << attempt), cancellationToken);
+                }
+            }
         }
 
         private Task SolutionUpdatedAsync(Solution newSolution, string operationDisplayName, CancellationToken cancellationToken)

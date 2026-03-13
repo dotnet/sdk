@@ -9,6 +9,10 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
+REM Set DOTNET_HOST_PATH so MSBuild task hosts can locate the dotnet executable.
+REM Without this, tasks from NuGet packages that use TaskHostFactory fail with MSB4216.
+set DOTNET_HOST_PATH=%DOTNET_ROOT%\dotnet.exe
+
 REM Ensure Visual Studio instances allow preview SDKs
 PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"
 
@@ -35,14 +39,16 @@ dotnet new --debug:ephemeral-hive
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
 if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
-dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
+REM Remove feeds not needed for tests. Errors from non-existent sources
+REM (e.g. internal-transport feeds only present in internal builds) are ignored.
+dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config 2>nul
+dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config 2>nul
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config

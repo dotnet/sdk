@@ -208,12 +208,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_LEVEL", "debug");
 
-            // suppress all timeouts:
-            info.Environment.Add("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
-            info.Environment.Add("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
-            info.Environment.Add("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
+            // Use generous but bounded timeouts for DCP operations in CI.
+            // Previous values of 100,000 seconds (~27 hours) effectively disabled timeouts,
+            // causing tests to hang for the full Helix work item duration (~2 hours) when
+            // a DCP operation deadlocked. 300 seconds (5 minutes) per operation is generous
+            // for slow CI machines while ensuring natural failure recovery.
+            info.Environment.Add("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "300");
+            info.Environment.Add("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "300");
+            info.Environment.Add("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "300");
             info.Environment.Add("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
-            info.Environment.Add("ASPIRE_WATCH_PIPE_CONNECTION_TIMEOUT_SECONDS", "100000");
+            info.Environment.Add("ASPIRE_WATCH_PIPE_CONNECTION_TIMEOUT_SECONDS", "300");
 
             // override defaults:
             foreach (var (name, value) in EnvironmentVariables)
