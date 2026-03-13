@@ -26,6 +26,7 @@ jobs:
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
+    enableBuildRetry: true
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
@@ -80,6 +81,7 @@ jobs:
           ./restore.sh -projects $(Build.SourcesDirectory)/src/Installer/dotnetup/dotnetup.csproj $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Unix)
         timeoutInMinutes: 10
+        retryCountOnTaskFailure: 2
         env:
           DOTNET_INSTALL_TEST_RUNTIMES: false
       - script: |
@@ -91,6 +93,7 @@ jobs:
           echo "Disk usage after cleanup:"
           df -h / || true
         displayName: 🧹 Free disk space
+        retryCountOnTaskFailure: 2
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}"
           CROSS_ARGS=""
@@ -102,3 +105,4 @@ jobs:
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+        retryCountOnTaskFailure: 2
