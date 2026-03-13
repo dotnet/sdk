@@ -4,6 +4,7 @@
       $(CollectUpToDateCheckInputDesignTimeDependsOn);
       ResolveStaticWebAssetsConfiguration;
       ResolveProjectStaticWebAssets;
+      ResolveReferencedProjectsStaticWebAssetsConfiguration;
       CollectStaticWebAssetInputsDesignTime;
     </CollectUpToDateCheckInputDesignTimeDependsOn>
     <CollectUpToDateCheckOutputDesignTimeDependsOn>
