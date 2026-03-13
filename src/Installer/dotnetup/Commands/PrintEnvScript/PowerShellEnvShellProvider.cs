@@ -15,10 +15,17 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
 
     public override string ToString() => ArgumentName;
 
-    public string GenerateEnvScript(string dotnetInstallPath)
+    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null)
     {
         // Escape single quotes in the path for PowerShell by replacing ' with ''
         var escapedPath = dotnetInstallPath.Replace("'", "''");
+        var pathExport = $"$env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+
+        if (dotnetupDir is not null)
+        {
+            var escapedDotnetupDir = dotnetupDir.Replace("'", "''");
+            pathExport = $"$env:PATH = '{escapedDotnetupDir}' + [IO.Path]::PathSeparator + '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+        }
 
         return
             $"""
@@ -27,7 +34,7 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
             # Example: . ./dotnet-env.ps1
             
             $env:DOTNET_ROOT = '{escapedPath}'
-            $env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH
+            {pathExport}
             """;
     }
 

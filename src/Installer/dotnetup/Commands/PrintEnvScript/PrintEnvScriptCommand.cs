@@ -46,8 +46,11 @@ internal class PrintEnvScriptCommand : CommandBase
             // Determine the dotnet install path
             string installPath = _dotnetInstallPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
 
+            // Determine the dotnetup directory so it can be added to PATH
+            string? dotnetupDir = Path.GetDirectoryName(Environment.ProcessPath);
+
             // Generate the shell script
-            string script = _shellProvider.GenerateEnvScript(installPath);
+            string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir);
 
             // Output the script to stdout
             Console.WriteLine(script);

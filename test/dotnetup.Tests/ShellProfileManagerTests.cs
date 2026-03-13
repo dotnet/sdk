@@ -274,7 +274,7 @@ public class ShellProfileManagerTests : IDisposable
         public string Extension => "sh";
         public string? HelpDescription => null;
 
-        public string GenerateEnvScript(string dotnetInstallPath) =>
+        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null) =>
             $"export DOTNET_ROOT='{dotnetInstallPath}'";
 
         public IReadOnlyList<string> GetProfilePaths() => _profilePaths;

@@ -15,10 +15,17 @@ public class ZshEnvShellProvider : IEnvShellProvider
 
     public override string ToString() => ArgumentName;
 
-    public string GenerateEnvScript(string dotnetInstallPath)
+    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null)
     {
         // Escape single quotes in the path for zsh by replacing ' with '\''
         var escapedPath = dotnetInstallPath.Replace("'", "'\\''");
+        var pathExport = $"export PATH='{escapedPath}':$PATH";
+
+        if (dotnetupDir is not null)
+        {
+            var escapedDotnetupDir = dotnetupDir.Replace("'", "'\\''");
+            pathExport = $"export PATH='{escapedDotnetupDir}':'{escapedPath}':$PATH";
+        }
 
         return
             $"""
@@ -31,7 +38,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
             # When dotnetup modifies shell profiles directly, it will handle this automatically.
 
             export DOTNET_ROOT='{escapedPath}'
-            export PATH='{escapedPath}':$PATH
+            {pathExport}
             """;
     }
 
