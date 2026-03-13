@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Xml;
 using Microsoft.Build.Construction;
@@ -84,8 +85,25 @@ public sealed class VirtualProjectBuilder
         return GetTempSubpath(directoryName);
     }
 
+    private const string CsprojExtension = ".csproj";
+
     public static string GetVirtualProjectPath(string entryPointFilePath)
-        => Path.ChangeExtension(entryPointFilePath, ".csproj");
+        => entryPointFilePath + CsprojExtension;
+
+    public static bool TryGetEntryPointFilePathFromVirtualProjectPath(string projectPath, [NotNullWhen(returnValue: true)] out string? entryPointFilePath)
+    {
+        if (projectPath.EndsWith(CsprojExtension, StringComparison.OrdinalIgnoreCase))
+        {
+            entryPointFilePath = projectPath[..^CsprojExtension.Length];
+            if (IsValidEntryPointPath(entryPointFilePath))
+            {
+                return true;
+            }
+        }
+
+        entryPointFilePath = null;
+        return false;
+    }
 
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
@@ -375,7 +393,7 @@ public sealed class VirtualProjectBuilder
                 using var reader = new StringReader(projectFileText);
                 using var xmlReader = XmlReader.Create(reader);
                 var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
-                projectRoot.FullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
+                projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
                 return projectRoot;
             }
         }
@@ -465,6 +483,7 @@ public sealed class VirtualProjectBuilder
         if (isVirtualProject)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+            Debug.Assert(entryPointFilePath is not null);
 
             // Note that ArtifactsPath needs to be specified before Sdk.props
             // (usually it's recommended to specify it in Directory.Build.props
@@ -475,8 +494,10 @@ public sealed class VirtualProjectBuilder
                   <PropertyGroup>
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
-                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                    <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                    <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
+                    <RootNamespace>$(AssemblyName)</RootNamespace>
+                    <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                    <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

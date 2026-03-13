@@ -65,6 +65,9 @@ Additionally, the implicit project file has the following customizations:
     This avoids including files like `./**/*.resx` in simple file-based apps where users usually don't expect that.
     See [multiple files](#multiple-files) for more details.
 
+  - `AssemblyName` and `RootNamespace` are set to the entry-point file name without extension (e.g., `Program` for `Program.cs`)
+    to ensure the binary name and generated code namespaces are not affected by the virtual project file name (which includes the `.cs` extension).
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,

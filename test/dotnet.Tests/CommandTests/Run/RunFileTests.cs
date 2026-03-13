@@ -1904,6 +1904,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Restore_NonExistentPackage()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:package Microsoft.ThisPackageDoesNotExist@1.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
+    }
+
+    [Fact]
     public void NoRestore_01()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2121,7 +2138,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2159,7 +2176,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2188,7 +2205,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Module"));
     }
@@ -2301,7 +2318,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "AppContainerExe"));
     }
@@ -4050,10 +4067,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 needsInterpolation = true;
             }
 
-            // Use variable file name.
+            // Use variable file path.
             if (rewritten.Contains(entryPointPathNormalized, StringComparison.OrdinalIgnoreCase))
             {
                 rewritten = rewritten.Replace(entryPointPathNormalized, "{" + nameof(CSharpCompilerCommand.EntryPointFileFullPath) + "}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
+            // Use variable file name.
+            if (rewritten.Contains(fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(fileName, "{FileName}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -4308,14 +4332,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             return arg.Replace("\"", string.Empty);
         }
 
-        static string? GetGeneratedMethodName(string fileName)
+        static string? GetGeneratedMethodName(string assetFileName)
         {
-            return fileName switch
+            return assetFileName switch
             {
                 $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}.AssemblyAttributes.cs" => "AssemblyAttributes",
-                $"{programName}.GlobalUsings.g.cs" => "GlobalUsings",
-                $"{programName}.AssemblyInfo.cs" => "AssemblyInfo",
-                $"{programName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
+                $"{fileName}.GlobalUsings.g.cs" => "GlobalUsings",
+                $"{fileName}.AssemblyInfo.cs" => "AssemblyInfo",
+                $"{fileName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
                 $"{programName}{FileNameSuffixes.RuntimeConfigJson}" => "RuntimeConfig",
                 _ => null,
             };
@@ -5691,6 +5715,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5704,8 +5729,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5750,7 +5777,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5780,6 +5807,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var bPath = Path.Join(testInstance.Path, "B.cs");
         File.WriteAllText(bPath, "");
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5793,8 +5821,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>A</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5838,7 +5868,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5852,6 +5882,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property LangVersion=preview
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5865,8 +5896,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5905,7 +5938,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
@@ -5923,6 +5956,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5936,8 +5970,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5976,7 +6012,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
@@ -6236,7 +6272,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var projectBasedFiles = ReadFiles();
 
         fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
-        fileBasedResult.StdErr.Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.StdErr!.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
         fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
         fileBasedFiles.Should().Equal(projectBasedFiles);
 

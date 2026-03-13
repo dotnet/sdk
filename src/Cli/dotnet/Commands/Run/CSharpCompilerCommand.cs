@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.CSharp;
@@ -55,6 +54,7 @@ internal sealed partial class CSharpCompilerCommand
 
     public string BaseDirectory => field ??= Path.GetDirectoryName(EntryPointFileFullPath)!;
     internal string BaseDirectoryWithTrailingSeparator => field ??= BaseDirectory + Path.DirectorySeparatorChar;
+    internal string FileName => field ??= Path.GetFileName(EntryPointFileFullPath);
     internal string FileNameWithoutExtension => field ??= Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
     /// <summary>
@@ -234,19 +234,19 @@ internal sealed partial class CSharpCompilerCommand
             File.WriteAllText(assemblyAttributes, GetAssemblyAttributesContent());
         }
 
-        string globalUsings = Path.Join(objDir, $"{FileNameWithoutExtension}.GlobalUsings.g.cs");
+        string globalUsings = Path.Join(objDir, $"{FileName}.GlobalUsings.g.cs");
         if (ShouldEmit(globalUsings))
         {
             File.WriteAllText(globalUsings, GetGlobalUsingsContent());
         }
 
-        string assemblyInfo = Path.Join(objDir, $"{FileNameWithoutExtension}.AssemblyInfo.cs");
+        string assemblyInfo = Path.Join(objDir, $"{FileName}.AssemblyInfo.cs");
         if (ShouldEmit(assemblyInfo))
         {
             File.WriteAllText(assemblyInfo, GetAssemblyInfoContent());
         }
 
-        string editorconfig = Path.Join(objDir, $"{FileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig");
+        string editorconfig = Path.Join(objDir, $"{FileName}.GeneratedMSBuildEditorConfig.editorconfig");
         if (ShouldEmit(editorconfig))
         {
             File.WriteAllText(editorconfig, GetGeneratedMSBuildEditorConfigContent());

@@ -107,8 +107,8 @@ internal sealed class ProjectGraphFactory(
     {
         if (!File.Exists(projectPath))
         {
-            var entryPointFilePath = Path.ChangeExtension(projectPath, ".cs");
-            if (!File.Exists(entryPointFilePath))
+            // The virtual project path is the entry-point file path with ".csproj" appended (e.g., "App.cs.csproj" for "App.cs").
+            if (!VirtualProjectBuilder.TryGetEntryPointFilePathFromVirtualProjectPath(projectPath, out string? entryPointFilePath))
             {
                 // `dotnet build` reports a warning when the reference project is missing.
                 // However, ProjectGraph doesn't allow us to return null to skip the project so we need to be stricter.
