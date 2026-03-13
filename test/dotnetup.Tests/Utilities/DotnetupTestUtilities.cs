@@ -257,6 +257,10 @@ internal static class DotnetupTestUtilities
         // Suppress the .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
 
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        process.StartInfo.Environment["NO_COLOR"] = "1";
+
         // Apply any additional environment variables
         if (environmentVariables != null)
         {
