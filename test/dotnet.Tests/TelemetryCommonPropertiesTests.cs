@@ -195,7 +195,8 @@ namespace Microsoft.DotNet.Tests
         {
             try
             {
-                if (envVars is not null){
+                if (envVars is not null)
+                {
                     foreach (var (key, value) in envVars)
                     {
                         Environment.SetEnvironmentVariable(key, value);
@@ -214,7 +215,7 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
-
+        
         [Theory]
         [InlineData("dummySessionId")]
         [InlineData(null)]
@@ -236,10 +237,13 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
+            { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot" },
             { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
             { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
             { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
             { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "plandex" } }, "plandex" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Plandex" } }, "plandex" },
             { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
             { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
             { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
@@ -280,17 +284,17 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "CI", "true"} }, true },
             { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
             { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
-{ new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
+            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
             { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-{ new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
+            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
             { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
             { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
             { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
-{ new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+            { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
         };
 
         private class NothingCache : IUserLevelCacheWriter

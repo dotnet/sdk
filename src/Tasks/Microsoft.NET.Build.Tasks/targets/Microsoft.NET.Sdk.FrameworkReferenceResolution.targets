@@ -61,6 +61,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
       <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>
       <AllowMissingPrunePackageData Condition="'$(AllowMissingPrunePackageData)' == ''">false</AllowMissingPrunePackageData>
+      <LoadPrunePackageDataFromNearestFramework Condition="'$(LoadPrunePackageDataFromNearestFramework)' == ''">false</LoadPrunePackageDataFromNearestFramework>
     </PropertyGroup>
     
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
@@ -69,7 +70,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetingPacks="@(TargetingPack)"
                         TargetingPackRoots="$(PrunePackageTargetingPackRoots)"
                         PrunePackageDataRoot="$(PrunePackageDataRoot)"
-                        AllowMissingPrunePackageData="$(AllowMissingPrunePackageData)">
+                        AllowMissingPrunePackageData="$(AllowMissingPrunePackageData)"
+                        LoadPrunePackageDataFromNearestFramework="$(LoadPrunePackageDataFromNearestFramework)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     
@@ -88,7 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
-          DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
+          DependsOnTargets="_ComputeTargetLatestRuntimePatch;AddWindowsSdkKnownFrameworkReferences"
           Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences

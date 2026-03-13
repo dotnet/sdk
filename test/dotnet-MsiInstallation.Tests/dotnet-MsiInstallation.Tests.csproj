@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <RootNamespace>Microsoft.DotNet.MsiInstallerTests</RootNamespace>
   </PropertyGroup>
 

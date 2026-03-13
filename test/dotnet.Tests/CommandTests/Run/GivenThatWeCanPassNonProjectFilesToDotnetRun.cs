@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferences")
                 .WithSource()
                 .Path;

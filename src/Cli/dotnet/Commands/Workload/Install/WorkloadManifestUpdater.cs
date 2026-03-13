@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -87,7 +88,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         else
         {
-            // this updates all the manifests 
+            // this updates all the manifests
             var manifests = _workloadResolver.GetInstalledManifests();
             await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
@@ -138,7 +139,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
         var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
         var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray());
+        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
         if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -164,7 +165,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
             if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
             {
-                var updatableWorkloads = JsonSerializer.Deserialize<string[]>(File.ReadAllText(adUpdatesFile));
+                var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
@@ -529,3 +530,6 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
     private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
 }
+
+[JsonSerializable(typeof(string[]))]
+internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;
