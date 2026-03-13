@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <PropertyGroup>
     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
@@ -17,7 +18,6 @@
   <PropertyGroup>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <!-- only copy symbols from project references (omit xml docs and config files) -->
@@ -25,11 +25,6 @@
 
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-
-    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
 
@@ -50,9 +45,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="NuGet.ProjectModel" />
@@ -62,27 +54,18 @@
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
     <PackageReference Include="System.IO.Hashing" />
+
+    <!-- Promote the System.Text.Json reference even for .NET Framework, because
+         GenerateDepsFile uses a live version of Microsoft.Extensions.DependencyModel
+         (to generate the latest deps file format) and DependencyModel has a live dep
+         on STJ. For this to work, we must ensure that we never try to interchange
+         types between the live STJ and the VS/MSBuild-provided one. -->
+    <PackageReference Update="System.Text.Json" VersionOverride="" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Don't reference MS.NET.Build.Extensions.Tasks, but make sure it builds before this project -->
     <ProjectReference Include="..\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-
-    <!--
-        Microsoft.NET.HostModel also uses System.Reflection.Metadata. Don't move ahead of the version of System.Reflection.Metadata
-        that MSBuild supports with the binding redirect to ensure that both this project and Microsoft.NET.HostModel can load
-        the same System.Reflection.Metadata assembly and their types can unify. See the following link for the MSBuild binding redirect config.
-          https://github.com/dotnet/msbuild/blob/299e0514835a1588e6ef21b1da748462dec706b8/src/MSBuild/app.config#L60
-    -->
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
   </ItemGroup>
 
   <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->

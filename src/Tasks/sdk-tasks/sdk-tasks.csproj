@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -12,9 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Packaging" />
@@ -22,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
-    <PackageReference Include="System.Resources.Extensions" VersionOverride="$(SystemResourcesExtensionsToolsetPackageVersion)" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
