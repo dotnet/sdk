@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .CopyTestAsset("11TestAppWith10CLIToolReferences")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new RestoreCommand(testInstance)
                 .Execute()

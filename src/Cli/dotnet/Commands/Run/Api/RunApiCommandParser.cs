@@ -7,16 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
 internal sealed class RunApiCommandParser
 {
-    private static readonly Command Command = SetAction(RunApiCommandDefinition.Create());
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(RunApiCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static Command SetAction(Command command)
-    {
-        command.SetAction((parseResult) => new RunApiCommand(parseResult).Execute());
-        return command;
+        command.SetAction(parseResult => new RunApiCommand(parseResult).Execute());
     }
 }

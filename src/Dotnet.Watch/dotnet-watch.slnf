@@ -1,0 +1,40 @@
+{
+  "solution": {
+    "path": "..\\..\\sdk.slnx",
+    "projects": [
+      "src\\Dotnet.Watch\\AspireService\\Microsoft.WebTools.AspireService.Package.csproj",
+      "src\\Dotnet.Watch\\AspireService\\Microsoft.WebTools.AspireService.shproj",
+      "src\\Dotnet.Watch\\BrowserRefresh\\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj",
+      "src\\Dotnet.Watch\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
+      "src\\Dotnet.Watch\\DotNetWatchTasks\\DotNetWatchTasks.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.Data\\Microsoft.DotNet.HotReload.Agent.Data.Package.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.Data\\Microsoft.DotNet.HotReload.Agent.Data.shproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.Host\\Microsoft.DotNet.HotReload.Agent.Host.Package.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.Host\\Microsoft.DotNet.HotReload.Agent.Host.shproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj",
+      "src\\Dotnet.Watch\\HotReloadAgent.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.Package.csproj",
+      "src\\Dotnet.Watch\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.shproj",
+      "src\\Dotnet.Watch\\HotReloadClient\\Microsoft.DotNet.HotReload.Client.Package.csproj",
+      "src\\Dotnet.Watch\\HotReloadClient\\Microsoft.DotNet.HotReload.Client.shproj",
+      "src\\Dotnet.Watch\\Web.Middleware\\Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj",
+      "src\\Dotnet.Watch\\Web.Middleware\\Microsoft.DotNet.HotReload.Web.Middleware.shproj",
+      "src\\Dotnet.Watch\\Watch.Aspire\\Microsoft.DotNet.HotReload.Watch.Aspire.csproj",
+      "src\\Dotnet.Watch\\Watch\\Microsoft.DotNet.HotReload.Watch.csproj",
+      "src\\Dotnet.Watch\\dotnet-watch\\dotnet-watch.csproj",
+      "src\\Cli\\Microsoft.DotNet.Cli.Definitions\\Microsoft.DotNet.Cli.Definitions.csproj",
+      "src\\Microsoft.DotNet.ProjectTools\\Microsoft.DotNet.ProjectTools.csproj",
+      "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
+      "test\\Microsoft.DotNet.HotReload.Client.Tests\\Microsoft.DotNet.HotReload.Client.Tests.csproj",
+      "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
+      "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
+      "test\\Microsoft.WebTools.AspireService.Tests\\Microsoft.WebTools.AspireService.Tests.csproj",
+      "test\\dotnet-watch-test-browser\\dotnet-watch-test-browser.csproj",
+      "test\\Microsoft.DotNet.HotReload.Test.Utilities\\Microsoft.DotNet.HotReload.Test.Utilities.csproj",
+      "test\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj",
+      "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
+      "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj"
+    ]
+  }
+}

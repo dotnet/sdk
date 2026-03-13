@@ -7,17 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.VSTest;
 
 internal static class VSTestCommandParser
 {
-    private static readonly VSTestCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(VSTestCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static VSTestCommandDefinition CreateCommand()
-    {
-        var command = new VSTestCommandDefinition();
         command.SetAction(VSTestCommand.Run);
-        return command;
     }
 }
