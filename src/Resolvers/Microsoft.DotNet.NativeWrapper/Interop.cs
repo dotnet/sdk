@@ -40,6 +40,9 @@ namespace Microsoft.DotNet.NativeWrapper
         // already be loaded in the process. Unfortunately there are no issues or pull requests tracking the original
         // implementation of this as it was committed directly from a dev branch into main.
 
+        // lpFileName passed to LoadLibraryEx must be a full path.
+        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
+
         private static void PreloadWindowsLibrary(string dllFileName)
         {
             string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
@@ -75,9 +78,6 @@ namespace Microsoft.DotNet.NativeWrapper
             return handle;
         }
 #endif
-
-        // lpFileName passed to LoadLibraryEx must be a full path.
-        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
         /// <summary>
         ///  Flags that control SDK resolution behavior in <see cref="hostfxr_resolve_sdk2"/>.
