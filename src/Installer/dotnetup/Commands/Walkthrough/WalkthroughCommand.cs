@@ -38,12 +38,14 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         string channel = channelFromGlobalJson ?? "latest";
 
         // Start predownloading the archive in the background while the user answers prompts.
-        // This warms the download cache so the real install skips the download entirely.
+        // This warms the download cache so the real install can benefit from a cache hit.
+        // Intentionally fire-and-forget: the install will show real download progress if
+        // the predownload hasn't finished yet, or skip the download via cache hit if it has.
         var installRoot = new DotnetInstallRoot(
             _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        var predownloadTask = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
+        _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
             channel, InstallComponent.SDK, installRoot);
 
         // Step 1: Choose how to access .NET
@@ -74,9 +76,10 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
-        // Await predownload so the cache is populated before the real install begins.
-        // Exceptions are already swallowed inside PredownloadToCacheAsync.
-        predownloadTask.GetAwaiter().GetResult();
+        // Don't await the predownload — let the install show real download progress.
+        // If the predownload already finished and warmed the cache, the install
+        // benefits automatically via a cache hit. Otherwise, the install downloads
+        // normally with a visible progress bar.
 
         RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
 

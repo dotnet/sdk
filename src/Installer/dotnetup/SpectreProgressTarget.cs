@@ -71,7 +71,9 @@ public class SpectreProgressTarget : IProgressTarget
             _baseDescription = task.Description;
 
             int spaceIndex = _baseDescription.IndexOf(' ');
-            if (spaceIndex > 0 && _baseDescription.StartsWith("Installing", StringComparison.Ordinal))
+            if (spaceIndex > 0 &&
+                (_baseDescription.StartsWith("Installing", StringComparison.Ordinal) ||
+                 _baseDescription.StartsWith("Downloading", StringComparison.Ordinal)))
             {
                 _shimmerWord = _baseDescription[..spaceIndex];
                 _restEscaped = _baseDescription[spaceIndex..].EscapeMarkup();
