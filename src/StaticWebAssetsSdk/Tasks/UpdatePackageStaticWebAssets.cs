@@ -29,9 +29,6 @@ public class UpdatePackageStaticWebAssets : Task
     public ITaskItem[] OriginalAssets { get; set; }
 
     [Output]
-    public ITaskItem[] RemappedEndpoints { get; set; }
-
-    [Output]
     public ITaskItem[] FilteredEndpoints { get; set; }
 
     public ITaskItem[] Endpoints { get; set; }
@@ -118,7 +115,6 @@ public class UpdatePackageStaticWebAssets : Task
 
     private void RemapEndpoints(Dictionary<string, string> assetMapping, HashSet<string> excludedAssetFiles)
     {
-        var remappedEndpoints = new List<ITaskItem>();
         var filteredEndpoints = new List<ITaskItem>();
 
         foreach (var endpoint in Endpoints)
@@ -140,7 +136,6 @@ public class UpdatePackageStaticWebAssets : Task
                 newEndpoint.SetMetadata("AssetFile", newAssetFile);
                 Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
                     endpoint.ItemSpec, assetFile, newAssetFile);
-                remappedEndpoints.Add(newEndpoint);
                 filteredEndpoints.Add(newEndpoint);
             }
             else
@@ -150,7 +145,6 @@ public class UpdatePackageStaticWebAssets : Task
             }
         }
 
-        RemappedEndpoints = [.. remappedEndpoints];
         FilteredEndpoints = [.. filteredEndpoints];
     }
 

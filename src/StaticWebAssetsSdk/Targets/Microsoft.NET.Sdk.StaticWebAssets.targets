@@ -821,7 +821,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
-      <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
       <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredPackageEndpoints" />
     </UpdatePackageStaticWebAssets>
 

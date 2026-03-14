@@ -344,8 +344,6 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        // No framework assets => no remapping done
-        task.RemappedEndpoints.Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -380,9 +378,9 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        task.RemappedEndpoints.Should().HaveCount(1);
+        task.FilteredEndpoints.Should().HaveCount(1);
 
-        var remapped = task.RemappedEndpoints[0];
+        var remapped = task.FilteredEndpoints[0];
         var expectedPath = Path.GetFullPath(Path.Combine(intermediateOutput, "fx", "FxLib", "framework.js"));
         remapped.GetMetadata("AssetFile").Should().Be(expectedPath);
     }
@@ -428,11 +426,11 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        task.RemappedEndpoints.Should().HaveCount(2);
+        task.FilteredEndpoints.Should().HaveCount(2);
 
         var expectedPath = Path.GetFullPath(Path.Combine(intermediateOutput, "fx", "FxLib", "framework.js"));
-        task.RemappedEndpoints[0].GetMetadata("AssetFile").Should().Be(expectedPath);
-        task.RemappedEndpoints[1].GetMetadata("AssetFile").Should().Be(expectedPath);
+        task.FilteredEndpoints[0].GetMetadata("AssetFile").Should().Be(expectedPath);
+        task.FilteredEndpoints[1].GetMetadata("AssetFile").Should().Be(expectedPath);
     }
 
     [Fact]
@@ -477,9 +475,9 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        // Only the framework endpoint should be remapped
-        task.RemappedEndpoints.Should().HaveCount(1);
-        task.RemappedEndpoints[0].ItemSpec.Should().Be("framework.js");
+        // Framework endpoint should be remapped in the filtered output
+        task.FilteredEndpoints.Should().HaveCount(2);
+        task.FilteredEndpoints.Should().Contain(e => e.GetMetadata("AssetFile").Contains("fx"));
     }
 
     [Fact]
@@ -505,7 +503,6 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         // Assert
         result.Should().BeTrue();
         task.UpdatedAssets.Should().HaveCount(1);
-        task.RemappedEndpoints.Should().BeNullOrEmpty();
     }
 
     [Fact]
