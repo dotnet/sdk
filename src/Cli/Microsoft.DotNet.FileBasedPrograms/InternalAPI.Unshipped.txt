@@ -71,6 +71,20 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Property(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Value.get -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Value.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.EnsureResolvedPath(Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExpandedName.get -> string?
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExpandedName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind.Expanded = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind.Final = 3 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind.Resolved = 2 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.OriginalName.get -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.OriginalName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Ref(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info, string! name) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ResolvedPath.get -> string?
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ResolvedPath.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.WithName(string! name, Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind kind) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Sdk(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Version.get -> string?
@@ -123,6 +137,7 @@ override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ToS
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.ToString() -> string!
+override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.SourceFile.GetHashCode() -> int
@@ -134,6 +149,7 @@ static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Parse(in Micro
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property?
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk?
 static Microsoft.DotNet.FileBasedPrograms.ErrorReporters.CreateCollectingReporter(out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder! builder) -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.CombineHashCodes(int value1, int value2) -> int

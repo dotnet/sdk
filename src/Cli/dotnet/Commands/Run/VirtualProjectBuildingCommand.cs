@@ -272,6 +272,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
+            // Build referenced file-based apps before the main build.
+            var refExitCode = BuildReferencedApps();
+            if (refExitCode != 0)
+            {
+                return refExitCode;
+            }
+
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
             IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
@@ -518,6 +525,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Project))
             {
                 Reporter.Verbose.WriteLine("Not saving cache because there is a project directive.");
+                return false;
+            }
+
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Ref))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is a ref directive.");
                 return false;
             }
 
@@ -1124,6 +1137,71 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             Reporter.Verbose.WriteLine($"Cannot touch folder '{directory}': {ex}");
         }
+    }
+
+    /// <summary>
+    /// Builds all file-based apps referenced via <c>#:ref</c> directives (with <c>OutputType=Library</c>).
+    /// Each referenced app is built independently using its own virtual project.
+    /// Must be called before the main app's MSBuild session starts.
+    /// </summary>
+    private int BuildReferencedApps()
+    {
+        var refDirectives = Directives.OfType<CSharpDirective.Ref>().ToArray();
+        if (refDirectives.Length == 0)
+        {
+            return 0;
+        }
+
+        foreach (var refDirective in refDirectives)
+        {
+            var refFilePath = refDirective.ResolvedPath;
+            if (refFilePath is null)
+            {
+                // Path was not resolved (e.g., file not found error already reported).
+                // Try to resolve it here for the build attempt.
+                var sourceDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath)!;
+                refFilePath = Path.GetFullPath(Path.Combine(sourceDirectory, refDirective.Name.Replace('\\', '/')));
+            }
+
+            if (!File.Exists(refFilePath))
+            {
+                continue;
+            }
+
+            Reporter.Verbose.WriteLine($"Building referenced file-based app: {refFilePath}");
+
+            // Create MSBuildArgs for the referenced app with OutputType=Library.
+            var refGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "OutputType", "Library" },
+            };
+            if (MSBuildArgs.GlobalProperties is not null)
+            {
+                foreach (var (key, value) in MSBuildArgs.GlobalProperties)
+                {
+                    refGlobalProperties.TryAdd(key, value);
+                }
+            }
+
+            var refMsbuildArgs = MSBuildArgs.CloneWithAdditionalProperties(
+                new ReadOnlyDictionary<string, string>(refGlobalProperties));
+
+            var refCommand = new VirtualProjectBuildingCommand(refFilePath, refMsbuildArgs)
+            {
+                NoRestore = NoRestore,
+                NoCache = NoCache,
+                NoBuild = NoBuild,
+                NoWriteBuildMarkers = NoWriteBuildMarkers,
+            };
+
+            var refExitCode = refCommand.Execute();
+            if (refExitCode != 0)
+            {
+                return refExitCode;
+            }
+        }
+
+        return 0;
     }
 
     private void MarkBuildStart()

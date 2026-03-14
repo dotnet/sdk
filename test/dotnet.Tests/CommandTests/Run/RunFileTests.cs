@@ -3115,6 +3115,257 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello");
     }
 
+    [Fact]
+    public void RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
+    [Fact]
+    public void RefDirective_Subdirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib/mylib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
+    [Fact]
+    public void RefDirective_Errors()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+
+        // Missing name.
+        File.WriteAllText(filePath, """
+            #:ref
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.MissingDirectiveName, "ref"));
+
+        // File does not exist.
+        File.WriteAllText(filePath, """
+            #:ref nonexistent.cs
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidRefDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, "nonexistent.cs"))));
+    }
+
+    /// <summary>
+    /// Verifies that <c>#:ref</c> produces a metadata (assembly) reference,
+    /// meaning internal members are not accessible unless <c>InternalsVisibleTo</c> is used.
+    /// </summary>
+    [Fact]
+    public void RefDirective_InternalsNotAccessible()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class PublicClass
+            {
+                public static string PublicMethod() => "public";
+                internal static string InternalMethod() => "internal";
+            }
+            internal static class InternalClass
+            {
+                public static string Method() => "internal class";
+            }
+            """);
+
+        // Accessing internal member should fail.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.PublicClass.InternalMethod());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS");
+
+        // Accessing internal class should fail.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.InternalClass.Method());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS");
+
+        // Accessing public member should succeed.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.PublicClass.PublicMethod());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("public");
+    }
+
+    /// <summary>
+    /// Verifies transitive <c>#:ref</c> references work: app.cs → lib1.cs → lib2.cs.
+    /// </summary>
+    [Fact]
+    public void RefDirective_Transitive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            namespace Lib2;
+            public static class Base
+            {
+                public static string Value() => "from lib2";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:ref lib2.cs
+            namespace Lib1;
+            public static class Middle
+            {
+                public static string Value() => $"from lib1 and {Lib2.Base.Value()}";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib1.cs
+            Console.WriteLine(Lib1.Middle.Value());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("from lib1 and from lib2");
+    }
+
+    /// <summary>
+    /// Diamond dependency: app.cs uses both <c>#:ref lib.cs</c> and <c>#:project ProjectLib</c>,
+    /// and both lib.cs (<c>#:project Common</c>) and ProjectLib reference a common project.
+    /// </summary>
+    [Fact]
+    public void RefDirective_DiamondWithProject()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Common project referenced by both lib.cs and ProjectLib.
+        var commonDir = Path.Join(testInstance.Path, "Common");
+        Directory.CreateDirectory(commonDir);
+        File.WriteAllText(Path.Join(commonDir, "Common.cs"), """
+            namespace Common;
+            public static class Shared
+            {
+                public static string Value() => "shared";
+            }
+            """);
+        File.WriteAllText(Path.Join(commonDir, "Common.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // ProjectLib: a regular project referencing Common.
+        var projectLibDir = Path.Join(testInstance.Path, "ProjectLib");
+        Directory.CreateDirectory(projectLibDir);
+        File.WriteAllText(Path.Join(projectLibDir, "ProjectLib.cs"), """
+            namespace ProjectLib;
+            public static class ProjClass
+            {
+                public static string Value() => $"ProjectLib({Common.Shared.Value()})";
+            }
+            """);
+        File.WriteAllText(Path.Join(projectLibDir, "ProjectLib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <ItemGroup>
+                <ProjectReference Include="../Common/Common.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        // lib.cs: a file-based library referencing Common via #:project.
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:project Common
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string Value() => $"Lib({Common.Shared.Value()})";
+            }
+            """);
+
+        // app.cs: references both lib.cs and ProjectLib.
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            #:project ProjectLib
+            Console.WriteLine($"{Lib.LibClass.Value()} {ProjectLib.ProjClass.Value()}");
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Lib(shared) ProjectLib(shared)");
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
@@ -5452,6 +5703,50 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Cannot use CSC because we cannot detect updates in the referenced project.
         Build(testInstance, BuildLevel.All, expectedOutput: "v2 Hello from Lib v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild_ProjectReferences"/>.
+    /// CSC-only optimization is also disabled when <c>#:ref</c> directives are present,
+    /// since we cannot detect updates in the referenced file-based app.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var code = """
+            #:ref lib.cs
+            Console.WriteLine("v1 " + Lib.LibClass.GetMessage());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "app.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: "app.cs");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        // Cannot use CSC because we cannot detect updates in the referenced file-based app.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v2 Hello from Lib v2", programFileName: "app.cs");
     }
 
     /// <summary>

@@ -323,6 +323,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "property": return Property.Parse(context);
             case "package": return Package.Parse(context);
             case "project": return Project.Parse(context);
+            case "ref": return Ref.Parse(context);
             case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
                 context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
@@ -585,6 +586,105 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         public override string ToString() => $"#:project {Name}";
+    }
+
+    /// <summary>
+    /// <c>#:ref</c> directive. References another file-based app.
+    /// </summary>
+    public sealed class Ref : Named
+    {
+        [SetsRequiredMembers]
+        public Ref(in ParseInfo info, string name) : base(info)
+        {
+            Name = name;
+            OriginalName = name;
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
+        /// </summary>
+        public string OriginalName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
+        /// </summary>
+        public string? ExpandedName { get; init; }
+
+        /// <summary>
+        /// The resolved full path to the referenced <c>.cs</c> file.
+        /// </summary>
+        public string? ResolvedPath { get; init; }
+
+        public static new Ref? Parse(in ParseContext context)
+        {
+            var directiveText = context.DirectiveText;
+            if (directiveText.IsWhiteSpace())
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+                return null;
+            }
+
+            return new Ref(context.Info, directiveText);
+        }
+
+        public enum NameKind
+        {
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ExpandedName"/>.
+            /// </summary>
+            Expanded = 1,
+
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ResolvedPath"/>.
+            /// </summary>
+            Resolved = 2,
+
+            /// <summary>
+            /// Change only <see cref="Named.Name"/>.
+            /// </summary>
+            Final = 3,
+        }
+
+        public Ref WithName(string name, NameKind kind)
+        {
+            return new Ref(Info, name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
+                ResolvedPath = kind == NameKind.Resolved ? name : ResolvedPath,
+            };
+        }
+
+        /// <summary>
+        /// Resolves the directive path to a full file path and validates the file exists.
+        /// </summary>
+        public Ref EnsureResolvedPath(ErrorReporter errorReporter)
+        {
+            var sourcePath = Info.SourceFile.Path;
+
+            var sourceDirectory = Path.GetDirectoryName(sourcePath)
+                ?? throw new InvalidOperationException($"Source file path '{sourcePath}' does not have a containing directory.");
+
+            var resolvedFilePath = Path.GetFullPath(Path.Combine(sourceDirectory, Name.Replace('\\', '/')));
+
+            if (!File.Exists(resolvedFilePath))
+            {
+                errorReporter(Info.SourceFile.Text, sourcePath, Info.Span,
+                    string.Format(FileBasedProgramsResources.InvalidRefDirective,
+                        string.Format(FileBasedProgramsResources.CouldNotFindRefFile, resolvedFilePath)));
+            }
+
+            // Name keeps the (possibly relative) display path; ResolvedPath stores the full path.
+            return new Ref(Info, Name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = ExpandedName,
+                ResolvedPath = resolvedFilePath,
+            };
+        }
+
+        public override string ToString() => $"#:ref {Name}";
     }
 
     public enum IncludeOrExcludeKind

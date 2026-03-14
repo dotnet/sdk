@@ -17,6 +17,11 @@
         <target state="translated">Non sono stati trovati progetti o directory `{0}`.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CouldNotFindRefFile">
+        <source>Could not find file `{0}`.</source>
+        <target state="new">Could not find file `{0}`.</target>
+        <note>{0} is the file path.</note>
+      </trans-unit>
       <trans-unit id="DirectiveError">
         <source>error</source>
         <target state="translated">errore</target>
@@ -56,6 +61,11 @@
         <source>The '#:project' directive is invalid: {0}</source>
         <target state="translated">La direttiva '#:project' non è valida: {0}</target>
         <note>{0} is the inner error message.</note>
+      </trans-unit>
+      <trans-unit id="InvalidRefDirective">
+        <source>The '#:ref' directive is invalid: {0}</source>
+        <target state="new">The '#:ref' directive is invalid: {0}</target>
+        <note>{Locked="#:ref"}{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
