@@ -27,7 +27,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net11.0/dotnetup.dll",
                 "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -106,8 +106,8 @@
         "tasks": [
             {
                 "label": "build",
-                "type": "process",
-                "command": "dotnet",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "build",
                     "dotnetup/dotnetup.csproj",
@@ -136,8 +136,8 @@
             },
             {
                 "label": "test",
-                "type": "process",
-                "command": "dotnet",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
