@@ -79,8 +79,14 @@ public class RuntimeInstallTests
     [InlineData("aspnetcore@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
     [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, "9.0")]
     [InlineData("ASPNETCORE@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("aspnet@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("aspnet@9.0", InstallComponent.ASPNETCore, "9.0")]
+    [InlineData("core@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("core@9.0", InstallComponent.ASPNETCore, "9.0")]
     [InlineData("windowsdesktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
     [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
+    [InlineData("desktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
+    [InlineData("desktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
     public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
         var (component, version) = RuntimeInstallCommand.ParseComponentSpec(spec);

@@ -3,7 +3,9 @@
 
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -89,11 +91,11 @@ internal class InstallExecutor
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -119,30 +121,48 @@ internal class InstallExecutor
         bool noProgress,
         bool requireMuxerUpdate = false)
     {
-        bool allSucceeded = true;
-
-        foreach (var additionalVersion in additionalVersions)
+        var versionsList = additionalVersions.ToList();
+        if (versionsList.Count == 0)
         {
-            var additionalRequest = new DotnetInstallRequest(
-                installRoot,
-                new UpdateChannel(additionalVersion),
-                component,
-                new InstallRequestOptions
-                {
-                    ManifestPath = manifestPath,
-                    RequireMuxerUpdate = requireMuxerUpdate
-                });
+            return true;
+        }
 
-            try
+        var requests = versionsList.Select(version => new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel(version),
+            component,
+            new InstallRequestOptions
             {
-                var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed additional {componentDescription} {additionalResult.Install.Version} at {additionalResult.Install.InstallRoot.Path}[/]");
-            }
-            catch (DotnetInstallException)
+                ManifestPath = manifestPath,
+                RequireMuxerUpdate = requireMuxerUpdate
+            })).ToList();
+
+        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        using var sharedReporter = progressTarget.CreateProgressReporter();
+
+        bool allSucceeded = true;
+        try
+        {
+            var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+            foreach (var result in results)
             {
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Error}]Failed to install additional {componentDescription} {additionalVersion}[/]");
-                allSucceeded = false;
+                if (result.WasAlreadyInstalled)
+                {
+                    SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                        $"[{DotnetupTheme.Current.Success}]{componentDescription} {result.Install.Version} is already installed at {result.Install.InstallRoot.Path}[/]");
+                }
+                else
+                {
+                    SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                        $"[{DotnetupTheme.Current.Success}]Installed additional {componentDescription} {result.Install.Version} at {result.Install.InstallRoot.Path}[/]");
+                }
             }
+        }
+        catch (DotnetInstallException ex)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"[{DotnetupTheme.Current.Error}]Failed to install additional {componentDescription}: {ex.Message.EscapeMarkup()}[/]");
+            allSucceeded = false;
         }
 
         return allSucceeded;

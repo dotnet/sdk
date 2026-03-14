@@ -40,13 +40,6 @@ internal class DotnetupProgram
         try
         {
             var exitCode = InvokeParser(args, rootActivity);
-            // When launched with no arguments in an interactive terminal (e.g. double-click),
-            // pause so the window doesn't disappear immediately.
-            // Only pause on success — errors should exit immediately.
-            if (exitCode == 0)
-            {
-                WaitForKeyPressIfNeeded(args);
-            }
 
             return exitCode;
         }
@@ -79,16 +72,6 @@ internal class DotnetupProgram
         rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
         rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
         return result;
-    }
-
-    private static void WaitForKeyPressIfNeeded(string[] args)
-    {
-        if (args.Length == 0 && !Console.IsOutputRedirected && !Console.IsInputRedirected)
-        {
-            Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(intercept: true);
-        }
     }
 
     private static void DisposeTelemetry()

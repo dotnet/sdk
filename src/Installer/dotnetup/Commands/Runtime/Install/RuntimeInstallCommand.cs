@@ -31,8 +31,14 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     {
         ["runtime"] = InstallComponent.Runtime,
         ["aspnetcore"] = InstallComponent.ASPNETCore,
+        ["aspnet"] = InstallComponent.ASPNETCore,
+        ["core"] = InstallComponent.ASPNETCore,
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
+        ["desktop"] = InstallComponent.WindowsDesktop,
     };
+
+    /// <summary>Primary (non-alias) names shown in help text and error messages.</summary>
+    private static readonly string[] s_primaryRuntimeTypes = ["runtime", "aspnetcore", "windowsdesktop"];
 
     protected override string GetCommandName() => "runtime/install";
 
@@ -209,14 +215,15 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     /// </summary>
     internal static IEnumerable<string> GetValidRuntimeTypes()
     {
-        foreach (var kvp in s_runtimeTypeMap)
+        foreach (var name in s_primaryRuntimeTypes)
         {
-            // Windows Desktop is only valid on Windows
-            if (kvp.Value == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            if (s_runtimeTypeMap.TryGetValue(name, out var component) &&
+                component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
             {
                 continue;
             }
-            yield return kvp.Key;
+
+            yield return name;
         }
     }
 }

@@ -67,23 +67,20 @@ internal class InstallWalkthrough
             // Track admin-to-user migration scenario
             Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
 
-            if (_options.Interactive)
+            // Copy all admin SDK versions except the one already being installed.
+            // The user confirmed copying via PromptAdminMigration, so no per-version prompt is needed.
+            foreach (var version in adminSdkVersions)
             {
-                var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
-                if (latestAdminVersion is not null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
+                if (resolvedVersion is null || version != resolvedVersion.ToString())
                 {
-                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the {_options.ComponentDescription} will no longer be accessible, we recommend installing the latest admin installed " +
-                        $"version ({latestAdminVersion}) to the new user install location. This will make sure this version of the {_options.ComponentDescription} continues to be used for projects that don't specify a .NET SDK version in global.json.");
-
-                    if (SpectreAnsiConsole.Confirm($"Also install {_options.ComponentDescription} {latestAdminVersion}?",
-                        defaultValue: true))
-                    {
-                        additionalVersions.Add(latestAdminVersion);
-                        Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
-                    }
+                    additionalVersions.Add(version);
                 }
             }
-            //  TODO: Add command-line option for installing admin versions locally
+
+            if (additionalVersions.Count > 0)
+            {
+                Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
+            }
         }
 
         return additionalVersions;

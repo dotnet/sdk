@@ -54,13 +54,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             return 1;
         }
 
-        // For isolation mode, we know we don't need to set the default install.
-        // For other modes, default to true since the user chose a mode that modifies PATH.
-        // If admin installs exist, prompt about copying them into the dotnetup-managed directory.
-        bool? setDefaultInstall = pathPreference == PathPreference.DotnetupDotnet ? false : true;
+        // Only FullPathReplacement modifies system PATH/DOTNET_ROOT.
+        // ShellProfile relies on shell config files, not system-level PATH changes.
+        // DotnetupDotnet (isolation) doesn't touch PATH at all.
+        bool? setDefaultInstall = pathPreference == PathPreference.FullPathReplacement;
 
         // Step 2: Prompt about admin installs before setting up the environment.
-        if (pathPreference != PathPreference.DotnetupDotnet && OperatingSystem.IsWindows())
+        if (pathPreference == PathPreference.FullPathReplacement && OperatingSystem.IsWindows())
         {
             setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
         }
@@ -132,9 +132,9 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             PathPreference = pathPreference,
         };
         DotnetupConfig.Write(config);
-        SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Success("Setup complete!"));
         DisplayPathGuidance(pathPreference);
+        SpectreAnsiConsole.WriteLine();
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 
     /// <summary>
@@ -181,17 +181,21 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
     private static void DisplayPathGuidance(PathPreference preference)
     {
         SpectreAnsiConsole.WriteLine();
-        switch (preference)
+        string? guidance = preference switch
         {
-            case PathPreference.DotnetupDotnet:
-                SpectreAnsiConsole.WriteLine(Strings.PathGuidanceDotnetupDotnet);
-                break;
-            case PathPreference.ShellProfile:
-                SpectreAnsiConsole.WriteLine(Strings.PathGuidanceShellProfile);
-                break;
-            case PathPreference.FullPathReplacement:
-                SpectreAnsiConsole.WriteLine(Strings.PathGuidanceFullReplacement);
-                break;
+            PathPreference.DotnetupDotnet => Strings.PathGuidanceDotnetupDotnet,
+            PathPreference.ShellProfile => Strings.PathGuidanceShellProfile,
+            PathPreference.FullPathReplacement => Strings.PathGuidanceFullReplacement,
+            _ => null,
+        };
+
+        if (guidance is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]{1}[/]",
+                DotnetupTheme.Current.Dim,
+                guidance.EscapeMarkup()));
         }
     }
 }

@@ -110,7 +110,6 @@ internal class InstallWorkflow
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
-        InstallExecutor.DisplayComplete();
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
