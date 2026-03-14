@@ -21,6 +21,8 @@ public interface IDotnetInstallManager
 
     string? GetLatestInstalledAdminVersion();
 
+    List<string> GetInstalledAdminSdkVersions();
+
     void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
 
     void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null);

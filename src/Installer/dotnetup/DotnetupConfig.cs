@@ -29,12 +29,14 @@ internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
     public PathPreference PathPreference { get; set; } = PathPreference.FullPathReplacement;
+    public ThemeColors? Theme { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(DotnetupConfigData))]
 [JsonSerializable(typeof(PathPreference))]
+[JsonSerializable(typeof(ThemeColors))]
 internal partial class DotnetupConfigJsonContext : JsonSerializerContext { }
 
 /// <summary>
@@ -72,6 +74,30 @@ internal static class DotnetupConfig
         DotnetupPaths.EnsureDataDirectoryExists();
         var json = JsonSerializer.Serialize(config, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         File.WriteAllText(DotnetupPaths.ConfigPath, json);
+    }
+
+    /// <summary>
+    /// Returns the user's <see cref="PathPreference"/> from the config file if it exists,
+    /// otherwise prompts interactively (when <paramref name="interactive"/> is true),
+    /// saves the result, and returns it.
+    /// When non-interactive and no config exists, returns <c>null</c>.
+    /// </summary>
+    public static PathPreference? EnsurePathPreference(bool interactive)
+    {
+        var config = Read();
+        if (config is not null)
+        {
+            return config.PathPreference;
+        }
+
+        if (!interactive)
+        {
+            return null;
+        }
+
+        var preference = Commands.Walkthrough.WalkthroughCommand.PromptPathPreference();
+        Write(new DotnetupConfigData { PathPreference = preference });
+        return preference;
     }
 
     /// <summary>

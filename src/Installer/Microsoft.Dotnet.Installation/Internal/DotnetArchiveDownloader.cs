@@ -83,73 +83,21 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="progress">Optional progress reporting</param>
     private async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
-        // Create temp file path in same directory for atomic move when complete
         string tempPath = $"{destinationPath}.download";
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
 
         for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
         {
             try
             {
-                // Ensure the directory exists
-                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-
-                // Content length for progress reporting
-                long? totalBytes = null;
-
-                // Make the actual download request
-                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
-
-                if (response.Content.Headers.ContentLength.HasValue)
-                {
-                    totalBytes = response.Content.Headers.ContentLength.Value;
-                }
-
-                using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-
-                var buffer = new byte[81920]; // 80KB buffer
-                long bytesRead = 0;
-                int read;
-
-                var lastProgressReport = DateTime.MinValue;
-
-                while ((read = await contentStream.ReadAsync(buffer).ConfigureAwait(false)) > 0)
-                {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
-
-                    bytesRead += read;
-
-                    // Report progress at most every 100ms to avoid UI thrashing
-                    var now = DateTime.UtcNow;
-                    if ((now - lastProgressReport).TotalMilliseconds > 100)
-                    {
-                        lastProgressReport = now;
-                        progress?.Report(new DownloadProgress(bytesRead, totalBytes));
-                    }
-                }
-
-                // Final progress report
-                progress?.Report(new DownloadProgress(bytesRead, totalBytes));
-
-                // Ensure all data is written to disk
-                await fileStream.FlushAsync().ConfigureAwait(false);
-                fileStream.Close();
-
-                // Atomic move to final destination
-                if (File.Exists(destinationPath))
-                {
-                    File.Delete(destinationPath);
-                }
-                File.Move(tempPath, destinationPath);
-
+                await DownloadAttemptAsync(downloadUrl, tempPath, destinationPath, progress).ConfigureAwait(false);
                 return;
             }
             catch (Exception)
             {
                 if (attempt < MaxRetryCount)
                 {
-                    await Task.Delay(RetryDelayMilliseconds * attempt).ConfigureAwait(false); // Linear backoff
+                    await Task.Delay(RetryDelayMilliseconds * attempt).ConfigureAwait(false);
                 }
                 else
                 {
@@ -158,22 +106,59 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             }
             finally
             {
-                // Delete the partial download if it exists
-                try
-                {
-                    if (File.Exists(tempPath))
-                    {
-                        File.Delete(tempPath);
-                    }
-                }
-                catch
-                {
-                    // Ignore cleanup errors
-                }
+                try { if (File.Exists(tempPath)) { File.Delete(tempPath); } }
+                catch { /* Ignore cleanup errors */ }
+            }
+        }
+    }
 
+    private async Task DownloadAttemptAsync(string downloadUrl, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
+    {
+        using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        long? totalBytes = response.Content.Headers.ContentLength;
+        using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+        await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
+
+        await fileStream.FlushAsync().ConfigureAwait(false);
+        fileStream.Close();
+
+        CommitDownload(tempPath, destinationPath);
+    }
+
+    private static async Task CopyStreamWithProgressAsync(Stream source, Stream destination, long? totalBytes, IProgress<DownloadProgress>? progress)
+    {
+        var buffer = new byte[81920]; // 80KB buffer
+        long bytesRead = 0;
+        int read;
+        var lastProgressReport = DateTime.MinValue;
+
+        while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+        {
+            await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            bytesRead += read;
+
+            var now = DateTime.UtcNow;
+            if ((now - lastProgressReport).TotalMilliseconds > 100)
+            {
+                lastProgressReport = now;
+                progress?.Report(new DownloadProgress(bytesRead, totalBytes));
             }
         }
 
+        progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+    }
+
+    private static void CommitDownload(string tempPath, string destinationPath)
+    {
+        if (File.Exists(destinationPath))
+        {
+            File.Delete(destinationPath);
+        }
+        File.Move(tempPath, destinationPath);
     }
 
     /// <summary>
@@ -201,6 +186,28 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
+        var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
+
+        Activity.Current?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+
+        if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
+        {
+            return;
+        }
+
+        DownloadArchive(downloadUrl, destinationPath, progress);
+        VerifyFileHash(destinationPath, expectedHash);
+
+        var fileInfo = new FileInfo(destinationPath);
+        Activity.Current?.SetTag("download.bytes", fileInfo.Length);
+        Activity.Current?.SetTag("download.from_cache", false);
+
+        try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
+        catch { /* Ignore errors adding to cache - it's not critical */ }
+    }
+
+    private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
 
         if (targetFile == null)
@@ -212,8 +219,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 component: installRequest.Component.ToString());
         }
 
-        string? downloadUrl = targetFile.Address.ToString();
-        string? expectedHash = targetFile.Hash.ToString();
+        string downloadUrl = targetFile.Address.ToString();
+        string expectedHash = targetFile.Hash.ToString();
 
         if (string.IsNullOrEmpty(expectedHash))
         {
@@ -223,6 +230,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());
         }
+
         if (string.IsNullOrEmpty(downloadUrl))
         {
             throw new DotnetInstallException(
@@ -232,53 +240,32 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 component: installRequest.Component.ToString());
         }
 
-        Activity.Current?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        return (downloadUrl, expectedHash);
+    }
 
-        // Check the cache first
+    private bool TryServeCachedArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress)
+    {
         string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
-        if (cachedFilePath != null)
+        if (cachedFilePath == null)
         {
-            try
-            {
-                // Verify the cached file's hash
-                VerifyFileHash(cachedFilePath, expectedHash);
-
-                // Copy from cache to destination
-                File.Copy(cachedFilePath, destinationPath, overwrite: true);
-
-                // Report 100% progress immediately since we're using cache
-                var cachedFileSize = new FileInfo(cachedFilePath).Length;
-                progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
-
-                var cachedFileInfo = new FileInfo(cachedFilePath);
-                Activity.Current?.SetTag("download.bytes", cachedFileInfo.Length);
-                Activity.Current?.SetTag("download.from_cache", true);
-                return;
-            }
-            catch
-            {
-                // If cached file is corrupted, fall through to download
-            }
+            return false;
         }
 
-        // Download the file if not in cache or cache is invalid
-        DownloadArchive(downloadUrl, destinationPath, progress);
-
-        // Verify the downloaded file
-        VerifyFileHash(destinationPath, expectedHash);
-
-        var fileInfo = new FileInfo(destinationPath);
-        Activity.Current?.SetTag("download.bytes", fileInfo.Length);
-        Activity.Current?.SetTag("download.from_cache", false);
-
-        // Add the verified file to the cache
         try
         {
-            _downloadCache.AddToCache(downloadUrl, destinationPath);
+            VerifyFileHash(cachedFilePath, expectedHash);
+            File.Copy(cachedFilePath, destinationPath, overwrite: true);
+
+            var cachedFileSize = new FileInfo(cachedFilePath).Length;
+            progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
+
+            Activity.Current?.SetTag("download.bytes", cachedFileSize);
+            Activity.Current?.SetTag("download.from_cache", true);
+            return true;
         }
         catch
         {
-            // Ignore errors adding to cache - it's not critical
+            return false; // Cached file corrupted — fall through to download
         }
     }
 

@@ -77,8 +77,42 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public string? GetLatestInstalledAdminVersion()
     {
-        // TODO: Implement this
-        return null;
+        var versions = GetInstalledAdminSdkVersions();
+        return versions.Count > 0 ? versions[0] : null;
+    }
+
+    public List<string> GetInstalledAdminSdkVersions()
+    {
+        var versions = new List<string>();
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return versions;
+        }
+
+        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+        foreach (var adminPath in adminPaths)
+        {
+            try
+            {
+                var installs = HostFxrWrapper.getInstalls(adminPath);
+                foreach (var install in installs)
+                {
+                    if (install.Component == InstallComponent.SDK)
+                    {
+                        versions.Add(install.Version.ToString());
+                    }
+                }
+            }
+            catch
+            {
+                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
+            }
+        }
+
+        // Sort descending so newest versions appear first
+        versions.Sort((a, b) => string.Compare(b, a, StringComparison.OrdinalIgnoreCase));
+        return versions;
     }
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
@@ -99,7 +133,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         );
 
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
-        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed .NET SDK {installResult.Install.Version} at {installResult.Install.InstallRoot.Path}[/]");
+        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed .NET SDK {installResult.Install.Version} at {installResult.Install.InstallRoot.Path}[/]");
     }
 
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
@@ -131,7 +165,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     bool succeeded = InstallRootManager.ApplyUserInstallRoot(
                         userChanges,
                         AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
 
                     if (!succeeded)
                     {
@@ -144,7 +178,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     bool adminSucceeded = InstallRootManager.ApplyAdminInstallRoot(
                         adminChanges,
                         AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
 
                     if (!adminSucceeded)
                     {

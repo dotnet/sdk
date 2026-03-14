@@ -131,7 +131,7 @@ internal static class InstallationLister
         });
 
         writer.WriteLine();
-        console.MarkupLine("Installations [dim](managed by dotnetup)[/]:");
+        console.MarkupLine($"Installations [{DotnetupTheme.Current.Dim}](managed by dotnetup)[/]:");
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
@@ -180,7 +180,7 @@ internal static class InstallationLister
 
                 specGrid.AddRow(
                     $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
-                    $"[dim](source: {sourceDisplay})[/]"
+                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay})[/]"
                 );
             }
 
@@ -200,7 +200,7 @@ internal static class InstallationLister
             foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
             {
                 string status = install.IsValid == false
-                    ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
+                    ? $"[{DotnetupTheme.Current.Error}]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
                     : $"({install.Architecture})";
 
                 installGrid.AddRow(

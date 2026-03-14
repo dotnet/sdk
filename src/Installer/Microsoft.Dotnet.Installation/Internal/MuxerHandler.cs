@@ -124,23 +124,8 @@ internal class MuxerHandler
             return;
         }
 
-        // Determine if we should update the muxer
-        bool shouldUpdateMuxer;
-        if (_preExtractionHighestRuntimeVersion == null)
-        {
-            // No runtime existed before - we need the muxer
-            shouldUpdateMuxer = true;
-        }
-        else if (postExtractionHighestRuntimeVersion > _preExtractionHighestRuntimeVersion)
-        {
-            // A higher runtime version was installed - update the muxer
-            shouldUpdateMuxer = true;
-        }
-        else
-        {
-            // Existing runtime is same or higher - keep existing muxer
-            shouldUpdateMuxer = false;
-        }
+        bool shouldUpdateMuxer = _preExtractionHighestRuntimeVersion == null ||
+                                  postExtractionHighestRuntimeVersion > _preExtractionHighestRuntimeVersion;
 
         if (!shouldUpdateMuxer)
         {
@@ -151,6 +136,11 @@ internal class MuxerHandler
             return;
         }
 
+        ApplyMuxerReplacement(postExtractionHighestRuntimeVersion);
+    }
+
+    private void ApplyMuxerReplacement(ReleaseVersion postVersion)
+    {
         // Move the existing muxer out of the way if it exists
         if (_hadExistingMuxer)
         {
@@ -182,14 +172,12 @@ internal class MuxerHandler
 
         try
         {
-            // Move the new muxer into place
             File.Move(_tempMuxerPath, _muxerTargetPath);
 
             Activity.Current?.SetTag("muxer.action", "updated");
             Activity.Current?.SetTag("muxer.previous_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
-            Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postExtractionHighestRuntimeVersion?.ToString()));
+            Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postVersion?.ToString()));
 
-            // Clean up the backup
             if (_movedExistingMuxer && File.Exists(_existingMuxerBackupPath))
             {
                 try { File.Delete(_existingMuxerBackupPath); } catch { }

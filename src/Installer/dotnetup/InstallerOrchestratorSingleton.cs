@@ -79,59 +79,172 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
-        // Validate channel format before attempting resolution
-        if (!ChannelVersionResolver.IsValidChannelFormat(installRequest.Channel.Name))
+        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        using var reporter = progressTarget.CreateProgressReporter();
+        using var prepared = PrepareInstall(installRequest, reporter, out var alreadyInstalledResult);
+
+        if (alreadyInstalledResult is not null)
+        {
+            return alreadyInstalledResult;
+        }
+
+        return CommitPreparedInstall(prepared!);
+    }
+#pragma warning restore CA1822
+
+    /// <summary>
+    /// Validates the channel format, resolves the version, and constructs the install object.
+    /// Throws <see cref="DotnetInstallException"/> if the channel is invalid or the version cannot be found.
+    /// </summary>
+    private static (ReleaseManifest Manifest, ReleaseVersion Version, DotnetInstall Install) ResolveInstall(DotnetInstallRequest request)
+    {
+        if (!ChannelVersionResolver.IsValidChannelFormat(request.Channel.Name))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InvalidChannel,
-                $"'{installRequest.Channel.Name}' is not a valid .NET version or channel. " +
+                $"'{request.Channel.Name}' is not a valid .NET version or channel. " +
                 $"Use a version like '9.0', '9.0.100', or a channel keyword: {string.Join(", ", ChannelVersionResolver.KnownChannelKeywords)}.",
-                version: null, // Don't include user input in telemetry
-                component: installRequest.Component.ToString());
+                version: null,
+                component: request.Component.ToString());
         }
 
-        // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
-        ReleaseManifest releaseManifest = new();
-        ReleaseVersion? versionToInstall = installRequest.ResolvedVersion
-            ?? new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
+        ReleaseManifest manifest = new();
+        ReleaseVersion? version = request.ResolvedVersion ?? new ChannelVersionResolver(manifest).Resolve(request);
 
-        if (versionToInstall == null)
+        if (version is null)
         {
-            // Channel format was valid, but the version doesn't exist
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.VersionNotFound,
-                $"Could not find .NET version '{installRequest.Channel.Name}'. The version may not exist or may not be supported.",
-                version: null, // Don't include user input in telemetry
-                component: installRequest.Component.ToString());
+                $"Could not find .NET version '{request.Channel.Name}'. The version may not exist or may not be supported.",
+                version: null,
+                component: request.Component.ToString());
         }
 
-        DotnetInstall install = new(
-            installRequest.InstallRoot,
-            versionToInstall,
-            installRequest.Component);
+        return (manifest, version, new DotnetInstall(request.InstallRoot, version, request.Component));
+    }
 
+    /// <summary>
+    /// Prepares and commits all install requests concurrently where possible: downloads run in parallel,
+    /// and commits serialize through the install-state mutex.
+    /// </summary>
+    /// <returns>All results, including already-installed entries.</returns>
+#pragma warning disable CA1822
+    public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
+    {
+        var preparedInstalls = new List<PreparedInstall>();
+        var results = new List<InstallResult>();
+        var exceptions = new List<Exception>();
+        var lockObj = new object();
+
+        // Phase 1: download all archives concurrently
+        var tasks = requests.Select(request => Task.Run(() =>
+        {
+            try
+            {
+                var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
+                lock (lockObj)
+                {
+                    if (prepared is not null)
+                    {
+                        preparedInstalls.Add(prepared);
+                    }
+                    else if (existingResult is not null)
+                    {
+                        results.Add(existingResult);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lock (lockObj) { exceptions.Add(ex); }
+            }
+        })).ToList();
+
+        Task.WaitAll([.. tasks]);
+
+        if (exceptions.Count > 0)
+        {
+            foreach (var p in preparedInstalls) { p.Dispose(); }
+            if (exceptions[0] is DotnetInstallException) { throw exceptions[0]; }
+            throw new AggregateException(exceptions);
+        }
+
+        // Phase 2: commit each prepared install; the install-state mutex serializes them
+        try
+        {
+            foreach (var prepared in preparedInstalls)
+            {
+                results.Add(CommitPreparedInstall(prepared));
+            }
+        }
+        finally
+        {
+            foreach (var p in preparedInstalls) { p.Dispose(); }
+        }
+
+        return results;
+    }
+#pragma warning restore CA1822
+
+    /// <summary>
+    /// Represents a prepared (downloaded but not yet committed) installation.
+    /// </summary>
+    internal sealed class PreparedInstall : IDisposable
+    {
+        public DotnetInstallRequest Request { get; }
+        public ReleaseVersion Version { get; }
+        public DotnetInstall Install { get; }
+        public DotnetArchiveExtractor Extractor { get; }
+        public ReleaseManifest ReleaseManifest { get; }
+        public bool WasAlreadyInstalled { get; init; }
+
+        public PreparedInstall(DotnetInstallRequest request, ReleaseVersion version, DotnetInstall install,
+            DotnetArchiveExtractor extractor, ReleaseManifest releaseManifest)
+        {
+            Request = request;
+            Version = version;
+            Install = install;
+            Extractor = extractor;
+            ReleaseManifest = releaseManifest;
+        }
+
+        public void Dispose() => Extractor.Dispose();
+    }
+
+    /// <summary>
+    /// Validates and resolves version for an install request, checks if already installed,
+    /// and downloads the archive — but does not commit (extract) it.
+    /// Returns null if the install was already present (the result is returned via the out parameter).
+    /// Used for concurrent multi-install scenarios where downloads happen in parallel.
+    /// </summary>
+    /// <param name="installRequest">The installation request.</param>
+    /// <param name="sharedReporter">A shared progress reporter for displaying download progress.</param>
+    /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
+    /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
+#pragma warning disable CA1822
+    public PreparedInstall? PrepareInstall(
+        DotnetInstallRequest installRequest,
+        IProgressReporter sharedReporter,
+        out InstallResult? alreadyInstalledResult)
+    {
+        alreadyInstalledResult = null;
+
+        var (releaseManifest, versionToInstall, install) = ResolveInstall(installRequest);
         string? customManifestPath = installRequest.Options.ManifestPath;
 
-        // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            // Untracked installs don't interact with the manifest, so skip reading it
-            // entirely. This avoids errors when the manifest uses a legacy format.
             var manifestData = installRequest.Options.Untracked
                 ? new DotnetupManifestData()
                 : new DotnetupSharedManifest(customManifestPath).ReadManifest();
 
             if (InstallAlreadyExists(manifestData, install))
             {
-                // Still record the install spec so the user's requested channel is tracked,
-                // even though the version is already installed (possibly via a different channel).
                 RecordInstallSpec(installRequest, customManifestPath);
-                return new InstallResult(install, WasAlreadyInstalled: true);
+                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
+                return null;
             }
 
-            // Guard: error if the target directory contains .NET artifacts but isn't tracked in the manifest.
-            // This prevents silently mixing managed and unmanaged installations.
-            // Skip this guard for untracked installs.
             if (!installRequest.Options.Untracked
                 && !IsRootInManifest(manifestData, installRequest.InstallRoot)
                 && HasDotnetArtifacts(installRequest.InstallRoot.Path))
@@ -144,49 +257,55 @@ internal class InstallerOrchestratorSingleton
                     component: installRequest.Component.ToString());
             }
 
-            // Fail fast: if the muxer must be updated and it is currently locked,
-            // throw before the expensive download.  The check is inside the mutex
-            // so it does not race with other dotnetup processes.
             if (installRequest.Options.RequireMuxerUpdate && installRequest.InstallRoot.Path is not null)
             {
                 MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
             }
         }
 
-        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter);
+        extractor.Prepare();
 
-        using DotnetArchiveExtractor installer = new(installRequest, versionToInstall, releaseManifest, progressTarget);
-        installer.Prepare();
+        return new PreparedInstall(installRequest, versionToInstall, install, extractor, releaseManifest);
+    }
+#pragma warning restore CA1822
 
-        // Extract and commit the install to the directory
+    /// <summary>
+    /// Commits a previously prepared installation: extracts the archive to the target directory
+    /// and records it in the manifest. Must be called sequentially (not concurrently).
+    /// </summary>
+    /// <returns>The installation result.</returns>
+#pragma warning disable CA1822
+    public InstallResult CommitPreparedInstall(PreparedInstall prepared)
+    {
+        string? customManifestPath = prepared.Request.Options.ManifestPath;
+
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            // Untracked installs skip manifest entirely to avoid legacy format errors.
-            var manifestData = installRequest.Options.Untracked
+            var manifestData = prepared.Request.Options.Untracked
                 ? new DotnetupManifestData()
                 : new DotnetupSharedManifest(customManifestPath).ReadManifest();
 
-            if (InstallAlreadyExists(manifestData, install))
+            if (InstallAlreadyExists(manifestData, prepared.Install))
             {
-                return new InstallResult(install, WasAlreadyInstalled: true);
+                return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
-            installer.Commit();
+            prepared.Extractor.Commit();
 
             ArchiveInstallationValidator validator = new();
-            if (validator.Validate(install, out string? validationFailure))
+            if (validator.Validate(prepared.Install, out string? validationFailure))
             {
-                RecordInstallSpec(installRequest, customManifestPath);
+                RecordInstallSpec(prepared.Request, customManifestPath);
 
-                // Record the installation with its resolved version
-                if (!installRequest.Options.Untracked)
+                if (!prepared.Request.Options.Untracked)
                 {
                     var manifestManager = new DotnetupSharedManifest(customManifestPath);
-                    manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
+                    manifestManager.AddInstallation(prepared.Request.InstallRoot, new Installation
                     {
-                        Component = installRequest.Component,
-                        Version = versionToInstall.ToString(),
-                        Subcomponents = [.. installer.ExtractedSubcomponents]
+                        Component = prepared.Request.Component,
+                        Version = prepared.Version.ToString(),
+                        Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents]
                     });
                 }
             }
@@ -195,12 +314,12 @@ internal class InstallerOrchestratorSingleton
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.InstallFailed,
                     $"Installation validation failed: {validationFailure}",
-                    version: versionToInstall.ToString(),
-                    component: installRequest.Component.ToString());
+                    version: prepared.Version.ToString(),
+                    component: prepared.Request.Component.ToString());
             }
         }
 
-        return new InstallResult(install, WasAlreadyInstalled: false);
+        return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
     }
 #pragma warning restore CA1822
 

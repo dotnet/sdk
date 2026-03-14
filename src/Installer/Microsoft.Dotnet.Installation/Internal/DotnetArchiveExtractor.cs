@@ -138,15 +138,19 @@ internal class DotnetArchiveExtractor : IDisposable
         string componentDescription = _request.Component.GetDisplayName();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
+        if (_archivePath is null)
+        {
+            throw new InvalidOperationException("Prepare() must be called before Commit().");
+        }
+
+        ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
+    }
+
+    private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)
+    {
         try
         {
-            if (_archivePath is null)
-            {
-                throw new InvalidOperationException("Prepare() must be called before Commit().");
-            }
-
-            // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, installTask);
+            ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask);
             installTask.Value = installTask.MaxValue;
         }
         catch (DotnetInstallException)
@@ -155,7 +159,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (InvalidDataException ex)
         {
-            // Archive is corrupted (invalid zip/tar format)
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ArchiveCorrupted,
                 $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
@@ -165,7 +168,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (UnauthorizedAccessException ex)
         {
-            // User environment issue — insufficient permissions to write to install directory
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PermissionDenied,
                 $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -175,9 +177,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (IOException ex)
         {
-            // IO errors during extraction (disk full, permission denied, path too long, etc.)
-            // Wrap as ExtractionFailed and preserve the original IOException.
-            // The telemetry layer classifies the inner IOException by HResult via ErrorCategoryClassifier.
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -187,7 +186,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (Exception ex)
         {
-            // Genuine extraction issue we should investigate — product error
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -374,60 +372,64 @@ internal class DotnetArchiveExtractor : IDisposable
         var tarReader = new TarReader(tarStream);
         TarEntry? entry;
 
-        // Defer hard link creation until after all regular files are extracted,
-        // since the target file may not exist yet when the hard link entry is encountered.
         var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
 
         while ((entry = tarReader.GetNextEntry()) is not null)
         {
             bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
-
             if (!skip)
             {
-                if (entry.EntryType == TarEntryType.RegularFile)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    // ExtractToFile handles Unix permissions automatically via entry.Mode
-                    entry.ExtractToFile(destPath, overwrite: true);
-                }
-                else if (entry.EntryType == TarEntryType.Directory)
-                {
-                    string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(dirPath);
-
-                    if (entry.Mode != default && !OperatingSystem.IsWindows())
-                    {
-                        File.SetUnixFileMode(dirPath, entry.Mode);
-                    }
-                }
-                else if (entry.EntryType == TarEntryType.SymbolicLink)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-
-                    // Remove existing file/link before creating symlink
-                    if (File.Exists(destPath) || Directory.Exists(destPath))
-                    {
-                        File.Delete(destPath);
-                    }
-
-                    File.CreateSymbolicLink(destPath, entry.LinkName!);
-                }
-                else if (entry.EntryType == TarEntryType.HardLink)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    deferredHardLinks.Add((destPath, linkTargetPath));
-                }
+                ProcessTarEntry(entry, targetDir, muxerHandler, deferredHardLinks);
             }
 
             onEntryExtracted?.Invoke(entry.Name);
             installTask?.Value += 1;
         }
 
-        // Create hard links after all regular files have been extracted
+        CreateDeferredHardLinks(deferredHardLinks);
+    }
+
+    private static void ProcessTarEntry(TarEntry entry, string targetDir, MuxerHandler? muxerHandler, List<(string DestPath, string TargetPath)> deferredHardLinks)
+    {
+        if (entry.EntryType == TarEntryType.RegularFile)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            entry.ExtractToFile(destPath, overwrite: true);
+        }
+        else if (entry.EntryType == TarEntryType.Directory)
+        {
+            string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(dirPath);
+
+            if (entry.Mode != default && !OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(dirPath, entry.Mode);
+            }
+        }
+        else if (entry.EntryType == TarEntryType.SymbolicLink)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+
+            if (File.Exists(destPath) || Directory.Exists(destPath))
+            {
+                File.Delete(destPath);
+            }
+
+            File.CreateSymbolicLink(destPath, entry.LinkName!);
+        }
+        else if (entry.EntryType == TarEntryType.HardLink)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            deferredHardLinks.Add((destPath, linkTargetPath));
+        }
+    }
+
+    private static void CreateDeferredHardLinks(List<(string DestPath, string TargetPath)> deferredHardLinks)
+    {
         foreach (var (destPath, targetPath) in deferredHardLinks)
         {
             if (File.Exists(destPath))
@@ -495,8 +497,11 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         try
         {
-            // Dispose the progress reporter to finalize progress display
-            _progressReporter?.Dispose();
+            // Dispose the progress reporter only if we own it (not shared)
+            if (_ownsProgressReporter)
+            {
+                _progressReporter?.Dispose();
+            }
         }
         catch
         {

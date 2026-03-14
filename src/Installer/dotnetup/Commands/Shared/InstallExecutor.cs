@@ -82,18 +82,18 @@ internal class InstallExecutor
         bool noProgress)
     {
 #pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
-        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
+        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [{DotnetupTheme.Current.Accent}]{resolvedVersion}[/] to [{DotnetupTheme.Current.Accent}]{installRequest.InstallRoot.Path}[/]...");
 #pragma warning restore CA1305
 
         var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -136,11 +136,11 @@ internal class InstallExecutor
             try
             {
                 var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version} at {additionalResult.Install.InstallRoot.Path}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed additional {componentDescription} {additionalResult.Install.Version} at {additionalResult.Install.InstallRoot.Path}[/]");
             }
             catch (DotnetInstallException)
             {
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Error}]Failed to install additional {componentDescription} {additionalVersion}[/]");
                 allSucceeded = false;
             }
         }

@@ -66,27 +66,27 @@ internal class UninstallWorkflow
                 if (sourceFilter != InstallSource.All)
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[yellow]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                        $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
                 }
                 else
                 {
                     AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                        $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
                 }
 
                 foreach (var spec in otherSourceSpecs)
                 {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
+                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
                 }
 
                 if (sourceFilter != InstallSource.All)
                 {
-                    AnsiConsole.MarkupLine("[dim]Use --source all to target these specs.[/]");
+                    AnsiConsole.MarkupLine(DotnetupTheme.Dim("Use --source all to target these specs."));
                 }
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
             }
 
             return 1;
@@ -104,7 +104,7 @@ internal class UninstallWorkflow
         foreach (var spec in matchingSpecs)
         {
             manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Removed install spec: {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
         }
 
         // Run garbage collection
@@ -120,11 +120,11 @@ internal class UninstallWorkflow
 
             if (stillPresent.Count > 0)
             {
-                AnsiConsole.MarkupLine("[dim]Some installations were not removed because they are still referenced by other install specs.[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Some installations were not removed because they are still referenced by other install specs."));
             }
         }
 
-        AnsiConsole.MarkupLine("[green]Done.[/]");
+        AnsiConsole.MarkupLine(DotnetupTheme.Success("Done."));
         return 0;
     }
 }

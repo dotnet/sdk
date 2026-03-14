@@ -32,12 +32,12 @@ internal static class GarbageCollectionRunner
         {
             foreach (var d in deleted)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [dim]{d}[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [{DotnetupTheme.Current.Dim}]{d}[/]");
             }
         }
         else if (showEmptyMessage)
         {
-            AnsiConsole.MarkupLine("[dim]No files were removed.[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim("No files were removed."));
         }
 
         return deleted;

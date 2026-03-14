@@ -138,5 +138,20 @@ public class RuntimeInstallTests
         parseResult.Errors.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("aspnetcore@9.0", "runtime@10.0")]
+    [InlineData("runtime@9.0", "aspnetcore@9.0", "windowsdesktop@9.0")]
+    [InlineData("9.0", "aspnetcore@10.0")]
+    public void Parser_RuntimeInstallWithMultipleSpecs_NoErrors(params string[] componentSpecs)
+    {
+        var args = new List<string> { "runtime", "install" };
+        args.AddRange(componentSpecs);
+        var parseResult = Parser.Parse(args.ToArray());
+        parseResult.Errors.Should().BeEmpty();
+        var parsed = parseResult.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument);
+        parsed.Should().NotBeNull();
+        parsed!.Length.Should().Be(componentSpecs.Length);
+    }
+
     #endregion
 }

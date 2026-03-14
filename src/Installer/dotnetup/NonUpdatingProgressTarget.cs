@@ -44,7 +44,7 @@ public class NonUpdatingProgressTarget : IProgressTarget
                 if (_value >= MaxValue && !_completed)
                 {
                     _completed = true;
-                    AnsiConsole.MarkupLine($"[green]Completed:[/] {Description}");
+                    AnsiConsole.MarkupLine($"{DotnetupTheme.Success("Completed:")} {Description}");
                 }
             }
         }

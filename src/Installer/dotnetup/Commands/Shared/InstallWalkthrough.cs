@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -59,7 +60,11 @@ internal class InstallWalkthrough
             return additionalVersions;
         }
 
-        if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
+        // Check for actual admin installs rather than relying solely on the current
+        // install type, because a previous walkthrough may have switched to User while
+        // admin SDKs still exist in Program Files.
+        var adminSdkVersions = _dotnetInstaller.GetInstalledAdminSdkVersions();
+        if (setDefaultInstall && adminSdkVersions.Count > 0)
         {
             // Track admin-to-user migration scenario
             Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
@@ -213,9 +218,19 @@ internal class InstallWalkthrough
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
-                    SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
-                        $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
+                    SpectreAnsiConsole.MarkupLine($"You have an existing admin install of .NET in [{DotnetupTheme.Current.Accent}]{currentDotnetInstallRoot.Path.EscapeMarkup()}[/].");
+
+                    var adminSdks = _dotnetInstaller.GetInstalledAdminSdkVersions();
+                    if (adminSdks.Count > 0)
+                    {
+                        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]The following installs would be converted to be owned by dotnetup:[/]");
+                        RenderScrollableList(adminSdks, visibleCount: 3);
+                    }
+
+                    SpectreAnsiConsole.MarkupLine($"We can configure your system to use the new install of .NET in [{DotnetupTheme.Current.Accent}]{resolvedInstallPath.EscapeMarkup()}[/] instead.");
+                    SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.[/]");
+                    SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
@@ -230,5 +245,120 @@ internal class InstallWalkthrough
         }
 
         return resolvedSetDefaultInstall ?? false;
+    }
+
+    /// <summary>
+    /// Renders a list of items with only <paramref name="visibleCount"/> shown initially.
+    /// When running interactively, the user can scroll with arrow keys to see more.
+    /// Falls back to a static truncated list when input is redirected.
+    /// </summary>
+    internal static void RenderScrollableList(List<string> items, int visibleCount)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+
+        if (items.Count <= visibleCount || Console.IsInputRedirected)
+        {
+            // All items fit or non-interactive — just print them all
+            foreach (var item in items)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
+            }
+
+            return;
+        }
+
+        // Interactive scrollable list
+        int offset = 0;
+        int maxOffset = items.Count - visibleCount;
+
+        Console.Write("\x1b[?25l"); // hide cursor
+        try
+        {
+            int startRow = Console.CursorTop;
+            RenderListWindow(items, offset, visibleCount, startRow, firstRender: true);
+
+            while (true)
+            {
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(intercept: true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            if (offset > 0)
+                            {
+                                offset--;
+                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false);
+                            }
+
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (offset < maxOffset)
+                            {
+                                offset++;
+                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false);
+                            }
+
+                            break;
+                        case ConsoleKey.Enter:
+                            // Collapse to final static view and exit
+                            Console.SetCursorPosition(0, startRow);
+                            Console.Write("\x1b[J");
+                            foreach (var item in items)
+                            {
+                                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
+                            }
+
+                            return;
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(50);
+                }
+            }
+        }
+        finally
+        {
+            Console.Write("\x1b[?25h"); // show cursor
+        }
+    }
+
+    private static void RenderListWindow(List<string> items, int offset, int visibleCount, int startRow, bool firstRender)
+    {
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+
+        if (!firstRender)
+        {
+            Console.SetCursorPosition(0, startRow);
+            Console.Write("\x1b[J");
+        }
+
+        if (offset > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▲ {1} more above[/]", dim, offset));
+        }
+
+        for (int i = offset; i < offset + visibleCount && i < items.Count; i++)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, items[i].EscapeMarkup()));
+        }
+
+        int remaining = items.Count - offset - visibleCount;
+        if (remaining > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▼ {1} more below (use ↑↓ arrows, Enter to continue)[/]", dim, remaining));
+        }
+        else
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim));
+        }
     }
 }

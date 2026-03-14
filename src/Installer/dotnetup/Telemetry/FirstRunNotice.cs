@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+using Spectre.Console;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
@@ -73,13 +77,19 @@ internal static class FirstRunNotice
 
     private static void ShowNotice()
     {
-        // Write to stderr, consistent with .NET SDK behavior
+        // Show the .NET bot banner followed by the telemetry notice dimmed inline.
+        // Uses Spectre.Console writing to stderr, consistent with .NET SDK behavior.
         // See: https://learn.microsoft.com/dotnet/core/compatibility/sdk/10.0/dotnet-cli-stderr-output
-        Console.Error.WriteLine();
-        Console.Error.Write("\x1b[2m");
-        Console.Error.WriteLine(Strings.TelemetryNotice);
-        Console.Error.Write("\x1b[0m");
-        Console.Error.WriteLine();
+        var stderrConsole = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(Console.Error),
+        });
+
+        int terminalWidth = Console.IsOutputRedirected ? int.MaxValue : Console.WindowWidth;
+        stderrConsole.Write(DotnetBotBanner.BuildPanel(terminalWidth));
+        stderrConsole.WriteLine();
+        stderrConsole.MarkupLine($"[dim]{Strings.TelemetryNotice.EscapeMarkup()}[/]");
+        stderrConsole.WriteLine();
     }
 
     private static void CreateSentinel(string sentinelPath)

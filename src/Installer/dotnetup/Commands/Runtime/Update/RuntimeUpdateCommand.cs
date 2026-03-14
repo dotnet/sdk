@@ -28,10 +28,10 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
         int exitCode = 0;
         foreach (var component in components)
         {
-            int result = workflow.Execute(_manifestPath, _installPath, component, _noProgress);
-            if (result != 0)
+            int componentExitCode = workflow.Execute(_manifestPath, _installPath, component, _noProgress);
+            if (componentExitCode != 0)
             {
-                exitCode = result;
+                exitCode = componentExitCode;
             }
         }
 

@@ -26,12 +26,15 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
+        var pathPreference = DotnetupConfig.EnsurePathPreference(_interactive);
+        bool? setDefault = _setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
 
         var options = new InstallWorkflow.InstallWorkflowOptions(
             _versionOrChannel,
             _installPath,
-            _setDefaultInstall,
+            setDefault,
             _manifestPath,
             _interactive,
             _noProgress,
@@ -40,7 +43,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             _updateGlobalJson,
             GlobalJsonChannelResolver.ResolveChannel,
             _requireMuxerUpdate,
-            _untracked);
+            _untracked,
+            pathPreference);
 
         workflow.Execute(options);
         return 0;
