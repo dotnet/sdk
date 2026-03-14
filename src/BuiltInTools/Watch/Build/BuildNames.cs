@@ -45,6 +45,7 @@ internal static class TargetNames
 {
     public const string Compile = nameof(Compile);
     public const string Restore = nameof(Restore);
+    public const string CompileDesignTime = nameof(CompileDesignTime);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
     public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
 }
@@ -54,4 +55,5 @@ internal static class ProjectCapability
     public const string Aspire = nameof(Aspire);
     public const string AspNetCore = nameof(AspNetCore);
     public const string WebAssembly = nameof(WebAssembly);
+    public const string SupportsHotReload = nameof(SupportsHotReload);
 }
