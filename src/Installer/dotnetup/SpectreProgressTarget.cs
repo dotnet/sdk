@@ -59,7 +59,7 @@ public class SpectreProgressTarget : IProgressTarget
             {
                 _shimmerWord = _baseDescription[..spaceIndex];
                 _restEscaped = _baseDescription[spaceIndex..].EscapeMarkup();
-                _shimmerTimer = new Timer(OnShimmerTick, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(120));
+                _shimmerTimer = new Timer(OnShimmerTick, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(80));
             }
         }
 
