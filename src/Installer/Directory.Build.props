@@ -1,0 +1,8 @@
+<Project>
+  <!-- Pin RepoRoot to the real repo root so Arcade does not infer it from this directory's global.json. -->
+  <PropertyGroup>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..'))</RepoRoot>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+</Project>
