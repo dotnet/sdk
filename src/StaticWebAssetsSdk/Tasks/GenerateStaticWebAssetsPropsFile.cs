@@ -82,15 +82,9 @@ public class GenerateStaticWebAssetsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = StaticWebAsset.FromTaskItem(element);
-
-            // Emit the raw RelativePath (preserving token expressions like ~group and ?fingerprint).
-            // The consumer parses and processes tokens through the standard token infrastructure.
-            var relativePath = asset.RelativePath;
-
-            // For the package path and Identity, resolve tokens to get the physical file location.
             var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
+            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
-            var contentRootExpression = @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\";
 
             var emittedSourceType = "Package";
             if (hasFrameworkMatcher)
@@ -112,7 +106,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XAttribute("Include", fullPathExpression),
                 new XElement(SourceType, emittedSourceType),
                 new XElement(SourceId, element.GetMetadata(SourceId)),
-                new XElement(ContentRoot, contentRootExpression),
+                new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                 new XElement(BasePath, element.GetMetadata(BasePath)),
                 new XElement(RelativePath, relativePath),
                 new XElement(AssetKind, element.GetMetadata(AssetKind)),

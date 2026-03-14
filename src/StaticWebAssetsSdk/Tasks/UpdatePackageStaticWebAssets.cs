@@ -20,8 +20,6 @@ public class UpdatePackageStaticWebAssets : Task
 
     public string ProjectBasePath { get; set; }
 
-    public ITaskItem[] StaticWebAssetGroups { get; set; }
-
     [Output]
     public ITaskItem[] UpdatedAssets { get; set; }
 
@@ -29,7 +27,7 @@ public class UpdatePackageStaticWebAssets : Task
     public ITaskItem[] OriginalAssets { get; set; }
 
     [Output]
-    public ITaskItem[] FilteredEndpoints { get; set; }
+    public ITaskItem[] RemappedEndpoints { get; set; }
 
     public ITaskItem[] Endpoints { get; set; }
 
@@ -37,115 +35,97 @@ public class UpdatePackageStaticWebAssets : Task
     {
         try
         {
-            var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
             var originalAssets = new List<ITaskItem>();
-            var updatedAssets = new List<StaticWebAsset>();
+            var updatedAssets = new List<ITaskItem>();
             var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
-            var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
 
             for (var i = 0; i < Assets.Length; i++)
             {
                 var candidate = Assets[i];
-                var candidateAsset = StaticWebAsset.FromV1TaskItem(candidate);
-                var sourceType = candidateAsset.SourceType;
+                var sourceType = candidate.GetMetadata(nameof(StaticWebAsset.SourceType));
 
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
-                    if (!candidateAsset.MatchesGroups(groupLookup, skipDeferred: true))
-                    {
-                        excludedAssetFiles.Add(candidateAsset.Identity);
-                        // Add to originalAssets so the target removes it from @(StaticWebAsset),
-                        // but do NOT add to updatedAssets so it doesn't get re-added.
-                        originalAssets.Add(candidate);
-                        continue;
-                    }
-
                     originalAssets.Add(candidate);
-                    updatedAssets.Add(candidateAsset);
+                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
-                    if (!candidateAsset.MatchesGroups(groupLookup, skipDeferred: true))
-                    {
-                        excludedAssetFiles.Add(candidateAsset.Identity);
-                        originalAssets.Add(candidate);
-                        continue;
-                    }
-
                     originalAssets.Add(candidate);
                     var (transformed, oldPath) = MaterializeFrameworkAsset(candidate);
                     if (transformed != null)
                     {
-                        updatedAssets.Add(transformed);
+                        updatedAssets.Add(transformed.ToTaskItem());
                         assetMapping[oldPath] = transformed.Identity;
                     }
                 }
             }
 
-            // Cascading exclusion: sort ensures parents before dependents,
-            // then a single pass removes related assets whose primary was excluded.
-            StaticWebAsset.SortByRelatedAssetInPlace(updatedAssets);
-            var filteredAssets = new List<StaticWebAsset>(updatedAssets.Count);
-            foreach (var asset in updatedAssets)
-            {
-                if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
-                {
-                    excludedAssetFiles.Add(asset.Identity);
-                    continue;
-                }
-
-                filteredAssets.Add(asset);
-            }
-
             OriginalAssets = [.. originalAssets];
-            UpdatedAssets = filteredAssets.Select(asset => asset.ToTaskItem()).ToArray();
+            UpdatedAssets = [.. updatedAssets];
 
-            if (Endpoints != null && (assetMapping.Count > 0 || excludedAssetFiles.Count > 0))
+            if (Endpoints != null && assetMapping.Count > 0)
             {
-                RemapEndpoints(assetMapping, excludedAssetFiles);
+                RemapEndpoints(assetMapping);
             }
         }
         catch (Exception ex)
         {
-            Log.LogErrorFromException(ex);
+            Log.LogError(ex.ToString());
         }
 
         return !Log.HasLoggedErrors;
     }
 
-    private void RemapEndpoints(Dictionary<string, string> assetMapping, HashSet<string> excludedAssetFiles)
+    private void RemapEndpoints(Dictionary<string, string> assetMapping)
     {
-        var filteredEndpoints = new List<ITaskItem>();
+        var remappedEndpoints = new List<ITaskItem>();
 
+        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.Ordinal);
         foreach (var endpoint in Endpoints)
         {
-            var assetFile = endpoint.GetMetadata("AssetFile");
-
-            // Exclude endpoints whose asset file was filtered out by group definitions
-            if (!string.IsNullOrEmpty(assetFile) && excludedAssetFiles.Contains(assetFile))
+            var identity = endpoint.ItemSpec;
+            if (!endpointsByIdentity.TryGetValue(identity, out var group))
             {
-                Log.LogMessage(MessageImportance.Low, "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
-                    endpoint.ItemSpec, assetFile);
-                continue;
+                group = new List<ITaskItem>();
+                endpointsByIdentity[identity] = group;
+            }
+            group.Add(endpoint);
+        }
+
+        foreach (var kvp in endpointsByIdentity)
+        {
+            var identity = kvp.Key;
+            var group = kvp.Value;
+            var groupNeedsRemapping = false;
+            foreach (var endpoint in group)
+            {
+                var assetFile = endpoint.GetMetadata("AssetFile");
+                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
+                {
+                    groupNeedsRemapping = true;
+                    break;
+                }
             }
 
-            // Remap endpoints for materialized framework assets
-            if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+            if (groupNeedsRemapping)
             {
-                var newEndpoint = new TaskItem(endpoint);
-                newEndpoint.SetMetadata("AssetFile", newAssetFile);
-                Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                    endpoint.ItemSpec, assetFile, newAssetFile);
-                filteredEndpoints.Add(newEndpoint);
-            }
-            else
-            {
-                // Pass through unchanged
-                filteredEndpoints.Add(endpoint);
+                foreach (var endpoint in group)
+                {
+                    var newEndpoint = new TaskItem(endpoint);
+                    var assetFile = endpoint.GetMetadata("AssetFile");
+                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+                    {
+                        newEndpoint.SetMetadata("AssetFile", newAssetFile);
+                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
+                            identity, assetFile, newAssetFile);
+                    }
+                    remappedEndpoints.Add(newEndpoint);
+                }
             }
         }
 
-        FilteredEndpoints = [.. filteredEndpoints];
+        RemappedEndpoints = [.. remappedEndpoints];
     }
 
     private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)
