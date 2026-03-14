@@ -140,10 +140,7 @@ internal class InstallWorkflow
         }
 
         string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
-        bool setDefaultInstall = walkthrough.ResolveSetDefaultInstall(
-            currentInstallRoot,
-            pathResolution.ResolvedInstallPath,
-            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
+        bool setDefaultInstall = DeriveSetDefaultInstall(options, walkthrough, currentInstallRoot, pathResolution);
 
         // Classify how the version/channel was determined for telemetry
         string requestSource = options.VersionOrChannel is not null
@@ -164,6 +161,47 @@ internal class InstallWorkflow
             updateGlobalJson,
             requestSource,
             pathResolution.PathSource);
+    }
+
+    /// <summary>
+    /// Determines whether the installation should be set as the system default.
+    /// Checks the saved config first; only shows prompts when the config is absent.
+    /// </summary>
+    private static bool DeriveSetDefaultInstall(
+        InstallWorkflowOptions options,
+        InstallWalkthrough walkthrough,
+        DotnetInstallRootConfiguration? currentInstallRoot,
+        InstallPathResolver.InstallPathResolutionResult pathResolution)
+    {
+        // If the caller already determined this (e.g. WalkthroughCommand), use it directly.
+        if (options.SetDefaultInstall is not null)
+        {
+            return options.SetDefaultInstall.Value;
+        }
+
+        // If a PathPreference was passed in options or is already saved in config, derive silently — no prompts.
+        var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
+        if (savedPreference is not null)
+        {
+            return savedPreference != PathPreference.DotnetupDotnet;
+        }
+
+        // No config yet. If interactive, show the full path preference selector
+        // (delegates to WalkthroughCommand.PromptPathPreference), saves to config, and returns the choice.
+        if (options.Interactive)
+        {
+            var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
+            if (preference is not null)
+            {
+                return preference != PathPreference.DotnetupDotnet;
+            }
+        }
+
+        // Non-interactive with no config: fall back to standard walkthrough logic (returns false).
+        return walkthrough.ResolveSetDefaultInstall(
+            currentInstallRoot,
+            pathResolution.ResolvedInstallPath,
+            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
     }
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)

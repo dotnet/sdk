@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
-using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
@@ -55,16 +54,14 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         }
 
         // For isolation mode, we know we don't need to set the default install.
-        // For other modes, pass null so InstallWalkthrough can prompt about admin migration.
-        bool? setDefaultInstall = pathPreference == PathPreference.DotnetupDotnet ? false : null;
+        // For other modes, default to true since the user chose a mode that modifies PATH.
+        // If admin installs exist, prompt about copying them into the dotnetup-managed directory.
+        bool? setDefaultInstall = pathPreference == PathPreference.DotnetupDotnet ? false : true;
 
         // Step 2: Prompt about admin installs before setting up the environment.
-        // Always check in walkthrough mode regardless of current configuration,
-        // because a previous walkthrough may have configured a user install while
-        // admin SDKs still exist in Program Files.
-        if (setDefaultInstall is null && OperatingSystem.IsWindows())
+        if (pathPreference != PathPreference.DotnetupDotnet && OperatingSystem.IsWindows())
         {
-            setDefaultInstall = PromptAdminMigration(installRoot.Path);
+            setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
         }
 
         // Install SDK — wait for predownload to finish (cache is warm)
@@ -149,43 +146,6 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             1 => PathPreference.ShellProfile,
             _ => PathPreference.FullPathReplacement,
         };
-    }
-
-    /// <summary>
-    /// Checks for admin .NET SDK installs and prompts the user about migrating them
-    /// to a dotnetup-managed user install. Always runs in walkthrough mode regardless
-    /// of current configuration.
-    /// </summary>
-    /// <param name="resolvedInstallPath">The resolved user install path.</param>
-    /// <returns>True if the user wants to set the user install as default, false if they decline, null if no admin installs found.</returns>
-    private bool? PromptAdminMigration(string resolvedInstallPath)
-    {
-        var adminSdks = _dotnetInstaller.GetInstalledAdminSdkVersions();
-        if (adminSdks.Count == 0)
-        {
-            return null;
-        }
-
-        // Find the admin install path for display purposes
-        var currentInstall = _dotnetInstaller.GetConfiguredInstallType();
-        string adminPath = currentInstall?.InstallType == InstallType.Admin
-            ? currentInstall.Path
-            : adminSdks.Count > 0 && OperatingSystem.IsWindows()
-                ? WindowsPathHelper.GetProgramFilesDotnetPaths().FirstOrDefault() ?? "Program Files\\dotnet"
-                : "the system .NET location";
-
-        SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine($"You have an existing admin install of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
-        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]The following installs would be converted to be owned by dotnetup:[/]");
-        InstallWalkthrough.RenderScrollableList(adminSdks, visibleCount: 3);
-
-        SpectreAnsiConsole.MarkupLine($"We can configure your system to use the new install of .NET in [{DotnetupTheme.Current.Accent}]{resolvedInstallPath.EscapeMarkup()}[/] instead.");
-        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.[/]");
-        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
-
-        return SpectreAnsiConsole.Confirm(
-            $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-            defaultValue: true);
     }
 
     /// <summary>

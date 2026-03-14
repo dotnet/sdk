@@ -169,22 +169,7 @@ internal class InstallWalkthrough
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
-                    SpectreAnsiConsole.MarkupLine($"You have an existing admin install of .NET in [{DotnetupTheme.Current.Accent}]{currentDotnetInstallRoot.Path.EscapeMarkup()}[/].");
-
-                    var adminSdks = _dotnetInstaller.GetInstalledAdminSdkVersions();
-                    if (adminSdks.Count > 0)
-                    {
-                        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]The following installs would be converted to be owned by dotnetup:[/]");
-                        RenderScrollableList(adminSdks, visibleCount: 3);
-                    }
-
-                    SpectreAnsiConsole.MarkupLine($"We can configure your system to use the new install of .NET in [{DotnetupTheme.Current.Accent}]{resolvedInstallPath.EscapeMarkup()}[/] instead.");
-                    SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.[/]");
-                    SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
-
-                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                        defaultValue: true);
+                    resolvedSetDefaultInstall = PromptAdminMigration(_dotnetInstaller);
                 }
 
                 //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
@@ -196,6 +181,36 @@ internal class InstallWalkthrough
         }
 
         return resolvedSetDefaultInstall ?? false;
+    }
+
+    /// <summary>
+    /// Prompts the user about copying admin-managed SDK installs into the dotnetup-managed directory.
+    /// </summary>
+    /// <returns>True if the user wants to proceed (or no admin installs exist), false if they decline.</returns>
+    internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
+    {
+        var adminSdks = dotnetInstaller.GetInstalledAdminSdkVersions();
+        if (adminSdks.Count == 0)
+        {
+            return true;
+        }
+
+        // Find the admin install path for display purposes
+        var currentInstall = dotnetInstaller.GetConfiguredInstallType();
+        string adminPath = currentInstall?.InstallType == InstallType.Admin
+            ? currentInstall.Path
+            : OperatingSystem.IsWindows()
+                ? WindowsPathHelper.GetProgramFilesDotnetPaths().FirstOrDefault() ?? "Program Files\\dotnet"
+                : "the system .NET location";
+
+        SpectreAnsiConsole.WriteLine();
+        SpectreAnsiConsole.MarkupLine($"You have an existing admin install of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
+        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+        RenderScrollableList(adminSdks, visibleCount: 3);
+
+        return SpectreAnsiConsole.Confirm(
+            "Do you want to copy the following installs into the dotnetup managed directory?",
+            defaultValue: true);
     }
 
     /// <summary>
