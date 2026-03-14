@@ -28,25 +28,9 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
+        ShowBanner();
 
-        // Resolve the channel early so we can start predownloading.
-        // This uses the same logic as InstallWorkflow: check global.json first, fall back to "latest".
-        var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        string? channelFromGlobalJson = globalJson?.GlobalJsonPath is not null
-            ? GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath)
-            : null;
-        string channel = channelFromGlobalJson ?? "latest";
-
-        // Start predownloading the archive in the background while the user answers prompts.
-        // This warms the download cache so the real install can benefit from a cache hit.
-        // Intentionally fire-and-forget: the install will show real download progress if
-        // the predownload hasn't finished yet, or skip the download via cache hit if it has.
-        var installRoot = new DotnetInstallRoot(
-            _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath(),
-            InstallerUtilities.GetDefaultInstallArchitecture());
-
-        _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
-            channel, InstallComponent.SDK, installRoot);
+        var (channel, globalJson, installRoot) = ResolveChannelAndStartPredownload();
 
         // Step 1: Choose how to access .NET
         var pathPreference = PromptPathPreference();
@@ -76,16 +60,40 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
-        // Don't await the predownload — let the install show real download progress.
-        // If the predownload already finished and warmed the cache, the install
-        // benefits automatically via a cache hit. Otherwise, the install downloads
-        // normally with a visible progress bar.
-
         RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
 
         // Step 3: Save config
         SaveConfigAndDisplayResult(pathPreference);
         return 0;
+    }
+
+    private static void ShowBanner()
+    {
+        int terminalWidth = Console.IsOutputRedirected ? int.MaxValue : Console.WindowWidth;
+        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel(terminalWidth));
+        SpectreAnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Resolves the install channel from global.json (or "latest") and fires off a
+    /// background predownload to warm the cache while the user answers prompts.
+    /// </summary>
+    private (string Channel, GlobalJsonInfo? GlobalJson, DotnetInstallRoot InstallRoot) ResolveChannelAndStartPredownload()
+    {
+        var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        string? channelFromGlobalJson = globalJson?.GlobalJsonPath is not null
+            ? GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath)
+            : null;
+        string channel = channelFromGlobalJson ?? "latest";
+
+        var installRoot = new DotnetInstallRoot(
+            _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath(),
+            InstallerUtilities.GetDefaultInstallArchitecture());
+
+        _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
+            channel, InstallComponent.SDK, installRoot);
+
+        return (channel, globalJson, installRoot);
     }
 
     private void RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)

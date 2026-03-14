@@ -131,14 +131,42 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822
     public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
     {
-        const int maxConcurrentDownloads = 6;
-        var preparedInstalls = new List<PreparedInstall>();
         var results = new List<InstallResult>();
         var exceptions = new List<Exception>();
         var lockObj = new object();
+
+        // Use a BlockingCollection so commits can start as soon as downloads finish,
+        // overlapping extraction/commit with still-running downloads.
+        using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
+
+        var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, exceptions, lockObj));
+        ConsumeAndCommit(readyQueue, results, exceptions, lockObj);
+        downloadTask.Wait();
+
+        if (exceptions.Count > 0)
+        {
+            if (exceptions[0] is DotnetInstallException) { throw exceptions[0]; }
+            throw new AggregateException(exceptions);
+        }
+
+        return results;
+    }
+#pragma warning restore CA1822
+
+    /// <summary>
+    /// Downloads archives concurrently (max 6) and enqueues PreparedInstalls for commit.
+    /// </summary>
+    private void DownloadAll(
+        IReadOnlyList<DotnetInstallRequest> requests,
+        IProgressReporter sharedReporter,
+        System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
+        List<InstallResult> results,
+        List<Exception> exceptions,
+        object lockObj)
+    {
+        const int maxConcurrentDownloads = 6;
         using var throttle = new SemaphoreSlim(maxConcurrentDownloads);
 
-        // Phase 1: download archives concurrently (capped at maxConcurrentDownloads)
         var tasks = requests.Select(request => Task.Run(() =>
         {
             throttle.Wait();
@@ -149,7 +177,7 @@ internal class InstallerOrchestratorSingleton
                 {
                     if (prepared is not null)
                     {
-                        preparedInstalls.Add(prepared);
+                        readyQueue.Add(prepared);
                     }
                     else if (existingResult is not null)
                     {
@@ -168,30 +196,45 @@ internal class InstallerOrchestratorSingleton
         })).ToList();
 
         Task.WaitAll([.. tasks]);
+        readyQueue.CompleteAdding();
+    }
 
-        if (exceptions.Count > 0)
-        {
-            foreach (var p in preparedInstalls) { p.Dispose(); }
-            if (exceptions[0] is DotnetInstallException) { throw exceptions[0]; }
-            throw new AggregateException(exceptions);
-        }
-
-        // Phase 2: commit each prepared install; the install-state mutex serializes them
+    /// <summary>
+    /// Consumes the ready queue and commits (extracts + records) each install as it arrives.
+    /// CommitPreparedInstall acquires the install-state mutex, so commits are serialized.
+    /// </summary>
+    private void ConsumeAndCommit(
+        System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
+        List<InstallResult> results,
+        List<Exception> exceptions,
+        object lockObj)
+    {
+        var committedInstalls = new List<PreparedInstall>();
         try
         {
-            foreach (var prepared in preparedInstalls)
+            foreach (var prepared in readyQueue.GetConsumingEnumerable())
             {
-                results.Add(CommitPreparedInstall(prepared));
+                committedInstalls.Add(prepared);
+                if (exceptions.Count > 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    results.Add(CommitPreparedInstall(prepared));
+                }
+                catch (Exception ex)
+                {
+                    lock (lockObj) { exceptions.Add(ex); }
+                }
             }
         }
         finally
         {
-            foreach (var p in preparedInstalls) { p.Dispose(); }
+            foreach (var p in committedInstalls) { p.Dispose(); }
         }
-
-        return results;
     }
-#pragma warning restore CA1822
 
     /// <summary>
     /// Represents a prepared (downloaded but not yet committed) installation.

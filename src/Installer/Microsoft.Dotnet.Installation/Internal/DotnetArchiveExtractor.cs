@@ -97,9 +97,9 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string componentDescription = _request.Component.GetDisplayName();
-        var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
-        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
+        string description = InstallComponentExtensions.FormatProgressDescription("Downloading", _request.Component, _resolvedVersion.ToString());
+        var downloadTask = ProgressReporter.AddTask(description, 100);
+        var reporter = new DownloadProgressReporter(downloadTask, description);
 
         try
         {
@@ -138,8 +138,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
         _extractedSubcomponents.Clear();
 
-        string componentDescription = _request.Component.GetDisplayName();
-        var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
+        string description = InstallComponentExtensions.FormatProgressDescription("Installing", _request.Component, _resolvedVersion.ToString());
+        var installTask = ProgressReporter.AddTask(description, maxValue: 100);
 
         if (_archivePath is null)
         {

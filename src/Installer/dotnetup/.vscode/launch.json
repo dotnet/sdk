@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/../../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+      "program": "${workspaceFolder}/../../../artifacts/bin/dotnetup/Debug/net11.0/dotnetup.dll",
       "args": "${input:commandLineArgs}",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

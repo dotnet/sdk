@@ -33,18 +33,22 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
         }
     }
 
+    /// <summary>
+    /// Formats bytes as a right-aligned string so columns line up across progress rows.
+    /// Output is always 8 characters wide (e.g. " 24.2 MB", "290.4 MB").
+    /// </summary>
     private static string FormatBytes(long bytes)
     {
         if (bytes > 1024 * 1024)
         {
-            return FormattableString.Invariant($"{bytes / (1024.0 * 1024.0):F1} MB");
+            return FormattableString.Invariant($"{bytes / (1024.0 * 1024.0),5:F1} MB");
         }
 
         if (bytes > 1024)
         {
-            return FormattableString.Invariant($"{bytes / 1024.0:F1} KB");
+            return FormattableString.Invariant($"{bytes / 1024.0,5:F1} KB");
         }
 
-        return $"{bytes} B";
+        return FormattableString.Invariant($"{bytes,5} B");
     }
 }
