@@ -106,7 +106,7 @@ internal static class InteractiveOptionSelector
 
         var rows = new List<IRenderable>
         {
-            new Markup($"[white]{title.EscapeMarkup()}[/]"),
+            new Markup($"[bold {theme.Brand}]{title.EscapeMarkup()}[/]"),
             Text.Empty,
         };
 
@@ -156,7 +156,7 @@ internal static class InteractiveOptionSelector
 
     private static void RenderFinal(string title, IReadOnlyList<SelectableOption> options, int selectedIndex)
     {
-        AnsiConsole.MarkupLine($"[white]{title.EscapeMarkup()}[/]");
+        AnsiConsole.MarkupLine($"[bold {DotnetupTheme.Current.Brand}]{title.EscapeMarkup()}[/]");
         AnsiConsole.MarkupLine(string.Format(
             CultureInfo.InvariantCulture,
             "[{0}]{1}[/]",

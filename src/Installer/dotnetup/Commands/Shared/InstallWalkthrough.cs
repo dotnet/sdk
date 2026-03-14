@@ -323,7 +323,7 @@ internal class InstallWalkthrough
                 SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
             }
 
-            SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture, "{0} [{1}](Y/n)[/] ", confirmPrompt, brand));
+            SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand));
             return ReadYesNo(defaultValue: true);
         }
 
@@ -465,7 +465,7 @@ internal class InstallWalkthrough
 
         if (confirmPrompt is not null)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}](Y/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand));
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand));
         }
         else if (remaining <= 0)
         {
