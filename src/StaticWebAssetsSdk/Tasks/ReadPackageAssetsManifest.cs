@@ -97,9 +97,15 @@ public class ReadPackageAssetsManifest : Task
             return null;
         }
 
-        if (manifest.Version != 1)
+        if (manifest is null)
         {
-            Log.LogError("Unsupported package manifest version {0} in '{1}'. Expected version 1.", manifest.Version, manifestPath);
+            Log.LogError("Package manifest '{0}' deserialized to null.", manifestPath);
+            return null;
+        }
+
+        if (manifest.Version != StaticWebAssetPackageManifest.CurrentVersion)
+        {
+            Log.LogError("Unsupported package manifest version {0} in '{1}'. Expected version {2}.", manifest.Version, manifestPath, StaticWebAssetPackageManifest.CurrentVersion);
             return null;
         }
 

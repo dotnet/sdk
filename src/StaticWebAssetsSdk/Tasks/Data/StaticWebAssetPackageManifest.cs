@@ -7,9 +7,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class StaticWebAssetPackageManifest
 {
-    public int Version { get; set; } = 1;
+    public const int CurrentVersion = 1;
+    public const string PackageManifestType = "Package";
 
-    public string ManifestType { get; set; } = "Package";
+    public int Version { get; set; } = CurrentVersion;
+
+    public string ManifestType { get; set; } = PackageManifestType;
 
     // Key: package-relative path (for example, staticwebassets/css/site.css)
     // Value: static web asset metadata.

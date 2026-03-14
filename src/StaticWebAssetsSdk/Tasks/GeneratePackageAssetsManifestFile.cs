@@ -93,8 +93,11 @@ public class GeneratePackageAssetsManifestFile : Task
             }
             else if (!string.IsNullOrEmpty(relatedAssetValue))
             {
-                // If we can't remap, clear it
-                relatedAssetValue = "";
+                Log.LogError(
+                    "Asset '{0}' has RelatedAsset '{1}' which could not be mapped to a package-relative path. " +
+                    "This indicates a graph inconsistency — the related asset is not part of the package.",
+                    element.ItemSpec, relatedAssetValue);
+                return false;
             }
 
             var manifestAsset = new StaticWebAsset(asset)
@@ -123,8 +126,8 @@ public class GeneratePackageAssetsManifestFile : Task
 
         var manifest = new StaticWebAssetPackageManifest
         {
-            Version = 1,
-            ManifestType = "Package",
+            Version = StaticWebAssetPackageManifest.CurrentVersion,
+            ManifestType = StaticWebAssetPackageManifest.PackageManifestType,
             Assets = assets,
             Endpoints = manifestEndpoints.ToArray(),
         };

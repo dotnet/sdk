@@ -108,8 +108,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 }
             }
 
-            var assetGroupsValue = element.GetMetadata("AssetGroups") ?? "";
-
             itemGroup.Add(new XElement("StaticWebAsset",
                 new XAttribute("Include", fullPathExpression),
                 new XElement(SourceType, emittedSourceType),
@@ -123,7 +121,6 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
                 new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                 new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
-                new XElement("AssetGroups", assetGroupsValue),
                 new XElement(Fingerprint, element.GetMetadata(Fingerprint)),
                 new XElement(Integrity, element.GetMetadata(Integrity)),
                 new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
