@@ -204,13 +204,15 @@ internal class InstallWalkthrough
                 : "the system .NET location";
 
         SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine($"You have an existing admin install of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
-        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
-        RenderScrollableList(adminSdks, visibleCount: 3);
+        SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
 
-        return SpectreAnsiConsole.Confirm(
-            "Do you want to copy the following installs into the dotnetup managed directory?",
-            defaultValue: true);
+        bool result = RenderScrollableListWithConfirm(
+            adminSdks,
+            visibleCount: 3,
+            "Do you want to copy the following installs into the dotnetup managed directory?");
+
+        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+        return result;
     }
 
     /// <summary>
@@ -296,10 +298,43 @@ internal class InstallWalkthrough
         }
 
         // Interactive scrollable list
-        RunInteractiveScrollLoop(items, visibleCount);
+        RunInteractiveScrollLoop(items, visibleCount, confirmPrompt: null);
     }
 
-    private static void RunInteractiveScrollLoop(List<string> items, int visibleCount)
+    /// <summary>
+    /// Renders a scrollable list with an inline confirmation prompt.
+    /// The prompt is shown below the list and Enter accepts the default (yes).
+    /// </summary>
+    internal static bool RenderScrollableListWithConfirm(List<string> items, int visibleCount, string confirmPrompt)
+    {
+        if (items.Count == 0)
+        {
+            return true;
+        }
+
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+        string brand = DotnetupTheme.Current.Brand;
+
+        if (items.Count <= visibleCount || Console.IsInputRedirected)
+        {
+            foreach (var item in items)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
+            }
+
+            SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture, "{0} [{1}](Y/n)[/] ", confirmPrompt, brand));
+            return ReadYesNo(defaultValue: true);
+        }
+
+        return RunInteractiveScrollLoop(items, visibleCount, confirmPrompt);
+    }
+
+    /// <summary>
+    /// Returns true (accept) or false (decline) when <paramref name="confirmPrompt"/> is set;
+    /// always returns true when <paramref name="confirmPrompt"/> is null (plain scroll).
+    /// </summary>
+    private static bool RunInteractiveScrollLoop(List<string> items, int visibleCount, string? confirmPrompt)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
@@ -310,7 +345,7 @@ internal class InstallWalkthrough
         try
         {
             int startRow = Console.CursorTop;
-            RenderListWindow(items, offset, visibleCount, startRow, firstRender: true);
+            RenderListWindow(items, offset, visibleCount, startRow, firstRender: true, confirmPrompt: confirmPrompt);
 
             while (true)
             {
@@ -323,7 +358,7 @@ internal class InstallWalkthrough
                             if (offset > 0)
                             {
                                 offset--;
-                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false);
+                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false, confirmPrompt: confirmPrompt);
                             }
 
                             break;
@@ -331,20 +366,22 @@ internal class InstallWalkthrough
                             if (offset < maxOffset)
                             {
                                 offset++;
-                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false);
+                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false, confirmPrompt: confirmPrompt);
                             }
 
                             break;
                         case ConsoleKey.Enter:
-                            // Collapse to final static view and exit
-                            Console.SetCursorPosition(0, startRow);
-                            Console.Write("\x1b[J");
-                            foreach (var item in items)
+                            // Collapse to final static view and exit — Enter means "yes" when confirming
+                            CollapseToFinalView(items, startRow, dim, accent, confirmPrompt, accepted: true);
+                            return true;
+                        case ConsoleKey.N:
+                            if (confirmPrompt is not null)
                             {
-                                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
+                                CollapseToFinalView(items, startRow, dim, accent, confirmPrompt, accepted: false);
+                                return false;
                             }
 
-                            return;
+                            break;
                     }
                 }
                 else
@@ -359,7 +396,47 @@ internal class InstallWalkthrough
         }
     }
 
-    private static void RenderListWindow(List<string> items, int offset, int visibleCount, int startRow, bool firstRender)
+    private static void CollapseToFinalView(List<string> items, int startRow, string dim, string accent, string? confirmPrompt, bool accepted)
+    {
+        string brand = DotnetupTheme.Current.Brand;
+        Console.SetCursorPosition(0, startRow);
+        Console.Write("\x1b[J");
+        foreach (var item in items)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
+        }
+
+        if (confirmPrompt is not null)
+        {
+            string answer = accepted ? "Yes" : "No";
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt, brand, answer));
+        }
+    }
+
+    /// <summary>
+    /// Reads a single y/n keypress. Returns <paramref name="defaultValue"/> on Enter.
+    /// </summary>
+    private static bool ReadYesNo(bool defaultValue)
+    {
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+            switch (key.Key)
+            {
+                case ConsoleKey.Enter:
+                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]{1}[/]", DotnetupTheme.Current.Brand, defaultValue ? "Yes" : "No"));
+                    return defaultValue;
+                case ConsoleKey.Y:
+                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]Yes[/]", DotnetupTheme.Current.Brand));
+                    return true;
+                case ConsoleKey.N:
+                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No[/]", DotnetupTheme.Current.Brand));
+                    return false;
+            }
+        }
+    }
+
+    private static void RenderListWindow(List<string> items, int offset, int visibleCount, int startRow, bool firstRender, string? confirmPrompt)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
@@ -383,9 +460,14 @@ internal class InstallWalkthrough
         int remaining = items.Count - offset - visibleCount;
         if (remaining > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▼ {1} more below (use ↑↓ arrows, Enter to continue)[/]", dim, remaining));
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▼ {1} more below (use ↑↓ arrows)[/]", dim, remaining));
         }
-        else
+
+        if (confirmPrompt is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}](Y/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand));
+        }
+        else if (remaining <= 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim));
         }

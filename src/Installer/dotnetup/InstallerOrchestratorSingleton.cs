@@ -80,7 +80,7 @@ internal class InstallerOrchestratorSingleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var reporter = progressTarget.CreateProgressReporter();
+        using var reporter = new LazyProgressReporter(progressTarget);
         using var prepared = PrepareInstall(installRequest, reporter, out var alreadyInstalledResult);
 
         if (alreadyInstalledResult is not null)

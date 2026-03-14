@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
@@ -67,6 +68,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         // Install SDK — wait for predownload to finish (cache is warm)
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
+        DisplayInstallLocation(globalJson);
 
         // Await predownload so the cache is populated before the real install begins.
         // Exceptions are already swallowed inside PredownloadToCacheAsync.
@@ -96,6 +98,30 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             RequireMuxerUpdate: _requireMuxerUpdate,
             PathPreference: pathPreference);
         workflow.Execute(options);
+    }
+
+    private void DisplayInstallLocation(GlobalJsonInfo? globalJson)
+    {
+        if (globalJson?.SdkPath is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]Installing to [{1}]{2}[/] as controlled by global.json file [{1}]{3}[/].[/]",
+                DotnetupTheme.Current.Dim,
+                DotnetupTheme.Current.Accent,
+                globalJson.SdkPath.EscapeMarkup(),
+                globalJson.GlobalJsonPath!.EscapeMarkup()));
+        }
+        else
+        {
+            string resolvedInstallPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]You can find dotnetup managed installs at [{1}]{2}[/].[/]",
+                DotnetupTheme.Current.Dim,
+                DotnetupTheme.Current.Accent,
+                resolvedInstallPath.EscapeMarkup()));
+        }
     }
 
     private static void SaveConfigAndDisplayResult(PathPreference pathPreference)

@@ -42,7 +42,12 @@ internal class DotnetupProgram
             var exitCode = InvokeParser(args, rootActivity);
             // When launched with no arguments in an interactive terminal (e.g. double-click),
             // pause so the window doesn't disappear immediately.
-            WaitForKeyPressIfNeeded(args);
+            // Only pause on success — errors should exit immediately.
+            if (exitCode == 0)
+            {
+                WaitForKeyPressIfNeeded(args);
+            }
+
             return exitCode;
         }
         catch (Exception ex)
