@@ -82,6 +82,11 @@ internal static class DotnetupPaths
     public static string ConfigPath => Path.Combine(DataDirectory, ConfigFileName);
 
     /// <summary>
+    /// Gets the path to the download cache directory.
+    /// </summary>
+    public static string DownloadCacheDirectory => Path.Combine(DataDirectory, "downloadcache");
+
+    /// <summary>
     /// Gets the path to the telemetry first-run sentinel file.
     /// </summary>
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);

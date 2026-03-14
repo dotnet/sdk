@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
@@ -111,7 +112,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             })).ToList();
 
         IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var sharedReporter = progressTarget.CreateProgressReporter();
+        using var sharedReporter = new LazyProgressReporter(progressTarget);
 
         var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
 
@@ -131,9 +132,11 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         var alreadyInstalled = new List<string>();
         string? sharedPath = null;
 
+        string accent = DotnetupTheme.Current.Accent;
+
         foreach (var installResult in results)
         {
-            string description = $"{installResult.Install.Component.GetDisplayName()} {installResult.Install.Version}";
+            string description = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", installResult.Install.Component.GetDisplayName(), accent, installResult.Install.Version.ToString().EscapeMarkup());
             sharedPath ??= installResult.Install.InstallRoot.Path;
             if (installResult.WasAlreadyInstalled)
             {
@@ -145,16 +148,18 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             }
         }
 
+        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
+
         if (installed.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Brand}]Installed {string.Join(", ", installed)} at {sharedPath}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
         }
 
         if (alreadyInstalled.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Brand}]{string.Join(", ", alreadyInstalled)} already installed at {sharedPath}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
         }
     }
 

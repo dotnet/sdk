@@ -28,11 +28,8 @@ internal class UninstallWorkflow
         var manifest = new DotnetupSharedManifest(manifestPath);
         var manifestData = manifest.ReadManifest();
 
-        // Resolve install path
         var dotnetInstaller = new DotnetInstallManager();
-        string resolvedInstallPath = installPath
-            ?? dotnetInstaller.GetConfiguredInstallType()?.Path
-            ?? dotnetInstaller.GetDefaultDotnetInstallPath();
+        string resolvedInstallPath = ResolveInstallPath(installPath, dotnetInstaller);
 
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(resolvedInstallPath)));
@@ -76,7 +73,7 @@ internal class UninstallWorkflow
         // Check if the targeted installations are still present (referenced by another spec)
         CheckAndReportStillPresent(manifestPath, installRoot, targetedInstallations);
 
-        AnsiConsole.MarkupLine(DotnetupTheme.Success("Done."));
+        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
         return 0;
     }
 
@@ -129,10 +126,10 @@ internal class UninstallWorkflow
         foreach (var spec in matchingSpecs)
         {
             manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Removed install spec: {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Dereferenced {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] [{DotnetupTheme.Current.Dim}](source: {spec.InstallSource})[/]");
         }
 
-        // Run garbage collection
+        // Run garbage collection 
         GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, showEmptyMessage: true);
     }
 
@@ -153,5 +150,25 @@ internal class UninstallWorkflow
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim("Some installations were not removed because they are still referenced by other install specs."));
             }
         }
+    }
+
+    /// <summary>
+    /// Resolves the install path for uninstall using the same logic as the install command:
+    /// only use the configured path if it's a user install, otherwise fall back to default.
+    /// </summary>
+    internal static string ResolveInstallPath(string? explicitInstallPath, IDotnetInstallManager dotnetInstaller)
+    {
+        if (explicitInstallPath is not null)
+        {
+            return explicitInstallPath;
+        }
+
+        var configuredInstall = dotnetInstaller.GetConfiguredInstallType();
+        if (configuredInstall is { InstallType: InstallType.User })
+        {
+            return configuredInstall.Path;
+        }
+
+        return dotnetInstaller.GetDefaultDotnetInstallPath();
     }
 }

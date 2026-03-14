@@ -30,8 +30,9 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
-        IArchiveDownloader? archiveDownloader = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader)
+        IArchiveDownloader? archiveDownloader = null,
+        string? cacheDirectory = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
     {
         _progressTarget = progressTarget;
     }
@@ -45,8 +46,9 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IProgressReporter sharedReporter,
-        IArchiveDownloader? archiveDownloader = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader)
+        IArchiveDownloader? archiveDownloader = null,
+        string? cacheDirectory = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
     {
         _progressReporter = sharedReporter;
         _ownsProgressReporter = false;
@@ -56,7 +58,8 @@ internal class DotnetArchiveExtractor : IDisposable
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
-        IArchiveDownloader? archiveDownloader)
+        IArchiveDownloader? archiveDownloader,
+        string? cacheDirectory = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
@@ -69,7 +72,7 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         else
         {
-            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
+            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: cacheDirectory);
             _shouldDisposeDownloader = true;
         }
     }

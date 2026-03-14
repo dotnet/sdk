@@ -60,7 +60,7 @@ internal class InstallerOrchestratorSingleton
             try
             {
                 var archivePath = Path.Combine(tempDir, $"predownload{DotnetupUtilities.GetArchiveFileExtensionForPlatform()}");
-                using var downloader = new DotnetArchiveDownloader(releaseManifest);
+                using var downloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
                 await Task.Run(() => downloader.DownloadArchiveWithVerification(request, version, archivePath)).ConfigureAwait(false);
             }
             finally
@@ -263,7 +263,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter);
+        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
         extractor.Prepare();
 
         return new PreparedInstall(installRequest, versionToInstall, install, extractor, releaseManifest);

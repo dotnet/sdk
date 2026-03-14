@@ -26,10 +26,10 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
     }
 
-    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null)
+    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
-        _downloadCache = new DownloadCache();
+        _downloadCache = new DownloadCache(cacheDirectory);
         if (httpClient == null)
         {
             _httpClient = CreateDefaultHttpClient();

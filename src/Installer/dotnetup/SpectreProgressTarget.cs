@@ -18,17 +18,20 @@ public class SpectreProgressTarget : IProgressTarget
         {
             TaskCompletionSource<ProgressContext> tcs = new();
             var progress = AnsiConsole.Progress();
+            var successAltStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt);
             progress.Columns(
-                new SpinnerColumn(Spinner.Known.Arc),
+                new SpinnerColumn(Spinner.Known.Line) { Style = Style.Parse(DotnetupTheme.Current.Brand) },
                 new TaskDescriptionColumn(),
                 new ProgressBarColumn
                 {
                     CompletedStyle = Style.Parse(DotnetupTheme.Current.Brand),
-                    FinishedStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt),
+                    FinishedStyle = successAltStyle,
                     RemainingStyle = new Style(Color.Grey),
                 },
-                new PercentageColumn(),
-                new RemainingTimeColumn());
+                new PercentageColumn
+                {
+                    CompletedStyle = successAltStyle,
+                });
 
             var progressTask = progress.StartAsync(async ctx =>
             {

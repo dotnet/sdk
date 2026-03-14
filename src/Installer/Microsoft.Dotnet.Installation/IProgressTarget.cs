@@ -53,6 +53,7 @@ public class NullProgressTarget : IProgressTarget
 public sealed class LazyProgressReporter : IProgressReporter
 {
     private readonly IProgressTarget _target;
+    private readonly object _lock = new();
     private IProgressReporter? _inner;
 
     public LazyProgressReporter(IProgressTarget target)
@@ -62,7 +63,11 @@ public sealed class LazyProgressReporter : IProgressReporter
 
     public IProgressTask AddTask(string description, double maxValue)
     {
-        _inner ??= _target.CreateProgressReporter();
+        lock (_lock)
+        {
+            _inner ??= _target.CreateProgressReporter();
+        }
+
         return _inner.AddTask(description, maxValue);
     }
 

@@ -96,8 +96,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             UpdateGlobalJson: null,
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
-            PathPreference: pathPreference,
-            Untracked: true);
+            PathPreference: pathPreference);
         workflow.Execute(options);
     }
 

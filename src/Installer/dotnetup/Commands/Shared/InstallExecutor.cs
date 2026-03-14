@@ -91,11 +91,11 @@ internal class InstallExecutor
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] is already installed at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Installed {componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -178,7 +178,7 @@ internal class InstallExecutor
         }
 
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var sharedReporter = progressTarget.CreateProgressReporter();
+        using var sharedReporter = new LazyProgressReporter(progressTarget);
 
         var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         return DisplayBatchResults(results, primaryRequest);
@@ -241,7 +241,8 @@ internal class InstallExecutor
             }
 
             sharedPath ??= result.Install.InstallRoot.Path;
-            string label = $"{result.Install.Component.GetDisplayName()} {result.Install.Version}";
+            string accent = DotnetupTheme.Current.Accent;
+            string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), accent, result.Install.Version.ToString().EscapeMarkup());
             if (result.WasAlreadyInstalled)
             {
                 alreadyInstalled.Add(label);
@@ -258,16 +259,19 @@ internal class InstallExecutor
 
     private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
     {
+        string accent = DotnetupTheme.Current.Accent;
+        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
+
         if (installed.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Brand}]Installed {string.Join(", ", installed)} at {sharedPath}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
         }
 
         if (alreadyInstalled.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Brand}]{string.Join(", ", alreadyInstalled)} already installed at {sharedPath}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
         }
     }
 
@@ -293,7 +297,7 @@ internal class InstallExecutor
     /// </summary>
     public static void DisplayComplete()
     {
-        SpectreAnsiConsole.WriteLine("Complete!");
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Complete!"));
     }
 
     /// <summary>
