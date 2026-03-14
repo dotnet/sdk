@@ -249,8 +249,14 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     // Returns true if the asset's group requirements are all satisfied by the declared groups.
     // When skipDeferred is true, groups marked Deferred are treated as provisionally satisfied.
-    internal bool MatchesGroups(Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups, bool skipDeferred = false)
+    // When sourceId is non-null, assets whose SourceId does not match pass through unconditionally.
+    internal bool MatchesGroups(Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups, bool skipDeferred = false, string sourceId = null)
     {
+        if (!string.IsNullOrEmpty(sourceId) && !string.Equals(SourceId, sourceId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
         var requirements = GetAssetGroupValues();
         if (requirements.Count == 0)
         {
@@ -278,64 +284,173 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return true;
     }
 
-    // Partially sorts assets so that parents (RelatedAsset targets) appear before their
-    // dependents. Assets without a RelatedAsset are emitted first, then assets whose parent
-    // has already been emitted. A single pass handles the common case where assets are
-    // already nearly sorted; a fallback drains remaining out-of-order assets.
-    internal static StaticWebAsset[] SortByRelatedAsset(IReadOnlyList<StaticWebAsset> assets)
+    // Sorts assets by RelatedAsset, then filters by group with cascading exclusion.
+    // Assets whose parent was excluded are also excluded.
+    // When sourceId is non-null, only assets with matching SourceId are evaluated;
+    // others pass through unconditionally.
+    internal static (List<StaticWebAsset> included, HashSet<string> excluded) FilterByGroup(
+        StaticWebAsset[] assets,
+        Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups,
+        bool skipDeferred,
+        string sourceId = null)
     {
-        if (assets.Count <= 1)
-        {
-            if (assets is StaticWebAsset[] arr)
-            {
-                return arr;
-            }
-            return assets.Count == 0 ? [] : [assets[0]];
-        }
+        SortByRelatedAssetInPlace(assets);
+        var included = new List<StaticWebAsset>(assets.Length);
+        var excluded = new HashSet<string>(OSPath.PathComparer);
 
-        var result = new StaticWebAsset[assets.Count];
-        var index = 0;
-        var emitted = new HashSet<string>(assets.Count, OSPath.PathComparer);
-        var deferred = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
-
-        // First pass: emit assets whose parent is already emitted or that have no parent.
         foreach (var asset in assets)
         {
-            if (string.IsNullOrEmpty(asset.RelatedAsset) || emitted.Contains(asset.RelatedAsset))
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excluded.Contains(asset.RelatedAsset))
             {
-                result[index++] = asset;
-                emitted.Add(asset.Identity);
+                excluded.Add(asset.Identity);
+                continue;
+            }
+
+            if (asset.MatchesGroups(groups, skipDeferred, sourceId))
+            {
+                included.Add(asset);
             }
             else
             {
-                deferred[asset.Identity] = asset;
+                excluded.Add(asset.Identity);
             }
         }
 
-        // Drain deferred assets recursively: visit the parent chain first so that
-        // parents always appear before their dependents in the result array.
-        void Visit(StaticWebAsset asset)
-        {
-            if (!emitted.Add(asset.Identity))
-            {
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(asset.RelatedAsset) && deferred.TryGetValue(asset.RelatedAsset, out var parent))
-            {
-                Visit(parent);
-            }
-
-            result[index++] = asset;
-        }
-
-        foreach (var asset in deferred.Values)
-        {
-            Visit(asset);
-        }
-
-        return result;
+        return (included, excluded);
     }
+
+    // In-place topological sort by RelatedAsset using a two-pointer approach.
+    // Mutates the input span so that parents appear before dependents.
+    // O(n) amortized time — i and tail each visit every index at most once.
+    // O(n) auxiliary space for the seen/deferred maps; no result array allocated.
+    internal static void SortByRelatedAssetInPlace(Span<StaticWebAsset> assets)
+    {
+        if (assets.Length <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Length, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Length - 1;
+
+        for (var i = 0; i < assets.Length; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                // Strategy 1: the parent was displaced earlier and we know where it is.
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                // Strategy 2: scan backward from tail for any placeable element.
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break; // tail exhausted — orphan, place as-is
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+    }
+
+    private static bool IsPlaceable(StaticWebAsset asset, HashSet<string> seen) =>
+        string.IsNullOrEmpty(asset.RelatedAsset) || seen.Contains(asset.RelatedAsset);
+
+    private static int FindInDeferred(StaticWebAsset asset, Dictionary<string, int> deferred) =>
+        deferred.TryGetValue(asset.RelatedAsset, out var index) ? index : -1;
+
+    // Walks tail downward, deferring every non-placeable element it passes,
+    // and returns the index of the first placeable element found (or -1).
+    private static int ScanTailForPlaceable(
+        Span<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+
+    // List<T> overload: delegates to Span on modern .NET, uses IList indexer on net472.
+    internal static void SortByRelatedAssetInPlace(List<StaticWebAsset> assets)
+    {
+#if NET6_0_OR_GREATER
+        SortByRelatedAssetInPlace(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(assets));
+#else
+        if (assets.Count <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Count, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Count - 1;
+
+        for (var i = 0; i < assets.Count; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break;
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+#endif
+    }
+
+#if !NET6_0_OR_GREATER
+    private static int ScanTailForPlaceable(
+        List<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+#endif
 
     internal bool TryGetAssetGroupValue(string key, out string value)
     {

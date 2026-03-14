@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -67,33 +66,8 @@ public class FilterStaticWebAssetGroups : Task
             }
         }
 
-        var parsedAssets = StaticWebAsset.SortByRelatedAsset(StaticWebAsset.FromTaskItemGroup(Assets));
-        var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
-        var includedAssets = new List<StaticWebAsset>(parsedAssets.Length);
-
-        foreach (var asset in parsedAssets)
-        {
-            if (!string.IsNullOrEmpty(Source) && !string.Equals(asset.SourceId, Source, StringComparison.Ordinal))
-            {
-                includedAssets.Add(asset);
-                continue;
-            }
-
-            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
-            {
-                excludedAssetFiles.Add(asset.Identity);
-                continue;
-            }
-
-            if (asset.MatchesGroups(groups, SkipDeferred))
-            {
-                includedAssets.Add(asset);
-            }
-            else
-            {
-                excludedAssetFiles.Add(asset.Identity);
-            }
-        }
+        var parsedAssets = StaticWebAsset.FromTaskItemGroup(Assets);
+        var (includedAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(parsedAssets, groups, SkipDeferred, Source);
 
         FilteredAssets = includedAssets.Select(asset => asset.ToTaskItem()).ToArray();
 

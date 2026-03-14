@@ -389,12 +389,17 @@ public class ReadPackageAssetsManifestTest : IDisposable
         var buildDir = Path.Combine(packageDir, "build");
         Directory.CreateDirectory(buildDir);
 
-        // Create actual files for each asset
+        // Create actual files for each asset and fill in SourceId/ContentRoot
+        // the way GeneratePackageAssetsManifestFile does (via copy constructor).
+        var contentRoot = Path.Combine(packageDir, "staticwebassets") + Path.DirectorySeparatorChar;
         foreach (var asset in assets)
         {
             var filePath = Path.Combine(packageDir, asset.Key.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             File.WriteAllText(filePath, "content-" + asset.Key);
+
+            asset.Value.SourceId = packageId;
+            asset.Value.ContentRoot = contentRoot;
         }
 
         var manifest = new StaticWebAssetPackageManifest

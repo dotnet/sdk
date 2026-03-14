@@ -84,9 +84,9 @@ public class UpdatePackageStaticWebAssets : Task
 
             // Cascading exclusion: sort ensures parents before dependents,
             // then a single pass removes related assets whose primary was excluded.
-            var sortedUpdatedAssets = StaticWebAsset.SortByRelatedAsset(updatedAssets);
-            updatedAssets.Clear();
-            foreach (var asset in sortedUpdatedAssets)
+            StaticWebAsset.SortByRelatedAssetInPlace(updatedAssets);
+            var filteredAssets = new List<StaticWebAsset>(updatedAssets.Count);
+            foreach (var asset in updatedAssets)
             {
                 if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
                 {
@@ -94,11 +94,11 @@ public class UpdatePackageStaticWebAssets : Task
                     continue;
                 }
 
-                updatedAssets.Add(asset);
+                filteredAssets.Add(asset);
             }
 
             OriginalAssets = [.. originalAssets];
-            UpdatedAssets = updatedAssets.Select(asset => asset.ToTaskItem()).ToArray();
+            UpdatedAssets = filteredAssets.Select(asset => asset.ToTaskItem()).ToArray();
 
             if (Endpoints != null && (assetMapping.Count > 0 || excludedAssetFiles.Count > 0))
             {

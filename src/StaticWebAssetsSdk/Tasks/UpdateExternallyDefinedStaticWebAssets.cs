@@ -67,29 +67,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        // Group filtering + cascading exclusion.
-        // Sort ensures parents appear before dependents so one pass suffices.
-        var sortedAssets = StaticWebAsset.SortByRelatedAsset(assets);
-        var excludedAssetFiles = new HashSet<string>(OSPath.PathComparer);
-        var filteredAssets = new List<StaticWebAsset>(sortedAssets.Length);
-
-        foreach (var asset in sortedAssets)
-        {
-            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetFiles.Contains(asset.RelatedAsset))
-            {
-                excludedAssetFiles.Add(asset.Identity);
-                continue;
-            }
-
-            if (asset.MatchesGroups(groupLookup, skipDeferred: true))
-            {
-                filteredAssets.Add(asset);
-            }
-            else
-            {
-                excludedAssetFiles.Add(asset.Identity);
-            }
-        }
+        var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
 
         UpdatedAssets = filteredAssets.Select(a => a.ToTaskItem()).ToArray();
 
