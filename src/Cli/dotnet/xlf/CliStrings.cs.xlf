@@ -987,10 +987,8 @@ setx PATH "%PATH%;{0}"
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publikujte se svou aplikací modul runtime pro .NET, aby ho nebylo nutné instalovat na cílovém počítači.
-Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je zadán identifikátor modulu runtime, výchozí hodnota je true.</target>
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.</source>
+        <target state="translated">Publikujte se svou aplikací modul runtime pro .NET, aby ho nebylo nutné instalovat na cílovém počítači.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
