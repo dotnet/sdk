@@ -362,7 +362,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             var eqIdx = requirement.IndexOf('=');
             if (eqIdx <= 0 || eqIdx == requirement.Length - 1)
             {
-                continue;
+                throw new InvalidOperationException(
+                    $"Malformed AssetGroups segment '{requirement}' in value '{assetGroups}'. Expected 'Name=Value' format.");
             }
 
             var reqName = requirement.Substring(0, eqIdx);

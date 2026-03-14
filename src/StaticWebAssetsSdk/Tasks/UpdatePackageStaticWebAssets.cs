@@ -97,11 +97,6 @@ public class UpdatePackageStaticWebAssets : Task
                     continue;
                 }
 
-                if (excludedAssetFiles.Contains(asset.Identity))
-                {
-                    continue;
-                }
-
                 updatedAssets.Add(asset);
             }
 
@@ -115,7 +110,7 @@ public class UpdatePackageStaticWebAssets : Task
         }
         catch (Exception ex)
         {
-            Log.LogError(ex.ToString());
+            Log.LogErrorFromException(ex);
         }
 
         return !Log.HasLoggedErrors;

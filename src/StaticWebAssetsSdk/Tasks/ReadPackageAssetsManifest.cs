@@ -50,126 +50,198 @@ public class ReadPackageAssetsManifest : Task
                 continue;
             }
 
-            StaticWebAssetPackageManifest manifest;
-            try
+            var manifest = ReadManifest(manifestPath);
+            if (manifest == null)
             {
-                var json = File.ReadAllBytes(manifestPath);
-                manifest = JsonSerializer.Deserialize(json,
-                    StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
-            }
-            catch (Exception ex)
-            {
-                Log.LogError("Failed to read package manifest '{0}': {1}", manifestPath, ex.Message);
-                return false;
-            }
-
-            if (manifest.Version != 1)
-            {
-                Log.LogError("Unsupported package manifest version {0} in '{1}'. Expected version 1.", manifest.Version, manifestPath);
                 return false;
             }
 
             var resolvedManifestAssets = ResolveManifestAssets(manifest.Assets, sourceId, contentRoot, packageRoot);
 
-            // Group filtering + cascading exclusion.
-            // Assets are sorted so parents appear before dependents, enabling a single-pass
-            // cascade: if a parent was excluded, skip its children without evaluating groups.
-            var sortedAssets = StaticWebAsset.SortByRelatedAsset(resolvedManifestAssets);
-            var includedAssets = new List<StaticWebAsset>(sortedAssets.Length);
-            var excludedAssetPaths = new HashSet<string>(OSPath.PathComparer);
-
-            foreach (var asset in sortedAssets)
+            if (!ValidateRelatedAssetReferences(resolvedManifestAssets, manifestPath))
             {
-                if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetPaths.Contains(asset.RelatedAsset))
-                {
-                    excludedAssetPaths.Add(asset.Identity);
-                    continue;
-                }
-
-                var matches = asset.MatchesGroups(groupLookup, skipDeferred: true);
-                if (matches)
-                {
-                    includedAssets.Add(asset);
-                }
-                else
-                {
-                    excludedAssetPaths.Add(asset.Identity);
-                }
+                return false;
             }
 
-            // Emit MSBuild items for included assets
-            var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
-            foreach (var asset in includedAssets)
+            var (includedAssets, excludedAssetPaths) = FilterAssetsByGroup(resolvedManifestAssets, groupLookup);
+
+            var assetMapping = MaterializeFrameworkAssets(includedAssets, sourceId);
+            if (Log.HasLoggedErrors)
             {
-                if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
-                {
-                    var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
-                    var resolvedRelativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
-                    var destPath = Path.GetFullPath(Path.Combine(fxDir, resolvedRelativePath));
-
-                    if (!File.Exists(asset.Identity))
-                    {
-                        Log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
-                        return false;
-                    }
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-
-                    if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(asset.Identity) > File.GetLastWriteTimeUtc(destPath))
-                    {
-                        File.Copy(asset.Identity, destPath, overwrite: true);
-                    }
-
-                    assetMapping[asset.Identity] = destPath;
-                    asset.Identity = destPath;
-                    asset.OriginalItemSpec = destPath;
-                    asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
-                    asset.SourceId = ProjectPackageId;
-                    asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
-                    asset.BasePath = ProjectBasePath;
-                    asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
-                }
-
-                allAssets.Add(asset);
+                return false;
             }
 
-            if (assetMapping.Count > 0)
-            {
-                foreach (var asset in allAssets)
-                {
-                    if (!string.IsNullOrEmpty(asset.RelatedAsset) && assetMapping.TryGetValue(asset.RelatedAsset, out var remappedRelatedAsset))
-                    {
-                        asset.RelatedAsset = remappedRelatedAsset;
-                    }
-                }
-            }
-
-            // Phase 4: Emit endpoints, filtering out those for excluded assets
-            foreach (var endpoint in manifest.Endpoints ?? [])
-            {
-                var resolvedAssetFile = ResolvePath(packageRoot, endpoint.AssetFile);
-                if (excludedAssetPaths.Contains(resolvedAssetFile))
-                {
-                    Log.LogMessage(MessageImportance.Low,
-                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
-                        endpoint.Route, resolvedAssetFile);
-                    continue;
-                }
-
-                if (assetMapping.TryGetValue(resolvedAssetFile, out var remappedAssetFile))
-                {
-                    resolvedAssetFile = remappedAssetFile;
-                }
-
-                endpoint.AssetFile = resolvedAssetFile;
-                allEndpoints.Add(endpoint);
-            }
+            allAssets.AddRange(includedAssets);
+            RemapRelatedAssets(allAssets, assetMapping);
+            ResolveAndFilterEndpoints(manifest.Endpoints, packageRoot, excludedAssetPaths, assetMapping, allEndpoints);
         }
 
         Assets = allAssets.Select(asset => asset.ToTaskItem()).ToArray();
         Endpoints = StaticWebAssetEndpoint.ToTaskItems(allEndpoints);
 
         return !Log.HasLoggedErrors;
+    }
+
+    private StaticWebAssetPackageManifest ReadManifest(string manifestPath)
+    {
+        StaticWebAssetPackageManifest manifest;
+        try
+        {
+            var json = File.ReadAllBytes(manifestPath);
+            manifest = JsonSerializer.Deserialize(json,
+                StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+        }
+        catch (Exception ex)
+        {
+            Log.LogError("Failed to read package manifest '{0}': {1}", manifestPath, ex.Message);
+            return null;
+        }
+
+        if (manifest.Version != 1)
+        {
+            Log.LogError("Unsupported package manifest version {0} in '{1}'. Expected version 1.", manifest.Version, manifestPath);
+            return null;
+        }
+
+        return manifest;
+    }
+
+    private bool ValidateRelatedAssetReferences(List<StaticWebAsset> assets, string manifestPath)
+    {
+        var resolvedIdentities = new HashSet<string>(assets.Select(a => a.Identity), OSPath.PathComparer);
+        foreach (var asset in assets)
+        {
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && !resolvedIdentities.Contains(asset.RelatedAsset))
+            {
+                Log.LogError(
+                    "Asset '{0}' in manifest '{1}' references RelatedAsset '{2}' which does not exist in the manifest.",
+                    asset.Identity, manifestPath, asset.RelatedAsset);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static (List<StaticWebAsset> included, HashSet<string> excluded) FilterAssetsByGroup(
+        List<StaticWebAsset> resolvedAssets,
+        Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groupLookup)
+    {
+        var sortedAssets = StaticWebAsset.SortByRelatedAsset(resolvedAssets);
+        var includedAssets = new List<StaticWebAsset>(sortedAssets.Length);
+        var excludedAssetPaths = new HashSet<string>(OSPath.PathComparer);
+
+        foreach (var asset in sortedAssets)
+        {
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excludedAssetPaths.Contains(asset.RelatedAsset))
+            {
+                excludedAssetPaths.Add(asset.Identity);
+                continue;
+            }
+
+            if (asset.MatchesGroups(groupLookup, skipDeferred: true))
+            {
+                includedAssets.Add(asset);
+            }
+            else
+            {
+                excludedAssetPaths.Add(asset.Identity);
+            }
+        }
+
+        return (includedAssets, excludedAssetPaths);
+    }
+
+    private Dictionary<string, string> MaterializeFrameworkAssets(
+        List<StaticWebAsset> includedAssets,
+        string sourceId)
+    {
+        var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
+        foreach (var asset in includedAssets)
+        {
+            if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
+            {
+                MaterializeFrameworkAsset(asset, sourceId, assetMapping);
+            }
+        }
+
+        return assetMapping;
+    }
+
+    private static void RemapRelatedAssets(List<StaticWebAsset> assets, Dictionary<string, string> assetMapping)
+    {
+        if (assetMapping.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var asset in assets)
+        {
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && assetMapping.TryGetValue(asset.RelatedAsset, out var remappedRelatedAsset))
+            {
+                asset.RelatedAsset = remappedRelatedAsset;
+            }
+        }
+    }
+
+    private void ResolveAndFilterEndpoints(
+        StaticWebAssetEndpoint[] endpoints,
+        string packageRoot,
+        HashSet<string> excludedAssetPaths,
+        Dictionary<string, string> assetMapping,
+        List<StaticWebAssetEndpoint> allEndpoints)
+    {
+        foreach (var endpoint in endpoints ?? [])
+        {
+            var resolvedAssetFile = ResolvePath(packageRoot, endpoint.AssetFile);
+            if (excludedAssetPaths.Contains(resolvedAssetFile))
+            {
+                Log.LogMessage(MessageImportance.Low,
+                    "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
+                    endpoint.Route, resolvedAssetFile);
+                continue;
+            }
+
+            if (assetMapping.TryGetValue(resolvedAssetFile, out var remappedAssetFile))
+            {
+                resolvedAssetFile = remappedAssetFile;
+            }
+
+            endpoint.AssetFile = resolvedAssetFile;
+            allEndpoints.Add(endpoint);
+        }
+    }
+
+    private void MaterializeFrameworkAsset(
+        StaticWebAsset asset,
+        string sourceId,
+        Dictionary<string, string> assetMapping)
+    {
+        var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
+        var resolvedRelativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
+        var destPath = Path.GetFullPath(Path.Combine(fxDir, resolvedRelativePath));
+
+        if (!File.Exists(asset.Identity))
+        {
+            Log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+
+        if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(asset.Identity) > File.GetLastWriteTimeUtc(destPath))
+        {
+            File.Copy(asset.Identity, destPath, overwrite: true);
+        }
+
+        assetMapping[asset.Identity] = destPath;
+        asset.Identity = destPath;
+        asset.OriginalItemSpec = destPath;
+        asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
+        asset.SourceId = ProjectPackageId;
+        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
+        asset.BasePath = ProjectBasePath;
+        asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
     }
 
     private static List<StaticWebAsset> ResolveManifestAssets(

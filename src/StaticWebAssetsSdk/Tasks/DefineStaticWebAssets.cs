@@ -322,7 +322,7 @@ public partial class DefineStaticWebAssets : Task
             }
             catch (Exception ex)
             {
-                Log.LogError(ex.ToString());
+                Log.LogErrorFromException(ex);
             }
         }
 

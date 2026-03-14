@@ -73,14 +73,14 @@ public class GeneratePackageAssetsManifestFile : Task
             var relativePath = asset.RelativePath;
             var packagePath = identityToPackagePath[element.ItemSpec];
 
-            var emittedSourceType = "Package";
+            var emittedSourceType = StaticWebAsset.SourceTypes.Package;
             if (hasFrameworkMatcher)
             {
                 matchContext.SetPathAndReinitialize(relativePath.AsSpan());
                 var match = frameworkMatcher.Match(matchContext);
                 if (match.IsMatch)
                 {
-                    emittedSourceType = "Framework";
+                    emittedSourceType = StaticWebAsset.SourceTypes.Framework;
                 }
             }
 

@@ -624,7 +624,7 @@ for path 'candidate.js'");
             // Arrange
             var (cache, inputHashes) = SetupCache([], []);
             // Assert
-            cache.Update([], [], [], inputHashes);
+            cache.Update([], [], [], [], inputHashes);
 
             // Assert
             Assert.True(cache.IsUpToDate());
@@ -637,7 +637,7 @@ for path 'candidate.js'");
             var (cache, inputHashes) = SetupCache(["input1"], ["input1"]);
 
             // Act
-            cache.Update([], [], [], inputHashes);
+            cache.Update([], [], [], [], inputHashes);
 
             // Assert
             Assert.True(cache.IsUpToDate());
@@ -656,13 +656,13 @@ for path 'candidate.js'");
             switch (updated)
             {
                 case UpdatedHash.GlobalProperties:
-                    cache.Update([1], [], [], inputHashes);
+                    cache.Update([1], [], [], [], inputHashes);
                     break;
                 case UpdatedHash.FingerprintPatterns:
-                    cache.Update([], [1], [], inputHashes);
+                    cache.Update([], [1], [], [], inputHashes);
                     break;
                 case UpdatedHash.Overrides:
-                    cache.Update([], [], [1], inputHashes);
+                    cache.Update([], [], [1], [], inputHashes);
                     break;
             }
 
@@ -680,7 +680,7 @@ for path 'candidate.js'");
             var cachedAsset = cache.CachedAssets.Values.Single();
 
             // Act
-            cache.Update([], [], [], inputHashes);
+            cache.Update([], [], [], [], inputHashes);
 
             // Assert
             Assert.False(cache.IsUpToDate());
@@ -695,7 +695,7 @@ for path 'candidate.js'");
         {
             // Arrange
             var (cache, inputHashes) = SetupCache(["input1"], ["input2"], appendCachedToInputHashes: true);
-            cache.Update([], [], [], inputHashes);
+            cache.Update([], [], [], [], inputHashes);
 
             // Act
             var newAssetItem = inputHashes["input1"];
@@ -734,7 +734,7 @@ for path 'candidate.js'");
                 var newAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input1.txt"), "Input1.txt");
                 inputHashes["input1"] = newAsset;
 
-                cache.Update([], [], [], inputHashes);
+                cache.Update([], [], [], [], inputHashes);
                 cache.AppendAsset("input1", new StaticWebAsset { Identity = newAsset.ItemSpec, RelativePath = "Input1.txt" }, newAsset);
                 cache.WriteCacheManifest();
 
