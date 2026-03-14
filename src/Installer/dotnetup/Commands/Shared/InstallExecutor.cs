@@ -208,20 +208,34 @@ internal class InstallExecutor
         bool requireMuxerUpdate)
     {
         var requests = new List<DotnetInstallRequest>();
+        // Track (Component, VersionString) pairs already included so duplicates are skipped.
+        var seen = new HashSet<(InstallComponent, string)>();
+
         if (primaryRequest is not null)
         {
             requests.Add(primaryRequest);
+            string primaryVersion = primaryRequest.ResolvedVersion?.ToString()
+                ?? primaryRequest.Channel.ToString() ?? string.Empty;
+            seen.Add((primaryRequest.Component, primaryVersion));
         }
 
-        requests.AddRange(additionalInstalls.Select(install => new DotnetInstallRequest(
-            installRoot,
-            new UpdateChannel(install.Version.ToString()),
-            install.Component,
-            new InstallRequestOptions
+        foreach (var install in additionalInstalls)
+        {
+            if (!seen.Add((install.Component, install.Version.ToString())))
             {
-                ManifestPath = manifestPath,
-                RequireMuxerUpdate = requireMuxerUpdate
-            })));
+                continue;
+            }
+
+            requests.Add(new DotnetInstallRequest(
+                installRoot,
+                new UpdateChannel(install.Version.ToString()),
+                install.Component,
+                new InstallRequestOptions
+                {
+                    ManifestPath = manifestPath,
+                    RequireMuxerUpdate = requireMuxerUpdate
+                }));
+        }
 
         return requests;
     }

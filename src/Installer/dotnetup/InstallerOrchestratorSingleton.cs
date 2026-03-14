@@ -165,11 +165,9 @@ internal class InstallerOrchestratorSingleton
         object lockObj)
     {
         const int maxConcurrentDownloads = 6;
-        using var throttle = new SemaphoreSlim(maxConcurrentDownloads);
 
-        var tasks = requests.Select(request => Task.Run(() =>
+        Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
         {
-            throttle.Wait();
             try
             {
                 var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
@@ -189,13 +187,8 @@ internal class InstallerOrchestratorSingleton
             {
                 lock (lockObj) { exceptions.Add(ex); }
             }
-            finally
-            {
-                throttle.Release();
-            }
-        })).ToList();
+        });
 
-        Task.WaitAll([.. tasks]);
         readyQueue.CompleteAdding();
     }
 
@@ -290,9 +283,30 @@ internal class InstallerOrchestratorSingleton
 
             if (InstallAlreadyExists(manifestData, install))
             {
-                RecordInstallSpec(installRequest, customManifestPath);
-                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
-                return null;
+                // Validate that the installation actually exists on disk.
+                // If the files were deleted but the manifest still records it,
+                // silently remove the stale record and proceed with re-installation.
+                ArchiveInstallationValidator validator = new();
+                if (validator.Validate(install))
+                {
+                    RecordInstallSpec(installRequest, customManifestPath);
+                    alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
+                    return null;
+                }
+
+                if (!installRequest.Options.Untracked)
+                {
+                    var staleRoot = manifestData.DotnetRoots.First(r =>
+                        DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+                    var staleInstallation = staleRoot.Installations.First(i =>
+                        i.Version == install.Version.ToString() && i.Component == install.Component);
+                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
+                    manifestManager.RemoveInstallation(install.InstallRoot, new Installation
+                    {
+                        Component = staleInstallation.Component,
+                        Version = staleInstallation.Version
+                    });
+                }
             }
 
             if (!installRequest.Options.Untracked

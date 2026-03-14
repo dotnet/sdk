@@ -94,6 +94,10 @@ public class ScopedMutex : IDisposable
                     // This shouldn't normally happen (it means too many Disposes),
                     // but clean up anyway
                     held.Remove(Name);
+                    if (held.Count == 0)
+                    {
+                        s_heldMutexCounts.Value = null!;
+                    }
                 }
             }
             return;
@@ -106,7 +110,13 @@ public class ScopedMutex : IDisposable
         }
         finally
         {
-            s_heldMutexCounts.Value?.Remove(Name);
+            var held = s_heldMutexCounts.Value;
+            held?.Remove(Name);
+            if (held is not null && held.Count == 0)
+            {
+                s_heldMutexCounts.Value = null!;
+            }
+
             _mutex.Dispose();
         }
     }

@@ -100,16 +100,28 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
-        var requests = parsed.Select(p => new DotnetInstallRequest(
-            installRoot,
-            new UpdateChannel(p.VersionOrChannel ?? ChannelVersionResolver.LatestChannel),
-            p.Component,
-            new InstallRequestOptions
+        // Deduplicate parsed specs so the same component+channel is not downloaded twice.
+        var seen = new HashSet<(InstallComponent, string)>();
+        var requests = new List<DotnetInstallRequest>();
+        foreach (var p in parsed)
+        {
+            string channel = p.VersionOrChannel ?? ChannelVersionResolver.LatestChannel;
+            if (!seen.Add((p.Component, channel)))
             {
-                ManifestPath = _manifestPath,
-                RequireMuxerUpdate = _requireMuxerUpdate,
-                Untracked = _untracked
-            })).ToList();
+                continue;
+            }
+
+            requests.Add(new DotnetInstallRequest(
+                installRoot,
+                new UpdateChannel(channel),
+                p.Component,
+                new InstallRequestOptions
+                {
+                    ManifestPath = _manifestPath,
+                    RequireMuxerUpdate = _requireMuxerUpdate,
+                    Untracked = _untracked
+                }));
+        }
 
         IReadOnlyList<InstallResult> results;
 

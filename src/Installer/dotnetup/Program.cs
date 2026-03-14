@@ -80,16 +80,17 @@ internal class DotnetupProgram
 
     private static void DisposeTelemetry()
     {
-        // The Azure Monitor exporter has built-in offline storage
-        // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
-        // survives process exit and is retried on the next run.
-        // Dispose on a background thread with a short timeout so we
-        // never block the user waiting for a network round-trip.
-        // This mirrors the pattern used by the .NET CLI, which writes
-        // telemetry to disk and sends it asynchronously.
+        // Best-effort flush with a short timeout. The Azure Monitor exporter
+        // has built-in offline storage (%LOCALAPPDATA%\Microsoft\AzureMonitor)
+        // so unsent spans survive process exit and are retried on the next run.
+        //
+        // We intentionally skip Dispose(): TracerProvider.Dispose() internally
+        // calls Shutdown() with its own (potentially long) timeout, which would
+        // block the user noticeably. Since ThreadPool threads are background
+        // threads, any remaining exporter work is terminated when Main returns.
         try
         {
-            Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
+            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 100);
         }
         catch
         {

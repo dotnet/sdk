@@ -115,9 +115,28 @@ internal class UpdateWorkflow
             return (false, false);
         }
 
-        // Check if this version is already installed
+        // Check if this version is already installed (in the manifest)
         var alreadyInstalled = root.Installations.Any(i =>
             i.Component == spec.Component && i.Version == latestVersion.ToString());
+
+        // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
+        if (alreadyInstalled)
+        {
+            var install = new DotnetInstall(installRoot, latestVersion, spec.Component);
+            ArchiveInstallationValidator validator = new();
+            if (!validator.Validate(install))
+            {
+                var staleInstallation = root.Installations.First(i =>
+                    i.Component == spec.Component && i.Version == latestVersion.ToString());
+                var manifest = new DotnetupSharedManifest(manifestPath);
+                manifest.RemoveInstallation(installRoot, new Installation
+                {
+                    Component = staleInstallation.Component,
+                    Version = staleInstallation.Version
+                });
+                alreadyInstalled = false;
+            }
+        }
 
         var (updated, failed) = TryInstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath);
         if (failed)

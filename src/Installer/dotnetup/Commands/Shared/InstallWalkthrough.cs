@@ -68,15 +68,18 @@ internal class InstallWalkthrough
             // Track admin-to-user migration scenario
             Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
 
-            // Copy all admin installs except the SDK version already being installed.
+            // Copy all admin installs except the version already being installed.
             // The user confirmed copying via PromptAdminMigration, so no per-item prompt is needed.
+            // Use a set to skip duplicates from the admin install list.
+            var seen = new HashSet<(InstallComponent, string)>();
+            if (resolvedVersion is not null)
+            {
+                seen.Add((InstallComponent.SDK, resolvedVersion.ToString()));
+            }
+
             foreach (var install in adminInstalls)
             {
-                bool isAlreadyBeingInstalled = install.Component == InstallComponent.SDK
-                    && resolvedVersion is not null
-                    && install.Version.ToString() == resolvedVersion.ToString();
-
-                if (!isAlreadyBeingInstalled)
+                if (seen.Add((install.Component, install.Version.ToString())))
                 {
                     additionalInstalls.Add(install);
                 }
