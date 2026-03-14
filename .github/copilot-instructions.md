@@ -31,10 +31,12 @@ Testing:
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
 dotnetup:
-- When building or testing dotnetup, always use the full path to the csproj file:
-  - `dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj`
-  - `dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj`
+- When building or testing dotnetup, always use the full path to the csproj file.
 - Do not run `dotnet build` from within the dotnetup directory as restore may fail.
+- Multiple agents may build/test concurrently. To avoid file-lock conflicts, **always use `/p:ArtifactsDir=`** with a unique directory named after what you are testing:
+  - Build: `d:\sdk\.dotnet\dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj "/p:ArtifactsDir=d:\sdk\artifacts\tmp\<descriptive-name>\"`
+  - Test:  `d:\sdk\.dotnet\dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj "/p:ArtifactsDir=d:\sdk\artifacts\tmp\<descriptive-name>\"`
+  - Use the **same** `/p:ArtifactsDir=` for both build and test so the test picks up the correct build output.
 - When running dotnetup directly (e.g. `dotnet run`), use the repo-local dogfood dotnet instance:
   - `d:\sdk\.dotnet\dotnet run --project d:\sdk\src\Installer\dotnetup\dotnetup.csproj -- <args>`
 

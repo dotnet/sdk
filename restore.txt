@@ -1,0 +1,4 @@
+  Determining projects to restore...
+  Restored D:\sdk\src\Installer\dotnetup\dotnetup.csproj (in 1.49 sec).
+  Restored D:\sdk\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj (in 1.38 sec).
+  Restored D:\sdk\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj (in 1.38 sec).
