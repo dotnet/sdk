@@ -67,9 +67,19 @@ public class FilterStaticWebAssetGroups : Task
         }
 
         var parsedAssets = StaticWebAsset.FromTaskItemGroup(Assets);
-        var (includedAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(parsedAssets, groups, SkipDeferred, Source);
+        var (_, excludedAssetFiles) = StaticWebAsset.FilterByGroup(parsedAssets, groups, SkipDeferred, Source);
 
-        FilteredAssets = includedAssets.Select(asset => asset.ToTaskItem()).ToArray();
+        // Null out excluded entries in-place — MSBuild ignores null ITaskItem[] entries,
+        // so we avoid allocating a new list and re-serializing included assets.
+        for (var i = 0; i < Assets.Length; i++)
+        {
+            if (excludedAssetFiles.Contains(Assets[i].ItemSpec))
+            {
+                Assets[i] = null;
+            }
+        }
+
+        FilteredAssets = Assets;
 
         var parsedEndpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
 

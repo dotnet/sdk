@@ -45,8 +45,8 @@ public class ReadPackageAssetsManifest : Task
 
             if (!File.Exists(manifestPath))
             {
-                Log.LogWarning("Package manifest file '{0}' not found.", manifestPath);
-                continue;
+                Log.LogError("Package manifest file '{0}' not found.", manifestPath);
+                return false;
             }
 
             var manifest = ReadManifest(manifestPath);

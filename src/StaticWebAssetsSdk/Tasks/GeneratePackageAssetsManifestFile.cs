@@ -52,26 +52,30 @@ public class GeneratePackageAssetsManifestFile : Task
         var hasFrameworkMatcher = frameworkMatcher != null;
         var matchContext = hasFrameworkMatcher ? StaticWebAssetGlobMatcher.CreateMatchContext() : default;
 
-        // Pre-compute identity-to-package-relative-path mapping for RelatedAsset remapping
-        var identityToPackagePath = new Dictionary<string, string>(Utils.OSPath.PathComparer);
-        foreach (var element in StaticWebAssets)
+        // Parse all assets once and pre-compute package-relative paths.
+        var parsedAssets = StaticWebAsset.FromTaskItemGroup(StaticWebAssets);
+        var identityToPackagePath = new Dictionary<string, string>(parsedAssets.Length, Utils.OSPath.PathComparer);
+        var packagePaths = new string[parsedAssets.Length];
+        for (var i = 0; i < parsedAssets.Length; i++)
         {
-            var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '/', tokenResolver);
-            identityToPackagePath[element.ItemSpec] = packagePath;
+            var packagePath = parsedAssets[i].ComputeTargetPath(PackagePathPrefix, '/', tokenResolver);
+            identityToPackagePath[parsedAssets[i].Identity] = packagePath;
+            packagePaths[i] = packagePath;
         }
 
         // Build manifest assets
         var assets = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
-        var orderedAssets = StaticWebAssets
-            .OrderBy(e => e.GetMetadata("BasePath"), StringComparer.OrdinalIgnoreCase)
-            .ThenBy(e => e.GetMetadata("RelativePath"), StringComparer.OrdinalIgnoreCase);
 
-        foreach (var element in orderedAssets)
+        // Sort indices by BasePath then RelativePath for deterministic output.
+        var indices = Enumerable.Range(0, parsedAssets.Length)
+            .OrderBy(i => parsedAssets[i].BasePath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => parsedAssets[i].RelativePath, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var i in indices)
         {
-            var asset = StaticWebAsset.FromTaskItem(element);
+            var asset = parsedAssets[i];
             var relativePath = asset.RelativePath;
-            var packagePath = identityToPackagePath[element.ItemSpec];
+            var packagePath = packagePaths[i];
 
             var emittedSourceType = StaticWebAsset.SourceTypes.Package;
             if (hasFrameworkMatcher)
@@ -85,7 +89,7 @@ public class GeneratePackageAssetsManifestFile : Task
             }
 
             // Remap RelatedAsset from build-time absolute path to package-relative path
-            var relatedAssetValue = element.GetMetadata("RelatedAsset");
+            var relatedAssetValue = asset.RelatedAsset;
             if (!string.IsNullOrEmpty(relatedAssetValue) &&
                 identityToPackagePath.TryGetValue(relatedAssetValue, out var remappedRelatedAsset))
             {
@@ -96,7 +100,7 @@ public class GeneratePackageAssetsManifestFile : Task
                 Log.LogError(
                     "Asset '{0}' has RelatedAsset '{1}' which could not be mapped to a package-relative path. " +
                     "This indicates a graph inconsistency — the related asset is not part of the package.",
-                    element.ItemSpec, relatedAssetValue);
+                    asset.Identity, relatedAssetValue);
                 return false;
             }
 

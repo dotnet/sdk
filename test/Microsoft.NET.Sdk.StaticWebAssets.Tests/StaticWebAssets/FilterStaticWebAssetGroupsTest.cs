@@ -93,7 +93,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(0, "asset with unsatisfied group should be excluded");
+        task.FilteredAssets.Where(a => a != null).Should().HaveCount(0, "asset with unsatisfied group should be excluded");
         task.SurvivingEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
     }
 
@@ -208,7 +208,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(0, "both primary and related should be excluded via cascading");
+        task.FilteredAssets.Where(a => a != null).Should().HaveCount(0, "both primary and related should be excluded via cascading");
         task.SurvivingEndpoints.Should().HaveCount(0, "endpoints for both excluded assets should be removed");
     }
 
@@ -239,8 +239,9 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.FilteredAssets.Should().HaveCount(1);
-        task.FilteredAssets[0].ItemSpec.Should().Be(includedAsset.ItemSpec);
+        var nonNullAssets = task.FilteredAssets.Where(a => a != null).ToArray();
+        nonNullAssets.Should().HaveCount(1);
+        nonNullAssets[0].ItemSpec.Should().Be(includedAsset.ItemSpec);
         task.SurvivingEndpoints.Should().HaveCount(1);
         task.SurvivingEndpoints[0].ItemSpec.Should().Be("app.js");
     }

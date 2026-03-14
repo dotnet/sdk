@@ -1581,6 +1581,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
+    internal static ITaskItem[] ToTaskItems(IEnumerable<StaticWebAsset> assets)
+    {
+        return assets.Select(a => a.ToTaskItem()).ToArray();
+    }
+
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous

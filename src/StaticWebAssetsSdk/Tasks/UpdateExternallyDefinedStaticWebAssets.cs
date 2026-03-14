@@ -69,33 +69,15 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
         var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
 
-        UpdatedAssets = filteredAssets.Select(a => a.ToTaskItem()).ToArray();
+        UpdatedAssets = StaticWebAsset.ToTaskItems(filteredAssets);
 
-        // Filter endpoints: exclude endpoints whose asset was excluded by group filtering.
-        if (excludedAssetFiles.Count > 0)
-        {
-            var filteredEndpoints = new List<StaticWebAssetEndpoint>(endpoints.Length);
-            foreach (var ep in endpoints)
-            {
-                if (!string.IsNullOrEmpty(ep.AssetFile) && excludedAssetFiles.Contains(ep.AssetFile))
-                {
-                    Log.LogMessage(MessageImportance.Low,
-                        "Excluding endpoint '{0}' because its asset file '{1}' was excluded by group filtering.",
-                        ep.Route, ep.AssetFile);
-                    continue;
-                }
-                filteredEndpoints.Add(ep);
-            }
-            UpdatedEndpoints = filteredEndpoints.Select(e => e.ToTaskItem()).ToArray();
-        }
-        else
-        {
-            UpdatedEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray();
-        }
+        // Filter endpoints using the shared helper.
+        var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(endpoints);
+        var (_, survivingEndpoints) = StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedAssetFiles);
+        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(survivingEndpoints);
 
-        AssetsWithoutEndpoints = assetsWithoutEndpoints
-            .Where(a => !excludedAssetFiles.Contains(a.Identity))
-            .Select(a => a.ToTaskItem()).ToArray();
+        AssetsWithoutEndpoints = StaticWebAsset.ToTaskItems(
+            assetsWithoutEndpoints.Where(a => !excludedAssetFiles.Contains(a.Identity)));
 
         return !Log.HasLoggedErrors;
     }
