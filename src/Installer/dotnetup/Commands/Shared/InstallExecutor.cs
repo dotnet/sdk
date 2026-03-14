@@ -177,10 +177,16 @@ internal class InstallExecutor
             return null;
         }
 
-        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var sharedReporter = new LazyProgressReporter(progressTarget);
+        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results;
 
-        var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        // Scope the progress reporter so the progress bar finishes rendering
+        // before we print the result summary lines beneath it.
+        {
+            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            using var sharedReporter = new LazyProgressReporter(progressTarget);
+            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        }
+
         return DisplayBatchResults(results, primaryRequest);
     }
 

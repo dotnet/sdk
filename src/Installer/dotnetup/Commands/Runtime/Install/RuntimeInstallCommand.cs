@@ -111,10 +111,13 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 Untracked = _untracked
             })).ToList();
 
-        IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var sharedReporter = new LazyProgressReporter(progressTarget);
+        IReadOnlyList<InstallResult> results;
 
-        var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        {
+            IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            using var sharedReporter = new LazyProgressReporter(progressTarget);
+            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        }
 
         DisplayMultiInstallResults(results);
 

@@ -42,6 +42,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         var installRoot = new DotnetInstallRoot(
             _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
+
         var predownloadTask = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
             channel, InstallComponent.SDK, installRoot);
 
@@ -54,20 +55,23 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             return 1;
         }
 
-        // Only FullPathReplacement modifies system PATH/DOTNET_ROOT.
-        // ShellProfile relies on shell config files, not system-level PATH changes.
+        // Both FullPathReplacement and ShellProfile shadow the system PATH, so
+        // dotnetup needs to be the default install for both modes.
         // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool? setDefaultInstall = pathPreference == PathPreference.FullPathReplacement;
+        bool? setDefaultInstall = pathPreference != PathPreference.DotnetupDotnet;
 
         // Step 2: Prompt about admin installs before setting up the environment.
-        if (pathPreference == PathPreference.FullPathReplacement && OperatingSystem.IsWindows())
+        // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
+        if (pathPreference != PathPreference.DotnetupDotnet && OperatingSystem.IsWindows())
         {
             setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
         }
 
-        // Install SDK — wait for predownload to finish (cache is warm)
+        // Install SDK — validate the install path early so the user sees any conflict
+        // before the download output, not after.
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
+        ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
         // Await predownload so the cache is populated before the real install begins.
@@ -195,6 +199,26 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
                 "[{0}]{1}[/]",
                 DotnetupTheme.Current.Dim,
                 guidance.EscapeMarkup()));
+        }
+    }
+
+    /// <summary>
+    /// Checks whether the target install path already contains .NET artifacts that are not
+    /// tracked by dotnetup. Mirrors the conflict check in
+    /// <see cref="InstallerOrchestratorSingleton.PrepareInstall"/> so we can surface the
+    /// error before any download work begins.
+    /// </summary>
+    private static void ValidateInstallPathOrThrow(DotnetInstallRoot installRoot, string? manifestPath)
+    {
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
+        if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
+            && InstallerOrchestratorSingleton.HasDotnetArtifacts(installRoot.Path))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                "To avoid conflicts, use a different install path or remove the existing installation first.");
         }
     }
 }
