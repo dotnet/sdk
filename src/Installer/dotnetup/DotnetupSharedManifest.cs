@@ -83,6 +83,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 ex);
         }
 
+        return ParseManifestJson(json);
+    }
+
+    private DotnetupManifestData ParseManifestJson(string json)
+    {
         try
         {
             // Try new format first

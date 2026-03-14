@@ -75,6 +75,15 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         // Exceptions are already swallowed inside PredownloadToCacheAsync.
         predownloadTask.GetAwaiter().GetResult();
 
+        RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
+
+        // Step 3: Save config
+        SaveConfigAndDisplayResult(pathPreference);
+        return 0;
+    }
+
+    private void RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)
+    {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
         var options = new InstallWorkflow.InstallWorkflowOptions(
             VersionOrChannel: channel,
@@ -89,22 +98,19 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
             PathPreference: pathPreference);
-
         workflow.Execute(options);
+    }
 
-        // Step 3: Save config
+    private static void SaveConfigAndDisplayResult(PathPreference pathPreference)
+    {
         var config = new DotnetupConfigData
         {
             PathPreference = pathPreference,
         };
         DotnetupConfig.Write(config);
-
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Success("Setup complete!"));
-
         DisplayPathGuidance(pathPreference);
-
-        return 0;
     }
 
     /// <summary>

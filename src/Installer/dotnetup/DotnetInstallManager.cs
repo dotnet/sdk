@@ -192,42 +192,47 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // Non-Windows platforms: use the simpler PATH-based approach
-            // Get current PATH
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-            var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string exeName = "dotnet";
-            // Remove only actual dotnet installation folders from PATH
-            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
-
-            switch (installType)
-            {
-                case InstallType.User:
-                    if (string.IsNullOrEmpty(dotnetRoot))
-                    {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
-                    }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Set DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
-                    break;
-                case InstallType.Admin:
-                    if (string.IsNullOrEmpty(dotnetRoot))
-                    {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
-                    }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Unset DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
-            }
-            // Update PATH
-            var newPath = string.Join(Path.PathSeparator, pathEntries);
-            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
+            ConfigureInstallTypeUnix(installType, dotnetRoot);
         }
+    }
+
+    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot)
+    {
+        // Non-Windows platforms: use the simpler PATH-based approach
+        // Get current PATH
+        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
+        string exeName = "dotnet";
+        // Remove only actual dotnet installation folders from PATH
+        pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+
+        switch (installType)
+        {
+            case InstallType.User:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                {
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                }
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Set DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+                break;
+            case InstallType.Admin:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                {
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                }
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Unset DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                break;
+            default:
+                throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+        }
+        // Update PATH
+        var newPath = string.Join(Path.PathSeparator, pathEntries);
+        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
 }

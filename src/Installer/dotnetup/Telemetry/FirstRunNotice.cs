@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 

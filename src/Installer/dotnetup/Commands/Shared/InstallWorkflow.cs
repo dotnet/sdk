@@ -192,8 +192,7 @@ internal class InstallWorkflow
         // Users may walk away after seeing download progress begin, expecting no more prompts.
         var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
-            context.SetDefaultInstall,
-            context.CurrentInstallRoot);
+            context.SetDefaultInstall);
 
         var installResult = InstallExecutor.ExecuteInstall(
             resolved.Request,

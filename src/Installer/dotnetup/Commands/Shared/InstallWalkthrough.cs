@@ -44,12 +44,10 @@ internal class InstallWalkthrough
     /// </summary>
     /// <param name="resolvedVersion">The version being installed.</param>
     /// <param name="setDefaultInstall">Whether the install will be set as default.</param>
-    /// <param name="currentInstallRoot">Current installation configuration.</param>
     /// <returns>List of additional versions to install, empty if none.</returns>
     public List<string> GetAdditionalAdminVersionsToMigrate(
         ReleaseVersion? resolvedVersion,
-        bool setDefaultInstall,
-        DotnetInstallRootConfiguration? currentInstallRoot)
+        bool setDefaultInstall)
     {
         var additionalVersions = new List<string>();
 
@@ -167,54 +165,7 @@ internal class InstallWalkthrough
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.User)
                 {
-                    if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
-                    {
-                        //  If the current install is fully configured and matches the resolved path, skip the prompt
-                        if (currentDotnetInstallRoot.IsFullyConfigured)
-                        {
-                            // Default install is already set up correctly, no need to prompt
-                            resolvedSetDefaultInstall = false;
-                        }
-                        else
-                        {
-                            // Not fully configured - display what needs to be configured and prompt
-                            if (OperatingSystem.IsWindows())
-                            {
-                                UserInstallRootChanges userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
-
-                                SpectreAnsiConsole.WriteLine($"The .NET installation at {resolvedInstallPath} is not fully configured.");
-                                SpectreAnsiConsole.WriteLine("The following changes are needed:");
-
-                                if (userInstallRootChanges.NeedsRemoveAdminPath)
-                                {
-                                    SpectreAnsiConsole.WriteLine("  - Remove admin .NET paths from system PATH");
-                                }
-                                if (userInstallRootChanges.NeedsAddToUserPath)
-                                {
-                                    SpectreAnsiConsole.WriteLine($"  - Add {userInstallRootChanges.UserDotnetPath} to user PATH");
-                                }
-                                if (userInstallRootChanges.NeedsSetDotnetRoot)
-                                {
-                                    SpectreAnsiConsole.WriteLine($"  - Set DOTNET_ROOT to {userInstallRootChanges.UserDotnetPath}");
-                                }
-
-                                resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                                    "Do you want to apply these configuration changes?",
-                                    defaultValue: true);
-                            }
-                            else
-                            {
-                                // On non-Windows, we don't have detailed configuration info
-                                //  No need to prompt here, the default install is already set up.
-                            }
-                        }
-                    }
-                    else
-                    {
-                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
-                            defaultValue: false);
-                    }
+                    resolvedSetDefaultInstall = ResolveDefaultInstallForUserInstall(currentDotnetInstallRoot, resolvedInstallPath);
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
@@ -248,6 +199,62 @@ internal class InstallWalkthrough
     }
 
     /// <summary>
+    /// Resolves whether the user install should be set as default when the current install type is User.
+    /// </summary>
+    private bool? ResolveDefaultInstallForUserInstall(
+        DotnetInstallRootConfiguration currentDotnetInstallRoot,
+        string resolvedInstallPath)
+    {
+        if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
+        {
+            //  If the current install is fully configured and matches the resolved path, skip the prompt
+            if (currentDotnetInstallRoot.IsFullyConfigured)
+            {
+                // Default install is already set up correctly, no need to prompt
+                return false;
+            }
+
+            // Not fully configured - display what needs to be configured and prompt
+            if (OperatingSystem.IsWindows())
+            {
+                UserInstallRootChanges userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
+
+                SpectreAnsiConsole.WriteLine($"The .NET installation at {resolvedInstallPath} is not fully configured.");
+                SpectreAnsiConsole.WriteLine("The following changes are needed:");
+
+                if (userInstallRootChanges.NeedsRemoveAdminPath)
+                {
+                    SpectreAnsiConsole.WriteLine("  - Remove admin .NET paths from system PATH");
+                }
+                if (userInstallRootChanges.NeedsAddToUserPath)
+                {
+                    SpectreAnsiConsole.WriteLine($"  - Add {userInstallRootChanges.UserDotnetPath} to user PATH");
+                }
+                if (userInstallRootChanges.NeedsSetDotnetRoot)
+                {
+                    SpectreAnsiConsole.WriteLine($"  - Set DOTNET_ROOT to {userInstallRootChanges.UserDotnetPath}");
+                }
+
+                return SpectreAnsiConsole.Confirm(
+                    "Do you want to apply these configuration changes?",
+                    defaultValue: true);
+            }
+            else
+            {
+                // On non-Windows, we don't have detailed configuration info
+                //  No need to prompt here, the default install is already set up.
+                return null;
+            }
+        }
+        else
+        {
+            return SpectreAnsiConsole.Confirm(
+                $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
+                defaultValue: false);
+        }
+    }
+
+    /// <summary>
     /// Renders a list of items with only <paramref name="visibleCount"/> shown initially.
     /// When running interactively, the user can scroll with arrow keys to see more.
     /// Falls back to a static truncated list when input is redirected.
@@ -274,6 +281,13 @@ internal class InstallWalkthrough
         }
 
         // Interactive scrollable list
+        RunInteractiveScrollLoop(items, visibleCount);
+    }
+
+    private static void RunInteractiveScrollLoop(List<string> items, int visibleCount)
+    {
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
         int offset = 0;
         int maxOffset = items.Count - visibleCount;
 

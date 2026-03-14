@@ -72,50 +72,60 @@ internal static class InstallationLister
 
         foreach (var root in roots)
         {
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
-
-            // Collect install specs
-            foreach (var spec in root.InstallSpecs)
-            {
-                installSpecs.Add(new InstallSpecInfo
-                {
-                    Component = spec.Component,
-                    VersionOrChannel = spec.VersionOrChannel,
-                    Source = spec.InstallSource,
-                    GlobalJsonPath = spec.GlobalJsonPath,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture
-                });
-            }
-
-            // Collect installations
-            foreach (var installation in root.Installations)
-            {
-                bool? isValid = null;
-                string? validationFailure = null;
-
-                if (verify)
-                {
-                    var dotnetInstall = new DotnetInstall(
-                        installRoot,
-                        new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
-                        installation.Component);
-                    isValid = validator.Validate(dotnetInstall, out validationFailure);
-                }
-
-                installations.Add(new InstallationInfo
-                {
-                    Component = installation.Component,
-                    Version = installation.Version,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture,
-                    IsValid = isValid,
-                    ValidationFailure = validationFailure
-                });
-            }
+            CollectRootData(root, verify, validator, installSpecs, installations);
         }
 
         return new ListData { InstallSpecs = installSpecs, Installations = installations };
+    }
+
+    private static void CollectRootData(
+        DotnetRootEntry root,
+        bool verify,
+        ArchiveInstallationValidator validator,
+        List<InstallSpecInfo> installSpecs,
+        List<InstallationInfo> installations)
+    {
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        // Collect install specs
+        foreach (var spec in root.InstallSpecs)
+        {
+            installSpecs.Add(new InstallSpecInfo
+            {
+                Component = spec.Component,
+                VersionOrChannel = spec.VersionOrChannel,
+                Source = spec.InstallSource,
+                GlobalJsonPath = spec.GlobalJsonPath,
+                InstallRoot = root.Path,
+                Architecture = root.Architecture
+            });
+        }
+
+        // Collect installations
+        foreach (var installation in root.Installations)
+        {
+            bool? isValid = null;
+            string? validationFailure = null;
+
+            if (verify)
+            {
+                var dotnetInstall = new DotnetInstall(
+                    installRoot,
+                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
+                    installation.Component);
+                isValid = validator.Validate(dotnetInstall, out validationFailure);
+            }
+
+            installations.Add(new InstallationInfo
+            {
+                Component = installation.Component,
+                Version = installation.Version,
+                InstallRoot = root.Path,
+                Architecture = root.Architecture,
+                IsValid = isValid,
+                ValidationFailure = validationFailure
+            });
+        }
     }
 
     private const int IndentSize = 2;

@@ -39,20 +39,11 @@ internal class DotnetupProgram
 
         try
         {
-            var result = Parser.Invoke(args);
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
-            rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-
+            var exitCode = InvokeParser(args, rootActivity);
             // When launched with no arguments in an interactive terminal (e.g. double-click),
             // pause so the window doesn't disappear immediately.
-            if (args.Length == 0 && !Console.IsOutputRedirected && !Console.IsInputRedirected)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey(intercept: true);
-            }
-
-            return result;
+            WaitForKeyPressIfNeeded(args);
+            return exitCode;
         }
         catch (Exception ex)
         {
@@ -73,22 +64,44 @@ internal class DotnetupProgram
             // exporters see it.  The 'using' dispose that follows is a no-op on
             // an already-stopped Activity.
             rootActivity?.Stop();
+            DisposeTelemetry();
+        }
+    }
 
-            // The Azure Monitor exporter has built-in offline storage
-            // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
-            // survives process exit and is retried on the next run.
-            // Dispose on a background thread with a short timeout so we
-            // never block the user waiting for a network round-trip.
-            // This mirrors the pattern used by the .NET CLI, which writes
-            // telemetry to disk and sends it asynchronously.
-            try
-            {
-                Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
-            }
-            catch
-            {
-                // Telemetry should never delay or crash the process exit.
-            }
+    private static int InvokeParser(string[] args, Activity? rootActivity)
+    {
+        var result = Parser.Invoke(args);
+        rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
+        rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+        return result;
+    }
+
+    private static void WaitForKeyPressIfNeeded(string[] args)
+    {
+        if (args.Length == 0 && !Console.IsOutputRedirected && !Console.IsInputRedirected)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey(intercept: true);
+        }
+    }
+
+    private static void DisposeTelemetry()
+    {
+        // The Azure Monitor exporter has built-in offline storage
+        // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
+        // survives process exit and is retried on the next run.
+        // Dispose on a background thread with a short timeout so we
+        // never block the user waiting for a network round-trip.
+        // This mirrors the pattern used by the .NET CLI, which writes
+        // telemetry to disk and sends it asynchronously.
+        try
+        {
+            Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
+        }
+        catch
+        {
+            // Telemetry should never delay or crash the process exit.
         }
     }
 }
