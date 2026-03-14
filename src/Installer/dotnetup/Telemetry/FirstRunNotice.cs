@@ -76,7 +76,9 @@ internal static class FirstRunNotice
         // Write to stderr, consistent with .NET SDK behavior
         // See: https://learn.microsoft.com/dotnet/core/compatibility/sdk/10.0/dotnet-cli-stderr-output
         Console.Error.WriteLine();
+        Console.Error.Write("\x1b[2m");
         Console.Error.WriteLine(Strings.TelemetryNotice);
+        Console.Error.Write("\x1b[0m");
         Console.Error.WriteLine();
     }
 
