@@ -63,8 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ListHeader">
-        <source>Installed .NET (managed by dotnetup):</source>
-        <target state="new">Installed .NET (managed by dotnetup):</target>
+        <source>Installations (managed by dotnetup):</source>
+        <target state="new">Installations (managed by dotnetup):</target>
         <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">
@@ -82,6 +82,51 @@
         <target state="new">Total</target>
         <note />
       </trans-unit>
+      <trans-unit id="PathDescriptionDotnetupDotnet">
+        <source>Run .NET via 'dotnetup dotnet &lt;cmd&gt;'. No changes to PATH or environment variables.</source>
+        <target state="new">Run .NET via 'dotnetup dotnet &lt;cmd&gt;'. No changes to PATH or environment variables.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionFullReplacement">
+        <source>Updates PATH and DOTNET_ROOT so 'dotnet' resolves to the dotnetup-managed install everywhere.</source>
+        <target state="new">Updates PATH and DOTNET_ROOT so 'dotnet' resolves to the dotnetup-managed install everywhere.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionShellProfile">
+        <source>Adds dotnetup-managed .NET to your shell profile so 'dotnet' works in new terminals.</source>
+        <target state="new">Adds dotnetup-managed .NET to your shell profile so 'dotnet' works in new terminals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceDotnetupDotnet">
+        <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
+        <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceFullReplacement">
+        <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
+        <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceShellProfile">
+        <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
+        <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceDotnetupDotnet">
+        <source>No PATH changes - use 'dotnetup dotnet' to run commands</source>
+        <target state="new">No PATH changes - use 'dotnetup dotnet' to run commands</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceFullReplacement">
+        <source>Set as system default - update PATH and DOTNET_ROOT environment variables</source>
+        <target state="new">Set as system default - update PATH and DOTNET_ROOT environment variables</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceShellProfile">
+        <source>Add to shell profile - update your shell configuration file</source>
+        <target state="new">Add to shell profile - update your shell configuration file</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RootCommandDescription">
         <source>.NET installation manager for user level installs.</source>
         <target state="new">.NET installation manager for user level installs.</target>
@@ -90,6 +135,11 @@
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WalkthroughCommandDescription">
+        <source>Run the interactive setup walkthrough to install .NET and configure PATH settings.</source>
+        <target state="new">Run the interactive setup walkthrough to install .NET and configure PATH settings.</target>
         <note />
       </trans-unit>
     </body>

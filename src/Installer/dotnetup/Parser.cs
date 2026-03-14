@@ -15,6 +15,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -61,10 +62,16 @@ internal class Parser
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetAliasCommand());
+        rootCommand.Subcommands.Add(WalkthroughCommandParser.GetCommand());
 
         rootCommand.SetAction(parseResult =>
         {
-            // No subcommand - show help
+            // No subcommand: run walkthrough if not yet configured, otherwise show description
+            if (!DotnetupConfig.Exists())
+            {
+                return new WalkthroughCommand(parseResult).Execute();
+            }
+
             parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
             return 0;
         });

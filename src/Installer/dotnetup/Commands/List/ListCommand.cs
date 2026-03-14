@@ -124,8 +124,14 @@ internal static class InstallationLister
 
     public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
+        // Create an AnsiConsole that writes to our TextWriter
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(writer)
+        });
+
         writer.WriteLine();
-        writer.WriteLine(Strings.ListHeader);
+        console.MarkupLine("Installations [dim](managed by dotnetup)[/]:");
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
@@ -134,11 +140,6 @@ internal static class InstallationLister
         }
         else
         {
-            // Create an AnsiConsole that writes to our TextWriter
-            var console = AnsiConsole.Create(new AnsiConsoleSettings
-            {
-                Out = new AnsiConsoleOutput(writer)
-            });
 
             // Group by install root for cleaner display
             var allRoots = listData.InstallSpecs.Select(s => s.InstallRoot)
@@ -178,8 +179,7 @@ internal static class InstallationLister
                     : spec.Source.ToString().ToLowerInvariant();
 
                 specGrid.AddRow(
-                    spec.Component.GetDisplayName(),
-                    spec.VersionOrChannel,
+                    $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
                     $"[dim](source: {sourceDisplay})[/]"
                 );
             }
@@ -204,8 +204,7 @@ internal static class InstallationLister
                     : $"({install.Architecture})";
 
                 installGrid.AddRow(
-                    install.Component.GetDisplayName(),
-                    install.Version,
+                    $"{install.Component.GetDisplayName()} {install.Version}",
                     status
                 );
             }
@@ -218,7 +217,6 @@ internal static class InstallationLister
     {
         var grid = new Grid();
         grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
-        grid.AddColumn(new GridColumn().PadRight(IndentSize).NoWrap());
         grid.AddColumn(new GridColumn().NoWrap());
         return grid;
     }

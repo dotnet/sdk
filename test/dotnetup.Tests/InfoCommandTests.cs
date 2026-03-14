@@ -115,7 +115,8 @@ public class InfoCommandTests
 
         // Assert
         output.Should().Contain("dotnetup Information:");
-        output.Should().Contain("Installed .NET (managed by dotnetup):");
+        output.Should().Contain("Installations");
+        output.Should().Contain("managed by dotnetup");
         output.Should().Contain("Total:");
     }
 

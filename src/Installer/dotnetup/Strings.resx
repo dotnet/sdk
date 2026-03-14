@@ -142,7 +142,7 @@
     <value>Skip verifying that each installation is valid.</value>
   </data>
   <data name="ListHeader" xml:space="preserve">
-    <value>Installed .NET (managed by dotnetup):</value>
+    <value>Installations (managed by dotnetup):</value>
   </data>
   <data name="ListNoInstallations" xml:space="preserve">
     <value>(none)</value>
@@ -170,5 +170,35 @@
   </data>
   <data name="TelemetryNotice" xml:space="preserve">
     <value>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</value>
+  </data>
+  <data name="WalkthroughCommandDescription" xml:space="preserve">
+    <value>Run the interactive setup walkthrough to install .NET and configure PATH settings.</value>
+  </data>
+  <data name="PathPreferenceDotnetupDotnet" xml:space="preserve">
+    <value>No PATH changes - use 'dotnetup dotnet' to run commands</value>
+  </data>
+  <data name="PathPreferenceShellProfile" xml:space="preserve">
+    <value>Add to shell profile - update your shell configuration file</value>
+  </data>
+  <data name="PathPreferenceFullReplacement" xml:space="preserve">
+    <value>Set as system default - update PATH and DOTNET_ROOT environment variables</value>
+  </data>
+  <data name="PathGuidanceDotnetupDotnet" xml:space="preserve">
+    <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
+  </data>
+  <data name="PathGuidanceShellProfile" xml:space="preserve">
+    <value>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</value>
+  </data>
+  <data name="PathGuidanceFullReplacement" xml:space="preserve">
+    <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
+  </data>
+  <data name="PathDescriptionDotnetupDotnet" xml:space="preserve">
+    <value>Run .NET via 'dotnetup dotnet &lt;cmd&gt;'. No changes to PATH or environment variables.</value>
+  </data>
+  <data name="PathDescriptionShellProfile" xml:space="preserve">
+    <value>Adds dotnetup-managed .NET to your shell profile so 'dotnet' works in new terminals.</value>
+  </data>
+  <data name="PathDescriptionFullReplacement" xml:space="preserve">
+    <value>Updates PATH and DOTNET_ROOT so 'dotnet' resolves to the dotnetup-managed install everywhere.</value>
   </data>
 </root>

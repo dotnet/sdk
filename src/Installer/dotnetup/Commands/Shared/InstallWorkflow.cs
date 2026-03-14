@@ -36,7 +36,8 @@ internal class InstallWorkflow
         bool? UpdateGlobalJson = null,
         Func<string, string?>? ResolveChannelFromGlobalJson = null,
         bool RequireMuxerUpdate = false,
-        bool Untracked = false);
+        bool Untracked = false,
+        PathPreference? PathPreference = null);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -122,8 +123,6 @@ internal class InstallWorkflow
             options.InstallPath,
             globalJson,
             currentInstallRoot,
-            options.Interactive,
-            options.ComponentDescription,
             out error);
 
         if (pathResolution is null)

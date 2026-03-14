@@ -43,6 +43,15 @@ internal class DotnetupProgram
             rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
             rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
 
+            // When launched with no arguments in an interactive terminal (e.g. double-click),
+            // pause so the window doesn't disappear immediately.
+            if (args.Length == 0 && !Console.IsOutputRedirected && !Console.IsInputRedirected)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey(intercept: true);
+            }
+
             return result;
         }
         catch (Exception ex)

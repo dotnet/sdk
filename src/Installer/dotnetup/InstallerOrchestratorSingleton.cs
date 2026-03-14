@@ -23,6 +23,58 @@ internal class InstallerOrchestratorSingleton
 
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
+    /// <summary>
+    /// Resolves the version for a channel and downloads the archive into the download cache
+    /// without installing. This allows a background task to warm the cache while the user
+    /// interacts with walkthrough prompts, so the subsequent <see cref="Install"/> call
+    /// finds the archive already cached and skips the download.
+    /// </summary>
+    /// <remarks>
+    /// This method is safe to call concurrently with <see cref="Install"/>. The download
+    /// cache handles deduplication, and no install-state mutex is acquired.
+    /// Exceptions are intentionally swallowed — a failed predownload simply means the
+    /// real install will download normally.
+    /// </remarks>
+    public static async Task PredownloadToCacheAsync(string channel, InstallComponent component, DotnetInstallRoot installRoot)
+    {
+        try
+        {
+            if (!ChannelVersionResolver.IsValidChannelFormat(channel))
+            {
+                return;
+            }
+
+            ReleaseManifest releaseManifest = new();
+            var resolver = new ChannelVersionResolver(releaseManifest);
+            var request = new DotnetInstallRequest(installRoot, new UpdateChannel(channel), component, new InstallRequestOptions());
+            var version = resolver.Resolve(request);
+
+            if (version is null)
+            {
+                return;
+            }
+
+            // Download to a temp file, which populates the download cache as a side effect.
+            // The temp file is cleaned up afterwards — only the cache entry matters.
+            var tempDir = Directory.CreateTempSubdirectory("dotnetup-predownload").FullName;
+            try
+            {
+                var archivePath = Path.Combine(tempDir, $"predownload{DotnetupUtilities.GetArchiveFileExtensionForPlatform()}");
+                using var downloader = new DotnetArchiveDownloader(releaseManifest);
+                await Task.Run(() => downloader.DownloadArchiveWithVerification(request, version, archivePath)).ConfigureAwait(false);
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch { /* best-effort cleanup */ }
+            }
+        }
+        catch
+        {
+            // Predownload is best-effort — failures are silently ignored.
+            // The real install will download normally.
+        }
+    }
+
     // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)

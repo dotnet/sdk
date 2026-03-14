@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 /// <summary>
@@ -36,22 +33,17 @@ internal class InstallPathResolver
     /// 1. Path from global.json (if available)
     /// 2. Explicitly provided install path
     /// 3. Current user installation path (if exists)
-    /// 4. Interactive prompt (if interactive mode)
-    /// 5. Default install path
+    /// 4. Default install path
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
     /// <param name="currentDotnetInstallRoot">Current .NET installation configuration, if any.</param>
-    /// <param name="interactive">Whether to prompt the user for input.</param>
-    /// <param name="componentDescription">Description of the component being installed (e.g., ".NET SDK", ".NET Runtime").</param>
     /// <param name="error">Output parameter for any error message.</param>
     /// <returns>The resolution result, or null if an error occurred.</returns>
     public InstallPathResolutionResult? Resolve(
         string? explicitInstallPath,
         GlobalJsonInfo? globalJsonInfo,
         DotnetInstallRootConfiguration? currentDotnetInstallRoot,
-        bool interactive,
-        string componentDescription,
         out string? error)
     {
         error = null;
@@ -63,8 +55,7 @@ internal class InstallPathResolver
         // 1. Explicit --install-path always wins
         // 2. global.json sdk-path
         // 3. Existing user installation
-        // 4. Interactive prompt
-        // 5. Default install path
+        // 4. Default install path
 
         if (explicitInstallPath is not null)
         {
@@ -77,13 +68,6 @@ internal class InstallPathResolver
         else if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
             return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
-        }
-        else if (interactive)
-        {
-            var prompted = SpectreAnsiConsole.Prompt(
-                new TextPrompt<string>($"Where should we install the {componentDescription} to?")
-                    .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, PathSource.InteractivePrompt);
         }
         else
         {

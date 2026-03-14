@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 internal class InstallWalkthrough
 {
     private readonly IDotnetInstallManager _dotnetInstaller;
-    private readonly ChannelVersionResolver _channelVersionResolver;
     private readonly InstallWorkflow.InstallWorkflowOptions _options;
 #pragma warning disable IDE0032 // Lazy-init via ??=; not convertible to auto-property
     private InstallRootManager? _installRootManager;
@@ -32,7 +31,7 @@ internal class InstallWalkthrough
         InstallWorkflow.InstallWorkflowOptions options)
     {
         _dotnetInstaller = dotnetInstaller;
-        _channelVersionResolver = channelVersionResolver;
+        _ = channelVersionResolver; // Reserved for future use
         _options = options;
     }
 
@@ -52,6 +51,13 @@ internal class InstallWalkthrough
         DotnetInstallRootConfiguration? currentInstallRoot)
     {
         var additionalVersions = new List<string>();
+
+        // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3).
+        // Option 1 (DotnetupDotnet) doesn't touch PATH, so admin installs remain accessible.
+        if (_options.PathPreference == PathPreference.DotnetupDotnet)
+        {
+            return additionalVersions;
+        }
 
         if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
         {
@@ -102,21 +108,6 @@ internal class InstallWalkthrough
         {
             SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
             return channelFromGlobalJson;
-        }
-
-        if (_options.Interactive)
-        {
-            // Feature bands (like 9.0.1xx) are SDK-specific, don't show them for runtimes
-            bool includeFeatureBands = _options.Component == InstallComponent.SDK;
-            SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels(includeFeatureBands)));
-
-            // Use appropriate version example for SDK vs Runtime
-            string versionExample = _options.Component == InstallComponent.SDK ? "9.0.304" : "9.0.12";
-            SpectreAnsiConsole.WriteLine($"You can also specify a specific version (for example {versionExample}).");
-
-            return SpectreAnsiConsole.Prompt(
-                new TextPrompt<string>($"Which channel of the {_options.ComponentDescription} do you want to install?")
-                    .DefaultValue(defaultChannel));
         }
 
         return defaultChannel;

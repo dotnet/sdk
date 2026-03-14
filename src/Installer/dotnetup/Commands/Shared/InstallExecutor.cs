@@ -89,11 +89,11 @@ internal class InstallExecutor
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version} at {orchestratorResult.Install.InstallRoot.Path}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -136,7 +136,7 @@ internal class InstallExecutor
             try
             {
                 var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version} at {additionalResult.Install.InstallRoot.Path}[/]");
             }
             catch (DotnetInstallException)
             {

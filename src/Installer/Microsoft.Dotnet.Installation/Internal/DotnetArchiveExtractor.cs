@@ -11,9 +11,10 @@ internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
-    private readonly IProgressTarget _progressTarget;
+    private readonly IProgressTarget? _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
+    private readonly bool _ownsProgressReporter = true;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -30,10 +31,35 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
         IArchiveDownloader? archiveDownloader = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader)
+    {
+        _progressTarget = progressTarget;
+    }
+
+    /// <summary>
+    /// Constructor that accepts a shared IProgressReporter, allowing multiple extractors
+    /// to display progress tasks within the same progress widget.
+    /// </summary>
+    public DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IProgressReporter sharedReporter,
+        IArchiveDownloader? archiveDownloader = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader)
+    {
+        _progressReporter = sharedReporter;
+        _ownsProgressReporter = false;
+    }
+
+    private DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IArchiveDownloader? archiveDownloader)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
-        _progressTarget = progressTarget;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -56,8 +82,9 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
     /// This avoids multiple newlines from Spectre.Console Progress between phases.
+    /// When a shared reporter was provided via the constructor, that instance is returned directly.
     /// </summary>
-    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
+    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
 
     public void Prepare()
     {
