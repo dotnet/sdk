@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -15,6 +16,10 @@ internal class DotnetupProgram
         // Handle --debug flag using the standard .NET SDK pattern
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Ensure UTF-8 output so Unicode glyphs (spinners, progress bars) render correctly.
+        // Follows the same pattern as the .NET SDK CLI (src/Cli/dotnet/Program.cs).
+        ConfigureConsoleEncoding();
 
         // Disable Spectre.Console line wrapping when output is redirected (piped),
         // since wrapping is not useful for non-interactive consumers.
@@ -90,6 +95,28 @@ internal class DotnetupProgram
         catch
         {
             // Telemetry should never delay or crash the process exit.
+        }
+    }
+
+    /// <summary>
+    /// Sets the console output encoding to UTF-8 so Unicode glyphs render correctly.
+    /// Mirrors the logic in the .NET SDK CLI (src/Cli/dotnet/Program.cs) and
+    /// UILanguageOverride.OperatingSystemSupportsUtf8().
+    /// </summary>
+    private static void ConfigureConsoleEncoding()
+    {
+        if (Env.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") == "1")
+        {
+            return;
+        }
+
+        if (!OperatingSystem.IsIOS() &&
+            !OperatingSystem.IsAndroid() &&
+            !OperatingSystem.IsTvOS() &&
+            !OperatingSystem.IsBrowser() &&
+            (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18363)))
+        {
+            Console.OutputEncoding = Encoding.UTF8;
         }
     }
 }
