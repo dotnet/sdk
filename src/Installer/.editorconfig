@@ -674,3 +674,11 @@ dotnet_diagnostic.CA2007.severity = silent
 
 [*.{cs,vb}]
 dotnet_diagnostic.ASPIREEVENTING001.severity = none
+
+# Meziantou.Analyzer rules scoped to dotnetup projects only
+[{dotnetup/**.cs,Microsoft.Dotnet.Installation/**.cs,dotnetup.Tests/**.cs}]
+
+# MA0051: Method is too long (max 60 lines)
+dotnet_diagnostic.MA0051.severity = warning
+dotnet_code_quality.MA0051.maximum_lines_per_method = 60
+dotnet_code_quality.MA0051.skip_local_functions = true
