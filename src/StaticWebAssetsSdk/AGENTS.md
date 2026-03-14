@@ -70,7 +70,7 @@ StaticWebAssetsPrepareForPublish
 ### Main Targets (Microsoft.NET.Sdk.StaticWebAssets.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `StaticWebAssetsPrepareForRun` | Entry point - orchestrates build-time asset processing |
 | `ResolveBuildStaticWebAssets` | Master orchestration for 3-stage asset resolution |
 | `ResolveCoreStaticWebAssets` | Stage 1: Discover existing assets from disk |
@@ -90,7 +90,7 @@ StaticWebAssetsPrepareForPublish
 ### Reference Targets (Microsoft.NET.Sdk.StaticWebAssets.References.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `ResolveReferencedProjectsStaticWebAssetsConfiguration` | Get configuration from project references |
 | `GetStaticWebAssetsProjectConfiguration` | Return this project's SWA config |
 | `ResolveReferencedProjectsStaticWebAssets` | Get assets from project references |
@@ -100,7 +100,7 @@ StaticWebAssetsPrepareForPublish
 ### Publish Targets (Microsoft.NET.Sdk.StaticWebAssets.Publish.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `StaticWebAssetsPrepareForPublish` | Entry point for publish |
 | `GenerateComputedPublishStaticWebAssets` | Generate publish-time computed assets |
 | `GenerateStaticWebAssetsPublishManifest` | Generate publish manifest |
@@ -116,7 +116,7 @@ StaticWebAssetsPrepareForPublish
 ### Compression Targets (Microsoft.NET.Sdk.StaticWebAssets.Compression.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `ResolveBuildCompressedStaticWebAssets` | Create compressed variants (build) |
 | `GenerateBuildCompressedStaticWebAssets` | Generate compressed files (build) |
 | `ResolveBuildCompressedStaticWebAssetsConfiguration` | Configure build compression |
@@ -127,7 +127,7 @@ StaticWebAssetsPrepareForPublish
 ### Scoped CSS Targets (Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `ResolveScopedCssAssets` | Main scoped CSS processing |
 | `GenerateScopedCssFiles` | Generate scoped CSS |
 | `ResolveScopedCssInputs` | Discover scoped CSS inputs |
@@ -140,7 +140,7 @@ StaticWebAssetsPrepareForPublish
 ### JS Modules Targets (Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `ResolveJsInitializerModuleStaticWebAssets` | Resolve JS initializer modules |
 | `ResolveJSModuleManifestBuildConfiguration` | Configure build JS manifest |
 | `GenerateJSModuleManifestBuildStaticWebAssets` | Generate build JS manifest |
@@ -153,7 +153,7 @@ StaticWebAssetsPrepareForPublish
 ### Embedded Assets Targets (Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets)
 
 | Target | Purpose |
-|--------|---------|
+|--------|--------|
 | `GetStaticWebAssetsCrosstargetingProjectConfiguration` | Get embedded project config |
 | `ResolveStaticWebAssetsCrossTargetingConfiguration` | Resolve cross-targeting config |
 | `ResolveStaticWebAssetsEmbeddingRules` | Resolve embedding rules |
