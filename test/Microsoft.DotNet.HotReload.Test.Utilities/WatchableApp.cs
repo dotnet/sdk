@@ -204,6 +204,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
             info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
 
+            // Aspire DCP logging:
+            info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));
+            info.Environment.Add("DCP_DIAGNOSTICS_LOG_LEVEL", "debug");
+
             // suppress all timeouts:
             info.Environment.Add("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             info.Environment.Add("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
