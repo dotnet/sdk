@@ -7,8 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-    public static readonly Argument<string?> ChannelArgument =
-        CommonOptions.CreateSdkChannelArgument(required: false, actionVerb: "install");
+    public static readonly Argument<string[]> ChannelArguments =
+        CommonOptions.CreateSdkChannelArguments(actionVerb: "install");
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
@@ -38,7 +38,7 @@ internal static class SdkInstallCommandParser
     {
         Command command = new("install", "Installs the .NET SDK");
 
-        command.Arguments.Add(ChannelArgument);
+        command.Arguments.Add(ChannelArguments);
 
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);

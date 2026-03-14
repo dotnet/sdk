@@ -101,6 +101,22 @@ internal class CommonOptions
     }
 
     /// <summary>
+    /// Creates a channel argument for SDK commands that accepts multiple values.
+    /// Allows commands like: dotnetup sdk install 9.0 10.0
+    /// </summary>
+    /// <param name="actionVerb">Verb for the description (e.g., "install").</param>
+    public static Argument<string[]> CreateSdkChannelArguments(string actionVerb)
+    {
+        return new Argument<string[]>("channel")
+        {
+            HelpName = "CHANNEL",
+            Description = $"One or more channels or versions of the .NET SDK to {actionVerb} (e.g., latest, 10, 9.0.3xx, or 9.0.304). "
+                + "Multiple channels can be provided to install concurrently.",
+            Arity = ArgumentArity.ZeroOrMore,
+        };
+    }
+
+    /// <summary>
     /// Creates a component-spec argument for runtime commands (single value).
     /// Each command needs its own Argument instance (System.CommandLine requirement),
     /// but the shape and valid types are shared.

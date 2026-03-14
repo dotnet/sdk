@@ -256,7 +256,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
                 if (exists)
                 {
-                    Console.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
+                    System.Diagnostics.Debug.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
                 }
             }
 

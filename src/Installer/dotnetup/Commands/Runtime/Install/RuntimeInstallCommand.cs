@@ -115,28 +115,47 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
 
-        foreach (var installResult in results)
-        {
-            string description = installResult.Install.Component.GetDisplayName();
-            if (installResult.WasAlreadyInstalled)
-            {
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Success}]{description} {installResult.Install.Version} is already installed at {installResult.Install.InstallRoot.Path}[/]");
-            }
-            else
-            {
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Success}]Installed {description} {installResult.Install.Version} at {installResult.Install.InstallRoot.Path}[/]");
-            }
-        }
+        DisplayMultiInstallResults(results);
 
         if (_setDefaultInstall == true)
         {
             _dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
         }
 
-        InstallExecutor.DisplayComplete();
         return 0;
+    }
+
+    private static void DisplayMultiInstallResults(IReadOnlyList<InstallResult> results)
+    {
+        var installed = new List<string>();
+        var alreadyInstalled = new List<string>();
+        string? sharedPath = null;
+
+        foreach (var installResult in results)
+        {
+            string description = $"{installResult.Install.Component.GetDisplayName()} {installResult.Install.Version}";
+            sharedPath ??= installResult.Install.InstallRoot.Path;
+            if (installResult.WasAlreadyInstalled)
+            {
+                alreadyInstalled.Add(description);
+            }
+            else
+            {
+                installed.Add(description);
+            }
+        }
+
+        if (installed.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"[{DotnetupTheme.Current.Brand}]Installed {string.Join(", ", installed)} at {sharedPath}[/]");
+        }
+
+        if (alreadyInstalled.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"[{DotnetupTheme.Current.Brand}]{string.Join(", ", alreadyInstalled)} already installed at {sharedPath}[/]");
+        }
     }
 
     private static void ValidateComponentForPlatform(InstallComponent component)

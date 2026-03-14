@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -44,46 +45,50 @@ internal class InstallWalkthrough
     /// </summary>
     /// <param name="resolvedVersion">The version being installed.</param>
     /// <param name="setDefaultInstall">Whether the install will be set as default.</param>
-    /// <returns>List of additional versions to install, empty if none.</returns>
-    public List<string> GetAdditionalAdminVersionsToMigrate(
+    /// <returns>List of additional installs to migrate, empty if none.</returns>
+    public List<DotnetInstall> GetAdditionalAdminVersionsToMigrate(
         ReleaseVersion? resolvedVersion,
         bool setDefaultInstall)
     {
-        var additionalVersions = new List<string>();
+        var additionalInstalls = new List<DotnetInstall>();
 
         // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3).
         // Option 1 (DotnetupDotnet) doesn't touch PATH, so admin installs remain accessible.
         if (_options.PathPreference == PathPreference.DotnetupDotnet)
         {
-            return additionalVersions;
+            return additionalInstalls;
         }
 
         // Check for actual admin installs rather than relying solely on the current
         // install type, because a previous walkthrough may have switched to User while
         // admin SDKs still exist in Program Files.
-        var adminSdkVersions = _dotnetInstaller.GetInstalledAdminSdkVersions();
-        if (setDefaultInstall && adminSdkVersions.Count > 0)
+        var adminInstalls = _dotnetInstaller.GetInstalledAdminInstalls();
+        if (setDefaultInstall && adminInstalls.Count > 0)
         {
             // Track admin-to-user migration scenario
             Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
 
-            // Copy all admin SDK versions except the one already being installed.
-            // The user confirmed copying via PromptAdminMigration, so no per-version prompt is needed.
-            foreach (var version in adminSdkVersions)
+            // Copy all admin installs except the SDK version already being installed.
+            // The user confirmed copying via PromptAdminMigration, so no per-item prompt is needed.
+            foreach (var install in adminInstalls)
             {
-                if (resolvedVersion is null || version != resolvedVersion.ToString())
+                bool isAlreadyBeingInstalled = install.Component == InstallComponent.SDK
+                    && resolvedVersion is not null
+                    && install.Version.ToString() == resolvedVersion.ToString();
+
+                if (!isAlreadyBeingInstalled)
                 {
-                    additionalVersions.Add(version);
+                    additionalInstalls.Add(install);
                 }
             }
 
-            if (additionalVersions.Count > 0)
+            if (additionalInstalls.Count > 0)
             {
                 Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
             }
         }
 
-        return additionalVersions;
+        return additionalInstalls;
     }
 
     /// <summary>
@@ -181,13 +186,13 @@ internal class InstallWalkthrough
     }
 
     /// <summary>
-    /// Prompts the user about copying admin-managed SDK installs into the dotnetup-managed directory.
+    /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
     /// <returns>True if the user wants to proceed (or no admin installs exist), false if they decline.</returns>
     internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
     {
-        var adminSdks = dotnetInstaller.GetInstalledAdminSdkVersions();
-        if (adminSdks.Count == 0)
+        var adminInstalls = dotnetInstaller.GetInstalledAdminInstalls();
+        if (adminInstalls.Count == 0)
         {
             return true;
         }
@@ -203,8 +208,11 @@ internal class InstallWalkthrough
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
 
+        var displayItems = adminInstalls.Select(i =>
+            string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version)).ToList();
+
         bool result = RenderScrollableListWithConfirm(
-            adminSdks,
+            displayItems,
             visibleCount: 3,
             "Do you want to copy the following installs into the dotnetup managed directory?");
 

@@ -38,4 +38,16 @@ public static class InstallComponentExtensions
         InstallComponent.WindowsDesktop => "Microsoft.WindowsDesktop.App",
         _ => component.ToString()
     };
+
+    /// <summary>
+    /// Resolves a framework name (e.g. "Microsoft.NETCore.App") to the corresponding <see cref="InstallComponent"/>.
+    /// Returns null when the name is not recognized.
+    /// </summary>
+    public static InstallComponent? FromFrameworkName(string frameworkName) => frameworkName switch
+    {
+        "Microsoft.NETCore.App" => InstallComponent.Runtime,
+        "Microsoft.AspNetCore.App" => InstallComponent.ASPNETCore,
+        "Microsoft.WindowsDesktop.App" => InstallComponent.WindowsDesktop,
+        _ => null
+    };
 }

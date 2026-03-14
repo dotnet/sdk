@@ -115,6 +115,33 @@ public class DotnetInstallManager : IDotnetInstallManager
         return versions;
     }
 
+    public List<DotnetInstall> GetInstalledAdminInstalls()
+    {
+        var installs = new List<DotnetInstall>();
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return installs;
+        }
+
+        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+        foreach (var adminPath in adminPaths)
+        {
+            try
+            {
+                installs.AddRange(HostFxrWrapper.getInstalls(adminPath));
+            }
+            catch
+            {
+                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
+            }
+        }
+
+        // Sort descending so newest versions appear first
+        installs.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
+        return installs;
+    }
+
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
     {
         foreach (var channelVersion in sdkVersions)

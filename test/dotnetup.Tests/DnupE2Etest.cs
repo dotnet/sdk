@@ -453,6 +453,125 @@ public class ConcurrentInstallationTests
 }
 
 /// <summary>
+/// Tests for multi-channel SDK install support (concurrent downloads, single invocation).
+/// </summary>
+[Collection("DotnetupMultiSdkInstallCollection")]
+public class MultiChannelSdkInstallTests
+{
+    [Fact]
+    public void SdkInstall_MultipleChannels_BothSucceed()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0", "10"], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Multi-channel SDK install failed. Output:\n{output}");
+
+        // Verify both SDKs are in the manifest
+        List<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+
+        installs.Should().HaveCount(2, "both SDK channels should produce separate manifest entries");
+        installs.Should().OnlyContain(i => i.Component == InstallComponent.SDK);
+
+        // Verify the two installed versions are distinct
+        installs.Select(i => i.Version).Distinct().Should().HaveCount(2,
+            "each channel should resolve to a different SDK version");
+    }
+
+    [Fact]
+    public void SdkInstall_MultipleChannels_OutputNotCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0", "10"], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Multi-channel SDK install failed. Output:\n{output}");
+
+        // The completion message should appear exactly once (not duplicated per channel)
+        int installedCount = CountOccurrences(output, "Installed");
+        int alreadyInstalledCount = CountOccurrences(output, "already installed");
+        (installedCount + alreadyInstalledCount).Should().BeLessThanOrEqualTo(2,
+            "There should be at most one 'Installed' line and one 'already installed' line, not one per channel. Output:\n" + output);
+
+        // Output should not contain garbled/interleaved progress bar artifacts.
+        // Progress bars use CR (\r) to overwrite lines. In captured output (redirected stdout),
+        // these should not appear because --no-progress is set.
+        output.Should().NotContain("\r\n\r\n\r\n",
+            "Output should not contain excessive blank lines from corrupted progress bars");
+    }
+
+    [Fact]
+    public void SdkInstall_SingleChannel_StillWorksWithNewArgument()
+    {
+        // Ensure backward compatibility: a single channel argument still works
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0"], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Single-channel SDK install failed. Output:\n{output}");
+
+        List<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+
+        installs.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
+    }
+
+    [Fact]
+    public void SdkInstall_NoChannel_StillWorksWithNewArgument()
+    {
+        // Ensure backward compatibility: no channel argument launches walkthrough / defaults to latest
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments([], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"No-channel SDK install failed. Output:\n{output}");
+
+        List<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+
+        installs.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
+    }
+
+    private static int CountOccurrences(string text, string pattern)
+    {
+        int count = 0;
+        int index = 0;
+        while ((index = text.IndexOf(pattern, index, StringComparison.OrdinalIgnoreCase)) != -1)
+        {
+            count++;
+            index += pattern.Length;
+        }
+
+        return count;
+    }
+}
+
+/// <summary>
 /// Tests that verify reuse behavior and error handling for dotnetup installations.
 /// </summary>
 [Collection("DotnetupReuseCollection")]

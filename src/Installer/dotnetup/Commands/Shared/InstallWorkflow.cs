@@ -227,26 +227,33 @@ internal class InstallWorkflow
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.
-        var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
+        var additionalInstalls = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
             context.SetDefaultInstall);
 
-        var installResult = InstallExecutor.ExecuteInstall(
+        if (additionalInstalls.Count > 0)
+        {
+            // Batch the primary install with additional installs so SDKs download concurrently.
+            // Set ResolvedVersion so the orchestrator skips redundant channel resolution.
+            var primaryRequest = resolved.Request with { ResolvedVersion = resolved.ResolvedVersion };
+            var primaryResult = InstallExecutor.ExecuteAdditionalInstalls(
+                additionalInstalls,
+                resolved.Request.InstallRoot,
+                context.Options.ManifestPath,
+                context.Options.NoProgress,
+                context.Options.RequireMuxerUpdate,
+                primaryRequest: primaryRequest);
+
+            return primaryResult ?? new InstallExecutor.InstallResult(
+                new DotnetInstall(resolved.Request.InstallRoot, resolved.ResolvedVersion!, resolved.Request.Component));
+        }
+
+        // No additional installs — use the simple single-install path.
+        return InstallExecutor.ExecuteInstall(
             resolved.Request,
             resolved.ResolvedVersion?.ToString(),
             context.Options.ComponentDescription,
             context.Options.NoProgress);
-
-        InstallExecutor.ExecuteAdditionalInstalls(
-            additionalVersions,
-            resolved.Request.InstallRoot,
-            context.Options.Component,
-            context.Options.ComponentDescription,
-            context.Options.ManifestPath,
-            context.Options.NoProgress,
-            context.Options.RequireMuxerUpdate);
-
-        return installResult;
     }
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

@@ -27,6 +27,9 @@ internal sealed class ThemeColors
     /// <summary>Color for the dotnet bot banner and branding elements.</summary>
     public string Brand { get; set; } = "#9780E5";
 
+    /// <summary>Color for completion/finished highlights (e.g. progress bar at 100%).</summary>
+    public string SuccessAlt { get; set; } = "gold1";
+
     /// <summary>Color for secondary/de-emphasized text.</summary>
     public string Dim { get; set; } = "dim";
 
@@ -42,6 +45,7 @@ internal sealed class ThemeColors
                 Warning = "yellow",
                 Accent = "blue",
                 Brand = "blue",
+                SuccessAlt = "gold1",
                 Dim = "dim",
             },
             ["monokai"] = new ThemeColors
@@ -51,6 +55,7 @@ internal sealed class ThemeColors
                 Warning = "#FD971F",
                 Accent = "#66D9EF",
                 Brand = "#AE81FF",
+                SuccessAlt = "#E6DB74",
                 Dim = "#75715E",
             },
         };
@@ -64,6 +69,7 @@ internal sealed class ThemeColors
             ["warning"] = (t => t.Warning, (t, v) => t.Warning = v),
             ["accent"] = (t => t.Accent, (t, v) => t.Accent = v),
             ["brand"] = (t => t.Brand, (t, v) => t.Brand = v),
+            ["successalt"] = (t => t.SuccessAlt, (t, v) => t.SuccessAlt = v),
             ["dim"] = (t => t.Dim, (t, v) => t.Dim = v),
         };
 }

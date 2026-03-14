@@ -32,6 +32,16 @@ internal static class DotnetupTestUtilities
         => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
 
     /// <summary>
+    /// Builds command line arguments for SDK install with multiple channels.
+    /// </summary>
+    public static string[] BuildMultiSdkArguments(string[] channels, string installPath, string? manifestPath = null, bool disableProgress = true)
+    {
+        var commandArgs = new List<string>(["sdk", "install"]);
+        commandArgs.AddRange(channels);
+        return BuildArgumentsCore(commandArgs, installPath, manifestPath, disableProgress);
+    }
+
+    /// <summary>
     /// Builds command line arguments for runtime install using the new component@version syntax.
     /// This delegates to BuildArguments with the componentSpec pre-formatted.
     /// </summary>

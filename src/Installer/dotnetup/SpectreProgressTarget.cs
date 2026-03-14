@@ -17,7 +17,20 @@ public class SpectreProgressTarget : IProgressTarget
         public Reporter()
         {
             TaskCompletionSource<ProgressContext> tcs = new();
-            var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
+            var progress = AnsiConsole.Progress();
+            progress.Columns(
+                new SpinnerColumn(Spinner.Known.Arc),
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn
+                {
+                    CompletedStyle = Style.Parse(DotnetupTheme.Current.Brand),
+                    FinishedStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt),
+                    RemainingStyle = new Style(Color.Grey),
+                },
+                new PercentageColumn(),
+                new RemainingTimeColumn());
+
+            var progressTask = progress.StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
                 await _overallTask.Task.ConfigureAwait(false);

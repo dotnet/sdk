@@ -102,70 +102,173 @@ internal class InstallExecutor
     }
 
     /// <summary>
-    /// Executes the installation of additional versions of a .NET component.
+    /// Executes the installation of additional admin installs (SDKs and runtimes), optionally including
+    /// a primary install request. Uses a two-phase approach: SDKs are installed first so that
+    /// runtimes bundled within SDK archives are already on disk, then only standalone runtimes
+    /// that are not yet present are downloaded.
     /// </summary>
-    /// <param name="additionalVersions">The list of additional versions to install.</param>
+    /// <param name="additionalInstalls">The list of additional admin installs to migrate.</param>
     /// <param name="installRoot">The installation root path.</param>
-    /// <param name="component">The component type to install.</param>
-    /// <param name="componentDescription">Description of the component for display.</param>
     /// <param name="manifestPath">Optional manifest path.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
-    /// <returns>True if all installations succeeded, false if any failed.</returns>
-    public static bool ExecuteAdditionalInstalls(
-        IEnumerable<string> additionalVersions,
+    /// <param name="primaryRequest">Optional primary install request to batch with the appropriate phase.</param>
+    /// <returns>The primary install result when <paramref name="primaryRequest"/> is supplied; null otherwise.</returns>
+    public static InstallResult? ExecuteAdditionalInstalls(
+        IEnumerable<DotnetInstall> additionalInstalls,
         DotnetInstallRoot installRoot,
-        InstallComponent component,
-        string componentDescription,
         string? manifestPath,
         bool noProgress,
-        bool requireMuxerUpdate = false)
+        bool requireMuxerUpdate = false,
+        DotnetInstallRequest? primaryRequest = null)
     {
-        var versionsList = additionalVersions.ToList();
-        if (versionsList.Count == 0)
+        var installsList = additionalInstalls.ToList();
+        if (installsList.Count == 0 && primaryRequest is null)
         {
-            return true;
+            return null;
         }
 
-        var requests = versionsList.Select(version => new DotnetInstallRequest(
-            installRoot,
-            new UpdateChannel(version),
-            component,
-            new InstallRequestOptions
-            {
-                ManifestPath = manifestPath,
-                RequireMuxerUpdate = requireMuxerUpdate
-            })).ToList();
+        var sdkInstalls = installsList.Where(i => i.Component == InstallComponent.SDK).ToList();
+        var runtimeInstalls = installsList.Where(i => i.Component != InstallComponent.SDK).ToList();
+
+        bool primaryIsSdk = primaryRequest is not null && primaryRequest.Component == InstallComponent.SDK;
+        var sdkPrimary = primaryIsSdk ? primaryRequest : null;
+        var runtimePrimary = primaryIsSdk ? null : primaryRequest;
+
+        DisplayBatchSummary(primaryRequest, installsList, installRoot);
+
+        // Phase 1: install SDKs first — their archives typically bundle runtime binaries.
+        var primaryResult = RunInstallBatch(sdkInstalls, installRoot, manifestPath, noProgress, requireMuxerUpdate, sdkPrimary);
+
+        // Phase 2: skip runtimes whose files already landed on disk via an SDK archive.
+        var remainingRuntimes = runtimeInstalls.Where(r => !RuntimeExistsOnDisk(installRoot, r)).ToList();
+        var runtimeResult = RunInstallBatch(remainingRuntimes, installRoot, manifestPath, noProgress, requireMuxerUpdate, runtimePrimary);
+
+        return primaryResult ?? runtimeResult;
+    }
+
+    private static void DisplayBatchSummary(
+        DotnetInstallRequest? primaryRequest,
+        List<DotnetInstall> additionalInstalls,
+        DotnetInstallRoot installRoot)
+    {
+        if (primaryRequest is null)
+        {
+            return;
+        }
+
+        string desc = primaryRequest.Component.GetDisplayName();
+#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
+        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {desc} [{DotnetupTheme.Current.Accent}]{primaryRequest.ResolvedVersion}[/] and {additionalInstalls.Count} additional component(s) to [{DotnetupTheme.Current.Accent}]{installRoot.Path.EscapeMarkup()}[/]...");
+#pragma warning restore CA1305
+    }
+
+    private static InstallResult? RunInstallBatch(
+        List<DotnetInstall> installs,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool noProgress,
+        bool requireMuxerUpdate,
+        DotnetInstallRequest? primaryRequest)
+    {
+        var requests = BuildBatchRequestsFromInstalls(primaryRequest, installs, installRoot, manifestPath, requireMuxerUpdate);
+        if (requests.Count == 0)
+        {
+            return null;
+        }
 
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
         using var sharedReporter = progressTarget.CreateProgressReporter();
 
-        bool allSucceeded = true;
-        try
+        var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        return DisplayBatchResults(results, primaryRequest);
+    }
+
+    private static bool RuntimeExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
+    {
+        string frameworkDir = Path.Combine(
+            installRoot.Path,
+            "shared",
+            runtime.Component.GetFrameworkName(),
+            runtime.Version.ToString());
+        return Directory.Exists(frameworkDir);
+    }
+
+    private static List<DotnetInstallRequest> BuildBatchRequestsFromInstalls(
+        DotnetInstallRequest? primaryRequest,
+        List<DotnetInstall> additionalInstalls,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool requireMuxerUpdate)
+    {
+        var requests = new List<DotnetInstallRequest>();
+        if (primaryRequest is not null)
         {
-            var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
-            foreach (var result in results)
-            {
-                if (result.WasAlreadyInstalled)
-                {
-                    SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[{DotnetupTheme.Current.Success}]{componentDescription} {result.Install.Version} is already installed at {result.Install.InstallRoot.Path}[/]");
-                }
-                else
-                {
-                    SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[{DotnetupTheme.Current.Success}]Installed additional {componentDescription} {result.Install.Version} at {result.Install.InstallRoot.Path}[/]");
-                }
-            }
-        }
-        catch (DotnetInstallException ex)
-        {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Error}]Failed to install additional {componentDescription}: {ex.Message.EscapeMarkup()}[/]");
-            allSucceeded = false;
+            requests.Add(primaryRequest);
         }
 
-        return allSucceeded;
+        requests.AddRange(additionalInstalls.Select(install => new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel(install.Version.ToString()),
+            install.Component,
+            new InstallRequestOptions
+            {
+                ManifestPath = manifestPath,
+                RequireMuxerUpdate = requireMuxerUpdate
+            })));
+
+        return requests;
+    }
+
+    private static InstallResult? DisplayBatchResults(
+        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results,
+        DotnetInstallRequest? primaryRequest)
+    {
+        InstallResult? primaryResult = null;
+        var installed = new List<string>();
+        var alreadyInstalled = new List<string>();
+        string? sharedPath = null;
+
+        foreach (var result in results)
+        {
+            bool isPrimary = primaryRequest is not null
+                && result.Install.Version.ToString() == primaryRequest.ResolvedVersion?.ToString()
+                && result.Install.Component == primaryRequest.Component;
+
+            if (isPrimary && primaryResult is null)
+            {
+                primaryResult = new InstallResult(result.Install, result.WasAlreadyInstalled);
+            }
+
+            sharedPath ??= result.Install.InstallRoot.Path;
+            string label = $"{result.Install.Component.GetDisplayName()} {result.Install.Version}";
+            if (result.WasAlreadyInstalled)
+            {
+                alreadyInstalled.Add(label);
+            }
+            else
+            {
+                installed.Add(label);
+            }
+        }
+
+        EmitBatchSummaryLines(installed, alreadyInstalled, sharedPath);
+        return primaryResult;
+    }
+
+    private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
+    {
+        if (installed.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"[{DotnetupTheme.Current.Brand}]Installed {string.Join(", ", installed)} at {sharedPath}[/]");
+        }
+
+        if (alreadyInstalled.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"[{DotnetupTheme.Current.Brand}]{string.Join(", ", alreadyInstalled)} already installed at {sharedPath}[/]");
+        }
     }
 
     /// <summary>
