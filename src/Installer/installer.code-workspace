@@ -44,7 +44,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
-                "program": "dotnet",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
@@ -62,7 +62,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
-                "program": "dotnet",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",

@@ -72,14 +72,7 @@ internal class Parser
 
         rootCommand.SetAction(parseResult =>
         {
-            // No subcommand: run walkthrough if not yet configured, otherwise show description
-            if (!DotnetupConfig.Exists())
-            {
-                return new WalkthroughCommand(parseResult).Execute();
-            }
-
-            parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
-            return 0;
+            return new WalkthroughCommand(parseResult).Execute();
         });
 
         return rootCommand;

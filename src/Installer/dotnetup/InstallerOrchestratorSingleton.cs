@@ -131,14 +131,17 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822
     public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
     {
+        const int maxConcurrentDownloads = 6;
         var preparedInstalls = new List<PreparedInstall>();
         var results = new List<InstallResult>();
         var exceptions = new List<Exception>();
         var lockObj = new object();
+        using var throttle = new SemaphoreSlim(maxConcurrentDownloads);
 
-        // Phase 1: download all archives concurrently
+        // Phase 1: download archives concurrently (capped at maxConcurrentDownloads)
         var tasks = requests.Select(request => Task.Run(() =>
         {
+            throttle.Wait();
             try
             {
                 var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
@@ -157,6 +160,10 @@ internal class InstallerOrchestratorSingleton
             catch (Exception ex)
             {
                 lock (lockObj) { exceptions.Add(ex); }
+            }
+            finally
+            {
+                throttle.Release();
             }
         })).ToList();
 

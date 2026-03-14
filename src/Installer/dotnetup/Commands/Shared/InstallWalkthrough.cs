@@ -208,8 +208,11 @@ internal class InstallWalkthrough
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
 
-        var displayItems = adminInstalls.Select(i =>
-            string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version)).ToList();
+        var displayItems = adminInstalls
+            .OrderBy(i => i.Component) // SDK first, then runtimes
+            .ThenByDescending(i => i.Version)
+            .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
+            .ToList();
 
         bool result = RenderScrollableListWithConfirm(
             displayItems,
