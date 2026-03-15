@@ -55,7 +55,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
 
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<(PointsToCheck pointsToCheck, string)> pointsToTaintedTargets) in sourceInfo.TaintedMethodsNeedsPointsToAnalysis)
                 {
-                    if (pointsToTaintedTargets.Any() && methodMatcher(method.Name, arguments))
+                    if (!pointsToTaintedTargets.IsEmpty && methodMatcher(method.Name, arguments))
                     {
                         pointsToAnalysisResult ??= pointsToFactory.Value;
                         if (pointsToAnalysisResult == null)
@@ -78,7 +78,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
 
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<(ValueContentCheck valueContentCheck, string)> valueContentTaintedTargets) in sourceInfo.TaintedMethodsNeedsValueContentAnalysis)
                 {
-                    if (valueContentTaintedTargets.Any() && methodMatcher(method.Name, arguments))
+                    if (!valueContentTaintedTargets.IsEmpty && methodMatcher(method.Name, arguments))
                     {
                         pointsToAnalysisResult ??= valueContentFactory.Value.p;
                         valueContentAnalysisResult ??= valueContentFactory.Value.v;
@@ -182,7 +182,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             this TaintedDataSymbolMap<SourceInfo> sourceSymbolMap,
             IMethodSymbol method,
             ImmutableArray<IArgumentOperation> arguments,
-            ISet<string> taintedParameterNames,
+            PooledHashSet<string> taintedParameterNames,
             [NotNullWhen(returnValue: true)] out PooledHashSet<(string, string)>? taintedParameterPairs)
         {
             taintedParameterPairs = null;
