@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -162,6 +163,19 @@ internal class InstallExecutor
         if (setDefaultInstall)
         {
             dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
+
+            // On non-Windows, print the activation command for the current terminal
+            if (!OperatingSystem.IsWindows())
+            {
+                var dotnetupPath = Environment.ProcessPath;
+                IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
+                if (dotnetupPath is not null && shellProvider is not null)
+                {
+                    SpectreAnsiConsole.WriteLine();
+                    SpectreAnsiConsole.WriteLine("To start using .NET in this terminal, run:");
+                    SpectreAnsiConsole.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath)}");
+                }
+            }
         }
     }
 

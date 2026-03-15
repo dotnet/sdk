@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -25,6 +26,26 @@ public class EnvShellProviderTests
     }
 
     [Fact]
+    public void BashProvider_ShouldIncludeDotnetupDirInPath()
+    {
+        var provider = new BashEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin");
+
+        script.Should().Contain("export PATH='/usr/local/bin':'/test/dotnet':$PATH");
+    }
+
+    [Fact]
+    public void BashProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
+    {
+        var provider = new BashEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
+
+        script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("export PATH='/usr/local/bin':$PATH");
+        script.Should().NotContain("'/test/dotnet'");
+    }
+
+    [Fact]
     public void ZshProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -39,6 +60,25 @@ public class EnvShellProviderTests
         script.Should().Contain("#!/usr/bin/env zsh");
         script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
         script.Should().Contain($"export PATH='{installPath}':$PATH");
+    }
+
+    [Fact]
+    public void ZshProvider_ShouldIncludeDotnetupDirInPath()
+    {
+        var provider = new ZshEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin");
+
+        script.Should().Contain("export PATH='/usr/local/bin':'/test/dotnet':$PATH");
+    }
+
+    [Fact]
+    public void ZshProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
+    {
+        var provider = new ZshEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
+
+        script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("export PATH='/usr/local/bin':$PATH");
     }
 
     [Fact]
@@ -58,6 +98,25 @@ public class EnvShellProviderTests
         script.Should().Contain("[IO.Path]::PathSeparator");
     }
 
+    [Fact]
+    public void PowerShellProvider_ShouldIncludeDotnetupDirInPath()
+    {
+        var provider = new PowerShellEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin");
+
+        script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + '/test/dotnet' + [IO.Path]::PathSeparator + $env:PATH");
+    }
+
+    [Fact]
+    public void PowerShellProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
+    {
+        var provider = new PowerShellEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
+
+        script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + $env:PATH");
+    }
+
     [Theory]
     [InlineData("bash")]
     [InlineData("zsh")]
@@ -65,7 +124,7 @@ public class EnvShellProviderTests
     public void ShellProviders_ShouldHaveCorrectArgumentName(string expectedName)
     {
         // Arrange
-        var provider = PrintEnvScriptCommandParser.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
+        var provider = ShellDetection.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
 
         // Assert
         provider.Should().NotBeNull();

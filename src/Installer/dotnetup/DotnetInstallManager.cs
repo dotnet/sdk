@@ -5,6 +5,7 @@ using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -158,13 +159,10 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // Non-Windows platforms: use the simpler PATH-based approach
-            // Get current PATH
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-            var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string exeName = "dotnet";
-            // Remove only actual dotnet installation folders from PATH
-            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+            // Non-Windows platforms: persist environment via shell profiles only.
+            // Environment.SetEnvironmentVariable with EnvironmentVariableTarget.User
+            // has no real persistent store on Unix, so shell profile entries are the
+            // sole persistence mechanism.
 
             switch (installType)
             {
@@ -173,27 +171,27 @@ public class DotnetInstallManager : IDotnetInstallManager
                     {
                         throw new ArgumentNullException(nameof(dotnetRoot));
                     }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Set DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+
+                    // Persist to shell profiles
+                    var dotnetupPath = Environment.ProcessPath;
+                    var shellProvider = ShellDetection.GetCurrentShellProvider();
+                    if (dotnetupPath is not null && shellProvider is not null)
+                    {
+                        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
+                    }
                     break;
                 case InstallType.Admin:
-                    if (string.IsNullOrEmpty(dotnetRoot))
+                    // Replace shell profile entries with dotnetup-only (no DOTNET_ROOT or dotnet PATH)
+                    var adminDotnetupPath = Environment.ProcessPath;
+                    var adminShellProvider = ShellDetection.GetCurrentShellProvider();
+                    if (adminDotnetupPath is not null && adminShellProvider is not null)
                     {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
+                        ShellProfileManager.AddProfileEntries(adminShellProvider, adminDotnetupPath, dotnetupOnly: true);
                     }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Unset DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
                     break;
                 default:
                     throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
             }
-            // Update PATH
-            var newPath = string.Join(Path.PathSeparator, pathEntries);
-            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
         }
     }
 }
