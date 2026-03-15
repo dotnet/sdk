@@ -347,6 +347,8 @@ public class TargetsTests
     [InlineData("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
     [InlineData("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
     [InlineData("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("11.0.100-preview.2", "v11.0", "resolute-chiseled", "11.0.0-preview.2-resolute-chiseled-extra")]
+    [InlineData("11.0.100", "v11.0", "resolute", "11.0-resolute-chiseled")]
     [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
@@ -617,6 +619,7 @@ public class TargetsTests
     [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
+    [InlineData("11.0.100", "v11.0", "resolute-chiseled", "mcr.microsoft.com/dotnet/runtime:11.0-resolute-chiseled-extra")]
     [Theory]
     public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
@@ -638,6 +641,7 @@ public class TargetsTests
     [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
+    [InlineData("11.0.100", "v11.0", "resolute-chiseled", "mcr.microsoft.com/dotnet/aspnet:11.0-resolute-chiseled-extra")]
     [Theory]
     public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
