@@ -7,7 +7,7 @@
     <PackageVersion Include="DiffPlex" Version="1.8.0" />
     <PackageVersion Include="FakeItEasy" Version="8.0.0" />
     <PackageVersion Include="Verify.DiffPlex" Version="3.1.2" />
-    <PackageVersion Include="Verify.Xunit" Version="28.7.0" />
+    <PackageVersion Include="Verify.XunitV3" Version="28.7.0" />
     <PackageVersion Include="Wcwidth.Sources" Version="2.0.0" />
   </ItemGroup>
 </Project>

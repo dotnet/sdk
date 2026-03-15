@@ -6,7 +6,6 @@ using System.IO.Pipes;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Elfie.Serialization;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 

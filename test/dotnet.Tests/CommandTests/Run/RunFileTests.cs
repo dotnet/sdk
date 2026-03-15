@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
@@ -20,6 +21,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
+    // Ensure OutOfTreeBaseDirectory (and its NuGet cache warm-up) runs before any test.
+    static RunFileTests() => _ = OutOfTreeBaseDirectory;
+
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
 
@@ -133,12 +137,52 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
+        WarmUpNuGetCache(outOfTreeBaseDirectory);
+
         // Check there are no implicit build files that would prevent testing optimizations.
         VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
         exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
             "so we can test optimizations that would be disabled with implicit build files present");
 
         return outOfTreeBaseDirectory;
+    }
+
+    /// <summary>
+    /// Runs a full MSBuild build of a trivial file-based app to pull CSC dependencies
+    /// (e.g., ILLink analyzer DLLs from microsoft.net.illink.tasks) into the NuGet cache.
+    /// Without this, <see cref="VirtualProjectBuildingCommand.GetBuildLevel"/> falls back to
+    /// <see cref="BuildLevel.All"/> because the NuGet-provided DLLs checked by
+    /// <see cref="CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache"/> are missing,
+    /// causing tests that assert CSC-only behavior to fail depending on the order they run in.
+    /// </summary>
+    private static void WarmUpNuGetCache(string outOfTreeBaseDirectory)
+    {
+        var warmUpDir = Path.Join(outOfTreeBaseDirectory, ".warmup");
+        Directory.CreateDirectory(warmUpDir);
+        var warmUpFile = Path.Join(warmUpDir, "WarmUp.cs");
+
+        try
+        {
+            File.WriteAllText(warmUpFile, """System.Console.Write("ok");""");
+
+            var result = new DotnetCommand(NullOutputHelper.Instance, "build", "WarmUp.cs")
+                .WithWorkingDirectory(warmUpDir)
+                .Execute();
+
+            if (result.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"NuGet cache warm-up failed with exit code {result.ExitCode}.{Environment.NewLine}" +
+                    $"stdout: {result.StdOut}{Environment.NewLine}" +
+                    $"stderr: {result.StdErr}");
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(warmUpDir, true); } catch { }
+            try { Directory.Delete(VirtualProjectBuilder.GetArtifactsPath(warmUpFile), true); } catch { }
+        }
+
     }
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
@@ -2516,7 +2560,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void Pack()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
+        var programFile = Path.Join(testInstance.Path, "PackTool.cs");
         File.WriteAllText(programFile, """
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             #if !DEBUG
@@ -2525,7 +2569,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Run unpacked.
-        new DotnetCommand(Log, "run", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "run", "PackTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -2538,17 +2582,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
 
         // Pack.
-        new DotnetCommand(Log, "pack", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "pack", "PackTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        var packageDir = new DirectoryInfo(outputDir).Sub("MyFileBasedTool");
-        packageDir.File("MyFileBasedTool.1.0.0.nupkg").Should().Exist();
+        var packageDir = new DirectoryInfo(outputDir).Sub("PackTool");
+        packageDir.File("PackTool.1.0.0.nupkg").Should().Exist();
         new DirectoryInfo(artifactsDir).Sub("package").Should().NotExist();
 
         // Run the packed tool.
-        new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", packageDir.FullName)
+        new DotnetCommand(Log, "tool", "exec", "PackTool", "--yes", "--add-source", packageDir.FullName)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -2562,14 +2606,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void Pack_CustomPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
+        var programFile = Path.Join(testInstance.Path, "PackCustomPathTool.cs");
         File.WriteAllText(programFile, """
             #:property PackageOutputPath=custom
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             """);
 
         // Run unpacked.
-        new DotnetCommand(Log, "run", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "run", "PackCustomPathTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -2582,16 +2626,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
 
         // Pack.
-        new DotnetCommand(Log, "pack", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "pack", "PackCustomPathTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(outputDir).File("MyFileBasedTool.1.0.0.nupkg").Should().Exist();
+        new DirectoryInfo(outputDir).File("PackCustomPathTool.1.0.0.nupkg").Should().Exist();
         new DirectoryInfo(artifactsDir).Sub("package").Should().NotExist();
 
         // Run the packed tool.
-        new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", outputDir)
+        new DotnetCommand(Log, "tool", "exec", "PackCustomPathTool", "--yes", "--add-source", outputDir)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -6263,5 +6307,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
             return result;
         }
+    }
+
+    /// <summary>
+    /// No-op <see cref="ITestOutputHelper"/> for use in static contexts where no test logger is available.
+    /// </summary>
+    private sealed class NullOutputHelper : ITestOutputHelper
+    {
+        public static readonly NullOutputHelper Instance = new();
+        public string Output => string.Empty;
+        public void Write(string message) { }
+        public void Write(string format, params object[] args) { }
+        public void WriteLine(string message) { }
+        public void WriteLine(string format, params object[] args) { }
     }
 }

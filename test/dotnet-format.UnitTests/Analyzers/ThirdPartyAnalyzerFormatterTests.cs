@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             TestOutputHelper = output;
         }
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             var logger = new TestLogger();
 
@@ -52,11 +52,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             }
         }
 
-        public Task DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             _analyzerReferencesProject = null;
 
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         private IEnumerable<AnalyzerReference> GetAnalyzerReferences(string prefix)

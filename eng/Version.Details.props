@@ -61,7 +61,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>11.0.0-preview.3.26153.117</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
     <MicrosoftDotNetWpfProjectTemplatesPackageVersion>11.0.0-preview.3.26153.117</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
     <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26153.117</MicrosoftDotNetXliffTasksPackageVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26153.117</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetXUnitV3ExtensionsPackageVersion>11.0.0-beta.26153.117</MicrosoftDotNetXUnitV3ExtensionsPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>11.0.0-preview.3.26153.117</MicrosoftExtensionsConfigurationIniPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>11.0.0-preview.3.26153.117</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>11.0.0-preview.3.26153.117</MicrosoftExtensionsDependencyModelPackageVersion>
@@ -91,11 +91,11 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkGitHubPackageVersion>11.0.100-preview.3.26153.117</MicrosoftSourceLinkGitHubPackageVersion>
     <MicrosoftSourceLinkGitLabPackageVersion>11.0.100-preview.3.26153.117</MicrosoftSourceLinkGitLabPackageVersion>
     <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineAbstractionsPackageVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion>
+    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineMocksPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineMocksXunitV3PackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineTestHelperPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineTestHelperPackageVersion>
+    <MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateSearchCommonPackageVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
@@ -205,7 +205,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotnetWinFormsProjectTemplatesVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplatesVersion>
     <MicrosoftDotNetWpfProjectTemplatesVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplatesVersion>
     <MicrosoftDotNetXliffTasksVersion>$(MicrosoftDotNetXliffTasksPackageVersion)</MicrosoftDotNetXliffTasksVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>$(MicrosoftDotNetXUnitExtensionsPackageVersion)</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetXUnitV3ExtensionsVersion>$(MicrosoftDotNetXUnitV3ExtensionsPackageVersion)</MicrosoftDotNetXUnitV3ExtensionsVersion>
     <MicrosoftExtensionsConfigurationIniVersion>$(MicrosoftExtensionsConfigurationIniPackageVersion)</MicrosoftExtensionsConfigurationIniVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
@@ -235,11 +235,11 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkGitHubVersion>$(MicrosoftSourceLinkGitHubPackageVersion)</MicrosoftSourceLinkGitHubVersion>
     <MicrosoftSourceLinkGitLabVersion>$(MicrosoftSourceLinkGitLabPackageVersion)</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftTemplateEngineAbstractionsVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAbstractionsVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
+    <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateEngineEdgeVersion>$(MicrosoftTemplateEngineEdgePackageVersion)</MicrosoftTemplateEngineEdgeVersion>
-    <MicrosoftTemplateEngineMocksVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineMocksVersion>
+    <MicrosoftTemplateEngineMocksVersion>$(MicrosoftTemplateEngineMocksXunitV3PackageVersion)</MicrosoftTemplateEngineMocksVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>
-    <MicrosoftTemplateEngineTestHelperVersion>$(MicrosoftTemplateEngineTestHelperPackageVersion)</MicrosoftTemplateEngineTestHelperVersion>
+    <MicrosoftTemplateEngineTestHelperVersion>$(MicrosoftTemplateEngineTestHelperXunitV3PackageVersion)</MicrosoftTemplateEngineTestHelperVersion>
     <MicrosoftTemplateEngineUtilsVersion>$(MicrosoftTemplateEngineUtilsPackageVersion)</MicrosoftTemplateEngineUtilsVersion>
     <MicrosoftTemplateSearchCommonVersion>$(MicrosoftTemplateSearchCommonPackageVersion)</MicrosoftTemplateSearchCommonVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryVersion>$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryVersion>

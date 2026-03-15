@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {

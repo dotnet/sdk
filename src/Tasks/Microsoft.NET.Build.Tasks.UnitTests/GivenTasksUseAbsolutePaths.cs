@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 

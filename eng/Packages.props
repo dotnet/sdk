@@ -7,7 +7,7 @@
     <PackageVersion Update="DiffPlex" Condition="'$(DiffPlexVersion)' != ''" Version="$(DiffPlexVersion)" />
     <PackageVersion Update="FakeItEasy" Condition="'$(FakeItEasyVersion)' != ''" Version="$(FakeItEasyVersion)" />
     <PackageVersion Update="Verify.DiffPlex" Condition="'$(VerifyDiffPlexVersion)' != ''" Version="$(VerifyDiffPlexVersion)" />
-    <PackageVersion Update="Verify.XUnit" Condition="'$(VerifyXUnitVersion)' != ''" Version="$(VerifyXUnitVersion)" />
+    <PackageVersion Update="Verify.XunitV3" Condition="'$(VerifyXunitV3Version)' != ''" Version="$(VerifyXunitV3Version)" />
     <PackageVersion Update="Wcwidth.Sources" Condition="'$(WcwidthSourcesVersion)' != ''" Version="$(WcwidthSourcesVersion)" />
   </ItemGroup>
 </Project>
