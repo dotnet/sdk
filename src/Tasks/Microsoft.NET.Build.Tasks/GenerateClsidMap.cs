@@ -10,7 +10,8 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateClsidMap : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateClsidMap : TaskBase, IMultiThreadableTask
     {
         [Required]
         public string IntermediateAssembly { get; set; }
@@ -18,9 +19,23 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ClsidMapDestinationPath { get; set; }
 
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
-            using (var assemblyStream = new FileStream(IntermediateAssembly, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            AbsolutePath assemblyPath = TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
+            AbsolutePath clsidMapPath = TaskEnvironment.GetAbsolutePath(ClsidMapDestinationPath);
+
+            using (var assemblyStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
             {
                 try
                 {
@@ -34,7 +49,7 @@ namespace Microsoft.NET.Build.Tasks
                                 Log.LogError(Strings.ClsidMapInvalidAssembly, IntermediateAssembly);
                                 return;
                             }
-                            ClsidMap.Create(reader, ClsidMapDestinationPath);
+                            ClsidMap.Create(reader, clsidMapPath);
                         }
                     }
                 }
