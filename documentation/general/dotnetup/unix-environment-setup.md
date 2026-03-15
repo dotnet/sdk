@@ -147,7 +147,7 @@ The command generates shell-specific scripts that:
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
 
 export DOTNET_ROOT='/home/user/.local/share/dotnet'
-export PATH='/home/user/.local/share/dotnet':$PATH
+export PATH='/home/user/.local/share/dotnetup':'/home/user/.local/share/dotnet':$PATH
 ```
 
 **PowerShell Example:**
@@ -155,7 +155,7 @@ export PATH='/home/user/.local/share/dotnet':$PATH
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
 
 $env:DOTNET_ROOT = '/home/user/.local/share/dotnet'
-$env:PATH = '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH
+$env:PATH = '/home/user/.local/share/dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 ```
 
 ### Shell Detection
