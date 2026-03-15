@@ -6,7 +6,8 @@ using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskBase, ICancelableTask
+    [MSBuildMultiThreadableTask]
+    public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
@@ -37,6 +38,17 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public bool EnableCompressionInSingleFile { get; set; }
         public bool EnableMacOsCodeSign { get; set; } = true;
+
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
 
         [Output]
         public ITaskItem[] ExcludedFiles { get; set; } = null!;
@@ -78,9 +90,11 @@ namespace Microsoft.NET.Build.Tasks
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
             Version version = new(TargetFrameworkVersion);
+            AbsolutePath absoluteOutputDir = TaskEnvironment.GetAbsolutePath(OutputDir);
+
             var bundler = new Bundler(
                 AppHostName,
-                OutputDir,
+                absoluteOutputDir,
                 options,
                 targetOS,
                 targetArch,
@@ -92,7 +106,8 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
+                AbsolutePath sourcePath = TaskEnvironment.GetAbsolutePath(item.ItemSpec);
+                fileSpec.Add(new FileSpec(sourcePath: sourcePath,
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 

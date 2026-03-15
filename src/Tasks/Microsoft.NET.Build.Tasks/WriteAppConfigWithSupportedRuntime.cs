@@ -7,8 +7,20 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         /// <summary>
         /// Path to the app.config source file.
         /// </summary>
@@ -35,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
             var fileStream = new FileStream(
-                OutputAppConfigFile.ItemSpec,
+                TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec),
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.Read);
@@ -156,7 +168,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                document = XDocument.Load(appConfigItem.ItemSpec);
+                document = XDocument.Load(TaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec));
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
                     throw new BuildErrorException(Strings.AppConfigRequiresRootConfiguration);

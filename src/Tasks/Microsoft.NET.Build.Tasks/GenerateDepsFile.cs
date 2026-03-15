@@ -16,8 +16,20 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         [Required]
         public string ProjectPath { get; set; }
 
@@ -133,7 +145,7 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(string depsFilePath)
+        private void WriteDepsFile(string depsFilePath, string originalDepsFilePath)
         {
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
@@ -244,7 +256,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
-                .WithReferenceAssembliesPath(new FrameworkReferenceResolver().GetDefaultReferenceAssembliesPath())
+                .WithReferenceAssembliesPath(new FrameworkReferenceResolver(TaskEnvironment.GetEnvironmentVariable).GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWereFiltered(GetFilteredPackages());
 
             if (CompileReferences.Length > 0)
@@ -263,7 +275,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 writer.Write(dependencyContext, fileStream);
             }
-            _filesWritten.Add(new TaskItem(depsFilePath));
+            _filesWritten.Add(new TaskItem(originalDepsFilePath));
 
             if (ValidRuntimeIdentifierPlatformsForAssets != null)
             {
@@ -304,7 +316,16 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            WriteDepsFile(DepsFilePath);
+            AbsolutePath absDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
+            if (AssetsFilePath != null)
+            {
+                AssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+            }
+            if (!string.IsNullOrEmpty(RuntimeGraphPath))
+            {
+                RuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+            }
+            WriteDepsFile(absDepsFilePath, DepsFilePath);
         }
     }
 }
