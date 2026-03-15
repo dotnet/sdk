@@ -2,25 +2,98 @@
 
 ## Overview
 
-This document describes the design for setting up the .NET environment via initialization scripts using the `dotnetup print-env-script` command. This is the first step toward enabling automatic user profile configuration for Unix as described in [issue #51582](https://github.com/dotnet/sdk/issues/51582). Note that this also supports PowerShell and thus Windows, but on Windows the main method of configuring the environment will be to set environment variables which are stored in the registry instead of written by initialization scripts.
+dotnetup automatically configures the Unix shell environment so that .NET is available in every new terminal session. This involves modifying shell profile files to set the `PATH` and `DOTNET_ROOT` environment variables. The same mechanism also supports PowerShell on any platform.
 
-## Background
+On Windows the primary method is registry-based environment variables, which is handled separately. This document focuses on the Unix (and PowerShell) profile-based approach.
 
-The dotnetup tool manages multiple .NET installations in a local user hive. For .NET to be accessible from the command line, the installation directory must be:
-1. Added to the `PATH` environment variable
-2. Set as the `DOTNET_ROOT` environment variable
+## How the Environment Gets Configured
 
-On Unix systems, this requires modifying shell configuration files (like `.bashrc`, `.zshrc`, etc.) or sourcing environment setup scripts.
+There are two primary ways the environment is configured:
 
-## Design Goals
+### 1. During `dotnetup sdk install` / `dotnetup runtime install`
 
-1. **Non-invasive**: Don't automatically modify user shell configuration files without explicit consent
-2. **Flexible**: Support multiple shells (bash, zsh, PowerShell)
-3. **Reversible**: Users should be able to easily undo environment changes
-4. **Single-file execution**: Generate scripts that can be sourced or saved for later use
-5. **Discoverable**: Make it easy for users to understand how to configure their environment
+When running interactively (the default in a terminal), the install command prompts the user to set the default install if one is not already configured:
 
-## The `dotnetup print-env-script` Command
+```
+Do you want to set the install path (~/.local/share/dotnet) as the default dotnet install?
+This will update the PATH and DOTNET_ROOT environment variables. [Y/n]
+```
+
+If the user confirms (or passes `--set-default-install` explicitly):
+
+- **On Windows**: Environment variables are set in the registry and updated for the current process.
+- **On Unix**: Shell profile files are modified so .NET is available in future terminal sessions. Since profile changes only take effect in new shells, dotnetup also prints an activation command for the current terminal:
+
+  ```
+  To start using .NET in this terminal, run:
+    eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
+  ```
+
+If the default install is already fully configured and matches the install path, the prompt is skipped entirely.
+
+### 2. `dotnetup defaultinstall`
+
+A standalone command that explicitly configures (or reconfigures) the default .NET install:
+
+```bash
+# Set up user-level default install (modifies shell profiles)
+dotnetup defaultinstall user
+
+# Switch to admin/system-managed .NET (removes DOTNET_ROOT from profiles, keeps dotnetup on PATH)
+dotnetup defaultinstall admin
+```
+
+**`defaultinstall user`** on Unix:
+1. Detects the current shell
+2. Modifies the appropriate shell profile files
+3. Prints an activation command for the current terminal
+
+**`defaultinstall admin`** on Unix:
+- Replaces existing profile entries with dotnetup-only entries (keeps dotnetup on PATH but removes `DOTNET_ROOT` and dotnet from `PATH`), since the system package manager owns the .NET installation.
+
+## Shell Profile Modification
+
+### Which Profile Files Are Modified
+
+| Shell | Files modified | Rationale |
+|-------|---------------|-----------|
+| **bash** | `~/.bashrc` (always) + the first existing of `~/.bash_profile` / `~/.profile` (creates `~/.profile` if neither exists) | `.bashrc` covers Linux terminals (non-login shells). The login profile covers macOS Terminal and SSH sessions. We never create `~/.bash_profile` to avoid shadowing an existing `~/.profile`. |
+| **zsh** | `~/.zshrc` (created if needed) | Covers all interactive zsh sessions. `~/.zshenv` is avoided because on macOS, `/etc/zprofile` runs `path_helper` which resets PATH after `.zshenv` loads. |
+| **pwsh** | `~/.config/powershell/Microsoft.PowerShell_profile.ps1` (creates directory and file if needed) | Standard `$PROFILE` path on Unix. |
+
+### Profile Entry Format
+
+Each profile file gets a marker comment and an eval line:
+
+**Bash / Zsh:**
+```bash
+# dotnetup
+eval "$('/path/to/dotnetup' print-env-script --shell bash)"
+```
+
+**PowerShell:**
+```powershell
+# dotnetup
+& '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
+```
+
+The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`).
+
+### Backups
+
+Before modifying an existing profile file, dotnetup creates a backup (e.g., `~/.bashrc.dotnetup-backup`). This allows the user to restore the file if needed.
+
+### Reversibility
+
+To remove the environment configuration, find the `# dotnetup` marker comment and the line immediately after it in each profile file, and remove both lines. The backup files can be used as a reference.
+
+### Idempotency
+
+If a profile file already contains the `# dotnetup` marker, the entry is not duplicated.
+
+## The `print-env-script` Command
+
+`print-env-script` is the low-level building block that generates shell-specific environment scripts. It is called internally by profile entries and activation commands, but can also be used standalone for custom setups, CI pipelines, or when you want to source the environment without modifying profile files.
 
 ### Command Structure
 
@@ -40,12 +113,7 @@ dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
 
 ### Usage Examples
 
-#### Auto-detect current shell
-```bash
-dotnetup print-env-script
-```
-
-#### Generate and source in one command
+#### Source directly (one-time, current terminal only)
 ```bash
 source <(dotnetup print-env-script)
 ```
@@ -67,13 +135,13 @@ source ~/.dotnet-env.sh
 dotnetup print-env-script --dotnet-install-path /opt/dotnet
 ```
 
-## Generated Script Format
+### Generated Script Format
 
 The command generates shell-specific scripts that:
 1. Set the `DOTNET_ROOT` environment variable to the installation path
 2. Prepend the installation path to the `PATH` environment variable
 
-### Bash/Zsh Example
+**Bash/Zsh Example:**
 ```bash
 #!/usr/bin/env bash
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
@@ -83,7 +151,7 @@ export DOTNET_ROOT='/home/user/.local/share/dotnet'
 export PATH='/home/user/.local/share/dotnet':$PATH
 ```
 
-### PowerShell Example
+**PowerShell Example:**
 ```powershell
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
 # Source this script (dot-source) to add .NET to your PATH and set DOTNET_ROOT
@@ -93,103 +161,53 @@ $env:DOTNET_ROOT = '/home/user/.local/share/dotnet'
 $env:PATH = '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 ```
 
-## Implementation Details
-
-### Provider Model
-
-The implementation uses a provider model similar to `System.CommandLine.StaticCompletions`, making it easy to add support for additional shells in the future.
-
-**Interface**: `IEnvShellProvider`
-```csharp
-public interface IEnvShellProvider
-{
-    string ArgumentName { get; }           // Shell name for CLI (e.g., "bash")
-    string Extension { get; }               // File extension (e.g., "sh")
-    string? HelpDescription { get; }        // Help text for the shell
-    string GenerateEnvScript(string dotnetInstallPath);
-}
-```
-
-**Implementations**:
-- `BashEnvShellProvider`: Generates bash-compatible scripts
-- `ZshEnvShellProvider`: Generates zsh-compatible scripts
-- `PowerShellEnvShellProvider`: Generates PowerShell Core scripts
-
 ### Shell Detection
 
-The command automatically detects the current shell when the `--shell` option is not provided:
+When `--shell` is not specified, the command automatically detects the current shell:
 
-1. **On Unix**: Reads the `$SHELL` environment variable and extracts the shell name from the path
-   - Example: `/bin/bash` → `bash`
+1. **On Unix**: Reads the `$SHELL` environment variable and extracts the shell name from the path (e.g., `/bin/bash` → `bash`)
 2. **On Windows**: Defaults to PowerShell (`pwsh`)
 
 ### Security Considerations
 
-**Path Escaping**: All installation paths are properly escaped to prevent shell injection vulnerabilities:
+All installation paths are properly escaped to prevent shell injection vulnerabilities:
 - **Bash/Zsh**: Uses single quotes with `'\''` escaping for embedded single quotes
 - **PowerShell**: Uses single quotes with `''` escaping for embedded single quotes
 
 This ensures that paths containing special characters, spaces, or shell metacharacters are handled safely.
 
-## Advantages of Generated Scripts
-
-As noted in the discussion, generating scripts dynamically has several advantages over using embedded resource files:
-
-1. **Single-file execution**: Users can source the script directly from the command output without needing to extract files
-2. **Flexibility**: Easy to customize the installation path or add future features
-3. **No signing required**: Generated text doesn't require code signing, unlike downloaded executables or scripts
-4. **Immediate availability**: No download or extraction step needed
-5. **Transparency**: Users can easily inspect what the script does by running the command
-
-## Shell Profile Modification
-
-Building on `print-env-script`, dotnetup can automatically modify shell profile files so that `.NET` is available in every new terminal session. This is triggered in two ways:
-
-1. **`sdk install --interactive`** — When the user confirms "set as default install?", dotnetup persists the environment configuration to shell profiles in addition to setting environment variables for the current process.
-2. **`defaultinstall user`** — Standalone command that configures the default install, including shell profile modification on Unix.
-
-After either operation, dotnetup prints a command the user can paste into the current terminal to activate `.NET` immediately, since profile changes only take effect in new shells.
-
-### Which Profile Files Are Modified
-
-| Shell | Files modified | Rationale |
-|-------|---------------|-----------|
-| **bash** | `~/.bashrc` (always) + the first existing of `~/.bash_profile` / `~/.profile` (creates `~/.profile` if neither exists) | `.bashrc` covers Linux terminals (non-login shells). The login profile covers macOS Terminal and SSH sessions. We never create `~/.bash_profile` to avoid shadowing an existing `~/.profile`. |
-| **zsh** | `~/.zshrc` (created if needed) | Covers all interactive zsh sessions. `~/.zshenv` is avoided because on macOS, `/etc/zprofile` runs `path_helper` which resets PATH after `.zshenv` loads. |
-| **pwsh** | `~/.config/powershell/Microsoft.PowerShell_profile.ps1` (creates directory and file if needed) | Standard `$PROFILE` path on Unix. |
-
-### Profile Entry Format
-
-Each profile file gets a marker comment and an eval line:
-
-**Bash / Zsh:**
-```bash
-# dotnetup
-eval "$(/path/to/dotnetup print-env-script --shell bash)"
-```
-
-**PowerShell:**
-```powershell
-# dotnetup
-& /path/to/dotnetup print-env-script --shell pwsh | Invoke-Expression
-```
-
-The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`).
-
-### Reversibility
-
-- The `# dotnetup` marker comment immediately before the eval line identifies the addition.
-- To remove: find the marker line and the line after it, remove both.
-- Before modifying any file, dotnetup creates a backup (e.g., `~/.bashrc.dotnetup-backup`).
+## Implementation Details
 
 ### Provider Model
 
-The `IEnvShellProvider` interface is extended with two methods so each shell provider owns its profile knowledge:
+The implementation uses a provider model, making it easy to add support for additional shells in the future.
 
-- `GetProfilePaths()` — Returns the list of profile file paths to modify for the shell.
-- `GenerateProfileEntry(string dotnetupPath)` — Generates the marker comment and eval line.
+**Interface**: `IEnvShellProvider`
+```csharp
+public interface IEnvShellProvider
+{
+    string ArgumentName { get; }
+    string Extension { get; }
+    string? HelpDescription { get; }
+    string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true);
+    IReadOnlyList<string> GetProfilePaths();
+    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false);
+    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false);
+}
+```
 
-A `ShellProfileManager` class coordinates the file I/O: adding and removing entries, creating backups, and ensuring idempotency (entries are not duplicated if already present).
+**Implementations**: `BashEnvShellProvider`, `ZshEnvShellProvider`, `PowerShellEnvShellProvider`
+
+### ShellDetection
+
+`ShellDetection.GetCurrentShellProvider()` resolves the user's current shell to the matching `IEnvShellProvider`. On Windows it returns the PowerShell provider; on Unix it reads `$SHELL`.
+
+### ShellProfileManager
+
+`ShellProfileManager` coordinates profile file modifications:
+- `AddProfileEntries(provider, dotnetupPath)` — appends entries, creates backups, skips if already present
+- `RemoveProfileEntries(provider)` — finds and removes marker + eval lines
+- `ReplaceProfileEntries(provider, dotnetupPath, dotnetupOnly)` — removes then adds (used by `defaultinstall admin`)
 
 ## Future Work
 
@@ -210,5 +228,3 @@ The implementation includes comprehensive tests:
 - Security tests for special character handling
 - Help documentation tests
 - Shell profile manager tests for add/remove/idempotency/backup behavior
-
-All tests ensure that the generated scripts are syntactically correct and properly escape paths.
