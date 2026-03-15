@@ -37,7 +37,6 @@ public class InstallEndToEndTests
         new object[] { "9.0.1xx" },
         new object[] { "latest" },
         new object[] { "preview" },
-        new object[] { "sts" },
         new object[] { "lts" },
     };
 

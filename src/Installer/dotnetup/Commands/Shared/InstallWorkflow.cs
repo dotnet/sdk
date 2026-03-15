@@ -114,7 +114,7 @@ internal class InstallWorkflow
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
     {
-        var walkthrough = new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver, options);
+        var walkthrough = new InstallWalkthrough(_dotnetInstaller, options);
         var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var currentInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
 
