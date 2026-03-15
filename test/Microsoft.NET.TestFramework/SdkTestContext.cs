@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework
 {
-    public class TestContext
+    public class SdkTestContext
     {
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
@@ -77,9 +77,9 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private static TestContext? _current;
+        private static SdkTestContext? _current;
 
-        public static TestContext Current
+        public static SdkTestContext Current
         {
             get
             {
@@ -101,7 +101,7 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetRuntimeGraphFilePath()
         {
-            string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string dotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
 
             DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
 
@@ -147,7 +147,7 @@ namespace Microsoft.NET.TestFramework
             //  one running the tests, it won't interfere
             Environment.SetEnvironmentVariable("MSBuildSdksPath", null);
 
-            TestContext testContext = new();
+            SdkTestContext testContext = new();
 
             bool runAsTool = false;
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "TestAssets")))

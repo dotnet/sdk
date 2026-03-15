@@ -193,7 +193,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceDirB = Path.Combine(testAsset.Path, "ServiceB");
         var serviceProjectB = Path.Combine(serviceDirB, "B.csproj");
         var libDir = Path.Combine(testAsset.Path, "Lib");
-        var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
         await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
@@ -285,7 +284,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
         var hostProgram = Path.Combine(hostDir, "Program.cs");
-        var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
         await using var w = CreateInProcWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
@@ -411,5 +409,83 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         Log("Waiting for verbose rude edit reported ...");
         await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
+    }
+
+    [Fact]
+    public async Task RelaunchOnCrash()
+    {
+        var testAsset = CopyTestAsset("WatchAppMultiProc");
+
+        var workingDirectory = testAsset.Path;
+        var hostDir = Path.Combine(testAsset.Path, "Host");
+        var hostProject = Path.Combine(hostDir, "Host.csproj");
+        var serviceDirA = Path.Combine(testAsset.Path, "ServiceA");
+        var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
+        var libDir = Path.Combine(testAsset.Path, "Lib");
+        var libSource = Path.Combine(libDir, "Lib.cs");
+
+        await using var w = CreateInProcWatcher(testAsset, ["--project", hostProject], workingDirectory);
+
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var processCrashedAndWillBeRelaunched = w.Observer.RegisterSemaphore(MessageDescriptor.ProcessCrashedAndWillBeRelaunched);
+        var projectRelaunched = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectRelaunched);
+
+        var hasCrashed = new SemaphoreSlim(initialCount: 0);
+        var hasUpdate = new SemaphoreSlim(initialCount: 0);
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("<Crashed>"))
+            {
+                hasCrashed.Release();
+            }
+            else if (line.Content.Contains("<Updated>"))
+            {
+                hasUpdate.Release();
+            }
+        };
+
+        w.Start();
+
+        // let the host process start:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // service should have been created before Hot Reload session started:
+        Assert.NotNull(w.Service);
+
+        await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
+
+        UpdateSourceFile(libSource, """
+            using System;
+
+            public class Lib
+            {
+                public static void Common()
+                    => throw new Exception("<Crashed>");
+            }
+            """);
+
+        Log("Waiting <Crashed> in output ...");
+        await hasCrashed.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for process crashed ...");
+        await processCrashedAndWillBeRelaunched.WaitAsync(w.ShutdownSource.Token);
+
+        // file change triggers relaunch:
+        UpdateSourceFile(libSource,"""
+            using System;
+
+            public class Lib
+            {
+                public static void Common()
+                    => Console.WriteLine("<Updated>");
+            }
+            """);
+
+        Log("Waiting for A to relaunch ...");
+        await projectRelaunched.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for <Updated> in output ...");
+        await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 }

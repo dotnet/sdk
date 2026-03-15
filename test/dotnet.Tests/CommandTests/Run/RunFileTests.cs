@@ -129,7 +129,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(outOfTreeBaseDirectory);
 
         // Create NuGet.config in our out-of-tree base directory.
-        var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
@@ -1904,6 +1904,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Restore_NonExistentPackage()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:package Microsoft.ThisPackageDoesNotExist@1.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
+    }
+
+    [Fact]
     public void NoRestore_01()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2121,7 +2138,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2159,7 +2176,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -2188,7 +2205,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Module"));
     }
@@ -2301,7 +2318,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "AppContainerExe"));
     }
@@ -3945,18 +3962,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(TestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(TestContext.Current.NuGetCachePath!);
+        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
+        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
         var msbuildArgsToVerify = new List<string>();
         var nuGetPackageFilePaths = new List<string>();
+        bool referenceSpreadInserted = false;
+        bool analyzerSpreadInserted = false;
+        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
             // The .NET Foundation licenses this file to you under the MIT license.
+
+            using System.Text.Json;
 
             namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -3964,7 +3986,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             partial class CSharpCompilerCommand
             {
                 private IEnumerable<string> GetCscArguments(
-                    string fileNameWithoutExtension,
                     string objDir,
                     string binDir)
                 {
@@ -4046,17 +4067,24 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 needsInterpolation = true;
             }
 
-            // Use variable file name.
+            // Use variable file path.
             if (rewritten.Contains(entryPointPathNormalized, StringComparison.OrdinalIgnoreCase))
             {
                 rewritten = rewritten.Replace(entryPointPathNormalized, "{" + nameof(CSharpCompilerCommand.EntryPointFileFullPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
+            // Use variable file name.
+            if (rewritten.Contains(fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(fileName, "{FileName}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
             // Use variable program name.
             if (rewritten.Contains(programName, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(programName, "{fileNameWithoutExtension}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(programName, "{FileNameWithoutExtension}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -4070,6 +4098,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // Ignore `/analyzerconfig` which is not variable (so it comes from the machine or sdk repo).
             if (!needsInterpolation && arg.StartsWith("/analyzerconfig", StringComparison.Ordinal))
             {
+                continue;
+            }
+
+            // Use GetFrameworkReferenceArguments() for framework references instead of hard-coding them.
+            if (arg.StartsWith("/reference:", StringComparison.Ordinal))
+            {
+                if (!referenceSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkReferenceArguments(),
+                        """);
+                    referenceSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
+                continue;
+            }
+
+            // Use GetFrameworkAnalyzerArguments() for targeting-pack analyzers instead of hard-coding them.
+            if (arg.StartsWith("/analyzer:", StringComparison.Ordinal)
+                && rewritten.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!analyzerSpreadInserted)
+                {
+                    code.AppendLine("""
+                                    .. GetFrameworkAnalyzerArguments(),
+                        """);
+                    analyzerSpreadInserted = true;
+                }
+
+                msbuildArgsToVerify.Add(msbuildArgToVerify);
                 continue;
             }
 
@@ -4109,12 +4168,76 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         code.AppendLine("""
                     ];
                 }
+            """);
+
+        // Generate file content templates.
+        var baseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.GetDirectoryName(entryPointPath)!);
+        var replacements = new List<(string, string)>
+        {
+            (TestPathUtility.ResolveTempPrefixLink(entryPointPath), nameof(CSharpCompilerCommand.EntryPointFileFullPath)),
+            (baseDirectory + Path.DirectorySeparatorChar, nameof(CSharpCompilerCommand.BaseDirectoryWithTrailingSeparator)),
+            (baseDirectory, nameof(CSharpCompilerCommand.BaseDirectory)),
+            (programName, nameof(CSharpCompilerCommand.FileNameWithoutExtension)),
+            (CSharpCompilerCommand.TargetFrameworkVersion, nameof(CSharpCompilerCommand.TargetFrameworkVersion)),
+            (CSharpCompilerCommand.TargetFramework, nameof(CSharpCompilerCommand.TargetFramework)),
+            (CSharpCompilerCommand.DefaultRuntimeVersion, nameof(CSharpCompilerCommand.DefaultRuntimeVersion)),
+        };
+        var emittedFiles = Directory.EnumerateFiles(artifactsDir, "*", SearchOption.AllDirectories).Order();
+        foreach (var emittedFile in emittedFiles)
+        {
+            var emittedFileName = Path.GetFileName(emittedFile);
+            var generatedMethodName = GetGeneratedMethodName(emittedFileName);
+            if (generatedMethodName is null)
+            {
+                Log.WriteLine($"Skipping unrecognized file '{emittedFile}'.");
+                continue;
+            }
+
+            var emittedFileContent = File.ReadAllText(emittedFile);
+
+            string interpolatedString = emittedFileContent;
+            string interpolationPrefix;
+
+            if (emittedFileName.EndsWith(".json", StringComparison.Ordinal))
+            {
+                interpolationPrefix = "$$";
+                foreach (var (key, value) in replacements)
+                {
+                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ")}}");
+                }
+            }
+            else
+            {
+                interpolationPrefix = "$";
+                foreach (var (key, value) in replacements)
+                {
+                    interpolatedString = interpolatedString.Replace(key, "{" + value + "}");
+                }
+            }
+
+            if (interpolatedString == emittedFileContent)
+            {
+                interpolationPrefix = "";
+            }
+
+            code.AppendLine($$""""
+
+                    private string Get{{generatedMethodName}}Content()
+                    {
+                        return {{interpolationPrefix}}"""
+                {{interpolatedString}}
+                """;
+                    }
+                """");
+        }
+
+        code.AppendLine("""
             }
             """);
 
         // Save the code.
         var codeFolder = new DirectoryInfo(Path.Join(
-            TestContext.Current.ToolsetUnderTest.RepoRoot,
+            SdkTestContext.Current.ToolsetUnderTest.RepoRoot,
             "src", "Cli", "dotnet", "Commands", "Run"));
         var nonGeneratedFile = codeFolder.File("CSharpCompilerCommand.cs");
         if (!nonGeneratedFile.Exists)
@@ -4160,12 +4283,30 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Check that csc args between MSBuild run and CSC-only run are equivalent.
         var normalizedCscOnlyArgs = cscOnlyCallArgs
-            .Select(static a => NormalizePathArg(RemoveQuotes(a)));
+            .Select(static a => NormalizePathArg(RemoveQuotes(a)))
+            .ToList();
         Log.WriteLine("CSC-only args:");
         Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
         Log.WriteLine("MSBuild args:");
         Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
-        normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify,
+
+        // References and targeting-pack analyzers may be in a different order (FrameworkList.xml vs. MSBuild),
+        // so compare them as sets. All other args must be in the same order.
+        var cscOnlyRefArgs = normalizedCscOnlyArgs.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var cscOnlyAnalyzerArgs = normalizedCscOnlyArgs.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var cscOnlyOtherArgs = normalizedCscOnlyArgs.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        var msbuildRefArgs = msbuildArgsToVerify.Where(static a => a.StartsWith("/reference:", StringComparison.Ordinal)).ToList();
+        var msbuildAnalyzerArgs = msbuildArgsToVerify.Where(a => a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase)).ToList();
+        var msbuildOtherArgs = msbuildArgsToVerify.Where(a => !a.StartsWith("/reference:", StringComparison.Ordinal) && !(a.StartsWith("/analyzer:", StringComparison.Ordinal) && a.Contains(NetCoreAppRefPackPath, StringComparison.OrdinalIgnoreCase))).ToList();
+        cscOnlyRefArgs.Should().NotBeEmpty(
+            "framework references should be resolved from FrameworkList.xml");
+        cscOnlyRefArgs.Should().BeEquivalentTo(msbuildRefArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyAnalyzerArgs.Should().NotBeEmpty(
+            "framework analyzers should be resolved from FrameworkList.xml");
+        cscOnlyAnalyzerArgs.Should().BeEquivalentTo(msbuildAnalyzerArgs,
+            "the generated file might be outdated, run this test locally to regenerate it");
+        cscOnlyOtherArgs.Should().Equal(msbuildOtherArgs,
             "the generated file might be outdated, run this test locally to regenerate it");
 
         static CompilerCall FindCompilerCall(string binaryLogPath)
@@ -4189,6 +4330,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         static string RemoveQuotes(string arg)
         {
             return arg.Replace("\"", string.Empty);
+        }
+
+        static string? GetGeneratedMethodName(string assetFileName)
+        {
+            return assetFileName switch
+            {
+                $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}.AssemblyAttributes.cs" => "AssemblyAttributes",
+                $"{fileName}.GlobalUsings.g.cs" => "GlobalUsings",
+                $"{fileName}.AssemblyInfo.cs" => "AssemblyInfo",
+                $"{fileName}.GeneratedMSBuildEditorConfig.editorconfig" => "GeneratedMSBuildEditorConfig",
+                $"{programName}{FileNameSuffixes.RuntimeConfigJson}" => "RuntimeConfig",
+                _ => null,
+            };
         }
     }
 
@@ -4257,7 +4411,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             var msbuildFileText = File.ReadAllText(msbuildFile);
             if (cscOnlyFileText.ReplaceLineEndings() != msbuildFileText.ReplaceLineEndings())
             {
-                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, find the template in '{nameof(CSharpCompilerCommand)}.cs' and update it): {cscOnlyFile}");
+                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, run test '{nameof(CscArguments)}' locally to re-generate the template): {cscOnlyFile}");
                 const int limit = 3_000;
                 if (cscOnlyFileText.Length < limit && msbuildFileText.Length < limit)
                 {
@@ -4752,7 +4906,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
             """);
 
-        var expectedDotNetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+        var expectedDotNetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
 
         var cscResult = new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithWorkingDirectory(testInstance.Path)
@@ -5386,6 +5540,63 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after a full MSBuild build,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void MSBuild_WritesCscRsp()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:property Configuration=Release
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // A build directive forces a full MSBuild build.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello");
+
+        // csc.rsp should be written to disk after a full MSBuild build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after a full MSBuild build");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
+    }
+
+    /// <summary>
+    /// Verifies that <c>csc.rsp</c> is written to disk after <c>dotnet build file.cs</c>,
+    /// so that IDEs can read it to create a virtual project.
+    /// </summary>
+    [Fact]
+    public void DotnetBuild_WritesCscRsp()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.Write("Hello");
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // csc.rsp should be written to disk after dotnet build.
+        var rspPath = Path.Join(artifactsDir, "csc.rsp");
+        File.Exists(rspPath).Should().BeTrue("csc.rsp should be written after dotnet build file.cs");
+        File.ReadAllLines(rspPath).Should().NotBeEmpty("csc.rsp should contain compiler arguments");
+    }
+
+    /// <summary>
     /// Testing <see cref="CscOnly"/> optimization when the NuGet cache is cleared between builds.
     /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
     /// </summary>
@@ -5504,6 +5715,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5517,8 +5729,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5563,7 +5777,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5593,6 +5807,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var bPath = Path.Join(testInstance.Path, "B.cs");
         File.WriteAllText(bPath, "");
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5606,8 +5821,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>A</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5651,7 +5868,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -5665,6 +5882,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property LangVersion=preview
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5678,8 +5896,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5718,7 +5938,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
@@ -5736,6 +5956,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -5749,8 +5970,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -5789,7 +6012,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
@@ -6049,7 +6272,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var projectBasedFiles = ReadFiles();
 
         fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
-        fileBasedResult.StdErr.Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.StdErr!.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
         fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
         fileBasedFiles.Should().Equal(projectBasedFiles);
 

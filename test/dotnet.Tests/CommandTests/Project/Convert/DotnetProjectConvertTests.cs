@@ -982,7 +982,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Theory, CombinatorialData]
     public void UserSecretsId_Overridden_SameAsImplicit(bool hasDirective, bool hasDirectiveBuildProps)
     {
-        const string implicitValue = "$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))";
+        const string implicitValue = "$(AssemblyName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))";
 
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
@@ -2012,5 +2012,298 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Assert.All(actualDiagnostics, d => { Assert.Equal(filePath, d.Location.Path); });
             actualDiagnostics.Select(d => (d.Location.Span.Start.Line + 1, d.Message)).Should().BeEquivalentTo(expectedErrors);
         }
+    }
+
+    [Fact]
+    public void DeleteSource_WithFlag()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        
+        var csFile = Path.Combine(testInstance.Path, "Program.cs");
+        File.WriteAllText(csFile, """Console.WriteLine("Test");""");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Source file should be deleted
+        File.Exists(csFile).Should().BeFalse();
+        
+        // Converted files should exist
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithoutFlag_NonInteractive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        
+        var csFile = Path.Combine(testInstance.Path, "Program.cs");
+        File.WriteAllText(csFile, """Console.WriteLine("Test");""");
+
+        // Without --delete-source and without --interactive, source file should remain
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Source file should still exist
+        File.Exists(csFile).Should().BeTrue();
+        
+        // Converted files should also exist
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_DryRun()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        
+        var csFile = Path.Combine(testInstance.Path, "Program.cs");
+        File.WriteAllText(csFile, """Console.WriteLine("Test");""");
+
+        var result = new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source", "--dry-run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        result.Should().Pass();
+        result.StdOut.Should().Contain("Dry run: would delete source file: " + csFile);
+
+        // Source file should still exist in dry-run mode
+        File.Exists(csFile).Should().BeTrue();
+        
+        // No files should be created in dry-run mode
+        Directory.Exists(Path.Join(testInstance.Path, "Program")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void DeleteSource_WithCustomOutput()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        
+        var csFile = Path.Combine(testInstance.Path, "Program.cs");
+        File.WriteAllText(csFile, """Console.WriteLine("Test");""");
+
+        var outputDir = Path.Combine(testInstance.Path, "CustomOutput");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "-o", outputDir, "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Source file should be deleted
+        File.Exists(csFile).Should().BeFalse();
+        
+        // Converted files should exist in custom output directory
+        File.Exists(Path.Join(outputDir, "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(outputDir, "Program.csproj")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithDefaultFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with default items enabled
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultNoneItems=true
+            #:property EnableDefaultCompileItems=true
+            Console.WriteLine("Test");
+            """);
+
+        // Create additional default files
+        File.WriteAllText(Path.Join(testInstance.Path, "appsettings.json"), "{}");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // ALL included files should be deleted (both Compile and None items)
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "appsettings.json")).Should().BeFalse();
+
+        // All files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "appsettings.json")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithDefaultFiles_NotDeleted()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        
+        // Create entry point file with default items enabled
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultNoneItems=true
+            #:property EnableDefaultCompileItems=true
+            Console.WriteLine("Test");
+            """);
+        
+        // Create additional default files
+        File.WriteAllText(Path.Join(testInstance.Path, "appsettings.json"), "{}");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
+
+        // Without --delete-source, all files should remain
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // All source files should still exist
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "appsettings.json")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
+        
+        // All files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "appsettings.json")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithIncludeDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with #:include directive
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:include Util.cs
+            Console.WriteLine("Test");
+            """);
+
+        // Create included file
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // ALL source files should be deleted (entry point AND included files)
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+
+        // Both files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithIncludeDirective_NotDeleted()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with #:include directive
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:include Util.cs
+            Console.WriteLine("Test");
+            """);
+
+        // Create included file
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
+
+        // Without --delete-source, all files should remain
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // All source files should still exist
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeTrue();
+
+        // Both files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithIncludeDirective_MultipleFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with multiple #:include directives
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:include Util.cs
+            #:include Helper.cs
+            #:include config.json
+            Console.WriteLine("Test");
+            """);
+
+        // Create included files
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class Util { }");
+        File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), "class Helper { }");
+        File.WriteAllText(Path.Join(testInstance.Path, "config.json"), "{}");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // ALL included files should be deleted (Compile and non-Compile)
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "config.json")).Should().BeFalse();
+
+        // All files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Helper.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "config.json")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteSource_WithIncludeDirective_Transitive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create entry point file with #:include directive
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ExperimentalFileBasedProgramEnableIncludeDirective=true
+            #:property ExperimentalFileBasedProgramEnableTransitiveDirectives=true
+            #:include Util.cs
+            Console.WriteLine("Test");
+            """);
+
+        // Create included file that itself has #:include directive (transitive)
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            #:include Helper.cs
+            class Util { }
+            """);
+
+        // Create transitively included file
+        File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), "class Helper { }");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // ALL Compile (source) files should be deleted (entry point, direct, and transitive)
+        File.Exists(Path.Join(testInstance.Path, "Program.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Util.cs")).Should().BeFalse();
+        File.Exists(Path.Join(testInstance.Path, "Helper.cs")).Should().BeFalse();
+
+        // All files should be copied to the output directory
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "Program", "Helper.cs")).Should().BeTrue();
     }
 }

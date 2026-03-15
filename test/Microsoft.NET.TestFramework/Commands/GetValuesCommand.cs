@@ -135,7 +135,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
         }
 
         public List<string> GetValues()
