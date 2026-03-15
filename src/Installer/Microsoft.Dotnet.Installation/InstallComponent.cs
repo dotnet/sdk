@@ -58,6 +58,13 @@ public static class InstallComponentExtensions
     }
 
     /// <summary>
+    /// Width of the " (nnn.n MB / nnn.n MB)" suffix appended during download progress.
+    /// Used to pad non-download descriptions (e.g. "Installing") to the same total width
+    /// so all progress rows stay aligned.
+    /// </summary>
+    public const int DownloadSuffixWidth = 22;
+
+    /// <summary>
     /// Builds a progress-bar description such as "Downloading aspnet (runtime)         9.0.312".
     /// Component names and versions are padded so all rows align vertically.
     /// </summary>

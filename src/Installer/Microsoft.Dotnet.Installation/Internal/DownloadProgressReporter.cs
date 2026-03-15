@@ -13,6 +13,9 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
     {
         _task = task;
         _description = description;
+        // Pad the initial description so the row is the same width as when
+        // download progress is being reported — prevents column jumping.
+        _task.Description = description + new string(' ', InstallComponentExtensions.DownloadSuffixWidth);
     }
 
     public void Report(DownloadProgress value)
@@ -25,30 +28,21 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
         {
             double percent = (double)value.BytesDownloaded / _totalBytes.Value * 100.0;
             _task.Value = percent;
-            _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)} / {FormatBytes(_totalBytes.Value)})";
+            // Fixed-width: "( nnn.n MB / nnn.n MB)" — always 22 chars
+            _task.Description = $"{_description} ({FormatMB(value.BytesDownloaded)} / {FormatMB(_totalBytes.Value)})";
         }
         else
         {
-            _task.Description = $"{_description} ({FormatBytes(value.BytesDownloaded)})";
+            _task.Description = $"{_description} ({FormatMB(value.BytesDownloaded)})";
         }
     }
 
     /// <summary>
-    /// Formats bytes as a right-aligned string so columns line up across progress rows.
-    /// Output is always 8 characters wide (e.g. " 24.2 MB", "290.4 MB").
+    /// Formats bytes as MB, right-aligned to 8 characters (e.g. "  0.7 MB", "290.4 MB").
+    /// Always uses MB so the unit width is consistent across all progress rows.
     /// </summary>
-    private static string FormatBytes(long bytes)
+    private static string FormatMB(long bytes)
     {
-        if (bytes > 1024 * 1024)
-        {
-            return FormattableString.Invariant($"{bytes / (1024.0 * 1024.0),5:F1} MB");
-        }
-
-        if (bytes > 1024)
-        {
-            return FormattableString.Invariant($"{bytes / 1024.0,5:F1} KB");
-        }
-
-        return FormattableString.Invariant($"{bytes,5} B");
+        return FormattableString.Invariant($"{bytes / (1024.0 * 1024.0),5:F1} MB");
     }
 }

@@ -139,7 +139,10 @@ internal class DotnetArchiveExtractor : IDisposable
         _extractedSubcomponents.Clear();
 
         string description = InstallComponentExtensions.FormatProgressDescription("Installing", _request.Component, _resolvedVersion.ToString());
-        var installTask = ProgressReporter.AddTask(description, maxValue: 100);
+        // Pad to match the width of "Downloading" rows (which have an MB suffix)
+        // so all progress rows stay aligned within the shared Spectre column.
+        string paddedDescription = description + new string(' ', InstallComponentExtensions.DownloadSuffixWidth);
+        var installTask = ProgressReporter.AddTask(paddedDescription, maxValue: 100);
 
         if (_archivePath is null)
         {
