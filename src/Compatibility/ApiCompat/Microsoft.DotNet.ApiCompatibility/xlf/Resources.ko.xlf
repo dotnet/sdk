@@ -77,6 +77,11 @@
         <target state="translated">기본 인터페이스 멤버 '{0}'에 sealed 키워드를 추가할 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStatic">
+        <source>Cannot add static keyword to '{0}'.</source>
+        <target state="new">Cannot add static keyword to '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">'{0}' 구성원에 가상 키워드를 추가할 수 없습니다.</target>
@@ -120,6 +125,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">형식 매개 변수 '{2}'의 '{1}'에서 제약 조건 '{0}'을(를) 제거할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStatic">
+        <source>Cannot remove static keyword from '{0}'.</source>
+        <target state="new">Cannot remove static keyword from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
