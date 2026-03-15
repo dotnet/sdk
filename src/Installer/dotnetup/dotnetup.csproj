@@ -15,8 +15,8 @@
     <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
 
     <!-- dotnetup versioning -->
-    <VersionPrefix>0.1.1</VersionPrefix>
-    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>

@@ -1,0 +1,11 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library -->
+    <DotnetupVersionPrefix>0.1.1</DotnetupVersionPrefix>
+    <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
+  </PropertyGroup>
+
+</Project>
