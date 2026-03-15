@@ -13,9 +13,10 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
     {
         _task = task;
         _description = description;
-        // Pad the initial description so the row is the same width as when
-        // download progress is being reported — prevents column jumping.
-        _task.Description = description + new string(' ', InstallComponentExtensions.DownloadSuffixWidth);
+        // Show placeholder MB values so the row has the same visible width as
+        // rows that are actively downloading — trailing spaces get ignored by
+        // Spectre's column layout, so we need real characters for alignment.
+        _task.Description = $"{description} ({FormatMB(0)} / {FormatMB(0)})";
     }
 
     public void Report(DownloadProgress value)
@@ -24,17 +25,14 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
         {
             _totalBytes = value.TotalBytes;
         }
-        if (_totalBytes.HasValue && _totalBytes.Value > 0)
+        long total = _totalBytes ?? 0;
+        if (total > 0)
         {
-            double percent = (double)value.BytesDownloaded / _totalBytes.Value * 100.0;
+            double percent = (double)value.BytesDownloaded / total * 100.0;
             _task.Value = percent;
-            // Fixed-width: "( nnn.n MB / nnn.n MB)" — always 22 chars
-            _task.Description = $"{_description} ({FormatMB(value.BytesDownloaded)} / {FormatMB(_totalBytes.Value)})";
         }
-        else
-        {
-            _task.Description = $"{_description} ({FormatMB(value.BytesDownloaded)})";
-        }
+        // Always use the full two-value format to keep row width consistent
+        _task.Description = $"{_description} ({FormatMB(value.BytesDownloaded)} / {FormatMB(total)})";
     }
 
     /// <summary>
