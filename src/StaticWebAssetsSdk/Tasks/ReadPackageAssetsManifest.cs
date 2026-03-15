@@ -42,6 +42,7 @@ public class ReadPackageAssetsManifest : Task
             var manifestPath = manifestItem.ItemSpec;
             var sourceId = manifestItem.GetMetadata("SourceId");
             var packageRoot = manifestItem.GetMetadata("PackageRoot");
+            var contentRoot = manifestItem.GetMetadata("ContentRoot");
 
             if (!File.Exists(manifestPath))
             {
@@ -76,7 +77,7 @@ public class ReadPackageAssetsManifest : Task
             var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(manifest.Endpoints ?? []);
             var (_, includedEndpoints) = StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedPaths);
 
-            if (!ResolveAssetsAndEndpoints(includedAssets, includedEndpoints, sourceId, packageRoot))
+            if (!ResolveAssetsAndEndpoints(includedAssets, includedEndpoints, sourceId, packageRoot, contentRoot))
             {
                 return false;
             }
@@ -99,10 +100,12 @@ public class ReadPackageAssetsManifest : Task
         List<StaticWebAsset> assets,
         List<StaticWebAssetEndpoint> endpoints,
         string sourceId,
-        string packageRoot)
+        string packageRoot,
+        string contentRoot)
     {
         var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
         var frameworkPaths = new Dictionary<string, string>(OSPath.PathComparer);
+        var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
 
         foreach (var asset in assets)
         {
@@ -121,6 +124,7 @@ public class ReadPackageAssetsManifest : Task
             {
                 asset.Identity = ResolvePath(packageRoot, asset.Identity);
                 asset.OriginalItemSpec = asset.Identity;
+                asset.ContentRoot = normalizedContentRoot;
             }
 
             if (!string.IsNullOrEmpty(asset.RelatedAsset))
