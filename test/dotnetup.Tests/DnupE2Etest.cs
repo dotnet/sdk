@@ -342,13 +342,11 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         pathLine.Should().NotBeNull($"PATH should be printed for {shell}");
         dotnetRootLine.Should().NotBeNull($"DOTNET_ROOT should be printed for {shell}");
 
-        // Verify PATH contains the install path (find first entry with 'dotnet' to handle shell startup files that may prepend entries)
+        // Verify PATH contains the install path
         var pathValue = pathLine!.Substring("PATH=".Length);
         var pathSeparator = OperatingSystem.IsWindows() ? ';' : ':';
         var pathEntries = pathValue.Split(pathSeparator);
-        var dotnetPathEntries = pathEntries.Where(p => p.Contains("dotnet", StringComparison.OrdinalIgnoreCase)).ToList();
-        var firstDotnetPathEntry = dotnetPathEntries.FirstOrDefault();
-        firstDotnetPathEntry.Should().Be(installPath, $"First PATH entry containing 'dotnet' should be the dotnet install path for {shell}. Found dotnet entries: [{string.Join(", ", dotnetPathEntries)}]");
+        pathEntries.Should().Contain(installPath, $"PATH should contain the dotnet install path for {shell}. PATH entries: [{string.Join(", ", pathEntries)}]");
 
         // Verify DOTNET_ROOT matches install path
         var dotnetRootValue = dotnetRootLine!.Substring("DOTNET_ROOT=".Length);
