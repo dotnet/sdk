@@ -5,8 +5,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 public class ZshEnvShellProvider : IEnvShellProvider
 {
-    private const string MarkerComment = "# dotnetup";
-
     public string ArgumentName => "zsh";
 
     public string Extension => "zsh";
@@ -72,7 +70,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''");
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        return $"{MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell zsh{flags})\"";
+        return $"{ShellProfileManager.MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell zsh{flags})\"";
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)

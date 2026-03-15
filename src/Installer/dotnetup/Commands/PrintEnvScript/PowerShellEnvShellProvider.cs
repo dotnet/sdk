@@ -5,8 +5,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 public class PowerShellEnvShellProvider : IEnvShellProvider
 {
-    private const string MarkerComment = "# dotnetup";
-
     public string ArgumentName => "pwsh";
 
     public string Extension => "ps1";
@@ -66,7 +64,7 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
     {
         var escapedPath = dotnetupPath.Replace("'", "''");
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        return $"{MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
+        return $"{ShellProfileManager.MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
