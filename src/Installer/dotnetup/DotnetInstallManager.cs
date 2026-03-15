@@ -158,13 +158,10 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // Non-Windows platforms: use the simpler PATH-based approach
-            // Get current PATH
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-            var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string exeName = "dotnet";
-            // Remove only actual dotnet installation folders from PATH
-            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+            // Non-Windows platforms: persist environment via shell profiles only.
+            // Environment.SetEnvironmentVariable with EnvironmentVariableTarget.User
+            // has no real persistent store on Unix, so shell profile entries are the
+            // sole persistence mechanism.
 
             switch (installType)
             {
@@ -173,10 +170,6 @@ public class DotnetInstallManager : IDotnetInstallManager
                     {
                         throw new ArgumentNullException(nameof(dotnetRoot));
                     }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Set DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
 
                     // Persist to shell profiles
                     var dotnetupPath = Environment.ProcessPath;
@@ -187,15 +180,6 @@ public class DotnetInstallManager : IDotnetInstallManager
                     }
                     break;
                 case InstallType.Admin:
-                    if (string.IsNullOrEmpty(dotnetRoot))
-                    {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
-                    }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Unset DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-
                     // Replace shell profile entries with dotnetup-only (no DOTNET_ROOT or dotnet PATH)
                     var adminDotnetupPath = Environment.ProcessPath;
                     var adminShellProvider = ShellDetection.GetCurrentShellProvider();
@@ -207,9 +191,6 @@ public class DotnetInstallManager : IDotnetInstallManager
                 default:
                     throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
             }
-            // Update PATH
-            var newPath = string.Join(Path.PathSeparator, pathEntries);
-            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
         }
     }
 }
