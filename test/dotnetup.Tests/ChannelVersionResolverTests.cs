@@ -61,21 +61,13 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [Fact]
-        public void GetLatestVersionForChannel_STS_ReturnsLatestSTSVersion()
+        public void GetLatestVersionForChannel_STS_IsNoLongerSupported()
         {
             var manifest = new ChannelVersionResolver();
+
+            // "sts" channel has been removed - it should not resolve to a version
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("sts"), InstallComponent.SDK);
-
-            Log.WriteLine($"STS Version found: {version}");
-
-            // Check that we got a version
-            Assert.NotNull(version);
-
-            // STS versions should have odd major versions (e.g., 7.0, 9.0, 11.0)
-            Assert.True(version.Major % 2 != 0, $"STS version {version} should have an odd major version");
-
-            // Should not be a preview version
-            Assert.Null(version.Prerelease);
+            Assert.Null(version);
         }
 
         [Fact(Skip = "No preview releases may be available after GA of a major release and before preview 1 of the next")]
@@ -106,7 +98,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("latest", true)]
         [InlineData("preview", true)]
         [InlineData("lts", true)]
-        [InlineData("sts", true)]
         [InlineData("LTS", true)]  // Case insensitive
         [InlineData("9", true)]
         [InlineData("9.0", true)]
@@ -146,8 +137,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             // Should include named channels
             Assert.Contains("latest", channels);
             Assert.Contains("lts", channels);
-            Assert.Contains("sts", channels);
             Assert.Contains("preview", channels);
+
+            // "sts" channel has been removed
+            Assert.DoesNotContain("sts", channels);
 
             // Should include product versions like "10.0"
             Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));
@@ -165,8 +158,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             // Should include named channels
             Assert.Contains("latest", channels);
             Assert.Contains("lts", channels);
-            Assert.Contains("sts", channels);
             Assert.Contains("preview", channels);
+
+            // "sts" channel has been removed
+            Assert.DoesNotContain("sts", channels);
 
             // Should include product versions like "10.0"
             Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));

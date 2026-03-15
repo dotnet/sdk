@@ -59,7 +59,7 @@ internal class UpdateChannel
 
     /// <summary>
     /// Checks if the given version matches this channel pattern.
-    /// Supports exact versions, named channels (latest, lts, sts, preview),
+    /// Supports exact versions, named channels (latest, lts, preview),
     /// major-only, major.minor, and feature band patterns.
     /// </summary>
     public bool Matches(ReleaseVersion version)
@@ -84,11 +84,7 @@ internal class UpdateChannel
 
         // These channels match any version. The "preview" channel may resolve to a stable version
         // when no preview exists yet (e.g., after a major release before the next preview).
-        // The "sts" channel includes both STS and LTS releases, since users on this channel want
-        // newer versions quickly regardless of support lifecycle. GC still keeps only the latest
-        // version per channel, so broad matching here doesn't prevent cleanup.
         if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase) ||
-            Name.Equals("sts", StringComparison.OrdinalIgnoreCase) ||
             Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
         {
             return true;
