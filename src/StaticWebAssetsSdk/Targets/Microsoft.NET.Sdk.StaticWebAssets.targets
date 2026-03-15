@@ -58,6 +58,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ReadPackageAssetsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
@@ -119,6 +124,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateExternallyDefinedStaticWebAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterStaticWebAssetGroups"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -303,6 +313,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCoreStaticWebAssetsDependsOn>
       UpdateExistingPackageStaticWebAssets;
+      ReadPackageStaticWebAssetManifests;
       ResolveProjectStaticWebAssets;
       ResolveEmbeddedProjectsStaticWebAssets;
       ResolveReferencedProjectsStaticWebAssets;
@@ -317,8 +328,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
       ResolveStaticWebAssetsInputs;
+      FilterDeferredStaticWebAssetGroups;
       $(ResolveBuildRelatedStaticWebAssetsDependsOn)
     </ResolveBuildRelatedStaticWebAssetsDependsOn>
+
+    <FilterDeferredStaticWebAssetGroupsDependsOn>
+      ResolveStaticWebAssetsInputs;
+      $(FilterDeferredStaticWebAssetGroupsDependsOn)
+    </FilterDeferredStaticWebAssetGroupsDependsOn>
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest;AddStaticWebAssetEndpointsBuildManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
@@ -382,6 +399,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetCanonicalMetadata Include="RelatedAsset" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitName" />
     <_StaticWebAssetCanonicalMetadata Include="AssetTraitValue" />
+    <_StaticWebAssetCanonicalMetadata Include="AssetGroups" />
     <_StaticWebAssetCanonicalMetadata Include="Fingerprint" />
     <_StaticWebAssetCanonicalMetadata Include="Integrity" />
     <_StaticWebAssetCanonicalMetadata Include="CopyToOutputDirectory" />
@@ -461,6 +479,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_StaticWebAssetEndpointsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_StaticWebAssetEndpointsPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildPropsFileImportPath>..\build\$(PackageId).props</_StaticWebAssetsGeneratedBuildPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>..\buildMultiTargeting\$(PackageId).props</_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>
+
+      <!-- JSON manifest packaging paths (.NET 11+ .targets-based packaging) -->
+      <_GeneratedPackageAssetsManifestFile>$(_StaticWebAssetsIntermediateOutputPath)$(PackageId).PackageAssets.json</_GeneratedPackageAssetsManifestFile>
+      <_GeneratedStaticWebAssetsTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssets.targets</_GeneratedStaticWebAssetsTargetsFile>
+      <_GeneratedBuildTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.build.$(PackageId).targets</_GeneratedBuildTargetsFile>
+      <_GeneratedBuildMultitargetingTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildMultiTargeting.$(PackageId).targets</_GeneratedBuildMultitargetingTargetsFile>
+      <_GeneratedBuildTransitiveTargetsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildTransitive.$(PackageId).targets</_GeneratedBuildTransitiveTargetsFile>
+
+      <!-- .targets-based import paths -->
+      <_StaticWebAssetsTargetsFileImportPath>Microsoft.AspNetCore.StaticWebAssets.targets</_StaticWebAssetsTargetsFileImportPath>
+      <_StaticWebAssetsGeneratedBuildTargetsFileImportPath>..\build\$(PackageId).targets</_StaticWebAssetsGeneratedBuildTargetsFileImportPath>
+      <_StaticWebAssetsGeneratedBuildMultiTargetingTargetsFileImportPath>..\buildMultiTargeting\$(PackageId).targets</_StaticWebAssetsGeneratedBuildMultiTargetingTargetsFileImportPath>
+
+      <!-- Opt-in flag: use JSON manifest + .targets packaging when targeting net11.0+ -->
+      <_UseJsonManifestPackaging Condition="'$(_UseJsonManifestPackaging)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">true</_UseJsonManifestPackaging>
+      <_UseJsonManifestPackaging Condition="'$(_UseJsonManifestPackaging)' == ''">false</_UseJsonManifestPackaging>
 
       <!-- Design -->
       <StaticWebAssetUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.upToDateCheck.txt</StaticWebAssetUpToDateCheckManifestPath>
@@ -650,11 +684,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
 
+    <!-- Filter ALL grouped assets (both project-owned and deferred/consumer) after the build
+         manifest has been written. The build manifest retains all variants so consumers can
+         select at restore time. The endpoints manifest and dev manifest only include the
+         variant selected by the project's groups. -->
+    <FilterStaticWebAssetGroups
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)">
+      <Output TaskParameter="FilteredAssets" ItemName="_CurrentProjectFilteredAssets" />
+      <Output TaskParameter="SurvivingEndpoints" ItemName="_CurrentProjectFilteredEndpoints" />
+    </FilterStaticWebAssetGroups>
+
     <GenerateStaticWebAssetEndpointsManifest
       Source="$(PackageId)"
       ManifestType="Build"
-      Assets="@(StaticWebAsset)"
-      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_CurrentProjectFilteredAssets)"
+      Endpoints="@(_CurrentProjectFilteredEndpoints)"
       ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
       CacheFilePath="$(StaticWebAssetBuildManifestPath)"
       ExclusionPatterns="$(StaticWebAssetEndpointExclusionPattern)"
@@ -663,7 +709,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
-      Assets="@(StaticWebAsset)"
+      Assets="@(_CurrentProjectFilteredAssets)"
       Source="$(PackageId)"
       ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
       CacheFilePath="$(StaticWebAssetBuildManifestPath)">
@@ -690,6 +736,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
 
+  <Target Name="FilterDeferredStaticWebAssetGroups" DependsOnTargets="$(FilterDeferredStaticWebAssetGroupsDependsOn)">
+    <!-- Extension point for asset groups that need to inspect other properties at build
+         time to produce the final value for a deferred group. Libraries or SDK
+         extensions can override FilterDeferredStaticWebAssetGroupsDependsOn to run
+         custom targets that resolve deferred groups before the final filtering pass. -->
+  </Target>
+
   <Target Name="ResolveBuildRelatedStaticWebAssets" DependsOnTargets="$(ResolveBuildRelatedStaticWebAssetsDependsOn)" />
 
   <Target Name="ResolveBuildStaticWebAssets" DependsOnTargets="ResolveCoreStaticWebAssets;ResolveStaticWebAssetsInputs;ResolveBuildRelatedStaticWebAssets" />
@@ -697,7 +750,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets;AssignLinkMetadata">
 
     <PropertyGroup>
       <_ResolveProjectStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
@@ -713,7 +766,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
+      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)"
+      StaticWebAssetGroupDefinitions="@(StaticWebAssetGroupDefinition)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
         <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
@@ -739,6 +793,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="ReadPackageStaticWebAssetManifests"
+          DependsOnTargets="UpdateExistingPackageStaticWebAssets"
+          Condition="'@(StaticWebAssetPackageManifest)' != ''">
+    <ReadPackageAssetsManifest
+      PackageManifests="@(StaticWebAssetPackageManifest)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
+      IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+      ProjectPackageId="$(PackageId)"
+      ProjectBasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </ReadPackageAssetsManifest>
   </Target>
 
   <Target Name="UpdateExistingPackageStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration">

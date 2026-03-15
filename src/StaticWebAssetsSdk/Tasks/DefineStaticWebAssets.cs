@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // path of the assets and so on.
 public partial class DefineStaticWebAssets : Task
 {
+    private static readonly char[] GroupPatternSeparator = [';'];
+
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
@@ -65,6 +67,8 @@ public partial class DefineStaticWebAssets : Task
 
     public string CacheManifestPath { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroupDefinitions { get; set; }
+
     [Output]
     public ITaskItem[] Assets { get; set; }
 
@@ -85,12 +89,11 @@ public partial class DefineStaticWebAssets : Task
             var outputs = assetsCache.GetComputedOutputs();
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
-
-            return !Log.HasLoggedErrors;
         }
-
-        try
+        else
         {
+            try
+            {
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
                 null;
@@ -291,6 +294,14 @@ public partial class DefineStaticWebAssets : Task
                     fileLength,
                     lastWriteTimeUtc);
 
+                // Preserve AssetGroups from the candidate if it already has one (e.g., compressed alternative
+                // inheriting from its primary asset)
+                var existingGroups = candidate.GetMetadata(nameof(StaticWebAsset.AssetGroups));
+                if (!string.IsNullOrEmpty(existingGroups))
+                {
+                    asset.AssetGroups = existingGroups;
+                }
+
                 var item = asset.ToTaskItem();
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -308,10 +319,17 @@ public partial class DefineStaticWebAssets : Task
 
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex);
+            }
         }
-        catch (Exception ex)
+
+        if (!Log.HasLoggedErrors && StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
         {
-            Log.LogError(ex.ToString());
+            Log.LogMessage(MessageImportance.Low, "Applying group definitions. Definitions count: {0}, Assets count: {1}", StaticWebAssetGroupDefinitions.Length, Assets.Length);
+            ApplyGroupDefinitions();
         }
 
         return !Log.HasLoggedErrors;
@@ -584,5 +602,233 @@ public partial class DefineStaticWebAssets : Task
         }
 
         return computedPath;
+    }
+
+    private void ApplyGroupDefinitions()
+    {
+        var definitions = ParseGroupDefinitions();
+        if (definitions == null)
+        {
+            return; // Error already logged
+        }
+
+        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+
+        for (var i = 0; i < Assets.Length; i++)
+        {
+            var asset = StaticWebAsset.FromTaskItem(Assets[i]);
+            var (groupEntries, newRelativePath) = MatchAssetToDefinitions(asset, definitions, matchContext);
+
+            if (groupEntries != null && groupEntries.Count > 0)
+            {
+                asset.AssetGroups = string.Join(";", groupEntries);
+                asset.RelativePath = newRelativePath;
+                Assets[i] = asset.ToTaskItem();
+            }
+        }
+    }
+
+    private readonly struct GroupDefinition
+    {
+        public GroupDefinition(
+            string name,
+            string value,
+            string sourceId,
+            int order,
+            StaticWebAssetGlobMatcher includeMatcher,
+            StaticWebAssetGlobMatcher excludeMatcher,
+            StaticWebAssetGlobMatcher relativePathMatcher,
+            string relativePathPrefix,
+            string contentRootSuffix)
+        {
+            Name = name;
+            Value = value;
+            SourceId = sourceId;
+            Order = order;
+            IncludeMatcher = includeMatcher;
+            ExcludeMatcher = excludeMatcher;
+            RelativePathMatcher = relativePathMatcher;
+            RelativePathPrefix = relativePathPrefix;
+            ContentRootSuffix = contentRootSuffix;
+        }
+
+        public string Name { get; }
+        public string Value { get; }
+        public string SourceId { get; }
+        public int Order { get; }
+        public StaticWebAssetGlobMatcher IncludeMatcher { get; }
+        public StaticWebAssetGlobMatcher ExcludeMatcher { get; }
+        public StaticWebAssetGlobMatcher RelativePathMatcher { get; }
+        public string RelativePathPrefix { get; }
+        public string ContentRootSuffix { get; }
+    }
+
+    private List<GroupDefinition> ParseGroupDefinitions()
+    {
+        var definitions = new List<GroupDefinition>();
+
+        foreach (var def in StaticWebAssetGroupDefinitions)
+        {
+            var name = def.ItemSpec;
+            var value = def.GetMetadata("Value");
+            var sourceId = def.GetMetadata("SourceId");
+            var orderStr = def.GetMetadata("Order");
+            if (!int.TryParse(orderStr, out var order))
+            {
+                order = 0;
+            }
+
+            var includePattern = def.GetMetadata("IncludePattern");
+            var excludePattern = def.GetMetadata("ExcludePattern");
+            var relativePathPattern = def.GetMetadata("RelativePathPattern");
+            var relativePathPrefix = def.GetMetadata("RelativePathPrefix");
+            var contentRootSuffix = def.GetMetadata("ContentRootSuffix");
+
+            StaticWebAssetGlobMatcher includeMatcher = null;
+            if (!string.IsNullOrEmpty(includePattern))
+            {
+                includeMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(includePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
+                    .Build();
+            }
+
+            StaticWebAssetGlobMatcher excludeMatcher = null;
+            if (!string.IsNullOrEmpty(excludePattern))
+            {
+                excludeMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(excludePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
+                    .Build();
+            }
+
+            StaticWebAssetGlobMatcher relativePathMatcher = null;
+            if (!string.IsNullOrEmpty(relativePathPattern))
+            {
+                relativePathMatcher = new StaticWebAssetGlobMatcherBuilder()
+                    .AddIncludePatterns(relativePathPattern)
+                    .Build();
+            }
+
+            definitions.Add(new GroupDefinition(name, value, sourceId, order, includeMatcher, excludeMatcher, relativePathMatcher, relativePathPrefix, contentRootSuffix));
+        }
+
+        // Validate that no two definitions share the same (Order, SourceId)
+        for (var i = 0; i < definitions.Count; i++)
+        {
+            for (var j = i + 1; j < definitions.Count; j++)
+            {
+                if (definitions[i].Order == definitions[j].Order &&
+                    string.Equals(definitions[i].SourceId, definitions[j].SourceId, StringComparison.Ordinal))
+                {
+                    Log.LogError(
+                        "Group definitions '{0}' and '{1}' have the same Order ({2}) and SourceId ('{3}'). " +
+                        "Each definition from the same source must have a unique Order to ensure deterministic evaluation.",
+                        definitions[i].Name, definitions[j].Name, definitions[i].Order, definitions[i].SourceId);
+                    return null;
+                }
+            }
+        }
+
+        definitions.Sort((a, b) => a.Order.CompareTo(b.Order));
+        return definitions;
+    }
+
+    private (List<string> GroupEntries, string RelativePath) MatchAssetToDefinitions(
+        StaticWebAsset asset, List<GroupDefinition> definitions, StaticWebAssetGlobMatcher.MatchContext matchContext)
+    {
+        var currentRelativePath = asset.RelativePath;
+        var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
+        var groupEntries = new List<string>();
+        var groupValues = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var def in definitions)
+        {
+            if (def.IncludeMatcher == null)
+            {
+                Log.LogMessage(MessageImportance.Low,
+                    "Skipping group definition '{0}' because it has no IncludePattern.", def.Name);
+                continue;
+            }
+            matchContext.SetPathAndReinitialize(pathWithoutTokens);
+            var includeMatch = def.IncludeMatcher.Match(matchContext);
+
+            if (!includeMatch.IsMatch)
+            {
+                continue;
+            }
+
+            if (def.ExcludeMatcher != null)
+            {
+                matchContext.SetPathAndReinitialize(pathWithoutTokens);
+                var excludeMatch = def.ExcludeMatcher.Match(matchContext);
+                if (excludeMatch.IsMatch)
+                {
+                    Log.LogMessage(MessageImportance.Low, "Asset '{0}' excluded from group '{1}={2}' by ExcludePattern.", asset.Identity, def.Name, def.Value);
+                    continue;
+                }
+            }
+
+            if (groupValues.TryGetValue(def.Name, out var existingValue))
+            {
+                if (!string.Equals(existingValue, def.Value, StringComparison.Ordinal))
+                {
+                    Log.LogError("Asset '{0}' matched group definitions for '{1}' with conflicting values '{2}' and '{3}'. Glob patterns must be non-overlapping for the same group name with different values.",
+                        asset.Identity, def.Name, existingValue, def.Value);
+                    return (null, null);
+                }
+                continue;
+            }
+
+            groupValues.Add(def.Name, def.Value);
+            groupEntries.Add(def.Name + "=" + def.Value);
+            Log.LogMessage(MessageImportance.Low, "Tagged asset '{0}' with group '{1}={2}'.", asset.Identity, def.Name, def.Value);
+
+            if (def.RelativePathMatcher != null)
+            {
+                matchContext.SetPathAndReinitialize(pathWithoutTokens);
+                var rpMatch = def.RelativePathMatcher.Match(matchContext);
+                if (rpMatch.IsMatch)
+                {
+                    // Safe to use pathWithoutTokens here: DefineStaticWebAssets runs on raw
+                    // Content items before fingerprint/token expressions are applied.
+                    var newRelativePath = StaticWebAsset.Normalize(rpMatch.Stem);
+
+                    if (!string.IsNullOrEmpty(def.RelativePathPrefix))
+                    {
+                        newRelativePath = def.RelativePathPrefix + newRelativePath;
+                        Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
+                    }
+
+                    Log.LogMessage(MessageImportance.Low, "Group '{0}' transformed RelativePath from '{1}' to '{2}'.",
+                        def.Name, currentRelativePath, newRelativePath);
+
+                    currentRelativePath = newRelativePath;
+                    pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(def.RelativePathPrefix) && def.RelativePathMatcher == null)
+            {
+                currentRelativePath = def.RelativePathPrefix + currentRelativePath;
+                pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
+                Log.LogMessage(MessageImportance.Low, "Group '{0}' prepended RelativePathPrefix '{1}' to relative path.", def.Name, def.RelativePathPrefix);
+            }
+
+            if (!string.IsNullOrEmpty(def.ContentRootSuffix))
+            {
+                ApplyContentRootSuffix(ref asset, def.ContentRootSuffix, def.Name);
+            }
+        }
+
+        return (groupEntries, currentRelativePath);
+    }
+
+    private void ApplyContentRootSuffix(ref StaticWebAsset asset, string contentRootSuffix, string groupName)
+    {
+        var normalizedContentRoot = asset.ContentRoot.TrimEnd('/', '\\');
+        var normalizedSuffix = contentRootSuffix.Trim('/', '\\');
+        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(normalizedContentRoot + "/" + normalizedSuffix);
+        Log.LogMessage(MessageImportance.Low,
+            "Group '{0}' adjusted ContentRoot to '{1}' via ContentRootSuffix.",
+            groupName, asset.ContentRoot);
     }
 }

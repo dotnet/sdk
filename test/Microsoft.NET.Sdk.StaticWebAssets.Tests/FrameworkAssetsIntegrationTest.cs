@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.IO.Compression;
+using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
@@ -27,23 +28,28 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new FileInfo(packagePath).Should().Exist();
 
-            // Extract the props file from the nupkg and verify SourceType
+            // Extract the JSON manifest from the nupkg and verify SourceType
             using var archive = ZipFile.OpenRead(packagePath);
-            var propsEntry = archive.Entries.FirstOrDefault(
-                e => e.FullName.Equals("build/Microsoft.AspNetCore.StaticWebAssets.props", StringComparison.OrdinalIgnoreCase));
+            var manifestEntry = archive.Entries.FirstOrDefault(
+                e => e.FullName.Equals("build/FrameworkAssetsLib.PackageAssets.json", StringComparison.OrdinalIgnoreCase));
 
-            propsEntry.Should().NotBeNull("the nupkg should contain a StaticWebAssets.props file");
+            manifestEntry.Should().NotBeNull("the nupkg should contain a PackageAssets.json file");
 
-            using var stream = propsEntry.Open();
-            using var reader = new StreamReader(stream);
-            var propsContent = reader.ReadToEnd();
+            using var stream = manifestEntry.Open();
+            var manifest = JsonSerializer.Deserialize(stream,
+                StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+            manifest.Should().NotBeNull();
+            manifest.Assets.Should().NotBeEmpty();
 
             // JS files should be marked as Framework
-            propsContent.Should().Contain("<SourceType>Framework</SourceType>",
+            manifest.Assets.Values.Should().Contain(
+                a => a.SourceType == "Framework",
                 "JS assets matching the FrameworkPattern should have SourceType=Framework");
 
             // CSS files should remain as Package
-            propsContent.Should().Contain("<SourceType>Package</SourceType>",
+            manifest.Assets.Values.Should().Contain(
+                a => a.SourceType == "Package",
                 "CSS assets not matching the FrameworkPattern should have SourceType=Package");
         }
 
@@ -69,10 +75,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "js", "framework.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "FrameworkAssetsLib.props"),
-                    Path.Combine("buildMultiTargeting", "FrameworkAssetsLib.props"),
-                    Path.Combine("buildTransitive", "FrameworkAssetsLib.props"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "FrameworkAssetsLib.targets"),
+                    Path.Combine("build", "FrameworkAssetsLib.PackageAssets.json"),
+                    Path.Combine("buildMultiTargeting", "FrameworkAssetsLib.targets"),
+                    Path.Combine("buildTransitive", "FrameworkAssetsLib.targets"),
                 });
         }
 
