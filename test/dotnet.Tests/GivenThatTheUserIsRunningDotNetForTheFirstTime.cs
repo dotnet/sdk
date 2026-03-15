@@ -165,8 +165,7 @@ namespace Microsoft.DotNet.Tests
 
             var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
 
-            // Disable telemetry to prevent the creation of the .dotnet folder
-            // for machineid and docker cache files
+            // Disable telemetry to prevent the creation of the .dotnet folder for machineid and docker cache files.
             command = command.WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "true");
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();

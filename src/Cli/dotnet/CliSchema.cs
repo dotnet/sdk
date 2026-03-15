@@ -31,8 +31,20 @@ internal static class CliSchema
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     });
 
-    public record ArgumentDetails(string? description, int order, bool hidden, string? helpName, string valueType, bool hasDefaultValue, object? defaultValue, ArityDetails arity);
-    public record ArityDetails(int minimum, int? maximum);
+    public record ArgumentDetails(
+        string? description,
+        int order,
+        bool hidden,
+        string? helpName,
+        string valueType,
+        bool hasDefaultValue,
+        object? defaultValue,
+        ArityDetails arity);
+
+    public record ArityDetails(
+        int minimum,
+        int? maximum);
+
     public record OptionDetails(
         string? description,
         bool hidden,
@@ -43,8 +55,8 @@ internal static class CliSchema
         object? defaultValue,
         ArityDetails arity,
         bool required,
-        bool recursive
-    );
+        bool recursive);
+
     public record CommandDetails(
         string? description,
         bool hidden,
@@ -52,6 +64,7 @@ internal static class CliSchema
         Dictionary<string, ArgumentDetails>? arguments,
         Dictionary<string, OptionDetails>? options,
         Dictionary<string, CommandDetails>? subcommands);
+
     public record RootCommandDetails(
         string name,
         string version,
@@ -63,8 +76,7 @@ internal static class CliSchema
         Dictionary<string, CommandDetails>? subcommands
     ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
 
-
-    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetry? telemetryClient)
+    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
     {
         var command = commandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
@@ -72,8 +84,8 @@ internal static class CliSchema
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
         var commandString = CommandHierarchyAsString(commandResult);
-        var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
-        telemetryClient?.TrackEvent("schema", telemetryProperties, null);
+        var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
+        telemetryClient?.TrackEvent("schema", telemetryProperties);
     }
 
     public static object GetJsonSchema()

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
@@ -11,7 +9,8 @@ internal static class MuxerCommandSpecMaker
 {
     internal static CommandSpec CreatePackageCommandSpecUsingMuxer(
         string commandPath,
-        IEnumerable<string> commandArguments)
+        IEnumerable<string>? commandArguments,
+        IDictionary<string, string>? environment = null)
     {
         var arguments = new List<string>();
 
@@ -45,15 +44,15 @@ internal static class MuxerCommandSpecMaker
                 arguments.AddRange(commandArguments);
             }
         }
-        return CreateCommandSpec(host, arguments);
+        return CreateCommandSpec(host, arguments, environment);
     }
 
     private static CommandSpec CreateCommandSpec(
         string commandPath,
-        IEnumerable<string> commandArguments)
+        IEnumerable<string>? commandArguments,
+        IDictionary<string, string>? environment = null)
     {
-        var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
-
-        return new CommandSpec(commandPath, escapedArgs);
+        var escapedArgs = commandArguments is not null ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments) : null;
+        return new CommandSpec(commandPath, escapedArgs, environment);
     }
 }
