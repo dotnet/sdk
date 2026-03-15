@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
-
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 /// <summary>
 /// Detects the user's current shell and resolves the matching <see cref="IEnvShellProvider"/>.

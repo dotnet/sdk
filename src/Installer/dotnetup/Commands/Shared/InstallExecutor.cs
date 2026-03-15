@@ -4,7 +4,7 @@
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;

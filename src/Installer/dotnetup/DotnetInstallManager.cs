@@ -5,6 +5,7 @@ using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
