@@ -24,7 +24,9 @@ internal static class PrintEnvScriptCommandParser
                 [var shellToken] => ShellDetection.GetShellProvider(shellToken.Value),
                 _ => throw new InvalidOperationException("Unexpected number of tokens") // this is impossible because of the Arity set above
             };
-        }
+        },
+        Validators = { OnlyAcceptSupportedShells() },
+        CompletionSources = { CreateCompletions() }
     };
 
     public static readonly Option<string?> DotnetInstallPathOption = new("--dotnet-install-path", "-d")
@@ -38,17 +40,6 @@ internal static class PrintEnvScriptCommandParser
         Description = "Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.",
         Arity = ArgumentArity.ZeroOrOne
     };
-
-    static PrintEnvScriptCommandParser()
-    {
-        // Add validator to only accept supported shells
-        ShellOption.Validators.Clear();
-        ShellOption.Validators.Add(OnlyAcceptSupportedShells());
-
-        // Add completions for shell names
-        ShellOption.CompletionSources.Clear();
-        ShellOption.CompletionSources.Add(CreateCompletions());
-    }
 
     private static readonly Command s_printEnvScriptCommand = ConstructCommand();
 
