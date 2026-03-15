@@ -3088,6 +3088,11 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
         <target state="translated">Use 'ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Armazene em cache e use uma instância 'CompositeFormat' como argumento para esta operação de formatação, em vez de passar a cadeia de caracteres de formato original. Isso reduz o custo da operação de formatação.</target>

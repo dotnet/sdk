@@ -3088,6 +3088,11 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <target state="translated">Użyj polecenia „ThrowIfCancellationRequested”</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Umieść wystąpienie „CompositeFormat” w pamięci podręcznej i użyj go jako argumentu tej operacji formatowania zamiast przekazywania oryginalnego ciągu formatu. Zmniejsza to koszt operacji formatowania.</target>

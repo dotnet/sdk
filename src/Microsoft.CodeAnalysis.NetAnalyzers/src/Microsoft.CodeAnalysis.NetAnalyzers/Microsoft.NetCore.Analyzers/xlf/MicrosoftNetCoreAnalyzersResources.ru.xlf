@@ -3088,6 +3088,11 @@ Widening and user defined conversions are not supported with generic types.</sou
         <target state="translated">Использовать "ThrowIfCancellationRequested"</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Кэшируйте и используйте экземпляр "CompositeFormat" в качестве аргумента для этой операции форматирования вместо передачи в исходной строке формата. Это сокращает затраты на операцию форматирования.</target>

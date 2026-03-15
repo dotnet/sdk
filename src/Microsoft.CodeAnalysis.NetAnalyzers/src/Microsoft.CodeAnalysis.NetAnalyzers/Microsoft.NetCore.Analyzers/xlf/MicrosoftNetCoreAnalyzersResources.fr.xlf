@@ -3088,6 +3088,11 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <target state="translated">Appeler ThrowIfCancellationRequested()</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Mettez en cache et utilisez une instance « CompositeFormat » comme argument pour cette opération de mise en forme, au lieu de transmettre la chaîne de format d’origine. Cela réduit le coût de l’opération de mise en forme.</target>

@@ -3088,6 +3088,11 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <target state="translated">Použijte ThrowIfCancellationRequested</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">Namísto předání původního řetězce formátu umožňuje zapsat a použít instanci CompositeFormat jako argument této operace formátování. Tím se sníží náklady na operaci formátování.</target>

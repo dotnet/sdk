@@ -3088,6 +3088,11 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">'ThrowIfCancellationRequested' を呼び出す</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
         <target state="translated">このフォーマット操作の引数には、元のフォーマット文字列を渡すのではなく、'CompositeFormat' インスタンスをキャッシュして渡すようにしてください。フォーマット操作のコストが軽減されます。</target>
