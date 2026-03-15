@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -170,7 +169,7 @@ internal class InstallWalkthrough
                 {
                     var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
                     SpectreAnsiConsole.MarkupLine($"[yellow]Shell '{shellEnv}' is not supported for automatic environment configuration. Skipping default install setup.[/]");
-                    SpectreAnsiConsole.MarkupLine($"[yellow]Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}[/]");
+                    SpectreAnsiConsole.MarkupLine($"[yellow]Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}[/]");
                     resolvedSetDefaultInstall = false;
                 }
                 else if (currentDotnetInstallRoot == null)

@@ -10,8 +10,30 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public static class ShellDetection
 {
+    /// <summary>
+    /// The list of shell providers supported by dotnetup.
+    /// </summary>
+    internal static readonly IEnvShellProvider[] s_supportedShells =
+    [
+        new BashEnvShellProvider(),
+        new ZshEnvShellProvider(),
+        new PowerShellEnvShellProvider()
+    ];
+
     private static readonly Dictionary<string, IEnvShellProvider> s_shellMap =
-        PrintEnvScriptCommandParser.s_supportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
+        s_supportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Looks up a shell provider by its argument name (e.g., "bash", "zsh", "pwsh").
+    /// </summary>
+    internal static IEnvShellProvider? GetShellProvider(string shellName)
+        => s_shellMap.GetValueOrDefault(shellName);
+
+    /// <summary>
+    /// Checks whether a shell name is supported.
+    /// </summary>
+    internal static bool IsSupported(string shellName)
+        => s_shellMap.ContainsKey(shellName);
 
     /// <summary>
     /// Returns the <see cref="IEnvShellProvider"/> for the user's current shell,

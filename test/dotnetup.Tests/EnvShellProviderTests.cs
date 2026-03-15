@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -123,7 +124,7 @@ public class EnvShellProviderTests
     public void ShellProviders_ShouldHaveCorrectArgumentName(string expectedName)
     {
         // Arrange
-        var provider = PrintEnvScriptCommandParser.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
+        var provider = ShellDetection.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
 
         // Assert
         provider.Should().NotBeNull();
