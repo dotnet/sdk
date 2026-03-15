@@ -11,13 +11,15 @@
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ChangeEntryPointLibraryName" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CopyPreservingRelativeSymlinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="Crossgen" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="DeduplicateAssembliesWithLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
-  <UsingTask TaskName="GenerateRuntimeAnalyzersSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GenerateMsiVersionFromFullVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GeneratePackagePruneDataDownloads" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="GenerateRuntimeAnalyzersSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
@@ -33,17 +35,7 @@
   <UsingTask TaskName="UpdateRuntimeConfig" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
-  <UsingTask TaskName="CopyPreservingRelativeSymlinks"
-             Condition="'$(MSBuildRuntimeType)' == 'Core'"
-             AssemblyFile="$(SdkTasksAssembly)"
-             TaskFactory="TaskHostFactory" />
-
-  <UsingTask TaskName="DeduplicateAssembliesWithLinks"
-             Condition="'$(MSBuildRuntimeType)' == 'Core'"
-             AssemblyFile="$(SdkTasksAssembly)"
-             TaskFactory="TaskHostFactory" />
-
   <!-- Tasks from the Arcade SDK -->
-  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" Runtime="NET" />
 
 </Project>

@@ -11,6 +11,13 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ItHasDeduplicatedAssemblies()
     {
+        // OSX is disabled until https://github.com/dotnet/runtime/issues/125332 is fixed.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            Log.WriteLine("SKIPPED: OSX deduplication not yet supported (https://github.com/dotnet/runtime/issues/125332)");
+            return;
+        }
+
         // Find and extract archive
         string archivePath = SdkTestContext.FindSdkAcquisitionArtifact("dotnet-sdk-*.tar.gz");
         Log.WriteLine($"Found SDK archive: {Path.GetFileName(archivePath)}");
