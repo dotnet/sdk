@@ -287,4 +287,37 @@ public class OverrideHtmlAssetPlaceholdersTest
             Assert.Equal(group, match.Groups["group"]?.Value);
         }
     }
+
+    [Theory]
+    [InlineData("main.js", false, "main.abc123.js")]
+    [InlineData("./main.js", false, "main.abc123.js")]
+    [InlineData("./main.mjs", false, "main.abc123.mjs")]
+    [InlineData("./notfound.js", false, "./notfound.js")]
+    [InlineData("./main.js", true, "main.abc123.js")]
+    public void GetFingerprintedAssetPath_WithDotSlashPrefix_ReturnsFingerprinted(
+        string assetPath, bool includeOnlyHardFingerprintedModules, string expectedResult)
+    {
+        var task = new OverrideHtmlAssetPlaceholders { IncludeOnlyHardFingerprintedModules = includeOnlyHardFingerprintedModules };
+        var urlMappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["main.js"] = new ResourceAsset("main.abc123.js") { IsHardFingerprinted = true },
+            ["main.mjs"] = new ResourceAsset("main.abc123.mjs") { IsHardFingerprinted = true },
+        };
+
+        var result = task.GetFingerprintedAssetPath(urlMappings, assetPath);
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    public void GetFingerprintedAssetPath_DotSlashPrefix_NotHardFingerprinted_ReturnsOriginal()
+    {
+        var task = new OverrideHtmlAssetPlaceholders { IncludeOnlyHardFingerprintedModules = true };
+        var urlMappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["main.js"] = new ResourceAsset("main.abc123.js") { IsHardFingerprinted = false },
+        };
+
+        var result = task.GetFingerprintedAssetPath(urlMappings, "./main.js");
+        Assert.Equal("./main.js", result);
+    }
 }
