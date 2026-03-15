@@ -101,6 +101,47 @@ internal class InstallExecutor
     }
 
     /// <summary>
+    /// Executes multiple installations with concurrent downloads and serialized extraction.
+    /// Each component gets its own progress bar during download.
+    /// </summary>
+    /// <param name="requests">The list of resolved install requests to execute.</param>
+    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <returns>The installation results in the same order as the requests.</returns>
+    public static IReadOnlyList<InstallResult> ExecuteInstallMultiple(
+        IReadOnlyList<ResolvedInstallRequest> requests,
+        bool noProgress)
+    {
+        var installRequests = requests.Select(r => r.Request).ToList();
+        var descriptions = requests.Select(r => r.Request.Component.GetDisplayName()).ToList();
+
+#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
+        for (int i = 0; i < requests.Count; i++)
+        {
+            SpectreAnsiConsole.MarkupLineInterpolated($"Installing {descriptions[i]} [blue]{requests[i].ResolvedVersion}[/] to [blue]{requests[i].Request.InstallRoot.Path}[/]...");
+        }
+#pragma warning restore CA1305
+
+        var orchestratorResults = InstallerOrchestratorSingleton.Instance.InstallMultiple(installRequests, noProgress);
+
+        var results = new List<InstallResult>();
+        for (int i = 0; i < orchestratorResults.Count; i++)
+        {
+            var orchResult = orchestratorResults[i];
+            if (orchResult.WasAlreadyInstalled)
+            {
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{descriptions[i]} {orchResult.Install.Version} is already installed at {orchResult.Install.InstallRoot}[/]");
+            }
+            else
+            {
+                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {descriptions[i]} {orchResult.Install.Version}, available via {orchResult.Install.InstallRoot}[/]");
+            }
+            results.Add(new InstallResult(orchResult.Install, orchResult.WasAlreadyInstalled));
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// Executes the installation of additional versions of a .NET component.
     /// </summary>
     /// <param name="additionalVersions">The list of additional versions to install.</param>

@@ -65,8 +65,9 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
-        foreach (var (component, versionOrChannel, componentDescription) in parsed)
+        if (parsed.Count == 1)
         {
+            var (component, versionOrChannel, componentDescription) = parsed[0];
             InstallWorkflow.InstallWorkflowOptions options = new(
                 versionOrChannel,
                 _installPath,
@@ -80,6 +81,22 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 Untracked: _untracked);
 
             workflow.Execute(options);
+        }
+        else
+        {
+            var optionsList = parsed.Select(p => new InstallWorkflow.InstallWorkflowOptions(
+                p.VersionOrChannel,
+                _installPath,
+                _setDefaultInstall,
+                _manifestPath,
+                _interactive,
+                _noProgress,
+                p.Component,
+                p.Description,
+                RequireMuxerUpdate: _requireMuxerUpdate,
+                Untracked: _untracked)).ToList();
+
+            workflow.ExecuteMultiple(optionsList);
         }
 
         return 0;

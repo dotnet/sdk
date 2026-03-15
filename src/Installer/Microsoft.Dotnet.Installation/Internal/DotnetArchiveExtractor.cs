@@ -14,6 +14,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
+    private readonly bool _ownsReporter;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -29,11 +30,14 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
-        IArchiveDownloader? archiveDownloader = null)
+        IArchiveDownloader? archiveDownloader = null,
+        IProgressReporter? sharedReporter = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
+        _progressReporter = sharedReporter;
+        _ownsReporter = sharedReporter is null;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -468,8 +472,11 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         try
         {
-            // Dispose the progress reporter to finalize progress display
-            _progressReporter?.Dispose();
+            // Dispose the progress reporter to finalize progress display (only if we own it)
+            if (_ownsReporter)
+            {
+                _progressReporter?.Dispose();
+            }
         }
         catch
         {
