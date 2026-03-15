@@ -22,7 +22,10 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
 
         // Verify we launched the browser.
-        App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
+        // Use WaitUntilOutputContains (async) instead of AssertOutputContains (sync check)
+        // because the browser launch message is emitted asynchronously and may not have been
+        // captured yet when the assertion runs.
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
