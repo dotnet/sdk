@@ -946,25 +946,31 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Get items from this project last so that they will be copied last. -->
     <ItemGroup>
-      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
                                                   Include="@(ContentWithTargetPath->'%(FullPath)')"
                                                   Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
-      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(ContentWithTargetPath->'%(FullPath)')"
                                             Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
-      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(ContentWithTargetPath->'%(FullPath)')"
                                             Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup>
-      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
                                                   Include="@(EmbeddedResource->'%(FullPath)')"
                                                   Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='Always'"/>
-      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(EmbeddedResource->'%(FullPath)')"
                                             Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='PreserveNewest'"/>
-      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(EmbeddedResource->'%(FullPath)')"
                                             Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
@@ -979,25 +985,31 @@ Copyright (c) .NET Foundation. All rights reserved.
     </AssignTargetPath>
 
     <ItemGroup>
-      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
                                                   Include="@(_CompileItemsToPublishWithTargetPath)"
                                                   Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
-      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                           KeepMetadata="$(_GCTPDIKeepMetadata)"
                                            Include="@(_CompileItemsToPublishWithTargetPath)"
                                            Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
-      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                           KeepMetadata="$(_GCTPDIKeepMetadata)"
                                            Include="@(_CompileItemsToPublishWithTargetPath)"
                                            Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup>
-      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
                                                   Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                                   Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
-      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
-      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
