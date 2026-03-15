@@ -154,7 +154,7 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Downloads archives concurrently (max 6) and enqueues PreparedInstalls for commit.
+    /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.
     /// </summary>
     private void DownloadAll(
         IReadOnlyList<DotnetInstallRequest> requests,
@@ -164,7 +164,7 @@ internal class InstallerOrchestratorSingleton
         List<Exception> exceptions,
         object lockObj)
     {
-        const int maxConcurrentDownloads = 6;
+        const int maxConcurrentDownloads = 3;
 
         Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
         {
