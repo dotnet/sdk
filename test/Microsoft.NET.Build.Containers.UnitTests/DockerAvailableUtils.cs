@@ -31,7 +31,7 @@ public class DockerAvailableFactAttribute : FactAttribute
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
-        else if (checkContainerdStoreAvailability && !DockerCli.IsContainerdStoreEnabledForDocker())
+        else if (checkContainerdStoreAvailability && DockerCliStatus.Command != DockerCli.PodmanCommand && !DockerCli.IsContainerdStoreEnabledForDocker())
         {
             base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
         }

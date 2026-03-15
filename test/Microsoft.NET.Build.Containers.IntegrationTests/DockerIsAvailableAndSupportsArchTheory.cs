@@ -11,7 +11,7 @@ public class DockerIsAvailableAndSupportsArchTheoryAttribute : TheoryAttribute
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
-        else if (checkContainerdStoreAvailability && !DockerSupportsArchHelper.IsContainerdStoreEnabledForDocker)
+        else if (checkContainerdStoreAvailability && !ContainerCli.IsPodman && !DockerSupportsArchHelper.IsContainerdStoreEnabledForDocker)
         {
             base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
         }

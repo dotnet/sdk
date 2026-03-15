@@ -179,11 +179,6 @@
         <target state="translated">イメージ インデックス '{0}' をレジストリ '{1}' にプッシュしました。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Podman のイメージ インデックスの作成はサポートされていません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: ローカル レジストリからイメージを読み込めませんでした。stdout: {0}</target>
