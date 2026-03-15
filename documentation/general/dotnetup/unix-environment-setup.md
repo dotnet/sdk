@@ -208,7 +208,7 @@ public interface IEnvShellProvider
 
 ## Future Work
 
-1. **`defaultinstall admin` on Unix**: System-wide configuration (e.g., `/etc/profile.d/`) is not yet supported.
+1. **System-wide configuration on Unix**: Writing to system-wide locations like `/etc/profile.d/` for admin installs is not yet supported.
 2. **Additional shells**: Support for fish, tcsh, and other shells.
 3. **Environment validation**: Commands to verify that the environment is correctly configured.
 
