@@ -27,6 +27,11 @@ internal static class TestOptions
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();
 
+    public static ProjectOptions GetProjectOptions(string[] args)
+        => GetProjectOptions(GetCommandLineOptions(args));
+
     public static ProjectOptions GetProjectOptions(CommandLineOptions options)
-        => options.GetMainProjectOptions(new ProjectRepresentation(options.ProjectPath ?? "test.csproj", entryPointFilePath: null), workingDirectory: "");
+        => options.GetMainProjectOptions(
+            new ProjectRepresentation(options.ProjectPath == null && options.FilePath == null ? "test.csproj" : options.ProjectPath, options.FilePath),
+            workingDirectory: "");
 }

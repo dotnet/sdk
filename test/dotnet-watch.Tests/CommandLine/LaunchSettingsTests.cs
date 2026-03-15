@@ -84,11 +84,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
-        [Fact]
-        public async Task RunsWithIterationEnvVariable()
+        [Theory]
+        [CombinatorialData]
+        public async Task RunsWithIterationEnvVariable(bool hotReload)
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
+
+            if (!hotReload)
+            {
+                App.WatchArgs.Add("--no-hot-reload");
+            }
 
             App.Start(testAsset, []);
 

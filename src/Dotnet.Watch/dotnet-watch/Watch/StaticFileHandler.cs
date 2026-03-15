@@ -31,14 +31,7 @@ namespace Microsoft.DotNet.Watch
 
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
-                    if (!projectGraph.Map.TryGetValue(containingProjectPath, out var projectNodes))
-                    {
-                        // Shouldn't happen.
-                        logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
-                        return allFilesHandled;
-                    }
-
-                    foreach (var projectNode in projectNodes)
+                    foreach (var projectNode in projectGraph.GetProjectNodes(containingProjectPath))
                     {
                         if (browserConnector.TryGetRefreshServer(projectNode, out var refreshServer))
                         {

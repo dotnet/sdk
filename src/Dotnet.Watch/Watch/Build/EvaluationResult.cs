@@ -7,6 +7,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -17,23 +18,12 @@ internal sealed class EvaluationResult(
     IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests,
     ProjectBuildManager buildManager)
 {
-    public readonly IReadOnlyDictionary<string, FileItem> Files = files;
-    public readonly LoadedProjectGraph ProjectGraph = projectGraph;
-    public readonly ProjectBuildManager BuildManager = buildManager;
+    public IReadOnlyDictionary<string, FileItem> Files => files;
+    public LoadedProjectGraph ProjectGraph => projectGraph;
+    public ProjectBuildManager BuildManager => buildManager;
 
     public readonly FilePathExclusions ItemExclusions
         = projectGraph != null ? FilePathExclusions.Create(projectGraph.Graph) : FilePathExclusions.Empty;
-
-    private readonly Lazy<IReadOnlySet<string>> _lazyBuildFiles
-        = new(() => projectGraph != null ? CreateBuildFileSet(projectGraph.Graph) : new HashSet<string>());
-
-    private static IReadOnlySet<string> CreateBuildFileSet(ProjectGraph projectGraph)
-        => projectGraph.ProjectNodes.SelectMany(p => p.ProjectInstance.ImportPaths)
-            .Concat(projectGraph.ProjectNodes.Select(p => p.ProjectInstance.FullPath))
-            .ToHashSet(PathUtilities.OSSpecificPathComparer);
-
-    public IReadOnlySet<string> BuildFiles
-        => _lazyBuildFiles.Value;
 
     public IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> StaticWebAssetsManifests
         => staticWebAssetsManifests;
@@ -41,15 +31,13 @@ internal sealed class EvaluationResult(
     public IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> RestoredProjectInstances
         => restoredProjectInstances;
 
-    public void WatchFiles(FileWatcher fileWatcher)
+    public void WatchFileItems(FileWatcher fileWatcher)
     {
         fileWatcher.WatchContainingDirectories(Files.Keys, includeSubdirectories: true);
 
         fileWatcher.WatchContainingDirectories(
             StaticWebAssetsManifests.Values.SelectMany(static manifest => manifest.DiscoveryPatterns.Select(static pattern => pattern.Directory)),
             includeSubdirectories: true);
-
-        fileWatcher.WatchFiles(BuildFiles);
     }
 
     public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions)
@@ -70,31 +58,24 @@ internal sealed class EvaluationResult(
     /// Loads project graph and performs design-time build.
     /// </summary>
     public static async ValueTask<EvaluationResult?> TryCreateAsync(
-        ProjectGraphFactory factory,
+        LoadedProjectGraph projectGraph,
+        ILogger logger,
         GlobalOptions globalOptions,
         EnvironmentOptions environmentOptions,
+        string? mainProjectTargetFramework,
         bool restore,
         CancellationToken cancellationToken)
     {
-        var logger = factory.Logger;
+        logger.Log(MessageDescriptor.LoadingProjects);
+
+        var projectLoadingStopwatch = Stopwatch.StartNew();
         var stopwatch = Stopwatch.StartNew();
-
-        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: true, cancellationToken);
-
-        if (projectGraph == null)
-        {
-            return null;
-        }
 
         var buildReporter = new BuildReporter(projectGraph.Logger, globalOptions, environmentOptions);
         var buildManager = new ProjectBuildManager(projectGraph.ProjectCollection, buildReporter);
 
-        logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
-
         if (restore)
         {
-            stopwatch.Restart();
-
             var restoreRequests = projectGraph.Graph.GraphRoots.Select(node => BuildRequest.Create(node.ProjectInstance, [TargetNames.Restore])).ToArray();
 
             if (await buildManager.BuildAsync(
@@ -128,7 +109,17 @@ internal sealed class EvaluationResult(
 
         var buildRequests =
            (from node in projectGraph.Graph.ProjectNodesTopologicallySorted
-            where node.ProjectInstance.GetPropertyValue(PropertyNames.TargetFramework) != ""
+            let targetFramework = node.ProjectInstance.GetTargetFramework()
+
+            // skip outer-build projects
+            where targetFramework != ""
+
+            // skip root projects that do not match main project TFM, if specified:
+            where mainProjectTargetFramework == null ||
+                  targetFramework == mainProjectTargetFramework ||
+                  node.ReferencingProjects.Count != 1 ||
+                  !node.ReferencingProjects.First().IsRoot
+
             let targets = GetBuildTargets(node.ProjectInstance, environmentOptions)
             where targets is not []
             select BuildRequest.Create(node.ProjectInstance, [.. targets])).ToArray();
@@ -151,6 +142,7 @@ internal sealed class EvaluationResult(
         }
 
         logger.LogDebug("Design-time build completed in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+        logger.Log(MessageDescriptor.LoadedProjects, projectGraph.Graph.ProjectNodes.Count, projectLoadingStopwatch.Elapsed.TotalSeconds);
 
         ProcessBuildResults(buildResults, logger, out var fileItems, out var staticWebAssetManifests);
 

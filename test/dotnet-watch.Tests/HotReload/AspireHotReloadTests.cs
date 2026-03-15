@@ -12,9 +12,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
         public async Task Aspire_BuildError_ManualRestart()
         {
-            var tfm = ToolsetInfo.CurrentTargetFramework;
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
                 .WithSource();
+
+            var serviceProjectDisplay = $"WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})";
+            var webProjectDisplay = $"WatchAspire.Web ({ToolsetInfo.CurrentTargetFramework})";
+            var hostProjectDisplay = $"WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})";
 
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
             var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
@@ -63,7 +66,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
             await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
 
-            await App.WaitUntilOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            await App.WaitUntilOutputContains($"dotnet watch ❌ [{serviceProjectDisplay}] {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             await App.WaitUntilOutputContains("dotnet watch ⌚ Affected projects:");
             await App.WaitUntilOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
             App.Process.ClearOutput();
@@ -74,7 +77,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains("Application is shutting down...");
 
-            await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
+            await App.WaitUntilOutputContains(MessageDescriptor.Exited, serviceProjectDisplay);
 
             await App.WaitUntilOutputContains(MessageDescriptor.Building);
             await App.WaitUntilOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
@@ -95,7 +98,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // The agent startup hook might not be initialized yet (signal handlers registered),
             // so the process might need to be forcefully killed. We could wait until the agent is initialized
             // but it's good to test this scenario.
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, $"WatchAspire.ApiService ({tfm})");
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, serviceProjectDisplay);
 
             App.Process.ClearOutput();
 
@@ -103,9 +106,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
 
-            await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            await App.WaitUntilOutputContains($"[WatchAspire.Web ({tfm})] Exited");
-            await App.WaitUntilOutputContains($"[WatchAspire.AppHost ({tfm})] Exited");
+            // Not checking specific exited message since on shutdown we might see non-zero exit codes
+            await App.WaitUntilOutputContains($"[{serviceProjectDisplay}] Exited");
+            await App.WaitUntilOutputContains($"[{webProjectDisplay}] Exited");
+            await App.WaitUntilOutputContains($"[{hostProjectDisplay}] Exited");
 
             await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 

@@ -20,7 +20,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
         var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
 
         var projectRepr = new ProjectRepresentation(projectPath, entryPointFilePath: null);
-        var factory = new ProjectGraphFactory([projectRepr], targetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
         Assert.NotNull(graph);
@@ -40,7 +40,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], targetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
         Assert.NotNull(graph);
@@ -60,7 +60,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], targetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
         Assert.Null(graph);
@@ -92,7 +92,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], targetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
         Assert.NotNull(graph);

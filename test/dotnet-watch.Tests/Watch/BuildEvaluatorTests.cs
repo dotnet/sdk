@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Options = new(),
                 MainProjectOptions = TestOptions.ProjectOptions,
                 RootProjects = [TestOptions.ProjectOptions.Representation],
-                TargetFramework = null,
                 BuildArguments = [],
                 EnvironmentOptions = environmentOptions,
                 BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
