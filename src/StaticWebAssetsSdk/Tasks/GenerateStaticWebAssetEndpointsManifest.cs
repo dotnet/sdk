@@ -64,8 +64,37 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
             var assets = StaticWebAsset.FromTaskItemGroup(Assets);
-            var manifestAssets = ComputeManifestAssets(assets, ManifestType)
-                .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
+            var manifestAssetsList = ComputeManifestAssets(assets, ManifestType);
+            var manifestAssets = new Dictionary<string, TargetPathAssetPair>(OSPath.PathComparer);
+            foreach (var a in manifestAssetsList)
+            {
+                if (manifestAssets.TryGetValue(a.ResolvedAsset.Identity, out var existing))
+                {
+                    if (existing.TargetPath != a.TargetPath ||
+                        existing.ResolvedAsset.SourceId != a.ResolvedAsset.SourceId)
+                    {
+                        Log.LogWarning(
+                            "Duplicate static web asset '{0}' with differing metadata (TargetPath='{1}' vs '{2}', SourceId='{3}' vs '{4}'). Keeping first occurrence.",
+                            a.ResolvedAsset.Identity,
+                            existing.TargetPath,
+                            a.TargetPath,
+                            existing.ResolvedAsset.SourceId,
+                            a.ResolvedAsset.SourceId);
+                    }
+                    else
+                    {
+                        Log.LogMessage(
+                            MessageImportance.Low,
+                            "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                            a.ResolvedAsset.Identity,
+                            a.ResolvedAsset.SourceId);
+                    }
+                }
+                else
+                {
+                    manifestAssets[a.ResolvedAsset.Identity] = a;
+                }
+            }
 
             // Build exclusion matcher if patterns are provided
             StaticWebAssetGlobMatcher exclusionMatcher = null;

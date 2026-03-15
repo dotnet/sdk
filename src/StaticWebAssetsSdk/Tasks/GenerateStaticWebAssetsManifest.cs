@@ -99,7 +99,36 @@ public class GenerateStaticWebAssetsManifest : Task
         // inside the manifest because its cumbersome to do it in MSBuild directly.
         if (StaticWebAssetsManifest.ManifestTypes.IsPublish(ManifestType))
         {
-            var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
+            var assetsByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+            foreach (var a in assets)
+            {
+                if (assetsByIdentity.TryGetValue(a.Identity, out var existing))
+                {
+                    if (existing.SourceId != a.SourceId ||
+                        existing.RelativePath != a.RelativePath)
+                    {
+                        Log.LogWarning(
+                            "Duplicate static web asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                            a.Identity,
+                            existing.SourceId,
+                            a.SourceId,
+                            existing.RelativePath,
+                            a.RelativePath);
+                    }
+                    else
+                    {
+                        Log.LogMessage(
+                            MessageImportance.Low,
+                            "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                            a.Identity,
+                            a.SourceId);
+                    }
+                }
+                else
+                {
+                    assetsByIdentity[a.Identity] = a;
+                }
+            }
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var endpoint in Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem))

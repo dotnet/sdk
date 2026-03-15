@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -1234,13 +1235,41 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
     }
 
-    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
+    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(
+        ITaskItem[] candidateAssets,
+        bool validate = false,
+        TaskLoggingHelper log = null)
     {
         var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length);
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
-            dictionary.Add(candidateAsset.Identity, candidateAsset);
+            if (dictionary.TryGetValue(candidateAsset.Identity, out var existing))
+            {
+                if (existing.SourceId != candidateAsset.SourceId ||
+                    existing.RelativePath != candidateAsset.RelativePath)
+                {
+                    log?.LogWarning(
+                        "Duplicate static web asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                        candidateAsset.Identity,
+                        existing.SourceId,
+                        candidateAsset.SourceId,
+                        existing.RelativePath,
+                        candidateAsset.RelativePath);
+                }
+                else
+                {
+                    log?.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate static web asset '{0}' (SourceId='{1}'). Assets are identical.",
+                        candidateAsset.Identity,
+                        candidateAsset.SourceId);
+                }
+            }
+            else
+            {
+                dictionary.Add(candidateAsset.Identity, candidateAsset);
+            }
         }
 
         return dictionary;
