@@ -43,6 +43,7 @@ namespace Microsoft.NET.Build.Tests
                     "/p:AssemblyTitle=TestTitle",
                     "/p:Trademark=TestTrademark",
                     "/p:NeutralLanguage=fr",
+                    "/p:EnableSourceControlManagerQueries=false",
                     attributeToOptOut == "All" ?
                         "/p:GenerateAssemblyInfo=false" :
                         $"/p:Generate{attributeToOptOut}=false"
@@ -90,6 +91,8 @@ namespace Microsoft.NET.Build.Tests
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
+            // Disable the built-in source control integration
+            testProject.AdditionalProperties["EnableSourceControlManagerQueries"] = "false";
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
@@ -107,6 +110,8 @@ namespace Microsoft.NET.Build.Tests
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
+            // Disable the built-in source control integration
+            testProject.AdditionalProperties["EnableSourceControlManagerQueries"] = "false";
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
@@ -251,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
-                .Execute($"/p:OutputType=Library", $"/p:TargetFramework={targetFramework}", $"/p:VersionPrefix=1.2.3")
+                .Execute($"/p:OutputType=Library", $"/p:TargetFramework={targetFramework}", $"/p:VersionPrefix=1.2.3", "/p:EnableSourceControlManagerQueries=false")
                 .Should()
                 .Pass();
 
@@ -526,6 +531,85 @@ namespace Microsoft.NET.Build.Tests
                 // The assembly level attribute is generated only for .NET 7 and newer
                 Assert.False(contains);
             }
+        }
+
+        [Fact]
+        public void TestDisableRuntimeMarshallingWithXamlPreCompileLikeTarget()
+        {
+            // This test simulates the WinUI3 scenario where XamlPreCompile runs before CoreCompile
+            // and needs to see the DisableRuntimeMarshallingAttribute from the generated AssemblyInfo
+            var testProject = new TestProject()
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["DisableRuntimeMarshalling"] = "true";
+            testProject.AdditionalProperties["AllowUnsafeBlocks"] = "true";
+            testProject.AdditionalProperties["PublishAot"] = "true";
+
+            // Add source code that uses GeneratedComInterface which requires DisableRuntimeMarshalling
+            testProject.SourceFiles["Program.cs"] = @"
+using System;
+
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello World"");
+    }
+}
+";
+            testProject.SourceFiles["ComInterface.cs"] = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+
+[Guid(""00000000-0000-0000-0000-000000000003"")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[GeneratedComInterface]
+public partial interface IRepro
+{
+    void Test(System.Drawing.Point pt);
+}
+";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    // Add a target that simulates XamlPreCompile by running before CoreCompile
+                    // and checking that the DisableRuntimeMarshallingAttribute exists
+                    project.Root.Add(
+                        new XElement(ns + "Target",
+                            new XAttribute("Name", "SimulateXamlPreCompile"),
+                            new XAttribute("BeforeTargets", "CoreCompile"),
+                            new XAttribute("DependsOnTargets", "GenerateAssemblyInfo"),
+                            new XElement(ns + "Message",
+                                new XAttribute("Text", "Simulating XamlPreCompile - AssemblyInfo file should exist"),
+                                new XAttribute("Importance", "High")),
+                            new XElement(ns + "Error",
+                                new XAttribute("Condition", "!Exists('$(GeneratedAssemblyInfoFile)')"),
+                                new XAttribute("Text", "GeneratedAssemblyInfoFile does not exist at '$(GeneratedAssemblyInfoFile)'"))
+                        )
+                    );
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            // The build should pass, meaning the GeneratedAssemblyInfo file exists before CoreCompile
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, "HelloWorld.dll");
+
+            // Verify that the DisableRuntimeMarshallingAttribute is present in the assembly
+            var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
+            bool contains = parameterlessAttributes.Any(attr => attr.Equals("DisableRuntimeMarshallingAttribute", StringComparison.Ordinal));
+
+            Assert.True(contains, "DisableRuntimeMarshallingAttribute should be present in the assembly");
         }
 
         [Fact]
