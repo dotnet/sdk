@@ -817,11 +817,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
       ProjectPackageId="$(PackageId)"
       ProjectBasePath="$(StaticWebAssetBasePath)"
-      StaticWebAssetGroups="@(StaticWebAssetGroup)"
     >
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
-      <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredPackageEndpoints" />
+      <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
@@ -838,11 +837,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
-      <!-- When endpoint filtering/remapping was performed, replace all endpoints with the filtered set -->
-      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" Condition="'@(_FilteredPackageEndpoints)' != ''" />
-      <StaticWebAssetEndpoint Include="@(_FilteredPackageEndpoints)" />
-      <!-- Add newly generated endpoints for updated assets that didn't have existing endpoints -->
       <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
+      <!-- Remap endpoints for materialized framework assets -->
+      <StaticWebAssetEndpoint Remove="@(_RemappedFrameworkEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_RemappedFrameworkEndpoints)" />
     </ItemGroup>
 
   </Target>
