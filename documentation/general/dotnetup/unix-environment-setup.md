@@ -113,9 +113,9 @@ dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
 
 ### Usage Examples
 
-#### Source directly (one-time, current terminal only)
+#### Eval directly (one-time, current terminal only)
 ```bash
-source <(dotnetup print-env-script)
+eval "$(dotnetup print-env-script)"
 ```
 
 #### Explicitly specify shell
@@ -127,7 +127,7 @@ dotnetup print-env-script --shell zsh
 ```bash
 dotnetup print-env-script --shell bash > ~/.dotnet-env.sh
 # Later, in .bashrc or manually:
-source ~/.dotnet-env.sh
+. ~/.dotnet-env.sh
 ```
 
 #### Use custom installation path
