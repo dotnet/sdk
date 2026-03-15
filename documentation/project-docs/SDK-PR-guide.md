@@ -80,3 +80,19 @@ Generally we will check the commit list and scan the changes for anything out of
 > Make sure to create a merge commit. *Do not squash*. If you squash, the next inter-branch PR will list all of the same commits.
 
 **NOTE** Some inter-branch flow will have 0 changes once the merge conflicts are resolved. This is likely when the only changes were to version numbers in the eng/*. These can be closed to save time and resources or merged to catch the commit history up (the next codeflow will have fewer commits). There is no preference either way.
+
+## Adding New ProjectCapability Items
+
+When adding a new `ProjectCapability` MSBuild item to any SDK targets file:
+
+1. **Add the capability** in the appropriate targets file (e.g., `Microsoft.NET.Sdk.targets`, `Microsoft.NET.Sdk.Web.ProjectSystem.targets`)
+2. **Document the capability** in the corresponding documentation file:
+   - See [Project Capabilities Documentation](project-capabilities.md) for the overview
+   - Add detailed documentation to the appropriate SDK-specific file in `documentation/project-docs/project-capabilities/`
+3. **Include in documentation**:
+   - The capability name
+   - When/why it's added (conditions)
+   - What features or experiences it enables
+   - Any relevant links or additional context
+
+A GitHub Actions workflow will automatically detect new `ProjectCapability` items in PRs and remind you to update the documentation. The workflow will apply the `project-capability-docs-needed` label and post a comment with guidance.
