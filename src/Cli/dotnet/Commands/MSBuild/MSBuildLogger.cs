@@ -31,6 +31,7 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
     internal const string WorkloadPublishPropertiesTelemetryEventName = "WorkloadPublishProperties";
     internal const string ReadyToRunTelemetryEventName = "ReadyToRun";
+    internal const string RestoreTelemetryEventName = "RestoreTelemetry";
 
     internal const string TargetFrameworkVersionTelemetryPropertyKey = "TargetFrameworkVersion";
     internal const string RuntimeIdentifierTelemetryPropertyKey = "RuntimeIdentifier";
@@ -229,6 +230,7 @@ public sealed class MSBuildLogger : INodeLogger
             case PublishPropertiesTelemetryEventName:
             case ReadyToRunTelemetryEventName:
             case WorkloadPublishPropertiesTelemetryEventName:
+            case RestoreTelemetryEventName:
             case SdkContainerPublishBaseImageInferenceEventName:
             case SdkContainerPublishSuccessEventName:
             case SdkContainerPublishErrorEventName:
