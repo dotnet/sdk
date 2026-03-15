@@ -42,6 +42,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("NuGet Config", "nuget.config", null)]
         [InlineData("dotnet gitignore file", "gitignore", null)]
         [InlineData("dotnet gitignore file", ".gitignore", null)]
+        [InlineData("dotnet gitattributes file", "gitattributes", null)]
+        [InlineData("dotnet gitattributes file", ".gitattributes", null)]
         [InlineData("Solution File", "sln", null)]
         [InlineData("Solution File", "sln", new[] { "--format", "sln" })]
         [InlineData("Solution File", "sln", new[] { "--format", "slnx" })]
