@@ -6163,6 +6163,39 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
+        [Fact]
+        public async Task GuardedLoggerMessage_NoDiagnostic_CS()
+        {
+             string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                sealed partial class Class1(ILogger<Class1> logger)
+                {
+                    public void M()
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log(LogLevel.Information, Guid.NewGuid());
+                        }
+
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log(logger, LogLevel.Information, Guid.NewGuid());
+                        }
+                    }
+
+                    [LoggerMessage(EventId = 0, Message = "{Id}")]
+                    partial void Log(LogLevel logLevel, Guid id);
+
+                    [LoggerMessage(EventId = 1, Message = "{Id}")]
+                    static partial void Log(ILogger logger, LogLevel logLevel, Guid id);
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
         // Helpers
 
         private static async Task VerifyCSharpDiagnosticAsync([StringSyntax($"{LanguageNames.CSharp}-Test")] string source, CodeAnalysis.CSharp.LanguageVersion? languageVersion = null, (string, string)? editorConfigText = null)
