@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
@@ -183,6 +184,18 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), packageVersion);
 
             return _fileSystem.Directory.Exists(nupkgDir);
+        }
+
+        public PackageDeprecationMetadata? DeprecationMetadata { get; set; }
+
+        public override PackageDeprecationMetadata? GetPackageDeprecationMetadata(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            NuGetVersion version,
+            Cli.Utils.VerbosityOptions verbosity,
+            RestoreActionConfig? restoreActionConfig = null)
+        {
+            return DeprecationMetadata;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
@@ -37,4 +38,12 @@ internal interface IToolPackageDownloader
         VerbosityOptions verbosity,
         [NotNullWhen(true)]
         out IToolPackage? toolPackage);
+
+    PackageDeprecationMetadata? GetPackageDeprecationMetadata(
+        PackageLocation packageLocation,
+        PackageId packageId,
+        NuGetVersion version,
+        VerbosityOptions verbosity,
+        RestoreActionConfig? restoreActionConfig = null
+    );
 }

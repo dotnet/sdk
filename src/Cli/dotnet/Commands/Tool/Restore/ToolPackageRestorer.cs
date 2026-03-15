@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -11,6 +12,7 @@ using NuGet.Versioning;
 using static Microsoft.DotNet.Cli.Commands.Tool.Restore.ToolRestoreCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
+
 
 internal class ToolPackageRestorer
 {
@@ -86,6 +88,20 @@ internal class ToolPackageRestorer
             // Check for newer versions and prepare warning message
             string warning = CheckForNewerVersion(package, configFile);
 
+            // Check for deprecation metadata
+            var packageLocation = new PackageLocation(
+                nugetConfig: configFile,
+                additionalFeeds: _additionalSources,
+                sourceFeedOverrides: _overrideSources,
+                rootConfigDirectory: package.FirstEffectDirectory);
+            var deprecationMetadata = _toolPackageDownloader.GetPackageDeprecationMetadata(
+                packageLocation,
+                package.PackageId,
+                toolPackage.Version,
+                _verbosity,
+                _restoreActionConfig);
+            string? deprecationWarning = ToolDeprecationWarning.FormatDeprecationWarning(package.PackageId, deprecationMetadata);
+
             return ToolRestoreResult.Success(
                 saveToCache:
                     (new RestoredCommandIdentifier(
@@ -100,7 +116,8 @@ internal class ToolPackageRestorer
                     package.PackageId,
                     package.Version.ToNormalizedString(),
                     string.Join(" ", package.CommandNames)),
-                warning: warning);
+                warning: warning,
+                deprecationWarning: deprecationWarning);
         }
         catch (ToolPackageException e)
         {

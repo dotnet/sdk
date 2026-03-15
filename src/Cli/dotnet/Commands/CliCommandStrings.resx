@@ -2083,6 +2083,18 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>You can invoke the tool using the following command: {0}
 Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
+  <data name="ToolPackageDeprecated" xml:space="preserve">
+    <value>warning: Package '{0}' is deprecated.</value>
+  </data>
+  <data name="ToolPackageDeprecatedMessage" xml:space="preserve">
+    <value>  Deprecation message: {0}</value>
+  </data>
+  <data name="ToolPackageDeprecatedReasons" xml:space="preserve">
+    <value>  Reason(s): {0}</value>
+  </data>
+  <data name="ToolPackageDeprecatedAlternativePackage" xml:space="preserve">
+    <value>  Alternative package: {0}</value>
+  </data>
   <data name="ToolInstallInvalidNuGetVersionRange" xml:space="preserve">
     <value>Specified version '{0}' is not a valid NuGet version range.</value>
   </data>

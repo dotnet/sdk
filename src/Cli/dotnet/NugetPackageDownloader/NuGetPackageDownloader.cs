@@ -710,6 +710,23 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return (packageMetadata.Identity.Version, source);
     }
 
+    public async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(PackageId packageId,
+        NuGetVersion version,
+        PackageSourceLocation packageSourceLocation = null)
+    {
+        try
+        {
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            (_, IPackageSearchMetadata metadata) = await GetPackageMetadataAsync(packageId.ToString(), version, packagesSources, CancellationToken.None).ConfigureAwait(false);
+            return await metadata.GetDeprecationMetadataAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            // Don't fail if we can't get deprecation metadata (e.g., network issues, package not found)
+            return null;
+        }
+    }
+
     private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,
         NuGetVersion packageVersion, IEnumerable<PackageSource> sources, CancellationToken cancellationToken, bool includeUnlisted = false)
     {

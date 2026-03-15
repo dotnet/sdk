@@ -3446,6 +3446,26 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
         <target state="translated">Versione</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageDeprecated">
+        <source>warning: Package '{0}' is deprecated.</source>
+        <target state="new">warning: Package '{0}' is deprecated.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageDeprecatedAlternativePackage">
+        <source>  Alternative package: {0}</source>
+        <target state="new">  Alternative package: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageDeprecatedMessage">
+        <source>  Deprecation message: {0}</source>
+        <target state="new">  Deprecation message: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageDeprecatedReasons">
+        <source>  Reason(s): {0}</source>
+        <target state="new">  Reason(s): {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolRestoreCommandDescription">
         <source>Restore tools defined in the local tool manifest.</source>
         <target state="translated">Ripristina gli strumenti definiti nel manifesto degli strumenti locale.</target>

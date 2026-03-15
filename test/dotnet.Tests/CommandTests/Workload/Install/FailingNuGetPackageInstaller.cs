@@ -46,6 +46,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
             VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
 
+        public Task<NuGet.Protocol.PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(PackageId packageId,
+            NuGetVersion version, PackageSourceLocation packageSourceLocation = null) => Task.FromResult<NuGet.Protocol.PackageDeprecationMetadata>(null);
+
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,

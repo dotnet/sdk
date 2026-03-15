@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -42,5 +43,9 @@ internal interface INuGetPackageDownloader
 
     Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
+        PackageSourceLocation packageSourceLocation = null);
+
+    Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(PackageId packageId,
+        NuGetVersion version,
         PackageSourceLocation packageSourceLocation = null);
 }
