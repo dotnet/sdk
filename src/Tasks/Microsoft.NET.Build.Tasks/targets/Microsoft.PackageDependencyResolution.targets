@@ -333,6 +333,47 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                     FilterRuntimeAssetsByRuntimeIdentifier
+
+    When BundledRuntimeAssetRuntimeIdentifiers is set, filter RuntimeTargetsCopyLocalItems
+    to only include assets that are compatible with at least one of the specified
+    RuntimeIdentifiers. This reduces the runtimes/ folder in the build output to
+    only contain assets needed for the targeted platforms.
+
+    Example usage:
+      <PropertyGroup>
+        <BundledRuntimeAssetRuntimeIdentifiers>linux-x64;win-x64</BundledRuntimeAssetRuntimeIdentifiers>
+      </PropertyGroup>
+    ============================================================
+    -->
+
+  <Target Name="FilterRuntimeAssetsByRuntimeIdentifier"
+          AfterTargets="ResolvePackageAssets"
+          Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != ''">
+
+    <ItemGroup>
+      <_RuntimeAssetFilterRids Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <!-- For each specified RID, collect the compatible runtime target items. -->
+    <SelectRuntimeIdentifierSpecificItems
+        Items="@(RuntimeTargetsCopyLocalItems)"
+        TargetRuntimeIdentifier="%(_RuntimeAssetFilterRids.Identity)"
+        RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_FilteredRuntimeTargetsCopyLocalItems" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <ItemGroup>
+      <RuntimeTargetsCopyLocalItems Remove="@(RuntimeTargetsCopyLocalItems)" />
+      <RuntimeTargetsCopyLocalItems Include="@(_FilteredRuntimeTargetsCopyLocalItems)" />
+      <_FilteredRuntimeTargetsCopyLocalItems Remove="@(_FilteredRuntimeTargetsCopyLocalItems)" />
+      <_RuntimeAssetFilterRids Remove="@(_RuntimeAssetFilterRids)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
                      ResolvePackageDependenciesDesignTime
 
     Aggregate the dependencies produced by ResolvePackageDependencies to a form
