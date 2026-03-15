@@ -61,9 +61,8 @@ internal class Parser
 
         rootCommand.SetAction(parseResult =>
         {
-            // No subcommand - show help
-            parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
-            return 0;
+            // No subcommand specified - default to sdk install
+            return new SdkInstallCommand(parseResult).Execute();
         });
 
         return rootCommand;

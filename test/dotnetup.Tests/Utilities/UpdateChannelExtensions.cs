@@ -23,7 +23,6 @@ internal static class UpdateChannelExtensions
 
         // Special channels are not fully specified versions
         if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {

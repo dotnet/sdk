@@ -24,14 +24,9 @@ internal class ChannelVersionResolver
     public const string LtsChannel = "lts";
 
     /// <summary>
-    /// Channel keyword for the latest Standard Term Support (STS) release.
-    /// </summary>
-    public const string StsChannel = "sts";
-
-    /// <summary>
     /// Known channel keywords that are always valid.
     /// </summary>
-    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, StsChannel];
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel];
 
     /// <summary>
     /// Maximum reasonable major version number. .NET versions are currently single-digit;
@@ -204,16 +199,15 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, StsChannel, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var releaseType = string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = _releaseManifest.GetReleasesIndex();
-            return GetLatestVersionByReleaseType(productIndex, releaseType, component);
+            return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
         }
         else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
