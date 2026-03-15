@@ -129,6 +129,17 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
+    ############### PUBLISH SDK ARTIFACTS ###############
+    # Publishes the built SDK installer artifacts (zip, tar.gz, pkg, exe, msi, deb, rpm) to pipeline artifacts.
+    # This enables validation and troubleshooting, particularly for PRs where local build output isn't available.
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish SDK Artifacts
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+        artifactName: $(System.PhaseName)_SDK_Attempt$(System.JobAttempt)
+      continueOnError: true
+      condition: succeededOrFailed()
+
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
