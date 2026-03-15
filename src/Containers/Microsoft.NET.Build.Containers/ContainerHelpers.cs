@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
+
 public static class ContainerHelpers
 {
     internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
