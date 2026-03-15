@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.IO.Pipes;
-using System.Reflection.Metadata;
 using System.Text.Json;
-using Elfie.Serialization;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -33,7 +29,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             commandName: "resource",
             commandArguments: ["--server", serverPipe]);
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [Fact]
     public async Task Host()
     {
         var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
@@ -48,7 +44,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         await host.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [Fact]
     public async Task ServerAndResources()
     {
         var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMultiProc")

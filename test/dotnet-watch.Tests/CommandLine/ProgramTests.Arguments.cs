@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"Arguments = {expectedApplicationArgs}");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+        [Fact]
         public async Task RunArguments_NoHotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+        [Fact]
         public async Task RunArguments_HotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
