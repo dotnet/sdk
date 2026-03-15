@@ -50,8 +50,6 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         return
             $"""
             # This script configures the environment for .NET installed at {dotnetInstallPath}
-            # Source this script (dot-source) to add .NET to your PATH and set DOTNET_ROOT
-            # Example: . ./dotnet-env.ps1
             
             $env:DOTNET_ROOT = '{escapedPath}'
             {pathExport}

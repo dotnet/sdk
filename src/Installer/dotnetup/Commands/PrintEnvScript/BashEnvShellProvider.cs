@@ -52,7 +52,6 @@ public class BashEnvShellProvider : IEnvShellProvider
             $"""
             #!/usr/bin/env bash
             # This script configures the environment for .NET installed at {dotnetInstallPath}
-            # Source this script to add .NET to your PATH and set DOTNET_ROOT
             #
             # Note: If you had a different dotnet in PATH before sourcing this script,
             # you may need to run 'hash -d dotnet' to clear the cached command location.
