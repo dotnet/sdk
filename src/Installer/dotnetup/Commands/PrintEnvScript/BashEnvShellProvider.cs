@@ -5,8 +5,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 public class BashEnvShellProvider : IEnvShellProvider
 {
-    private const string MarkerComment = "# dotnetup";
-
     public string ArgumentName => "bash";
 
     public string Extension => "sh";
@@ -89,7 +87,7 @@ public class BashEnvShellProvider : IEnvShellProvider
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''");
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        return $"{MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
+        return $"{ShellProfileManager.MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
