@@ -17,7 +17,23 @@ public class SpectreProgressTarget : IProgressTarget
         public Reporter()
         {
             TaskCompletionSource<ProgressContext> tcs = new();
-            var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
+            var progress = AnsiConsole.Progress();
+            var successAltStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt);
+            progress.Columns(
+                new SpinnerColumn(Spinner.Known.Line) { Style = Style.Parse(DotnetupTheme.Current.Brand) },
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn
+                {
+                    CompletedStyle = Style.Parse(DotnetupTheme.Current.Brand),
+                    FinishedStyle = successAltStyle,
+                    RemainingStyle = new Style(Color.Grey),
+                },
+                new PercentageColumn
+                {
+                    CompletedStyle = successAltStyle,
+                });
+
+            var progressTask = progress.StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
                 await _overallTask.Task.ConfigureAwait(false);
@@ -37,19 +53,89 @@ public class SpectreProgressTarget : IProgressTarget
         }
     }
 
+#pragma warning disable CA1001 // Timer is disposed in StopShimmer when the task completes
     private sealed class ProgressTaskImpl : IProgressTask
+#pragma warning restore CA1001
     {
         private readonly Spectre.Console.ProgressTask _task;
+        private readonly string _baseDescription;
+        private readonly string? _shimmerWord;
+        private readonly string? _restEscaped;
+        private readonly Timer? _shimmerTimer;
+        private int _shimmerTick;
+        private volatile bool _shimmerStopped;
 
         public ProgressTaskImpl(Spectre.Console.ProgressTask task)
         {
             _task = task;
+            _baseDescription = task.Description;
+
+            int spaceIndex = _baseDescription.IndexOf(' ');
+            if (spaceIndex > 0 && _baseDescription.StartsWith("Installing", StringComparison.Ordinal))
+            {
+                _shimmerWord = _baseDescription[..spaceIndex];
+                _restEscaped = _baseDescription[spaceIndex..].EscapeMarkup();
+                _shimmerTimer = new Timer(OnShimmerTick, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(80));
+            }
+        }
+
+        private void OnShimmerTick(object? state)
+        {
+            if (_shimmerStopped)
+            {
+                return;
+            }
+
+            try
+            {
+                int tick = Interlocked.Increment(ref _shimmerTick);
+                int wordLen = _shimmerWord!.Length;
+                // Wave sweeps across the word then briefly exits before re-entering.
+                int totalPositions = wordLen + 6;
+                int center = (tick % totalPositions) - 3;
+
+                var sb = new StringBuilder();
+                for (int i = 0; i < wordLen; i++)
+                {
+                    int distance = Math.Abs(i - center);
+                    string ch = _shimmerWord[i].ToString().EscapeMarkup();
+
+                    sb.Append(distance switch
+                    {
+                        0 => $"[white bold]{ch}[/]",
+                        1 => $"[grey85]{ch}[/]",
+                        _ => $"[grey]{ch}[/]",
+                    });
+                }
+
+                sb.Append(_restEscaped);
+                _task.Description = sb.ToString();
+            }
+            catch
+            {
+                // Shimmer is cosmetic — swallow any rendering errors silently.
+            }
+        }
+
+        private void StopShimmer()
+        {
+            _shimmerStopped = true;
+            _shimmerTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _shimmerTimer?.Dispose();
+            _task.Description = _baseDescription;
         }
 
         public double Value
         {
             get => _task.Value;
-            set => _task.Value = value;
+            set
+            {
+                _task.Value = value;
+                if (value >= _task.MaxValue && _shimmerTimer is not null && !_shimmerStopped)
+                {
+                    StopShimmer();
+                }
+            }
         }
 
         public string Description

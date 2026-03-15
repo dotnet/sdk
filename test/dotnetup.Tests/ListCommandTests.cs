@@ -51,7 +51,8 @@ public class ListCommandTests
         var output = sw.ToString();
 
         // Assert
-        output.Should().Contain("Installed .NET (managed by dotnetup):");
+        output.Should().Contain("Installations");
+        output.Should().Contain("managed by dotnetup");
         output.Should().Contain("Total: 0");
     }
 

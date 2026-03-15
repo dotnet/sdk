@@ -47,7 +47,7 @@ internal class UpdateWorkflow
         var rootsList = rootsToUpdate.ToList();
         if (rootsList.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No tracked dotnet installations found to update.[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning("No tracked dotnet installations found to update."));
             return 0;
         }
 
@@ -111,43 +111,37 @@ internal class UpdateWorkflow
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
             return (false, false);
         }
 
-        // Check if this version is already installed
+        // Check if this version is already installed (in the manifest)
         var alreadyInstalled = root.Installations.Any(i =>
             i.Component == spec.Component && i.Version == latestVersion.ToString());
 
-        bool updated = false;
+        // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
         if (alreadyInstalled)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion}).[/]");
+            var install = new DotnetInstall(installRoot, latestVersion, spec.Component);
+            ArchiveInstallationValidator validator = new();
+            if (!validator.Validate(install))
+            {
+                var staleInstallation = root.Installations.First(i =>
+                    i.Component == spec.Component && i.Version == latestVersion.ToString());
+                var manifest = new DotnetupSharedManifest(manifestPath);
+                manifest.RemoveInstallation(installRoot, new Installation
+                {
+                    Component = staleInstallation.Component,
+                    Version = staleInstallation.Version
+                });
+                alreadyInstalled = false;
+            }
         }
-        else
+
+        var (updated, failed) = TryInstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath);
+        if (failed)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [blue]{latestVersion}[/]...");
-
-            var installRequest = new DotnetInstallRequest(
-                installRoot,
-                channel,
-                spec.Component,
-                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true })
-            {
-                ResolvedVersion = latestVersion
-            };
-
-            try
-            {
-                var result = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                updated = true;
-            }
-            catch (DotnetInstallException)
-            {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
-                return (false, true);
-            }
+            return (false, true);
         }
 
         // Update global.json if requested and this spec came from a global.json,
@@ -170,7 +164,56 @@ internal class UpdateWorkflow
     {
         if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [dim]{globalJsonPath}[/] to {latestVersion}.");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [{DotnetupTheme.Current.Dim}]{globalJsonPath}[/] to {latestVersion}.");
         }
+    }
+
+    /// <summary>
+    /// Installs the given version or logs a message if it is already installed.
+    /// </summary>
+    /// <returns>A tuple of (wasUpdated, hadFailure).</returns>
+    private static (bool Updated, bool Failed) TryInstallVersion(
+        UpdateChannel channel,
+        InstallSpec spec,
+        DotnetInstallRoot installRoot,
+        ReleaseVersion latestVersion,
+        bool alreadyInstalled,
+        bool noProgress,
+        string? manifestPath)
+    {
+        string displayName = spec.Component.GetDisplayName();
+        bool updated = false;
+
+        if (alreadyInstalled)
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion}).[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [{DotnetupTheme.Current.Accent}]{latestVersion}[/]...");
+
+            var installRequest = new DotnetInstallRequest(
+                installRoot,
+                channel,
+                spec.Component,
+                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true })
+            {
+                ResolvedVersion = latestVersion
+            };
+
+            try
+            {
+                InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                updated = true;
+            }
+            catch (DotnetInstallException)
+            {
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Error}]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                return (false, true);
+            }
+        }
+
+        return (updated, false);
     }
 }

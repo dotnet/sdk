@@ -113,19 +113,30 @@ public static class ErrorCodeMapper
 
         var fullStackTrace = GetFullStackTrace(ex);
 
+        return ClassifyExceptionType(ex, fullStackTrace);
+    }
+
+    private static ExceptionErrorInfo ClassifyExceptionType(Exception ex, string? fullStackTrace)
+    {
+        if (ex is DotnetInstallException installEx)
+        {
+            return GetInstallExceptionErrorInfo(installEx) with { StackTrace = fullStackTrace };
+        }
+
+        return TryClassifyNetworkOrIoException(ex, fullStackTrace)
+            ?? ClassifyOperationException(ex, fullStackTrace);
+    }
+
+    private static ExceptionErrorInfo? TryClassifyNetworkOrIoException(Exception ex, string? stackTrace)
+    {
         return ex switch
         {
-            // DotnetInstallException has specific error codes - categorize by error code
-            // Sanitize the version to prevent PII leakage (user could have typed anything)
-            // For network-related errors, also check the inner exception for more details
-            DotnetInstallException installEx => GetInstallExceptionErrorInfo(installEx) with { StackTrace = fullStackTrace },
-
             // HTTP errors: 4xx client errors are often user issues, 5xx are product/server issues
             HttpRequestException httpEx => new ExceptionErrorInfo(
                 httpEx.StatusCode.HasValue ? $"Http{(int)httpEx.StatusCode}" : "HttpRequestException",
                 Category: ErrorCategoryClassifier.ClassifyHttpError(httpEx.StatusCode),
                 StatusCode: (int?)httpEx.StatusCode,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // FileNotFoundException before IOException (it derives from IOException)
             // Could be user error (wrong path) or product error (our code referenced wrong file)
@@ -135,60 +146,66 @@ public static class ErrorCodeMapper
                 Category: ErrorCategory.Product,
                 HResult: fnfEx.HResult,
                 Details: fnfEx.FileName is not null ? "file_specified" : null,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Permission denied - user environment issue (needs elevation or different permissions)
             UnauthorizedAccessException => new ExceptionErrorInfo(
                 "PermissionDenied",
                 Category: ErrorCategory.User,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Directory not found - could be user specified bad path
             DirectoryNotFoundException => new ExceptionErrorInfo(
                 "DirectoryNotFound",
                 Category: ErrorCategory.User,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
-            IOException ioEx => MapIOException(ioEx, fullStackTrace),
+            IOException ioEx => MapIOException(ioEx, stackTrace),
 
+            _ => null
+        };
+    }
+
+    private static ExceptionErrorInfo ClassifyOperationException(Exception ex, string? stackTrace) =>
+        ex switch
+        {
             // User cancelled the operation
             OperationCanceledException => new ExceptionErrorInfo(
                 "Cancelled",
                 Category: ErrorCategory.User,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Invalid argument - user provided bad input
             ArgumentException argEx => new ExceptionErrorInfo(
                 "InvalidArgument",
                 Category: ErrorCategory.User,
                 Details: argEx.ParamName,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Invalid operation - usually a bug in our code
             InvalidOperationException => new ExceptionErrorInfo(
                 "InvalidOperation",
                 Category: ErrorCategory.Product,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Not supported - could be user trying unsupported scenario
             NotSupportedException => new ExceptionErrorInfo(
                 "NotSupported",
                 Category: ErrorCategory.User,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Timeout - network/environment issue outside our control
             TimeoutException => new ExceptionErrorInfo(
                 "Timeout",
                 Category: ErrorCategory.User,
-                StackTrace: fullStackTrace),
+                StackTrace: stackTrace),
 
             // Unknown exceptions default to product (fail-safe - we should handle known cases)
             _ => new ExceptionErrorInfo(
                 ex.GetType().Name,
                 Category: ErrorCategory.Product,
-                StackTrace: fullStackTrace)
+                StackTrace: stackTrace)
         };
-    }
 
     /// <summary>
     /// Gets error info for a DotnetInstallException, enriching with inner exception details

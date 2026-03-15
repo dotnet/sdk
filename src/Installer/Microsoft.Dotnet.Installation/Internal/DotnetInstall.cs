@@ -9,7 +9,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
 /// </summary>
-internal record DotnetInstall(
+public record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
     InstallComponent Component);

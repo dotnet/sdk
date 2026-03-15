@@ -3,7 +3,9 @@
 
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -82,70 +84,215 @@ internal class InstallExecutor
         bool noProgress)
     {
 #pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
-        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
+        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [{DotnetupTheme.Current.Accent}]{resolvedVersion}[/] to [{DotnetupTheme.Current.Accent}]{installRequest.InstallRoot.Path}[/]...");
 #pragma warning restore CA1305
 
         var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]{componentDescription} {orchestratorResult.Install.Version} is already installed at {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] is already installed at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed {componentDescription} {orchestratorResult.Install.Version}, available via {orchestratorResult.Install.InstallRoot}[/]");
+            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Installed {componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
     }
 
     /// <summary>
-    /// Executes the installation of additional versions of a .NET component.
+    /// Executes the installation of additional admin installs (SDKs and runtimes), optionally including
+    /// a primary install request. Uses a two-phase approach: SDKs are installed first so that
+    /// runtimes bundled within SDK archives are already on disk, then only standalone runtimes
+    /// that are not yet present are downloaded.
     /// </summary>
-    /// <param name="additionalVersions">The list of additional versions to install.</param>
+    /// <param name="additionalInstalls">The list of additional admin installs to migrate.</param>
     /// <param name="installRoot">The installation root path.</param>
-    /// <param name="component">The component type to install.</param>
-    /// <param name="componentDescription">Description of the component for display.</param>
     /// <param name="manifestPath">Optional manifest path.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
-    /// <returns>True if all installations succeeded, false if any failed.</returns>
-    public static bool ExecuteAdditionalInstalls(
-        IEnumerable<string> additionalVersions,
+    /// <param name="primaryRequest">Optional primary install request to batch with the appropriate phase.</param>
+    /// <returns>The primary install result when <paramref name="primaryRequest"/> is supplied; null otherwise.</returns>
+    public static InstallResult? ExecuteAdditionalInstalls(
+        IEnumerable<DotnetInstall> additionalInstalls,
         DotnetInstallRoot installRoot,
-        InstallComponent component,
-        string componentDescription,
         string? manifestPath,
         bool noProgress,
-        bool requireMuxerUpdate = false)
+        bool requireMuxerUpdate = false,
+        DotnetInstallRequest? primaryRequest = null)
     {
-        bool allSucceeded = true;
-
-        foreach (var additionalVersion in additionalVersions)
+        var installsList = additionalInstalls.ToList();
+        if (installsList.Count == 0 && primaryRequest is null)
         {
-            var additionalRequest = new DotnetInstallRequest(
+            return null;
+        }
+
+        var sdkInstalls = installsList.Where(i => i.Component == InstallComponent.SDK).ToList();
+        var runtimeInstalls = installsList.Where(i => i.Component != InstallComponent.SDK).ToList();
+
+        bool primaryIsSdk = primaryRequest is not null && primaryRequest.Component == InstallComponent.SDK;
+        var sdkPrimary = primaryIsSdk ? primaryRequest : null;
+        var runtimePrimary = primaryIsSdk ? null : primaryRequest;
+
+        DisplayBatchSummary(primaryRequest, installsList, installRoot);
+
+        // Phase 1: install SDKs first — their archives typically bundle runtime binaries.
+        var primaryResult = RunInstallBatch(sdkInstalls, installRoot, manifestPath, noProgress, requireMuxerUpdate, sdkPrimary);
+
+        // Phase 2: skip runtimes whose files already landed on disk via an SDK archive.
+        var remainingRuntimes = runtimeInstalls.Where(r => !RuntimeExistsOnDisk(installRoot, r)).ToList();
+        var runtimeResult = RunInstallBatch(remainingRuntimes, installRoot, manifestPath, noProgress, requireMuxerUpdate, runtimePrimary);
+
+        return primaryResult ?? runtimeResult;
+    }
+
+    private static void DisplayBatchSummary(
+        DotnetInstallRequest? primaryRequest,
+        List<DotnetInstall> additionalInstalls,
+        DotnetInstallRoot installRoot)
+    {
+        if (primaryRequest is null)
+        {
+            return;
+        }
+
+        string desc = primaryRequest.Component.GetDisplayName();
+#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
+        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {desc} [{DotnetupTheme.Current.Accent}]{primaryRequest.ResolvedVersion}[/] and {additionalInstalls.Count} additional component(s) to [{DotnetupTheme.Current.Accent}]{installRoot.Path.EscapeMarkup()}[/]...");
+#pragma warning restore CA1305
+    }
+
+    private static InstallResult? RunInstallBatch(
+        List<DotnetInstall> installs,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool noProgress,
+        bool requireMuxerUpdate,
+        DotnetInstallRequest? primaryRequest)
+    {
+        var requests = BuildBatchRequestsFromInstalls(primaryRequest, installs, installRoot, manifestPath, requireMuxerUpdate);
+        if (requests.Count == 0)
+        {
+            return null;
+        }
+
+        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results;
+
+        // Scope the progress reporter so the progress bar finishes rendering
+        // before we print the result summary lines beneath it.
+        {
+            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            using var sharedReporter = new LazyProgressReporter(progressTarget);
+            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        }
+
+        return DisplayBatchResults(results, primaryRequest);
+    }
+
+    private static bool RuntimeExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
+    {
+        string frameworkDir = Path.Combine(
+            installRoot.Path,
+            "shared",
+            runtime.Component.GetFrameworkName(),
+            runtime.Version.ToString());
+        return Directory.Exists(frameworkDir);
+    }
+
+    private static List<DotnetInstallRequest> BuildBatchRequestsFromInstalls(
+        DotnetInstallRequest? primaryRequest,
+        List<DotnetInstall> additionalInstalls,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool requireMuxerUpdate)
+    {
+        var requests = new List<DotnetInstallRequest>();
+        // Track (Component, VersionString) pairs already included so duplicates are skipped.
+        var seen = new HashSet<(InstallComponent, string)>();
+
+        if (primaryRequest is not null)
+        {
+            requests.Add(primaryRequest);
+            string primaryVersion = primaryRequest.ResolvedVersion?.ToString()
+                ?? primaryRequest.Channel.ToString() ?? string.Empty;
+            seen.Add((primaryRequest.Component, primaryVersion));
+        }
+
+        foreach (var install in additionalInstalls)
+        {
+            if (!seen.Add((install.Component, install.Version.ToString())))
+            {
+                continue;
+            }
+
+            requests.Add(new DotnetInstallRequest(
                 installRoot,
-                new UpdateChannel(additionalVersion),
-                component,
+                new UpdateChannel(install.Version.ToString()),
+                install.Component,
                 new InstallRequestOptions
                 {
                     ManifestPath = manifestPath,
                     RequireMuxerUpdate = requireMuxerUpdate
-                });
+                }));
+        }
 
-            try
+        return requests;
+    }
+
+    private static InstallResult? DisplayBatchResults(
+        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results,
+        DotnetInstallRequest? primaryRequest)
+    {
+        InstallResult? primaryResult = null;
+        var installed = new List<string>();
+        var alreadyInstalled = new List<string>();
+        string? sharedPath = null;
+
+        foreach (var result in results)
+        {
+            bool isPrimary = primaryRequest is not null
+                && result.Install.Version.ToString() == primaryRequest.ResolvedVersion?.ToString()
+                && result.Install.Component == primaryRequest.Component;
+
+            if (isPrimary && primaryResult is null)
             {
-                var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
+                primaryResult = new InstallResult(result.Install, result.WasAlreadyInstalled);
             }
-            catch (DotnetInstallException)
+
+            sharedPath ??= result.Install.InstallRoot.Path;
+            string accent = DotnetupTheme.Current.Accent;
+            string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), accent, result.Install.Version.ToString().EscapeMarkup());
+            if (result.WasAlreadyInstalled)
             {
-                SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
-                allSucceeded = false;
+                alreadyInstalled.Add(label);
+            }
+            else
+            {
+                installed.Add(label);
             }
         }
 
-        return allSucceeded;
+        EmitBatchSummaryLines(installed, alreadyInstalled, sharedPath);
+        return primaryResult;
+    }
+
+    private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
+    {
+        string accent = DotnetupTheme.Current.Accent;
+        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
+
+        if (installed.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
+        }
+
+        if (alreadyInstalled.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
+        }
     }
 
     /// <summary>
@@ -170,7 +317,7 @@ internal class InstallExecutor
     /// </summary>
     public static void DisplayComplete()
     {
-        SpectreAnsiConsole.WriteLine("Complete!");
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Complete!"));
     }
 
     /// <summary>

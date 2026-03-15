@@ -28,11 +28,8 @@ internal class UninstallWorkflow
         var manifest = new DotnetupSharedManifest(manifestPath);
         var manifestData = manifest.ReadManifest();
 
-        // Resolve install path
         var dotnetInstaller = new DotnetInstallManager();
-        string resolvedInstallPath = installPath
-            ?? dotnetInstaller.GetConfiguredInstallType()?.Path
-            ?? dotnetInstaller.GetDefaultDotnetInstallPath();
+        string resolvedInstallPath = ResolveInstallPath(installPath, dotnetInstaller);
 
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(resolvedInstallPath)));
@@ -59,36 +56,7 @@ internal class UninstallWorkflow
 
         if (matchingSpecs.Count == 0)
         {
-            // Check if there are matches with other sources
-            var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
-            if (otherSourceSpecs.Count > 0)
-            {
-                if (sourceFilter != InstallSource.All)
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[yellow]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
-                }
-                else
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                        $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
-                }
-
-                foreach (var spec in otherSourceSpecs)
-                {
-                    AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [dim]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
-                }
-
-                if (sourceFilter != InstallSource.All)
-                {
-                    AnsiConsole.MarkupLine("[dim]Use --source all to target these specs.[/]");
-                }
-            }
-            else
-            {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[yellow]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
-            }
-
+            ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, resolvedInstallPath);
             return 1;
         }
 
@@ -100,17 +68,76 @@ internal class UninstallWorkflow
             .Select(i => (i.Component, i.Version))
             .ToHashSet();
 
+        RemoveSpecsAndRunGc(manifest, installRoot, matchingSpecs, manifestPath);
+
+        // Check if the targeted installations are still present (referenced by another spec)
+        CheckAndReportStillPresent(manifestPath, installRoot, targetedInstallations);
+
+        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
+        return 0;
+    }
+
+    private static void ReportNoMatchingSpecs(
+        List<InstallSpec> allMatchingSpecs,
+        List<InstallSpec> matchingSpecs,
+        InstallSource sourceFilter,
+        InstallComponent componentFilter,
+        string versionOrChannel,
+        string resolvedInstallPath)
+    {
+        // Check if there are matches with other sources
+        var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
+        if (otherSourceSpecs.Count > 0)
+        {
+            if (sourceFilter != InstallSource.All)
+            {
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+            }
+
+            foreach (var spec in otherSourceSpecs)
+            {
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
+            }
+
+            if (sourceFilter != InstallSource.All)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Use --source all to target these specs."));
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
+        }
+    }
+
+    private static void RemoveSpecsAndRunGc(
+        DotnetupSharedManifest manifest,
+        DotnetInstallRoot installRoot,
+        List<InstallSpec> matchingSpecs,
+        string? manifestPath)
+    {
         // Remove the install spec(s)
         foreach (var spec in matchingSpecs)
         {
             manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Removed install spec: {spec.Component.GetDisplayName()} [blue]{spec.VersionOrChannel}[/] (source: {spec.InstallSource})");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Dereferenced {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] [{DotnetupTheme.Current.Dim}](source: {spec.InstallSource})[/]");
         }
 
-        // Run garbage collection
+        // Run garbage collection 
         GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, showEmptyMessage: true);
+    }
 
-        // Check if the targeted installations are still present (referenced by another spec)
+    private static void CheckAndReportStillPresent(
+        string? manifestPath,
+        DotnetInstallRoot installRoot,
+        HashSet<(InstallComponent Component, string Version)> targetedInstallations)
+    {
         if (targetedInstallations.Count > 0)
         {
             var updatedManifest = new DotnetupSharedManifest(manifestPath);
@@ -120,11 +147,28 @@ internal class UninstallWorkflow
 
             if (stillPresent.Count > 0)
             {
-                AnsiConsole.MarkupLine("[dim]Some installations were not removed because they are still referenced by other install specs.[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Some installations were not removed because they are still referenced by other install specs."));
             }
         }
+    }
 
-        AnsiConsole.MarkupLine("[green]Done.[/]");
-        return 0;
+    /// <summary>
+    /// Resolves the install path for uninstall using the same logic as the install command:
+    /// only use the configured path if it's a user install, otherwise fall back to default.
+    /// </summary>
+    internal static string ResolveInstallPath(string? explicitInstallPath, IDotnetInstallManager dotnetInstaller)
+    {
+        if (explicitInstallPath is not null)
+        {
+            return explicitInstallPath;
+        }
+
+        var configuredInstall = dotnetInstaller.GetConfiguredInstallType();
+        if (configuredInstall is { InstallType: InstallType.User })
+        {
+            return configuredInstall.Path;
+        }
+
+        return dotnetInstaller.GetDefaultDotnetInstallPath();
     }
 }

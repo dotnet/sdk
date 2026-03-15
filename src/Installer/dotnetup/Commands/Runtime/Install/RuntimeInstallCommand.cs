@@ -2,14 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Spectre.Console;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 {
-    private readonly string? _componentSpec = result.GetValue(RuntimeInstallCommandParser.ComponentSpecArgument);
+    private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
     private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
@@ -18,7 +21,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
     private readonly bool _untracked = result.GetValue(CommonOptions.UntrackedOption);
 
-    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
+    private readonly DotnetInstallManager _dotnetInstaller = new();
     private readonly ChannelVersionResolver _channelVersionResolver = new();
 
     /// <summary>
@@ -29,25 +32,164 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     {
         ["runtime"] = InstallComponent.Runtime,
         ["aspnetcore"] = InstallComponent.ASPNETCore,
+        ["aspnet"] = InstallComponent.ASPNETCore,
+        ["core"] = InstallComponent.ASPNETCore,
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
+        ["desktop"] = InstallComponent.WindowsDesktop,
     };
+
+    /// <summary>Primary (non-alias) names shown in help text and error messages.</summary>
+    private static readonly string[] s_primaryRuntimeTypes = ["runtime", "aspnetcore", "windowsdesktop"];
 
     protected override string GetCommandName() => "runtime/install";
 
     protected override int ExecuteCore()
     {
-        // Parse the component spec to determine runtime type and version
-        var (component, versionOrChannel) = ParseComponentSpec(_componentSpec);
+        // Single spec (or none): use existing InstallWorkflow for full walkthrough support
+        if (_componentSpecs.Length <= 1)
+        {
+            string? singleSpec = _componentSpecs.Length == 1 ? _componentSpecs[0] : null;
+            return ExecuteSingleInstall(singleSpec);
+        }
 
-        // Windows Desktop Runtime is only available on Windows
+        // Multiple specs: validate all upfront, then download concurrently and commit sequentially
+        return ExecuteMultipleInstalls(_componentSpecs);
+    }
+
+    private int ExecuteSingleInstall(string? spec)
+    {
+        var (component, versionOrChannel) = ParseComponentSpec(spec);
+        ValidateComponentForPlatform(component);
+        ValidateNotSdkVersion(versionOrChannel);
+
+        string componentDescription = component.GetDisplayName();
+        var pathPreference = DotnetupConfig.EnsurePathPreference(_interactive);
+        bool? setDefault = _setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+
+        InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
+
+        InstallWorkflow.InstallWorkflowOptions options = new(
+            versionOrChannel,
+            _installPath,
+            setDefault,
+            _manifestPath,
+            _interactive,
+            _noProgress,
+            component,
+            componentDescription,
+            RequireMuxerUpdate: _requireMuxerUpdate,
+            Untracked: _untracked,
+            PathPreference: pathPreference);
+
+        workflow.Execute(options);
+        return 0;
+    }
+
+    private int ExecuteMultipleInstalls(string[] specs)
+    {
+        // Parse and validate all specs upfront before any downloads begin
+        var parsed = new List<(InstallComponent Component, string? VersionOrChannel)>();
+        foreach (var spec in specs)
+        {
+            var (component, versionOrChannel) = ParseComponentSpec(spec);
+            ValidateComponentForPlatform(component);
+            ValidateNotSdkVersion(versionOrChannel);
+            parsed.Add((component, versionOrChannel));
+        }
+
+        string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
+        var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Deduplicate parsed specs so the same component+channel is not downloaded twice.
+        var seen = new HashSet<(InstallComponent, string)>();
+        var requests = new List<DotnetInstallRequest>();
+        foreach (var p in parsed)
+        {
+            string channel = p.VersionOrChannel ?? ChannelVersionResolver.LatestChannel;
+            if (!seen.Add((p.Component, channel)))
+            {
+                continue;
+            }
+
+            requests.Add(new DotnetInstallRequest(
+                installRoot,
+                new UpdateChannel(channel),
+                p.Component,
+                new InstallRequestOptions
+                {
+                    ManifestPath = _manifestPath,
+                    RequireMuxerUpdate = _requireMuxerUpdate,
+                    Untracked = _untracked
+                }));
+        }
+
+        IReadOnlyList<InstallResult> results;
+
+        {
+            IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            using var sharedReporter = new LazyProgressReporter(progressTarget);
+            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        }
+
+        DisplayMultiInstallResults(results);
+
+        if (_setDefaultInstall == true)
+        {
+            _dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
+        }
+
+        return 0;
+    }
+
+    private static void DisplayMultiInstallResults(IReadOnlyList<InstallResult> results)
+    {
+        var installed = new List<string>();
+        var alreadyInstalled = new List<string>();
+        string? sharedPath = null;
+
+        string accent = DotnetupTheme.Current.Accent;
+
+        foreach (var installResult in results)
+        {
+            string description = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", installResult.Install.Component.GetDisplayName(), accent, installResult.Install.Version.ToString().EscapeMarkup());
+            sharedPath ??= installResult.Install.InstallRoot.Path;
+            if (installResult.WasAlreadyInstalled)
+            {
+                alreadyInstalled.Add(description);
+            }
+            else
+            {
+                installed.Add(description);
+            }
+        }
+
+        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
+
+        if (installed.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
+        }
+
+        if (alreadyInstalled.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
+        }
+    }
+
+    private static void ValidateComponentForPlatform(InstallComponent component)
+    {
         if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
                 $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
         }
+    }
 
-        // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
+    private static void ValidateNotSdkVersion(string? versionOrChannel)
+    {
         if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
         {
             throw new DotnetInstallException(
@@ -55,26 +197,6 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
                 + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
         }
-
-        // Use GetDisplayName() from InstallComponentExtensions for consistent descriptions
-        string componentDescription = component.GetDisplayName();
-
-        InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
-
-        InstallWorkflow.InstallWorkflowOptions options = new(
-            versionOrChannel,
-            _installPath,
-            _setDefaultInstall,
-            _manifestPath,
-            _interactive,
-            _noProgress,
-            component,
-            componentDescription,
-            RequireMuxerUpdate: _requireMuxerUpdate,
-            Untracked: _untracked);
-
-        workflow.Execute(options);
-        return 0;
     }
 
     /// <summary>
@@ -132,14 +254,15 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     /// </summary>
     internal static IEnumerable<string> GetValidRuntimeTypes()
     {
-        foreach (var kvp in s_runtimeTypeMap)
+        foreach (var name in s_primaryRuntimeTypes)
         {
-            // Windows Desktop is only valid on Windows
-            if (kvp.Value == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            if (s_runtimeTypeMap.TryGetValue(name, out var component) &&
+                component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
             {
                 continue;
             }
-            yield return kvp.Key;
+
+            yield return name;
         }
     }
 }

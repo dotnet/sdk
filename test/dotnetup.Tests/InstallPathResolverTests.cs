@@ -38,8 +38,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: globalJsonInfo,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         output.WriteLine($"Error: {error ?? "(none)"}, Result: {result?.ResolvedInstallPath ?? "(null)"}");
@@ -59,8 +57,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: globalJsonInfo,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -78,8 +74,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: SamePath,
             globalJsonInfo: globalJsonInfo,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -94,8 +88,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -112,8 +104,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: null,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -132,8 +122,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: null,
             currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -152,8 +140,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -176,8 +162,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
             currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -199,8 +183,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: globalJsonInfo,
             currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -218,8 +200,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: null,
             currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();
@@ -241,8 +221,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
             explicitInstallPath: null,
             globalJsonInfo: null,
             currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
             out string? error);
 
         error.Should().BeNull();

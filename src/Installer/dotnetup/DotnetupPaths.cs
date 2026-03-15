@@ -11,6 +11,7 @@ internal static class DotnetupPaths
 {
     private const string DotnetupFolderName = "dotnetup";
     private const string ManifestFileName = "dotnetup_manifest.json";
+    private const string ConfigFileName = "dotnetup.config.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
 
 #pragma warning disable IDE0032 // Lazy-init cache; not convertible to auto-property
@@ -74,6 +75,16 @@ internal static class DotnetupPaths
             return Path.Combine(DataDirectory, ManifestFileName);
         }
     }
+
+    /// <summary>
+    /// Gets the path to the dotnetup configuration file.
+    /// </summary>
+    public static string ConfigPath => Path.Combine(DataDirectory, ConfigFileName);
+
+    /// <summary>
+    /// Gets the path to the download cache directory.
+    /// </summary>
+    public static string DownloadCacheDirectory => Path.Combine(DataDirectory, "downloadcache");
 
     /// <summary>
     /// Gets the path to the telemetry first-run sentinel file.

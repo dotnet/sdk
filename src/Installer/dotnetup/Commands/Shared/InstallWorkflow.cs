@@ -36,7 +36,8 @@ internal class InstallWorkflow
         bool? UpdateGlobalJson = null,
         Func<string, string?>? ResolveChannelFromGlobalJson = null,
         bool RequireMuxerUpdate = false,
-        bool Untracked = false);
+        bool Untracked = false,
+        PathPreference? PathPreference = null);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -109,7 +110,6 @@ internal class InstallWorkflow
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
-        InstallExecutor.DisplayComplete();
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
@@ -122,8 +122,6 @@ internal class InstallWorkflow
             options.InstallPath,
             globalJson,
             currentInstallRoot,
-            options.Interactive,
-            options.ComponentDescription,
             out error);
 
         if (pathResolution is null)
@@ -141,10 +139,7 @@ internal class InstallWorkflow
         }
 
         string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
-        bool setDefaultInstall = walkthrough.ResolveSetDefaultInstall(
-            currentInstallRoot,
-            pathResolution.ResolvedInstallPath,
-            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
+        bool setDefaultInstall = DeriveSetDefaultInstall(options, walkthrough, currentInstallRoot, pathResolution);
 
         // Classify how the version/channel was determined for telemetry
         string requestSource = options.VersionOrChannel is not null
@@ -165,6 +160,47 @@ internal class InstallWorkflow
             updateGlobalJson,
             requestSource,
             pathResolution.PathSource);
+    }
+
+    /// <summary>
+    /// Determines whether the installation should be set as the system default.
+    /// Checks the saved config first; only shows prompts when the config is absent.
+    /// </summary>
+    private static bool DeriveSetDefaultInstall(
+        InstallWorkflowOptions options,
+        InstallWalkthrough walkthrough,
+        DotnetInstallRootConfiguration? currentInstallRoot,
+        InstallPathResolver.InstallPathResolutionResult pathResolution)
+    {
+        // If the caller already determined this (e.g. WalkthroughCommand), use it directly.
+        if (options.SetDefaultInstall is not null)
+        {
+            return options.SetDefaultInstall.Value;
+        }
+
+        // If a PathPreference was passed in options or is already saved in config, derive silently — no prompts.
+        var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
+        if (savedPreference is not null)
+        {
+            return savedPreference != PathPreference.DotnetupDotnet;
+        }
+
+        // No config yet. If interactive, show the full path preference selector
+        // (delegates to WalkthroughCommand.PromptPathPreference), saves to config, and returns the choice.
+        if (options.Interactive)
+        {
+            var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
+            if (preference is not null)
+            {
+                return preference != PathPreference.DotnetupDotnet;
+            }
+        }
+
+        // Non-interactive with no config: fall back to standard walkthrough logic (returns false).
+        return walkthrough.ResolveSetDefaultInstall(
+            currentInstallRoot,
+            pathResolution.ResolvedInstallPath,
+            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
     }
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
@@ -191,27 +227,33 @@ internal class InstallWorkflow
     {
         // Gather all user prompts before starting any downloads.
         // Users may walk away after seeing download progress begin, expecting no more prompts.
-        var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
+        var additionalInstalls = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
-            context.SetDefaultInstall,
-            context.CurrentInstallRoot);
+            context.SetDefaultInstall);
 
-        var installResult = InstallExecutor.ExecuteInstall(
+        if (additionalInstalls.Count > 0)
+        {
+            // Batch the primary install with additional installs so SDKs download concurrently.
+            // Set ResolvedVersion so the orchestrator skips redundant channel resolution.
+            var primaryRequest = resolved.Request with { ResolvedVersion = resolved.ResolvedVersion };
+            var primaryResult = InstallExecutor.ExecuteAdditionalInstalls(
+                additionalInstalls,
+                resolved.Request.InstallRoot,
+                context.Options.ManifestPath,
+                context.Options.NoProgress,
+                context.Options.RequireMuxerUpdate,
+                primaryRequest: primaryRequest);
+
+            return primaryResult ?? new InstallExecutor.InstallResult(
+                new DotnetInstall(resolved.Request.InstallRoot, resolved.ResolvedVersion!, resolved.Request.Component));
+        }
+
+        // No additional installs — use the simple single-install path.
+        return InstallExecutor.ExecuteInstall(
             resolved.Request,
             resolved.ResolvedVersion?.ToString(),
             context.Options.ComponentDescription,
             context.Options.NoProgress);
-
-        InstallExecutor.ExecuteAdditionalInstalls(
-            additionalVersions,
-            resolved.Request.InstallRoot,
-            context.Options.Component,
-            context.Options.ComponentDescription,
-            context.Options.ManifestPath,
-            context.Options.NoProgress,
-            context.Options.RequireMuxerUpdate);
-
-        return installResult;
     }
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

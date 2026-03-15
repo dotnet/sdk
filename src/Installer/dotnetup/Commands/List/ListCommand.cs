@@ -72,50 +72,60 @@ internal static class InstallationLister
 
         foreach (var root in roots)
         {
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
-
-            // Collect install specs
-            foreach (var spec in root.InstallSpecs)
-            {
-                installSpecs.Add(new InstallSpecInfo
-                {
-                    Component = spec.Component,
-                    VersionOrChannel = spec.VersionOrChannel,
-                    Source = spec.InstallSource,
-                    GlobalJsonPath = spec.GlobalJsonPath,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture
-                });
-            }
-
-            // Collect installations
-            foreach (var installation in root.Installations)
-            {
-                bool? isValid = null;
-                string? validationFailure = null;
-
-                if (verify)
-                {
-                    var dotnetInstall = new DotnetInstall(
-                        installRoot,
-                        new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
-                        installation.Component);
-                    isValid = validator.Validate(dotnetInstall, out validationFailure);
-                }
-
-                installations.Add(new InstallationInfo
-                {
-                    Component = installation.Component,
-                    Version = installation.Version,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture,
-                    IsValid = isValid,
-                    ValidationFailure = validationFailure
-                });
-            }
+            CollectRootData(root, verify, validator, installSpecs, installations);
         }
 
         return new ListData { InstallSpecs = installSpecs, Installations = installations };
+    }
+
+    private static void CollectRootData(
+        DotnetRootEntry root,
+        bool verify,
+        ArchiveInstallationValidator validator,
+        List<InstallSpecInfo> installSpecs,
+        List<InstallationInfo> installations)
+    {
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        // Collect install specs
+        foreach (var spec in root.InstallSpecs)
+        {
+            installSpecs.Add(new InstallSpecInfo
+            {
+                Component = spec.Component,
+                VersionOrChannel = spec.VersionOrChannel,
+                Source = spec.InstallSource,
+                GlobalJsonPath = spec.GlobalJsonPath,
+                InstallRoot = root.Path,
+                Architecture = root.Architecture
+            });
+        }
+
+        // Collect installations
+        foreach (var installation in root.Installations)
+        {
+            bool? isValid = null;
+            string? validationFailure = null;
+
+            if (verify)
+            {
+                var dotnetInstall = new DotnetInstall(
+                    installRoot,
+                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
+                    installation.Component);
+                isValid = validator.Validate(dotnetInstall, out validationFailure);
+            }
+
+            installations.Add(new InstallationInfo
+            {
+                Component = installation.Component,
+                Version = installation.Version,
+                InstallRoot = root.Path,
+                Architecture = root.Architecture,
+                IsValid = isValid,
+                ValidationFailure = validationFailure
+            });
+        }
     }
 
     private const int IndentSize = 2;
@@ -124,8 +134,14 @@ internal static class InstallationLister
 
     public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
+        // Create an AnsiConsole that writes to our TextWriter
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(writer)
+        });
+
         writer.WriteLine();
-        writer.WriteLine(Strings.ListHeader);
+        console.MarkupLine($"Installations [{DotnetupTheme.Current.Dim}](managed by dotnetup)[/]:");
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
@@ -134,11 +150,6 @@ internal static class InstallationLister
         }
         else
         {
-            // Create an AnsiConsole that writes to our TextWriter
-            var console = AnsiConsole.Create(new AnsiConsoleSettings
-            {
-                Out = new AnsiConsoleOutput(writer)
-            });
 
             // Group by install root for cleaner display
             var allRoots = listData.InstallSpecs.Select(s => s.InstallRoot)
@@ -178,9 +189,8 @@ internal static class InstallationLister
                     : spec.Source.ToString().ToLowerInvariant();
 
                 specGrid.AddRow(
-                    spec.Component.GetDisplayName(),
-                    spec.VersionOrChannel,
-                    $"[dim](source: {sourceDisplay})[/]"
+                    $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
+                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay})[/]"
                 );
             }
 
@@ -200,12 +210,11 @@ internal static class InstallationLister
             foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
             {
                 string status = install.IsValid == false
-                    ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
+                    ? $"[{DotnetupTheme.Current.Error}]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
                     : $"({install.Architecture})";
 
                 installGrid.AddRow(
-                    install.Component.GetDisplayName(),
-                    install.Version,
+                    $"{install.Component.GetDisplayName()} {install.Version}",
                     status
                 );
             }
@@ -218,7 +227,6 @@ internal static class InstallationLister
     {
         var grid = new Grid();
         grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
-        grid.AddColumn(new GridColumn().PadRight(IndentSize).NoWrap());
         grid.AddColumn(new GridColumn().NoWrap());
         return grid;
     }

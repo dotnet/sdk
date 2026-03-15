@@ -1,0 +1,13 @@
+# Licensed to the .NET Foundation under one or more agreements.
+# The .NET Foundation licenses this file to you under the MIT license.
+
+# Meziantou.Analyzer suppressions for NativeWrapper shared code.
+# These files are not owned by dotnetup but are compiled into Microsoft.Dotnet.Installation.
+# The rules below are suppressed because they either do not apply or require changes
+# to code owned by a different team.
+[*.cs]
+dotnet_diagnostic.MA0006.severity = none
+dotnet_diagnostic.MA0008.severity = none
+dotnet_diagnostic.MA0048.severity = none
+dotnet_diagnostic.MA0099.severity = none
+dotnet_diagnostic.MA0144.severity = none

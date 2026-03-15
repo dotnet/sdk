@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -77,8 +77,69 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public string? GetLatestInstalledAdminVersion()
     {
-        // TODO: Implement this
-        return null;
+        var versions = GetInstalledAdminSdkVersions();
+        return versions.Count > 0 ? versions[0] : null;
+    }
+
+    public List<string> GetInstalledAdminSdkVersions()
+    {
+        var versions = new List<string>();
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return versions;
+        }
+
+        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+        foreach (var adminPath in adminPaths)
+        {
+            try
+            {
+                var installs = HostFxrWrapper.getInstalls(adminPath);
+                foreach (var install in installs)
+                {
+                    if (install.Component == InstallComponent.SDK)
+                    {
+                        versions.Add(install.Version.ToString());
+                    }
+                }
+            }
+            catch
+            {
+                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
+            }
+        }
+
+        // Sort descending so newest versions appear first
+        versions.Sort((a, b) => string.Compare(b, a, StringComparison.OrdinalIgnoreCase));
+        return versions;
+    }
+
+    public List<DotnetInstall> GetInstalledAdminInstalls()
+    {
+        var installs = new List<DotnetInstall>();
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return installs;
+        }
+
+        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+        foreach (var adminPath in adminPaths)
+        {
+            try
+            {
+                installs.AddRange(HostFxrWrapper.getInstalls(adminPath));
+            }
+            catch
+            {
+                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
+            }
+        }
+
+        // Sort descending so newest versions appear first
+        installs.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
+        return installs;
     }
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
@@ -99,7 +160,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         );
 
         InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
-        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed .NET SDK {installResult.Install.Version} at {installResult.Install.InstallRoot.Path}[/]");
     }
 
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
@@ -131,7 +192,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     bool succeeded = InstallRootManager.ApplyUserInstallRoot(
                         userChanges,
                         AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
 
                     if (!succeeded)
                     {
@@ -144,7 +205,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     bool adminSucceeded = InstallRootManager.ApplyAdminInstallRoot(
                         adminChanges,
                         AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
 
                     if (!adminSucceeded)
                     {
@@ -158,42 +219,47 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
         else
         {
-            // Non-Windows platforms: use the simpler PATH-based approach
-            // Get current PATH
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-            var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string exeName = "dotnet";
-            // Remove only actual dotnet installation folders from PATH
-            pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
-
-            switch (installType)
-            {
-                case InstallType.User:
-                    if (string.IsNullOrEmpty(dotnetRoot))
-                    {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
-                    }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Set DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
-                    break;
-                case InstallType.Admin:
-                    if (string.IsNullOrEmpty(dotnetRoot))
-                    {
-                        throw new ArgumentNullException(nameof(dotnetRoot));
-                    }
-                    // Add dotnetRoot to PATH
-                    pathEntries.Insert(0, dotnetRoot);
-                    // Unset DOTNET_ROOT
-                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
-            }
-            // Update PATH
-            var newPath = string.Join(Path.PathSeparator, pathEntries);
-            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
+            ConfigureInstallTypeUnix(installType, dotnetRoot);
         }
+    }
+
+    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot)
+    {
+        // Non-Windows platforms: use the simpler PATH-based approach
+        // Get current PATH
+        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
+        string exeName = "dotnet";
+        // Remove only actual dotnet installation folders from PATH
+        pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+
+        switch (installType)
+        {
+            case InstallType.User:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                {
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                }
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Set DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+                break;
+            case InstallType.Admin:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                {
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                }
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Unset DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                break;
+            default:
+                throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+        }
+        // Update PATH
+        var newPath = string.Join(Path.PathSeparator, pathEntries);
+        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
 }

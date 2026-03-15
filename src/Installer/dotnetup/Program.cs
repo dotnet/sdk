@@ -16,6 +16,10 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
+        // Ensure UTF-8 output so Unicode glyphs (spinners, progress bars) render correctly.
+        // Follows the same pattern as the .NET SDK CLI (src/Cli/dotnet/Program.cs).
+        ConfigureConsoleEncoding();
+
         // Disable Spectre.Console line wrapping when output is redirected (piped),
         // since wrapping is not useful for non-interactive consumers.
         if (Console.IsOutputRedirected)
@@ -39,11 +43,9 @@ internal class DotnetupProgram
 
         try
         {
-            var result = Parser.Invoke(args);
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
-            rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            var exitCode = InvokeParser(args, rootActivity);
 
-            return result;
+            return exitCode;
         }
         catch (Exception ex)
         {
@@ -64,22 +66,57 @@ internal class DotnetupProgram
             // exporters see it.  The 'using' dispose that follows is a no-op on
             // an already-stopped Activity.
             rootActivity?.Stop();
+            DisposeTelemetry();
+        }
+    }
 
-            // The Azure Monitor exporter has built-in offline storage
-            // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
-            // survives process exit and is retried on the next run.
-            // Dispose on a background thread with a short timeout so we
-            // never block the user waiting for a network round-trip.
-            // This mirrors the pattern used by the .NET CLI, which writes
-            // telemetry to disk and sends it asynchronously.
-            try
-            {
-                Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
-            }
-            catch
-            {
-                // Telemetry should never delay or crash the process exit.
-            }
+    private static int InvokeParser(string[] args, Activity? rootActivity)
+    {
+        var result = Parser.Invoke(args);
+        rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
+        rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+        return result;
+    }
+
+    private static void DisposeTelemetry()
+    {
+        // Best-effort flush with a short timeout. The Azure Monitor exporter
+        // has built-in offline storage (%LOCALAPPDATA%\Microsoft\AzureMonitor)
+        // so unsent spans survive process exit and are retried on the next run.
+        //
+        // We intentionally skip Dispose(): TracerProvider.Dispose() internally
+        // calls Shutdown() with its own (potentially long) timeout, which would
+        // block the user noticeably. Since ThreadPool threads are background
+        // threads, any remaining exporter work is terminated when Main returns.
+        try
+        {
+            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 100);
+        }
+        catch
+        {
+            // Telemetry should never delay or crash the process exit.
+        }
+    }
+
+    /// <summary>
+    /// Sets the console output encoding to UTF-8 so Unicode glyphs render correctly.
+    /// Mirrors the logic in the .NET SDK CLI (src/Cli/dotnet/Program.cs) and
+    /// UILanguageOverride.OperatingSystemSupportsUtf8().
+    /// </summary>
+    private static void ConfigureConsoleEncoding()
+    {
+        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") == "1")
+        {
+            return;
+        }
+
+        if (!OperatingSystem.IsIOS() &&
+            !OperatingSystem.IsAndroid() &&
+            !OperatingSystem.IsTvOS() &&
+            !OperatingSystem.IsBrowser() &&
+            (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18363)))
+        {
+            Console.OutputEncoding = Encoding.UTF8;
         }
     }
 }

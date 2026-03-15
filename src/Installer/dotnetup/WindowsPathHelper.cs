@@ -526,54 +526,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
                 WindowStyle = ProcessWindowStyle.Hidden
             };
 
-            try
-            {
-                using var process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    throw new InvalidOperationException("Failed to start elevated process.");
-                }
-
-                process.WaitForExit();
-
-                if (process.ExitCode == -2147450730)
-                {
-                    //  NOTE: Process exit code -2147450730 means that the right .NET runtime could not be found
-                    //  This should not happen when using NativeAOT dotnetup, but when testing using IL it can happen and
-                    //  can be caused if DOTNET_ROOT has been set to a path that doesn't have the right runtime to run dotnetup.
-                    throw new InvalidOperationException("Elevated process failed: Unable to find matching .NET Runtime." + Environment.NewLine +
-                        "This is probably because dotnetup is not being run as self-contained and DOTNET_ROOT is set to a path that doesn't have a matching runtime.");
-                }
-                else if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Elevated process returned exit code {process.ExitCode}");
-                }
-
-                return true;
-            }
-            catch (System.ComponentModel.Win32Exception ex)
-            {
-                // User cancelled UAC prompt or elevation failed
-                // ERROR_CANCELLED = 1223
-                if (ex.NativeErrorCode == 1223)
-                {
-                    return false;
-                }
-                throw;
-            }
+            return RunElevatedProcessCore(startInfo);
         }
         finally
         {
-            //  Show any output from elevated process
-            if (File.Exists(outputFilePath))
-            {
-                string outputContent = File.ReadAllText(outputFilePath);
-                if (!string.IsNullOrEmpty(outputContent))
-                {
-                    Console.WriteLine(outputContent);
-                }
-            }
+            DisplayElevatedProcessOutput(outputFilePath);
 
             // Clean up temporary directory
             try
@@ -583,6 +540,66 @@ internal sealed partial class WindowsPathHelper : IDisposable
             catch
             {
                 // Ignore cleanup errors
+            }
+        }
+    }
+
+    /// <summary>
+    /// Starts the elevated process described by <paramref name="startInfo"/>, waits for it to exit,
+    /// and validates the exit code.
+    /// </summary>
+    /// <returns>True on success; false if the user cancelled the UAC prompt.</returns>
+    private static bool RunElevatedProcessCore(ProcessStartInfo startInfo)
+    {
+        try
+        {
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                throw new InvalidOperationException("Failed to start elevated process.");
+            }
+
+            process.WaitForExit();
+
+            if (process.ExitCode == -2147450730)
+            {
+                //  NOTE: Process exit code -2147450730 means that the right .NET runtime could not be found
+                //  This should not happen when using NativeAOT dotnetup, but when testing using IL it can happen and
+                //  can be caused if DOTNET_ROOT has been set to a path that doesn't have the right runtime to run dotnetup.
+                throw new InvalidOperationException("Elevated process failed: Unable to find matching .NET Runtime." + Environment.NewLine +
+                    "This is probably because dotnetup is not being run as self-contained and DOTNET_ROOT is set to a path that doesn't have a matching runtime.");
+            }
+            else if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"Elevated process returned exit code {process.ExitCode}");
+            }
+
+            return true;
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            // User cancelled UAC prompt or elevation failed
+            // ERROR_CANCELLED = 1223
+            if (ex.NativeErrorCode == 1223)
+            {
+                return false;
+            }
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Reads and displays any output written by the elevated process to <paramref name="outputFilePath"/>.
+    /// </summary>
+    private static void DisplayElevatedProcessOutput(string outputFilePath)
+    {
+        if (File.Exists(outputFilePath))
+        {
+            string outputContent = File.ReadAllText(outputFilePath);
+            if (!string.IsNullOrEmpty(outputContent))
+            {
+                Console.WriteLine(outputContent);
             }
         }
     }

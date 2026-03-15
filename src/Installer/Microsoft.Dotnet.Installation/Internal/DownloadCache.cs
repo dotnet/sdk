@@ -20,17 +20,17 @@ internal partial class DownloadCacheJsonContext : JsonSerializerContext
 /// </summary>
 internal class DownloadCache
 {
-    private static readonly string s_cacheDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "dotnetup",
-        "downloadcache");
-
-    private static readonly string s_cacheIndexPath = Path.Combine(s_cacheDirectory, "cache-index.json");
-
+    private readonly string _cacheDirectory;
+    private readonly string _cacheIndexPath;
     private readonly Dictionary<string, string> _cacheIndex;
 
-    public DownloadCache()
+    public DownloadCache(string? cacheDirectory = null)
     {
+        _cacheDirectory = cacheDirectory ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "dotnetup",
+            "downloadcache");
+        _cacheIndexPath = Path.Combine(_cacheDirectory, "cache-index.json");
         _cacheIndex = LoadCacheIndex();
     }
 
@@ -43,7 +43,7 @@ internal class DownloadCache
     {
         if (_cacheIndex.TryGetValue(downloadUrl, out string? fileName))
         {
-            string filePath = Path.Combine(s_cacheDirectory, fileName);
+            string filePath = Path.Combine(_cacheDirectory, fileName);
             if (File.Exists(filePath))
             {
                 return filePath;
@@ -63,11 +63,11 @@ internal class DownloadCache
     public void AddToCache(string downloadUrl, string sourceFilePath)
     {
         // Ensure cache directory exists
-        Directory.CreateDirectory(s_cacheDirectory);
+        Directory.CreateDirectory(_cacheDirectory);
 
         // Use the filename from the download URL
         string fileName = GetFileNameFromUrl(downloadUrl);
-        string cachedFilePath = Path.Combine(s_cacheDirectory, fileName);
+        string cachedFilePath = Path.Combine(_cacheDirectory, fileName);
 
         // Skip if this filename is already cached for a different URL
         // (collision case - we'll download the right file when needed and hash check will catch it)
@@ -104,16 +104,16 @@ internal class DownloadCache
     /// <summary>
     /// Loads the cache index from disk.
     /// </summary>
-    private static Dictionary<string, string> LoadCacheIndex()
+    private Dictionary<string, string> LoadCacheIndex()
     {
-        if (!File.Exists(s_cacheIndexPath))
+        if (!File.Exists(_cacheIndexPath))
         {
             return [];
         }
 
         try
         {
-            string json = File.ReadAllText(s_cacheIndexPath);
+            string json = File.ReadAllText(_cacheIndexPath);
             var index = JsonSerializer.Deserialize(json, DownloadCacheJsonContext.Default.DictionaryStringString);
             return index ?? [];
         }
@@ -131,9 +131,9 @@ internal class DownloadCache
     {
         try
         {
-            Directory.CreateDirectory(s_cacheDirectory);
+            Directory.CreateDirectory(_cacheDirectory);
             string json = JsonSerializer.Serialize(_cacheIndex, DownloadCacheJsonContext.Default.DictionaryStringString);
-            File.WriteAllText(s_cacheIndexPath, json);
+            File.WriteAllText(_cacheIndexPath, json);
         }
         catch
         {
