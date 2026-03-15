@@ -51,8 +51,9 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     [Fact]
@@ -86,8 +87,9 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     [Fact]
@@ -105,7 +107,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var msbuild = CreateMSBuildCommand(
             ProjectDirectory,
             "AppWithP2PReference",
-            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;CollectStaticWebAssetInputsDesignTime;CollectStaticWebAssetOutputsDesignTime");
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssetsConfiguration;CollectStaticWebAssetInputsDesignTime;CollectStaticWebAssetOutputsDesignTime");
 
         msbuild.ExecuteWithoutRestore("/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true", "/bl:design.binlog").Should().Pass();
 
@@ -113,14 +115,51 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         var inputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCInput.txt");
         new FileInfo(inputFilePath).Should().Exist();
         var inputFiles = File.ReadAllLines(inputFilePath);
-        inputFiles.Should().HaveCount(1);
+        inputFiles.Should().HaveCount(2);
         inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.json"));
+        inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.endpoints.json"));
 
         var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
         new FileInfo(outputFilePath).Should().Exist();
         var outputFiles = File.ReadAllLines(outputFilePath);
-        outputFiles.Should().ContainSingle();
-        Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
+    }
+
+    [Fact]
+    public void CollectUpToDateCheckInputOutputsDesignTime_IncludesReferencedProjectsManifests_OnInitialLoad()
+    {
+        // This test verifies the timing bug fix: referenced project manifest paths must be available
+        // in the FUTDC inputs even before a full build has occurred (i.e., on initial VS load).
+        // Arrange
+        var testAsset = "RazorAppWithP2PReference";
+        ProjectDirectory = AddIntrospection(CreateAspNetSdkTestAsset(testAsset));
+
+        var build = CreateBuildCommand(ProjectDirectory, "AppWithP2PReference");
+
+        var msbuild = CreateMSBuildCommand(
+            ProjectDirectory,
+            "AppWithP2PReference",
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssetsConfiguration;CollectStaticWebAssetInputsDesignTime;CollectStaticWebAssetOutputsDesignTime");
+
+        // Run design-time targets WITHOUT a prior full build to simulate initial VS project load
+        msbuild.ExecuteWithoutRestore("/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true", "/bl:design.binlog").Should().Pass();
+
+        // The referenced project manifest paths must be tracked as inputs, even without a prior build
+        var inputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCInput.txt");
+        new FileInfo(inputFilePath).Should().Exist();
+        var inputFiles = File.ReadAllLines(inputFilePath);
+        inputFiles.Should().HaveCount(2);
+        inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.json"));
+        inputFiles.Should().Contain(Path.Combine(ProjectDirectory.Path, "ClassLibrary", "obj", "Debug", DefaultTfm, "staticwebassets.build.endpoints.json"));
+
+        var outputFilePath = Path.Combine(build.GetIntermediateDirectory().FullName, "StaticWebAssetsUTDCOutput.txt");
+        new FileInfo(outputFilePath).Should().Exist();
+        var outputFiles = File.ReadAllLines(outputFilePath);
+        outputFiles.Should().HaveCount(2);
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.json");
+        outputFiles.Should().Contain(x => Path.GetFileName(x) == "staticwebassets.build.endpoints.json");
     }
 
     private static MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)

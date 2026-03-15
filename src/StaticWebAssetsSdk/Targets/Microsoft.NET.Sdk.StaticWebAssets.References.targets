@@ -46,14 +46,42 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectsConfiguration" />
     </MSBuild>
 
+    <!-- During VS design-time builds (DesignTimeBuild=true), project references typically have BuildReference=false
+      so _StaticWebAssetProjectReference is empty and _ReferencedProjectsConfiguration is not populated.
+      To correctly populate the up-to-date check tracking file on initial project load (before any build
+      has occurred), we query referenced projects for their manifest paths directly. This is safe because
+      GetStaticWebAssetsProjectConfiguration only reads MSBuild properties and does not trigger a build.
+      The condition on _ReferencedProjectsConfiguration ensures this path only runs when the regular
+      build-time path produced no results, preventing duplicate entries. -->
+    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' and '$(DesignTimeBuild)' == 'true' and '@(_ReferencedProjectsConfiguration)' == '' and '@(ProjectReferenceWithConfiguration)' != ''">
+      <_StaticWebAssetDesignTimeProjectReference Include="@(_MSBuildProjectReferenceExistent)" />
+    </ItemGroup>
+
+    <MSBuild
+      Condition="'$(BuildingInsideVisualStudio)' == 'true' and '$(DesignTimeBuild)' == 'true' and '@(_StaticWebAssetDesignTimeProjectReference)' != ''"
+      Targets="GetStaticWebAssetsProjectConfiguration"
+      Properties="%(_StaticWebAssetDesignTimeProjectReference.SetConfiguration);%(_StaticWebAssetDesignTimeProjectReference.SetPlatform);%(_StaticWebAssetDesignTimeProjectReference.SetTargetFramework)"
+      RemoveProperties="%(_StaticWebAssetDesignTimeProjectReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences)"
+      Projects="@(_StaticWebAssetDesignTimeProjectReference)"
+      BuildInParallel="$(BuildInParallel)"
+      SkipNonexistentTargets="true">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_DesignTimeReferencedProjectsConfiguration" />
+    </MSBuild>
+
     <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+      <!-- From real builds (BuildReference=true path) -->
       <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(BuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.BuildManifestPath)' != ''" />
+      <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(EndpointsBuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.EndpointsBuildManifestPath)' != ''" />
+      <!-- From design-time builds (all references path, to fix timing bug on initial VS load) -->
+      <_ReferenceManifestPath Include="@(_DesignTimeReferencedProjectsConfiguration->'%(BuildManifestPath)')" Condition="'%(_DesignTimeReferencedProjectsConfiguration.BuildManifestPath)' != ''" />
+      <_ReferenceManifestPath Include="@(_DesignTimeReferencedProjectsConfiguration->'%(EndpointsBuildManifestPath)')" Condition="'%(_DesignTimeReferencedProjectsConfiguration.EndpointsBuildManifestPath)' != ''" />
     </ItemGroup>
 
     <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)' == 'true'"
       File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
       Lines="@(_ReferenceManifestPath)"
-      Overwrite="false"
+      Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
     <MergeConfigurationProperties
@@ -97,6 +125,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           <AdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove)</AdditionalPublishPropertiesToRemove>
           <!-- Build manifest -->
           <BuildManifestPath>$([System.IO.Path]::GetFullPath('$(StaticWebAssetBuildManifestPath)'))</BuildManifestPath>
+          <EndpointsBuildManifestPath>$([System.IO.Path]::GetFullPath('$(StaticWebAssetEndpointsBuildManifestPath)'))</EndpointsBuildManifestPath>
         </_StaticWebAssetThisProjectConfiguration>
       </ItemGroup>
   </Target>
