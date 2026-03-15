@@ -294,19 +294,7 @@ internal class InstallerOrchestratorSingleton
                     return null;
                 }
 
-                if (!installRequest.Options.Untracked)
-                {
-                    var staleRoot = manifestData.DotnetRoots.First(r =>
-                        DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-                    var staleInstallation = staleRoot.Installations.First(i =>
-                        i.Version == install.Version.ToString() && i.Component == install.Component);
-                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
-                    manifestManager.RemoveInstallation(install.InstallRoot, new Installation
-                    {
-                        Component = staleInstallation.Component,
-                        Version = staleInstallation.Version
-                    });
-                }
+                RemoveStaleManifestEntry(installRequest, manifestData, install, customManifestPath);
             }
 
             if (!installRequest.Options.Untracked
@@ -333,6 +321,32 @@ internal class InstallerOrchestratorSingleton
         return new PreparedInstall(installRequest, versionToInstall, install, extractor, releaseManifest);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Removes a stale manifest entry for an install whose on-disk files no longer exist.
+    /// </summary>
+    private static void RemoveStaleManifestEntry(
+        DotnetInstallRequest installRequest,
+        DotnetupManifestData manifestData,
+        DotnetInstall install,
+        string? customManifestPath)
+    {
+        if (installRequest.Options.Untracked)
+        {
+            return;
+        }
+
+        var staleRoot = manifestData.DotnetRoots.First(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        var staleInstallation = staleRoot.Installations.First(i =>
+            i.Version == install.Version.ToString() && i.Component == install.Component);
+        var manifestManager = new DotnetupSharedManifest(customManifestPath);
+        manifestManager.RemoveInstallation(install.InstallRoot, new Installation
+        {
+            Component = staleInstallation.Component,
+            Version = staleInstallation.Version
+        });
+    }
 
     /// <summary>
     /// Commits a previously prepared installation: extracts the archive to the target directory
