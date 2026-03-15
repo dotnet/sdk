@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.IDE0044.severity = warning # Make field readonly
