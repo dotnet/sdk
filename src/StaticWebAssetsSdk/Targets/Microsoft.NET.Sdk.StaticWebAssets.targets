@@ -796,4 +796,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlAssetPlaceholders.targets" Condition="'$(OverrideHtmlAssetPlaceholders)' == 'true'" />
 
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.TypeScript.targets" Condition="'$(EnableTypeScriptNuGetTarget)' == 'true'" />
+
 </Project>
