@@ -43,6 +43,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
                 #!/usr/bin/env zsh
                 # This script adds dotnetup to your PATH
                 {pathExport}
+                rehash 2>/dev/null
                 """;
         }
 
@@ -50,13 +51,10 @@ public class ZshEnvShellProvider : IEnvShellProvider
             $"""
             #!/usr/bin/env zsh
             # This script configures the environment for .NET installed at {dotnetInstallPath}
-            #
-            # Note: If you had a different dotnet in PATH before sourcing this script,
-            # you may need to run 'rehash' or 'hash -d dotnet' to clear the cached command location.
-            # When dotnetup modifies shell profiles directly, it will handle this automatically.
 
             export DOTNET_ROOT='{escapedPath}'
             {pathExport}
+            rehash 2>/dev/null
             """;
     }
 

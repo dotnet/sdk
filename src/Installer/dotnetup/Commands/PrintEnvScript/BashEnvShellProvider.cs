@@ -43,6 +43,8 @@ public class BashEnvShellProvider : IEnvShellProvider
                 #!/usr/bin/env bash
                 # This script adds dotnetup to your PATH
                 {pathExport}
+                hash -d dotnet 2>/dev/null
+                hash -d dotnetup 2>/dev/null
                 """;
         }
 
@@ -50,13 +52,11 @@ public class BashEnvShellProvider : IEnvShellProvider
             $"""
             #!/usr/bin/env bash
             # This script configures the environment for .NET installed at {dotnetInstallPath}
-            #
-            # Note: If you had a different dotnet in PATH before sourcing this script,
-            # you may need to run 'hash -d dotnet' to clear the cached command location.
-            # When dotnetup modifies shell profiles directly, it will handle this automatically.
 
             export DOTNET_ROOT='{escapedPath}'
             {pathExport}
+            hash -d dotnet 2>/dev/null
+            hash -d dotnetup 2>/dev/null
             """;
     }
 

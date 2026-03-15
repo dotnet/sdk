@@ -140,6 +140,7 @@ dotnetup print-env-script --dotnet-install-path /opt/dotnet
 The command generates shell-specific scripts that:
 1. Set the `DOTNET_ROOT` environment variable to the installation path
 2. Prepend the installation path to the `PATH` environment variable
+3. Clear the shell's cached command location for `dotnet` to pick up the new PATH
 
 **Bash/Zsh Example:**
 ```bash
@@ -148,6 +149,8 @@ The command generates shell-specific scripts that:
 
 export DOTNET_ROOT='/home/user/.local/share/dotnet'
 export PATH='/home/user/.local/share/dotnetup':'/home/user/.local/share/dotnet':$PATH
+hash -d dotnet 2>/dev/null
+hash -d dotnetup 2>/dev/null
 ```
 
 **PowerShell Example:**
