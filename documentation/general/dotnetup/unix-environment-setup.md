@@ -145,7 +145,6 @@ The command generates shell-specific scripts that:
 ```bash
 #!/usr/bin/env bash
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
-# Source this script to add .NET to your PATH and set DOTNET_ROOT
 
 export DOTNET_ROOT='/home/user/.local/share/dotnet'
 export PATH='/home/user/.local/share/dotnet':$PATH
@@ -154,8 +153,6 @@ export PATH='/home/user/.local/share/dotnet':$PATH
 **PowerShell Example:**
 ```powershell
 # This script configures the environment for .NET installed at /home/user/.local/share/dotnet
-# Source this script (dot-source) to add .NET to your PATH and set DOTNET_ROOT
-# Example: . ./dotnet-env.ps1
 
 $env:DOTNET_ROOT = '/home/user/.local/share/dotnet'
 $env:PATH = '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH
