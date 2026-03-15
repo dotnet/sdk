@@ -37,6 +37,11 @@
         <target state="translated">找不到 .NET SDK。請檢查是否已安裝該項目，已針對正確的架構設定您的 PATH，且在 global.json 中指定的版本 (如果有的話) 和安裝的版本相符。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnableToLocateNETCoreSdkButPreviewAvailable">
+        <source>Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</source>
+        <target state="new">Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -590,6 +590,93 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [Fact]
+        public void ItReportsWhenPreviewSdkIsAvailableButDisallowedInVisualStudio()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.DisallowPrereleaseByDefault = true;
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    ProjectFileDirectory = environment.TestDirectory,
+                    IsRunningInVisualStudio = true
+                },
+                new MockFactory());
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.AdditionalPaths.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+#if NETFRAMEWORK
+            result.Errors.Should().Contain(e => e.Contains("11.0.0-preview1") && e.Contains("preview SDK"));
+#else
+            // On non-NETFRAMEWORK platforms, the retry logic doesn't run, so we should get the generic error
+            result.Errors.Should().Contain(Strings.UnableToLocateNETCoreSdk);
+#endif
+        }
+
+        [Fact]
+        public void ItDoesNotReportPreviewSdkWhenNotInVisualStudio()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.DisallowPrereleaseByDefault = true;
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    ProjectFileDirectory = environment.TestDirectory,
+                    IsRunningInVisualStudio = false
+                },
+                new MockFactory());
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.AdditionalPaths.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().Contain(Strings.UnableToLocateNETCoreSdk);
+            result.Errors.Should().NotContain(e => e.Contains("preview SDK"));
+        }
+
+        [Fact]
+        public void ItDoesNotReportPreviewSdkWhenPreviewsAreAllowed()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.DisallowPrereleaseByDefault = false;
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    ProjectFileDirectory = environment.TestDirectory,
+                    IsRunningInVisualStudio = true
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be(preview.FullName);
+            result.AdditionalPaths.Should().BeNull();
+            result.Version.Should().Be("11.0.0-preview1");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
         public void GivenTemplateLocatorItCanResolveSdkVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);

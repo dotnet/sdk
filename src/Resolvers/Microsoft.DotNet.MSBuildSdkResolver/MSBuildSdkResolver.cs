@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string>? _getCurrentProcessPath;
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
+        private readonly VSSettings _vsSettings;
 
         private const string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
@@ -86,6 +87,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             _getCurrentProcessPath = getCurrentProcessPath;
             _netCoreSdkResolver = new NETCoreSdkResolver(getEnvironmentVariable, vsSettings);
             _getMsbuildRuntime = getMsbuildRuntime;
+            _vsSettings = vsSettings;
 
             if (_getEnvironmentVariable(EnvironmentVariableNames.DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG) is string val &&
                 (string.Equals(val, "true", StringComparison.OrdinalIgnoreCase) ||
@@ -167,6 +169,30 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (resolverResult.ResolvedSdkDirectory == null)
                 {
                     logger?.LogMessage($"Failed to resolve .NET SDK.  Global.json path: {resolverResult.GlobalJsonPath}");
+
+#if NETFRAMEWORK
+                    // Check if we're in Visual Studio and preview SDKs are disallowed
+                    // If so, retry allowing previews to see if a preview SDK is available
+                    if (context.IsRunningInVisualStudio && _vsSettings.DisallowPrerelease())
+                    {
+                        logger?.LogString("Retrying SDK resolution allowing preview SDKs");
+                        var retryResult = _netCoreSdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetRoot, disallowPrerelease: false);
+
+                        string? previewSdkDirectory = retryResult.ResolvedSdkDirectory;
+                        if (previewSdkDirectory != null)
+                        {
+                            string previewVersion = new DirectoryInfo(previewSdkDirectory).Name;
+                            logger?.LogMessage($"Found preview SDK: {previewVersion}");
+                            return Failure(
+                                factory,
+                                logger,
+                                context.Logger,
+                                Strings.UnableToLocateNETCoreSdkButPreviewAvailable,
+                                previewVersion);
+                        }
+                    }
+#endif
+
                     return Failure(
                         factory,
                         logger,
