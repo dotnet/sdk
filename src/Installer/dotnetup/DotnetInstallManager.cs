@@ -185,7 +185,7 @@ public class DotnetInstallManager : IDotnetInstallManager
                     var adminShellProvider = ShellDetection.GetCurrentShellProvider();
                     if (adminDotnetupPath is not null && adminShellProvider is not null)
                     {
-                        ShellProfileManager.ReplaceProfileEntries(adminShellProvider, adminDotnetupPath, dotnetupOnly: true);
+                        ShellProfileManager.AddProfileEntries(adminShellProvider, adminDotnetupPath, dotnetupOnly: true);
                     }
                     break;
                 default:

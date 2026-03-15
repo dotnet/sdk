@@ -14,8 +14,9 @@ public class ShellProfileManager
     private const string BackupSuffix = ".dotnetup-backup";
 
     /// <summary>
-    /// Adds profile entries to all profile files for the given shell provider.
-    /// Creates backups before modifying existing files. Skips files that already contain the entry.
+    /// Ensures the correct dotnetup profile entry is present in all profile files for the given shell provider.
+    /// If an entry already exists, it is replaced in-place. If no entry exists, one is appended.
+    /// Creates backups before modifying existing files.
     /// </summary>
     /// <param name="provider">The shell provider to use.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
@@ -29,24 +30,13 @@ public class ShellProfileManager
 
         foreach (var profilePath in profilePaths)
         {
-            if (AddEntryToFile(profilePath, entry))
+            if (EnsureEntryInFile(profilePath, entry))
             {
                 modifiedFiles.Add(profilePath);
             }
         }
 
         return modifiedFiles;
-    }
-
-    /// <summary>
-    /// Replaces existing dotnetup profile entries with new ones.
-    /// Removes the old entries first, then adds the new entries.
-    /// </summary>
-    /// <returns>The list of profile file paths that were modified.</returns>
-    public static IReadOnlyList<string> ReplaceProfileEntries(IEnvShellProvider provider, string dotnetupPath, bool dotnetupOnly = false)
-    {
-        RemoveProfileEntries(provider);
-        return AddProfileEntries(provider, dotnetupPath, dotnetupOnly);
     }
 
     /// <summary>
@@ -83,30 +73,65 @@ public class ShellProfileManager
         return content.Contains(MarkerComment, StringComparison.Ordinal);
     }
 
-    private static bool AddEntryToFile(string profilePath, string entry)
+    /// <summary>
+    /// Ensures the given entry is present in the file. If an existing dotnetup entry is found,
+    /// it is replaced in-place to preserve the user's ordering. Otherwise the entry is appended.
+    /// Returns true if the file was modified, false if the entry was already correct.
+    /// </summary>
+    private static bool EnsureEntryInFile(string profilePath, string entry)
     {
-        if (HasProfileEntry(profilePath))
-        {
-            return false;
-        }
-
         var directory = Path.GetDirectoryName(profilePath);
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        // Create backup of existing file
-        if (File.Exists(profilePath))
+        if (!File.Exists(profilePath))
         {
-            File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
+            // New file — just write the entry
+            File.WriteAllText(profilePath, entry + Environment.NewLine);
+            return true;
         }
 
-        // Append entry with a leading newline to separate from existing content
+        var lines = File.ReadAllLines(profilePath).ToList();
+        var entryLines = entry.Split('\n', StringSplitOptions.None)
+            .Select(l => l.TrimEnd('\r'))
+            .ToArray();
+
+        // Look for an existing marker
+        int markerIndex = lines.FindIndex(l => l.TrimEnd() == MarkerComment);
+
+        if (markerIndex >= 0)
+        {
+            // Determine how many lines the old entry spans (marker + command lines)
+            int oldEntryEnd = markerIndex + 1;
+            // The old entry is the marker line plus the next line (the eval/invoke line)
+            if (oldEntryEnd < lines.Count)
+            {
+                oldEntryEnd++;
+            }
+
+            // Check if the existing entry already matches
+            var oldEntry = lines.GetRange(markerIndex, oldEntryEnd - markerIndex);
+            if (oldEntry.Count == entryLines.Length &&
+                oldEntry.Zip(entryLines).All(pair => pair.First.TrimEnd() == pair.Second.TrimEnd()))
+            {
+                return false; // Already correct
+            }
+
+            // Replace in-place
+            File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
+            lines.RemoveRange(markerIndex, oldEntryEnd - markerIndex);
+            lines.InsertRange(markerIndex, entryLines);
+            File.WriteAllLines(profilePath, lines);
+            return true;
+        }
+
+        // No existing entry — append
+        File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
         using var writer = File.AppendText(profilePath);
         writer.WriteLine();
         writer.WriteLine(entry);
-
         return true;
     }
 
