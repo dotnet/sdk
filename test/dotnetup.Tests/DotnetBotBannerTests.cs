@@ -17,6 +17,7 @@ public class DotnetBotBannerTests
         var console = AnsiConsole.Create(new AnsiConsoleSettings
         {
             Out = new AnsiConsoleOutput(writer),
+            Ansi = AnsiSupport.No,
         });
         console.Profile.Width = width;
         console.Write(panel);

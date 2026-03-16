@@ -262,7 +262,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
                 if (exists)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
+                    Console.Error.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
                 }
             }
 
@@ -494,7 +494,12 @@ internal class DotnetArchiveExtractor : IDisposable
                 Console.Error.WriteLine($"Warning: Unrecognized subcomponent path '{relativeEntryPath}' in archive. This file will not be tracked by dotnetup.");
                 break;
             case SubcomponentResolveResult.TooShallow:
-                Console.Error.WriteLine($"Warning: File '{relativeEntryPath}' is in a known folder but not deep enough to be tracked as a subcomponent.");
+                // Directory entries (ending with '/') are normal structural entries in archives
+                // and are expected to be shallower than subcomponent depth. Only warn for files.
+                if (!relativeEntryPath.EndsWith('/') && !relativeEntryPath.EndsWith('\\'))
+                {
+                    Console.Error.WriteLine($"Warning: File '{relativeEntryPath}' is in a known folder but not deep enough to be tracked as a subcomponent.");
+                }
                 break;
         }
     }
