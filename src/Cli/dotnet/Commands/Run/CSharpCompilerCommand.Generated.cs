@@ -38,7 +38,7 @@ partial class CSharpCompilerCommand
             "/langversion:14.0",
             "/features:FileBasedProgram",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/codestyle/cs/build/config/analysislevelstyle_default.globalconfig",
-            $"/analyzerconfig:{objDir}/{FileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig",
+            $"/analyzerconfig:{objDir}/{FileName}.GeneratedMSBuildEditorConfig.editorconfig",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_11_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll",
@@ -46,9 +46,9 @@ partial class CSharpCompilerCommand
             $"/analyzer:{NuGetCachePath}/microsoft.net.illink.tasks/{RuntimeVersion}/analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
             .. GetFrameworkAnalyzerArguments(),
             $"{EntryPointFileFullPath}",
-            $"{objDir}/{FileNameWithoutExtension}.GlobalUsings.g.cs",
+            $"{objDir}/{FileName}.GlobalUsings.g.cs",
             $"{objDir}/.NETCoreApp,Version=v{TargetFrameworkVersion}.AssemblyAttributes.cs",
-            $"{objDir}/{FileNameWithoutExtension}.AssemblyInfo.cs",
+            $"{objDir}/{FileName}.AssemblyInfo.cs",
             "/warnaserror+:NU1605,SYSLIB0011",
         ];
     }

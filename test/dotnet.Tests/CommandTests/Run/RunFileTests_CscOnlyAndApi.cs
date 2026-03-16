@@ -1249,6 +1249,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -1262,8 +1263,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -1308,7 +1311,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -1338,6 +1341,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var bPath = Path.Join(testInstance.Path, "B.cs");
         File.WriteAllText(bPath, "");
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -1351,8 +1355,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>A</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -1396,7 +1402,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                     </Project>
 
-                    """)}},"Diagnostics":[]}
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":[]}
                 """);
     }
 
@@ -1410,6 +1416,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             #:property LangVersion=preview
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -1423,8 +1430,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -1463,7 +1472,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
@@ -1481,6 +1490,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             Console.WriteLine();
             """);
 
+        var projectPath = VirtualProjectBuilder.GetVirtualProjectPath(programPath);
         new DotnetCommand(Log, "run-api")
             .WithStandardInput($$"""
                 {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
@@ -1494,8 +1504,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
-                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
+                        <AssemblyName>Program</AssemblyName>
+                        <RootNamespace>$(AssemblyName)</RootNamespace>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -1534,7 +1546,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                     </Project>
 
-                    """)}},"Diagnostics":
+                    """)}},"ProjectPath":{{ToJson(projectPath)}},"Diagnostics":
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
@@ -1794,7 +1806,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var projectBasedFiles = ReadFiles();
 
         fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
-        fileBasedResult.StdErr.Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.StdErr!.Replace("Program.cs.csproj", "Program.csproj").Should().Be(projectBasedResult.StdErr);
         fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
         fileBasedFiles.Should().Equal(projectBasedFiles);
 

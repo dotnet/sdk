@@ -13,6 +13,23 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileTestBase(log)
 {
     [Fact]
+    public void Restore_NonExistentPackage()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:package Microsoft.ThisPackageDoesNotExist@1.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
+    }
+
+    [Fact]
     public void NoRestore_01()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -230,7 +247,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -268,7 +285,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Library"));
     }
@@ -297,7 +314,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "Module"));
     }
@@ -410,7 +427,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .Execute()
             .Should().Fail()
             .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
-                Path.ChangeExtension(programFile, ".csproj"),
+                VirtualProjectBuilder.GetVirtualProjectPath(programFile),
                 ToolsetInfo.CurrentTargetFrameworkVersion,
                 "AppContainerExe"));
     }
