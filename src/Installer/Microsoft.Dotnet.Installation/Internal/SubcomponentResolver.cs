@@ -16,7 +16,13 @@ internal enum SubcomponentResolveResult
     UnknownFolder,
     /// <summary>Known folder but path is not deep enough to identify a subcomponent.</summary>
     TooShallow,
-    /// <summary>Intermediate directory entry in a known subcomponent hierarchy (e.g., "shared/" or "host/fxr/").</summary>
+    /// <summary>
+    /// Intermediate directory entry in a known subcomponent hierarchy (e.g., "shared/" or "host/fxr/").
+    /// Tar archives (produced on both Linux and Windows) include explicit directory entries
+    /// for every level of the hierarchy; zip archives historically omit these intermediate
+    /// entries and jump straight to files (e.g., "shared/Microsoft.NETCore.App/9.0.11/System.dll").
+    /// See dotnet/sdk#52910 for Windows tar.gz production.
+    /// </summary>
     IntermediateDirectory,
     /// <summary>Known non-subcomponent folder (e.g., swidtag, metadata) — expected to be ignored.</summary>
     IgnoredFolder,
