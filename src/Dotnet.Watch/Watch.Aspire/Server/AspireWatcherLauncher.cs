@@ -31,7 +31,6 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
             EnvironmentOptions = EnvironmentOptions,
             MainProjectOptions = null,
             BuildArguments = [],
-            TargetFramework = null,
             RootProjects = rootProjects,
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
             BrowserLauncher = new BrowserLauncher(logger, Reporter, EnvironmentOptions),

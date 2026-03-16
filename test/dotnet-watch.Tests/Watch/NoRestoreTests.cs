@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Options = new(),
                 MainProjectOptions = projectOptions,
                 RootProjects = [projectOptions.Representation],
-                TargetFramework = cmdOptions.TargetFramework,
                 BuildArguments = cmdOptions.BuildArguments,
                 EnvironmentOptions = environmentOptions,
                 BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
@@ -113,8 +112,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
             var evaluator = new BuildEvaluator(context);
 
-            AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]

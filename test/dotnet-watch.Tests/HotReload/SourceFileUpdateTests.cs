@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitUntilOutputContains(MessageDescriptor.FixBuildError);
 
             UpdateSourceFile(programPath, """
                 System.Console.WriteLine("<Updated>");

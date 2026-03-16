@@ -28,6 +28,9 @@ namespace Microsoft.DotNet.Watch
         public ImmutableArray<string> ManagedCodeUpdateCapabilities => managedCodeUpdateCapabilities;
         public RunningProcess Process => process;
 
+        public string GetTargetFramework()
+            => projectNode.ProjectInstance.GetTargetFramework();
+
         /// <summary>
         /// Set to true when the process termination is being requested so that it can be auto-restarted.
         /// </summary>

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Logging;
@@ -9,21 +10,28 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection collection, ILogger logger)
     {
-        // full path of proj file to list of nodes representing all target frameworks of the project:
-        public readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> Map = 
-            graph.ProjectNodes.GroupBy(n => n.ProjectInstance.FullPath).ToDictionary(
+        // full path of proj file to list of nodes representing all target frameworks of the project (excluding outer build nodes):
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> _innerBuildNodes = 
+            graph.ProjectNodes.Where(n => n.ProjectInstance.GetTargetFramework() != "").GroupBy(n => n.ProjectInstance.FullPath).ToDictionary(
                 keySelector: static g => g.Key,
                 elementSelector: static g => (IReadOnlyList<ProjectGraphNode>)[.. g]);
+
+        private readonly Lazy<IReadOnlySet<string>> _lazyBuildFiles = new(() =>
+            graph.ProjectNodes.SelectMany(p => p.ProjectInstance.ImportPaths)
+                .Concat(graph.ProjectNodes.Select(p => p.ProjectInstance.FullPath))
+                .ToHashSet(PathUtilities.OSSpecificPathComparer));
 
         public ProjectGraph Graph => graph;
         public ILogger Logger => logger;
         public ProjectCollection ProjectCollection => collection;
 
+        public IReadOnlySet<string> BuildFiles => _lazyBuildFiles.Value;
+
         public IReadOnlyList<ProjectGraphNode> GetProjectNodes(string projectPath)
         {
-            if (Map.TryGetValue(projectPath, out var rootProjectNodes))
+            if (_innerBuildNodes.TryGetValue(projectPath, out var nodes))
             {
-                return rootProjectNodes;
+                return nodes;
             }
 
             logger.LogError("Project '{ProjectPath}' not found in the project graph.", projectPath);
@@ -52,7 +60,7 @@ namespace Microsoft.DotNet.Watch
             ProjectGraphNode? candidate = null;
             foreach (var node in projectNodes)
             {
-                if (node.ProjectInstance.GetPropertyValue("TargetFramework") == targetFramework)
+                if (node.ProjectInstance.GetTargetFramework() == targetFramework)
                 {
                     if (candidate != null)
                     {
