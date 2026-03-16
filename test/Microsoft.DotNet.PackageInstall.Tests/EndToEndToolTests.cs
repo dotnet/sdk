@@ -346,7 +346,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 IncludeAnyRid = true // will make one package with the "any" RID (cross-platform)
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             // Create a dotnet-tools.json manifest that references the tool (simulating a repo that has the tool in its manifest)

@@ -1906,7 +1906,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Restore_NonExistentPackage()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, """
             #:package Microsoft.ThisPackageDoesNotExist@1.0.0
