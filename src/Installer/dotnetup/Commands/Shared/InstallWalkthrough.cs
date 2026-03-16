@@ -26,7 +26,6 @@ internal class InstallWalkthrough
 #pragma warning disable IDE0032 // Lazy-init via ??=; not convertible to auto-property
     private InstallRootManager? _installRootManager;
 #pragma warning restore IDE0032
-    private List<DotnetInstall>? _selectedAdminInstalls;
 
     public InstallWalkthrough(
         IDotnetInstallManager dotnetInstaller,
@@ -56,27 +55,6 @@ internal class InstallWalkthrough
         if (_options.PathPreference == PathPreference.DotnetupDotnet)
         {
             return [];
-        }
-
-        // If the caller pre-selected admin installs via the multi-select prompt,
-        // use that list directly (filtering out the version being installed).
-        var source = _selectedAdminInstalls ?? _options.SelectedAdminInstalls;
-        if (source is not null)
-        {
-            if (source.Count > 0)
-            {
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
-                Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
-            }
-
-            // Exclude the version already being installed.
-            var seen = new HashSet<(InstallComponent, string)>();
-            if (resolvedVersion is not null)
-            {
-                seen.Add((InstallComponent.SDK, resolvedVersion.ToString()));
-            }
-
-            return [.. source.Where(i => seen.Add((i.Component, i.Version.ToString())))];
         }
 
         if (!setDefaultInstall)
@@ -188,8 +166,7 @@ internal class InstallWalkthrough
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
-                    _selectedAdminInstalls = PromptAdminMigration(_dotnetInstaller);
-                    resolvedSetDefaultInstall = true;
+                    resolvedSetDefaultInstall = PromptAdminMigration(_dotnetInstaller);
                 }
 
                 //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
@@ -204,16 +181,15 @@ internal class InstallWalkthrough
     }
 
     /// <summary>
-    /// Prompts the user to select which admin-managed installs to copy into the
-    /// dotnetup-managed directory using an interactive multi-select.
+    /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
-    /// <returns>The selected installs to copy (empty if none or no admin installs exist).</returns>
-    internal static List<DotnetInstall> PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
+    /// <returns>True if the user wants to proceed (or no admin installs exist), false if they decline.</returns>
+    internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
     {
         var adminInstalls = dotnetInstaller.GetInstalledAdminInstalls();
         if (adminInstalls.Count == 0)
         {
-            return [];
+            return true;
         }
 
         // Find the admin install path for display purposes
@@ -227,38 +203,24 @@ internal class InstallWalkthrough
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
 
-        var sorted = adminInstalls
+        var displayItems = adminInstalls
             .OrderBy(i => i.Component)
             .ThenByDescending(i => i.Version)
+            .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
             .ToList();
 
-        if (Console.IsInputRedirected)
+        bool result = RenderScrollableListWithConfirm(
+            displayItems,
+            visibleCount: 3,
+            "Do you want to copy the following installs into the dotnetup managed directory?");
+
+        if (result)
         {
-            // Non-interactive: copy everything (matches previous default of "Yes").
-            return sorted;
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be copied after your primary install completes.[/]");
         }
 
-        string brand = DotnetupTheme.Current.Brand;
-        string dim = DotnetupTheme.Current.Dim;
-
-        var prompt = new MultiSelectionPrompt<DotnetInstall>()
-            .Title("Select which installs to copy into the dotnetup managed directory:")
-            .InstructionsText($"[{dim}](Press [bold]<space>[/] to toggle, [bold]<enter>[/] to accept)[/]")
-            .AddChoices(sorted)
-            .UseConverter(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
-            .HighlightStyle(Style.Parse(brand))
-            .Required(false);
-
-        // Pre-select all items (matches previous default of "Yes" to copy all).
-        foreach (var item in sorted)
-        {
-            prompt.Select(item);
-        }
-
-        var selected = SpectreAnsiConsole.Prompt(prompt);
-
-        SpectreAnsiConsole.MarkupLine($"[{dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
-        return selected;
+        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+        return result;
     }
 
     /// <summary>

@@ -38,7 +38,6 @@ internal class InstallWorkflow
         bool RequireMuxerUpdate = false,
         bool Untracked = false,
         PathPreference? PathPreference = null,
-        List<DotnetInstall>? SelectedAdminInstalls = null,
         Verbosity Verbosity = Verbosity.Normal);
 
     /// <summary>
@@ -228,35 +227,30 @@ internal class InstallWorkflow
 
     private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
-        // Gather all user prompts before starting any downloads.
-        // Users may walk away after seeing download progress begin, expecting no more prompts.
+        // Always install the primary component first so the user can start working quickly.
+        var primaryResult = InstallExecutor.ExecuteInstall(
+            resolved.Request,
+            resolved.ResolvedVersion?.ToString(),
+            context.Options.ComponentDescription,
+            context.Options.NoProgress);
+
+        // Copy admin installs after the primary install completes — these may take a while
+        // and should not block the user from getting started.
         var additionalInstalls = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
             context.SetDefaultInstall);
 
         if (additionalInstalls.Count > 0)
         {
-            // Batch the primary install with additional installs so SDKs download concurrently.
-            // Set ResolvedVersion so the orchestrator skips redundant channel resolution.
-            var primaryRequest = resolved.Request with { ResolvedVersion = resolved.ResolvedVersion };
-            var primaryResult = InstallExecutor.ExecuteAdditionalInstalls(
+            InstallExecutor.ExecuteAdditionalInstalls(
                 additionalInstalls,
                 resolved.Request.InstallRoot,
                 context.Options.ManifestPath,
                 context.Options.NoProgress,
-                context.Options.RequireMuxerUpdate,
-                primaryRequest: primaryRequest);
-
-            return primaryResult ?? new InstallExecutor.InstallResult(
-                new DotnetInstall(resolved.Request.InstallRoot, resolved.ResolvedVersion!, resolved.Request.Component));
+                context.Options.RequireMuxerUpdate);
         }
 
-        // No additional installs — use the simple single-install path.
-        return InstallExecutor.ExecuteInstall(
-            resolved.Request,
-            resolved.ResolvedVersion?.ToString(),
-            context.Options.ComponentDescription,
-            context.Options.NoProgress);
+        return primaryResult;
     }
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
