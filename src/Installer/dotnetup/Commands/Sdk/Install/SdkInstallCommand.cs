@@ -19,6 +19,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
     private readonly bool _untracked = result.GetValue(CommonOptions.UntrackedOption);
 
@@ -60,7 +61,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             GlobalJsonChannelResolver.ResolveChannel,
             _requireMuxerUpdate,
             _untracked,
-            pathPreference);
+            pathPreference,
+            Verbosity: _verbosity);
 
         workflow.Execute(options);
         return 0;
@@ -79,7 +81,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             {
                 ManifestPath = _manifestPath,
                 RequireMuxerUpdate = _requireMuxerUpdate,
-                Untracked = _untracked
+                Untracked = _untracked,
+                Verbosity = _verbosity
             })).ToList();
 
         IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();

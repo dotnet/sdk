@@ -38,7 +38,8 @@ internal class InstallWorkflow
         bool RequireMuxerUpdate = false,
         bool Untracked = false,
         PathPreference? PathPreference = null,
-        List<DotnetInstall>? SelectedAdminInstalls = null);
+        List<DotnetInstall>? SelectedAdminInstalls = null,
+        Verbosity Verbosity = Verbosity.Normal);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -221,7 +222,8 @@ internal class InstallWorkflow
             context.Options.RequireMuxerUpdate,
             installSource,
             installSource == InstallRequestSource.GlobalJson ? context.GlobalJson?.GlobalJsonPath : null,
-            context.Options.Untracked);
+            context.Options.Untracked,
+            context.Options.Verbosity);
     }
 
     private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

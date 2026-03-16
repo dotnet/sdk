@@ -99,6 +99,26 @@ public class SubcomponentResolverTests
     }
 
     [Theory]
+    [InlineData("shared/")]
+    [InlineData("shared/Microsoft.NETCore.App/")]
+    [InlineData("shared/Microsoft.AspNetCore.App/")]
+    [InlineData("host/")]
+    [InlineData("host/fxr/")]
+    [InlineData("./shared/")]
+    [InlineData("./shared/Microsoft.NETCore.App/")]
+    [InlineData("./host/")]
+    [InlineData("./host/fxr/")]
+    [InlineData("sdk/")]
+    [InlineData("sdk-manifests/")]
+    [InlineData("sdk-manifests/10.0.100/")]
+    [InlineData("sdk-manifests/10.0.100/microsoft.net.sdk.android/")]
+    public void ReturnsIntermediateDirectoryForShallowDirectoryEntries(string input)
+    {
+        SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
+        result.Should().Be(SubcomponentResolveResult.IntermediateDirectory);
+    }
+
+    [Theory]
     [InlineData("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
     [InlineData("shared\\Microsoft.NETCore.App\\10.0.1\\System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
     [InlineData("host\\fxr\\10.0.1\\hostfxr.dll", "host/fxr/10.0.1")]

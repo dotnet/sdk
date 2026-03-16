@@ -219,7 +219,7 @@ internal class DotnetArchiveExtractor : IDisposable
         // Build a predicate that skips entries whose subcomponent already exists on disk.
         // The archive is still downloaded and all subcomponents are tracked for the manifest,
         // but extraction is skipped to avoid overwriting files from an earlier installation.
-        var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir);
+        var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -242,11 +242,11 @@ internal class DotnetArchiveExtractor : IDisposable
     /// with an already-installed SDK). The entry is still reported to the
     /// <c>onEntryExtracted</c> callback so the subcomponent is recorded in the manifest.
     /// </summary>
-    private static Func<string, bool> CreateExistingSubcomponentSkipPredicate(string targetDir)
+    private static Func<string, bool> CreateExistingSubcomponentSkipPredicate(string targetDir, Verbosity verbosity)
     {
         var cache = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-        return (string entryName) =>
+        return entryName =>
         {
             var subcomponentId = SubcomponentResolver.Resolve(entryName);
             if (subcomponentId is null)
@@ -260,7 +260,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 exists = Directory.Exists(subcomponentPath);
                 cache[subcomponentId] = exists;
 
-                if (exists)
+                if (exists && verbosity >= Verbosity.Detailed)
                 {
                     Console.Error.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
                 }
@@ -494,12 +494,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 Console.Error.WriteLine($"Warning: Unrecognized subcomponent path '{relativeEntryPath}' in archive. This file will not be tracked by dotnetup.");
                 break;
             case SubcomponentResolveResult.TooShallow:
-                // Directory entries (ending with '/') are normal structural entries in archives
-                // and are expected to be shallower than subcomponent depth. Only warn for files.
-                if (!relativeEntryPath.EndsWith('/') && !relativeEntryPath.EndsWith('\\'))
-                {
-                    Console.Error.WriteLine($"Warning: File '{relativeEntryPath}' is in a known folder but not deep enough to be tracked as a subcomponent.");
-                }
+                Console.Error.WriteLine($"Warning: File '{relativeEntryPath}' is in a known folder but not deep enough to be tracked as a subcomponent.");
                 break;
         }
     }

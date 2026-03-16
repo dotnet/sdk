@@ -19,6 +19,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
 
     private readonly DotnetInstallManager _dotnetInstaller = new();
@@ -116,7 +117,8 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
             PathPreference: pathPreference,
-            SelectedAdminInstalls: selectedAdminInstalls);
+            SelectedAdminInstalls: selectedAdminInstalls,
+            Verbosity: _verbosity);
         workflow.Execute(options);
     }
 

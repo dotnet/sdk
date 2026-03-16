@@ -65,6 +65,26 @@ internal record InstallRequestOptions()
     /// already exists (e.g., during updates) to avoid creating duplicates.
     /// </summary>
     public bool SkipInstallSpecRecording { get; init; }
+
+    /// <summary>
+    /// Controls the level of diagnostic output during installation.
+    /// Corresponds to the <c>--verbosity</c> CLI option.
+    /// </summary>
+    public Verbosity Verbosity { get; init; }
+}
+
+/// <summary>
+/// Controls the amount of output produced during installation operations.
+/// Currently only <see cref="Normal"/> (default) and <see cref="Detailed"/> are
+/// implemented. Future levels such as Quiet and Diagnostic can be added between
+/// or after the existing values when needed.
+/// </summary>
+internal enum Verbosity
+{
+    // Future: Quiet = 0,
+    Normal = 1,
+    Detailed = 2,
+    // Future: Diagnostic = 3,
 }
 
 /// <summary>

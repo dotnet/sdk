@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -30,6 +31,13 @@ internal class CommonOptions
     {
         Description = "Disables progress display for operations",
         Arity = ArgumentArity.ZeroOrOne
+    };
+
+    public static readonly Option<Verbosity> VerbosityOption = new("--verbosity", "-v")
+    {
+        Description = "Set the output verbosity level (normal, detailed)",
+        Arity = ArgumentArity.ExactlyOne,
+        DefaultValueFactory = _ => Verbosity.Normal
     };
 
     /// <summary>

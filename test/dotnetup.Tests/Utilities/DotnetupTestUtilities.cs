@@ -45,8 +45,8 @@ internal static class DotnetupTestUtilities
     /// Builds command line arguments for runtime install using the new component@version syntax.
     /// This delegates to BuildArguments with the componentSpec pre-formatted.
     /// </summary>
-    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true)
-        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress);
+    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true, bool detailed = false)
+        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress, detailed);
 
     /// <summary>
     /// Builds command line arguments for runtime install
@@ -192,7 +192,7 @@ internal static class DotnetupTestUtilities
     /// <summary>
     /// Core method that appends common options to command arguments.
     /// </summary>
-    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress)
+    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress, bool detailed = false)
     {
         commandArgs.AddRange(["--install-path", installPath, "--interactive", "false"]);
 
@@ -205,6 +205,11 @@ internal static class DotnetupTestUtilities
         if (disableProgress)
         {
             commandArgs.Add("--no-progress");
+        }
+
+        if (detailed)
+        {
+            commandArgs.AddRange(["--verbosity", "detailed"]);
         }
 
         return [.. commandArgs];

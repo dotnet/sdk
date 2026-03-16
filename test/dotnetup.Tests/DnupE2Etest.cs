@@ -656,8 +656,8 @@ public class ReuseAndErrorTests
         installsAfterSdk.Should().NotContain(i => i.Component == expectedComponent,
             $"{expectedComponent} should not be in manifest before explicit runtime install");
 
-        // Step 2: Install runtime for same major.minor using component@version syntax
-        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath);
+        // Step 2: Install runtime for same major.minor using component@version syntax, with detailed verbosity to see skip messages
+        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath, detailed: true);
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(runtimeArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
 

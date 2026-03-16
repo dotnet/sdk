@@ -16,6 +16,8 @@ internal enum SubcomponentResolveResult
     UnknownFolder,
     /// <summary>Known folder but path is not deep enough to identify a subcomponent.</summary>
     TooShallow,
+    /// <summary>Intermediate directory entry in a known subcomponent hierarchy (e.g., "shared/" or "host/fxr/").</summary>
+    IntermediateDirectory,
     /// <summary>Known non-subcomponent folder (e.g., swidtag, metadata) — expected to be ignored.</summary>
     IgnoredFolder,
     /// <summary>Input resolved to an empty path after normalization (e.g., "/", ".//").</summary>
@@ -62,16 +64,9 @@ with(StringComparer.OrdinalIgnoreCase),
             return null;
         }
 
-        // Normalize to forward slashes, strip leading "./" (common in tar archives), and trim trailing slashes
-        var normalized = relativeEntryPath.Replace('\\', '/');
-        if (normalized.StartsWith("./", StringComparison.Ordinal))
-        {
-            normalized = normalized.Substring(2);
-        }
-        normalized = normalized.TrimEnd('/');
+        var (normalized, isDirectoryEntry) = NormalizeEntryPath(relativeEntryPath);
 
-        // Split into segments. RemoveEmptyEntries ensures inputs like "/" or "//"
-        // produce an empty array rather than arrays of empty strings.
+        // RemoveEmptyEntries ensures inputs like "/" or "//" produce an empty array.
         var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         if (segments.Length == 0)
@@ -91,28 +86,53 @@ with(StringComparer.OrdinalIgnoreCase),
 
         if (!s_subcomponentDepthByFolder.TryGetValue(topLevelFolder, out int requiredDepth))
         {
+            // Single-segment path that isn't a known folder (e.g., "dotnet.exe", "LICENSE.txt")
             if (segments.Length < 2)
             {
-                // Single-segment path that isn't a known folder (e.g., "dotnet.exe", "LICENSE.txt")
                 result = SubcomponentResolveResult.RootLevelFile;
                 return null;
             }
 
-            // Unknown top-level folder — not a recognized subcomponent
+            // Unknown top-level folder — not a recognized subcomponent area
             result = SubcomponentResolveResult.UnknownFolder;
             return null;
         }
 
         if (segments.Length < requiredDepth)
         {
-            // Entry is inside a known folder but not deep enough to identify a subcomponent
-            result = SubcomponentResolveResult.TooShallow;
+            // Directory entries (e.g., "shared/", "host/fxr/") are expected intermediate
+            // parts of the hierarchy and get a distinct classification.
+            result = isDirectoryEntry
+                ? SubcomponentResolveResult.IntermediateDirectory
+                : SubcomponentResolveResult.TooShallow;
             return null;
         }
 
         // Join the first 'requiredDepth' segments with forward slashes
         result = SubcomponentResolveResult.Resolved;
         return string.Join('/', segments, 0, requiredDepth);
+    }
+
+    /// <summary>
+    /// Normalizes an archive entry path: converts backslashes to forward slashes,
+    /// strips leading "./" prefixes (common in tar archives), and detects/trims
+    /// trailing directory separators.
+    /// </summary>
+    /// <remarks>
+    /// Both tar and zip formats use forward slashes in entry names (the ZIP
+    /// specification requires it), so the trailing-'/' directory detection is
+    /// cross-platform. Backslashes are normalized first for robustness.
+    /// </remarks>
+    private static (string normalized, bool isDirectoryEntry) NormalizeEntryPath(string entryPath)
+    {
+        var normalized = entryPath.Replace('\\', '/');
+        if (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized.Substring(2);
+        }
+
+        bool isDirectoryEntry = normalized.EndsWith('/');
+        return (normalized.TrimEnd('/'), isDirectoryEntry);
     }
 
     /// <summary>

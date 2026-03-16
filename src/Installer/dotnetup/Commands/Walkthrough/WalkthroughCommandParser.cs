@@ -18,6 +18,7 @@ internal static class WalkthroughCommandParser
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new WalkthroughCommand(parseResult).Execute());

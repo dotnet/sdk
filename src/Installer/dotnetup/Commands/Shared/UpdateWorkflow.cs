@@ -28,8 +28,9 @@ internal class UpdateWorkflow
     /// <param name="componentFilter">Which component(s) to update. Null means update all.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
+    /// <param name="verbosity">The verbosity level for diagnostic messages during installation.</param>
     /// <returns>Exit code (0 for success).</returns>
-    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false)
+    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -66,7 +67,7 @@ internal class UpdateWorkflow
                     continue;
                 }
 
-                var (updated, failed) = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson);
+                var (updated, failed) = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
                 if (updated) { anyUpdated = true; rootUpdated = true; }
                 if (failed) { anyFailed = true; }
             }
@@ -97,7 +98,8 @@ internal class UpdateWorkflow
         DotnetInstallRoot installRoot,
         string? manifestPath,
         bool noProgress,
-        bool updateGlobalJson)
+        bool updateGlobalJson,
+        Verbosity verbosity)
     {
         var channel = new UpdateChannel(spec.VersionOrChannel);
 
@@ -138,7 +140,7 @@ internal class UpdateWorkflow
             }
         }
 
-        var (updated, failed) = TryInstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath);
+        var (updated, failed) = TryInstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath, verbosity);
         if (failed)
         {
             return (false, true);
@@ -179,7 +181,8 @@ internal class UpdateWorkflow
         ReleaseVersion latestVersion,
         bool alreadyInstalled,
         bool noProgress,
-        string? manifestPath)
+        string? manifestPath,
+        Verbosity verbosity)
     {
         string displayName = spec.Component.GetDisplayName();
         bool updated = false;
@@ -196,7 +199,7 @@ internal class UpdateWorkflow
                 installRoot,
                 channel,
                 spec.Component,
-                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true })
+                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity })
             {
                 ResolvedVersion = latestVersion
             };
