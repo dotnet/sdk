@@ -108,11 +108,23 @@ public class DotnetBotBannerTests
         string[] lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         lines.Should().HaveCountGreaterThan(2);
 
-        // All lines in the panel should have the same width (expanded to terminal).
-        int expectedWidth = lines[0].Length;
+        // Verify structural alignment: every line starts with a left border
+        // and ends with a right border character. We check structure rather than
+        // string.Length because the bot art uses Unicode characters (▄█▀•■) with
+        // "Ambiguous" East Asian Width. Spectre.Console may measure these as
+        // single- or double-width depending on the platform, producing different
+        // amounts of padding spaces (and thus different string.Length values)
+        // while still rendering visually aligned borders.
+        char[] leftBorders = ['╭', '│', '╰'];
+        char[] rightBorders = ['╮', '│', '╯'];
+
         foreach (string line in lines)
         {
-            line.Length.Should().Be(expectedWidth, because: $"all panel lines should align, but \"{line}\" has length {line.Length}");
+            line.Should().NotBeEmpty();
+            leftBorders.Should().Contain(line[0],
+                because: "each line should start with a left border character");
+            rightBorders.Should().Contain(line[^1],
+                because: "each line should end with a right border character");
         }
     }
 }
