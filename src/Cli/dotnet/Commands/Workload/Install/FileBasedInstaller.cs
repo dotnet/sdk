@@ -541,7 +541,7 @@ internal class FileBasedInstaller : IInstaller
             if (!Directory.GetFileSystemEntries(installationRecordDirectory).Any())
             {
                 //  There are no installation records for the workload pack anymore, so we can delete the pack
-                var packToDelete = JsonSerializer.Deserialize<PackInfo>(jsonPackInfo);
+                var packToDelete = JsonSerializer.Deserialize(jsonPackInfo, PackInfoJsonSerializerContext.Default.PackInfo);
                 DeletePack(packToDelete);
 
                 //  Delete now-empty pack installation record directory
@@ -633,7 +633,7 @@ internal class FileBasedInstaller : IInstaller
         var historyDirectory = GetWorkloadHistoryDirectory();
         Directory.CreateDirectory(historyDirectory);
         string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
-        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, WorkloadHistoryJsonSerializerContext.Default.WorkloadHistoryRecord));
     }
 
     public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
@@ -876,7 +876,7 @@ internal class FileBasedInstaller : IInstaller
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
         }
-        File.WriteAllText(path, JsonSerializer.Serialize(packInfo));
+        File.WriteAllText(path, JsonSerializer.Serialize(packInfo, PackInfoJsonSerializerContext.Default.PackInfo));
     }
 
     private void DeletePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)

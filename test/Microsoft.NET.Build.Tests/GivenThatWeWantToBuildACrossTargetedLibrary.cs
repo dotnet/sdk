@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.1.0.60101")]
         public void It_builds_nondesktop_library_successfully_on_all_platforms()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(Path.Combine("CrossTargeting", "NetStandardAndNetCoreApp"))
                 .WithSource();
 
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_desktop_library_successfully_on_windows()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CrossTargeting")
                 .WithSource();
 
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Build.Tests
             string secondFrameworkRids,
             string expectedCombination)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(Path.Combine("CrossTargeting", "NetStandardAndNetCoreApp"), identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
                 xml.Root.Add(XElement.Parse(target));
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new MSBuildCommand(testAsset, "GetOutputPath")
                 .Execute()
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Build.Tests
                 </Project>
                 """;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()

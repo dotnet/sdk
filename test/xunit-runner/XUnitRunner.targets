@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <SDKCustomXUnitPublishTargetFramework Condition="'$(SDKCustomXUnitPublishTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitPublishTargetFramework>
     <SDKCustomXUnitRuntimeTargetFramework Condition="'$(SDKCustomXUnitRuntimeTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitRuntimeTargetFramework>
@@ -9,15 +10,13 @@
 
     <SDKCustomXUnitArguments Condition="'$(SDKCustomXUnitArguments)' == ''">-nocolor</SDKCustomXUnitArguments>
 
-    <TaskTargetFramework>net8.0</TaskTargetFramework>
-    <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
-
-    <SDKHelixCustomSdkTaskDll>$(ArtifactsDir)\bin\HelixTasks\$(Configuration)\$(TaskTargetFramework)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
+    <!-- Keep TFM in sync with HelixTasks.csproj -->
+    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
 
-  <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
-  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
-  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
+  <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
   <Choose>
     <When Condition="$(HelixTargetQueue.ToLowerInvariant().Contains('windows'))">

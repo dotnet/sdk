@@ -11,7 +11,7 @@ public abstract class WatchSdkTest(ITestOutputHelper logger)
     : SdkTest(new DebugTestOutputLogger(logger))
 {
     public TestAssetsManager TestAssets
-        => _testAssetsManager;
+        => TestAssetsManager;
 
     public DebugTestOutputLogger Logger
         => (DebugTestOutputLogger)base.Log;
