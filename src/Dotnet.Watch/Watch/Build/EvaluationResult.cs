@@ -106,22 +106,7 @@ internal sealed class EvaluationResult(
         // Update the project instances of the graph with design-time build results.
         // The properties and items set by DTB will be used by the Workspace to create Roslyn representation of projects.
 
-        var buildRequests =
-           (from node in projectGraph.Graph.ProjectNodesTopologicallySorted
-            let targetFramework = node.ProjectInstance.GetTargetFramework()
-
-            // skip outer-build projects
-            where targetFramework != ""
-
-            // skip root projects that do not match main project TFM, if specified:
-            where mainProjectTargetFramework == null ||
-                  targetFramework == mainProjectTargetFramework ||
-                  node.ReferencingProjects.Count != 1 ||
-                  !node.ReferencingProjects.First().IsRoot
-
-            let targets = GetBuildTargets(node.ProjectInstance, environmentOptions)
-            where targets is not []
-            select BuildRequest.Create(node.ProjectInstance, [.. targets])).ToArray();
+        var buildRequests = CreateDesignTimeBuildRequests(projectGraph.Graph, mainProjectTargetFramework, environmentOptions.SuppressHandlingStaticWebAssets).ToImmutableArray();
 
         var buildResults = await buildManager.BuildAsync(
             buildRequests,
@@ -148,6 +133,28 @@ internal sealed class EvaluationResult(
         BuildReporter.ReportWatchedFiles(logger, fileItems);
 
         return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests, buildManager);
+    }
+
+    // internal for testing
+    internal static IEnumerable<BuildRequest<object?>> CreateDesignTimeBuildRequests(ProjectGraph graph, string? mainProjectTargetFramework, bool suppressStaticWebAssets)
+    {
+        return from node in graph.ProjectNodesTopologicallySorted
+               let targetFramework = node.ProjectInstance.GetTargetFramework()
+
+               // skip outer-build projects
+               where targetFramework != ""
+
+               // skip root projects that do not match main project TFM, if specified:
+               where mainProjectTargetFramework == null ||
+                     targetFramework == mainProjectTargetFramework ||
+                     HasParentWithTargetFramework(node)
+
+               let targets = GetBuildTargets(node.ProjectInstance, suppressStaticWebAssets)
+               where targets is not []
+               select BuildRequest.Create(node.ProjectInstance, [.. targets]);
+
+        static bool HasParentWithTargetFramework(ProjectGraphNode node)
+            => node.ReferencingProjects.Any(p => p.ProjectInstance.GetTargetFramework() != "");
     }
 
     private static void ProcessBuildResults(
@@ -236,7 +243,7 @@ internal sealed class EvaluationResult(
         staticWebAssetManifests = staticWebAssetManifestsBuilder;
     }
 
-    private static string[] GetBuildTargets(ProjectInstance projectInstance, EnvironmentOptions environmentOptions)
+    private static string[] GetBuildTargets(ProjectInstance projectInstance, bool suppressStaticWebAssets)
     {
         var compileTarget = projectInstance.Targets.ContainsKey(TargetNames.CompileDesignTime)
             ? TargetNames.CompileDesignTime
@@ -254,7 +261,7 @@ internal sealed class EvaluationResult(
             compileTarget
         };
 
-        if (!environmentOptions.SuppressHandlingStaticWebAssets)
+        if (!suppressStaticWebAssets)
         {
             // generates static file asset manifest
             if (projectInstance.Targets.ContainsKey(TargetNames.GenerateComputedBuildStaticWebAssets))

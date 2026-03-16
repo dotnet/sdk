@@ -4,6 +4,7 @@
 using System.Runtime.Versioning;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -13,9 +14,6 @@ internal static class ProjectGraphUtilities
     {
         public string GetDisplayName()
             => projectNode.ProjectInstance.GetDisplayName();
-
-        public bool IsRoot
-            => projectNode.ReferencingProjects.Count == 0;
     }
 
     public static string GetDisplayName(this ProjectInstance project)

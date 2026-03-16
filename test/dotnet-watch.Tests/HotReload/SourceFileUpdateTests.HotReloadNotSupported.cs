@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System.ComponentModel.DataAnnotations;
-
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)

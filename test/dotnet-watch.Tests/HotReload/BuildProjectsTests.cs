@@ -71,13 +71,6 @@ public class BuildProjects(ITestOutputHelper output)
     private TestContext CreateContext(string[]? rootProjects = null)
         => new(output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
 
-    private static TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, object[]? identifiers = null)
-        => TestDirectory.Create(TestAssetsManager.GetTestDestinationDirectoryPath(
-            testName,
-            testName,
-            identifiers != null ? string.Join(';', identifiers.Select(id => id.ToString())) : string.Empty,
-            baseDirectory: null));
-
     [Fact]
     public async Task SingleProject_NotMain()
     {
@@ -289,7 +282,7 @@ public class BuildProjects(ITestOutputHelper output)
     [InlineData("net9.0")]
     public async Task MultiTfm_FrameworkSelection(string expectedTfm)
     {
-        var dir = CreateTestDirectory(identifiers: [expectedTfm]);
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [expectedTfm]);
         var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         var currentTfm = ToolsetInfo.CurrentTargetFramework;
@@ -330,7 +323,7 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task MultiTfm_CommandLineOption()
     {
-        var dir = CreateTestDirectory();
+        var dir = TestAssetsManager.CreateTestDirectory();
         var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         var currentTfm = ToolsetInfo.CurrentTargetFramework;
@@ -370,7 +363,7 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task MultiTfm_NoMainProject()
     {
-        var dir = CreateTestDirectory();
+        var dir = TestAssetsManager.CreateTestDirectory();
         var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         var currentTfm = ToolsetInfo.CurrentTargetFramework;
