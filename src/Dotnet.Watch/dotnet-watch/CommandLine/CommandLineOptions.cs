@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
@@ -65,7 +66,10 @@ internal sealed class CommandLineOptions
 
         // determine subcommand:
         var command = GetSubcommand(parseResult, out bool isExplicitCommand);
-        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
+
+        // Options that the subcommand forwards to build command.
+        // Exclude --framework option as it is passed to `dotnet build` and `dotnet run` explicitly by the watcher.
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null && o.Name != CommonOptions.FrameworkOptionName);
 
         foreach (var buildOption in buildOptions)
         {
@@ -112,14 +116,15 @@ internal sealed class CommandLineOptions
             out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
+        var buildArguments = buildOptions
+            .Select(option => option.ForwardingFunction!(parseResult))
+            .SelectMany(args => args)
+            .ToList();
 
         if (binLogToken != null)
         {
             buildArguments.Add(binLogToken);
         }
-
-        var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
         var logLevel = parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
@@ -150,7 +155,7 @@ internal sealed class CommandLineOptions
             FilePath = parseResult.GetValue(definition.FileOption),
             LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
-            TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
+            TargetFramework = parseResult.GetValue(definition.FrameworkOption),
         };
     }
 
@@ -196,7 +201,7 @@ internal sealed class CommandLineOptions
             {
                 continue;
             }
-            
+
             // forward forwardable option if the subcommand supports it:
             if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
             {
@@ -351,6 +356,7 @@ internal sealed class CommandLineOptions
             IsMainProject = true,
             Representation = project,
             WorkingDirectory = workingDirectory,
+            TargetFramework = TargetFramework,
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],

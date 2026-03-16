@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData("StartupHookSupport", "False")]
         public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
         {
-            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
 
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
                 .WithSource()
@@ -28,13 +28,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--non-interactive"]);
 
-            await App.WaitForOutputLineContaining($"[WatchHotReloadApp ({tfm})] " + MessageDescriptor.ProjectDoesNotSupportHotReload.GetMessage($"'{propertyName}' property is '{propertyValue}'"));
+            var message = MessageDescriptor.ProjectDoesNotSupportHotReload.GetMessage($"'{propertyName}' property is '{propertyValue}'");
+            await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
 
             UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
 
-            await App.WaitForOutputLineContaining($"[auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
+            await App.WaitForOutputLineContaining($"[{projectDisplay}] [auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
             await App.WaitForOutputLineContaining("<updated>");
         }
 

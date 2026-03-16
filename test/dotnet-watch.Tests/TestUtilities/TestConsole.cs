@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestConsole : IConsole
     {
-        public event Action<ConsoleKeyInfo>? KeyPressed;
+        private Action<ConsoleKeyInfo>? _keyPressed;
 
         private readonly TestOutputWriter _testWriter;
 
@@ -19,6 +17,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public bool IsErrorRedirected { get; } = false;
         public ConsoleColor ForegroundColor { get; set; }
 
+        public readonly List<ConsoleKeyInfo> QueuedKeyPresses = [];
+
         public TestConsole(ITestOutputHelper output)
         {
             _testWriter = new TestOutputWriter(output);
@@ -26,12 +26,29 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Out = _testWriter;
         }
 
+        public event Action<ConsoleKeyInfo> KeyPressed
+        {
+            add
+            {
+                _keyPressed += value;
+                foreach (var key in QueuedKeyPresses)
+                {
+                    value.Invoke(key);
+                }
+                QueuedKeyPresses.Clear();
+            }
+            remove
+            {
+                _keyPressed -= value;
+            }
+        }
+
         public void Clear() { }
 
         public void PressKey(ConsoleKeyInfo key)
         {
-            Assert.NotNull(KeyPressed);
-            KeyPressed.Invoke(key);
+            Assert.NotNull(_keyPressed);
+            _keyPressed.Invoke(key);
         }
 
         public void ResetColor()

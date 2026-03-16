@@ -13,10 +13,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)]
-        public async Task MauiBlazor()
+        [PlatformSpecificTheory(TestPlatforms.Windows)]
+        [CombinatorialData]
+        public async Task MauiBlazor(bool selectTfm)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
+            var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor", identifier: selectTfm.ToString())
                 .WithSource();
 
             var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "maui", "--include-previews"])
@@ -29,9 +30,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows10.0.19041.0" : "maccatalyst";
             var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
-            App.Start(testAsset, ["-f", tfm]);
+            App.Start(testAsset, selectTfm ? [] : ["-f", tfm], testFlags: TestFlags.ReadKeyFromStdin);
+
+            if (selectTfm)
+            {
+                await App.WaitUntilOutputContains("❔ Select target framework");
+                App.SendKey(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? '2' : '1');
+            }
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+
+            // only the selected target framework is built:
+            Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", "net10.0-windows10.0.19041.0", "win-x64", "maui-blazor.dll")));
+            Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", "net10.0-maccatalyst", "maccatalyst-x64", "maui-blazor.dll")));
 
             // update code file:
             var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
@@ -58,6 +69,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
             await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
             await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
+
+            // no warnings - these would be reported if we tried to access web asset manifest from unbuilt TFMs:
+            App.AssertOutputDoesNotContain(MessageDescriptor.StaticWebAssetManifestNotFound);
+            App.AssertOutputDoesNotContain(MessageDescriptor.ScopedCssBundleFileNotFound);
+            App.AssertOutputDoesNotContain(MessageDescriptor.ManifestFileNotFound);
         }
     }
 }

@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     });
             }
 
+            var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
             var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
             App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
@@ -42,9 +43,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
             await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            await App.WaitUntilOutputContains($"⌚ [auto-restart] {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            await App.WaitUntilOutputContains($"⌚ [{projectDisplay}] [auto-restart] {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            await App.WaitUntilOutputContains(MessageDescriptor.Exited, projectDisplay);
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
             App.Process.ClearOutput();
 
             // valid edit:
@@ -122,6 +123,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
                 .WithSource();
 
+            var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
             var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
             App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
@@ -133,18 +135,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
 
             // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
-            await App.WaitUntilOutputContains("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)");
             await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
+            await App.WaitUntilOutputContains($"❌ [{projectDisplay}] {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            await App.WaitUntilOutputContains("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)");
 
-            await App.WaitUntilOutputContains($"❌ {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
             App.SendKey('a');
 
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
-            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            App.AssertOutputContains(MessageDescriptor.Exited, projectDisplay);
+            App.AssertOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
             App.Process.ClearOutput();
 
             // rude edit: deleting virtual method
@@ -153,9 +155,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
             await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            await App.WaitUntilOutputContains($"⌚ [auto-restart] {programPath}(39,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            await App.WaitUntilOutputContains($"⌚ [{projectDisplay}] [auto-restart] {programPath}(39,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            await App.WaitUntilOutputContains(MessageDescriptor.Exited, projectDisplay);
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
         }
 
         [Theory]
@@ -178,6 +180,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     });
             }
 
+            var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
             var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
             App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
@@ -191,9 +194,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
             await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            await App.WaitUntilOutputContains($"⌚ [auto-restart] {programPath}(17,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
-            await App.WaitUntilOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            await App.WaitUntilOutputContains($"⌚ [{projectDisplay}] [auto-restart] {programPath}(17,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
+            await App.WaitUntilOutputContains(MessageDescriptor.Exited, projectDisplay);
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
             await App.WaitUntilOutputContains("<Updated>");
             App.Process.ClearOutput();
 
