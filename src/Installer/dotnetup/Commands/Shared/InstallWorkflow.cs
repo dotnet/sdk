@@ -37,7 +37,8 @@ internal class InstallWorkflow
         Func<string, string?>? ResolveChannelFromGlobalJson = null,
         bool RequireMuxerUpdate = false,
         bool Untracked = false,
-        PathPreference? PathPreference = null);
+        PathPreference? PathPreference = null,
+        List<DotnetInstall>? SelectedAdminInstalls = null);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.

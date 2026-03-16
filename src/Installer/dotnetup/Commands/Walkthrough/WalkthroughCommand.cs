@@ -48,9 +48,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
 
         // Step 2: Prompt about admin installs before setting up the environment.
         // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
+        List<DotnetInstall>? selectedAdminInstalls = null;
         if (pathPreference != PathPreference.DotnetupDotnet && OperatingSystem.IsWindows())
         {
-            setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
+            selectedAdminInstalls = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
+            // The user always wants to set default when in PATH mode; the multi-select
+            // only controls which admin installs to copy.
+            setDefaultInstall = true;
         }
 
         // Install SDK — validate the install path early so the user sees any conflict
@@ -60,7 +64,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
-        RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
+        RunInstallWorkflow(channel, pathPreference, setDefaultInstall, selectedAdminInstalls);
 
         // Step 3: Save config
         SaveConfigAndDisplayResult(pathPreference);
@@ -96,7 +100,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         return (channel, globalJson, installRoot);
     }
 
-    private void RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)
+    private void RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall, List<DotnetInstall>? selectedAdminInstalls)
     {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
         var options = new InstallWorkflow.InstallWorkflowOptions(
@@ -111,7 +115,8 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             UpdateGlobalJson: null,
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
-            PathPreference: pathPreference);
+            PathPreference: pathPreference,
+            SelectedAdminInstalls: selectedAdminInstalls);
         workflow.Execute(options);
     }
 
