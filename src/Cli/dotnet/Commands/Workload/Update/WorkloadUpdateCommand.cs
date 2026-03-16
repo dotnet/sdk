@@ -92,7 +92,6 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         {
             var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
                 new NullLogger(),
                 NullReporter.Instance,

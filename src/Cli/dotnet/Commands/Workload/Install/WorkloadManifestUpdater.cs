@@ -68,7 +68,6 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
-                                      filePermissionSetter: null,
                                       new FirstPartyNuGetPackageSigningVerifier(),
                                       new NullLogger(),
                                       reporter,

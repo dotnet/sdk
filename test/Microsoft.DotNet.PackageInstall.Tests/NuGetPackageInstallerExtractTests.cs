@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             NuGetTestLogger logger = new(Log);
             NuGetPackageDownloader installer =
-                new(new DirectoryPath(Directory.GetCurrentDirectory()), null,
+                new(new DirectoryPath(Directory.GetCurrentDirectory()),
                     new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             string packagePath =
                 await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
@@ -44,7 +44,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             NuGetPackageDownloader installer =
                 new(
                     new DirectoryPath(Directory.GetCurrentDirectory()),
-                    null,
                     new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             var allFiles = new List<string>()
             {
@@ -66,7 +65,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             NuGetTestLogger logger = new(Log);
             NuGetPackageDownloader installer =
-                new(new DirectoryPath(Directory.GetCurrentDirectory()), null,
+                new(new DirectoryPath(Directory.GetCurrentDirectory()),
                     new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             var allFiles = new List<string>()
             {

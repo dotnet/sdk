@@ -62,7 +62,7 @@ internal class FileBasedInstaller : IInstaller
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??
-                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
+                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir,
                                       new FirstPartyNuGetPackageSigningVerifier(), logger,
                                       restoreActionConfig: _restoreActionConfig,
                                       verbosityOptions: nugetPackageDownloaderVerbosity);

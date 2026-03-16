@@ -120,7 +120,6 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
             IsPackageDownloaderProvided = false;
             PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
                 nugetLogger,
                 Reporter,

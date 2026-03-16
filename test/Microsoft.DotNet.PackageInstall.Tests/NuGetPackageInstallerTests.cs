@@ -36,10 +36,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             _tempDirectory = GetUniqueTempProjectPathEachTest();
             _logger = new NuGetTestLogger();
             _installer =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
+                new NuGetPackageDownloader(_tempDirectory, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
             _toolInstaller =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
+                new NuGetPackageDownloader(_tempDirectory, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), shouldUsePackageSourceMapping: true);
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException()
         {
             var installer =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(),
+                new NuGetPackageDownloader(_tempDirectory, new MockFirstPartyNuGetPackageSigningVerifier(),
                     _logger, restoreActionConfig: new RestoreActionConfig(IgnoreFailedSources: true, NoCache: true));
 
             // should not throw FatalProtocolException
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenANonSignedSdkItShouldPrintMessageOnce()
         {
             BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             await nuGetPackageDownloader.DownloadPackageAsync(
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenANonSignedSdkItShouldNotPrintMessageInQuiet()
         {
             BufferedReporter bufferedReporter = new BufferedReporter();
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: VerbosityOptions.quiet);
             await nuGetPackageDownloader.DownloadPackageAsync(
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private string DownloadSamplePackage(PackageId packageId)
         {
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
 

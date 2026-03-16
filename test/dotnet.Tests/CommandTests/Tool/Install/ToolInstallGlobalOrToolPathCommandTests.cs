@@ -66,8 +66,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(_pathToPlaceShim),
                     string.Empty,
                     fileSystem: _fileSystem,
-                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
-                    filePermissionSetter: new NoOpFilePermissionSetter());
+                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem));
             _environmentPathInstructionMock =
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim);
             var store = new ToolPackageStoreMock(
@@ -633,8 +632,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(_pathToPlaceShim),
                     string.Empty,
                     fileSystem: _fileSystem,
-                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
-                    filePermissionSetter: new NoOpFilePermissionSetter()));
+                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem)));
             toolUninstallCommand.Execute().Should().Be(0);
         }
 
@@ -976,17 +974,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return Path.Combine(
                 _pathToPlaceShim,
                 ToolCommandName + extension);
-        }
-
-        internal class NoOpFilePermissionSetter : IFilePermissionSetter
-        {
-            public void SetUserExecutionPermission(string path)
-            {
-            }
-
-            public void SetPermission(string path, string chmodArgument)
-            {
-            }
         }
 
         private string _nugetConfigWithInvalidSources = @"{

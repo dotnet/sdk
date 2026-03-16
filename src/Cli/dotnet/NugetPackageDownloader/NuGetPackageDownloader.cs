@@ -24,7 +24,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 internal class NuGetPackageDownloader : INuGetPackageDownloader
 {
     private readonly SourceCacheContext _cacheSettings;
-    private readonly IFilePermissionSetter _filePermissionSetter;
 
     /// <summary>
     /// In many commands we don't passing NuGetConsoleLogger and pass NullLogger instead to reduce the verbosity
@@ -53,7 +52,6 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public NuGetPackageDownloader(
         DirectoryPath packageInstallDir,
-        IFilePermissionSetter filePermissionSetter = null,
         IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null,
         ILogger verboseLogger = null,
         IReporter reporter = null,
@@ -70,7 +68,6 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
         _firstPartyNuGetPackageSigningVerifier = firstPartyNuGetPackageSigningVerifier ??
                                                  new FirstPartyNuGetPackageSigningVerifier();
-        _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
         _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
         _retryTimer = timer;
         _sourceRepositories = new();
@@ -257,10 +254,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 var permissionList = FileList.Deserialize(workloadUnixFilePermissions);
                 foreach (var fileAndPermission in permissionList.File)
                 {
-                    _filePermissionSetter
-                        .SetPermission(
-                            Path.Combine(targetFolder.Value, fileAndPermission.Path),
-                            fileAndPermission.Permission);
+                    string filePath = Path.Combine(targetFolder.Value, fileAndPermission.Path);
+                    File.SetUnixFileMode(filePath, ChmodHelper.GetArguments(fileAndPermission.Permission.AsSpan(), filePath));
                 }
             }
         }
