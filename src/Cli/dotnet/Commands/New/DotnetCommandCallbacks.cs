@@ -23,7 +23,11 @@ internal static class DotnetCommandCallbacks
         {
             commandArgs = commandArgs.Append(packageAddCommandDef.VersionOption.Name).Append(version);
         }
-        var addPackageReferenceCommand = new PackageAddCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
+
+        var addCommand = new AddCommandDefinition();
+        AddCommandParser.ConfigureCommand(addCommand);
+
+        var addPackageReferenceCommand = new PackageAddCommand(addCommand.Parse([.. commandArgs]));
         return addPackageReferenceCommand.Execute() == 0;
     }
 
@@ -32,7 +36,11 @@ internal static class DotnetCommandCallbacks
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         PathUtility.EnsureAllPathsExist([projectToAdd], CliStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "reference", projectToAdd];
-        var addProjectReferenceCommand = new ReferenceAddCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
+
+        var addCommand = new AddCommandDefinition();
+        AddCommandParser.ConfigureCommand(addCommand);
+
+        var addProjectReferenceCommand = new ReferenceAddCommand(addCommand.Parse([.. commandArgs]));
         return addProjectReferenceCommand.Execute() == 0;
     }
 
@@ -57,7 +65,11 @@ internal static class DotnetCommandCallbacks
         {
             commandArgs = commandArgs.Append(SolutionAddCommandDefinition.InRootOptionName);
         }
-        var addProjectToSolutionCommand = new SolutionAddCommand(SolutionCommandParser.GetCommand().Parse([.. commandArgs]));
+
+        var solutionCommand = new SolutionCommandDefinition();
+        SolutionCommandParser.ConfigureCommand(solutionCommand);
+
+        var addProjectToSolutionCommand = new SolutionAddCommand(solutionCommand.Parse([.. commandArgs]));
         return addProjectToSolutionCommand.Execute() == 0;
     }
 }

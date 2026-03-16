@@ -6,22 +6,22 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommandArgs : ICommandArgs
+    internal sealed class TemplateCommandArgs : ICommandArgs
     {
         private readonly TemplateCommand _command;
         private Dictionary<string, OptionResult> _templateOptions = new();
 
-        public TemplateCommandArgs(TemplateCommand command, BaseCommand parentCommand, ParseResult parseResult)
+        public TemplateCommandArgs(TemplateCommand command, Command parentCommand, ParseResult parseResult)
         {
-            ParseResult = parseResult ?? throw new ArgumentNullException(nameof(parseResult));
-            _command = command ?? throw new ArgumentNullException(nameof(command));
-            ParentCommand = parentCommand ?? throw new ArgumentNullException(nameof(parentCommand));
+            ParseResult = parseResult;
+            _command = command;
+            ParentCommand = parentCommand;
             RootCommand = GetRootCommand(parentCommand);
 
-            Name = parseResult.GetValueForOptionOrNull(SharedOptions.NameOption);
-            IsForceFlagSpecified = parseResult.GetValue(SharedOptions.ForceOption);
-            IsDryRun = parseResult.GetValue(SharedOptions.DryRunOption);
-            NoUpdateCheck = parseResult.GetValue(SharedOptions.NoUpdateCheckOption);
+            Name = parseResult.GetValueForOptionOrNull(command.NameOption);
+            IsForceFlagSpecified = parseResult.GetValue(command.ForceOption);
+            IsDryRun = parseResult.GetValue(command.DryRunOption);
+            NoUpdateCheck = parseResult.GetValue(command.NoUpdateCheckOption);
 
             if (command.LanguageOption != null)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public NewCommand RootCommand { get; }
 
-        public BaseCommand ParentCommand { get; }
+        public Command ParentCommand { get; }
 
         public bool TryGetAliasForCanonicalName(string canonicalName, out string? alias)
         {
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return optionValue.ToString();
         }
 
-        private NewCommand GetRootCommand(BaseCommand command)
+        private NewCommand GetRootCommand(Command command)
         {
             if (command is NewCommand newCommand)
             {

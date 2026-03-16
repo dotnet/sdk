@@ -1,13 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        private async Task ValidateOperation(Action<string> operation, int expectedTypesAfterOperation)
+        private async Task ValidateOperation(
+            Action<string> operation,
+            int expectedTypesAfterOperation,
+            [CallerMemberName] string callingMethod = "",
+            [CallerFilePath] string? callerFilePath = null,
+            string? identifier = "")
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp", callingMethod, callerFilePath, identifier)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
@@ -83,7 +90,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             File.WriteAllText(changedFile, "");
 
             // no file change within timeout:
-            var fileChanged = App.AssertFileChanged();
+            var fileChanged = App.AssertOutputLineStartsWith("dotnet watch ⌚ File changed:");
             var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), fileChanged);
             Assert.NotSame(fileChanged, finished);
         }
@@ -96,8 +103,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SuppressVerboseLogging();
             App.Start(testAsset, ["--list"]);
-            var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
+            await App.Process.WaitUntilOutputCompleted();
+            var files = App.Process.Output.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
 
             AssertEx.EqualFileList(
                 testAsset.Path,
