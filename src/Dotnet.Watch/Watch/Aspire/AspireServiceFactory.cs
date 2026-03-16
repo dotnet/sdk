@@ -72,7 +72,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
             _isDisposed = true;
 
-            // should not receive any more requests at this point, triggeres cancellation of any in-flight operations:
+            // should not receive any more requests at this point, triggers cancellation of any in-flight operations:
             _service.InitiateShutdown();
 
             // wait for all in-flight process initialization to complete:
