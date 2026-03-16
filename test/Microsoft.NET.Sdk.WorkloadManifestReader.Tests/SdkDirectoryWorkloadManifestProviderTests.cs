@@ -24,7 +24,7 @@ namespace ManifestReaderTests
         [MemberNotNull("_testDirectory", "_manifestRoot", "_manifestVersionBandDirectory", "_fakeDotnetRootDirectory")]
         void Initialize(string featureBand = "5.0.100", [CallerMemberName] string? testName = null, string? identifier = null)
         {
-            _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier).Path;
+            _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier).Path;
             _fakeDotnetRootDirectory = Path.Combine(_testDirectory, "dotnet");
             _manifestRoot = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests");
             _manifestVersionBandDirectory = Path.Combine(_manifestRoot, featureBand);
@@ -553,6 +553,41 @@ namespace ManifestReaderTests
             GetManifestContents(sdkDirectoryWorkloadManifestProvider)
                 .Should()
                 .BeEquivalentTo("ios: 11.0.2/8.0.100");
+        }
+
+        [Theory]
+        [InlineData("utf-16")] // UTF-16 LE with BOM
+        [InlineData("utf-16BE")] // UTF-16 BE with BOM
+        public void ItUsesWorkloadSetFromGlobalJsonWithUtf16Encoding(string encodingName)
+        {
+            Initialize("8.0.200");
+
+            string? globalJsonPath = Path.Combine(_testDirectory, "global.json");
+            var encoding = System.Text.Encoding.GetEncoding(encodingName);
+            File.WriteAllText(globalJsonPath, """
+            {
+                "sdk": {
+                    "version": "8.0.200",
+                    "workloadVersion": "8.0.201"
+                }
+            }
+            """, encoding);
+
+            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
+
+            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
+{
+  "ios": "11.0.1/8.0.100"
+}
+""");
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
+
+            GetManifestContents(sdkDirectoryWorkloadManifestProvider)
+                .Should()
+                .BeEquivalentTo("ios: 11.0.1/8.0.100");
         }
 
         [Fact]
@@ -1328,7 +1363,7 @@ Microsoft.Net.Workload.Emscripten.net7"
         [Fact]
         public void ItShouldIgnoreManifestsNotFoundInFallback()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var fakeDotnetRootDirectory = Path.Combine(testDirectory, "dotnet");
 
             // Write 6.0.100 manifests-> ios only

@@ -47,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
         private void Setup([CallerMemberName] string identifier = "")
         {
-            _testDirectory = _testAssetsManager.CreateTestDirectory(identifier: identifier).Path;
+            _testDirectory = TestAssetsManager.CreateTestDirectory(identifier: identifier).Path;
             _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             _nugetDownloader = new(_dotnetRoot);
             var currentSdkFeatureBand = new SdkFeatureBand(CurrentSdkVersion);

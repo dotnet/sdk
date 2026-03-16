@@ -11,6 +11,12 @@ public class DotnetCliSnapshotTests(ITestOutputHelper log) : SdkTest(log)
     [Theory(Skip = "https://github.com/dotnet/sdk/issues/48817")]
     public async Task VerifyCompletions(string shellName)
     {
+        if (!shellName.Equals("zsh") || !SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+        {
+            // This has been unstable lately; skipping
+            return;
+        }
+
         var provider = CompletionsCommandParser.ShellProviders[shellName];
         var completions = provider.GenerateCompletions(Parser.RootCommand);
         var settings = new VerifySettings();

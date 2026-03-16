@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
