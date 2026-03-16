@@ -44,8 +44,8 @@ internal sealed partial class CSharpCompilerCommand
     private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
-    internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
-    private static string DefaultRuntimeVersion => field ??= GetDefaultRuntimeVersion();
+    internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
+    private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
     private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
@@ -432,10 +432,39 @@ internal sealed partial class CSharpCompilerCommand
         return false;
     }
 
+    private static string ComputeRuntimeVersion()
+    {
+        var result = GetConfiguredRuntimeVersion() ?? GetExecutingRuntimeVersion();
+        Debug.Assert(!string.IsNullOrWhiteSpace(result));
+        return result;
+
+        static string? GetConfiguredRuntimeVersion()
+        {
+            string runtimeConfigPath = Path.Combine(SdkPath, "dotnet.runtimeconfig.json");
+            if (!File.Exists(runtimeConfigPath)) return null;
+
+            using var stream = File.OpenRead(runtimeConfigPath);
+            using var jsonDoc = JsonDocument.Parse(stream);
+
+            JsonElement root = jsonDoc.RootElement;
+            if (!root.TryGetProperty("runtimeOptions", out JsonElement runtimeOptions) ||
+                !runtimeOptions.TryGetProperty("framework", out JsonElement framework)) return null;
+
+            string? runtimeVersion = framework.GetProperty("version").GetString();
+            return runtimeVersion;
+        }
+
+        static string? GetExecutingRuntimeVersion()
+        {
+            var executingRuntimeVersion = Path.GetFileName(Path.GetDirectoryName(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()));
+            return executingRuntimeVersion;
+        }
+    }
+
     /// <summary>
     /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
     /// </summary>
-    private static string GetDefaultRuntimeVersion()
+    private static string ComputeDefaultRuntimeVersion()
     {
         if (NuGetVersion.TryParse(RuntimeVersion, out var version))
         {
