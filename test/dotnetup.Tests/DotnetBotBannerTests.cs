@@ -25,18 +25,11 @@ public class DotnetBotBannerTests
     }
 
     [Fact]
-    public void WideTerminal_ShowsBotArt()
+    public void Panel_ShowsTextContent()
     {
-        var panel = DotnetBotBanner.BuildPanel(80);
+        var panel = DotnetBotBanner.BuildPanel();
         string output = RenderPanel(panel, 80);
 
-        // Bot art characters should be present
-        output.Should().Contain("▄█▄");
-        output.Should().Contain("▀█▀");
-        output.Should().Contain("••");
-        output.Should().Contain("■");
-
-        // Text content
         output.Should().Contain("dotnetup");
         output.Should().Contain(".NET installation manager for developers.");
 
@@ -46,29 +39,20 @@ public class DotnetBotBannerTests
     }
 
     [Fact]
-    public void NarrowTerminal_ShowsTextOnly()
+    public void Panel_DoesNotContainBotArt()
     {
-        var panel = DotnetBotBanner.BuildPanel(40);
-        string output = RenderPanel(panel, 40);
+        var panel = DotnetBotBanner.BuildPanel();
+        string output = RenderPanel(panel, 80);
 
-        // Text content should still be present
-        output.Should().Contain("dotnetup");
-        output.Should().Contain(".NET installation manager");
-
-        // Bot art should NOT be present
         output.Should().NotContain("▄█▄");
         output.Should().NotContain("▀█▀");
         output.Should().NotContain("■");
-
-        // Border should still be there
-        output.Should().Contain("╭");
-        output.Should().Contain("╰");
     }
 
     [Fact]
     public void Panel_IsSizedToContent()
     {
-        var panel = DotnetBotBanner.BuildPanel(100);
+        var panel = DotnetBotBanner.BuildPanel();
         string output = RenderPanel(panel, 100);
 
         // Panel should auto-size to content (not expand to terminal width).
@@ -78,43 +62,14 @@ public class DotnetBotBannerTests
     }
 
     [Fact]
-    public void ExactThreshold_ShowsBotArt()
+    public void Panel_AllBorderLinesAligned()
     {
-        // At exactly MinWidthForBotArt (55), should still show bot art.
-        var panel = DotnetBotBanner.BuildPanel(55);
-        string output = RenderPanel(panel, 55);
-
-        output.Should().Contain("▄█▄");
-        output.Should().Contain("dotnetup");
-    }
-
-    [Fact]
-    public void JustBelowThreshold_ShowsTextOnly()
-    {
-        // At 54 (one below threshold), should fall back to text-only.
-        var panel = DotnetBotBanner.BuildPanel(54);
-        string output = RenderPanel(panel, 54);
-
-        output.Should().NotContain("▄█▄");
-        output.Should().Contain("dotnetup");
-    }
-
-    [Fact]
-    public void WideTerminal_AllBorderLinesAligned()
-    {
-        var panel = DotnetBotBanner.BuildPanel(80);
+        var panel = DotnetBotBanner.BuildPanel();
         string output = RenderPanel(panel, 80);
 
         string[] lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         lines.Should().HaveCountGreaterThan(2);
 
-        // Verify structural alignment: every line starts with a left border
-        // and ends with a right border character. We check structure rather than
-        // string.Length because the bot art uses Unicode characters (▄█▀•■) with
-        // "Ambiguous" East Asian Width. Spectre.Console may measure these as
-        // single- or double-width depending on the platform, producing different
-        // amounts of padding spaces (and thus different string.Length values)
-        // while still rendering visually aligned borders.
         char[] leftBorders = ['╭', '│', '╰'];
         char[] rightBorders = ['╮', '│', '╯'];
 

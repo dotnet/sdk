@@ -84,8 +84,7 @@ internal static class FirstRunNotice
             Out = new AnsiConsoleOutput(Console.Error),
         });
 
-        int terminalWidth = Console.IsOutputRedirected ? int.MaxValue : Console.WindowWidth;
-        stderrConsole.Write(DotnetBotBanner.BuildPanel(terminalWidth));
+        stderrConsole.Write(DotnetBotBanner.BuildPanel());
         stderrConsole.WriteLine();
         stderrConsole.MarkupLine($"[dim]{Strings.TelemetryNotice.EscapeMarkup()}[/]");
         stderrConsole.WriteLine();

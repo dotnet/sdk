@@ -74,8 +74,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
 
     private static void ShowBanner()
     {
-        int terminalWidth = Console.IsOutputRedirected ? int.MaxValue : Console.WindowWidth;
-        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel(terminalWidth));
+        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
         SpectreAnsiConsole.WriteLine();
     }
 
