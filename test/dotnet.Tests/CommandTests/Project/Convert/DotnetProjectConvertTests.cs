@@ -240,6 +240,80 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Contain($"""
                 <ProjectReference Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj" />
                 """);
+
+        // The referenced library should have been converted too.
+        var libProjectDir = Path.Join(testInstance.Path, "lib");
+        File.Exists(Path.Join(libProjectDir, "lib.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(libProjectDir, "lib.cs")).Should().BeTrue();
+        File.ReadAllText(Path.Join(libProjectDir, "lib.csproj"))
+            .Should().Contain("<OutputType>Library</OutputType>");
+
+        // The converted project should build and produce the same output.
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirFullPath)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void RefDirective_Transitive_Convert()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            namespace Lib2;
+            public static class Helper
+            {
+                public static string Get() => "from lib2";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:ref lib2.cs
+            namespace Lib1;
+            public static class Facade
+            {
+                public static string Get() => $"from lib1 and {Lib2.Helper.Get()}";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib1.cs
+            Console.WriteLine(Lib1.Facade.Get());
+            """);
+
+        var expectedOutput = "from lib1 and from lib2";
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // All three projects should exist.
+        File.Exists(Path.Join(outputDirFullPath, "app.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "lib1", "lib1.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(testInstance.Path, "lib2", "lib2.csproj")).Should().BeTrue();
+
+        // lib1.csproj should reference lib2.
+        File.ReadAllText(Path.Join(testInstance.Path, "lib1", "lib1.csproj"))
+            .Should().Contain($"""
+                <ProjectReference Include="..{Path.DirectorySeparatorChar}lib2{Path.DirectorySeparatorChar}lib2.csproj" />
+                """);
+
+        // The converted project should build and produce the same output.
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirFullPath)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
     }
 
     [Fact]
