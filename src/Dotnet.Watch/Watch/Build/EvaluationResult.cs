@@ -7,7 +7,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 namespace Microsoft.DotNet.Watch;
 

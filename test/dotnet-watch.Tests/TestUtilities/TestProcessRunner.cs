@@ -14,5 +14,5 @@ internal class TestProcessRunner()
     {
         var result = RunImpl?.Invoke(processSpec, logger, launchResult);
         return result ?? await base.RunAsync(processSpec, logger, launchResult, processTerminationToken);
-    }   
+    }
 }

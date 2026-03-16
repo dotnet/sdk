@@ -941,6 +941,7 @@ namespace Microsoft.DotNet.Watch
             BuildOnly,
         }
 
+        // internal for testing
         internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, LoadedProjectGraph? projectGraph, bool success)
         {
             public string? MainProjectTargetFramework { get; } = mainProjectTargetFramework;
