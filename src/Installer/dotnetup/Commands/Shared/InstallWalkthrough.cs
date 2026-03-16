@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -163,7 +164,16 @@ internal class InstallWalkthrough
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
             if (_options.Interactive && !installPathCameFromGlobalJson)
             {
-                if (currentDotnetInstallRoot == null)
+                // On non-Windows, configuring the default install requires modifying shell profiles.
+                // If we can't detect a supported shell, skip the prompt — there's nothing useful we can do.
+                if (!OperatingSystem.IsWindows() && ShellDetection.GetCurrentShellProvider() is null)
+                {
+                    var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+                    SpectreAnsiConsole.MarkupLine($"[yellow]Shell '{shellEnv}' is not supported for automatic environment configuration. Skipping default install setup.[/]");
+                    SpectreAnsiConsole.MarkupLine($"[yellow]Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}[/]");
+                    resolvedSetDefaultInstall = false;
+                }
+                else if (currentDotnetInstallRoot == null)
                 {
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",

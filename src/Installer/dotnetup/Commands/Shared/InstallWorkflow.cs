@@ -226,4 +226,86 @@ internal class InstallWorkflow
         }
     }
 
+    /// <summary>
+    /// Executes multiple installations with concurrent downloads. Context resolution (install path,
+    /// default install prompting) happens once for the first spec's options. Each spec's component
+    /// and version are resolved independently, then downloads run in parallel and installs are
+    /// serialized.
+    /// </summary>
+    public void ExecuteMultiple(IReadOnlyList<InstallWorkflowOptions> optionsList)
+    {
+        if (optionsList.Count == 0)
+        {
+            return;
+        }
+
+        // For a single spec, use the standard path
+        if (optionsList.Count == 1)
+        {
+            Execute(optionsList[0]);
+            return;
+        }
+
+        // Use the first spec's options for shared context (install path, interactive, etc.)
+        var baseOptions = optionsList[0];
+
+        // Record telemetry for the batch
+        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, "multi");
+        Activity.Current?.SetTag("install.count", optionsList.Count);
+
+        // Resolve shared context once (install path, default install decision)
+        var context = ResolveWorkflowContext(baseOptions, out string? error);
+        if (context is null)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, error ?? "Failed to resolve workflow context.");
+        }
+
+        if (File.Exists(context.InstallPath))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallPathIsFile,
+                $"The install path '{context.InstallPath}' is an existing file, not a directory. " +
+                "Please specify a directory path for the installation.");
+        }
+
+        if (InstallExecutor.IsAdminInstallPath(context.InstallPath))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminPathBlocked,
+                $"The install path '{context.InstallPath}' is a system-managed .NET location. " +
+                "dotnetup cannot install to the default system .NET directory. " +
+                "Use your system package manager or choose a different path.");
+        }
+
+        // Create install requests for all specs
+        var resolvedRequests = new List<InstallExecutor.ResolvedInstallRequest>();
+        foreach (var options in optionsList)
+        {
+            string channel = options.VersionOrChannel ?? "latest";
+
+            var resolved = InstallExecutor.CreateAndResolveRequest(
+                context.InstallPath,
+                channel,
+                options.Component,
+                options.ManifestPath,
+                _channelVersionResolver,
+                options.RequireMuxerUpdate,
+                untracked: options.Untracked);
+
+            resolvedRequests.Add(resolved);
+        }
+
+        // Execute all installations with concurrent downloads
+        InstallExecutor.ExecuteInstallMultiple(resolvedRequests, baseOptions.NoProgress);
+
+        // Apply post-install configuration once
+        if (context.SetDefaultInstall)
+        {
+            InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, context.SetDefaultInstall, context.InstallPath);
+        }
+
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, "installed");
+        InstallExecutor.DisplayComplete();
+    }
+
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
@@ -9,6 +10,7 @@ internal class PrintEnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
+    private readonly bool _dotnetupOnly;
     private readonly IDotnetInstallManager _dotnetInstaller;
 
     public PrintEnvScriptCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
@@ -16,6 +18,7 @@ internal class PrintEnvScriptCommand : CommandBase
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
         _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
+        _dotnetupOnly = result.GetValue(PrintEnvScriptCommandParser.DotnetupOnlyOption);
     }
 
     protected override string GetCommandName() => "print-env-script";
@@ -31,13 +34,13 @@ internal class PrintEnvScriptCommand : CommandBase
                 if (shellPath is null)
                 {
                     Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
-                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
                 }
                 else
                 {
                     var shellName = Path.GetFileName(shellPath);
                     Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
-                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
                     Console.Error.WriteLine("Please specify the shell using --shell option.");
                 }
                 return 1;
@@ -46,8 +49,12 @@ internal class PrintEnvScriptCommand : CommandBase
             // Determine the dotnet install path
             string installPath = _dotnetInstallPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
 
+            // Determine the dotnetup directory so it can be added to PATH
+            string? dotnetupDir = Path.GetDirectoryName(Environment.ProcessPath);
+
             // Generate the shell script
-            string script = _shellProvider.GenerateEnvScript(installPath);
+            bool includeDotnet = !_dotnetupOnly;
+            string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
 
             // Output the script to stdout
             Console.WriteLine(script);

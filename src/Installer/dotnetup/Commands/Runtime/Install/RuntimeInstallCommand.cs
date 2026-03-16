@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 {
-    private readonly string? _componentSpec = result.GetValue(RuntimeInstallCommandParser.ComponentSpecArgument);
+    private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecArgument) ?? [];
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
     private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
@@ -36,44 +36,69 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
-        // Parse the component spec to determine runtime type and version
-        var (component, versionOrChannel) = ParseComponentSpec(_componentSpec);
+        // If no specs provided, default to installing latest core runtime
+        var specs = _componentSpecs.Length > 0 ? (string?[])_componentSpecs : [null];
 
-        // Windows Desktop Runtime is only available on Windows
-        if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+        // Parse and validate all specs up front before installing any
+        var parsed = new List<(InstallComponent Component, string? VersionOrChannel, string Description)>();
+        foreach (var spec in specs)
         {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PlatformNotSupported,
-                $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
-        }
+            var (component, versionOrChannel) = ParseComponentSpec(spec);
 
-        // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
-        if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.InvalidChannel,
-                $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
-                + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
-        }
+            if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PlatformNotSupported,
+                    $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
+            }
 
-        // Use GetDisplayName() from InstallComponentExtensions for consistent descriptions
-        string componentDescription = component.GetDisplayName();
+            if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InvalidChannel,
+                    $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
+                    + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
+            }
+
+            parsed.Add((component, versionOrChannel, component.GetDisplayName()));
+        }
 
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
-        InstallWorkflow.InstallWorkflowOptions options = new(
-            versionOrChannel,
-            _installPath,
-            _setDefaultInstall,
-            _manifestPath,
-            _interactive,
-            _noProgress,
-            component,
-            componentDescription,
-            RequireMuxerUpdate: _requireMuxerUpdate,
-            Untracked: _untracked);
+        if (parsed.Count == 1)
+        {
+            var (component, versionOrChannel, componentDescription) = parsed[0];
+            InstallWorkflow.InstallWorkflowOptions options = new(
+                versionOrChannel,
+                _installPath,
+                _setDefaultInstall,
+                _manifestPath,
+                _interactive,
+                _noProgress,
+                component,
+                componentDescription,
+                RequireMuxerUpdate: _requireMuxerUpdate,
+                Untracked: _untracked);
 
-        workflow.Execute(options);
+            workflow.Execute(options);
+        }
+        else
+        {
+            var optionsList = parsed.Select(p => new InstallWorkflow.InstallWorkflowOptions(
+                p.VersionOrChannel,
+                _installPath,
+                _setDefaultInstall,
+                _manifestPath,
+                _interactive,
+                _noProgress,
+                p.Component,
+                p.Description,
+                RequireMuxerUpdate: _requireMuxerUpdate,
+                Untracked: _untracked)).ToList();
+
+            workflow.ExecuteMultiple(optionsList);
+        }
+
         return 0;
     }
 

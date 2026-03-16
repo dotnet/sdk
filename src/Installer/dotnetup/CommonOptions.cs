@@ -122,6 +122,24 @@ internal class CommonOptions
         };
     }
 
+    /// <summary>
+    /// Creates a positional argument that accepts one or more runtime component specifications.
+    /// Used by runtime install to support installing multiple runtimes in a single invocation.
+    /// </summary>
+    /// <param name="actionVerb">Verb for the description (e.g., "install").</param>
+    public static Argument<string[]> CreateMultipleRuntimeComponentSpecArgument(string actionVerb)
+    {
+        return new Argument<string[]>("component-spec")
+        {
+            HelpName = "COMPONENT_SPEC",
+            Description = $"One or more version/channel (e.g., 10.0) or component@version (e.g., aspnetcore@10.0) to {actionVerb}. "
+                + "When only a version is provided, the core .NET runtime is targeted. "
+                + "Multiple specs can be provided to {actionVerb} several runtimes at once. "
+                + "Valid component types: " + string.Join(", ", RuntimeInstallCommand.GetValidRuntimeTypes()),
+            Arity = ArgumentArity.ZeroOrMore,
+        };
+    }
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 }

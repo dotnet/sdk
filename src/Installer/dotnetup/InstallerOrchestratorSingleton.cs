@@ -153,7 +153,182 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
+    /// Installs multiple components with concurrent downloads and serialized extraction.
+    /// All pre-checks run first, then archives download in parallel with separate progress bars,
+    /// and finally extraction/commit happens one at a time.
+    /// </summary>
+#pragma warning disable CA1822 // Intentionally an instance method on a singleton
+    public IReadOnlyList<InstallResult> InstallMultiple(IReadOnlyList<DotnetInstallRequest> installRequests, bool noProgress = false)
+    {
+        if (installRequests.Count == 0)
+        {
+            return [];
+        }
+
+        // For a single request, delegate to the existing path
+        if (installRequests.Count == 1)
+        {
+            return [Install(installRequests[0], noProgress)];
+        }
+
+        ReleaseManifest releaseManifest = new();
+
+        // Phase 1: Validate and resolve all requests, check for already-installed
+        var prepared = new List<(int OriginalIndex, DotnetInstallRequest Request, ReleaseVersion Version, DotnetInstall Install, string? ManifestPath)>();
+        var results = new InstallResult?[installRequests.Count];
+
+        for (int i = 0; i < installRequests.Count; i++)
+        {
+            var request = installRequests[i];
+
+            if (!ChannelVersionResolver.IsValidChannelFormat(request.Channel.Name))
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InvalidChannel,
+                    $"'{request.Channel.Name}' is not a valid .NET version or channel. " +
+                    $"Use a version like '9.0', '9.0.100', or a channel keyword: {string.Join(", ", ChannelVersionResolver.KnownChannelKeywords)}.",
+                    version: null,
+                    component: request.Component.ToString());
+            }
+
+            ReleaseVersion? version = request.ResolvedVersion
+                ?? new ChannelVersionResolver(releaseManifest).Resolve(request);
+
+            if (version == null)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.VersionNotFound,
+                    $"Could not find .NET version '{request.Channel.Name}'. The version may not exist or may not be supported.",
+                    version: null,
+                    component: request.Component.ToString());
+            }
+
+            DotnetInstall install = new(request.InstallRoot, version, request.Component);
+            string? customManifestPath = request.Options.ManifestPath;
+
+            using (var finalizeLock = ModifyInstallStateMutex())
+            {
+                var manifestData = request.Options.Untracked
+                    ? new DotnetupManifestData()
+                    : new DotnetupSharedManifest(customManifestPath).ReadManifest();
+
+                if (InstallAlreadyExists(manifestData, install))
+                {
+                    RecordInstallSpec(request, customManifestPath);
+                    results[i] = new InstallResult(install, WasAlreadyInstalled: true);
+                    continue;
+                }
+
+                if (!request.Options.Untracked
+                    && !IsRootInManifest(manifestData, request.InstallRoot)
+                    && HasDotnetArtifacts(request.InstallRoot.Path))
+                {
+                    throw new DotnetInstallException(
+                        DotnetInstallErrorCode.Unknown,
+                        $"The install path '{request.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                        "To avoid conflicts, use a different install path or remove the existing installation first.",
+                        version: version.ToString(),
+                        component: request.Component.ToString());
+                }
+
+                if (request.Options.RequireMuxerUpdate && request.InstallRoot.Path is not null)
+                {
+                    MuxerHandler.EnsureMuxerIsWritable(request.InstallRoot.Path);
+                }
+            }
+
+            prepared.Add((i, request, version, install, customManifestPath));
+        }
+
+        // If everything was already installed, return early
+        if (prepared.Count == 0)
+        {
+            return [.. results.Select(r => r!)];
+        }
+
+        // Phase 2: Download all archives concurrently with shared progress
+        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        using var sharedReporter = progressTarget.CreateProgressReporter();
+
+        var extractors = new DotnetArchiveExtractor[prepared.Count];
+        try
+        {
+            for (int i = 0; i < prepared.Count; i++)
+            {
+                extractors[i] = new DotnetArchiveExtractor(
+                    prepared[i].Request,
+                    prepared[i].Version,
+                    releaseManifest,
+                    progressTarget,
+                    sharedReporter: sharedReporter);
+            }
+
+            // Download concurrently
+            var downloadTasks = extractors.Select(e => Task.Run(() => e.Prepare())).ToArray();
+            Task.WaitAll(downloadTasks);
+
+            // Phase 3: Commit sequentially
+            for (int i = 0; i < prepared.Count; i++)
+            {
+                var (originalIndex, request, version, install, customManifestPath) = prepared[i];
+
+                using (var finalizeLock = ModifyInstallStateMutex())
+                {
+                    var manifestData = request.Options.Untracked
+                        ? new DotnetupManifestData()
+                        : new DotnetupSharedManifest(customManifestPath).ReadManifest();
+
+                    if (InstallAlreadyExists(manifestData, install))
+                    {
+                        results[originalIndex] = new InstallResult(install, WasAlreadyInstalled: true);
+                        continue;
+                    }
+
+                    extractors[i].Commit();
+
+                    ArchiveInstallationValidator validator = new();
+                    if (validator.Validate(install, out string? validationFailure))
+                    {
+                        RecordInstallSpec(request, customManifestPath);
+
+                        if (!request.Options.Untracked)
+                        {
+                            var manifestManager = new DotnetupSharedManifest(customManifestPath);
+                            manifestManager.AddInstallation(request.InstallRoot, new Installation
+                            {
+                                Component = request.Component,
+                                Version = version.ToString(),
+                                Subcomponents = [.. extractors[i].ExtractedSubcomponents]
+                            });
+                        }
+                    }
+                    else
+                    {
+                        throw new DotnetInstallException(
+                            DotnetInstallErrorCode.InstallFailed,
+                            $"Installation validation failed: {validationFailure}",
+                            version: version.ToString(),
+                            component: request.Component.ToString());
+                    }
+                }
+
+                results[originalIndex] = new InstallResult(install, WasAlreadyInstalled: false);
+            }
+        }
+        finally
+        {
+            foreach (var extractor in extractors)
+            {
+                extractor?.Dispose();
+            }
+        }
+
+        return [.. results.Select(r => r!)];
+    }
+#pragma warning restore CA1822
+
+    /// <summary>
+    /// Records the install specin the manifest, respecting Untracked and SkipInstallSpecRecording flags.
     /// </summary>
     private static void RecordInstallSpec(DotnetInstallRequest installRequest, string? customManifestPath)
     {

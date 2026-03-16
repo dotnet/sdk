@@ -7,8 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 internal static class RuntimeInstallCommandParser
 {
-    public static readonly Argument<string?> ComponentSpecArgument =
-        CommonOptions.CreateRuntimeComponentSpecArgument(required: false, actionVerb: "install");
+    public static readonly Argument<string[]> ComponentSpecArgument =
+        CommonOptions.CreateMultipleRuntimeComponentSpecArgument(actionVerb: "install");
 
     private static readonly Command s_command = ConstructCommand();
 

@@ -176,6 +176,17 @@ public class InstallerOrchestratorTests
 
     #endregion
 
+    #region InstallMultiple
+
+    [Fact]
+    public void InstallMultiple_EmptyList_ReturnsEmpty()
+    {
+        var results = InstallerOrchestratorSingleton.Instance.InstallMultiple([], noProgress: true);
+        results.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Helpers
 
     private static DotnetInstall MakeInstall(string path, string version, InstallComponent component)

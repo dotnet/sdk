@@ -3,38 +3,31 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 internal static class PrintEnvScriptCommandParser
 {
-    internal static readonly IEnvShellProvider[] s_supportedShells =
-    [
-        new BashEnvShellProvider(),
-        new ZshEnvShellProvider(),
-        new PowerShellEnvShellProvider()
-    ];
-
-    private static readonly Dictionary<string, IEnvShellProvider> s_shellMap =
-        s_supportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
-
     public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
     {
-        Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
+        Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
         Arity = ArgumentArity.ZeroOrOne,
         // called when no token is presented at all
-        DefaultValueFactory = (optionResult) => LookupShellFromEnvironment(),
+        DefaultValueFactory = (optionResult) => ShellDetection.GetCurrentShellProvider(),
         // called for all other scenarios
         CustomParser = (optionResult) =>
         {
             return optionResult.Tokens switch
             {
                 // shouldn't be required because of the DefaultValueFactory above
-                [] => LookupShellFromEnvironment(),
-                [var shellToken] => s_shellMap[shellToken.Value],
+                [] => ShellDetection.GetCurrentShellProvider(),
+                [var shellToken] => ShellDetection.GetShellProvider(shellToken.Value),
                 _ => throw new InvalidOperationException("Unexpected number of tokens") // this is impossible because of the Arity set above
             };
-        }
+        },
+        Validators = { OnlyAcceptSupportedShells() },
+        CompletionSources = { CreateCompletions() }
     };
 
     public static readonly Option<string?> DotnetInstallPathOption = new("--dotnet-install-path", "-d")
@@ -43,16 +36,11 @@ internal static class PrintEnvScriptCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    static PrintEnvScriptCommandParser()
+    public static readonly Option<bool> DotnetupOnlyOption = new("--dotnetup-only")
     {
-        // Add validator to only accept supported shells
-        ShellOption.Validators.Clear();
-        ShellOption.Validators.Add(OnlyAcceptSupportedShells());
-
-        // Add completions for shell names
-        ShellOption.CompletionSources.Clear();
-        ShellOption.CompletionSources.Add(CreateCompletions());
-    }
+        Description = "Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.",
+        Arity = ArgumentArity.ZeroOrOne
+    };
 
     private static readonly Command s_printEnvScriptCommand = ConstructCommand();
 
@@ -67,38 +55,11 @@ internal static class PrintEnvScriptCommandParser
 
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);
+        command.Options.Add(DotnetupOnlyOption);
 
         command.SetAction(parseResult => new PrintEnvScriptCommand(parseResult).Execute());
 
         return command;
-    }
-
-    private static IEnvShellProvider? LookupShellFromEnvironment()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            return s_shellMap["pwsh"];
-        }
-
-        var shellPath = Environment.GetEnvironmentVariable("SHELL");
-        if (shellPath is null)
-        {
-            // Return null if we can't detect the shell
-            // This allows help to work, but Execute will handle the error
-            return null;
-        }
-
-        var shellName = Path.GetFileName(shellPath);
-        if (s_shellMap.TryGetValue(shellName, out var shellProvider))
-        {
-            return shellProvider;
-        }
-        else
-        {
-            // Return null for unsupported shells
-            // This allows help to work, but Execute will handle the error
-            return null;
-        }
     }
 
     private static Action<System.CommandLine.Parsing.OptionResult> OnlyAcceptSupportedShells()
@@ -110,9 +71,9 @@ internal static class PrintEnvScriptCommandParser
                 return;
             }
             var singleToken = optionResult.Tokens[0];
-            if (!s_shellMap.ContainsKey(singleToken.Value))
+            if (!ShellDetection.IsSupported(singleToken.Value))
             {
-                optionResult.AddError($"Unsupported shell '{singleToken.Value}'. Supported shells: {string.Join(", ", s_shellMap.Keys)}");
+                optionResult.AddError($"Unsupported shell '{singleToken.Value}'. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
             }
         };
     }
@@ -121,7 +82,7 @@ internal static class PrintEnvScriptCommandParser
     {
         return (CompletionContext context) =>
         {
-            return s_shellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, documentation: shellProvider.HelpDescription));
+            return ShellDetection.s_supportedShells.Select(s => new CompletionItem(s.ArgumentName, documentation: s.HelpDescription));
         };
     }
 }
