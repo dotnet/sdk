@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -10,8 +12,6 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 { "sourceFile", sourceSnippet }
             };
 
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
 
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "_R1_.cs", string.Empty },
                 { "_R2_.cs", string.Empty }
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -242,7 +242,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile", sourceSnippet }
             };
@@ -258,7 +258,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -319,7 +319,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile", sourceSnippet }
             };
@@ -344,7 +344,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -392,7 +392,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile", sourceSnippet }
             };
@@ -417,7 +417,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -490,7 +490,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile", sourceSnippet }
             };
@@ -510,7 +510,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -569,7 +569,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile.cs", sourceSnippet }
             };
@@ -589,7 +589,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
@@ -649,7 +649,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonSerializer.Serialize(templateConfig, new JsonSerializerOptions { WriteIndented = true }) },
                 //content
                 { "sourceFile", sourceSnippet }
             };
@@ -669,7 +669,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;

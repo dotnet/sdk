@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string templateConfigDir = Path.Combine(sourceBasePath, RunnableProjectGenerator.TemplateConfigDirectoryName);
             string filePath = Path.Combine(templateConfigDir, RunnableProjectGenerator.TemplateConfigFileName);
             environmentSettings.Host.FileSystem.CreateDirectory(templateConfigDir);
-            environmentSettings.Host.FileSystem.WriteAllText(filePath, JsonConvert.SerializeObject(jsonToBe));
+            environmentSettings.Host.FileSystem.WriteAllText(filePath, JsonSerializer.Serialize(jsonToBe));
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();

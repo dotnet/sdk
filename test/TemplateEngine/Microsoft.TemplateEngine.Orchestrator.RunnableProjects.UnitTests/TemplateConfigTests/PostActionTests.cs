@@ -1,13 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             _environmentSettings = environmentSettingsHelper.CreateEnvironment(virtualize: true);
         }
 
-        private static JObject TestTemplateJson
+        private static JsonObject TestTemplateJson
         {
             get
             {
@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                   ]
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
@@ -317,7 +317,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
                 """;
 
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configString));
 
             Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
@@ -354,7 +354,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
                 """;
 
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configString));
 
             Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
@@ -410,7 +410,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
                 """;
 
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configString));
 
             IVariableCollection vc = new VariableCollection
             {

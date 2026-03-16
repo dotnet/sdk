@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
@@ -72,40 +72,29 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             }
         }
 
-        [JsonProperty]
         public Guid ConfigMountPointId => Guid.Empty;
 
-        [JsonProperty]
         public string? Author { get; private set; }
 
-        [JsonProperty]
         public IReadOnlyList<string> Classifications { get; private set; }
 
-        [JsonProperty]
         public string DefaultName => string.Empty;
 
-        [JsonProperty]
         public string? Description { get; private set; }
 
-        [JsonProperty]
         public string Identity { get; private set; }
 
-        [JsonProperty]
         public Guid GeneratorId => Guid.Empty;
 
-        [JsonProperty]
         public string? GroupIdentity { get; private set; }
 
-        [JsonProperty]
         public int Precedence { get; private set; }
 
-        [JsonProperty]
         public string Name { get; private set; }
 
         [JsonIgnore]
         public bool PreferDefaultName { get; }
 
-        [JsonProperty]
         public string ShortName
         {
             get
@@ -129,34 +118,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             }
         }
 
-        [JsonProperty]
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
-        [JsonProperty]
         public string ConfigPlace => string.Empty;
 
-        [JsonProperty]
         public Guid LocaleConfigMountPointId => Guid.Empty;
 
-        [JsonProperty]
         public string LocaleConfigPlace => string.Empty;
 
-        [JsonProperty]
         public Guid HostConfigMountPointId => Guid.Empty;
 
-        [JsonProperty]
         public string HostConfigPlace => string.Empty;
 
-        [JsonProperty]
         public string? ThirdPartyNotices { get; private set; }
 
-        [JsonProperty]
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; private set; }
 
-        [JsonProperty]
         public bool HasScriptRunningPostActions { get; set; }
 
-        [JsonProperty]
         public DateTime? ConfigTimestampUtc { get; private set; }
 
         [JsonIgnore]
@@ -172,17 +151,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         [JsonIgnore]
         public string MountPointUri => string.Empty;
 
-        [JsonProperty]
         public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; } = new Dictionary<string, ICacheTag>();
 
-        [JsonProperty]
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         [JsonIgnore]
         public IReadOnlyList<Guid> PostActions { get; }
 
         [JsonIgnore]
-        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => [];
 
         // ShortName should get deserialized when it exists, for backwards compat.
         // But moving forward, ShortNameList should be the definitive source.
@@ -202,23 +179,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
             }
 
-            [JsonProperty]
             public string? Description { get; }
 
-            [JsonProperty]
             public IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
 
-            [JsonProperty]
             public string? DefaultValue { get; }
 
-            [JsonProperty]
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string? DisplayName => null;
 
             [JsonIgnore]
-            public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
+            public IReadOnlyDictionary<string, ParameterChoice> Choices => new Dictionary<string, ParameterChoice>();
 
         }
 
@@ -232,20 +205,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
             }
 
-            [JsonProperty]
             public string? DataType { get; }
 
-            [JsonProperty]
             public string? DefaultValue { get; }
 
-            [JsonProperty]
             public string? Description { get; }
 
-            [JsonProperty]
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string DisplayName => throw new NotImplementedException();
+            public string DisplayName => string.Empty;
         }
     }
 }

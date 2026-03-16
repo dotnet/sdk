@@ -48,9 +48,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         [Theory]
-        [InlineData(/*lang=json*/ """{ name: "localizedName"}""", false, "localizedName")]
-        [InlineData(/*lang=json*/ """{ name: ""}""", false, "")]
-        [InlineData(/*lang=json*/ """{ notName: "localizedName"}""", false, null)]
+        [InlineData(/*lang=json,strict*/ """{ "name": "localizedName"}""", false, "localizedName")]
+        [InlineData(/*lang=json,strict*/ """{ "name": ""}""", false, "")]
+        [InlineData(/*lang=json,strict*/ """{ "notName": "localizedName"}""", false, null)]
         public void CanReadName(string fileContent, bool errorExpected, string? expectedName)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -72,9 +72,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         [Theory]
-        [InlineData(/*lang=json*/ """{ description: "localizedDescription"}""", false, "localizedDescription")]
-        [InlineData(/*lang=json*/ """{ description: ""}""", false, "")]
-        [InlineData(/*lang=json*/ """{ notdescription: "localizedDescription"}""", false, null)]
+        [InlineData(/*lang=json,strict*/ """{ "description": "localizedDescription"}""", false, "localizedDescription")]
+        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, "")]
+        [InlineData(/*lang=json,strict*/ """{ "notdescription": "localizedDescription"}""", false, null)]
         public void CanReadDescription(string fileContent, bool errorExpected, string? expectedDescription)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             "localizedSymbolDescription1|localizedSymbolDescription2")]
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription")]
-        [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
+        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
         // Test case for NullReferenceException fix: malformed symbol key with only "symbols/" prefix
         [InlineData(/*lang=json,strict*/ """{ "symbols/": "test" }""", false, null, null, null)]
         public void CanReadNonChoiceSymbol(
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/choices/one/displayName": "one-localized"}""", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
-        [InlineData(/*lang=json*/ "{ description: \"\"}", false, null, null, null, null)]
+        [InlineData(/*lang=json,strict*/ "{ \"description\": \"\"}", false, null, null, null, null)]
         public void CanReadChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -243,7 +243,7 @@ false,
 "pa0|pa1",
 "localizedDescription|localizedDescription",
 "first*firstLocalized%second*secondLocalized|first*firstLocalized")]
-        [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
+        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
         [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""", false, "pa0", "localizedDescription", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/first/text": "localizedDescription" }""", false, "pa0", "(null)", "first*localizedDescription")]
         // Test case for NullReferenceException fix: malformed postAction key with only "postActions/" prefix

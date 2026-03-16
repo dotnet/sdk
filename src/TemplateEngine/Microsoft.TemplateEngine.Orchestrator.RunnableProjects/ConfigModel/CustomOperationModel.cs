@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -22,13 +22,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? Configuration { get; internal init; }
 
-        internal static CustomOperationModel FromJObject(JObject jObject)
+        internal static CustomOperationModel FromJObject(JsonObject jObject)
         {
             CustomOperationModel model = new CustomOperationModel
             {
                 Type = jObject.ToString(nameof(Type)),
                 Condition = jObject.ToString(nameof(Condition)),
-                Configuration = jObject.Get<JObject>(nameof(Configuration))?.ToString(),
+                Configuration = jObject.Get<JsonObject>(nameof(Configuration))?.ToJsonString(),
             };
 
             return model;

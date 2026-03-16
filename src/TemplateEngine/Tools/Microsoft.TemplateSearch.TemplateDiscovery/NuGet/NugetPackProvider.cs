@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 {
                     string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
-                    NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
+                    NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JExtensions.ParseJsonObject(responseText));
                     totalPackCount = resultsForPage.TotalHits;
                     if (resultsForPage.Data.Count > 0)
                     {
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             using HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
+            NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JExtensions.ParseJsonObject(responseText));
             return resultsForPage.TotalHits;
         }
 

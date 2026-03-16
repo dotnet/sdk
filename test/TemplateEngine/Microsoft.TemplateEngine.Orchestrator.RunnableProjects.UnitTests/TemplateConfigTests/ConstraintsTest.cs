@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
@@ -47,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            var model = TemplateConfigModel.FromJObject(JObject.FromObject(json));
+            var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject());
 
             Assert.Equal(4, model.Constraints.Count);
             Assert.Equal("con1", model.Constraints[0].Type);
@@ -78,10 +79,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            var model = TemplateConfigModel.FromJObject(JObject.FromObject(json), loggerProvider.CreateLogger("test"));
+            var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject(), loggerProvider.CreateLogger("test"));
             Assert.Empty(model.Constraints);
             Assert.Single(loggedMessages);
-            Assert.Equal($"Constraint definition '{JObject.FromObject(new { args = "arg" })}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
+            Assert.Equal($"Constraint definition '{JsonNode.Parse(JsonSerializer.Serialize(new { args = "arg" }))!.ToJsonString()}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
         }
 
         [Fact]
@@ -98,7 +99,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            var model = TemplateConfigModel.FromJObject(JObject.FromObject(json), loggerProvider.CreateLogger("test"));
+            var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject(), loggerProvider.CreateLogger("test"));
             Assert.Empty(model.Constraints);
             Assert.Single(loggedMessages);
             Assert.Equal("'constraints' should contain objects.", loggedMessages.Single().Item2);

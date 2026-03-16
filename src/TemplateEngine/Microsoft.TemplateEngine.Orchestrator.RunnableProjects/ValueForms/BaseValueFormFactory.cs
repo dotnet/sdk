@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         public abstract IValueForm Create(string? name = null);
 
-        public abstract IValueForm FromJObject(string name, JObject? configuration = null);
+        public abstract IValueForm FromJObject(string name, JsonObject? configuration = null);
 
         protected abstract class BaseValueForm : IValueForm
         {

@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Binding = binding;
         }
 
-        internal BindSymbol(string name, JObject jObject) : base(jObject, name)
+        internal BindSymbol(string name, JsonObject jObject) : base(jObject, name)
         {
             string? binding = jObject.ToString(nameof(Binding));
             if (string.IsNullOrWhiteSpace(binding))

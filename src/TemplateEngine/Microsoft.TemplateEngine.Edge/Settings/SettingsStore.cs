@@ -1,66 +1,67 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class SettingsStore
     {
-        internal SettingsStore(JObject? obj)
+        internal SettingsStore(JsonObject? obj)
         {
             if (obj == null)
             {
                 return;
             }
 
-            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), StringComparison.OrdinalIgnoreCase, out JToken? componentGuidToAssemblyQualifiedNameToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ComponentGuidToAssemblyQualifiedName), out JsonNode? componentGuidToAssemblyQualifiedNameToken))
             {
-                if (componentGuidToAssemblyQualifiedNameToken is JObject componentGuidToAssemblyQualifiedNameObject)
+                if (componentGuidToAssemblyQualifiedNameToken is JsonObject componentGuidToAssemblyQualifiedNameObject)
                 {
-                    foreach (JProperty entry in componentGuidToAssemblyQualifiedNameObject.Properties())
+                    foreach (var entry in componentGuidToAssemblyQualifiedNameObject)
                     {
-                        if (entry.Value is { Type: JTokenType.String })
+                        if (entry.Value?.GetValueKind() == JsonValueKind.String)
                         {
-                            ComponentGuidToAssemblyQualifiedName[entry.Name] = entry.Value.ToString();
+                            ComponentGuidToAssemblyQualifiedName[entry.Key] = entry.Value.GetValue<string>();
                         }
                     }
                 }
             }
 
-            if (obj.TryGetValue(nameof(ProbingPaths), StringComparison.OrdinalIgnoreCase, out JToken? probingPathsToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ProbingPaths), out JsonNode? probingPathsToken))
             {
-                if (probingPathsToken is JArray probingPathsArray)
+                if (probingPathsToken is JsonArray probingPathsArray)
                 {
-                    foreach (JToken path in probingPathsArray)
+                    foreach (JsonNode? path in probingPathsArray)
                     {
-                        if (path is { Type: JTokenType.String })
+                        if (path?.GetValueKind() == JsonValueKind.String)
                         {
-                            ProbingPaths.Add(path.ToString());
+                            ProbingPaths.Add(path.GetValue<string>());
                         }
                     }
                 }
             }
 
-            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), StringComparison.OrdinalIgnoreCase, out JToken? componentTypeToGuidListToken))
+            if (obj.TryGetValueCaseInsensitive(nameof(ComponentTypeToGuidList), out JsonNode? componentTypeToGuidListToken))
             {
-                if (componentTypeToGuidListToken is JObject componentTypeToGuidListObject)
+                if (componentTypeToGuidListToken is JsonObject componentTypeToGuidListObject)
                 {
-                    foreach (JProperty entry in componentTypeToGuidListObject.Properties())
+                    foreach (var entry in componentTypeToGuidListObject)
                     {
-                        if (entry.Value is JArray values)
+                        if (entry.Value is JsonArray values)
                         {
                             HashSet<Guid> set = new HashSet<Guid>();
-                            ComponentTypeToGuidList[entry.Name] = set;
+                            ComponentTypeToGuidList[entry.Key] = set;
 
-                            foreach (JToken value in values)
+                            foreach (JsonNode? value in values)
                             {
-                                if (value is { Type: JTokenType.String })
+                                if (value?.GetValueKind() == JsonValueKind.String)
                                 {
-                                    if (Guid.TryParse(value.ToString(), out Guid id))
+                                    if (Guid.TryParse(value.GetValue<string>(), out Guid id))
                                     {
                                         set.Add(id);
                                     }
@@ -72,13 +73,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        [JsonProperty]
+        [JsonInclude]
         internal Dictionary<string, string> ComponentGuidToAssemblyQualifiedName { get; } = new();
 
-        [JsonProperty]
+        [JsonInclude]
         internal HashSet<string> ProbingPaths { get; } = new();
 
-        [JsonProperty]
+        [JsonInclude]
         internal Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; } = new();
 
         internal static SettingsStore Load(IEngineEnvironmentSettings engineEnvironmentSettings, SettingsFilePaths paths)
@@ -88,7 +89,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return new SettingsStore(null);
             }
 
-            JObject parsed;
+            JsonObject parsed;
             using (Timing.Over(engineEnvironmentSettings.Host.Logger, "Parse settings"))
             {
                 try

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -8,7 +9,6 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
@@ -20,20 +20,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
-            JObject rawConfiguration = JObject.Parse(configuration);
+            JsonObject rawConfiguration = JExtensions.ParseJsonObject(configuration);
             string? original = rawConfiguration.ToString("original");
             string? replacement = rawConfiguration.ToString("replacement");
             string? id = rawConfiguration.ToString("id");
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            JArray? onlyIf = rawConfiguration.Get<JArray>("onlyIf");
+            JsonArray? onlyIf = rawConfiguration.Get<JsonArray>("onlyIf");
             TokenConfig coreConfig = original.TokenConfigBuilder();
 
             if (onlyIf != null)
             {
-                foreach (JToken entry in onlyIf.Children())
+                foreach (JsonNode? entry in onlyIf)
                 {
-                    if (entry is not JObject)
+                    if (entry is not JsonObject)
                     {
                         continue;
                     }

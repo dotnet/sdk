@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json.Schema" />
+    <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="FakeItEasy" />
     <PackageReference Include="Verify.XUnit" />
     <PackageReference Include="Verify.DiffPlex" />

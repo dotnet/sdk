@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateSearch.Common.UnitTests
@@ -175,7 +176,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public async Task SearchReturnsErrorOnIncorrectCache()
         {
-            var jsonObject = JObject.FromObject(new { randomField = "smth" });
+            var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { randomField = "smth" }))!;
             string searchFilePath = Path.Combine(TestUtils.CreateTemporaryFolder(), "searchCacheV2.json");
             File.WriteAllText(searchFilePath, jsonObject.ToString());
 
@@ -208,7 +209,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public async Task SearchReturnsErrorOnIncorrectV1Cache()
         {
-            var jsonObject = JObject.FromObject(new { version = "1.0.0.0", randomField = "smth" });
+            var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "1.0.0.0", randomField = "smth" }))!;
             string searchFilePath = Path.Combine(TestUtils.CreateTemporaryFolder(), "searchCache.json");
             File.WriteAllText(searchFilePath, jsonObject.ToString());
 
@@ -241,7 +242,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public async Task SearchReturnsErrorOnIncorrectV2Cache()
         {
-            var jsonObject = JObject.FromObject(new { version = "2.0", randomField = "smth" });
+            var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "2.0", randomField = "smth" }))!;
             string searchFilePath = Path.Combine(TestUtils.CreateTemporaryFolder(), "searchCache.json");
             File.WriteAllText(searchFilePath, jsonObject.ToString());
 
@@ -274,7 +275,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public async Task SearchReturnsErrorOnIncorrectVersionCache()
         {
-            var jsonObject = JObject.FromObject(new { version = "3.0", TemplatePackages = Array.Empty<string>() });
+            var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "3.0", TemplatePackages = Array.Empty<string>() }))!;
             string searchFilePath = Path.Combine(TestUtils.CreateTemporaryFolder(), "searchCache.json");
             File.WriteAllText(searchFilePath, jsonObject.ToString());
 

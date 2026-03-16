@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -56,12 +58,12 @@ namespace Microsoft.TemplateSearch.Common
             environmentSettings.Host.Logger.LogDebug($"Reading cache file {pathToConfig}");
             string cacheText = environmentSettings.Host.FileSystem.ReadAllText(pathToConfig);
 
-            JObject cacheObject = JObject.Parse(cacheText);
+            JsonObject cacheObject = JExtensions.ParseJsonObject(cacheText);
 
             return TryReadDiscoveryMetadata(cacheObject, environmentSettings.Host.Logger, additionalDataReaders, out discoveryMetadata);
         }
 
-        internal static bool TryReadDiscoveryMetadata(JObject cacheObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
+        internal static bool TryReadDiscoveryMetadata(JsonObject cacheObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
         {
             // add the reader calls, build the model objects
             if (TryReadVersion(logger, cacheObject, out string? version)
@@ -76,12 +78,12 @@ namespace Microsoft.TemplateSearch.Common
             return false;
         }
 
-        private static bool TryReadVersion(ILogger logger, JObject cacheObject, out string? version)
+        private static bool TryReadVersion(ILogger logger, JsonObject cacheObject, out string? version)
         {
             logger.LogDebug($"Reading template metadata version");
-            if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.Version), out JToken? value))
+            if (cacheObject.TryGetValueCaseInsensitive(nameof(TemplateDiscoveryMetadata.Version), out JsonNode? value))
             {
-                version = value.Value<string>();
+                version = value?.ToString();
                 logger.LogDebug($"Version: {version}.");
                 return true;
             }
@@ -92,26 +94,26 @@ namespace Microsoft.TemplateSearch.Common
 
         private static bool TryReadTemplateList(
             ILogger logger,
-            JObject cacheObject,
+            JsonObject cacheObject,
             out IReadOnlyList<ITemplateInfo>? templateList)
         {
             logger.LogDebug($"Reading template list");
             try
             {
                 // This is lifted from TemplateCache.ParseCacheContent - almost identical
-                if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.TemplateCache), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken))
+                if (cacheObject.TryGetValueCaseInsensitive(nameof(TemplateDiscoveryMetadata.TemplateCache), out JsonNode? templateInfoToken))
                 {
                     List<ITemplateInfo> buildingTemplateList = new List<ITemplateInfo>();
 
-                    if (templateInfoToken is JArray arr)
+                    if (templateInfoToken is JsonArray arr)
                     {
-                        foreach (JToken entry in arr)
+                        foreach (JsonNode? entry in arr)
                         {
-                            if (entry != null && entry.Type == JTokenType.Object)
+                            if (entry is JsonObject entryObj)
                             {
                                 try
                                 {
-                                    buildingTemplateList.Add(BlobStorageTemplateInfo.FromJObject((JObject)entry));
+                                    buildingTemplateList.Add(BlobStorageTemplateInfo.FromJObject(entryObj));
                                 }
                                 catch (ArgumentException ex)
                                 {
@@ -138,13 +140,13 @@ namespace Microsoft.TemplateSearch.Common
             }
         }
 
-        private static bool TryReadPackToTemplateMap(ILogger logger, JObject cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry>? packToTemplateMap)
+        private static bool TryReadPackToTemplateMap(ILogger logger, JsonObject cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry>? packToTemplateMap)
         {
             logger.LogDebug($"Reading package information.");
             try
             {
-                if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.PackToTemplateMap), out JToken? packToTemplateMapToken)
-                    || packToTemplateMapToken is not JObject packToTemplateMapObject)
+                JsonNode? packToTemplateMapToken = JExtensions.GetPropertyCaseInsensitive(cacheObject, nameof(TemplateDiscoveryMetadata.PackToTemplateMap));
+                if (packToTemplateMapToken is not JsonObject packToTemplateMapObject)
                 {
                     logger.LogDebug($"Failed to read package info entries. Details: no PackToTemplateMap property found.");
                     packToTemplateMap = null;
@@ -153,25 +155,25 @@ namespace Microsoft.TemplateSearch.Common
 
                 Dictionary<string, PackToTemplateEntry> workingPackToTemplateMap = new();
 
-                foreach (JProperty packEntry in packToTemplateMapObject.Properties())
+                foreach (var packEntry in packToTemplateMapObject)
                 {
-                    if (packEntry != null)
+                    if (packEntry.Value != null)
                     {
-                        string packName = packEntry.Name.ToString();
-                        JObject entryValue = (JObject)packEntry.Value;
+                        string packName = packEntry.Key;
+                        JsonObject entryValue = (JsonObject)packEntry.Value;
 
-                        if (entryValue.TryGetValue(nameof(PackToTemplateEntry.Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken)
-                            && versionToken.Type == JTokenType.String
-                            && entryValue.TryGetValue(nameof(PackToTemplateEntry.TemplateIdentificationEntry), StringComparison.OrdinalIgnoreCase, out JToken? identificationToken)
-                            && identificationToken is JArray identificationArray)
+                        JsonNode? versionNode = JExtensions.GetPropertyCaseInsensitive(entryValue, nameof(PackToTemplateEntry.Version));
+                        JsonNode? identificationNode = JExtensions.GetPropertyCaseInsensitive(entryValue, nameof(PackToTemplateEntry.TemplateIdentificationEntry));
+                        if (versionNode is JsonValue versionVal && versionVal.GetValueKind() == JsonValueKind.String
+                            && identificationNode is JsonArray identificationArray)
                         {
-                            string? version = versionToken.Value<string>() ?? throw new Exception("Version value is null.");
+                            string? version = versionNode.ToString() ?? throw new Exception("Version value is null.");
                             List<TemplateIdentificationEntry> templatesInPack = new List<TemplateIdentificationEntry>();
 
-                            foreach (JToken templateIdentityInfo in identificationArray)
+                            foreach (JsonNode? templateIdentityInfo in identificationArray)
                             {
-                                string? identity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.Identity));
-                                string? groupIdentity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.GroupIdentity));
+                                string? identity = templateIdentityInfo?.ToString(nameof(TemplateIdentificationEntry.Identity));
+                                string? groupIdentity = templateIdentityInfo?.ToString(nameof(TemplateIdentificationEntry.GroupIdentity));
 
                                 if (identity == null)
                                 {
@@ -182,8 +184,8 @@ namespace Microsoft.TemplateSearch.Common
                             }
 
                             workingPackToTemplateMap[packName] = new PackToTemplateEntry(version, templatesInPack);
-                            if (entryValue.TryGetValue(nameof(PackToTemplateEntry.TotalDownloads), out JToken? totalDownloadsToken)
-                                && long.TryParse(totalDownloadsToken.Value<string>(), out long totalDownloads))
+                            if (entryValue.TryGetValueCaseInsensitive(nameof(PackToTemplateEntry.TotalDownloads), out JsonNode? totalDownloadsNode)
+                                && long.TryParse(totalDownloadsNode?.ToString(), out long totalDownloads))
                             {
                                 workingPackToTemplateMap[packName].TotalDownloads = totalDownloads;
                             }
@@ -203,7 +205,7 @@ namespace Microsoft.TemplateSearch.Common
             }
         }
 
-        private static bool TryReadAdditionalData(ILogger logger, JObject cacheObject, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out IReadOnlyDictionary<string, object>? additionalData)
+        private static bool TryReadAdditionalData(ILogger logger, JsonObject cacheObject, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out IReadOnlyDictionary<string, object>? additionalData)
         {
             if (additionalDataReaders == null)
             {
@@ -212,8 +214,8 @@ namespace Microsoft.TemplateSearch.Common
             }
             logger.LogDebug($"Reading additional information.");
             // get the additional data section
-            if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.AdditionalData), out JToken? additionalDataToken)
-                || additionalDataToken is not JObject additionalDataObject)
+            JsonNode? additionalDataToken = JExtensions.GetPropertyCaseInsensitive(cacheObject, nameof(TemplateDiscoveryMetadata.AdditionalData));
+            if (additionalDataToken is not JsonObject additionalDataObject)
             {
                 logger.LogDebug($"Failed to read package info entries. Details: no AdditionalData property found.");
                 additionalData = null;
@@ -227,8 +229,8 @@ namespace Microsoft.TemplateSearch.Common
                 try
                 {
                     // get the entry for this piece of additional data
-                    if (!additionalDataObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
-                        || dataToken is not JObject dataObject)
+                    JsonNode? dataNode = JExtensions.GetPropertyCaseInsensitive(additionalDataObject, dataReadInfo.Key);
+                    if (dataNode is not JsonObject dataObject)
                     {
                         // this piece of data wasn't found, or wasn't valid. Ignore it.
                         continue;

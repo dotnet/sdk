@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
@@ -21,29 +21,29 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             IconUrl = info.IconUrl;
         }
 
-        [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         private FilteredPackageInfo(string name, string reason)
         {
             Name = name;
             Reason = reason;
         }
 
-        [JsonProperty]
+        [JsonInclude]
         public string Name { get; private set; }
 
-        [JsonProperty]
+        [JsonInclude]
         public string? Version { get; private set; }
 
-        [JsonProperty]
+        [JsonInclude]
         public string Reason { get; private set; }
 
-        [JsonProperty]
+        [JsonInclude]
         public long TotalDownloads { get; private set; }
 
-        [JsonProperty]
+        [JsonInclude]
         public IReadOnlyList<string> Owners { get; private set; } = [];
 
-        [JsonProperty]
+        [JsonInclude]
         public bool Reserved { get; private set; }
 
         [JsonIgnore]

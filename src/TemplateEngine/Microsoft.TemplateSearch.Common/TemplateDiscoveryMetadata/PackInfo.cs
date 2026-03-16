@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -24,19 +23,14 @@ namespace Microsoft.TemplateSearch.Common
             Reserved = reserved;
         }
 
-        [JsonProperty]
         public string Name { get; }
 
-        [JsonProperty]
         public string Version { get; }
 
-        [JsonProperty]
         public long TotalDownloads { get; }
 
-        [JsonProperty]
         public IReadOnlyList<string> Owners { get; } = [];
 
-        [JsonProperty]
         public bool Reserved { get; }
 
         //not supported for v1

@@ -3,13 +3,13 @@
 
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 (IScanTemplateInfo Template, ITemplatePackage TemplatePackage, ILocalizationLocator? Localization, IMountPoint MountPoint) chosenTemplate = duplicatedIdentities.Value.Last();
 
                 ILocalizationLocator? loc = GetBestLocalizationLocatorMatch(chosenTemplate.Template);
-                (string, JObject?)? hostFile = GetBestHostConfigMatch(chosenTemplate.Template, environmentSettings, chosenTemplate.MountPoint);
+                (string, JsonObject?)? hostFile = GetBestHostConfigMatch(chosenTemplate.Template, environmentSettings, chosenTemplate.MountPoint);
 
                 templates.Add(new TemplateInfo(chosenTemplate.Template, loc, hostFile));
             }
@@ -71,11 +71,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             PrintOverlappingIdentityWarning(logger, templateDeduplicationDictionary);
         }
 
-        public TemplateCache(JObject? contentJObject)
+        public TemplateCache(JsonObject? contentJObject)
         {
-            if (contentJObject != null && contentJObject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
+            if (contentJObject != null && contentJObject.TryGetValueCaseInsensitive(nameof(Version), out JsonNode? versionToken))
             {
-                Version = versionToken.ToString();
+                Version = versionToken!.ToJsonString().Trim('"');
             }
             else
             {
@@ -86,17 +86,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            Locale = contentJObject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
-                ? localeToken.ToString()
+            Locale = contentJObject.TryGetValueCaseInsensitive(nameof(Locale), out JsonNode? localeToken)
+                ? localeToken!.GetValue<string>()
                 : string.Empty;
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJObject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
+            if (contentJObject.TryGetValueCaseInsensitive(nameof(MountPointsInfo), out JsonNode? mountPointInfoToken) && mountPointInfoToken is JsonObject mountPointInfoObj)
             {
-                foreach (var entry in dict)
+                foreach (var entry in mountPointInfoObj)
                 {
-                    mountPointInfo.Add(entry.Key, entry.Value.Value<DateTime>());
+                    if (entry.Value != null)
+                    {
+                        mountPointInfo.Add(entry.Key, entry.Value.GetValue<DateTime>());
+                    }
                 }
             }
 
@@ -104,13 +107,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJObject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
+            if (contentJObject.TryGetValueCaseInsensitive(nameof(TemplateInfo), out JsonNode? templateInfoToken) && templateInfoToken is JsonArray arr)
             {
-                foreach (JToken entry in arr)
+                foreach (JsonNode? entry in arr)
                 {
-                    if (entry != null && entry.Type == JTokenType.Object)
+                    if (entry is JsonObject entryObj)
                     {
-                        templateList.Add(Settings.TemplateInfo.FromJObject((JObject)entry));
+                        templateList.Add(Settings.TemplateInfo.FromJObject(entryObj));
                     }
                 }
             }
@@ -118,16 +121,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             TemplateInfo = templateList;
         }
 
-        [JsonProperty]
+        [JsonPropertyName("Version")]
         public string? Version { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("Locale")]
         public string Locale { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("TemplateInfo")]
         public IReadOnlyList<TemplateInfo> TemplateInfo { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("MountPointsInfo")]
         public Dictionary<string, DateTime> MountPointsInfo { get; }
 
         private ILocalizationLocator? GetBestLocalizationLocatorMatch(IScanTemplateInfo template)
@@ -195,7 +198,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private (string, JObject?)? GetBestHostConfigMatch(IScanTemplateInfo newTemplate, IEngineEnvironmentSettings settings, IMountPoint mountPoint)
+        private (string, JsonObject?)? GetBestHostConfigMatch(IScanTemplateInfo newTemplate, IEngineEnvironmentSettings settings, IMountPoint mountPoint)
         {
             if (newTemplate.HostConfigFiles.TryGetValue(settings.Host.HostIdentifier, out string? preferredHostFilePath))
             {
@@ -212,7 +215,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        private JObject? ReadHostFile(IScanTemplateInfo template, string path, IEngineEnvironmentSettings settings, IMountPoint mountPoint)
+        private JsonObject? ReadHostFile(IScanTemplateInfo template, string path, IEngineEnvironmentSettings settings, IMountPoint mountPoint)
         {
             if (template.GeneratorId != RunnableProjectGeneratorId)
             {

@@ -13,7 +13,6 @@
     <PackageReference Include="Xunit" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="System.CommandLine" />

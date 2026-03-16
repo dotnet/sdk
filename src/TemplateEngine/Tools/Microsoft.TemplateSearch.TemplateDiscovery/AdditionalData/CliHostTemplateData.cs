@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
-    [JsonConverter(typeof(CliHostTemplateData.CustomJsonConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(CliHostTemplateData.CustomJsonConverter))]
     internal class CliHostTemplateData
     {
         private const string IsHiddenKey = "isHidden";
@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
         private const string ShortNameKey = "shortName";
         private const string AlwaysShowKey = "alwaysShow";
 
-        internal CliHostTemplateData(JObject? jObject)
+        internal CliHostTemplateData(JsonObject? jObject)
         {
             var symbolsInfo = new Dictionary<string, IReadOnlyDictionary<string, string>>();
 
@@ -24,33 +24,37 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 return;
             }
 
-            if (jObject.GetValue(nameof(UsageExamples), StringComparison.OrdinalIgnoreCase) is JArray usagesArray)
+            JsonNode? usagesNode = Microsoft.TemplateEngine.JExtensions.GetPropertyCaseInsensitive(jObject, nameof(UsageExamples));
+            if (usagesNode is JsonArray usagesArray)
             {
-                UsageExamples = new List<string>(usagesArray.Values<string>().Where(v => v != null).OfType<string>());
+                UsageExamples = new List<string>(usagesArray.Select(v => v?.ToString()).Where(v => v != null).OfType<string>());
             }
 
-            if (jObject.GetValue(nameof(SymbolInfo), StringComparison.OrdinalIgnoreCase) is JObject symbols)
+            JsonNode? symbolsNode = Microsoft.TemplateEngine.JExtensions.GetPropertyCaseInsensitive(jObject, nameof(SymbolInfo));
+            if (symbolsNode is JsonObject symbols)
             {
-                foreach (var symbolInfo in symbols.Properties())
+                foreach (var symbolInfo in symbols)
                 {
-                    if (symbolInfo.Value is not JObject symbol)
+                    if (symbolInfo.Value is not JsonObject symbol)
                     {
                         continue;
                     }
 
                     var symbolProperties = new Dictionary<string, string>();
 
-                    foreach (var symbolProperty in symbol.Properties())
+                    foreach (var symbolProperty in symbol)
                     {
-                        symbolProperties[symbolProperty.Name] = symbolProperty.Value.Value<string>() ?? string.Empty;
+                        symbolProperties[symbolProperty.Key] = symbolProperty.Value?.ToString() ?? string.Empty;
                     }
 
-                    symbolsInfo[symbolInfo.Name] = symbolProperties;
+                    symbolsInfo[symbolInfo.Key] = symbolProperties;
                 }
             }
             SymbolInfo = symbolsInfo;
 
-            IsHidden = jObject.Value<bool>(nameof(IsHidden));
+            IsHidden = jObject.TryGetPropertyValue(nameof(IsHidden), out JsonNode? isHiddenNode)
+                && isHiddenNode is JsonValue isHiddenVal
+                && isHiddenVal.TryGetValue<bool>(out bool boolVal) && boolVal;
 
         }
 
@@ -157,11 +161,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             return parameterName;
         }
 
-        private class CustomJsonConverter : JsonConverter<CliHostTemplateData>
+        private class CustomJsonConverter : System.Text.Json.Serialization.JsonConverter<CliHostTemplateData>
         {
-            public override CliHostTemplateData ReadJson(JsonReader reader, Type objectType, CliHostTemplateData? existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
+            public override CliHostTemplateData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, CliHostTemplateData? value, JsonSerializer serializer)
+            public override void Write(Utf8JsonWriter writer, CliHostTemplateData value, JsonSerializerOptions options)
             {
                 if (value == null)
                 {
@@ -171,12 +175,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 if (value.IsHidden)
                 {
                     writer.WritePropertyName(nameof(IsHidden));
-                    writer.WriteValue(value.IsHidden);
+                    writer.WriteBooleanValue(value.IsHidden);
                 }
                 if (value.SymbolInfo.Any())
                 {
                     writer.WritePropertyName(nameof(SymbolInfo));
-                    serializer.Serialize(writer, value.SymbolInfo);
+                    JsonSerializer.Serialize(writer, value.SymbolInfo, options);
                 }
 
                 if (value.UsageExamples != null && value.UsageExamples.Any(e => !string.IsNullOrWhiteSpace(e)))
@@ -187,7 +191,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                     {
                         if (!string.IsNullOrWhiteSpace(example))
                         {
-                            writer.WriteValue(example);
+                            writer.WriteStringValue(example);
                         }
                     }
                     writer.WriteEndArray();

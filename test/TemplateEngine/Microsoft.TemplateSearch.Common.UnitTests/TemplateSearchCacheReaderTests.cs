@@ -1,14 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateSearch.Common.UnitTests
@@ -27,7 +28,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string content = File.ReadAllText("NuGetTemplateSearchInfo.json");
-            JObject cache = JObject.Parse(content);
+            JsonObject cache = JExtensions.ParseJsonObject(content);
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
@@ -48,7 +49,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string content = File.ReadAllText("NuGetTemplateSearchInfo_v2.json");
-            JObject cache = JObject.Parse(content);
+            JsonObject cache = JExtensions.ParseJsonObject(content);
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
@@ -73,7 +74,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string content = File.ReadAllText("NuGetTemplateSearchInfoWithInvalidData.json");
-            JObject cache = JObject.Parse(content);
+            JsonObject cache = JExtensions.ParseJsonObject(content);
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
@@ -95,7 +96,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default);
             await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
-            var jObj = JObject.Parse(content);
+            var jObj = JExtensions.ParseJsonObject(content);
             Assert.NotNull(TemplateSearchCache.FromJObject(jObj, environmentSettings.Host.Logger, null));
         }
 
@@ -111,7 +112,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default);
             await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
-            var jObj = JObject.Parse(content);
+            var jObj = JExtensions.ParseJsonObject(content);
 #pragma warning disable CS0618 // Type or member is obsolete
             Assert.True(LegacySearchCacheReader.TryReadDiscoveryMetadata(jObj, environmentSettings.Host.Logger, null, out _));
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -142,7 +143,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             TemplatePackageSearchData package = new TemplatePackageSearchData(mockPackage, new[] { template });
             TemplateSearchCache cache = new TemplateSearchCache(new[] { package });
 
-            JObject jobj = cache.ToJObject();
+            JsonObject jobj = cache.ToJObject();
 
             TemplateSearchCache deserializedCache = TemplateSearchCache.FromJObject(jobj, NullLogger.Instance);
 

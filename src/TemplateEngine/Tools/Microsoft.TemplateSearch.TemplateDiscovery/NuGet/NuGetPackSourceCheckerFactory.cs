@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Filters;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
@@ -72,9 +73,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             Verbose.WriteLine($"Opening {fileLocation.FullName}");
 
             using var fileStream = fileLocation.OpenRead();
-            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            using var jsonReader = new JsonTextReader(textReader);
-            return new JsonSerializer().Deserialize<IEnumerable<FilteredPackageInfo>>(jsonReader);
+            return JsonSerializer.Deserialize<IEnumerable<FilteredPackageInfo>>(fileStream);
         }
 
         private static async Task<TemplateSearchCache?> LoadExistingCacheAsync(CommandArgs config, CancellationToken cancellationToken)
@@ -93,9 +92,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             }
             Verbose.WriteLine($"Opening {cacheFileLocation.FullName}");
             using var fileStream = cacheFileLocation.OpenRead();
-            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            using var jsonReader = new JsonTextReader(textReader);
-            return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
+            JsonObject cacheObject = JExtensions.ParseJsonObject(new StreamReader(fileStream, System.Text.Encoding.UTF8, true).ReadToEnd());
+            return TemplateSearchCache.FromJObject(cacheObject, NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
         }
 
         private static async Task DownloadUriToFileAsync(string uri, string filePath, CancellationToken cancellationToken)

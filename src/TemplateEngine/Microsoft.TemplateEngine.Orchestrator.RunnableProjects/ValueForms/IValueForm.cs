@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         /// <summary>
         /// True is the form is a default implicit form.
-        /// See <see cref="TemplateConfigModel.SetupValueFormMapForTemplate(Newtonsoft.Json.Linq.JObject?)"/> for more details.
+        /// See <see cref="TemplateConfigModel.SetupValueFormMapForTemplate(System.Text.Json.Nodes.JsonObject?)"/> for more details.
         /// </summary>
         internal bool IsDefault { get; }
 

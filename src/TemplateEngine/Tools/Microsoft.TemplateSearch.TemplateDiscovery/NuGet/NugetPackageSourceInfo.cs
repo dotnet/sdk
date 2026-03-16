@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
@@ -40,14 +40,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         public string? IconUrl { get; private set; }
 
         //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
-        internal static NuGetPackageSourceInfo FromJObject(JObject entry)
+        internal static NuGetPackageSourceInfo FromJObject(JsonObject entry)
         {
             string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
             string version = entry.ToString("version") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"version\"  property.", nameof(entry));
             NuGetPackageSourceInfo sourceInfo = new NuGetPackageSourceInfo(id, version)
             {
                 TotalDownloads = entry.ToInt32("totalDownloads"),
-                Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection([]),
+                Owners = entry.Get<JsonNode>("owners").JTokenStringOrArrayToCollection([]),
                 Reserved = entry.ToBool("verified"),
                 Description = entry.ToString("description"),
                 IconUrl = entry.ToString("iconUrl")

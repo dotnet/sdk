@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
   </ItemGroup>
 

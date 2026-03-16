@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <param name="template">unlocalized template.</param>
         /// <param name="localizationInfo">localization information.</param>
         /// <param name="hostConfig">host config information.</param>
-        internal TemplateInfo(IScanTemplateInfo template, ILocalizationLocator? localizationInfo, (string Path, JObject? Content)? hostConfig)
+        internal TemplateInfo(IScanTemplateInfo template, ILocalizationLocator? localizationInfo, (string Path, JsonObject? Content)? hostConfig)
         {
             if (template is null)
             {
@@ -97,11 +97,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             Name = localizationInfo?.Name ?? template.Name;
             ParameterDefinitions = LocalizeParameters(template, localizationInfo);
-            HostData = hostConfig?.Content?.ToString(Formatting.None);
+            HostData = hostConfig?.Content?.ToJsonString();
         }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        [JsonProperty(nameof(Parameters))]
+        [JsonPropertyName("Parameters")]
 #pragma warning restore CS0618 // Type or member is obsolete
         public IParameterDefinitionSet ParameterDefinitions { get; private set; } = ParameterDefinitionSet.Empty;
 
@@ -109,34 +109,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [Obsolete("Use ParameterDefinitionSet instead.")]
         public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
-        [JsonProperty]
+        [JsonPropertyName("MountPointUri")]
         public string MountPointUri { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("Author")]
         public string? Author { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("Classifications")]
         public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
-        [JsonProperty]
+        [JsonPropertyName("DefaultName")]
         public string? DefaultName { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("Description")]
         public string? Description { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("Identity")]
         public string Identity { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("GeneratorId")]
         public Guid GeneratorId { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("GroupIdentity")]
         public string? GroupIdentity { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("Precedence")]
         public int Precedence { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("Name")]
         public string Name { get; }
 
         [JsonIgnore]
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public IReadOnlyList<string> ShortNameList { get; } = new List<string>();
 
-        [JsonProperty]
+        [JsonPropertyName("PreferDefaultName")]
         public bool PreferDefaultName { get; private set; }
 
         [JsonIgnore]
@@ -210,22 +210,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        [JsonProperty]
+        [JsonPropertyName("ConfigPlace")]
         public string ConfigPlace { get; }
 
-        [JsonProperty]
+        [JsonPropertyName("LocaleConfigPlace")]
         public string? LocaleConfigPlace { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("HostConfigPlace")]
         public string? HostConfigPlace { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("ThirdPartyNotices")]
         public string? ThirdPartyNotices { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("BaselineInfo")]
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; private set; } = new Dictionary<string, IBaselineInfo>();
 
-        [JsonProperty]
+        [JsonPropertyName("TagsCollection")]
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; } = new Dictionary<string, string>();
 
         [JsonIgnore]
@@ -233,13 +233,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public string? HostData { get; private set; }
 
-        [JsonProperty]
+        [JsonPropertyName("PostActions")]
         public IReadOnlyList<Guid> PostActions { get; private set; } = [];
 
-        [JsonProperty]
+        [JsonPropertyName("Constraints")]
         public IReadOnlyList<TemplateConstraintInfo> Constraints { get; private set; } = [];
 
-        public static TemplateInfo FromJObject(JObject entry)
+        public static TemplateInfo FromJObject(JsonObject entry)
         {
             return TemplateInfoReader.FromJObject(entry);
         }

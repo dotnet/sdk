@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
-            JObject rawConfiguration = JObject.Parse(configuration);
+            JsonObject rawConfiguration = JExtensions.ParseJsonObject(configuration);
             string? startToken = rawConfiguration.ToString("startToken");
             string? realEndToken = rawConfiguration.ToString("realEndToken");
             string? pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
@@ -29,9 +29,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag, onByDefault);
         }
 
-        internal static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
+        internal static JsonObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
         {
-            JObject config = new JObject
+            JsonObject config = new JsonObject
             {
                 ["startToken"] = startToken,
                 ["realEndToken"] = realEndToken,

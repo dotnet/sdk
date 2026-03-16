@@ -1,18 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization
 {
     internal class ParameterSymbolJsonConverter : JsonConverter<ParameterSymbol>
     {
         //falls back to default de-serializer if not implemented
-        public override ParameterSymbol ReadJson(JsonReader reader, Type objectType, ParameterSymbol? existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
+        public override ParameterSymbol Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
 
-        public override void WriteJson(JsonWriter writer, ParameterSymbol? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, ParameterSymbol value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -23,18 +24,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
             writer.WriteStartObject();
 
             writer.WritePropertyName("type");
-            writer.WriteValue(value.Type);
+            writer.WriteStringValue(value.Type);
 
             if (!string.IsNullOrEmpty(value.FileRename))
             {
                 writer.WritePropertyName("fileRename");
-                writer.WriteValue(value.FileRename);
+                writer.WriteStringValue(value.FileRename);
             }
 
             if (!string.IsNullOrEmpty(value.Replaces))
             {
                 writer.WritePropertyName("replaces");
-                writer.WriteValue(value.Replaces);
+                writer.WriteStringValue(value.Replaces);
             }
 
             if (value.ReplacementContexts.Any())
@@ -50,65 +51,65 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
             if (!string.IsNullOrEmpty(value.DefaultValue))
             {
                 writer.WritePropertyName("defaultValue");
-                writer.WriteValue(value.DefaultValue);
+                writer.WriteStringValue(value.DefaultValue);
             }
 
             if (!string.IsNullOrEmpty(value.DataType))
             {
                 writer.WritePropertyName("datatype");
-                writer.WriteValue(value.DataType);
+                writer.WriteStringValue(value.DataType);
             }
 
             if (!string.IsNullOrEmpty(value.DisplayName))
             {
                 writer.WritePropertyName("displayName");
-                writer.WriteValue(value.DisplayName);
+                writer.WriteStringValue(value.DisplayName);
             }
 
             if (!string.IsNullOrEmpty(value.Description))
             {
                 writer.WritePropertyName("description");
-                writer.WriteValue(value.Description);
+                writer.WriteStringValue(value.Description);
             }
 
             if (!string.IsNullOrEmpty(value.DefaultIfOptionWithoutValue) && value.DataType != "bool")
             {
                 writer.WritePropertyName("defaultIfOptionWithoutValue");
-                writer.WriteValue(value.DefaultIfOptionWithoutValue);
+                writer.WriteStringValue(value.DefaultIfOptionWithoutValue);
             }
 
             if (value.AllowMultipleValues)
             {
                 writer.WritePropertyName("allowMultipleValues");
-                writer.WriteValue(value.AllowMultipleValues);
+                writer.WriteBooleanValue(value.AllowMultipleValues);
             }
 
             if (value.EnableQuotelessLiterals)
             {
                 writer.WritePropertyName("enableQuotelessLiterals");
-                writer.WriteValue(value.EnableQuotelessLiterals);
+                writer.WriteBooleanValue(value.EnableQuotelessLiterals);
             }
 
             if (value.IsRequired)
             {
                 writer.WritePropertyName("isRequired");
-                writer.WriteValue(value.IsRequired);
+                writer.WriteBooleanValue(value.IsRequired);
             }
             else if (!string.IsNullOrEmpty(value.IsRequiredCondition))
             {
                 writer.WritePropertyName("isRequired");
-                writer.WriteValue(value.IsRequiredCondition);
+                writer.WriteStringValue(value.IsRequiredCondition);
             }
 
             if (value.Precedence.PrecedenceDefinition == PrecedenceDefinition.Disabled)
             {
                 writer.WritePropertyName("isEnabled");
-                writer.WriteValue(false);
+                writer.WriteBooleanValue(false);
             }
             else if (!string.IsNullOrEmpty(value.IsEnabledCondition))
             {
                 writer.WritePropertyName("isEnabled");
-                writer.WriteValue(value.IsEnabledCondition);
+                writer.WriteStringValue(value.IsEnabledCondition);
             }
 
             if (value.Choices != null)
@@ -119,17 +120,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("choice");
-                    writer.WriteValue(choice.Key);
+                    writer.WriteStringValue(choice.Key);
                     if (!string.IsNullOrEmpty(choice.Value.DisplayName))
                     {
                         writer.WritePropertyName("displayName");
-                        writer.WriteValue(choice.Value.DisplayName);
+                        writer.WriteStringValue(choice.Value.DisplayName);
                     }
 
                     if (!string.IsNullOrEmpty(choice.Value.Description))
                     {
                         writer.WritePropertyName("description");
-                        writer.WriteValue(choice.Value.Description);
+                        writer.WriteStringValue(choice.Value.Description);
                     }
                     writer.WriteEndObject();
                 }

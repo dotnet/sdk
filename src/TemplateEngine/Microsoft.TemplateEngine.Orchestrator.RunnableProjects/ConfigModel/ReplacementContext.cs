@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -28,16 +28,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? OnlyIfAfter { get; }
 
-        internal static IReadOnlyList<ReplacementContext> FromJObject(JObject jObject)
+        internal static IReadOnlyList<ReplacementContext> FromJObject(JsonObject jObject)
         {
-            JArray? onlyIf = jObject.Get<JArray>("onlyIf");
+            JsonArray? onlyIf = jObject.Get<JsonArray>("onlyIf");
 
             if (onlyIf != null)
             {
                 List<ReplacementContext> contexts = new List<ReplacementContext>();
-                foreach (JToken entry in onlyIf.Children())
+                foreach (JsonNode? entry in onlyIf)
                 {
-                    if (entry is not JObject)
+                    if (entry is not JsonObject)
                     {
                         continue;
                     }

@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Json.Schema;
 using Microsoft.TemplateEngine.Tests;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.SchemaTests
 {
@@ -21,13 +21,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
         [InlineData(@"SchemaTests/ConditionalParametersTest.json")]
         public void IsJSONSchemaValid(string testFile)
         {
-            using TextReader schemaFileStream = File.OpenText(@"SchemaTests/template.json");
-            JSchema schema = JSchema.Load(new JsonTextReader(schemaFileStream));
-            using TextReader jsonFileStream = File.OpenText(testFile);
-            using JsonTextReader jsonReader = new JsonTextReader(jsonFileStream);
-            JObject templateConfig = (JObject)JToken.ReadFrom(jsonReader);
+            string schemaContent = File.ReadAllText(@"SchemaTests/template.json");
+            var schema = JsonSchema.FromText(schemaContent);
+
+            string jsonContent = File.ReadAllText(testFile);
+            var jsonNode = JsonNode.Parse(jsonContent, null, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            var result = schema.Evaluate(jsonNode, new EvaluationOptions { OutputFormat = OutputFormat.List });
+
+            var errors = result.Details?
+                .Where(d => !d.IsValid && d.Errors != null)
+                .SelectMany(d => d.Errors!.Values)
+                .ToList() ?? new List<string>();
+
             Assert.True(
-                templateConfig.IsValid(schema, out IList<string> errors),
+                result.IsValid,
                 "The JSON file is not valid against the schema" +
                 Environment.NewLine +
                 string.Join(Environment.NewLine, errors));

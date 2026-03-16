@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     {
         protected ActionableValueFormFactory(string identifier) : base(identifier) { }
 
-        public override IValueForm FromJObject(string name, JObject? configuration = null)
+        public override IValueForm FromJObject(string name, JsonObject? configuration = null)
         {
             return new ActionableValueForm(name, this);
         }

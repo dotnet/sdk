@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -29,42 +30,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier
         });
 
-        // Sets up the value forms for a symbol, based on configuration from template.json
-        // There are two acceptable configuration formats for each forms specification.
-        //
-        // Note: in the examples below, "global" is used. But we'll be extending this to allow
-        //  conditional forms, which will have other names.
-        //  The same format will be used for other named form definitions.
-        //
-        // Simple:
-        // "forms": {
-        //   "global": [ <strings representing value form names> ]
-        // }
-        //
-        // Detailed:
-        // "forms" {
-        //   "global": {
-        //     "forms": [ <strings representing value form names> ],
-        //     "addIdentity": <bool default true>,
-        //     // other future extensions, e.g. conditionals
-        //   },
-        //
-        // If the symbol doesn't include an "identity" form and the addIdentity flag isn't false,
-        // an identity specification is added to the beginning of the symbol's value form list.
-        // If there is an identity form listed, its position remains intact irrespective of the addIdentity flag.
-        internal static SymbolValueFormsModel FromJObject(JObject configJson)
+        internal static SymbolValueFormsModel FromJObject(JsonObject configJson)
         {
-            JToken? globalConfig = configJson.Property("global")?.Value;
+            JsonNode? globalConfig = JExtensions.GetPropertyCaseInsensitive(configJson, "global");
             List<string> globalForms;
             bool addIdentity;
 
-            if (globalConfig?.Type == JTokenType.Array)
+            if (globalConfig?.GetValueKind() == JsonValueKind.Array)
             {
                 // config is just an array of form names.
                 globalForms = globalConfig.ArrayAsStrings().ToList();
                 addIdentity = true; // default value
             }
-            else if (globalConfig?.Type == JTokenType.Object)
+            else if (globalConfig?.GetValueKind() == JsonValueKind.Object)
             {
                 // config is an object.
                 globalForms = globalConfig.ArrayAsStrings("forms").ToList();

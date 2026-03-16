@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -23,10 +23,10 @@ namespace Microsoft.TemplateSearch.Common
             Version = version;
         }
 
-        [JsonProperty]
+        [JsonInclude]
         internal IReadOnlyList<TemplatePackageSearchData> TemplatePackages { get; }
 
-        [JsonProperty]
+        [JsonInclude]
         internal string Version { get; private set; }
     }
 }

@@ -1,18 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization
 {
     internal class TemplateConfigModelJsonConverter : JsonConverter<TemplateConfigModel>
     {
         //falls back to default de-serializer if not implemented
-        public override TemplateConfigModel ReadJson(JsonReader reader, Type objectType, TemplateConfigModel? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override TemplateConfigModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             => throw new NotImplementedException();
 
-        public override void WriteJson(JsonWriter writer, TemplateConfigModel? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, TemplateConfigModel value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -20,9 +21,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
             }
             writer.WriteStartObject();
             writer.WritePropertyName("identity");
-            writer.WriteValue(value.Identity);
+            writer.WriteStringValue(value.Identity);
             writer.WritePropertyName("name");
-            writer.WriteValue(value.Name);
+            writer.WriteStringValue(value.Name);
             writer.WritePropertyName("shortName");
 
             if (value.ShortNameList.Count > 1)
@@ -32,74 +33,74 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 {
                     if (!string.IsNullOrEmpty(shortName))
                     {
-                        writer.WriteValue(shortName);
+                        writer.WriteStringValue(shortName);
                     }
                 }
                 writer.WriteEndArray();
             }
             else if (value.ShortNameList.Count == 1)
             {
-                writer.WriteValue(value.ShortNameList[0]);
+                writer.WriteStringValue(value.ShortNameList[0]);
             }
             else
             {
-                writer.WriteValue(string.Empty);
+                writer.WriteStringValue(string.Empty);
             }
 
             if (!string.IsNullOrEmpty(value.GroupIdentity))
             {
                 writer.WritePropertyName("groupIdentity");
-                writer.WriteValue(value.GroupIdentity);
+                writer.WriteStringValue(value.GroupIdentity);
             }
             if (value.Precedence != 0)
             {
                 writer.WritePropertyName("precedence");
-                writer.WriteValue(value.Precedence);
+                writer.WriteNumberValue(value.Precedence);
             }
             if (!string.IsNullOrEmpty(value.Author))
             {
                 writer.WritePropertyName("author");
-                writer.WriteValue(value.Author);
+                writer.WriteStringValue(value.Author);
             }
             if (!string.IsNullOrEmpty(value.Description))
             {
                 writer.WritePropertyName("description");
-                writer.WriteValue(value.Description);
+                writer.WriteStringValue(value.Description);
             }
             if (!string.IsNullOrEmpty(value.ThirdPartyNotices))
             {
                 writer.WritePropertyName("thirdPartyNotices");
-                writer.WriteValue(value.ThirdPartyNotices);
+                writer.WriteStringValue(value.ThirdPartyNotices);
             }
             if (!string.IsNullOrEmpty(value.DefaultName))
             {
                 writer.WritePropertyName("defaultName");
-                writer.WriteValue(value.DefaultName);
+                writer.WriteStringValue(value.DefaultName);
             }
             if (!string.IsNullOrEmpty(value.SourceName))
             {
                 writer.WritePropertyName("sourceName");
-                writer.WriteValue(value.SourceName);
+                writer.WriteStringValue(value.SourceName);
             }
             if (!string.IsNullOrEmpty(value.PlaceholderFilename))
             {
                 writer.WritePropertyName("placeholderFilename");
-                writer.WriteValue(value.PlaceholderFilename);
+                writer.WriteStringValue(value.PlaceholderFilename);
             }
             if (!string.IsNullOrEmpty(value.GeneratorVersions))
             {
                 writer.WritePropertyName("generatorVersions");
-                writer.WriteValue(value.GeneratorVersions);
+                writer.WriteStringValue(value.GeneratorVersions);
             }
             if (value.PreferNameDirectory)
             {
                 writer.WritePropertyName("preferNameDirectory");
-                writer.WriteValue(value.PreferNameDirectory);
+                writer.WriteBooleanValue(value.PreferNameDirectory);
             }
             if (value.PreferDefaultName)
             {
                 writer.WritePropertyName("preferDefaultName");
-                writer.WriteValue(value.PreferDefaultName);
+                writer.WriteBooleanValue(value.PreferDefaultName);
             }
 
             if (value.Classifications.Any())
@@ -110,7 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 {
                     if (!string.IsNullOrEmpty(classification))
                     {
-                        writer.WriteValue(classification);
+                        writer.WriteStringValue(classification);
                     }
                 }
                 writer.WriteEndArray();
@@ -122,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 writer.WriteStartArray();
                 foreach (Guid guid in value.Guids)
                 {
-                    writer.WriteValue(guid.ToString());
+                    writer.WriteStringValue(guid.ToString());
                 }
                 writer.WriteEndArray();
             }
@@ -134,7 +135,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 foreach (KeyValuePair<string, string> tag in value.Tags)
                 {
                     writer.WritePropertyName(tag.Key);
-                    writer.WriteValue(tag.Value);
+                    writer.WriteStringValue(tag.Value);
                 }
                 writer.WriteEndObject();
             }
@@ -148,31 +149,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                     if (!string.IsNullOrEmpty(source.Source))
                     {
                         writer.WritePropertyName("source");
-                        writer.WriteValue(source.Source);
+                        writer.WriteStringValue(source.Source);
                     }
                     if (!string.IsNullOrEmpty(source.Target))
                     {
                         writer.WritePropertyName("target");
-                        writer.WriteValue(source.Target);
+                        writer.WriteStringValue(source.Target);
                     }
                     if (!string.IsNullOrEmpty(source.Condition))
                     {
                         writer.WritePropertyName("condition");
-                        writer.WriteValue(source.Condition);
+                        writer.WriteStringValue(source.Condition);
                     }
                     if (source.Include.Any())
                     {
                         writer.WritePropertyName("include");
                         if (source.Include.Count == 1)
                         {
-                            writer.WriteValue(source.Include[0]);
+                            writer.WriteStringValue(source.Include[0]);
                         }
                         else
                         {
                             writer.WriteStartArray();
                             foreach (string el in source.Include)
                             {
-                                writer.WriteValue(el);
+                                writer.WriteStringValue(el);
                             }
                             writer.WriteEndArray();
                         }
@@ -182,14 +183,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                         writer.WritePropertyName("exclude");
                         if (source.Exclude.Count == 1)
                         {
-                            writer.WriteValue(source.Exclude[0]);
+                            writer.WriteStringValue(source.Exclude[0]);
                         }
                         else
                         {
                             writer.WriteStartArray();
                             foreach (string el in source.Exclude)
                             {
-                                writer.WriteValue(el);
+                                writer.WriteStringValue(el);
                             }
                             writer.WriteEndArray();
                         }
@@ -199,14 +200,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                         writer.WritePropertyName("copyOnly");
                         if (source.CopyOnly.Count == 1)
                         {
-                            writer.WriteValue(source.CopyOnly[0]);
+                            writer.WriteStringValue(source.CopyOnly[0]);
                         }
                         else
                         {
                             writer.WriteStartArray();
                             foreach (string el in source.CopyOnly)
                             {
-                                writer.WriteValue(el);
+                                writer.WriteStringValue(el);
                             }
                             writer.WriteEndArray();
                         }
@@ -218,7 +219,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                         {
                             writer.WriteStartObject();
                             writer.WritePropertyName(el.Key);
-                            writer.WriteValue(el.Value);
+                            writer.WriteStringValue(el.Value);
                             writer.WriteEndObject();
                         }
                     }
@@ -232,21 +233,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                             if (!string.IsNullOrEmpty(mod.Condition))
                             {
                                 writer.WritePropertyName("condition");
-                                writer.WriteValue(mod.Condition);
+                                writer.WriteStringValue(mod.Condition);
                             }
                             if (mod.Include.Any())
                             {
                                 writer.WritePropertyName("include");
                                 if (mod.Include.Count == 1)
                                 {
-                                    writer.WriteValue(mod.Include[0]);
+                                    writer.WriteStringValue(mod.Include[0]);
                                 }
                                 else
                                 {
                                     writer.WriteStartArray();
                                     foreach (string el in mod.Include)
                                     {
-                                        writer.WriteValue(el);
+                                        writer.WriteStringValue(el);
                                     }
                                     writer.WriteEndArray();
                                 }
@@ -256,14 +257,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                                 writer.WritePropertyName("exclude");
                                 if (mod.Exclude.Count == 1)
                                 {
-                                    writer.WriteValue(mod.Exclude[0]);
+                                    writer.WriteStringValue(mod.Exclude[0]);
                                 }
                                 else
                                 {
                                     writer.WriteStartArray();
                                     foreach (string el in mod.Exclude)
                                     {
-                                        writer.WriteValue(el);
+                                        writer.WriteStringValue(el);
                                     }
                                     writer.WriteEndArray();
                                 }
@@ -273,14 +274,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                                 writer.WritePropertyName("copyOnly");
                                 if (mod.CopyOnly.Count == 1)
                                 {
-                                    writer.WriteValue(mod.CopyOnly[0]);
+                                    writer.WriteStringValue(mod.CopyOnly[0]);
                                 }
                                 else
                                 {
                                     writer.WriteStartArray();
                                     foreach (string el in mod.CopyOnly)
                                     {
-                                        writer.WriteValue(el);
+                                        writer.WriteStringValue(el);
                                     }
                                     writer.WriteEndArray();
                                 }
@@ -292,7 +293,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                                 {
                                     writer.WriteStartObject();
                                     writer.WritePropertyName(el.Key);
-                                    writer.WriteValue(el.Value);
+                                    writer.WriteStringValue(el.Value);
                                     writer.WriteEndObject();
                                 }
                             }
@@ -315,17 +316,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                     if (!string.IsNullOrEmpty(model.Id))
                     {
                         writer.WritePropertyName("id");
-                        writer.WriteValue(model.Id);
+                        writer.WriteStringValue(model.Id);
                     }
                     writer.WritePropertyName("actionId");
-                    writer.WriteValue(model.ActionId);
+                    writer.WriteStringValue(model.ActionId);
                     if (!string.IsNullOrEmpty(model.Description))
                     {
                         writer.WritePropertyName("description");
-                        writer.WriteValue(model.Description);
+                        writer.WriteStringValue(model.Description);
                     }
                     writer.WritePropertyName("continueOnError");
-                    writer.WriteValue(model.ContinueOnError);
+                    writer.WriteBooleanValue(model.ContinueOnError);
 
                     if (model.Args.Any())
                     {
@@ -334,7 +335,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                         foreach (KeyValuePair<string, string> arg in model.Args)
                         {
                             writer.WritePropertyName(arg.Key);
-                            writer.WriteValue(arg.Value);
+                            writer.WriteStringValue(arg.Value);
                         }
                         writer.WriteEndObject();
                     }
@@ -347,16 +348,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                         {
                             writer.WriteStartObject();
                             writer.WritePropertyName("text");
-                            writer.WriteValue(mi.Text);
+                            writer.WriteStringValue(mi.Text);
                             if (!string.IsNullOrEmpty(mi.Condition))
                             {
                                 writer.WritePropertyName("condition");
-                                writer.WriteValue(mi.Condition);
+                                writer.WriteStringValue(mi.Condition);
                             }
                             if (!string.IsNullOrEmpty(mi.Id))
                             {
                                 writer.WritePropertyName("id");
-                                writer.WriteValue(mi.Id);
+                                writer.WriteStringValue(mi.Id);
                             }
                             writer.WriteEndObject();
                         }
@@ -387,7 +388,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                     {
                         continue;
                     }
-                    serializer.Serialize(writer, p);
+                    JsonSerializer.Serialize(writer, p, options);
                     //writer.WriteRaw(JsonConvert.SerializeObject(p, ParameterSymbolJsonConverter.Instance));
                 }
                 writer.WriteEndObject();

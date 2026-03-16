@@ -1,17 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    [JsonConverter(typeof(TemplateSearchData.TemplateSearchDataJsonConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(TemplateSearchData.TemplateSearchDataJsonConverter))]
     public partial class TemplateSearchData : ITemplateInfo
     {
-        internal TemplateSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
+        internal TemplateSearchData(JsonObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
             if (jObject is null)
             {
@@ -34,13 +34,13 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         #region JsonConverter
-        private class TemplateSearchDataJsonConverter : JsonConverter<TemplateSearchData>
+        private class TemplateSearchDataJsonConverter : System.Text.Json.Serialization.JsonConverter<TemplateSearchData>
         {
             //falls back to default de-serializer if not implemented
-            public override TemplateSearchData ReadJson(JsonReader reader, Type objectType, TemplateSearchData? existingValue, bool hasExistingValue, JsonSerializer serializer)
+            public override TemplateSearchData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
                 => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, TemplateSearchData? value, JsonSerializer serializer)
+            public override void Write(Utf8JsonWriter writer, TemplateSearchData value, JsonSerializerOptions options)
             {
                 if (value == null)
                 {
@@ -48,43 +48,43 @@ namespace Microsoft.TemplateSearch.Common
                 }
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(ITemplateInfo.Identity));
-                writer.WriteValue(value.TemplateInfo.Identity);
+                writer.WriteStringValue(value.TemplateInfo.Identity);
                 if (!string.IsNullOrWhiteSpace(value.TemplateInfo.GroupIdentity))
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.GroupIdentity));
-                    writer.WriteValue(value.TemplateInfo.GroupIdentity);
+                    writer.WriteStringValue(value.TemplateInfo.GroupIdentity);
                 }
                 if (value.TemplateInfo.Precedence != 0)
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.Precedence));
-                    writer.WriteValue(value.TemplateInfo.Precedence);
+                    writer.WriteNumberValue(value.TemplateInfo.Precedence);
                 }
                 writer.WritePropertyName(nameof(ITemplateInfo.Name));
-                writer.WriteValue(value.TemplateInfo.Name);
+                writer.WriteStringValue(value.TemplateInfo.Name);
                 writer.WritePropertyName(nameof(ITemplateInfo.ShortNameList));
                 writer.WriteStartArray();
                 foreach (string shortName in value.TemplateInfo.ShortNameList)
                 {
                     if (!string.IsNullOrWhiteSpace(shortName))
                     {
-                        writer.WriteValue(shortName);
+                        writer.WriteStringValue(shortName);
                     }
                 }
                 writer.WriteEndArray();
                 if (!string.IsNullOrWhiteSpace(value.TemplateInfo.Author))
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.Author));
-                    writer.WriteValue(value.TemplateInfo.Author);
+                    writer.WriteStringValue(value.TemplateInfo.Author);
                 }
                 if (!string.IsNullOrWhiteSpace(value.TemplateInfo.Description))
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.Description));
-                    writer.WriteValue(value.TemplateInfo.Description);
+                    writer.WriteStringValue(value.TemplateInfo.Description);
                 }
                 if (!string.IsNullOrWhiteSpace(value.TemplateInfo.ThirdPartyNotices))
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.ThirdPartyNotices));
-                    writer.WriteValue(value.TemplateInfo.ThirdPartyNotices);
+                    writer.WriteStringValue(value.TemplateInfo.ThirdPartyNotices);
                 }
 
                 if (value.TemplateInfo.Classifications.Any())
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateSearch.Common
                     {
                         if (!string.IsNullOrWhiteSpace(classification))
                         {
-                            writer.WriteValue(classification);
+                            writer.WriteStringValue(classification);
                         }
                     }
                     writer.WriteEndArray();
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateSearch.Common
                     foreach (var tag in value.TemplateInfo.TagsCollection)
                     {
                         writer.WritePropertyName(tag.Key);
-                        writer.WriteValue(tag.Value);
+                        writer.WriteStringValue(tag.Value);
                     }
                     writer.WriteEndObject();
                 }
@@ -123,21 +123,21 @@ namespace Microsoft.TemplateSearch.Common
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName(nameof(ITemplateParameter.Name));
-                        writer.WriteValue(param.Name);
+                        writer.WriteStringValue(param.Name);
                         if (!string.IsNullOrWhiteSpace(param.DataType))
                         {
                             writer.WritePropertyName(nameof(ITemplateParameter.DataType));
-                            writer.WriteValue(param.DataType);
+                            writer.WriteStringValue(param.DataType);
                         }
                         if (!string.IsNullOrWhiteSpace(param.Description))
                         {
                             writer.WritePropertyName(nameof(ITemplateParameter.Description));
-                            writer.WriteValue(param.Description);
+                            writer.WriteStringValue(param.Description);
                         }
                         if (!string.IsNullOrWhiteSpace(param.DefaultIfOptionWithoutValue))
                         {
                             writer.WritePropertyName(nameof(ITemplateParameter.DefaultIfOptionWithoutValue));
-                            writer.WriteValue(param.DefaultIfOptionWithoutValue);
+                            writer.WriteStringValue(param.DefaultIfOptionWithoutValue);
                         }
 
                         if (param.Choices != null && param.Choices.Any())
@@ -151,12 +151,12 @@ namespace Microsoft.TemplateSearch.Common
                                 if (!string.IsNullOrWhiteSpace(choice.Value.Description))
                                 {
                                     writer.WritePropertyName(nameof(ParameterChoice.Description));
-                                    writer.WriteValue(choice.Value.Description);
+                                    writer.WriteStringValue(choice.Value.Description);
                                 }
                                 if (!string.IsNullOrWhiteSpace(choice.Value.DisplayName))
                                 {
                                     writer.WritePropertyName(nameof(ParameterChoice.DisplayName));
-                                    writer.WriteValue(choice.Value.DisplayName);
+                                    writer.WriteStringValue(choice.Value.DisplayName);
                                 }
                                 writer.WriteEndObject();
                             }
@@ -170,7 +170,7 @@ namespace Microsoft.TemplateSearch.Common
                 if (value.TemplateInfo.BaselineInfo.Any())
                 {
                     writer.WritePropertyName(nameof(ITemplateInfo.BaselineInfo));
-                    serializer.Serialize(writer, value.TemplateInfo.BaselineInfo);
+                    JsonSerializer.Serialize(writer, value.TemplateInfo.BaselineInfo, options);
                 }
 
                 if (value.TemplateInfo.PostActions.Any())
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateSearch.Common
                     writer.WriteStartArray();
                     foreach (Guid guid in value.TemplateInfo.PostActions)
                     {
-                        writer.WriteValue(guid.ToString());
+                        writer.WriteStringValue(guid.ToString());
                     }
                     writer.WriteEndArray();
                 }
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateSearch.Common
                     foreach (var item in value.AdditionalData)
                     {
                         writer.WritePropertyName(item.Key);
-                        serializer.Serialize(writer, item.Value);
+                        JsonSerializer.Serialize(writer, item.Value, options);
                     }
                 }
 

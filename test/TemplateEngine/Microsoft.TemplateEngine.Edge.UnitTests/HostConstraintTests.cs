@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -47,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns("host1");
             A.CallTo(() => settings.Host.Version).Returns("2.0.0");
@@ -92,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns("host2");
             A.CallTo(() => settings.Host.Version).Returns("2.0.0");
@@ -140,7 +141,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
 
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns("host3");
@@ -173,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
 
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns("host3");
@@ -223,7 +224,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns("host1");
             A.CallTo(() => settings.Host.Version).Returns(hostVersion);
@@ -273,7 +274,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Host.HostIdentifier).Returns(hostName);
             A.CallTo(() => settings.Host.Version).Returns(hostVersion);

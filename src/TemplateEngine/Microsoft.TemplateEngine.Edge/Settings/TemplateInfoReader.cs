@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -14,26 +14,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         internal class TemplateInfoReader
         {
-            internal static TemplateInfo FromJObject(JObject entry)
+            internal static TemplateInfo FromJObject(JsonObject entry)
             {
                 string identity = entry.ToString(nameof(Identity)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Identity)} property.", nameof(entry));
                 string name = entry.ToString(nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
                 string mountPointUri = entry.ToString(nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
                 string configPlace = entry.ToString(nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
-                JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
+                JsonNode? shortNameToken = entry.Get<JsonNode>(nameof(ShortNameList));
                 IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection([]);
 
                 TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace)
                 {
                     Author = entry.ToString(nameof(Author))
                 };
-                JArray? classificationsArray = entry.Get<JArray>(nameof(Classifications));
+                JsonArray? classificationsArray = entry.Get<JsonArray>(nameof(Classifications));
                 if (classificationsArray != null)
                 {
                     List<string> classifications = new List<string>();
-                    foreach (JToken item in classificationsArray)
+                    foreach (JsonNode? item in classificationsArray)
                     {
-                        classifications.Add(item.ToString());
+                        if (item != null)
+                        {
+                            classifications.Add(item.GetValue<string>());
+                        }
                     }
                     info.Classifications = classifications;
                 }
@@ -49,34 +52,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 info.HostConfigPlace = entry.ToString(nameof(HostConfigPlace));
                 info.ThirdPartyNotices = entry.ToString(nameof(ThirdPartyNotices));
 
-                JObject? baselineJObject = entry.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+                JsonObject? baselineJObject = entry.Get<JsonObject>(nameof(ITemplateInfo.BaselineInfo));
                 Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
                 if (baselineJObject != null)
                 {
-                    foreach (JProperty item in baselineJObject.Properties())
+                    foreach (var item in baselineJObject)
                     {
-                        var defaultOverrides = item.Value.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides));
+                        var defaultOverrides = item.Value?.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides));
                         if (defaultOverrides is null)
                         {
                             continue;
                         }
 
                         IBaselineInfo baseline = new BaselineInfo(defaultOverrides, item.Value.ToString(nameof(IBaselineInfo.Description)));
-                        baselineInfo.Add(item.Name, baseline);
+                        baselineInfo.Add(item.Key, baseline);
                     }
                     info.BaselineInfo = baselineInfo;
                 }
 
                 //read parameters
 #pragma warning disable CS0618 // Type or member is obsolete
-                JArray? parametersArray = entry.Get<JArray>(nameof(Parameters));
+                JsonArray? parametersArray = entry.Get<JsonArray>(nameof(Parameters));
 #pragma warning restore CS0618 // Type or member is obsolete
                 if (parametersArray != null)
                 {
                     List<ITemplateParameter> templateParameters = new List<ITemplateParameter>();
-                    foreach (JToken item in parametersArray)
+                    foreach (JsonNode? item in parametersArray)
                     {
-                        if (item is JObject jObj)
+                        if (item is JsonObject jObj)
                         {
                             templateParameters.Add(ParameterFromJObject(jObj));
                         }
@@ -87,25 +90,25 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 //read tags
                 // tags are just "name": "description"
                 // e.g.: "language": "C#"
-                JObject? tagsObject = entry.Get<JObject>(nameof(TagsCollection));
+                JsonObject? tagsObject = entry.Get<JsonObject>(nameof(TagsCollection));
                 if (tagsObject != null)
                 {
                     Dictionary<string, string> tags = new Dictionary<string, string>();
-                    foreach (JProperty item in tagsObject.Properties())
+                    foreach (var item in tagsObject)
                     {
-                        tags.Add(item.Name.ToString(), item.Value.ToString());
+                        tags.Add(item.Key, item.Value?.GetValue<string>() ?? string.Empty);
                     }
                     info.TagsCollection = tags;
                 }
 
                 info.HostData = entry.ToString(nameof(info.HostData));
-                JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
+                JsonArray? postActionsArray = entry.Get<JsonArray>(nameof(info.PostActions));
                 if (postActionsArray != null)
                 {
                     List<Guid> postActions = new List<Guid>();
-                    foreach (JToken item in postActionsArray)
+                    foreach (JsonNode? item in postActionsArray)
                     {
-                        if (Guid.TryParse(item.ToString(), out Guid id))
+                        if (item != null && Guid.TryParse(item.GetValue<string>(), out Guid id))
                         {
                             postActions.Add(id);
                         }
@@ -114,11 +117,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 //read parameters
-                JArray? constraintsArray = entry.Get<JArray>(nameof(info.Constraints));
+                JsonArray? constraintsArray = entry.Get<JsonArray>(nameof(info.Constraints));
                 if (constraintsArray != null)
                 {
                     List<TemplateConstraintInfo> constraints = new List<TemplateConstraintInfo>();
-                    foreach (JToken item in constraintsArray)
+                    foreach (JsonNode? item in constraintsArray)
                     {
                         string? type = item.ToString(nameof(TemplateConstraintInfo.Type));
                         if (string.IsNullOrWhiteSpace(type))
@@ -134,10 +137,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             /// <summary>
-            /// Parses <see cref="ITemplateParameter"/> from <see cref="JObject"/>.
+            /// Parses <see cref="ITemplateParameter"/> from <see cref="JsonObject"/>.
             /// </summary>
             /// <param name="jObject"></param>
-            private static ITemplateParameter ParameterFromJObject(JObject jObject)
+            private static ITemplateParameter ParameterFromJObject(JsonObject jObject)
             {
                 string? name = jObject.ToString(nameof(ITemplateParameter.Name));
                 if (string.IsNullOrWhiteSpace(name))
@@ -160,13 +163,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (dataType.Equals("choice", StringComparison.OrdinalIgnoreCase))
                 {
                     choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
-                    JObject? cdToken = jObject.Get<JObject>(nameof(ITemplateParameter.Choices));
+                    JsonObject? cdToken = jObject.Get<JsonObject>(nameof(ITemplateParameter.Choices));
                     if (cdToken != null)
                     {
-                        foreach (JProperty cdPair in cdToken.Properties())
+                        foreach (var cdPair in cdToken)
                         {
                             choices.Add(
-                                cdPair.Name.ToString(),
+                                cdPair.Key,
                                 new ParameterChoice(
                                     cdPair.Value.ToString(nameof(ParameterChoice.DisplayName)),
                                     cdPair.Value.ToString(nameof(ParameterChoice.Description))));
@@ -205,34 +208,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 public string? Description => _parameter.Description;
 
-                [JsonProperty]
+                [JsonPropertyName("Name")]
                 public string Name => _parameter.Name;
 
-                [JsonProperty]
+                [JsonPropertyName("Precedence")]
                 public TemplateParameterPrecedence Precedence => _parameter.Precedence;
 
-                [JsonProperty]
+                [JsonPropertyName("Type")]
                 public string Type => _parameter.Type;
 
-                [JsonProperty]
+                [JsonPropertyName("IsName")]
                 public bool IsName => _parameter.IsName;
 
-                [JsonProperty]
+                [JsonPropertyName("DefaultValue")]
                 public string? DefaultValue => _parameter.DefaultValue;
 
-                [JsonProperty]
+                [JsonPropertyName("DefaultIfOptionWithoutValue")]
                 public string? DefaultIfOptionWithoutValue => _parameter.DefaultIfOptionWithoutValue;
 
-                [JsonProperty]
+                [JsonPropertyName("DataType")]
                 public string DataType => _parameter.DataType;
 
-                [JsonProperty]
+                [JsonPropertyName("Choices")]
                 public IReadOnlyDictionary<string, ParameterChoice>? Choices => _parameter.Choices;
 
-                [JsonProperty]
+                [JsonPropertyName("DisplayName")]
                 public string? DisplayName => _parameter.DisplayName;
 
-                [JsonProperty]
+                [JsonPropertyName("AllowMultipleValues")]
                 public bool AllowMultipleValues => _parameter.AllowMultipleValues;
 
                 [Obsolete]

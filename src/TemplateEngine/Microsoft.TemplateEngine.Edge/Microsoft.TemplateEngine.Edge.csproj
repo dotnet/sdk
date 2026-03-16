@@ -28,7 +28,7 @@
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Credentials" />
     <PackageReference Include="NuGet.Protocol" />
-    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

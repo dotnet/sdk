@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             return configuration.Match.Replace(value, configuration.Replacement);
         }
 
-        protected override ReplacementValueFormSettings ReadConfiguration(JObject jObject)
+        protected override ReplacementValueFormSettings ReadConfiguration(JsonObject jObject)
         {
             return new ReplacementValueFormSettings(new Regex(jObject.ToString("pattern")), jObject.ToString("replacement"));
         }

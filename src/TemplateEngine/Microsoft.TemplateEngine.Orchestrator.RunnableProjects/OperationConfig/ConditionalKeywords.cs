@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         // TODO: Allow the rawConfiguration elements to be either strings (as-is) or arrays of strings.
         // The code that consumes instances of this class is already setup to deal with multiple forms of each keyword type.
-        internal static ConditionalKeywords FromJObject(JObject rawConfiguration)
+        internal static ConditionalKeywords FromJObject(JsonObject rawConfiguration)
         {
             ConditionalKeywords keywords = new ConditionalKeywords();
             string? ifKeyword = rawConfiguration.ToString("ifKeyword");

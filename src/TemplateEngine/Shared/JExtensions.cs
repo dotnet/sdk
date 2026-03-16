@@ -1,42 +1,63 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine
 {
     internal static class JExtensions
     {
-        internal static string? ToString(this JToken? token, string? key)
+        private static readonly JsonDocumentOptions DocOptions = new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+        private static readonly JsonNodeOptions NodeOptions = new() { PropertyNameCaseInsensitive = true };
+        private static readonly JsonSerializerOptions SerializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
+        internal static string? ToString(this JsonNode? token, string? key)
         {
             if (key == null)
             {
-                if (token == null || token.Type != JTokenType.String)
+                if (token == null)
                 {
                     return null;
                 }
 
-                return token.ToString();
+                if (token is JsonValue val && val.GetValueKind() == JsonValueKind.String)
+                {
+                    return val.GetValue<string>();
+                }
+
+                return null;
             }
 
-            if (token is not JObject obj)
+            if (token is not JsonObject obj)
             {
                 return null;
             }
 
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element) || element.Type == JTokenType.Null)
+            JsonNode? element = GetPropertyCaseInsensitive(obj, key);
+            if (element == null || element.GetValueKind() == JsonValueKind.Null)
             {
                 return null;
             }
 
-            return element.ToString();
+            if (element is JsonValue strVal && strVal.GetValueKind() == JsonValueKind.String)
+            {
+                return strVal.GetValue<string>();
+            }
+
+            return element.ToJsonString();
         }
 
-        internal static bool TryGetValue(this JToken? token, string? key, out JToken? result)
+        internal static bool TryGetValue(this JsonNode? token, string? key, out JsonNode? result)
         {
             result = null;
 
@@ -49,25 +70,42 @@ namespace Microsoft.TemplateEngine
             {
                 result = token;
             }
-            else if (!((JObject)token).TryGetValue(key, StringComparison.OrdinalIgnoreCase, out result))
+            else
             {
-                return false;
+                result = GetPropertyCaseInsensitive(token.AsObject(), key);
+                if (result == null)
+                {
+                    return false;
+                }
             }
 
             return true;
         }
 
-        internal static bool TryParseBool(this JToken token, out bool result)
+        internal static bool TryParseBool(this JsonNode token, out bool result)
         {
             result = false;
-            return (token.Type == JTokenType.Boolean || token.Type == JTokenType.String)
-                   &&
-                   bool.TryParse(token.ToString(), out result);
+            var kind = token.GetValueKind();
+            if (kind == JsonValueKind.True)
+            {
+                result = true;
+                return true;
+            }
+            if (kind == JsonValueKind.False)
+            {
+                result = false;
+                return true;
+            }
+            if (kind == JsonValueKind.String)
+            {
+                return bool.TryParse(token.GetValue<string>(), out result);
+            }
+            return false;
         }
 
-        internal static bool ToBool(this JToken? token, string? key = null, bool defaultValue = false)
+        internal static bool ToBool(this JsonNode? token, string? key = null, bool defaultValue = false)
         {
-            if (!token.TryGetValue(key, out JToken? checkToken))
+            if (!token.TryGetValue(key, out JsonNode? checkToken))
             {
                 return defaultValue;
             }
@@ -80,20 +118,31 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        internal static bool TryParseInt(this JToken token, out int result)
+        internal static bool TryParseInt(this JsonNode token, out int result)
         {
             result = default;
-            return (token.Type == JTokenType.Integer || token.Type == JTokenType.String)
-                   &&
-                   int.TryParse(token.ToString(), out result);
+            var kind = token.GetValueKind();
+            if (kind == JsonValueKind.Number)
+            {
+                if (token is JsonValue jv && jv.TryGetValue(out int intVal))
+                {
+                    result = intVal;
+                    return true;
+                }
+                return int.TryParse(token.ToJsonString(), out result);
+            }
+            if (kind == JsonValueKind.String)
+            {
+                return int.TryParse(token.GetValue<string>(), out result);
+            }
+            return false;
         }
 
-        internal static int ToInt32(this JToken? token, string? key = null, int defaultValue = 0)
+        internal static int ToInt32(this JsonNode? token, string? key = null, int defaultValue = 0)
         {
-            int value;
             if (key == null)
             {
-                if (token == null || token.Type != JTokenType.Integer || !int.TryParse(token.ToString(), out value))
+                if (token == null || !token.TryParseInt(out int value))
                 {
                     return defaultValue;
                 }
@@ -101,28 +150,21 @@ namespace Microsoft.TemplateEngine
                 return value;
             }
 
-            if (token is not JObject obj)
+            if (token is not JsonObject obj)
             {
                 return defaultValue;
             }
 
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element))
+            JsonNode? element = GetPropertyCaseInsensitive(obj, key);
+            if (element == null || !element.TryParseInt(out int result))
             {
                 return defaultValue;
             }
-            else if (element.Type == JTokenType.Integer)
-            {
-                return element.ToInt32();
-            }
-            else if (int.TryParse(element.ToString(), out value))
-            {
-                return value;
-            }
 
-            return defaultValue;
+            return result;
         }
 
-        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default, bool ignoreCase = false)
+        internal static T ToEnum<T>(this JsonNode token, string? key = null, T defaultValue = default, bool ignoreCase = false)
             where T : struct
         {
             string? val = token.ToString(key);
@@ -134,7 +176,7 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        internal static Guid ToGuid(this JToken token, string? key = null, Guid defaultValue = default)
+        internal static Guid ToGuid(this JsonNode token, string? key = null, Guid defaultValue = default)
         {
             string? val = token.ToString(key);
             if (val == null || !Guid.TryParse(val, out Guid result))
@@ -149,10 +191,10 @@ namespace Microsoft.TemplateEngine
         /// Reads <paramref name="propertyName"/> as read only string list/>.
         /// Property value may be string or array.
         /// </summary>
-        internal static IReadOnlyList<string> ToStringReadOnlyList(this JObject jObject, string propertyName, IReadOnlyList<string>? defaultValue = null)
+        internal static IReadOnlyList<string> ToStringReadOnlyList(this JsonObject jObject, string propertyName, IReadOnlyList<string>? defaultValue = null)
         {
             defaultValue ??= [];
-            JToken? token = jObject.Get<JToken>(propertyName);
+            JsonNode? token = jObject.Get<JsonNode>(propertyName);
             if (token == null)
             {
                 return defaultValue;
@@ -160,52 +202,49 @@ namespace Microsoft.TemplateEngine
             return token.JTokenStringOrArrayToCollection(defaultValue) ?? defaultValue;
         }
 
-        internal static IEnumerable<JProperty> PropertiesOf(this JToken? token, string? key = null)
+        internal static IEnumerable<KeyValuePair<string, JsonNode?>> PropertiesOf(this JsonNode? token, string? key = null)
         {
-            if (token is not JObject obj)
+            if (token is not JsonObject obj)
             {
                 return [];
             }
 
             if (key != null)
             {
-                if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element))
+                JsonNode? element = GetPropertyCaseInsensitive(obj, key);
+                if (element == null)
                 {
                     return [];
                 }
-                return element is not JObject jObj ? [] : jObj.Properties();
+                return element is not JsonObject jObj ? [] : jObj.ToList();
             }
-            return obj.Properties();
+            return obj.ToList();
         }
 
-        internal static T? Get<T>(this JToken? token, string? key)
-            where T : JToken
+        internal static T? Get<T>(this JsonNode? token, string? key)
+            where T : JsonNode
         {
-            if (token is not JObject obj || key == null)
+            if (token is not JsonObject obj || key == null)
             {
                 return default;
             }
 
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? res))
-            {
-                return default;
-            }
-
+            JsonNode? res = GetPropertyCaseInsensitive(obj, key);
             return res as T;
         }
 
-        internal static IReadOnlyDictionary<string, string> ToStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, string> ToStringDictionary(this JsonNode token, StringComparer? comparer = null, string? propertyName = null)
         {
             Dictionary<string, string> result = new(comparer ?? StringComparer.Ordinal);
 
-            foreach (JProperty property in token.PropertiesOf(propertyName))
+            foreach (var property in token.PropertiesOf(propertyName))
             {
-                if (property.Value == null || property.Value.Type != JTokenType.String)
+                if (property.Value == null || property.Value.GetValueKind() != JsonValueKind.String)
                 {
                     continue;
                 }
 
-                result[property.Name] = property.Value.ToString();
+                result[property.Key] = property.Value.GetValue<string>();
             }
 
             return result;
@@ -213,15 +252,18 @@ namespace Microsoft.TemplateEngine
 
         /// <summary>
         /// Converts properties of <paramref name="token"/> to dictionary.
-        /// Leaves the values as JToken.
+        /// Leaves the values as JsonNode.
         /// </summary>
-        internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, JsonNode> ToJsonNodeDictionary(this JsonNode token, StringComparer? comparer = null, string? propertyName = null)
         {
-            Dictionary<string, JToken> result = new(comparer ?? StringComparer.Ordinal);
+            Dictionary<string, JsonNode> result = new(comparer ?? StringComparer.Ordinal);
 
-            foreach (JProperty property in token.PropertiesOf(propertyName))
+            foreach (var property in token.PropertiesOf(propertyName))
             {
-                result[property.Name] = property.Value;
+                if (property.Value != null)
+                {
+                    result[property.Key] = property.Value;
+                }
             }
 
             return result;
@@ -229,23 +271,26 @@ namespace Microsoft.TemplateEngine
 
         /// <summary>
         /// Converts properties of <paramref name="token"/> to dictionary.
-        /// Values are serialized to string (as JToken). Strings are serialized as <see cref="JToken"/>, i.e. needs to be parsed prior to be used.
+        /// Values are serialized to string (as JsonNode). Strings are serialized as JSON, i.e. needs to be parsed prior to be used.
         /// </summary>
-        internal static IReadOnlyDictionary<string, string> ToJTokenStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, string> ToJsonNodeStringDictionary(this JsonNode token, StringComparer? comparer = null, string? propertyName = null)
         {
             Dictionary<string, string> result = new(comparer ?? StringComparer.Ordinal);
 
-            foreach (JProperty property in token.PropertiesOf(propertyName))
+            foreach (var property in token.PropertiesOf(propertyName))
             {
-                result[property.Name] = property.Value.ToString(Formatting.None);
+                if (property.Value != null)
+                {
+                    result[property.Key] = property.Value.ToJsonString();
+                }
             }
 
             return result;
         }
 
-        internal static TemplateParameterPrecedence ToTemplateParameterPrecedence(this JToken jObject, string? key)
+        internal static TemplateParameterPrecedence ToTemplateParameterPrecedence(this JsonNode jObject, string? key)
         {
-            if (!jObject.TryGetValue(key, out JToken? checkToken))
+            if (!jObject.TryGetValue(key, out JsonNode? checkToken))
             {
                 return TemplateParameterPrecedence.Default;
             }
@@ -258,50 +303,50 @@ namespace Microsoft.TemplateEngine
             return new TemplateParameterPrecedence(precedenceDefinition, isRequiredCondition, isEnabledCondition, isRequired);
         }
 
-        internal static IReadOnlyList<string> ArrayAsStrings(this JToken? token, string? propertyName = null)
+        internal static IReadOnlyList<string> ArrayAsStrings(this JsonNode? token, string? propertyName = null)
         {
             if (propertyName != null)
             {
-                token = token.Get<JArray>(propertyName);
+                token = token.Get<JsonArray>(propertyName);
             }
 
-            if (token is not JArray arr)
+            if (token is not JsonArray arr)
             {
                 return [];
             }
 
             List<string> values = new();
 
-            foreach (JToken item in arr)
+            foreach (JsonNode? item in arr)
             {
-                if (item != null && item.Type == JTokenType.String)
+                if (item != null && item.GetValueKind() == JsonValueKind.String)
                 {
-                    values.Add(item.ToString());
+                    values.Add(item.GetValue<string>());
                 }
             }
 
             return values;
         }
 
-        internal static IReadOnlyList<Guid> ArrayAsGuids(this JToken? token, string? propertyName = null)
+        internal static IReadOnlyList<Guid> ArrayAsGuids(this JsonNode? token, string? propertyName = null)
         {
             if (propertyName != null)
             {
-                token = token.Get<JArray>(propertyName);
+                token = token.Get<JsonArray>(propertyName);
             }
 
-            if (token is not JArray arr)
+            if (token is not JsonArray arr)
             {
                 return [];
             }
 
             List<Guid> values = new();
 
-            foreach (JToken item in arr)
+            foreach (JsonNode? item in arr)
             {
-                if (item != null && item.Type == JTokenType.String)
+                if (item != null && item.GetValueKind() == JsonValueKind.String)
                 {
-                    if (Guid.TryParse(item.ToString(), out Guid val))
+                    if (Guid.TryParse(item.GetValue<string>(), out Guid val))
                     {
                         values.Add(val);
                     }
@@ -311,20 +356,20 @@ namespace Microsoft.TemplateEngine
             return values;
         }
 
-        internal static IEnumerable<T> Items<T>(this JToken? token, string? propertyName = null)
-            where T : JToken
+        internal static IEnumerable<T> Items<T>(this JsonNode? token, string? propertyName = null)
+            where T : JsonNode
         {
             if (propertyName != null)
             {
-                token = token.Get<JArray>(propertyName);
+                token = token.Get<JsonArray>(propertyName);
             }
 
-            if (token is not JArray arr)
+            if (token is not JsonArray arr)
             {
                 yield break;
             }
 
-            foreach (JToken item in arr)
+            foreach (JsonNode? item in arr)
             {
                 if (item is T res)
                 {
@@ -333,47 +378,40 @@ namespace Microsoft.TemplateEngine
             }
         }
 
-        internal static JObject ReadJObjectFromIFile(this IFile file)
+        internal static JsonObject ReadJObjectFromIFile(this IFile file)
         {
             using Stream s = file.OpenRead();
             using TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true);
-            using JsonReader r = new JsonTextReader(tr);
-            {
-                return JObject.Load(r);
-            }
+            string json = tr.ReadToEnd();
+            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+                ?? throw new InvalidOperationException("Failed to parse JSON from file.");
         }
 
-        internal static JObject ReadObject(this IPhysicalFileSystem fileSystem, string path)
+        internal static JsonObject ReadObject(this IPhysicalFileSystem fileSystem, string path)
         {
             using Stream fileStream = fileSystem.OpenRead(path);
             using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            using var jsonReader = new JsonTextReader(textReader);
-            {
-                return JObject.Load(jsonReader);
-            }
+            string json = textReader.ReadToEnd();
+            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+                ?? throw new InvalidOperationException($"Failed to parse JSON from '{path}'.");
         }
 
         internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
         {
             using Stream fileStream = fileSystem.CreateFile(path);
-            using var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
-            using var jsonWriter = new JsonTextWriter(textWriter);
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(jsonWriter, obj);
-            }
+            JsonSerializer.Serialize(fileStream, obj, SerializerOptions);
         }
 
-        internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JToken? token, IReadOnlyList<string> defaultSet)
+        internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JsonNode? token, IReadOnlyList<string> defaultSet)
         {
             if (token == null)
             {
                 return defaultSet;
             }
 
-            if (token.Type == JTokenType.String)
+            if (token.GetValueKind() == JsonValueKind.String)
             {
-                string tokenValue = token.ToString();
+                string tokenValue = token.GetValue<string>();
                 return new List<string>() { tokenValue };
             }
 
@@ -382,11 +420,10 @@ namespace Microsoft.TemplateEngine
 
         /// <summary>
         /// Converts <paramref name="obj"/> to valid JSON string.
-        /// JToken.ToString() doesn't provide a valid JSON string for JTokenType == String.
         /// </summary>
         internal static string ToJsonString(object obj)
         {
-            return JToken.FromObject(obj).ToString(Formatting.None);
+            return JsonSerializer.Serialize(obj, SerializerOptions);
         }
 
         internal static string ToCamelCase(this string str)
@@ -398,5 +435,111 @@ namespace Microsoft.TemplateEngine
             };
         }
 
+        /// <summary>
+        /// Tries to get a property value from a <see cref="JsonObject"/> using case-insensitive key matching.
+        /// </summary>
+        internal static bool TryGetValueCaseInsensitive(this JsonObject obj, string key, out JsonNode? result)
+        {
+            result = GetPropertyCaseInsensitive(obj, key);
+            return result != null;
+        }
+
+        /// <summary>
+        /// Gets a property from a JsonObject with case-insensitive key matching.
+        /// </summary>
+        internal static JsonNode? GetPropertyCaseInsensitive(JsonObject obj, string key)
+        {
+            // Try exact match first (fast path).
+            if (obj.TryGetPropertyValue(key, out JsonNode? result))
+            {
+                return result;
+            }
+
+            // Fall back to case-insensitive search.
+            foreach (var kvp in obj)
+            {
+                if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return kvp.Value;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Parses a JSON string into a JsonObject (with comment/trailing comma support).
+        /// </summary>
+        internal static JsonObject ParseJsonObject(string json)
+        {
+            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+                ?? throw new InvalidOperationException("Failed to parse JSON string as JsonObject.");
+        }
+
+        /// <summary>
+        /// Parses a JSON string into a JsonNode (with comment/trailing comma support).
+        /// </summary>
+        internal static JsonNode? ParseJsonNode(string json)
+        {
+            return JsonNode.Parse(json, NodeOptions, DocOptions);
+        }
+
+        /// <summary>
+        /// Serializes an object to a JsonObject via JSON round-trip.
+        /// Equivalent to Newtonsoft's JObject.FromObject().
+        /// </summary>
+        internal static JsonObject FromObject(object obj)
+        {
+            string json = JsonSerializer.Serialize(obj, SerializerOptions);
+            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+                ?? throw new InvalidOperationException("Failed to round-trip object to JsonObject.");
+        }
+
+        /// <summary>
+        /// Creates a deep clone of a <see cref="JsonObject"/> by round-tripping through JSON text.
+        /// </summary>
+        internal static JsonObject DeepCloneObject(this JsonObject source)
+        {
+            return (JsonObject?)JsonNode.Parse(source.ToJsonString(), NodeOptions, DocOptions)
+                ?? throw new InvalidOperationException("Failed to deep clone JsonObject.");
+        }
+
+        /// <summary>
+        /// Merges properties from <paramref name="source"/> into <paramref name="target"/>.
+        /// Equivalent to Newtonsoft's JObject.Merge() with default settings:
+        /// - Objects are recursively merged
+        /// - Arrays are concatenated
+        /// - Other values (including null) from source overwrite target.
+        /// </summary>
+        internal static void Merge(this JsonObject target, JsonObject source)
+        {
+            foreach (var property in source)
+            {
+                if (property.Value is JsonObject sourceObj
+                    && target.TryGetPropertyValue(property.Key, out JsonNode? targetNode)
+                    && targetNode is JsonObject targetObj)
+                {
+                    // Recursively merge nested objects
+                    targetObj.Merge(sourceObj);
+                }
+                else if (property.Value is JsonArray sourceArr
+                    && target.TryGetPropertyValue(property.Key, out targetNode)
+                    && targetNode is JsonArray targetArr)
+                {
+                    // Concatenate arrays
+                    foreach (var item in sourceArr)
+                    {
+                        targetArr.Add(item != null ? JsonNode.Parse(item.ToJsonString()) : null);
+                    }
+                }
+                else
+                {
+                    // Overwrite (or add) the property; clone value to detach from source tree
+                    target[property.Key] = property.Value != null
+                        ? JsonNode.Parse(property.Value.ToJsonString())
+                        : null;
+                }
+            }
+        }
     }
 }

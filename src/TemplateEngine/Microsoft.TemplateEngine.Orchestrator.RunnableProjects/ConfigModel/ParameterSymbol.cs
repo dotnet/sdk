@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -25,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <param name="name"></param>
         /// <param name="jObject">JSON to initialize the symbol with.</param>
         /// <param name="defaultOverride"></param>
-        internal ParameterSymbol(string name, JObject jObject, string? defaultOverride)
+        internal ParameterSymbol(string name, JsonObject jObject, string? defaultOverride)
             : base(name, jObject, defaultOverride, true)
         {
             DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
@@ -38,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             {
                 TagName = jObject.ToString(nameof(TagName));
 
-                foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
+                foreach (JsonObject choiceObject in jObject.Items<JsonObject>(nameof(Choices)))
                 {
                     string? choiceName = choiceObject.ToString("choice");
 
@@ -187,20 +188,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         }
 
-        private static TemplateParameterPrecedence GetPrecedence(bool isRequired, JObject jObject)
+        private static TemplateParameterPrecedence GetPrecedence(bool isRequired, JsonObject jObject)
         {
             string? isRequiredCondition = ParseIsRequiredConditionField(jObject);
 
             // Initialize IsEnabled - as a condition or a constant
             string? isEnabledCondition = null;
             bool isEnabled = true;
-            if (jObject != null && jObject.TryGetValue("IsEnabled", StringComparison.OrdinalIgnoreCase, out JToken? isEnabledToken))
+            if (jObject != null && jObject.TryGetValue("IsEnabled", out JsonNode? isEnabledToken))
             {
                 if (isEnabledToken!.TryParseBool(out bool enabledConst))
                 {
                     isEnabled = enabledConst;
                 }
-                else if (isEnabledToken.Type == JTokenType.String)
+                else if (isEnabledToken!.GetValueKind() == JsonValueKind.String)
                 {
                     isEnabledCondition = isEnabledToken.ToString();
                 }
@@ -242,9 +243,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             return TemplateParameterPrecedence.Default;
         }
 
-        private static string? ParseIsRequiredConditionField(JToken token)
+        private static string? ParseIsRequiredConditionField(JsonNode token)
         {
-            if (!token.TryGetValue(nameof(IsRequired), out JToken? isRequiredToken))
+            if (!token.TryGetValue(nameof(IsRequired), out JsonNode? isRequiredToken))
             {
                 return null;
             }
@@ -255,7 +256,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 return null;
             }
 
-            if (isRequiredToken!.Type != JTokenType.String)
+            if (isRequiredToken!.GetValueKind() != JsonValueKind.String)
             {
                 throw new ArgumentException(string.Format(LocalizableStrings.Symbol_Error_IsRequiredNotABoolOrString, isRequiredToken));
             }

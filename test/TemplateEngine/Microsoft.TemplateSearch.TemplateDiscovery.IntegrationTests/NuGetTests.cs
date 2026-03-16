@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             {
                 string responseText = await response.Content.ReadAsStringAsync(CancellationToken.None);
 
-                NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
+                NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JsonNode.Parse(responseText)!.AsObject());
                 Assert.Equal(1, resultsForPage.TotalHits);
                 Assert.Single(resultsForPage.Data);
 

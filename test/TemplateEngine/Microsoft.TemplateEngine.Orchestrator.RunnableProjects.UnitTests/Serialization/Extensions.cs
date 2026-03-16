@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization
 {
@@ -15,6 +15,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
         /// </summary>
         /// <exception cref="NotSupportedException">when attempting to serialize model which contains unsupported member.</exception>
         internal static string ToJsonString(this TemplateConfigModel templateConfigModel)
-            => JsonConvert.SerializeObject(templateConfigModel, Formatting.Indented, TemplateConfigModelJsonConverter.Instance, ParameterSymbolJsonConverter.Instance);
+            => JsonSerializer.Serialize(templateConfigModel, new JsonSerializerOptions { WriteIndented = true, Converters = { TemplateConfigModelJsonConverter.Instance, ParameterSymbolJsonConverter.Instance } });
     }
 }

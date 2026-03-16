@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         internal static string WriteLegacySearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             var searchMetadata = CreateLegacySearchMetadata(packSourceCheckResults);
-            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString(Newtonsoft.Json.Formatting.None));
+            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToJsonString());
             Console.WriteLine($"Legacy search cache file created: {outputFileName}");
             return outputFileName;
         }

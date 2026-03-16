@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
@@ -113,10 +113,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .Should()
                 .ExitWith(0);
 
-            var jObjectV1 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")))!;
-            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.Children<JProperty>().Single(p => p.Name.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value["Owners"]!.Values().Single());
-            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
-            Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.Value<string>());
+            var jObjectV1 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")))!.AsObject();
+            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.AsObject().Single(p => p.Key.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value!["Owners"]!.AsArray().Select(n => n!.GetValue<string>()).Single());
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
+            Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.GetValue<string>());
         }
 
         [Fact]
@@ -138,8 +138,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .Should()
                 .ExitWith(0);
 
-            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
-            Assert.Equal("description", jObjectV2!["TemplatePackages"]![0]!["Description"]!.Value<string>());
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
+            Assert.Equal("description", jObjectV2!["TemplatePackages"]![0]!["Description"]!.GetValue<string>());
         }
 
         [Fact]
@@ -161,8 +161,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .Should()
                 .ExitWith(0);
 
-            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
-            Assert.Equal("https://icon", jObjectV2!["TemplatePackages"]![0]!["IconUrl"]!.Value<string>());
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
+            Assert.Equal("https://icon", jObjectV2!["TemplatePackages"]![0]!["IconUrl"]!.GetValue<string>());
         }
 
         [Fact]
@@ -246,10 +246,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             Assert.True(File.Exists(cacheV2Path));
             Assert.True(File.Exists(nonTemplatePackagesList));
 
-            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
-            Assert.Equal(2, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
-            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
-            Assert.Equal(2, jObjectV2["TemplatePackages"]?.Count());
+            var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
+            Assert.Equal(2, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
+            Assert.Equal(2, jObjectV2["TemplatePackages"]?.AsArray().Count);
         }
 
         [Fact]
@@ -332,11 +332,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             Assert.True(File.Exists(cacheV2Path));
             Assert.True(File.Exists(nonTemplatePackagesList));
 
-            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
-            Assert.Equal(1, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
-            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
-            Assert.Equal(1, jObjectV2["TemplatePackages"]?.Count());
-            Assert.Equal("1.0.1", jObjectV2["TemplatePackages"]?[0]?["Version"]?.Value<string>());
+            var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
+            Assert.Equal(1, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
+            Assert.Equal(1, jObjectV2["TemplatePackages"]?.AsArray().Count);
+            Assert.Equal("1.0.1", jObjectV2["TemplatePackages"]?[0]?["Version"]?.GetValue<string>());
         }
 
         [Fact]
@@ -424,10 +424,10 @@ Package Test.Templates was unlisted.");
             Assert.True(File.Exists(cacheV2Path));
             Assert.True(File.Exists(nonTemplatePackagesList));
 
-            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
-            Assert.Equal(0, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
-            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
-            Assert.Equal(0, jObjectV2["TemplatePackages"]?.Count());
+            var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
+            Assert.Equal(0, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
+            Assert.Equal(0, jObjectV2["TemplatePackages"]?.AsArray().Count);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped

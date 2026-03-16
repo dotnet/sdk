@@ -1,17 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    [JsonConverter(typeof(TemplatePackageSearchDataJsonConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(TemplatePackageSearchDataJsonConverter))]
     public partial class TemplatePackageSearchData
     {
-        internal TemplatePackageSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
+        internal TemplatePackageSearchData(JsonObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
             if (jObject is null)
             {
@@ -27,20 +27,20 @@ namespace Microsoft.TemplateSearch.Common
                 : throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Name)} property or it is not a string.", nameof(jObject));
             Version = jObject.ToString(nameof(Version));
             TotalDownloads = jObject.ToInt32(nameof(TotalDownloads));
-            Owners = jObject.Get<JToken>(nameof(Owners)).JTokenStringOrArrayToCollection([]);
+            Owners = jObject.Get<JsonNode>(nameof(Owners)).JTokenStringOrArrayToCollection([]);
             Reserved = jObject.ToBool(nameof(Reserved));
 
             Description = jObject.ToString(nameof(Description));
             IconUrl = jObject.ToString(nameof(IconUrl));
 
-            JArray? templatesData = jObject.Get<JArray>(nameof(Templates))
+            JsonArray? templatesData = jObject.Get<JsonArray>(nameof(Templates))
                 ?? throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Templates)} property or it is not an array.", nameof(jObject));
             List<TemplateSearchData> templates = new List<TemplateSearchData>();
-            foreach (JToken template in templatesData)
+            foreach (JsonNode? template in templatesData)
             {
                 try
                 {
-                    if (template is JObject templateObj)
+                    if (template is JsonObject templateObj)
                     {
                         templates.Add(new TemplateSearchData(templateObj, logger, additionalDataReaders));
                     }
@@ -62,12 +62,12 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         #region JsonConverter
-        private class TemplatePackageSearchDataJsonConverter : JsonConverter<TemplatePackageSearchData>
+        private class TemplatePackageSearchDataJsonConverter : System.Text.Json.Serialization.JsonConverter<TemplatePackageSearchData>
         {
-            public override TemplatePackageSearchData ReadJson(JsonReader reader, Type objectType, TemplatePackageSearchData? existingValue, bool hasExistingValue, JsonSerializer serializer)
+            public override TemplatePackageSearchData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
                 => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, TemplatePackageSearchData? value, JsonSerializer serializer)
+            public override void Write(Utf8JsonWriter writer, TemplatePackageSearchData value, JsonSerializerOptions options)
             {
                 if (value == null)
                 {
@@ -75,30 +75,30 @@ namespace Microsoft.TemplateSearch.Common
                 }
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(Name));
-                writer.WriteValue(value.Name);
+                writer.WriteStringValue(value.Name);
                 if (!string.IsNullOrWhiteSpace(value.Version))
                 {
                     writer.WritePropertyName(nameof(Version));
-                    writer.WriteValue(value.Version);
+                    writer.WriteStringValue(value.Version);
                 }
                 if (value.TotalDownloads != 0)
                 {
                     writer.WritePropertyName(nameof(TotalDownloads));
-                    writer.WriteValue(value.TotalDownloads);
+                    writer.WriteNumberValue(value.TotalDownloads);
                 }
                 if (value.Owners.Any())
                 {
                     writer.WritePropertyName(nameof(Owners));
                     if (value.Owners.Count == 1)
                     {
-                        writer.WriteValue(value.Owners[0]);
+                        writer.WriteStringValue(value.Owners[0]);
                     }
                     else
                     {
                         writer.WriteStartArray();
                         foreach (string owner in value.Owners)
                         {
-                            writer.WriteValue(owner);
+                            writer.WriteStringValue(owner);
                         }
                         writer.WriteEndArray();
                     }
@@ -107,28 +107,28 @@ namespace Microsoft.TemplateSearch.Common
                 if (value.Reserved)
                 {
                     writer.WritePropertyName(nameof(Reserved));
-                    writer.WriteValue(value.Reserved);
+                    writer.WriteBooleanValue(value.Reserved);
                 }
                 if (!string.IsNullOrWhiteSpace(value.Description))
                 {
                     writer.WritePropertyName(nameof(Description));
-                    writer.WriteValue(value.Description);
+                    writer.WriteStringValue(value.Description);
                 }
                 if (!string.IsNullOrWhiteSpace(value.IconUrl))
                 {
                     writer.WritePropertyName(nameof(IconUrl));
-                    writer.WriteValue(value.IconUrl);
+                    writer.WriteStringValue(value.IconUrl);
                 }
 
                 writer.WritePropertyName(nameof(Templates));
-                serializer.Serialize(writer, value.Templates);
+                JsonSerializer.Serialize(writer, value.Templates, options);
 
                 if (value.AdditionalData.Any())
                 {
                     foreach (var item in value.AdditionalData)
                     {
                         writer.WritePropertyName(item.Key);
-                        serializer.Serialize(writer, item.Value);
+                        JsonSerializer.Serialize(writer, item.Value, options);
                     }
                 }
                 writer.WriteEndObject();

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,6 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Fakes;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             Guid inputTestGuid = new("12aa8f4e-a4aa-4ac1-927c-94cb99485ef1");
             string contentFileNamePrefix = "content - ";
-            JObject choiceParam = JObject.Parse(paramDefinition);
+            JsonObject choiceParam = JExtensions.ParseJsonObject(paramDefinition);
             choiceParam["AllowMultipleValues"] = isMultichoice;
             TemplateConfigModel config = new TemplateConfigModel("test")
             {
@@ -181,8 +181,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 ShortNameList = new[] { "shortName" },
                 Symbols = new[]
                 {
-                    new ComputedSymbol("computed1", JObject.Parse(ValidComputedDefinition)),
-                    new ComputedSymbol("computed2", JObject.Parse(ValidComputedDefinition))
+                    new ComputedSymbol("computed1", JExtensions.ParseJsonObject(ValidComputedDefinition)),
+                    new ComputedSymbol("computed2", JExtensions.ParseJsonObject(ValidComputedDefinition))
                 }
             };
 
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 ShortNameList = new[] { "shortName" },
                 Symbols = new[]
                 {
-                    new GeneratedSymbol("fake1", JObject.Parse(ValidCustomMacroDefinition))
+                    new GeneratedSymbol("fake1", JExtensions.ParseJsonObject(ValidCustomMacroDefinition))
                 }
             };
 

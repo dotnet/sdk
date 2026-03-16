@@ -1,13 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
@@ -84,8 +85,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             try
             {
-                var jToken = JToken.Parse(token);
-                if (jToken.TryParseBool(out bool result))
+                var jToken = JExtensions.ParseJsonNode(token);
+                if (jToken != null && jToken.TryParseBool(out bool result))
                 {
                     return result;
                 }
@@ -101,8 +102,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             try
             {
-                var jToken = JToken.Parse(token);
-                if (jToken.TryParseInt(out int result))
+                var jToken = JExtensions.ParseJsonNode(token);
+                if (jToken != null && jToken.TryParseInt(out int result))
                 {
                     return result;
                 }
@@ -118,12 +119,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             try
             {
-                var jToken = JToken.Parse(token);
-                if (jToken is not JValue val)
+                var jToken = JExtensions.ParseJsonNode(token);
+                if (jToken is not JsonValue val)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeString, config.VariableName, parameterName), config.VariableName);
                 }
-                return val.ToString();
+                return val.GetValueKind() == JsonValueKind.String ? val.GetValue<string>() : val.ToJsonString();
             }
             catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
@@ -131,16 +132,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
         }
 
-        protected static JArray ConvertJTokenToJArray(string token, IGeneratedSymbolConfig config, string parameterName)
+        protected static JsonArray ConvertJTokenToJArray(string token, IGeneratedSymbolConfig config, string parameterName)
         {
             try
             {
-                var jToken = JToken.Parse(token);
-                if (jToken.Type != JTokenType.Array)
+                var jToken = JExtensions.ParseJsonNode(token);
+                if (jToken == null || jToken.GetValueKind() != JsonValueKind.Array)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeArray, config.VariableName, parameterName), config.VariableName);
                 }
-                return (JArray)jToken;
+                return (JsonArray)jToken;
             }
             catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
@@ -185,7 +186,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             return converter(token, config, parameterName);
         }
 
-        protected JArray GetMandatoryParameterArray(IGeneratedSymbolConfig config, string parameterName)
+        protected JsonArray GetMandatoryParameterArray(IGeneratedSymbolConfig config, string parameterName)
         {
             if (!config.Parameters.TryGetValue(parameterName, out string token))
             {

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -9,7 +11,6 @@ using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -36,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IWorkloadsInfoProvider workloadInfoProvider = new WorkloadsInfoProviderMock(workloads); //A.Fake<IWorkloadsInfoProvider>();
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Components.OfType<IWorkloadsInfoProvider>()).Returns(new[] { workloadInfoProvider });
@@ -68,7 +69,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IWorkloadsInfoProvider workloadInfoProviderA = A.Fake<IWorkloadsInfoProvider>();
             A.CallTo(() => workloadInfoProviderA
                     .GetInstalledWorkloadsAsync(A<CancellationToken>._))
@@ -110,7 +111,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(config))!.AsObject());
             IWorkloadsInfoProvider workloadInfoProviderA = A.Fake<IWorkloadsInfoProvider>();
             A.CallTo(() => workloadInfoProviderA
                     .GetInstalledWorkloadsAsync(A<CancellationToken>._))

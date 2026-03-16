@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
@@ -42,14 +42,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         private static void WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             TemplateSearchCache searchMetadata = packSourceCheckResults.SearchCache;
-            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString(Formatting.None));
+            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToJsonString());
             Console.WriteLine($"Search cache file created: {outputFileName}");
         }
 
         private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<FilteredPackageInfo> packCheckResults)
         {
             var orderedFilters = packCheckResults.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToArray();
-            string serializedContent = JsonConvert.SerializeObject(orderedFilters, Formatting.None);
+            string serializedContent = JsonSerializer.Serialize(orderedFilters);
             string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
             File.WriteAllText(outputFileName, serializedContent);
             Console.WriteLine($"Non template pack list was created: {outputFileName}");

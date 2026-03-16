@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -37,15 +37,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         internal IVariableConfig VariableFormat { get; } = VariableConfig.Default;
 
-        internal static CustomFileGlobModel FromJObject(JObject globData, string globName)
+        internal static CustomFileGlobModel FromJObject(JsonObject globData, string globName)
         {
             // setup the custom operations
             List<CustomOperationModel> customOpsForGlob = new List<CustomOperationModel>();
-            if (globData.TryGetValue(nameof(Operations), StringComparison.OrdinalIgnoreCase, out JToken? operationData))
+            if (globData.TryGetValue(nameof(Operations), out JsonNode? operationData))
             {
-                foreach (JToken operationConfig in (JArray)operationData)
+                foreach (JsonNode? operationConfig in (JsonArray)operationData!)
                 {
-                    if (operationConfig is JObject obj)
+                    if (operationConfig is JsonObject obj)
                     {
                         customOpsForGlob.Add(CustomOperationModel.FromJObject(obj));
                     }

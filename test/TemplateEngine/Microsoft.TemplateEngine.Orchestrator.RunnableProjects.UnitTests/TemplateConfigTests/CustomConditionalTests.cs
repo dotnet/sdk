@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     {
         // defines a template configuration with a custom conditional configuration.
         // The style is omitted, which implies custon
-        private static JObject CustomConditionalSetupNoStyleSpecification
+        private static JsonObject CustomConditionalSetupNoStyleSpecification
         {
             get
             {
@@ -28,11 +28,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                              "wholeLine": "true",
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject CustomConditionalSetupExplicitStyleSpecification
+        private static JsonObject CustomConditionalSetupExplicitStyleSpecification
         {
             get
             {
@@ -47,11 +47,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                              "wholeLine": "true",
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject LineConditionalSetup
+        private static JsonObject LineConditionalSetup
         {
             get
             {
@@ -61,11 +61,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         "token": "//"
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
-        private static JObject BlockConditionalSetup
+        private static JsonObject BlockConditionalSetup
         {
             get
             {
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         "pseudoEndToken": "* /"
                 }
                 """;
-                return JObject.Parse(configString);
+                return JExtensions.ParseJsonObject(configString);
             }
         }
 
