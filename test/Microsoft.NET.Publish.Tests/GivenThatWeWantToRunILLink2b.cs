@@ -173,10 +173,9 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            var intermediateLinkDir = Path.Combine(intermediateDirectory, "linked");
             var linkedDirectory = Path.Combine(intermediateDirectory, "linked");
 
-            var linkSemaphore = Path.Combine(intermediateLinkDir, "Link.semaphore");
+            var linkSemaphore = Path.Combine(linkedDirectory, "Link.semaphore");
 
             // Link, keeping classlib
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
