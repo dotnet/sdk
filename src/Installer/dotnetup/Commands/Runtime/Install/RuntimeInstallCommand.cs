@@ -2,11 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
-using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
@@ -134,7 +131,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayMultiInstallResults(results);
+        InstallExecutor.DisplayMultiInstallResults(results);
 
         if (_setDefaultInstall == true)
         {
@@ -142,43 +139,6 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         return 0;
-    }
-
-    private static void DisplayMultiInstallResults(IReadOnlyList<InstallResult> results)
-    {
-        var installed = new List<string>();
-        var alreadyInstalled = new List<string>();
-        string? sharedPath = null;
-
-        string accent = DotnetupTheme.Current.Accent;
-
-        foreach (var installResult in results)
-        {
-            string description = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", installResult.Install.Component.GetDisplayName(), accent, installResult.Install.Version.ToString().EscapeMarkup());
-            sharedPath ??= installResult.Install.InstallRoot.Path;
-            if (installResult.WasAlreadyInstalled)
-            {
-                alreadyInstalled.Add(description);
-            }
-            else
-            {
-                installed.Add(description);
-            }
-        }
-
-        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
-
-        if (installed.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
-        }
-
-        if (alreadyInstalled.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "{0} was already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
-        }
     }
 
     private static void ValidateComponentForPlatform(InstallComponent component)

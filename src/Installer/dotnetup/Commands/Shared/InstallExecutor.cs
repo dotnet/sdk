@@ -294,8 +294,16 @@ internal class InstallExecutor
         if (alreadyInstalled.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
+                "{0} was already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
         }
+    }
+
+    /// <summary>
+    /// Displays results for a multi-install batch (used by SDK and Runtime install commands).
+    /// </summary>
+    public static void DisplayMultiInstallResults(IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results)
+    {
+        DisplayBatchResults(results, primaryRequest: null);
     }
 
     /// <summary>

@@ -80,6 +80,34 @@ internal class InstallWorkflow
             throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, error ?? "Failed to resolve workflow context.");
         }
 
+        ValidateInstallPath(context);
+
+        // Record resolved context telemetry
+        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
+        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
+
+        var resolved = CreateInstallRequest(context);
+        RecordResolvedTelemetry(context, resolved);
+
+        var (installResult, deferredInstalls) = ExecuteInstallations(context, resolved);
+
+        ApplyPostInstallConfiguration(context, resolved);
+
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
+
+        return new InstallWorkflowResult(
+            deferredInstalls,
+            resolved.Request.InstallRoot,
+            options.ManifestPath,
+            options.NoProgress,
+            options.RequireMuxerUpdate);
+    }
+
+    private static void ValidateInstallPath(WorkflowContext context)
+    {
         // Block install paths that point to existing files (not directories)
         if (File.Exists(context.InstallPath))
         {
@@ -100,35 +128,13 @@ internal class InstallWorkflow
                 "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
+    }
 
-        // Record resolved context telemetry
-        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-
-        // Record request source (how the version/channel was determined)
+    private static void RecordResolvedTelemetry(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    {
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, context.RequestSource);
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(context.Channel));
-
-        var resolved = CreateInstallRequest(context);
-
-        // Record resolved version
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
-
-        var (installResult, deferredInstalls) = ExecuteInstallations(context, resolved);
-
-        ApplyPostInstallConfiguration(context, resolved);
-
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
-
-        return new InstallWorkflowResult(
-            deferredInstalls,
-            resolved.Request.InstallRoot,
-            options.ManifestPath,
-            options.NoProgress,
-            options.RequireMuxerUpdate);
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
