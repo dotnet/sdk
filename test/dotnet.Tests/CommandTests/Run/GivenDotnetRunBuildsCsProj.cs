@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--no-build", "-v:m");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Restore");
             }
@@ -705,7 +705,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             result.Should().Pass()
                 .And.HaveStdOutContaining("Hello World!");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().HaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("CoreCompile");
@@ -1035,7 +1035,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--project", nonExistentProject, "--no-build");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // After the fix, we should get a clear error message about the file not existing
                 var stderr = result.StdErr;
@@ -1079,7 +1079,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
         }
     }
 }

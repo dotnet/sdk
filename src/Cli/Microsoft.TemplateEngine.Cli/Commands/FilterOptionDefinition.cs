@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Cli.TemplateResolution;
@@ -54,12 +55,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// </summary>
         public static readonly IReadOnlyDictionary<string, FilterOptionDefinition> AllDefinitions = new Dictionary<string, FilterOptionDefinition>()
         {
-            { SharedOptions.AuthorOption.Name, AuthorFilter },
-            { SharedOptions.BaselineOption.Name, BaselineFilter },
-            { SharedOptions.LanguageOption.Name, LanguageFilter },
-            { SharedOptions.TagOption.Name, TagFilter },
-            { SharedOptions.TypeOption.Name, TypeFilter },
-            { SharedOptions.PackageOption.Name, PackageFilter }
+            { SharedOptionsFactory.AuthorOptionName, AuthorFilter },
+            { SharedOptionsFactory.BaselineOptionName, BaselineFilter },
+            { SharedOptionsFactory.LanguageOptionName, LanguageFilter },
+            { SharedOptionsFactory.TagOptionName, TagFilter },
+            { SharedOptionsFactory.TypeOptionName, TypeFilter },
+            { SharedOptionsFactory.PackageOptionName, PackageFilter }
         };
 
         private static Func<ITemplatePackageInfo, bool> PackageMatchFilter(string? packageArg)

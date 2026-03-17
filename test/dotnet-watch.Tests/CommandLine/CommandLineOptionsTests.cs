@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([command]);
             var args = options.CommandArguments.ToList();
-            Assert.Equal(command, options.ExplicitCommand);
+            Assert.True(options.IsExplicitCommand);
             Assert.Equal(command, options.Command);
             Assert.Empty(args);
         }
@@ -104,6 +104,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
             Assert.Equal("test", options.Command);
             AssertEx.SequenceEqual([], options.CommandArguments);
+        }
+
+        [Fact]
+        public void QuietAndVerbose()
+        {
+             VerifyErrors(["--quiet", "--verbose"],
+                expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, "--quiet", "--verbose")}"]);
         }
 
         [Fact]
@@ -136,7 +143,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--no-launch-profile", "run"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.False(options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -146,7 +153,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["run", "--no-launch-profile"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.False(options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -156,7 +163,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--no-launch-profile", "run", "--no-launch-profile"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.False(options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -239,7 +246,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--no-launch-profile"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--no-launch-profile"], options.CommandArguments);
         }
 
@@ -248,7 +256,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--launch-profile", "p"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--launch-profile", "p"], options.CommandArguments);
         }
 
@@ -257,7 +266,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--property", "x=1"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--property", "x=1"], options.CommandArguments);
         }
 
@@ -306,11 +316,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
 
-            // the forwarding function of --property property joins the properties with `:`:
-            AssertEx.SequenceEqual(["--property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
+            // The forwarding function of --property property joins the properties with `:`
+            // --framework is not forwarded as property.
+            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
 
-            // it's ok to keep the two arguments and not to join them with `:` since `run` command handles these options correctly
-            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
+            // It's ok to keep the two arguments and not to join them with `:` since `run` command handles these options correctly
+            // --framework is not forwarded, it will be specified explicitly.
+            AssertEx.SequenceEqual(["--project", "P", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -356,7 +368,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
-        public void MultiplePropertyValues()
+        public void OptionDuplicates_Property()
         {
             var options = VerifyOptions(["--property", "P1=V1", "run", "--property", "P2=V2"]);
             AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
@@ -366,7 +378,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
+        [InlineData("--file")]
         [InlineData("--project")]
+        [InlineData("-p")]
         [InlineData("--framework")]
         public void OptionDuplicates_NotAllowed(string option)
         {
@@ -390,14 +404,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
-        public void CannotHaveQuietAndVerbose()
-        {
-            VerifyErrors(["--quiet", "--verbose"],
-                $"[Error] {Resources.Error_QuietAndVerboseSpecified}");
-        }
-
-        [Fact]
-        public void ShortFormForProjectArgumentPrintsWarning()
+        public void Project_ShortForm()
         {
             var options = VerifyOptions(["-p", "MyProject.csproj"],
                 expectedMessages: [$"[Warning] {Resources.Warning_ProjectAbbreviationDeprecated}"]);
@@ -406,14 +413,37 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
-        public void LongFormForProjectArgumentWorks()
+        public void Project_ShortAndLongForm()
+        {
+            VerifyErrors(["-p", "MyProject1.csproj", "--project", "MyProject2.csproj"],
+                expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, "--project", "-p")}"]);
+        }
+
+        [Theory]
+        [InlineData("-p")]
+        [InlineData("--project")]
+        public void Project_File(string projectOption)
+        {
+            VerifyErrors([projectOption, "MyProject1.csproj", "--file", "a.cs"],
+                expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, "--file", projectOption)}"]);
+        }
+
+        [Fact]
+        public void Project_LongForm()
         {
             var options = VerifyOptions(["--project", "MyProject.csproj"]);
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
 
         [Fact]
-        public void LongFormForLaunchProfileArgumentWorks()
+        public void File()
+        {
+            var options = VerifyOptions(["--file", "MyFile.cs"]);
+            Assert.Equal("MyFile.cs", options.FilePath);
+        }
+
+        [Fact]
+        public void LaunchProfile_LongForm()
         {
             var options = VerifyOptions(["--launch-profile", "CustomLaunchProfile"]);
             Assert.NotNull(options);
@@ -421,7 +451,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
-        public void ShortFormForLaunchProfileArgumentWorks()
+        public void LaunchProfile_ShortForm()
         {
             var options = VerifyOptions(["-lp", "CustomLaunchProfile"]);
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
@@ -434,7 +464,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// </summary>
         [Theory]
         [InlineData(new[] { "--configuration", "release" }, new[] { "--property:Configuration=release", NugetInteractiveProperty })]
-        [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
+        [InlineData(new[] { "--framework", "net9.0" }, new[] { NugetInteractiveProperty }, new string[0])]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
         [InlineData(new[] { "--project", "x.csproj" }, new[] { NugetInteractiveProperty }, new[] { "--project", "x.csproj" })]
@@ -517,7 +547,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public void ForwardedBuildOptions_ArtifactsPath()
         {
-            var path = TestContext.Current.TestAssetsDirectory;
+            var path = SdkTestContext.Current.TestAssetsDirectory;
 
             var args = new[] { "--artifacts-path", path };
             var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };
