@@ -160,14 +160,18 @@ internal sealed class DockerCli
 
         string commandPath = await FindFullCommandPath(cancellationToken);
         var createdImages = new List<string>();
-        string firstTag = destinationReference.Tags.First();
-        string manifestName = $"{destinationReference.Repository}:{firstTag}";
 
         try
         {
+            string firstTag = destinationReference.Tags.First();
+            string manifestName = $"{destinationReference.Repository}:{firstTag}";
+
             // Create the manifest list.
-            await RunAndIgnoreAsync($"manifest rm {manifestName}");
+            // 'create' will fail if the manifest already exists.
+            // Note that manifests are considered a type of image, so we can use the regular 'rmi' and 'tag' commands for them.
+            await RunAndIgnoreAsync($"rmi {manifestName}");
             await RunAsync($"manifest create {manifestName}");
+            createdImages.Add(manifestName);
 
             // Load per-arch images and add them to the manifest list.
             // We intentionally don't remove these because that makes the manifest unusable.
@@ -194,8 +198,6 @@ internal sealed class DockerCli
         }
         catch
         {
-            await RunAndIgnoreAsync($"manifest rm {manifestName}");
-
             foreach (string image in createdImages)
             {
                 await RunAndIgnoreAsync($"rmi {image}");
