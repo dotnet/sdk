@@ -315,6 +315,11 @@ public partial class DefineStaticWebAssets : Task
                     asset.AssetGroups = existingGroups;
                 }
 
+                // Capture the pre-group relative path for dedup — group definitions may rewrite
+                // RelativePath so that two grouped assets (e.g. V4/css/site.css, V5/css/site.css)
+                // share the same post-group path. Dedup must use the original path.
+                var dedupRelativePath = asset.RelativePath;
+
                 // Apply group definitions to this individual asset before serializing to ITaskItem.
                 if (groupDefinitions != null)
                 {
@@ -329,7 +334,7 @@ public partial class DefineStaticWebAssets : Task
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
                     item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
-                    UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
+                    UpdateAssetKindIfNecessary(assetsByRelativePath, dedupRelativePath, item);
                 }
 
                 assetsCache.AppendAsset(hash, asset, item);
