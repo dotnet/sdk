@@ -21,6 +21,13 @@ public class ScopedMutex : IDisposable
     /// </summary>
     public static Action? OnWaitingForMutex { get; set; }
 
+    /// <summary>
+    /// When true, the <see cref="OnWaitingForMutex"/> callback is never invoked.
+    /// Set this during multi-install operations where in-process mutex contention
+    /// is expected and the "waiting" message would be misleading.
+    /// </summary>
+    public static bool SuppressWaitingCallback { get; set; }
+
     // Process-wide count of non-reentrant mutex holds across all async contexts.
     // Used to suppress the "waiting" callback when the holder is within this same process.
     private static int s_processActiveHolds;
@@ -58,7 +65,7 @@ public class ScopedMutex : IDisposable
             // Only invoke the callback when an *external* process holds the mutex.
             // Suppress it when another task within this process holds it so we don't
             // show misleading "waiting for mutex" text when we're waiting on ourselves.
-            if (Volatile.Read(ref s_processActiveHolds) == 0)
+            if (!SuppressWaitingCallback && Volatile.Read(ref s_processActiveHolds) == 0)
             {
                 OnWaitingForMutex?.Invoke();
             }

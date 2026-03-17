@@ -139,9 +139,20 @@ internal class InstallerOrchestratorSingleton
         // overlapping extraction/commit with still-running downloads.
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
-        var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, exceptions, lockObj));
-        ConsumeAndCommit(readyQueue, results, exceptions, lockObj);
-        downloadTask.Wait();
+        // Suppress the "another process is waiting" message during multi-install
+        // because in-process mutex contention between download and commit threads
+        // is expected and the message would be misleading.
+        ScopedMutex.SuppressWaitingCallback = true;
+        try
+        {
+            var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, exceptions, lockObj));
+            ConsumeAndCommit(readyQueue, results, exceptions, lockObj);
+            downloadTask.Wait();
+        }
+        finally
+        {
+            ScopedMutex.SuppressWaitingCallback = false;
+        }
 
         if (exceptions.Count > 0)
         {
