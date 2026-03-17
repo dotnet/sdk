@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
@@ -144,7 +145,7 @@ internal sealed class CommandLineOptions
                 LogLevel = logLevel,
                 NoHotReload = parseResult.GetValue(definition.NoHotReloadOption),
                 NonInteractive = parseResult.GetValue(definition.NonInteractiveOption),
-                BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
+                BinaryLogPath = ParseBinaryLogFilePath(binLogPath, logger),
             },
 
             CommandArguments = commandArguments,
@@ -160,24 +161,21 @@ internal sealed class CommandLineOptions
     }
 
     /// <summary>
-    /// Parses the value of msbuild option `-binaryLogger[:[LogFile=]output.binlog[;ProjectImports={None,Embed,ZipFile}]]`.
-    /// Emulates https://github.com/dotnet/msbuild/blob/7f69ea906c29f2478cc05423484ad185de66e124/src/Build/Logging/BinaryLogger/BinaryLogger.cs#L481.
-    /// See https://github.com/dotnet/msbuild/issues/12256
+    /// Parses the value of msbuild option `-binaryLogger`.
     /// </summary>
-    internal static string? ParseBinaryLogFilePath(string? value)
-        => value switch
+    internal static string? ParseBinaryLogFilePath(string? value, ILogger logger)
+    {
+        try
         {
-            null => null,
-            _ => (from parameter in value.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                  where !string.Equals(parameter, "ProjectImports=None", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=Embed", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=ZipFile", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "OmitInitialInfo", StringComparison.OrdinalIgnoreCase)
-                  let path = (parameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase) ? parameter["LogFile=".Length..] : parameter).Trim('"')
-                  let pathWithExtension = path.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ? path : $"{path}.binlog"
-                  select pathWithExtension)
-                 .LastOrDefault("msbuild.binlog")
-        };
+            return value != null ? BinaryLogger.ParseParameters(value).LogFilePath ?? "msbuild.binlog" : null;
+        }
+        catch (Build.Framework.LoggerException e)
+        {
+            // MSB4234: Invalid binary logger parameter(s): "{0}". Expected: ProjectImports={{None,Embed,ZipFile}} and/or [LogFile=]filePath.binlog (the log file name or path, must have the ".binlog" extension)
+            logger.LogError(e.Message);
+            return null;
+        }
+    }
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
