@@ -487,6 +487,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**",
                     ["ContentRootSuffix"] = "V4"
@@ -520,6 +521,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**"
                     // No RelativePathPrefix, no ContentRootSuffix
@@ -553,6 +555,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**",
                     ["RelativePathPrefix"] = "#[{BootstrapVersion}/]~"
@@ -586,6 +589,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**",
                     ["RelativePathPrefix"] = "shared/"
@@ -618,6 +622,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**",
                     ["RelativePathPrefix"] = "shared/",
@@ -653,6 +658,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "Default",
                     ["Order"] = "0",
+                    ["SourceId"] = "MyLib",
                     ["IncludePattern"] = "**",
                     ["RelativePathPrefix"] = "lib/"
                     // No RelativePathPattern — no stripping, just prepend
@@ -692,6 +698,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V5",
                     ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V5/**",
                     ["RelativePathPattern"] = "V5/**",
                     ["ContentRootSuffix"] = "V5"
@@ -700,6 +707,7 @@ public class AssetGroupFilteringTest : IDisposable
                 {
                     ["Value"] = "V4",
                     ["Order"] = "1",
+                    ["SourceId"] = "IdentityUI",
                     ["IncludePattern"] = "V4/**",
                     ["RelativePathPattern"] = "V4/**",
                     ["ContentRootSuffix"] = "V4"

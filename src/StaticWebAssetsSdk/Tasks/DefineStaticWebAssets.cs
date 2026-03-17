@@ -687,14 +687,32 @@ public partial class DefineStaticWebAssets : Task
         {
             var name = def.ItemSpec;
             var value = def.GetMetadata("Value");
+            if (string.IsNullOrEmpty(value))
+            {
+                Log.LogError("Group definition '{0}' is missing required metadata 'Value'.", name);
+                return null;
+            }
+
             var sourceId = def.GetMetadata("SourceId");
+            if (string.IsNullOrEmpty(sourceId))
+            {
+                Log.LogError("Group definition '{0}' is missing required metadata 'SourceId'.", name);
+                return null;
+            }
+
             var orderStr = def.GetMetadata("Order");
             if (!int.TryParse(orderStr, out var order))
             {
-                order = 0;
+                Log.LogError("Group definition '{0}' has invalid or missing 'Order' value '{1}'. Order must be an integer.", name, orderStr);
+                return null;
             }
 
             var includePattern = def.GetMetadata("IncludePattern");
+            if (string.IsNullOrEmpty(includePattern))
+            {
+                Log.LogError("Group definition '{0}' is missing required metadata 'IncludePattern'.", name);
+                return null;
+            }
             var excludePattern = def.GetMetadata("ExcludePattern");
             var relativePathPattern = def.GetMetadata("RelativePathPattern");
             var relativePathPrefix = def.GetMetadata("RelativePathPrefix");
@@ -759,12 +777,6 @@ public partial class DefineStaticWebAssets : Task
 
         foreach (var def in definitions)
         {
-            if (def.IncludeMatcher == null)
-            {
-                Log.LogMessage(MessageImportance.Low,
-                    "Skipping group definition '{0}' because it has no IncludePattern.", def.Name);
-                continue;
-            }
             matchContext.SetPathAndReinitialize(pathWithoutTokens);
             var includeMatch = def.IncludeMatcher.Match(matchContext);
 
