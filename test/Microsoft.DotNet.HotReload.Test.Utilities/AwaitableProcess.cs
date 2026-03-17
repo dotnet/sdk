@@ -10,19 +10,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class AwaitableProcess : IAsyncDisposable
     {
-        // Maximum time to wait for a single line of output from the process.
-        // On CI (Helix), cap at 5 minutes. The HELIX_WORK_ITEM_TIMEOUT is the total budget
-        // for ALL tests in the work item (~2h), which is far too long for a single
-        // wait-for-output operation. If a process produces no output for 5 minutes,
-        // it's deadlocked (e.g., dotnet-watch shutdown race in AspireServiceFactory).
-        // Capping here turns a 2-hour partition-blocking hang into a 5-minute clean failure.
-        private static readonly TimeSpan s_maxPerOperationTimeout = TimeSpan.FromMinutes(5);
-
+        // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
-            ? Min(TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)), s_maxPerOperationTimeout)
-            : TimeSpan.FromMinutes(10);
-
-        private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
+            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 
         private readonly List<string> _lines = [];
 
@@ -236,17 +226,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
-            // Close stdin before killing. This unblocks PhysicalConsole.ListenToStandardInputAsync()
-            // which reads from stdin with CancellationToken.None and no timeout.
-            // Without this, the stdin reader can keep the process alive after Kill() on some platforms.
-            try
-            {
-                Process.StandardInput.Close();
-            }
-            catch
-            {
-            }
-
             try
             {
                 Process.Kill(entireProcessTree: true);
@@ -255,17 +234,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
-            // Wait for process exit with a timeout to prevent hanging the test if Kill() fails.
-            // The WaitForProcessExitAsync loop checks HasExited every 1 second, so 30s is generous.
-            using var exitTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            try
-            {
-                await _processExitAwaiter.WaitAsync(exitTimeout.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.Log($"Process {Id} did not exit within 30 seconds after Kill()");
-            }
+            // ensure process has exited
+            await _processExitAwaiter;
 
             Process.Dispose();
 
