@@ -82,6 +82,19 @@ public partial class DefineStaticWebAssets : Task
     public override bool Execute()
     {
         _overrides = new HashSet<string>(PropertyOverrides ?? [], StringComparer.OrdinalIgnoreCase);
+
+        // Parse group definitions once upfront so they can be applied per-asset inside the loop.
+        List<GroupDefinition> groupDefinitions = null;
+        if (StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
+        {
+            groupDefinitions = ParseGroupDefinitions();
+            if (groupDefinitions == null)
+            {
+                return false; // Validation error already logged
+            }
+            Log.LogMessage(MessageImportance.Low, "Parsed {0} group definitions.", groupDefinitions.Count);
+        }
+
         var assetsCache = GetOrCreateAssetsCache();
 
         if (assetsCache.IsUpToDate())
@@ -326,10 +339,10 @@ public partial class DefineStaticWebAssets : Task
             }
         }
 
-        if (!Log.HasLoggedErrors && StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
+        if (!Log.HasLoggedErrors && groupDefinitions != null)
         {
-            Log.LogMessage(MessageImportance.Low, "Applying group definitions. Definitions count: {0}, Assets count: {1}", StaticWebAssetGroupDefinitions.Length, Assets.Length);
-            ApplyGroupDefinitions();
+            Log.LogMessage(MessageImportance.Low, "Applying group definitions. Definitions count: {0}, Assets count: {1}", groupDefinitions.Count, Assets.Length);
+            ApplyGroupDefinitions(groupDefinitions);
         }
 
         return !Log.HasLoggedErrors;
@@ -604,14 +617,8 @@ public partial class DefineStaticWebAssets : Task
         return computedPath;
     }
 
-    private void ApplyGroupDefinitions()
+    private void ApplyGroupDefinitions(List<GroupDefinition> definitions)
     {
-        var definitions = ParseGroupDefinitions();
-        if (definitions == null)
-        {
-            return; // Error already logged
-        }
-
         var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
         for (var i = 0; i < Assets.Length; i++)
