@@ -411,9 +411,11 @@ internal class InstallExecutor
         }
         else
         {
-            // Standard admin/package-manager locations on Linux and macOS
+            // Standard system/package-manager locations on Linux and macOS.
+            // See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
             if (IsOrIsUnder(fullPath, "/usr/share/dotnet", StringComparison.Ordinal) ||
                 IsOrIsUnder(fullPath, "/usr/lib/dotnet", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/usr/lib64/dotnet", StringComparison.Ordinal) ||
                 IsOrIsUnder(fullPath, "/usr/local/share/dotnet", StringComparison.Ordinal))
             {
                 return true;

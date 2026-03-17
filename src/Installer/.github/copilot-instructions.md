@@ -31,3 +31,46 @@ Concurrency:
   d:\sdk\.dotnet\dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj "/p:ArtifactsDir=d:\sdk\artifacts\tmp\parser-fix\" --filter "FullyQualifiedName~ParserTests"
   ```
 - Clean up temporary artifacts directories when you are done: `Remove-Item -Recurse -Force d:\sdk\artifacts\tmp\<descriptive-name>`
+
+PR Feedback Resolution:
+- When asked to resolve PR feedback (e.g., "resolve PR feedback for https://github.com/dotnet/sdk/pull/12345"), follow this workflow:
+
+1. **Gather comments** — Use the GitHub MCP server tools (`mcp_github_pull_request_read`, `mcp_github_list_pull_requests`, etc.) or git MCP tools to fetch all review comments and conversation threads from the PR. Identify which comments are unresolved vs already resolved/outdated.
+
+2. **Create a plan document** — Generate `src/Installer/pr-feedback-plan.md` with all comments organized by size category:
+   - **Already Resolved** — Comments that are outdated or already addressed. Table format with columns: #, File, Comment, Link, Status.
+   - **Quick Fixes** — Renames, comment additions, single-line changes.
+   - **Medium Fixes** — Multi-file refactors, method extractions, logic changes.
+   - **Large / Investigation Items** — Architecture changes, cross-cutting concerns, items needing research.
+   Each item gets a unique ID (Q1, Q2, ..., M1, M2, ..., L1, L2, etc.), a link to the GitHub discussion comment, the reviewer's comment text, and a status field.
+
+3. **Execute fixes** — Work through items in size order (Quick first, then Medium, then Large). Use subagents (the `Explore` agent) for research on larger items. For each item:
+   - Build after each fix: `d:\sdk\.dotnet\dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj "/p:ArtifactsDir=d:\sdk\artifacts\tmp\pr-feedback\"`
+   - Run relevant tests after groups of related fixes.
+   - Mark items ✅ Done in the plan document as they are completed.
+
+4. **Update the plan document** — After all items are complete, **reorder** the entries in `pr-feedback-plan.md` to match the order they appear on the GitHub PR conversation page (i.e., by file path and line number as GitHub displays them, not by size category). This makes it easy for the author to walk through the PR on github.com and close/resolve each comment in order. Include a summary section containing:
+   - Total comments, counts per category, all marked ✅
+   - A "Files Modified" list
+   - Build and test status
+
+5. **Link format in the plan** — Use workspace-relative links for code references so they open in the IDE, NOT GitHub blob URLs. Include specific line numbers for the changed code. Example:
+   - ✅ Correct: `[InstallWalkthrough.cs](dotnetup/Commands/Shared/InstallWalkthrough.cs)`
+   - ✅ Correct with line: `[InstallWalkthrough.cs L36](dotnetup/Commands/Shared/InstallWalkthrough.cs#L36)`
+   - ❌ Wrong: `[InstallWalkthrough.cs](https://github.com/dotnet/sdk/blob/.../InstallWalkthrough.cs)`
+   - For GitHub discussion links, use the `r<id>` format: `[r2948551306](https://github.com/dotnet/sdk/pull/53464#discussion_r2948551306)`
+
+6. **Handle TODOs** — For items that cannot be fully resolved and require a TODO:
+   - Do NOT leave silent TODOs in code. Instead, create a separate `.md` file under `src/Installer/issues/` describing the follow-up work.
+   - Format the `.md` as a GitHub issue body: title, description, acceptance criteria, and relevant code links.
+   - Include the `dotnetup` label in the frontmatter or title so it can be filed with that label.
+   - Be prepared to file these issues via the GitHub MCP server tools when asked.
+
+7. **Example plan entry** (for a completed Quick Fix):
+   ```markdown
+   ### Q1: InstallWalkthrough.cs L36 — Remove unused parameter
+   **Link:** [r2948948414](https://github.com/dotnet/sdk/pull/53464#discussion_r2948948414)
+   **Comment:** "Why are we reserving this?"
+   **Status:** ✅ Done — Removed `channelVersionResolver` parameter from constructor and the discard assignment. Updated caller in InstallWorkflow.cs.
+   **Code:** [InstallWalkthrough.cs](dotnetup/Commands/Shared/InstallWalkthrough.cs#L36), [InstallWorkflow.cs](dotnetup/Commands/Shared/InstallWorkflow.cs#L42)
+   ```

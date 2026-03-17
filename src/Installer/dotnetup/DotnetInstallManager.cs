@@ -113,9 +113,14 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     /// <summary>
     /// Returns the system-level .NET install directories for the current platform.
-    /// Windows: uses the registry to find install locations under Program Files.
-    /// macOS: reads /etc/dotnet/install_location, defaults to /usr/local/share/dotnet.
-    /// Linux: checks /usr/share/dotnet and /usr/lib/dotnet.
+    /// Windows: reads registry (sharedhost\Path, then InstallLocation) per architecture,
+    ///          falls back to %ProgramFiles%\dotnet.
+    /// macOS: checks /etc/dotnet/install_location_{arch}, /etc/dotnet/install_location,
+    ///        defaults to /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
+    /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
+    ///
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+    /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     internal static List<string> GetSystemDotnetPaths()
     {
@@ -128,42 +133,98 @@ public class DotnetInstallManager : IDotnetInstallManager
 
         if (OperatingSystem.IsMacOS())
         {
-            // macOS installer writes the dotnet root here
-            const string installLocationFile = "/etc/dotnet/install_location";
-            try
-            {
-                if (File.Exists(installLocationFile))
-                {
-                    string? location = File.ReadAllText(installLocationFile).Trim();
-                    if (!string.IsNullOrEmpty(location) && Directory.Exists(location))
-                    {
-                        paths.Add(location.TrimEnd(Path.DirectorySeparatorChar));
-                    }
-                }
-            }
-            catch
-            {
-                // Best-effort; file may not exist or be unreadable
-            }
-
-            // Default macOS system location when install_location file is missing
-            TryAddPath(paths, "/usr/local/share/dotnet");
+            AddMacOSPaths(paths);
         }
         else
         {
-            // Linux package-manager locations
-            TryAddPath(paths, "/usr/share/dotnet");
-            TryAddPath(paths, "/usr/lib/dotnet");
+            AddLinuxPaths(paths);
         }
 
         return paths;
+    }
 
-        static void TryAddPath(List<string> list, string path)
+    /// <summary>
+    /// Adds macOS system dotnet paths in priority order:
+    /// 1. Per-architecture install_location file: /etc/dotnet/install_location_{arch}
+    /// 2. Default install_location file: /etc/dotnet/install_location
+    /// 3. Default system location: /usr/local/share/dotnet
+    /// 4. x64 emulation sublocation: /usr/local/share/dotnet/x64 (when running x64 on arm64 via Rosetta)
+    /// </summary>
+    private static void AddMacOSPaths(List<string> paths)
+    {
+        var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+
+        // Per-architecture install_location file takes highest priority.
+        // See: https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+        TryReadInstallLocationFile(paths, $"/etc/dotnet/install_location_{arch}");
+
+        // Fall back to the non-architecture-specific file.
+        TryReadInstallLocationFile(paths, "/etc/dotnet/install_location");
+
+        // Default macOS system location (the .NET macOS installer places files here).
+        TryAddPath(paths, "/usr/local/share/dotnet");
+
+        // When running x64 under Rosetta on an arm64 Mac, the x64 dotnet root
+        // is a subdirectory rather than a sibling directory.
+        if (RuntimeInformation.ProcessArchitecture == Architecture.X64 &&
+            RuntimeInformation.OSArchitecture == Architecture.Arm64)
         {
-            if (Directory.Exists(path) && !list.Contains(path, StringComparer.Ordinal))
+            TryAddPath(paths, "/usr/local/share/dotnet/x64");
+        }
+    }
+
+    /// <summary>
+    /// Adds Linux system dotnet paths in priority order:
+    /// 1. /usr/lib/dotnet — preferred by newer distros and the .NET install docs.
+    /// 2. /usr/share/dotnet — used by some distributions (e.g., Ubuntu packages).
+    /// 3. /usr/lib64/dotnet — used by some RPM-based distributions (Fedora, RHEL).
+    ///
+    /// Note: /etc/ld.so.conf and /etc/ld.so.conf.d/* configure the dynamic linker
+    /// and may reference dotnet library paths on some distributions. The well-known
+    /// directories above cover the standard package-manager install locations.
+    /// </summary>
+    private static void AddLinuxPaths(List<string> paths)
+    {
+        TryAddPath(paths, "/usr/lib/dotnet");
+        TryAddPath(paths, "/usr/share/dotnet");
+        TryAddPath(paths, "/usr/lib64/dotnet");
+    }
+
+    /// <summary>
+    /// Reads a dotnet install_location file and adds the path it contains if valid.
+    /// These files are written by the .NET installer on macOS and contain a single
+    /// line with the dotnet root directory.
+    /// </summary>
+    private static void TryReadInstallLocationFile(List<string> paths, string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
             {
-                list.Add(path);
+                return;
             }
+
+            string? location = File.ReadAllText(filePath).Trim();
+            if (!string.IsNullOrEmpty(location))
+            {
+                var normalized = location.TrimEnd(Path.DirectorySeparatorChar);
+                if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.Ordinal))
+                {
+                    paths.Add(normalized);
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort; file may be unreadable due to permissions
+        }
+    }
+
+    private static void TryAddPath(List<string> paths, string path)
+    {
+        if (Directory.Exists(path) && !paths.Contains(path, StringComparer.Ordinal))
+        {
+            paths.Add(path);
         }
     }
 

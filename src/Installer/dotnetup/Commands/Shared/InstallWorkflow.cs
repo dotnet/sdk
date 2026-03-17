@@ -196,7 +196,7 @@ internal class InstallWorkflow
     /// Returns true when the given <see cref="PathPreference"/> implies we should
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
-    internal static bool ShouldReplacePath(PathPreference preference) =>
+    internal static bool ShouldSetAsDefaultInstall(PathPreference preference) =>
         preference != PathPreference.DotnetupDotnet;
 
     private static bool DeriveSetDefaultInstall(
@@ -212,7 +212,7 @@ internal class InstallWorkflow
         var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
         if (savedPreference is not null)
         {
-            return ShouldReplacePath(savedPreference.Value);
+            return ShouldSetAsDefaultInstall(savedPreference.Value);
         }
 
         // No config yet. If interactive, show the full path preference selector
@@ -222,7 +222,7 @@ internal class InstallWorkflow
             var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
             if (preference is not null)
             {
-                return ShouldReplacePath(preference.Value);
+                return ShouldSetAsDefaultInstall(preference.Value);
             }
         }
 
