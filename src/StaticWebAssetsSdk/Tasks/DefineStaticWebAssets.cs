@@ -631,17 +631,37 @@ public partial class DefineStaticWebAssets : Task
         List<GroupDefinition> definitions,
         StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
-        var (groupEntries, newRelativePath, contentRootSuffix) = MatchAssetToDefinitions(asset, definitions, matchContext);
+        var result = MatchAssetToDefinitions(asset, definitions, matchContext);
 
-        if (groupEntries != null && groupEntries.Count > 0)
+        if (result.GroupEntries != null && result.GroupEntries.Count > 0)
         {
-            asset.AssetGroups = string.Join(";", groupEntries);
-            asset.RelativePath = newRelativePath;
-            if (contentRootSuffix != null)
+            asset.AssetGroups = string.Join(";", result.GroupEntries);
+            asset.RelativePath = result.RelativePath;
+            if (result.ContentRootSuffix != null)
             {
-                ApplyContentRootSuffix(ref asset, contentRootSuffix.Value.Suffix, contentRootSuffix.Value.GroupName);
+                ApplyContentRootSuffix(ref asset, result.ContentRootSuffix, result.ContentRootGroupName);
             }
         }
+    }
+
+    private readonly struct GroupMatchResult
+    {
+        public GroupMatchResult(
+            List<string> groupEntries,
+            string relativePath,
+            string contentRootSuffix,
+            string contentRootGroupName)
+        {
+            GroupEntries = groupEntries;
+            RelativePath = relativePath;
+            ContentRootSuffix = contentRootSuffix;
+            ContentRootGroupName = contentRootGroupName;
+        }
+
+        public List<string> GroupEntries { get; }
+        public string RelativePath { get; }
+        public string ContentRootSuffix { get; }
+        public string ContentRootGroupName { get; }
     }
 
     private readonly struct GroupDefinition
@@ -766,14 +786,15 @@ public partial class DefineStaticWebAssets : Task
         return definitions;
     }
 
-    private (List<string> GroupEntries, string RelativePath, (string Suffix, string GroupName)? ContentRootSuffix) MatchAssetToDefinitions(
+    private GroupMatchResult MatchAssetToDefinitions(
         StaticWebAsset asset, List<GroupDefinition> definitions, StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
         var currentRelativePath = asset.RelativePath;
         var pathWithoutTokens = StaticWebAssetPathPattern.PathWithoutTokens(currentRelativePath);
         var groupEntries = new List<string>();
         var groupValues = new Dictionary<string, string>(StringComparer.Ordinal);
-        (string Suffix, string GroupName)? contentRootSuffix = null;
+        string contentRootSuffix = null;
+        string contentRootGroupName = null;
 
         foreach (var def in definitions)
         {
@@ -802,7 +823,7 @@ public partial class DefineStaticWebAssets : Task
                 {
                     Log.LogError("Asset '{0}' matched group definitions for '{1}' with conflicting values '{2}' and '{3}'. Glob patterns must be non-overlapping for the same group name with different values.",
                         asset.Identity, def.Name, existingValue, def.Value);
-                    return (null, null, null);
+                    return default;
                 }
                 continue;
             }
@@ -844,11 +865,12 @@ public partial class DefineStaticWebAssets : Task
 
             if (!string.IsNullOrEmpty(def.ContentRootSuffix))
             {
-                contentRootSuffix = (def.ContentRootSuffix, def.Name);
+                contentRootSuffix = def.ContentRootSuffix;
+                contentRootGroupName = def.Name;
             }
         }
 
-        return (groupEntries, currentRelativePath, contentRootSuffix);
+        return new GroupMatchResult(groupEntries, currentRelativePath, contentRootSuffix, contentRootGroupName);
     }
 
     private void ApplyContentRootSuffix(ref StaticWebAsset asset, string contentRootSuffix, string groupName)
