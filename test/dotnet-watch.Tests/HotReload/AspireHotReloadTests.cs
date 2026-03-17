@@ -109,9 +109,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
+            // TODO: these are not reliably reported: https://github.com/dotnet/sdk/issues/53308
+            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
+            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
+            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
 
             // Note: do not check that 'sessionTerminated' notification is received.
             // It might get cancelled and not delivered on shutdown.

@@ -87,6 +87,33 @@ Commands:
         }
 
         [Fact]
+        public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
+        {
+            const string testAsset = "TestAppSimple";
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource().Path;
+
+            var packageName = "Newtonsoft.Json";
+            var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
+            var parentDirectory = Directory.GetParent(projectDirectory)!.FullName;
+            var relativeProjectPath = Path.GetRelativePath(parentDirectory, projectFilePath);
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("add", "package", packageName)
+                .Should().Pass();
+
+            var remove = new DotnetCommand(Log)
+                .WithWorkingDirectory(parentDirectory)
+                .Execute("remove", relativeProjectPath, "package", packageName);
+
+            remove.Should().Pass();
+            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{relativeProjectPath}'.");
+            remove.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
         public void FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();

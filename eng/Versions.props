@@ -68,7 +68,8 @@
 
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/aspire -->
-    <AspirePackageVersion>9.4.0</AspirePackageVersion>
+    <AspirePackageVersion>13.1.2</AspirePackageVersion>
+    <MicrosoftExtensionsServiceDiscoveryPackageVersion>10.3.0</MicrosoftExtensionsServiceDiscoveryPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
