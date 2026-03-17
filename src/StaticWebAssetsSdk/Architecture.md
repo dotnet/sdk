@@ -135,14 +135,14 @@ The only supported token is `fingerprint` (base-36 SHA-256).
 
 ## 3. Static Web Asset Endpoints
 
-`StaticWebAssetEndpoint` (`Tasks/Data/StaticWebAssetEndpoint.cs`) is the runtime-facing counterpart. It represents a URL route mapped to an asset. **`AssetFile` always points to the virtual path from SWA** (matching `StaticWebAsset.Identity`) — endpoints never reference an arbitrary disk path independently.
+`StaticWebAssetEndpoint` (`Tasks/Data/StaticWebAssetEndpoint.cs`) is the runtime-facing counterpart. It represents a URL route mapped to an asset. During the MSBuild pipeline, endpoints are initially created with `AssetFile = StaticWebAsset.Identity` (an absolute path). When generating the endpoints manifest for runtime, `AssetFile` is rewritten to the asset's virtual path (`StaticWebAsset.ComputeTargetPath`), which is relative to the app's web root. Endpoints never introduce an asset independently; they always refer back to an existing `StaticWebAsset`.
 
 ### Core Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `Route` | `string` | URL path registered in the routing table. Used as the MSBuild item identity. |
-| `AssetFile` | `string` | Path to the file on disk, matching `StaticWebAsset.Identity`. Links the endpoint to its underlying asset in the virtual file system. |
+| `AssetFile` | `string` | In the pipeline, the absolute path matching `StaticWebAsset.Identity`; in the endpoints manifest/runtime, the asset's virtual path (from `StaticWebAsset.ComputeTargetPath`) relative to the app's web root. Links the endpoint to its underlying asset in the virtual file system. |
 
 ### Selectors (Content Negotiation)
 
