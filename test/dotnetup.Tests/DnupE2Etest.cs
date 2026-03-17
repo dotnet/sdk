@@ -266,10 +266,10 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         // Suppress .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
 
-        // output which is a framework-dependent AppHost. Ensure DOTNET_ROOT is set so
-        // the AppHost can locate the runtime. On CI each script step gets a fresh shell,
-        // so DOTNET_ROOT from the restore step isn't inherited. The env script sourced
-        // later in the test will overwrite DOTNET_ROOT with the test install path.
+        // When running the managed (non-AOT) dotnetup AppHost, DOTNET_ROOT must be set
+        // so it can locate the runtime. When running the native AOT binary this is
+        // unnecessary but harmless. The env script sourced later in the test will
+        // overwrite DOTNET_ROOT with the test install path.
         string? currentDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
             ?? (Environment.ProcessPath is string processPath ? Path.GetDirectoryName(processPath) : null);
         if (currentDotnetRoot != null)
