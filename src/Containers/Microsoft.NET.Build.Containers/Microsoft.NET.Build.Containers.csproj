@@ -65,8 +65,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
-  <!-- net472 builds manually import files to compile -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <!-- .NET Framework builds manually import files to compile -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Compile Remove="**/*.*" />
     <Compile Include="ReferenceParser.cs" />
     <Compile Include="KnownStrings.cs" />
@@ -84,8 +84,8 @@
     <Compile Include="Globals.cs" />
   </ItemGroup>
 
-  <!-- core remove files specific to net472 workarounds -->
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+  <!-- Non-.NET Framework builds remove files specific to .NET Framework workarounds -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
     <Compile Remove="netframeworkDefinitions.cs" />
   </ItemGroup>
