@@ -92,6 +92,8 @@ public class SpectreProgressTarget : IProgressTarget
                 int wordLen = _shimmerWord!.Length;
                 // Wave sweeps across the word then briefly exits before re-entering.
                 int totalPositions = wordLen + 6;
+                // Offset by -3 so the shimmer wave starts off-screen (left of the word)
+                // and sweeps across naturally before exiting on the right.
                 int center = (tick % totalPositions) - 3;
 
                 var sb = new StringBuilder();

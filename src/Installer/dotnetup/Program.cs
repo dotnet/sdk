@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -16,8 +18,9 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
-        // Ensure UTF-8 output so Unicode glyphs (spinners, progress bars) render correctly.
-        // Follows the same pattern as the .NET SDK CLI (src/Cli/dotnet/Program.cs).
+        // Capture current console encoding so it can be restored on exit.
+        // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
+        using AutomaticEncodingRestorer encodingRestorer = new();
         ConfigureConsoleEncoding();
 
         // Disable Spectre.Console line wrapping when output is redirected (piped),
@@ -100,21 +103,12 @@ internal class DotnetupProgram
 
     /// <summary>
     /// Sets the console output encoding to UTF-8 so Unicode glyphs render correctly.
-    /// Mirrors the logic in the .NET SDK CLI (src/Cli/dotnet/Program.cs) and
-    /// UILanguageOverride.OperatingSystemSupportsUtf8().
+    /// Uses UILanguageOverride.OperatingSystemSupportsUtf8() from the .NET SDK CLI.
     /// </summary>
     private static void ConfigureConsoleEncoding()
     {
-        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") == "1")
-        {
-            return;
-        }
-
-        if (!OperatingSystem.IsIOS() &&
-            !OperatingSystem.IsAndroid() &&
-            !OperatingSystem.IsTvOS() &&
-            !OperatingSystem.IsBrowser() &&
-            (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18363)))
+        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8())
         {
             Console.OutputEncoding = Encoding.UTF8;
         }

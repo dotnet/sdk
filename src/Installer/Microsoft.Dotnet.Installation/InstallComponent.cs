@@ -13,6 +13,11 @@ public enum InstallComponent
 
 public static class InstallComponentExtensions
 {
+    // ── Framework-name constants (shared by GetFrameworkName / FromFrameworkName) ──
+    public const string RuntimeFrameworkName = "Microsoft.NETCore.App";
+    public const string AspNetCoreFrameworkName = "Microsoft.AspNetCore.App";
+    public const string WindowsDesktopFrameworkName = "Microsoft.WindowsDesktop.App";
+
     /// <summary>
     /// The longest display name across all components. Used to pad shorter names
     /// so progress rows align when multiple component types are shown together.
@@ -58,42 +63,15 @@ public static class InstallComponentExtensions
     }
 
     /// <summary>
-    /// Width of the " (nnn.n MB / nnn.n MB)" suffix appended during download progress.
-    /// Used to pad non-download descriptions (e.g. "Installing") to the same total width
-    /// so all progress rows stay aligned.
-    /// </summary>
-    public const int DownloadSuffixWidth = 22;
-
-    /// <summary>
-    /// Fixed width for action verbs in progress descriptions ("Downloading", "Downloaded",
-    /// "Installing", "Installed"). Matches the longest verb so shorter ones are right-padded.
-    /// </summary>
-    private const int ActionWidth = 11; // "Downloading".Length
-
-    /// <summary>
-    /// Builds a progress-bar description such as "Downloading aspnet (runtime)         9.0.312".
-    /// Component names and versions are padded so all rows align vertically.
-    /// </summary>
-    public static string FormatProgressDescription(string action, InstallComponent component, string version) =>
-        $"{action.PadRight(ActionWidth)} {component.GetPaddedDisplayName()} {FormatVersionForDisplay(version)}";
-
-    /// <summary>
-    /// Formats bytes as MB, right-aligned to 8 characters (e.g. "  0.7 MB", "290.4 MB").
-    /// Always uses MB so the unit width is consistent across all progress rows.
-    /// </summary>
-    public static string FormatMB(long bytes) =>
-        FormattableString.Invariant($"{bytes / (1024.0 * 1024.0),5:F1} MB");
-
-    /// <summary>
     /// Gets the official framework name for the component (e.g., "Microsoft.NETCore.App").
     /// Used for JSON/machine-readable output.
     /// </summary>
     public static string GetFrameworkName(this InstallComponent component) => component switch
     {
         InstallComponent.SDK => ".NET SDK",
-        InstallComponent.Runtime => "Microsoft.NETCore.App",
-        InstallComponent.ASPNETCore => "Microsoft.AspNetCore.App",
-        InstallComponent.WindowsDesktop => "Microsoft.WindowsDesktop.App",
+        InstallComponent.Runtime => RuntimeFrameworkName,
+        InstallComponent.ASPNETCore => AspNetCoreFrameworkName,
+        InstallComponent.WindowsDesktop => WindowsDesktopFrameworkName,
         _ => component.ToString()
     };
 
@@ -103,9 +81,9 @@ public static class InstallComponentExtensions
     /// </summary>
     public static InstallComponent? FromFrameworkName(string frameworkName) => frameworkName switch
     {
-        "Microsoft.NETCore.App" => InstallComponent.Runtime,
-        "Microsoft.AspNetCore.App" => InstallComponent.ASPNETCore,
-        "Microsoft.WindowsDesktop.App" => InstallComponent.WindowsDesktop,
+        RuntimeFrameworkName => InstallComponent.Runtime,
+        AspNetCoreFrameworkName => InstallComponent.ASPNETCore,
+        WindowsDesktopFrameworkName => InstallComponent.WindowsDesktop,
         _ => null
     };
 }

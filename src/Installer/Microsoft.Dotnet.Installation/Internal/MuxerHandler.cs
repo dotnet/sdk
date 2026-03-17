@@ -172,12 +172,14 @@ internal class MuxerHandler
 
         try
         {
+            // Move the new muxer into place
             File.Move(_tempMuxerPath, _muxerTargetPath);
 
             Activity.Current?.SetTag("muxer.action", "updated");
             Activity.Current?.SetTag("muxer.previous_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
             Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postVersion?.ToString()));
 
+            // Clean up the backup
             if (_movedExistingMuxer && File.Exists(_existingMuxerBackupPath))
             {
                 try { File.Delete(_existingMuxerBackupPath); } catch { }
@@ -208,7 +210,7 @@ internal class MuxerHandler
     /// </summary>
     internal static ReleaseVersion? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
     {
-        var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+        var runtimePath = Path.Combine(installRoot, "shared", InstallComponentExtensions.RuntimeFrameworkName);
         if (!Directory.Exists(runtimePath))
         {
             return null;

@@ -52,7 +52,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             _interactive,
             _noProgress,
             InstallComponent.SDK,
-            ".NET SDK",
+            InstallComponent.SDK.GetDisplayName(),
             _updateGlobalJson,
             GlobalJsonChannelResolver.ResolveChannel,
             _requireMuxerUpdate,

@@ -43,7 +43,7 @@ public class ScopedMutex : IDisposable
             // Re-entrant: this thread already holds this mutex
             ++state.HoldCount;
             _isReentrant = true;
-            _mutex = null!;
+            _mutex = null!; // null! needed: _mutex is non-nullable Mutex but unused in re-entrant path
             return;
         }
 
@@ -65,6 +65,9 @@ public class ScopedMutex : IDisposable
             // Only invoke the callback when an *external* process holds the mutex.
             // Suppress it when another task within this process holds it so we don't
             // show misleading "waiting for mutex" text when we're waiting on ourselves.
+            // Volatile.Read ensures we see the latest value written by Interlocked.Increment/Decrement
+            // on other threads. While Interlocked operations provide full barriers, the defensive
+            // Volatile.Read makes the cross-thread intent explicit at the read site.
             if (!SuppressWaitingCallback && Volatile.Read(ref s_processActiveHolds) == 0)
             {
                 OnWaitingForMutex?.Invoke();

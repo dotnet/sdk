@@ -97,7 +97,7 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string description = InstallComponentExtensions.FormatProgressDescription("Downloading", _request.Component, _resolvedVersion.ToString());
+        string description = ProgressFormatting.FormatProgressDescription("Downloading", _request.Component, _resolvedVersion.ToString());
         var downloadTask = ProgressReporter.AddTask(description, 100);
         var reporter = new DownloadProgressReporter(downloadTask, description);
 
@@ -130,8 +130,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
         downloadTask.Value = 100;
         long archiveBytes = new FileInfo(_archivePath).Length;
-        string downloadedDesc = InstallComponentExtensions.FormatProgressDescription("Downloaded", _request.Component, _resolvedVersion.ToString());
-        downloadTask.Description = $"{downloadedDesc} ({InstallComponentExtensions.FormatMB(archiveBytes)} / {InstallComponentExtensions.FormatMB(archiveBytes)})";
+        string downloadedDesc = ProgressFormatting.FormatProgressDescription("Downloaded", _request.Component, _resolvedVersion.ToString());
+        downloadTask.Description = $"{downloadedDesc} ({ProgressFormatting.FormatMB(archiveBytes)} / {ProgressFormatting.FormatMB(archiveBytes)})";
     }
 
     public void Commit()
@@ -141,10 +141,10 @@ internal class DotnetArchiveExtractor : IDisposable
 
         _extractedSubcomponents.Clear();
 
-        string description = InstallComponentExtensions.FormatProgressDescription("Installing", _request.Component, _resolvedVersion.ToString());
+        string description = ProgressFormatting.FormatProgressDescription("Installing", _request.Component, _resolvedVersion.ToString());
         // Pad to match the width of "Downloading" rows (which have an MB suffix)
         // so all progress rows stay aligned within the shared Spectre column.
-        string paddedDescription = description + new string(' ', InstallComponentExtensions.DownloadSuffixWidth);
+        string paddedDescription = description + new string(' ', ProgressFormatting.DownloadSuffixWidth);
         var installTask = ProgressReporter.AddTask(paddedDescription, maxValue: 100);
 
         if (_archivePath is null)
@@ -155,7 +155,7 @@ internal class DotnetArchiveExtractor : IDisposable
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
 
         // Switch to past tense and drop the trailing padding now that the task is complete.
-        installTask.Description = InstallComponentExtensions.FormatProgressDescription("Installed", _request.Component, _resolvedVersion.ToString());
+        installTask.Description = ProgressFormatting.FormatProgressDescription("Installed", _request.Component, _resolvedVersion.ToString());
     }
 
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)

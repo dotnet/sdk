@@ -16,7 +16,7 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
         // Show placeholder MB values so the row has the same visible width as
         // rows that are actively downloading — trailing spaces get ignored by
         // Spectre's column layout, so we need real characters for alignment.
-        _task.Description = $"{description} ({InstallComponentExtensions.FormatMB(0)} / {InstallComponentExtensions.FormatMB(0)})";
+        _task.Description = $"{description} ({ProgressFormatting.FormatMB(0)} / {ProgressFormatting.FormatMB(0)})";
     }
 
     public void Report(DownloadProgress value)
@@ -32,6 +32,6 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
             _task.Value = percent;
         }
         // Always use the full two-value format to keep row width consistent
-        _task.Description = $"{_description} ({InstallComponentExtensions.FormatMB(value.BytesDownloaded)} / {InstallComponentExtensions.FormatMB(total)})";
+        _task.Description = $"{_description} ({ProgressFormatting.FormatMB(value.BytesDownloaded)} / {ProgressFormatting.FormatMB(total)})";
     }
 }

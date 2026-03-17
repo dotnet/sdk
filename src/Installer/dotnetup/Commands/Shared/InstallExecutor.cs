@@ -6,8 +6,8 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 using OrchestratorInstallResult = Microsoft.DotNet.Tools.Bootstrapper.InstallResult;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
@@ -91,9 +91,13 @@ internal class InstallExecutor
         string componentDescription,
         bool noProgress)
     {
-#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
-        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [{DotnetupTheme.Current.Accent}]{resolvedVersion}[/] to [{DotnetupTheme.Current.Accent}]{installRequest.InstallRoot.Path}[/]...");
-#pragma warning restore CA1305
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            "Installing {0} [{1}]{2}[/] to [{1}]{3}[/]...",
+            componentDescription,
+            DotnetupTheme.Current.Accent,
+            resolvedVersion,
+            installRequest.InstallRoot.Path.EscapeMarkup()));
 
         var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
@@ -171,9 +175,14 @@ internal class InstallExecutor
         }
 
         string desc = primaryRequest.Component.GetDisplayName();
-#pragma warning disable CA1305 // Spectre.Console API does not accept IFormatProvider
-        SpectreAnsiConsole.MarkupLineInterpolated($"Installing {desc} [{DotnetupTheme.Current.Accent}]{primaryRequest.ResolvedVersion}[/] and {additionalInstalls.Count} additional component(s) to [{DotnetupTheme.Current.Accent}]{installRoot.Path.EscapeMarkup()}[/]...");
-#pragma warning restore CA1305
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            "Installing {0} [{1}]{2}[/] and {3} additional component(s) to [{1}]{4}[/]...",
+            desc,
+            DotnetupTheme.Current.Accent,
+            primaryRequest.ResolvedVersion,
+            additionalInstalls.Count,
+            installRoot.Path.EscapeMarkup()));
     }
 
     private static InstallResult? RunInstallBatch(

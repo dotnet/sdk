@@ -36,7 +36,14 @@ internal sealed class ThemeColors
     /// <summary>Color for success emphasis (installed versions/paths in success messages).</summary>
     public string SuccessAccent { get; set; } = "#9780E5";
 
-    /// <summary>Built-in preset themes keyed by name.</summary>
+    /// <summary>
+    /// Built-in preset themes keyed by name.
+    /// The "standard" preset uses simple ANSI color names (green, red, blue, etc.) that
+    /// map to the user's terminal palette and will respect custom terminal color schemes.
+    /// The "default" preset uses hex values (#9780E5) for brand consistency but overrides
+    /// user terminal themes. Spectre.Console's Color.Default could be explored in the future
+    /// to use the terminal's native foreground/background colors for some properties.
+    /// </summary>
     internal static readonly IReadOnlyDictionary<string, ThemeColors> s_presets =
         new Dictionary<string, ThemeColors>(StringComparer.OrdinalIgnoreCase)
         {
@@ -105,25 +112,25 @@ internal static class DotnetupTheme
 
     // ── Markup helpers ──────────────────────────────────────────────
 
-    /// <summary>Wraps text in success color markup: <c>[green]text[/]</c></summary>
+    /// <summary>Wraps text in the theme's success color markup.</summary>
     public static string Success(string text) => $"[{Current.Success}]{text}[/]";
 
-    /// <summary>Wraps text in error color markup.</summary>
+    /// <summary>Wraps text in the theme's error color markup.</summary>
     public static string Error(string text) => $"[{Current.Error}]{text}[/]";
 
-    /// <summary>Wraps text in warning color markup.</summary>
+    /// <summary>Wraps text in the theme's warning color markup.</summary>
     public static string Warning(string text) => $"[{Current.Warning}]{text}[/]";
 
-    /// <summary>Wraps text in accent color markup (versions, paths).</summary>
+    /// <summary>Wraps text in the theme's accent color markup (versions, paths).</summary>
     public static string Accent(string text) => $"[{Current.Accent}]{text}[/]";
 
-    /// <summary>Wraps text in brand color markup (dotnet purple).</summary>
+    /// <summary>Wraps text in the theme's brand color markup.</summary>
     public static string Brand(string text) => $"[{Current.Brand}]{text}[/]";
 
-    /// <summary>Wraps text in dim/secondary color markup.</summary>
+    /// <summary>Wraps text in the theme's dim/secondary color markup.</summary>
     public static string Dim(string text) => $"[{Current.Dim}]{text}[/]";
 
-    /// <summary>Wraps text in success-accent color markup (versions/paths in success messages).</summary>
+    /// <summary>Wraps text in the theme's success-accent color markup (versions/paths in success messages).</summary>
     public static string SuccessAccent(string text) => $"[{Current.SuccessAccent}]{text}[/]";
 
     /// <summary>

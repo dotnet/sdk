@@ -67,17 +67,13 @@ internal static class InstallationLister
                 Path.GetFullPath(r.Path), Path.GetFullPath(installPath), StringComparison.OrdinalIgnoreCase))
             : manifestData.DotnetRoots;
 
-        var installSpecs = new List<InstallSpecInfo>();
-        var installations = new List<InstallationInfo>();
+        var allData = roots.Select(r => CollectRootData(r, verify, validator)).ToList();
 
-        foreach (var root in roots)
+        return new ListData
         {
-            var (specs, installs) = CollectRootData(root, verify, validator);
-            installSpecs.AddRange(specs);
-            installations.AddRange(installs);
-        }
-
-        return new ListData { InstallSpecs = installSpecs, Installations = installations };
+            InstallSpecs = [.. allData.SelectMany(d => d.Specs)],
+            Installations = [.. allData.SelectMany(d => d.Installations)]
+        };
     }
 
     private static (List<InstallSpecInfo> Specs, List<InstallationInfo> Installations) CollectRootData(

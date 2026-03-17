@@ -23,21 +23,14 @@ internal class InstallWalkthrough
 {
     private readonly IDotnetInstallManager _dotnetInstaller;
     private readonly InstallWorkflow.InstallWorkflowOptions _options;
-#pragma warning disable IDE0032 // Lazy-init via ??=; not convertible to auto-property
-    private InstallRootManager? _installRootManager;
-#pragma warning restore IDE0032
 
     public InstallWalkthrough(
         IDotnetInstallManager dotnetInstaller,
-        ChannelVersionResolver channelVersionResolver,
         InstallWorkflow.InstallWorkflowOptions options)
     {
         _dotnetInstaller = dotnetInstaller;
-        _ = channelVersionResolver; // Reserved for future use
         _options = options;
     }
-
-    private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
 
     /// <summary>
     /// Prompts the user to install a higher admin version when switching to user install.
@@ -50,21 +43,17 @@ internal class InstallWalkthrough
         ReleaseVersion? resolvedVersion,
         bool setDefaultInstall)
     {
-        // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3).
-        // Option 1 (DotnetupDotnet) doesn't touch PATH, so admin installs remain accessible.
-        if (_options.PathPreference == PathPreference.DotnetupDotnet)
-        {
-            return [];
-        }
-
-        if (!setDefaultInstall)
+        // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3)
+        // AND set-default-install is on. Option 1 (DotnetupDotnet) doesn't touch PATH,
+        // so admin installs remain accessible.
+        if (_options.PathPreference == PathPreference.DotnetupDotnet || !setDefaultInstall)
         {
             return [];
         }
 
         // Non-interactive fallback: copy all admin installs.
-        var adminInstalls = _dotnetInstaller.GetInstalledAdminInstalls();
-        if (adminInstalls.Count == 0)
+        var systemInstalls = _dotnetInstaller.GetExistingSystemInstalls();
+        if (systemInstalls.Count == 0)
         {
             return [];
         }
@@ -77,13 +66,13 @@ internal class InstallWalkthrough
             seenAll.Add((InstallComponent.SDK, resolvedVersion.ToString()));
         }
 
-        var result = adminInstalls.Where(i => seenAll.Add((i.Component, i.Version.ToString()))).ToList();
-        if (result.Count > 0)
+        var uniqueInstalls = systemInstalls.Where(i => seenAll.Add((i.Component, i.Version.ToString()))).ToList();
+        if (uniqueInstalls.Count > 0)
         {
             Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
         }
 
-        return result;
+        return uniqueInstalls;
     }
 
     /// <summary>
@@ -136,85 +125,39 @@ internal class InstallWalkthrough
     }
 
     /// <summary>
-    /// Resolves whether the installation should be set as the default .NET install.
-    /// </summary>
-    /// <param name="currentDotnetInstallRoot">The current .NET installation configuration.</param>
-    /// <param name="resolvedInstallPath">The resolved installation path.</param>
-    /// <param name="installPathCameFromGlobalJson">True if the install path came from global.json, which typically means it's repo-local.</param>
-    /// <returns>True if the installation should be set as default, false otherwise.</returns>
-    public bool ResolveSetDefaultInstall(
-        DotnetInstallRootConfiguration? currentDotnetInstallRoot,
-        string resolvedInstallPath,
-        bool installPathCameFromGlobalJson)
-    {
-        bool? resolvedSetDefaultInstall = _options.SetDefaultInstall;
-
-        if (resolvedSetDefaultInstall == null)
-        {
-            //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
-            if (_options.Interactive && !installPathCameFromGlobalJson)
-            {
-                if (currentDotnetInstallRoot == null)
-                {
-                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                        defaultValue: true);
-                }
-                else if (currentDotnetInstallRoot.InstallType == InstallType.User)
-                {
-                    resolvedSetDefaultInstall = ResolveDefaultInstallForUserInstall(currentDotnetInstallRoot, resolvedInstallPath);
-                }
-                else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
-                {
-                    resolvedSetDefaultInstall = PromptAdminMigration(_dotnetInstaller);
-                }
-
-                //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
-            }
-            else
-            {
-                resolvedSetDefaultInstall = false; // Default to not setting the default install path if not specified
-            }
-        }
-
-        return resolvedSetDefaultInstall ?? false;
-    }
-
-    /// <summary>
     /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
-    /// <returns>True if the user wants to proceed (or no admin installs exist), false if they decline.</returns>
+    /// <returns>True if the user wants to copy system installs, false if they decline or no system installs exist.</returns>
     internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
     {
-        var adminInstalls = dotnetInstaller.GetInstalledAdminInstalls();
-        if (adminInstalls.Count == 0)
+        var systemInstalls = dotnetInstaller.GetExistingSystemInstalls();
+        if (systemInstalls.Count == 0)
         {
-            return true;
+            // Nothing to migrate — don't override the caller's initial choice.
+            return false;
         }
 
-        // Find the admin install path for display purposes
+        // Find the system install path for display purposes
         var currentInstall = dotnetInstaller.GetConfiguredInstallType();
-        string adminPath = currentInstall?.InstallType == InstallType.Admin
+        string systemPath = currentInstall?.InstallType == InstallType.Admin
             ? currentInstall.Path
-            : OperatingSystem.IsWindows()
-                ? WindowsPathHelper.GetProgramFilesDotnetPaths().FirstOrDefault() ?? "Program Files\\dotnet"
-                : "the system .NET location";
+            : DotnetInstallManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 
         SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{adminPath.EscapeMarkup()}[/].");
+        SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
 
-        var displayItems = adminInstalls
+        var displayItems = systemInstalls
             .OrderBy(i => i.Component)
             .ThenByDescending(i => i.Version)
             .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
             .ToList();
 
-        bool result = RenderScrollableListWithConfirm(
+        bool userAcceptedMigration = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
             visibleCount: 3,
             "Do you want to copy the following installs into the dotnetup managed directory?");
 
-        if (result)
+        if (userAcceptedMigration)
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes. You can change this later with \"dotnetup defaultinstall\".[/]");
         }
@@ -222,264 +165,6 @@ internal class InstallWalkthrough
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
         }
-        return result;
-    }
-
-    /// <summary>
-    /// Resolves whether the user install should be set as default when the current install type is User.
-    /// </summary>
-    private bool? ResolveDefaultInstallForUserInstall(
-        DotnetInstallRootConfiguration currentDotnetInstallRoot,
-        string resolvedInstallPath)
-    {
-        if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
-        {
-            //  If the current install is fully configured and matches the resolved path, skip the prompt
-            if (currentDotnetInstallRoot.IsFullyConfigured)
-            {
-                // Default install is already set up correctly, no need to prompt
-                return false;
-            }
-
-            // Not fully configured - display what needs to be configured and prompt
-            if (OperatingSystem.IsWindows())
-            {
-                UserInstallRootChanges userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
-
-                SpectreAnsiConsole.WriteLine($"The .NET installation at {resolvedInstallPath} is not fully configured.");
-                SpectreAnsiConsole.WriteLine("The following changes are needed:");
-
-                if (userInstallRootChanges.NeedsRemoveAdminPath)
-                {
-                    SpectreAnsiConsole.WriteLine("  - Remove admin .NET paths from system PATH");
-                }
-                if (userInstallRootChanges.NeedsAddToUserPath)
-                {
-                    SpectreAnsiConsole.WriteLine($"  - Add {userInstallRootChanges.UserDotnetPath} to user PATH");
-                }
-                if (userInstallRootChanges.NeedsSetDotnetRoot)
-                {
-                    SpectreAnsiConsole.WriteLine($"  - Set DOTNET_ROOT to {userInstallRootChanges.UserDotnetPath}");
-                }
-
-                return SpectreAnsiConsole.Confirm(
-                    "Do you want to apply these configuration changes?",
-                    defaultValue: true);
-            }
-            else
-            {
-                // On non-Windows, we don't have detailed configuration info
-                //  No need to prompt here, the default install is already set up.
-                return null;
-            }
-        }
-        else
-        {
-            return SpectreAnsiConsole.Confirm(
-                $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
-                defaultValue: false);
-        }
-    }
-
-    /// <summary>
-    /// Renders a list of items with only <paramref name="visibleCount"/> shown initially.
-    /// When running interactively, the user can scroll with arrow keys to see more.
-    /// Falls back to a static truncated list when input is redirected.
-    /// </summary>
-    internal static void RenderScrollableList(List<string> items, int visibleCount)
-    {
-        if (items.Count == 0)
-        {
-            return;
-        }
-
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-
-        if (items.Count <= visibleCount || Console.IsInputRedirected)
-        {
-            // All items fit or non-interactive — just print them all
-            foreach (var item in items)
-            {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
-            }
-
-            return;
-        }
-
-        // Interactive scrollable list
-        RunInteractiveScrollLoop(items, visibleCount, confirmPrompt: null);
-    }
-
-    /// <summary>
-    /// Renders a scrollable list with an inline confirmation prompt.
-    /// The prompt is shown below the list and Enter accepts the default (yes).
-    /// </summary>
-    internal static bool RenderScrollableListWithConfirm(List<string> items, int visibleCount, string confirmPrompt)
-    {
-        if (items.Count == 0)
-        {
-            return true;
-        }
-
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-        string brand = DotnetupTheme.Current.Brand;
-
-        if (items.Count <= visibleCount || Console.IsInputRedirected)
-        {
-            foreach (var item in items)
-            {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
-            }
-
-            SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand));
-            return ReadYesNo(defaultValue: true);
-        }
-
-        return RunInteractiveScrollLoop(items, visibleCount, confirmPrompt);
-    }
-
-    /// <summary>
-    /// Returns true (accept) or false (decline) when <paramref name="confirmPrompt"/> is set;
-    /// always returns true when <paramref name="confirmPrompt"/> is null (plain scroll).
-    /// </summary>
-    private static bool RunInteractiveScrollLoop(List<string> items, int visibleCount, string? confirmPrompt)
-    {
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-        int offset = 0;
-        int maxOffset = items.Count - visibleCount;
-
-        Console.Write(Constants.Ansi.HideCursor);
-        try
-        {
-            int startRow = Console.CursorTop;
-            RenderListWindow(items, offset, visibleCount, startRow, firstRender: true, confirmPrompt: confirmPrompt);
-
-            while (true)
-            {
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(intercept: true);
-                    switch (key.Key)
-                    {
-                        case ConsoleKey.UpArrow:
-                            if (offset > 0)
-                            {
-                                offset--;
-                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false, confirmPrompt: confirmPrompt);
-                            }
-
-                            break;
-                        case ConsoleKey.DownArrow:
-                            if (offset < maxOffset)
-                            {
-                                offset++;
-                                RenderListWindow(items, offset, visibleCount, startRow, firstRender: false, confirmPrompt: confirmPrompt);
-                            }
-
-                            break;
-                        case ConsoleKey.Enter:
-                            // Collapse to final static view and exit — Enter means "yes" when confirming
-                            CollapseToFinalView(items, startRow, dim, accent, confirmPrompt, accepted: true);
-                            return true;
-                        case ConsoleKey.N:
-                            if (confirmPrompt is not null)
-                            {
-                                CollapseToFinalView(items, startRow, dim, accent, confirmPrompt, accepted: false);
-                                return false;
-                            }
-
-                            break;
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(50);
-                }
-            }
-        }
-        finally
-        {
-            Console.Write(Constants.Ansi.ShowCursor);
-        }
-    }
-
-    private static void CollapseToFinalView(List<string> items, int startRow, string dim, string accent, string? confirmPrompt, bool accepted)
-    {
-        string brand = DotnetupTheme.Current.Brand;
-        Console.SetCursorPosition(0, startRow);
-        Console.Write(Constants.Ansi.ClearToEnd);
-        foreach (var item in items)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
-        }
-
-        if (confirmPrompt is not null)
-        {
-            string answer = accepted ? "Yes" : "No";
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt, brand, answer));
-        }
-    }
-
-    /// <summary>
-    /// Reads a single y/n keypress. Returns <paramref name="defaultValue"/> on Enter.
-    /// </summary>
-    private static bool ReadYesNo(bool defaultValue)
-    {
-        while (true)
-        {
-            var key = Console.ReadKey(intercept: true);
-            switch (key.Key)
-            {
-                case ConsoleKey.Enter:
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]{1}[/]", DotnetupTheme.Current.Brand, defaultValue ? "Yes" : "No"));
-                    return defaultValue;
-                case ConsoleKey.Y:
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]Yes[/]", DotnetupTheme.Current.Brand));
-                    return true;
-                case ConsoleKey.N:
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No[/]", DotnetupTheme.Current.Brand));
-                    return false;
-            }
-        }
-    }
-
-    private static void RenderListWindow(List<string> items, int offset, int visibleCount, int startRow, bool firstRender, string? confirmPrompt)
-    {
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-
-        if (!firstRender)
-        {
-            Console.SetCursorPosition(0, startRow);
-            Console.Write(Constants.Ansi.ClearToEnd);
-        }
-
-        if (offset > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more above[/]", dim, Constants.Symbols.UpTriangle, offset));
-        }
-
-        for (int i = offset; i < offset + visibleCount && i < items.Count; i++)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, items[i].EscapeMarkup()));
-        }
-
-        int remaining = items.Count - offset - visibleCount;
-        if (remaining > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more below (use {3}{4} arrows)[/]", dim, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow));
-        }
-
-        if (confirmPrompt is not null)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand));
-        }
-        else if (remaining <= 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim));
-        }
+        return userAcceptedMigration;
     }
 }

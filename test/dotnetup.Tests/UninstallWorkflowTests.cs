@@ -104,7 +104,7 @@ public class UninstallWorkflowTests
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory) => throw new NotImplementedException();
         public string? GetLatestInstalledAdminVersion() => throw new NotImplementedException();
         public List<string> GetInstalledAdminSdkVersions() => throw new NotImplementedException();
-        public List<DotnetInstall> GetInstalledAdminInstalls() => throw new NotImplementedException();
+        public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
         public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
         public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null) => throw new NotImplementedException();
         public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();

@@ -215,7 +215,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             Interactive: true,
             NoProgress: _noProgress,
             Component: InstallComponent.SDK,
-            ComponentDescription: ".NET SDK",
+            ComponentDescription: InstallComponent.SDK.GetDisplayName(),
             UpdateGlobalJson: null,
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
@@ -237,7 +237,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             return;
         }
 
-        var adminInstalls = _dotnetInstaller.GetInstalledAdminInstalls();
+        var adminInstalls = _dotnetInstaller.GetExistingSystemInstalls();
         if (adminInstalls.Count == 0 || workflowResult.InstallRoot is null)
         {
             return;

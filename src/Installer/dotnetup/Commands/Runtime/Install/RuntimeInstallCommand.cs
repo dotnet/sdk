@@ -94,20 +94,14 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
-        // Deduplicate parsed specs so the same component+channel is not downloaded twice.
-        var seen = new HashSet<(InstallComponent, string)>();
-        var requests = new List<DotnetInstallRequest>();
-        foreach (var p in parsed)
-        {
-            string channel = p.VersionOrChannel ?? ChannelVersionResolver.LatestChannel;
-            if (!seen.Add((p.Component, channel)))
-            {
-                continue;
-            }
-
-            requests.Add(new DotnetInstallRequest(
+        // Deduplicate parsed specs so the same component+channel is not downloaded twice,
+        // then build install requests.
+        var requests = parsed
+            .Select(p => (p.Component, Channel: p.VersionOrChannel ?? ChannelVersionResolver.LatestChannel))
+            .Distinct()
+            .Select(p => new DotnetInstallRequest(
                 installRoot,
-                new UpdateChannel(channel),
+                new UpdateChannel(p.Channel),
                 p.Component,
                 new InstallRequestOptions
                 {
@@ -115,8 +109,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                     RequireMuxerUpdate = _requireMuxerUpdate,
                     Untracked = _untracked,
                     Verbosity = _verbosity
-                }));
-        }
+                }))
+            .ToList();
 
         InstallExecutor.RunMultiInstall(requests, installPath, _noProgress, setDefault, _dotnetInstaller);
 

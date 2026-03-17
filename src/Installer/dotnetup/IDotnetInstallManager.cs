@@ -24,7 +24,7 @@ public interface IDotnetInstallManager
 
     List<string> GetInstalledAdminSdkVersions();
 
-    List<DotnetInstall> GetInstalledAdminInstalls();
+    List<DotnetInstall> GetExistingSystemInstalls();
 
     void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
 

@@ -46,6 +46,7 @@ internal static class DotnetupConfig
 {
     /// <summary>
     /// Reads the config file if it exists, otherwise returns null.
+    /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
     /// </summary>
     public static DotnetupConfigData? Read()
     {
@@ -57,8 +58,8 @@ internal static class DotnetupConfig
 
         try
         {
-            var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize(json, DotnetupConfigJsonContext.Default.DotnetupConfigData);
+            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path);
+            return JsonSerializer.Deserialize(stream, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         }
         catch
         {

@@ -77,59 +77,28 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public string? GetLatestInstalledAdminVersion()
     {
-        var versions = GetInstalledAdminSdkVersions();
-        return versions.Count > 0 ? versions[0] : null;
+        var sdkInstalls = GetExistingSystemInstalls()
+            .Where(i => i.Component == InstallComponent.SDK)
+            .ToList();
+        return sdkInstalls.Count > 0 ? sdkInstalls[0].Version.ToString() : null;
     }
 
     public List<string> GetInstalledAdminSdkVersions()
     {
-        var versions = new List<string>();
-
-        if (!OperatingSystem.IsWindows())
-        {
-            return versions;
-        }
-
-        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
-        foreach (var adminPath in adminPaths)
-        {
-            try
-            {
-                var installs = HostFxrWrapper.getInstalls(adminPath);
-                foreach (var install in installs)
-                {
-                    if (install.Component == InstallComponent.SDK)
-                    {
-                        versions.Add(install.Version.ToString());
-                    }
-                }
-            }
-            catch
-            {
-                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
-            }
-        }
-
-        // Sort descending so newest versions appear first
-        versions.Sort((a, b) => string.Compare(b, a, StringComparison.OrdinalIgnoreCase));
-        return versions;
+        return [.. GetExistingSystemInstalls()
+            .Where(i => i.Component == InstallComponent.SDK)
+            .Select(i => i.Version.ToString())];
     }
 
-    public List<DotnetInstall> GetInstalledAdminInstalls()
+    public List<DotnetInstall> GetExistingSystemInstalls()
     {
         var installs = new List<DotnetInstall>();
 
-        if (!OperatingSystem.IsWindows())
-        {
-            return installs;
-        }
-
-        var adminPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
-        foreach (var adminPath in adminPaths)
+        foreach (var systemPath in GetSystemDotnetPaths())
         {
             try
             {
-                installs.AddRange(HostFxrWrapper.getInstalls(adminPath));
+                installs.AddRange(HostFxrWrapper.getInstalls(systemPath));
             }
             catch
             {
@@ -140,6 +109,62 @@ public class DotnetInstallManager : IDotnetInstallManager
         // Sort descending so newest versions appear first
         installs.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
         return installs;
+    }
+
+    /// <summary>
+    /// Returns the system-level .NET install directories for the current platform.
+    /// Windows: uses the registry to find install locations under Program Files.
+    /// macOS: reads /etc/dotnet/install_location, defaults to /usr/local/share/dotnet.
+    /// Linux: checks /usr/share/dotnet and /usr/lib/dotnet.
+    /// </summary>
+    internal static List<string> GetSystemDotnetPaths()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return WindowsPathHelper.GetProgramFilesDotnetPaths();
+        }
+
+        var paths = new List<string>();
+
+        if (OperatingSystem.IsMacOS())
+        {
+            // macOS installer writes the dotnet root here
+            const string installLocationFile = "/etc/dotnet/install_location";
+            try
+            {
+                if (File.Exists(installLocationFile))
+                {
+                    string? location = File.ReadAllText(installLocationFile).Trim();
+                    if (!string.IsNullOrEmpty(location) && Directory.Exists(location))
+                    {
+                        paths.Add(location.TrimEnd(Path.DirectorySeparatorChar));
+                    }
+                }
+            }
+            catch
+            {
+                // Best-effort; file may not exist or be unreadable
+            }
+
+            // Default macOS system location when install_location file is missing
+            TryAddPath(paths, "/usr/local/share/dotnet");
+        }
+        else
+        {
+            // Linux package-manager locations
+            TryAddPath(paths, "/usr/share/dotnet");
+            TryAddPath(paths, "/usr/lib/dotnet");
+        }
+
+        return paths;
+
+        static void TryAddPath(List<string> list, string path)
+        {
+            if (Directory.Exists(path) && !list.Contains(path, StringComparer.Ordinal))
+            {
+                list.Add(path);
+            }
+        }
     }
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)

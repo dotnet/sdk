@@ -140,7 +140,7 @@ internal class InstallWorkflow
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
     {
-        var walkthrough = new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver, options);
+        var walkthrough = new InstallWalkthrough(_dotnetInstaller, options);
         var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var currentInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
 
@@ -192,6 +192,13 @@ internal class InstallWorkflow
     /// Determines whether the installation should be set as the system default.
     /// Checks the saved config first; only shows prompts when the config is absent.
     /// </summary>
+    /// <summary>
+    /// Returns true when the given <see cref="PathPreference"/> implies we should
+    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
+    /// </summary>
+    internal static bool ShouldReplacePath(PathPreference preference) =>
+        preference != PathPreference.DotnetupDotnet;
+
     private static bool DeriveSetDefaultInstall(
         InstallWorkflowOptions options)
     {
@@ -205,7 +212,7 @@ internal class InstallWorkflow
         var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
         if (savedPreference is not null)
         {
-            return savedPreference != PathPreference.DotnetupDotnet;
+            return ShouldReplacePath(savedPreference.Value);
         }
 
         // No config yet. If interactive, show the full path preference selector
@@ -215,7 +222,7 @@ internal class InstallWorkflow
             var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
             if (preference is not null)
             {
-                return preference != PathPreference.DotnetupDotnet;
+                return ShouldReplacePath(preference.Value);
             }
         }
 

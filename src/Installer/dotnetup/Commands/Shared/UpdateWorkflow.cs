@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -113,7 +112,7 @@ internal class UpdateWorkflow
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'.[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'."));
             return (false, false);
         }
 
@@ -166,7 +165,7 @@ internal class UpdateWorkflow
     {
         if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Updated [{DotnetupTheme.Current.Dim}]{globalJsonPath}[/] to {latestVersion}.");
+            AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
         }
     }
 
@@ -189,11 +188,11 @@ internal class UpdateWorkflow
 
         if (alreadyInstalled)
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion}).[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion})."));
         }
         else
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Updating {displayName} {spec.VersionOrChannel} to [{DotnetupTheme.Current.Accent}]{latestVersion}[/]...");
+            AnsiConsole.MarkupLine($"Updating {displayName} {spec.VersionOrChannel} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
 
             var installRequest = new DotnetInstallRequest(
                 installRoot,
@@ -207,12 +206,12 @@ internal class UpdateWorkflow
             try
             {
                 InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Updated {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
                 updated = true;
             }
             catch (DotnetInstallException)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Error}]Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}.[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}."));
                 return (false, true);
             }
         }

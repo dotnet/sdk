@@ -16,6 +16,11 @@ internal record SelectableOption(string Key, string Title, string Description, s
 /// A custom interactive option selector that uses Spectre.Console's LiveDisplay
 /// for flicker-free rendering. Shows all options with a slowly flashing arrow
 /// indicator on the selected item. Supports up/down arrow navigation.
+///
+/// Why not use Spectre's SelectionPrompt?
+/// SelectionPrompt supports only single-line items and a static ">" indicator.
+/// This selector provides multi-line items (title + description), per-option
+/// tooltips for the selected item, theme-aware styling, and the flashing arrow.
 /// </summary>
 internal static class InteractiveOptionSelector
 {
