@@ -43,6 +43,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
         _handler.Dispose();
     }
 
+    public override bool IsExpectedConnectionTermination(Exception exception, CancellationToken cancellationToken)
+        => cancellationToken.IsCancellationRequested;
+
     /// <summary>
     /// Creates and starts a new <see cref="WebSocketClientTransport"/> instance.
     /// </summary>
