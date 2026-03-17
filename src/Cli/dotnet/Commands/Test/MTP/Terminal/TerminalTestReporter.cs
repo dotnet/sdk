@@ -753,7 +753,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string? outputData, string? errorData)
     {
         if (_isHelp)
         {

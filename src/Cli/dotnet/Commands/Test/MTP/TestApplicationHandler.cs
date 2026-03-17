@@ -14,7 +14,7 @@ internal sealed class TestApplicationHandler
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? TargetFramework, string? Architecture, string ExecutionId, string NegotiatedVersion)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
@@ -24,11 +24,14 @@ internal sealed class TestApplicationHandler
         _options = options;
     }
 
-    internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
+    // Only 1.0.0 specifically should redirect output/err.
+    internal bool ShouldRedirectOutputAndError => !_handshakeInfo.HasValue || _handshakeInfo.Value.NegotiatedVersion == "1.0.0";
+
+    internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, string negotiatedVersion)
     {
         LogHandshake(handshakeMessage);
 
-        if (!gotSupportedVersion)
+        if (negotiatedVersion.Length == 0)
         {
             _output.HandshakeFailure(
                 _module.TargetPath,
@@ -37,7 +40,7 @@ internal sealed class TestApplicationHandler
                 string.Format(
                     CliCommandStrings.DotnetTestIncompatibleHandshakeVersion,
                     handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
-                    ProtocolConstants.SupportedVersions),
+                    string.Join(';', ProtocolConstants.SupportedVersions)),
                 string.Empty);
 
             // Protocol version is not supported.
@@ -48,7 +51,7 @@ internal sealed class TestApplicationHandler
         var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
         var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
         var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
-        var currentHandshakeInfo = (tfm, arch, executionId);
+        var currentHandshakeInfo = (tfm, arch, executionId, negotiatedVersion);
 
         if (!_handshakeInfo.HasValue)
         {
@@ -137,6 +140,7 @@ internal sealed class TestApplicationHandler
         }
 
         var handshakeInfo = _handshakeInfo.Value;
+        var shouldRedirect = ShouldRedirectOutputAndError;
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
             _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
@@ -149,8 +153,8 @@ internal sealed class TestApplicationHandler
                 exceptions: null,
                 expected: null,
                 actual: null,
-                standardOutput: testResult.StandardOutput,
-                errorOutput: testResult.ErrorOutput);
+                standardOutput: shouldRedirect ? testResult.StandardOutput : null,
+                errorOutput: shouldRedirect ? testResult.ErrorOutput : null);
         }
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
@@ -164,8 +168,8 @@ internal sealed class TestApplicationHandler
                 exceptions: [.. testResult.Exceptions!.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
-                standardOutput: testResult.StandardOutput,
-                errorOutput: testResult.ErrorOutput);
+                standardOutput: shouldRedirect ? testResult.StandardOutput : null,
+                errorOutput: shouldRedirect ? testResult.ErrorOutput : null);
         }
     }
 
@@ -263,7 +267,7 @@ internal sealed class TestApplicationHandler
         return false;
     }
 
-    internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
+    internal void OnTestProcessExited(int exitCode, string? outputData, string? errorData)
     {
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
@@ -378,7 +382,7 @@ internal sealed class TestApplicationHandler
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 
-    private static void LogTestProcessExit(int exitCode, string outputData, string errorData)
+    private static void LogTestProcessExit(int exitCode, string? outputData, string? errorData)
     {
         if (!Logger.TraceEnabled)
         {
