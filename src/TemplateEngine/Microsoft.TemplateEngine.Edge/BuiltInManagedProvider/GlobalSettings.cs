@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 {
                     // Ignore FSW notifications received during writing changes (we'll notify synchronously)
                     _watcher?.Dispose();
-                    _environmentSettings.Host.FileSystem.WriteObject(_globalSettingsFile, globalSettingsData);
+                    _environmentSettings.Host.FileSystem.WriteObject(_globalSettingsFile, globalSettingsData, GlobalSettingsJsonSerializerContext.Default.GlobalSettingsData);
                     // We are ready for new notifications now
                     _watcher = CreateWatcherIfRequested();
                     SettingsChanged?.Invoke();

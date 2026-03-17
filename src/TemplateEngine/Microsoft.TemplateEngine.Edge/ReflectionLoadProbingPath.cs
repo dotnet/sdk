@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 #if NET
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 #endif
 
@@ -43,6 +44,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
 #if NET
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Assembly probing loads assemblies by path at runtime.")]
         private static Assembly? SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
 #else
         private static Assembly? SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
@@ -195,6 +197,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
 #if NET
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Assembly resolution probes and loads assemblies at runtime.")]
         private static Assembly? Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
 #else
         private static Assembly? Resolving(object sender, ResolveEventArgs resolveEventArgs)

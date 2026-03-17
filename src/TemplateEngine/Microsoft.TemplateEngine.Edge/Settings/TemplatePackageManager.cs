@@ -373,7 +373,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             try
             {
-                _environmentSettings.Host.FileSystem.WriteObject(_paths.TemplateCacheFile, cache);
+                _environmentSettings.Host.FileSystem.WriteObject(_paths.TemplateCacheFile, cache, TemplateCacheJsonSerializerContext.Default.TemplateCache);
             }
             catch (Exception ex)
             {

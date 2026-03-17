@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -396,10 +400,10 @@ namespace Microsoft.TemplateEngine
                 ?? throw new InvalidOperationException($"Failed to parse JSON from '{path}'.");
         }
 
-        internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
+        internal static void WriteObject<T>(this IPhysicalFileSystem fileSystem, string path, T obj, JsonTypeInfo<T> jsonTypeInfo)
         {
             using Stream fileStream = fileSystem.CreateFile(path);
-            JsonSerializer.Serialize(fileStream, obj, SerializerOptions);
+            JsonSerializer.Serialize(fileStream, obj, jsonTypeInfo);
         }
 
         internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JsonNode? token, IReadOnlyList<string> defaultSet)
@@ -421,6 +425,10 @@ namespace Microsoft.TemplateEngine
         /// <summary>
         /// Converts <paramref name="obj"/> to valid JSON string.
         /// </summary>
+#if NET7_0_OR_GREATER
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+        [RequiresDynamicCode("JSON serialization and deserialization might require runtime code generation.")]
+#endif
         internal static string ToJsonString(object obj)
         {
             return JsonSerializer.Serialize(obj, SerializerOptions);
@@ -488,6 +496,10 @@ namespace Microsoft.TemplateEngine
         /// Serializes an object to a JsonObject via JSON round-trip.
         /// Equivalent to Newtonsoft's JObject.FromObject().
         /// </summary>
+#if NET7_0_OR_GREATER
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+        [RequiresDynamicCode("JSON serialization and deserialization might require runtime code generation.")]
+#endif
         internal static JsonObject FromObject(object obj)
         {
             string json = JsonSerializer.Serialize(obj, SerializerOptions);
