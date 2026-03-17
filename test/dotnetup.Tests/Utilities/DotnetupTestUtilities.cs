@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -238,7 +239,15 @@ internal static class DotnetupTestUtilities
 
             // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
             // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
-            foreach (string tfmDir in Directory.GetDirectories(configDir))
+            string[] tfmDirs = Directory.GetDirectories(configDir);
+            if (tfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild.");
+            }
+
+            foreach (string tfmDir in tfmDirs)
             {
                 string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
                 if (File.Exists(publishedPath))
@@ -263,7 +272,15 @@ internal static class DotnetupTestUtilities
                 continue;
             }
 
-            foreach (string tfmDir in Directory.GetDirectories(configDir))
+            string[] fallbackTfmDirs = Directory.GetDirectories(configDir);
+            if (fallbackTfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild.");
+            }
+
+            foreach (string tfmDir in fallbackTfmDirs)
             {
                 string managedPath = Path.Combine(tfmDir, executableName);
                 if (File.Exists(managedPath))
