@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -20,6 +21,8 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool RedirectStandardInput { get; set; }
 
         public bool DisableOutputAndErrorRedirection { get; set; }
+
+        public bool CreateNewProcessGroup { get; set; }
 
         private string EscapeArgs()
         {
@@ -60,6 +63,13 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 ret.WorkingDirectory = WorkingDirectory;
             }
+
+#if NET
+            if (CreateNewProcessGroup && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ret.CreateNewProcessGroup = true;
+            }
+#endif
 
             return ret;
         }
