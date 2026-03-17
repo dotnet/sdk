@@ -51,6 +51,10 @@ public class GeneratePackageAssetsManifestFile : Task
         }
 
         var manifestEndpoints = BuildManifestEndpoints(identityToPackagePath);
+        if (manifestEndpoints == null)
+        {
+            return false;
+        }
 
         var manifest = new StaticWebAssetPackageManifest
         {
@@ -168,6 +172,14 @@ public class GeneratePackageAssetsManifestFile : Task
             if (identityToPackagePath.TryGetValue(endpoint.AssetFile, out var packageRelativePath))
             {
                 endpoint.AssetFile = packageRelativePath;
+            }
+            else
+            {
+                Log.LogError(
+                    "Endpoint '{0}' references AssetFile '{1}' which could not be mapped to a package-relative path. " +
+                    "This indicates a graph inconsistency — the referenced asset is not part of the package.",
+                    endpoint.Route, endpoint.AssetFile);
+                return null;
             }
             manifestEndpoints.Add(endpoint);
         }
