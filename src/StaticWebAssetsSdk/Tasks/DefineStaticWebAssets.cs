@@ -881,6 +881,13 @@ public partial class DefineStaticWebAssets : Task
 
             if (!string.IsNullOrEmpty(def.ContentRootSuffix))
             {
+                if (contentRootSuffix != null && !string.Equals(contentRootSuffix, def.ContentRootSuffix, StringComparison.Ordinal))
+                {
+                    Log.LogError(
+                        "Asset '{0}' matched group definitions '{1}' and '{2}' with conflicting ContentRootSuffix values '{3}' and '{4}'.",
+                        asset.Identity, contentRootGroupName, def.Name, contentRootSuffix, def.ContentRootSuffix);
+                    return default;
+                }
                 contentRootSuffix = def.ContentRootSuffix;
                 contentRootGroupName = def.Name;
             }
