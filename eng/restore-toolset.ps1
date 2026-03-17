@@ -20,14 +20,18 @@ function InitializeCustomSDKToolset {
     # don't read/write the user's home-folder manifest.
     $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir ".dotnetup"
 
-    # Build dotnetup if not already present (needs SDK to be installed first)
-    EnsureDotnetupBuilt
-
-    InstallDotNetSharedFramework "6.0.0"
-    InstallDotNetSharedFramework "7.0.0"
-    InstallDotNetSharedFramework "8.0.0"
-    InstallDotNetSharedFramework "9.0.0"
-    InstallDotNetSharedFramework "10.0.0"
+    # The following shared frameworks are only needed for testing.
+    # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
+    # dotnetup is only built when test runtimes are needed (it's the install tool).
+    if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
+        # Build dotnetup if not already present (needs SDK to be installed first)
+        EnsureDotnetupBuilt
+        InstallDotNetSharedFramework "6.0.0"
+        InstallDotNetSharedFramework "7.0.0"
+        InstallDotNetSharedFramework "8.0.0"
+        InstallDotNetSharedFramework "9.0.0"
+        InstallDotNetSharedFramework "10.0.0"
+    }
 
     CreateBuildEnvScripts
     CreateVSShortcut
