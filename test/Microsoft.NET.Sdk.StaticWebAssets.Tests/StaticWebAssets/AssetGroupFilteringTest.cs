@@ -310,6 +310,166 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
+    [Fact]
+    public void ApplyGroupDefinitions_MissingValue_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    // No "Value"
+                    ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
+                    ["IncludePattern"] = "V4/**",
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'Value'"));
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_MissingSourceId_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    // No "SourceId"
+                    ["IncludePattern"] = "V4/**",
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'SourceId'"));
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_InvalidOrder_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "not-a-number",
+                    ["SourceId"] = "IdentityUI",
+                    ["IncludePattern"] = "V4/**",
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("invalid or missing 'Order'"));
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_MissingIncludePattern_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
+                    // No "IncludePattern"
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'IncludePattern'"));
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_SourceIdMismatch_DefinitionsIgnored()
+    {
+        var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("BootstrapVersion", new Dictionary<string, string>
+                {
+                    ["Value"] = "V4",
+                    ["Order"] = "0",
+                    ["SourceId"] = "OtherLib",
+                    ["IncludePattern"] = "V4/**",
+                    ["RelativePathPattern"] = "V4/**",
+                    ["ContentRootSuffix"] = "V4"
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        _errorMessages.Should().BeEmpty();
+        task.Assets.Should().HaveCount(1);
+
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.AssetGroups.Should().BeNullOrEmpty("definitions with mismatched SourceId should not apply");
+        asset.RelativePath.Should().Contain("V4", "RelativePath should not be transformed");
+    }
+
+    [Fact]
+    public void ApplyGroupDefinitions_ConflictingContentRootSuffix_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "shared", "site.css", "body{}");
+
+        var task = CreateDefineStaticWebAssetsTask(
+            new[] { CreateCandidateAssetItem(file) },
+            new ITaskItem[]
+            {
+                new TaskItem("GroupA", new Dictionary<string, string>
+                {
+                    ["Value"] = "V1",
+                    ["Order"] = "0",
+                    ["SourceId"] = "IdentityUI",
+                    ["IncludePattern"] = "**",
+                    ["ContentRootSuffix"] = "suffixA"
+                }),
+                new TaskItem("GroupB", new Dictionary<string, string>
+                {
+                    ["Value"] = "V2",
+                    ["Order"] = "1",
+                    ["SourceId"] = "IdentityUI",
+                    ["IncludePattern"] = "**",
+                    ["ContentRootSuffix"] = "suffixB"
+                })
+            });
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("conflicting ContentRootSuffix"));
+    }
+
     [Theory]
     [InlineData(new[] { "BootstrapVersion=V4", "BootstrapVersion=V5" }, true)]
     [InlineData(new[] { "BootstrapVersion=V4", "" }, false)]

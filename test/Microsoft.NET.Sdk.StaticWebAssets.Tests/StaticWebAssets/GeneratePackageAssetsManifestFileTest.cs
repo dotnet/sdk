@@ -180,6 +180,32 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         manifest.Assets.Values.Single().AssetGroups.Should().Be("BootstrapVersion=V5");
     }
 
+    [Fact]
+    public void Endpoints_UnmappedAssetFile_ProducesError()
+    {
+        var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var asset = CreateAsset(file, contentRoot, "js/app.js", "abc");
+
+        var endpoint = new StaticWebAssetEndpoint
+        {
+            Route = "_content/mylib/js/missing.js",
+            AssetFile = Path.Combine(_tempDir, "nonexistent", "missing.js"),
+            Selectors = [],
+            ResponseHeaders = [],
+            EndpointProperties = [],
+        };
+
+        var task = CreateManifestTask(
+            new[] { asset.ToTaskItem() },
+            StaticWebAssetEndpoint.ToTaskItems(new[] { endpoint }));
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("could not be mapped to a package-relative path"));
+    }
+
     private GeneratePackageAssetsManifestFile CreateManifestTask(
         ITaskItem[] assets,
         ITaskItem[] endpoints = null,

@@ -261,6 +261,29 @@ public class ReadPackageAssetsManifestTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("Unsupported package manifest version"));
     }
 
+    [Fact]
+    public void MissingIntermediateOutputPath_ProducesError()
+    {
+        var packageRoot = SetupPackageRoot("MyLib",
+            CreateManifestAsset("staticwebassets/css/site.css", "css/site.css", "_content/mylib", ""));
+        var manifestItem = CreateManifestItem(packageRoot, "MyLib");
+
+        var task = new ReadPackageAssetsManifest
+        {
+            BuildEngine = _buildEngine.Object,
+            PackageManifests = new[] { manifestItem },
+            StaticWebAssetGroups = Array.Empty<ITaskItem>(),
+            IntermediateOutputPath = null,
+            ProjectPackageId = "ConsumerApp",
+            ProjectBasePath = "_content/consumerapp",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("IntermediateOutputPath is required"));
+    }
+
     private ReadPackageAssetsManifest CreateReadManifestTask(
         ITaskItem[] manifests,
         ITaskItem[] groups = null)
