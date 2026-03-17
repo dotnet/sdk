@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"[{webProjectDisplay}] Exited");
             await App.WaitUntilOutputContains($"[{hostProjectDisplay}] Exited");
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Disposing server ...");
 
             // TODO: these are not reliably reported: https://github.com/dotnet/sdk/issues/53308
             //await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
