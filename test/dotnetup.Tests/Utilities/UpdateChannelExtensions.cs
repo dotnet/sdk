@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -22,9 +23,7 @@ internal static class UpdateChannelExtensions
         var parts = channel.Name.Split('.');
 
         // Special channels are not fully specified versions
-        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
+        if (ChannelVersionResolver.KnownChannelKeywords.Any(k => string.Equals(channel.Name, k, StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }
