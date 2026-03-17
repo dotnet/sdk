@@ -84,7 +84,7 @@ public partial class DefineStaticWebAssets : Task
         _overrides = new HashSet<string>(PropertyOverrides ?? [], StringComparer.OrdinalIgnoreCase);
 
         // Parse group definitions once upfront so they can be applied per-asset inside the loop.
-        List<GroupDefinition> groupDefinitions = null;
+        Dictionary<string, List<GroupDefinition>> groupDefinitions = null;
         if (StaticWebAssetGroupDefinitions != null && StaticWebAssetGroupDefinitions.Length > 0)
         {
             groupDefinitions = ParseGroupDefinitions();
@@ -92,7 +92,7 @@ public partial class DefineStaticWebAssets : Task
             {
                 return false; // Validation error already logged
             }
-            Log.LogMessage(MessageImportance.Low, "Parsed {0} group definitions.", groupDefinitions.Count);
+            Log.LogMessage(MessageImportance.Low, "Parsed {0} group definition source(s).", groupDefinitions.Count);
         }
 
         var assetsCache = GetOrCreateAssetsCache();
@@ -628,9 +628,14 @@ public partial class DefineStaticWebAssets : Task
 
     private void ApplyGroupToAsset(
         ref StaticWebAsset asset,
-        List<GroupDefinition> definitions,
+        Dictionary<string, List<GroupDefinition>> definitionsBySourceId,
         StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
+        if (!definitionsBySourceId.TryGetValue(asset.SourceId, out var definitions))
+        {
+            return;
+        }
+
         var result = MatchAssetToDefinitions(asset, definitions, matchContext);
 
         if (result.GroupEntries != null && result.GroupEntries.Count > 0)
@@ -699,7 +704,7 @@ public partial class DefineStaticWebAssets : Task
         public string ContentRootSuffix { get; }
     }
 
-    private List<GroupDefinition> ParseGroupDefinitions()
+    private Dictionary<string, List<GroupDefinition>> ParseGroupDefinitions()
     {
         var definitions = new List<GroupDefinition>();
 
@@ -783,7 +788,18 @@ public partial class DefineStaticWebAssets : Task
         }
 
         definitions.Sort((a, b) => a.Order.CompareTo(b.Order));
-        return definitions;
+
+        var result = new Dictionary<string, List<GroupDefinition>>(StringComparer.Ordinal);
+        foreach (var def in definitions)
+        {
+            if (!result.TryGetValue(def.SourceId, out var list))
+            {
+                list = new List<GroupDefinition>();
+                result[def.SourceId] = list;
+            }
+            list.Add(def);
+        }
+        return result;
     }
 
     private GroupMatchResult MatchAssetToDefinitions(
