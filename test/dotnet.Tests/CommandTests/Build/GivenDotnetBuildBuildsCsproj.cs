@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
-                .Execute("--no-restore", "--nologo", "/t:PrintMessage")
+                .Execute("--no-restore", "--no-logo", "/t:PrintMessage")
                 .Should()
                 .Pass()
                 .And
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var cmd = new DotnetBuildCommand(Log)
                .WithWorkingDirectory(testInstance.Path)
-               .Execute("--nologo");
+               .Execute("--no-logo");
 
             cmd.Should().Pass();
 

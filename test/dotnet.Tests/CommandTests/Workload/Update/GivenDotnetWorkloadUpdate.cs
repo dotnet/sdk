@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             string workloadHistoryRecord = @"{
               ""TimeStarted"": ""2023-11-13T13:25:49.8011987-08:00"",
               ""TimeCompleted"": ""2023-11-13T13:25:52.8522942-08:00"",
-              ""CommandName"": ""update"",
+              ""Name"": ""update"",
               ""WorkloadArguments"": [],
               ""RollbackFileContents"": null,
               ""CommandLineArgs"": [],
