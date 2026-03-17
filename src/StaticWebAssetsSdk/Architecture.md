@@ -196,7 +196,7 @@ StaticWebAsset (Primary)
 ├── Endpoint (non-fingerprinted)
 │   ├── Route: css/app.css
 │   ├── AssetFile: D:\project\wwwroot\css\app.css
-│   ├── ResponseHeaders: [Content-Type=text/css, ETag="abc123"]
+│   ├── ResponseHeaders: [Content-Type=text/css, ETag="sha256-..."]
 │   └── EndpointProperties: [fingerprint=abc123, integrity=sha256-...]
 │
 └── Alternative Asset (gzip)
