@@ -351,7 +351,7 @@ internal class InstallWalkthrough
         int offset = 0;
         int maxOffset = items.Count - visibleCount;
 
-        Console.Write("\x1b[?25l"); // hide cursor
+        Console.Write(Constants.Ansi.HideCursor);
         try
         {
             int startRow = Console.CursorTop;
@@ -402,7 +402,7 @@ internal class InstallWalkthrough
         }
         finally
         {
-            Console.Write("\x1b[?25h"); // show cursor
+            Console.Write(Constants.Ansi.ShowCursor);
         }
     }
 
@@ -410,7 +410,7 @@ internal class InstallWalkthrough
     {
         string brand = DotnetupTheme.Current.Brand;
         Console.SetCursorPosition(0, startRow);
-        Console.Write("\x1b[J");
+        Console.Write(Constants.Ansi.ClearToEnd);
         foreach (var item in items)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
@@ -454,12 +454,12 @@ internal class InstallWalkthrough
         if (!firstRender)
         {
             Console.SetCursorPosition(0, startRow);
-            Console.Write("\x1b[J");
+            Console.Write(Constants.Ansi.ClearToEnd);
         }
 
         if (offset > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▲ {1} more above[/]", dim, offset));
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more above[/]", dim, Constants.Symbols.UpTriangle, offset));
         }
 
         for (int i = offset; i < offset + visibleCount && i < items.Count; i++)
@@ -470,7 +470,7 @@ internal class InstallWalkthrough
         int remaining = items.Count - offset - visibleCount;
         if (remaining > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]▼ {1} more below (use ↑↓ arrows)[/]", dim, remaining));
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more below (use {3}{4} arrows)[/]", dim, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow));
         }
 
         if (confirmPrompt is not null)

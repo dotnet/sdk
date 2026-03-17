@@ -56,13 +56,10 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
     private int ExecuteSingleInstall(string? spec)
     {
-        var (component, versionOrChannel) = ParseComponentSpec(spec);
-        ValidateComponentForPlatform(component);
-        ValidateNotSdkVersion(versionOrChannel);
+        var (component, versionOrChannel) = ParseAndValidateComponentSpec(spec);
 
         string componentDescription = component.GetDisplayName();
-        var pathPreference = DotnetupConfig.EnsurePathPreference(_interactive);
-        bool? setDefault = _setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+        var (pathPreference, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
 
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
@@ -90,12 +87,10 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         var parsed = new List<(InstallComponent Component, string? VersionOrChannel)>();
         foreach (var spec in specs)
         {
-            var (component, versionOrChannel) = ParseComponentSpec(spec);
-            ValidateComponentForPlatform(component);
-            ValidateNotSdkVersion(versionOrChannel);
-            parsed.Add((component, versionOrChannel));
+            parsed.Add(ParseAndValidateComponentSpec(spec));
         }
 
+        var (_, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -123,20 +118,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 }));
         }
 
-        IReadOnlyList<InstallResult> results;
-
-        {
-            IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-            using var sharedReporter = new LazyProgressReporter(progressTarget);
-            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
-        }
-
-        InstallExecutor.DisplayMultiInstallResults(results);
-
-        if (_setDefaultInstall == true)
-        {
-            _dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
-        }
+        InstallExecutor.RunMultiInstall(requests, installPath, _noProgress, setDefault, _dotnetInstaller);
 
         return 0;
     }
@@ -160,6 +142,17 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
                 + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
         }
+    }
+
+    /// <summary>
+    /// Parses and validates a component specification, checking platform support and SDK version conflicts.
+    /// </summary>
+    private static (InstallComponent Component, string? VersionOrChannel) ParseAndValidateComponentSpec(string? spec)
+    {
+        var (component, versionOrChannel) = ParseComponentSpec(spec);
+        ValidateComponentForPlatform(component);
+        ValidateNotSdkVersion(versionOrChannel);
+        return (component, versionOrChannel);
     }
 
     /// <summary>

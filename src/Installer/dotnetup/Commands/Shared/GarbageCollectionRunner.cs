@@ -32,7 +32,7 @@ internal static class GarbageCollectionRunner
         {
             foreach (var d in deleted)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  Removed [{DotnetupTheme.Current.Dim}]{d}[/]");
+                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  Removed {0}", DotnetupTheme.Dim(d)));
             }
         }
         else if (showEmptyMessage)

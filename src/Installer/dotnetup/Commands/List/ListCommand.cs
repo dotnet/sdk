@@ -53,9 +53,6 @@ internal static class InstallationLister
     /// </summary>
     public static ListData GetListData(bool verify = false, string? manifestPath = null, string? installPath = null)
     {
-        var installSpecs = new List<InstallSpecInfo>();
-        var installations = new List<InstallationInfo>();
-
         DotnetupManifestData manifestData;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
@@ -70,38 +67,37 @@ internal static class InstallationLister
                 Path.GetFullPath(r.Path), Path.GetFullPath(installPath), StringComparison.OrdinalIgnoreCase))
             : manifestData.DotnetRoots;
 
+        var installSpecs = new List<InstallSpecInfo>();
+        var installations = new List<InstallationInfo>();
+
         foreach (var root in roots)
         {
-            CollectRootData(root, verify, validator, installSpecs, installations);
+            var (specs, installs) = CollectRootData(root, verify, validator);
+            installSpecs.AddRange(specs);
+            installations.AddRange(installs);
         }
 
         return new ListData { InstallSpecs = installSpecs, Installations = installations };
     }
 
-    private static void CollectRootData(
+    private static (List<InstallSpecInfo> Specs, List<InstallationInfo> Installations) CollectRootData(
         DotnetRootEntry root,
         bool verify,
-        ArchiveInstallationValidator validator,
-        List<InstallSpecInfo> installSpecs,
-        List<InstallationInfo> installations)
+        ArchiveInstallationValidator validator)
     {
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 
-        // Collect install specs
-        foreach (var spec in root.InstallSpecs)
+        var specs = root.InstallSpecs.Select(spec => new InstallSpecInfo
         {
-            installSpecs.Add(new InstallSpecInfo
-            {
-                Component = spec.Component,
-                VersionOrChannel = spec.VersionOrChannel,
-                Source = spec.InstallSource,
-                GlobalJsonPath = spec.GlobalJsonPath,
-                InstallRoot = root.Path,
-                Architecture = root.Architecture
-            });
-        }
+            Component = spec.Component,
+            VersionOrChannel = spec.VersionOrChannel,
+            Source = spec.InstallSource,
+            GlobalJsonPath = spec.GlobalJsonPath,
+            InstallRoot = root.Path,
+            Architecture = root.Architecture
+        }).ToList();
 
-        // Collect installations
+        var installations = new List<InstallationInfo>();
         foreach (var installation in root.Installations)
         {
             bool? isValid = null;
@@ -126,6 +122,8 @@ internal static class InstallationLister
                 ValidationFailure = validationFailure
             });
         }
+
+        return (specs, installations);
     }
 
     private const int IndentSize = 2;

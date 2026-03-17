@@ -7,6 +7,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
+using OrchestratorInstallResult = Microsoft.DotNet.Tools.Bootstrapper.InstallResult;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
@@ -15,6 +16,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal class InstallExecutor
 {
+    // ── Shared format strings for install result messages ──
+    private const string InstalledAtFormat = "Installed {0} at [{1}]{2}[/]";
+    private const string AlreadyInstalledAtFormat = "{0} was already installed at [{1}]{2}[/]";
+
     /// <summary>
     /// Result of an installation execution.
     /// </summary>
@@ -92,13 +97,18 @@ internal class InstallExecutor
 
         var orchestratorResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
 
+        string successAccent = DotnetupTheme.Current.SuccessAccent;
+        string version = orchestratorResult.Install.Version.ToString().EscapeMarkup();
+        string path = orchestratorResult.Install.InstallRoot.Path.EscapeMarkup();
+        string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", componentDescription, successAccent, version);
+
         if (orchestratorResult.WasAlreadyInstalled)
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"{componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] is already installed at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, AlreadyInstalledAtFormat, label, successAccent, path));
         }
         else
         {
-            SpectreAnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Installed {componentDescription} [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.Version}[/] at [{DotnetupTheme.Current.Accent}]{orchestratorResult.Install.InstallRoot.Path}[/]");
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, InstalledAtFormat, label, successAccent, path));
         }
 
         return new InstallResult(orchestratorResult.Install, orchestratorResult.WasAlreadyInstalled);
@@ -144,7 +154,7 @@ internal class InstallExecutor
         var primaryResult = RunInstallBatch(sdkInstalls, installRoot, manifestPath, noProgress, requireMuxerUpdate, sdkPrimary);
 
         // Phase 2: skip runtimes whose files already landed on disk via an SDK archive.
-        var remainingRuntimes = runtimeInstalls.Where(r => !RuntimeExistsOnDisk(installRoot, r)).ToList();
+        var remainingRuntimes = runtimeInstalls.Where(r => !RuntimeFolderExistsOnDisk(installRoot, r)).ToList();
         var runtimeResult = RunInstallBatch(remainingRuntimes, installRoot, manifestPath, noProgress, requireMuxerUpdate, runtimePrimary);
 
         return primaryResult ?? runtimeResult;
@@ -180,7 +190,7 @@ internal class InstallExecutor
             return null;
         }
 
-        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results;
+        IReadOnlyList<OrchestratorInstallResult> results;
 
         // Scope the progress reporter so the progress bar finishes rendering
         // before we print the result summary lines beneath it.
@@ -193,7 +203,7 @@ internal class InstallExecutor
         return DisplayBatchResults(results, primaryRequest);
     }
 
-    private static bool RuntimeExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
+    private static bool RuntimeFolderExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
     {
         string frameworkDir = Path.Combine(
             installRoot.Path,
@@ -244,7 +254,7 @@ internal class InstallExecutor
     }
 
     private static InstallResult? DisplayBatchResults(
-        IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results,
+        IReadOnlyList<OrchestratorInstallResult> results,
         DotnetInstallRequest? primaryRequest)
     {
         InstallResult? primaryResult = null;
@@ -264,8 +274,8 @@ internal class InstallExecutor
             }
 
             sharedPath ??= result.Install.InstallRoot.Path;
-            string accent = DotnetupTheme.Current.Accent;
-            string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), accent, result.Install.Version.ToString().EscapeMarkup());
+            string successAccent = DotnetupTheme.Current.SuccessAccent;
+            string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), successAccent, result.Install.Version.ToString().EscapeMarkup());
             if (result.WasAlreadyInstalled)
             {
                 alreadyInstalled.Add(label);
@@ -282,28 +292,67 @@ internal class InstallExecutor
 
     private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
     {
-        string accent = DotnetupTheme.Current.Accent;
+        string successAccent = DotnetupTheme.Current.SuccessAccent;
         string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
 
         if (installed.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "Installed {0} at [{1}]{2}[/]", string.Join(", ", installed), accent, escapedPath));
+                InstalledAtFormat, string.Join(", ", installed), successAccent, escapedPath));
         }
 
         if (alreadyInstalled.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "{0} was already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
+                AlreadyInstalledAtFormat, string.Join(", ", alreadyInstalled), successAccent, escapedPath));
         }
     }
 
     /// <summary>
     /// Displays results for a multi-install batch (used by SDK and Runtime install commands).
     /// </summary>
-    public static void DisplayMultiInstallResults(IReadOnlyList<global::Microsoft.DotNet.Tools.Bootstrapper.InstallResult> results)
+    public static void DisplayMultiInstallResults(IReadOnlyList<OrchestratorInstallResult> results)
     {
         DisplayBatchResults(results, primaryRequest: null);
+    }
+
+    /// <summary>
+    /// Resolves the path preference and derives whether to set a default install.
+    /// Shared by SDK and Runtime single-install paths.
+    /// </summary>
+    public static (PathPreference? PathPreference, bool? SetDefault) ResolveInstallDefaults(bool interactive, bool? setDefaultInstall)
+    {
+        var pathPreference = DotnetupConfig.EnsurePathPreference(interactive);
+        bool? setDefault = setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+        return (pathPreference, setDefault);
+    }
+
+    /// <summary>
+    /// Runs a multi-install batch: creates progress reporting, calls InstallMany,
+    /// displays results, and optionally configures the default install type.
+    /// Shared by SDK and Runtime multi-install paths.
+    /// </summary>
+    public static void RunMultiInstall(
+        List<DotnetInstallRequest> requests,
+        string installPath,
+        bool noProgress,
+        bool? setDefaultInstall,
+        IDotnetInstallManager dotnetInstaller)
+    {
+        IReadOnlyList<OrchestratorInstallResult> results;
+
+        {
+            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            using var sharedReporter = new LazyProgressReporter(progressTarget);
+            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+        }
+
+        DisplayMultiInstallResults(results);
+
+        if (setDefaultInstall == true)
+        {
+            dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
+        }
     }
 
     /// <summary>
@@ -328,7 +377,7 @@ internal class InstallExecutor
     /// </summary>
     public static void DisplayComplete()
     {
-        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Complete!"));
+        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.SuccessAccent}]Complete![/]");
     }
 
     /// <summary>

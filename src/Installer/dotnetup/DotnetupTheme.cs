@@ -33,6 +33,9 @@ internal sealed class ThemeColors
     /// <summary>Color for secondary/de-emphasized text.</summary>
     public string Dim { get; set; } = "dim";
 
+    /// <summary>Color for success emphasis (installed versions/paths in success messages).</summary>
+    public string SuccessAccent { get; set; } = "#9780E5";
+
     /// <summary>Built-in preset themes keyed by name.</summary>
     internal static readonly IReadOnlyDictionary<string, ThemeColors> s_presets =
         new Dictionary<string, ThemeColors>(StringComparer.OrdinalIgnoreCase)
@@ -47,6 +50,7 @@ internal sealed class ThemeColors
                 Brand = "blue",
                 SuccessAlt = "gold1",
                 Dim = "dim",
+                SuccessAccent = "green",
             },
             ["monokai"] = new ThemeColors
             {
@@ -57,6 +61,7 @@ internal sealed class ThemeColors
                 Brand = "#AE81FF",
                 SuccessAlt = "#E6DB74",
                 Dim = "#75715E",
+                SuccessAccent = "#A6E22E",
             },
         };
 
@@ -71,6 +76,7 @@ internal sealed class ThemeColors
             ["brand"] = (t => t.Brand, (t, v) => t.Brand = v),
             ["successalt"] = (t => t.SuccessAlt, (t, v) => t.SuccessAlt = v),
             ["dim"] = (t => t.Dim, (t, v) => t.Dim = v),
+            ["successaccent"] = (t => t.SuccessAccent, (t, v) => t.SuccessAccent = v),
         };
 }
 
@@ -116,6 +122,9 @@ internal static class DotnetupTheme
 
     /// <summary>Wraps text in dim/secondary color markup.</summary>
     public static string Dim(string text) => $"[{Current.Dim}]{text}[/]";
+
+    /// <summary>Wraps text in success-accent color markup (versions/paths in success messages).</summary>
+    public static string SuccessAccent(string text) => $"[{Current.SuccessAccent}]{text}[/]";
 
     /// <summary>
     /// Validates that a color string is acceptable for Spectre.Console markup.

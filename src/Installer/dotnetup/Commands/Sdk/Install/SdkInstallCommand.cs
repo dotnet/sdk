@@ -40,8 +40,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private int ExecuteSingleInstall(string? versionOrChannel)
     {
-        var pathPreference = DotnetupConfig.EnsurePathPreference(_interactive);
-        bool? setDefault = _setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+        var (pathPreference, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
 
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
 
@@ -67,6 +66,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private int ExecuteMultipleInstalls(string[] channels)
     {
+        var (_, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -82,17 +82,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 Verbosity = _verbosity
             })).ToList();
 
-        IProgressTarget progressTarget = _noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-        using var sharedReporter = progressTarget.CreateProgressReporter();
-
-        var results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
-
-        InstallExecutor.DisplayMultiInstallResults(results);
-
-        if (_setDefaultInstall == true)
-        {
-            _dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
-        }
+        InstallExecutor.RunMultiInstall(requests, installPath, _noProgress, setDefault, _dotnetInstaller);
 
         return 0;
     }

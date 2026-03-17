@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -38,14 +39,13 @@ internal class InstallWorkflow
         bool RequireMuxerUpdate = false,
         bool Untracked = false,
         PathPreference? PathPreference = null,
-        Verbosity Verbosity = Verbosity.Normal,
-        bool DeferAdditionalInstalls = false);
+        Verbosity Verbosity = Verbosity.Normal);
 
     /// <summary>
     /// Result of the install workflow, including any deferred additional installs.
     /// </summary>
     public record InstallWorkflowResult(
-        IReadOnlyList<DotnetInstall> DeferredInstalls,
+        ReleaseVersion? ResolvedVersion,
         DotnetInstallRoot? InstallRoot,
         string? ManifestPath,
         bool NoProgress,
@@ -69,11 +69,6 @@ internal class InstallWorkflow
 
     public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
-        // Record telemetry for the install request
-        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
-        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(options.VersionOrChannel));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, options.InstallPath is not null);
-
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
         {
@@ -82,24 +77,17 @@ internal class InstallWorkflow
 
         ValidateInstallPath(context);
 
-        // Record resolved context telemetry
-        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
-
         var resolved = CreateInstallRequest(context);
-        RecordResolvedTelemetry(context, resolved);
+        RecordTelemetry(options, context, resolved);
 
-        var (installResult, deferredInstalls) = ExecuteInstallations(context, resolved);
+        var installResult = ExecuteInstallations(context, resolved);
 
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
 
         return new InstallWorkflowResult(
-            deferredInstalls,
+            resolved.ResolvedVersion,
             resolved.Request.InstallRoot,
             options.ManifestPath,
             options.NoProgress,
@@ -130,8 +118,21 @@ internal class InstallWorkflow
         }
     }
 
-    private static void RecordResolvedTelemetry(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static void RecordTelemetry(InstallWorkflowOptions options, WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
+        // Request-level tags
+        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(options.VersionOrChannel));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, options.InstallPath is not null);
+
+        // Resolved context tags
+        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
+        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
+
+        // Resolved version tags
         Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, context.RequestSource);
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(context.Channel));
@@ -164,7 +165,7 @@ internal class InstallWorkflow
         }
 
         string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
-        bool setDefaultInstall = DeriveSetDefaultInstall(options, walkthrough, currentInstallRoot, pathResolution);
+        bool setDefaultInstall = DeriveSetDefaultInstall(options);
 
         // Classify how the version/channel was determined for telemetry
         string requestSource = options.VersionOrChannel is not null
@@ -192,10 +193,7 @@ internal class InstallWorkflow
     /// Checks the saved config first; only shows prompts when the config is absent.
     /// </summary>
     private static bool DeriveSetDefaultInstall(
-        InstallWorkflowOptions options,
-        InstallWalkthrough walkthrough,
-        DotnetInstallRootConfiguration? currentInstallRoot,
-        InstallPathResolver.InstallPathResolutionResult pathResolution)
+        InstallWorkflowOptions options)
     {
         // If the caller already determined this (e.g. WalkthroughCommand), use it directly.
         if (options.SetDefaultInstall is not null)
@@ -221,11 +219,8 @@ internal class InstallWorkflow
             }
         }
 
-        // Non-interactive with no config: fall back to standard walkthrough logic (returns false).
-        return walkthrough.ResolveSetDefaultInstall(
-            currentInstallRoot,
-            pathResolution.ResolvedInstallPath,
-            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
+        // Non-interactive with no config: default to not setting the default install.
+        return false;
     }
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
@@ -249,7 +244,7 @@ internal class InstallWorkflow
             context.Options.Verbosity);
     }
 
-    private static (InstallExecutor.InstallResult Result, IReadOnlyList<DotnetInstall> DeferredInstalls) ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Always install the primary component first so the user can start working quickly.
         var primaryResult = InstallExecutor.ExecuteInstall(
@@ -258,16 +253,10 @@ internal class InstallWorkflow
             context.Options.ComponentDescription,
             context.Options.NoProgress);
 
-        // Copy admin installs after the primary install completes — these may take a while
-        // and should not block the user from getting started.
+        // Copy admin installs after the primary install completes.
         var additionalInstalls = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
             context.SetDefaultInstall);
-
-        if (context.Options.DeferAdditionalInstalls)
-        {
-            return (primaryResult, additionalInstalls);
-        }
 
         if (additionalInstalls.Count > 0)
         {
@@ -279,7 +268,7 @@ internal class InstallWorkflow
                 context.Options.RequireMuxerUpdate);
         }
 
-        return (primaryResult, []);
+        return primaryResult;
     }
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

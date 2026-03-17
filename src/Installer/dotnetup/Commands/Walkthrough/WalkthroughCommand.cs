@@ -31,7 +31,10 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
     {
         ShowBanner();
 
-        var (channel, globalJson, installRoot) = ResolveChannelAndStartPredownload();
+        // Step 0: Explain channels and let the user pick one
+        string selectedChannel = PromptChannel();
+
+        var (channel, globalJson, installRoot) = ResolveChannelAndStartPredownload(selectedChannel);
 
         // Step 1: Choose how to access .NET
         var pathPreference = PromptPathPreference();
@@ -67,19 +70,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         SaveConfigAndDisplayResult(pathPreference);
 
         // Step 4: Migrate admin installs after setup is complete so the user knows they can start working
-        if (workflowResult.DeferredInstalls.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]You may now use dotnetup. In the meantime, we'll install your remaining components.[/]",
-                DotnetupTheme.Current.Dim));
-            InstallExecutor.ExecuteAdditionalInstalls(
-                workflowResult.DeferredInstalls,
-                workflowResult.InstallRoot!,
-                workflowResult.ManifestPath,
-                workflowResult.NoProgress,
-                workflowResult.RequireMuxerUpdate);
-        }
+        RunDeferredAdminInstalls(workflowResult, pathPreference, setDefaultInstall);
 
         return 0;
     }
@@ -91,16 +82,117 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
     }
 
     /// <summary>
-    /// Resolves the install channel from global.json (or "latest") and fires off a
+    /// Explains how dotnetup channels work and lets the user pick a channel.
+    /// Builds example channels dynamically from the release manifest and shows
+    /// what each one currently resolves to.
+    /// </summary>
+    private string PromptChannel()
+    {
+        string brand = DotnetupTheme.Current.Brand;
+        string dim = DotnetupTheme.Current.Dim;
+
+        SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
+        SpectreAnsiConsole.WriteLine();
+
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
+            brand));
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            "[{0}]Channels may be implied from your global.json.[/]",
+            dim));
+        SpectreAnsiConsole.WriteLine();
+
+        var examples = BuildChannelExamples();
+
+        var prompt = new SelectionPrompt<ChannelExample>()
+            .Title("[bold]Select an example channel to get started:[/]")
+            .PageSize(examples.Count - 1)
+            .HighlightStyle(Style.Parse(brand))
+            .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
+            .UseConverter(ex =>
+            {
+                string resolved = ex.ResolvedVersion is not null
+                    ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
+                    : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
+                string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
+                    ? " [white](suggested)[/]"
+                    : "";
+                return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
+                    brand,
+                    ex.Channel.EscapeMarkup().PadRight(12),
+                    suggested,
+                    dim,
+                    ex.Description.EscapeMarkup(),
+                    resolved);
+            });
+
+        prompt.AddChoices(examples);
+
+        if (Console.IsInputRedirected)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]Using default channel: [{1}]latest[/][/]",
+                dim, brand));
+            return ChannelVersionResolver.LatestChannel;
+        }
+
+        var selected = SpectreAnsiConsole.Prompt(prompt);
+        SpectreAnsiConsole.WriteLine();
+        return selected.Channel;
+    }
+
+    /// <summary>
+    /// Builds a list of example channels with descriptions and resolved versions.
+    /// Uses the release manifest to find the latest major version dynamically.
+    /// </summary>
+    private List<ChannelExample> BuildChannelExamples()
+    {
+        var resolver = _channelVersionResolver;
+
+        var latestResolved = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.LatestChannel), InstallComponent.SDK);
+        string? ltsVersion = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.LtsChannel), InstallComponent.SDK)?.ToString();
+        string? previewVersion = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.PreviewChannel), InstallComponent.SDK)?.ToString();
+
+        var examples = new List<ChannelExample>
+        {
+            new(ChannelVersionResolver.LatestChannel, "Latest stable release", latestResolved?.ToString()),
+            new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
+            new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
+        };
+
+        if (latestResolved is not null)
+        {
+            string latestVersion = latestResolved.ToString();
+            string majorMinor = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}");
+            string featureBand = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}.{latestResolved.SdkFeatureBand / 100}xx");
+
+            examples.Add(new(majorMinor, "Major.Minor channel", latestVersion));
+            examples.Add(new(featureBand, "SDK feature band", latestVersion));
+            examples.Add(new(latestVersion, "Explicit version", latestVersion));
+        }
+
+        return examples;
+    }
+
+    private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
+
+    /// <summary>
+    /// Resolves the install channel from global.json (or the user's selection) and fires off a
     /// background predownload to warm the cache while the user answers prompts.
     /// </summary>
-    private (string Channel, GlobalJsonInfo? GlobalJson, DotnetInstallRoot InstallRoot) ResolveChannelAndStartPredownload()
+    private (string Channel, GlobalJsonInfo? GlobalJson, DotnetInstallRoot InstallRoot) ResolveChannelAndStartPredownload(string selectedChannel)
     {
         var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
         string? channelFromGlobalJson = globalJson?.GlobalJsonPath is not null
             ? GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath)
             : null;
-        string channel = channelFromGlobalJson ?? "latest";
+        string channel = channelFromGlobalJson ?? selectedChannel;
 
         var installRoot = new DotnetInstallRoot(
             _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath(),
@@ -128,9 +220,50 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
             PathPreference: pathPreference,
-            Verbosity: _verbosity,
-            DeferAdditionalInstalls: true);
+            Verbosity: _verbosity);
         return workflow.Execute(options);
+    }
+
+    /// <summary>
+    /// Gets admin installs that should be migrated and installs them after the primary setup is complete.
+    /// </summary>
+    private void RunDeferredAdminInstalls(
+        InstallWorkflow.InstallWorkflowResult workflowResult,
+        PathPreference pathPreference,
+        bool? setDefaultInstall)
+    {
+        if (pathPreference == PathPreference.DotnetupDotnet || setDefaultInstall != true)
+        {
+            return;
+        }
+
+        var adminInstalls = _dotnetInstaller.GetInstalledAdminInstalls();
+        if (adminInstalls.Count == 0 || workflowResult.InstallRoot is null)
+        {
+            return;
+        }
+
+        // Exclude the version we just installed
+        var seen = new HashSet<(InstallComponent, string)>();
+        if (workflowResult.ResolvedVersion is not null)
+        {
+            seen.Add((InstallComponent.SDK, workflowResult.ResolvedVersion.ToString()));
+        }
+
+        var toMigrate = adminInstalls.Where(i => seen.Add((i.Component, i.Version.ToString()))).ToList();
+        if (toMigrate.Count == 0)
+        {
+            return;
+        }
+
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+            "You may now use dotnetup. In the meantime, we'll install your remaining components."));
+        InstallExecutor.ExecuteAdditionalInstalls(
+            toMigrate,
+            workflowResult.InstallRoot,
+            workflowResult.ManifestPath,
+            workflowResult.NoProgress,
+            workflowResult.RequireMuxerUpdate);
     }
 
     private void DisplayInstallLocation(GlobalJsonInfo? globalJson)
