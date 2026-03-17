@@ -58,7 +58,7 @@ These invariants must hold at all times. Violating any of them is a bug.
 **Path normalization**
 
 - `ContentRoot` is always an absolute path ending with a directory separator.
-- `BasePath` and `RelativePath` use forward slashes only, no leading or trailing slashes.
+- `BasePath` and `RelativePath` use forward slashes only. `BasePath` is normalized via `StaticWebAsset.Normalize()`, which trims leading and trailing slashes and represents the root as `"/"` when the normalized path is empty. `RelativePath` has no leading or trailing slashes.
 
 **Defaults (applied when not explicitly set)**
 
