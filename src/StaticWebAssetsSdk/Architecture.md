@@ -44,7 +44,7 @@ The build pipeline is implemented as a set of MSBuild targets and tasks. Targets
 **Path normalization**
 
 - `ContentRoot` is always an absolute path ending with a directory separator.
-- `BasePath` and `RelativePath` use forward slashes only, no leading or trailing slashes.
+- `BasePath` and `RelativePath` use forward slashes only. `RelativePath` has no leading or trailing slashes. `BasePath` is either `"/"` (representing the empty/root base path) or has no leading or trailing slashes.
 
 **Defaults (applied when not explicitly set)**
 
