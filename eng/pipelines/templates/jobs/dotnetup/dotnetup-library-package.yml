@@ -58,7 +58,7 @@ jobs:
           & .\restore.cmd $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-build.binlog $(_officialBuildProperties)
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-build.binlog $(_officialBuildProperties)
         displayName: 💻 Build Windows
       - powershell: |
           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-package.binlog $(_officialBuildProperties)

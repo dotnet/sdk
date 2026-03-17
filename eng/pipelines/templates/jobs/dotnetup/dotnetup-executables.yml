@@ -1,0 +1,108 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  dependsOn: ''
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  enableSbom: true
+  timeoutInMinutes: 150
+  ### PUBLISH ###
+  # The RID to publish for (e.g. win-x64, linux-arm64, osx-x64, linux-musl-x64, etc.)
+  rid: ''
+  pool: {}
+  container: ''
+  preSteps: []
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    displayName: '${{ parameters.pool.emoji }} dotnetup executable: ${{ parameters.rid }}'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableBuildRetry: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    - name: _officialBuildProperties
+      value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\*Tests\**;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '📦 Publish dotnetup ${{ parameters.rid }} executable'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/'
+        artifactName: 'dotnetup-executable-${{ parameters.rid }}'
+        publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '📊 Publish dotnetup ${{ parameters.rid }} binlogs'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
+        artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
+        publishLocation: Container
+
+    steps:
+    # Use shallow checkout to save disk in space-constrained cross-build containers.
+    - checkout: self
+      fetchDepth: 1
+
+    - template: /eng/pipelines/templates/steps/strip-global-json-runtimes.yml
+      parameters:
+        os: ${{ parameters.pool.os }}
+
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          & .\restore.cmd -projects dotnetup.slnf $(_officialBuildProperties)
+        displayName: 🍱 Bootstrap toolset (Windows)
+        timeoutInMinutes: 10
+        env:
+          DOTNET_INSTALL_TEST_RUNTIMES: false
+      - powershell: |
+          New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
+          & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+
+    - ${{ if ne(parameters.pool.os, 'windows') }}:
+      - script: |
+          ./restore.sh -projects $(Build.SourcesDirectory)/src/Installer/dotnetup/dotnetup.csproj $(_officialBuildProperties)
+        displayName: 🍱 Bootstrap toolset (Unix)
+        timeoutInMinutes: 10
+        retryCountOnTaskFailure: 2
+        env:
+          DOTNET_INSTALL_TEST_RUNTIMES: false
+      - script: |
+          # Free disk space in cross-build containers.
+          # 1. Clear disposable NuGet HTTP cache (restored packages remain in global-packages).
+          ./.dotnet/dotnet nuget locals http-cache --clear 2>/dev/null || true
+          # 2. Delete source trees not needed for the dotnetup publish.
+          rm -rf test/ template_feed/ documentation/ benchmarks/ .github/ .claude/
+          echo "Disk usage after cleanup:"
+          df -h / || true
+        displayName: 🧹 Free disk space
+        retryCountOnTaskFailure: 2
+      - script: |
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}"
+          CROSS_ARGS=""
+          if [ -n "$ROOTFS_DIR" ]; then
+            CROSS_ARGS="-p:SysRoot=$ROOTFS_DIR -p:LinkerFlavor=lld"
+          fi
+          ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained $CROSS_ARGS -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+        retryCountOnTaskFailure: 2

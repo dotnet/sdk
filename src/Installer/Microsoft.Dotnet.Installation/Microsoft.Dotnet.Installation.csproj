@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -8,7 +8,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Strong naming not needed on .NET Core -->
-    <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
+    <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own -->
+    <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054</NoWarn>
+
+    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build. -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+
     <IsPackable>true</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
