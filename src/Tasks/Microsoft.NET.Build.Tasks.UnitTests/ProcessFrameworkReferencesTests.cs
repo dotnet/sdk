@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
@@ -991,6 +991,334 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == $"Microsoft.NETCore.App.Runtime.{rid}",
                     $"Should include runtime pack for supported RID: {rid}");
             }
+        }
+
+        [Fact]
+        public void It_populates_KnownRuntimeIdentifierPlatforms_from_NETCoreApp_runtime_pack_RIDs()
+        {
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "win-x64;linux-x64;osx-arm64");
+
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "8.0",
+                EnableTargetingPackDownload = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreRef }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            task.KnownRuntimeIdentifierPlatforms.Should().NotBeNull();
+            task.KnownRuntimeIdentifierPlatforms.Should().Contain("win");
+            task.KnownRuntimeIdentifierPlatforms.Should().Contain("linux");
+            task.KnownRuntimeIdentifierPlatforms.Should().Contain("osx");
+            task.KnownRuntimeIdentifierPlatforms.Should().NotContain("win-x64",
+                "only the platform prefix should appear, not the full RID");
+        }
+
+        [Fact]
+        public void It_adds_to_UnavailableRuntimePacks_when_pack_is_in_graph_but_not_supported_for_target_RID()
+        {
+            // Pack only supports win-x64, but the target RID is linux-x64 (which is in the runtime graph)
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "win-x64");
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                EnableRuntimePackDownload = true,
+                SelfContained = true,
+                RuntimeIdentifier = "linux-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreRef }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            task.UnavailableRuntimePacks.Should().NotBeNull();
+            task.UnavailableRuntimePacks.Should().Contain(p =>
+                p.ItemSpec == "Microsoft.NETCore.App" &&
+                p.GetMetadata(MetadataKeys.RuntimeIdentifier) == "linux-x64",
+                "the pack should be reported as unavailable rather than causing an error");
+        }
+
+        [Fact]
+        public void It_suppresses_transitive_targeting_pack_downloads_when_DisableTransitiveFrameworkReferenceDownloads_is_true()
+        {
+            // Only Microsoft.NETCore.App is directly referenced, but both are in KnownFrameworkReferences
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0");
+            var aspNetRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "net8.0", "8.0.0");
+
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "8.0",
+                EnableTargetingPackDownload = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MinimalRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreRef, aspNetRef }
+            };
+
+            var task = CreateTask(config);
+            task.DisableTransitiveFrameworkReferenceDownloads = true;
+            task.Execute().Should().BeTrue();
+
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref",
+                "direct reference should still be downloaded");
+            task.PackagesToDownload.Should().NotContain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Ref",
+                "transitive reference should be suppressed when DisableTransitiveFrameworkReferenceDownloads=true");
+        }
+
+        [Fact]
+        public void It_logs_warning_when_RequiresILLinkPack_and_IsAotCompatible_but_ILLink_pack_not_found()
+        {
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "5.0",
+                RequiresILLinkPack = true
+                // KnownILLinkPacks not set → defaults to empty → UnsupportedForTargetFramework
+            };
+
+            var task = CreateTask(config);
+            task.IsAotCompatible = true;
+            task.MinNonEolTargetFrameworkForAot = "net8.0";
+
+            task.Execute().Should().BeTrue("IsAotCompatible unsupported produces a warning, not an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Warnings.Should().NotBeEmpty(
+                "a warning should be logged when IsAotCompatible is true but the framework does not support ILLink");
+        }
+
+        [Fact]
+        public void It_logs_warning_when_RequiresILLinkPack_and_IsTrimmable_but_ILLink_pack_not_found()
+        {
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "5.0",
+                RequiresILLinkPack = true
+            };
+
+            var task = CreateTask(config);
+            task.IsTrimmable = true;
+            task.MinNonEolTargetFrameworkForTrimming = "net8.0";
+
+            task.Execute().Should().BeTrue("IsTrimmable unsupported produces a warning, not an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Warnings.Should().NotBeEmpty(
+                "a warning should be logged when IsTrimmable is true but the framework does not support ILLink");
+        }
+
+        [Fact]
+        public void It_logs_warning_when_RequiresILLinkPack_and_EnableSingleFileAnalyzer_but_ILLink_pack_not_found()
+        {
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "5.0",
+                RequiresILLinkPack = true,
+                EnableSingleFileAnalyzer = true
+            };
+
+            var task = CreateTask(config);
+            task.MinNonEolTargetFrameworkForSingleFile = "net8.0";
+
+            task.Execute().Should().BeTrue("EnableSingleFileAnalyzer unsupported produces a warning, not an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Warnings.Should().NotBeEmpty(
+                "a warning should be logged when EnableSingleFileAnalyzer is true but the framework does not support ILLink");
+        }
+
+        [Fact]
+        public void It_errors_when_RequiresILLinkPack_is_set_but_no_ILLink_pack_is_available()
+        {
+            // No IsAotCompatible, PublishTrimmed, IsTrimmable, or EnableSingleFileAnalyzer set —
+            // the bare RequiresILLinkPack path should log a hard error.
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "5.0",
+                RequiresILLinkPack = true
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeFalse("bare RequiresILLinkPack with no available pack should produce an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Errors.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public void It_adds_ILLink_analyzer_package_for_pre_net8_pack_version()
+        {
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net7.0",
+                ["ILLinkPackVersion"] = "7.0.0" // < 8.0.0 → separate analyzer package should be added
+            });
+
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net7.0", "7.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "linux-x64");
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "7.0",
+                EnableRuntimePackDownload = true,
+                RequiresILLinkPack = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks",
+                "the ILLink build pack should be included");
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Analyzers",
+                "the separate analyzer package should be added for ILLink versions before 8.0.0");
+        }
+
+        [Fact]
+        public void It_does_not_add_ILLink_analyzer_package_for_net8_and_later_pack_version()
+        {
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net8.0",
+                ["ILLinkPackVersion"] = "8.0.0" // >= 8.0.0 → analyzers are bundled in the main pack
+            });
+
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "linux-x64");
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                EnableRuntimePackDownload = true,
+                RequiresILLinkPack = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks",
+                "the ILLink build pack should be included");
+            task.ImplicitPackageReferences.Should().NotContain(p => p.ItemSpec == "Microsoft.NET.ILLink.Analyzers",
+                "the separate analyzer package must not be added for ILLink 8.0.0 and later");
+        }
+
+        [Fact]
+        public void It_errors_when_Crossgen2_is_enabled_but_no_Crossgen2_pack_is_available()
+        {
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "8.0",
+                ReadyToRunEnabled = true,
+                ReadyToRunUseCrossgen2 = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[]
+                {
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                        "Microsoft.NETCore.App.Runtime.**RID**", "win-x64")
+                }
+                // KnownCrossgen2Packs not set → defaults to empty → UnsupportedForTargetFramework
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeFalse("Crossgen2 with no available pack should produce an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Errors.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public void It_allows_targeting_pack_version_to_be_overridden_via_FrameworkReference_metadata()
+        {
+            const string overrideVersion = "8.0.999-custom";
+
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0");
+
+            var frameworkRef = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+            {
+                ["TargetingPackVersion"] = overrideVersion
+            });
+
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "8.0",
+                EnableTargetingPackDownload = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MinimalRuntimeGraph),
+                FrameworkReferences = new[] { frameworkRef },
+                KnownFrameworkReferences = new[] { netCoreRef }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            var targetingPack = task.TargetingPacks?.FirstOrDefault(p => p.ItemSpec == "Microsoft.NETCore.App");
+            targetingPack.Should().NotBeNull("the targeting pack should be resolved");
+            targetingPack!.GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be(overrideVersion,
+                "the targeting pack version should respect the FrameworkReference metadata override");
+
+            var downloadPack = task.PackagesToDownload?.FirstOrDefault(p => p.ItemSpec == "Microsoft.NETCore.App.Ref");
+            downloadPack.Should().NotBeNull("the targeting pack should be queued for download");
+            downloadPack!.GetMetadata(MetadataKeys.Version).Should().Be(overrideVersion,
+                "the download version should match the overridden targeting pack version");
+        }
+
+        [Fact]
+        public void It_errors_when_multiple_runtime_packs_match_the_same_framework_reference_and_labels()
+        {
+            var kfr = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "win-x64");
+
+            // A second KnownRuntimePack with the same name and no labels creates an ambiguous match
+            var conflictingRuntimePack = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net8.0",
+                ["RuntimePackNamePatterns"] = "Microsoft.NETCore.App.Runtime.Extra.**RID**",
+                ["RuntimePackRuntimeIdentifiers"] = "win-x64",
+                ["LatestRuntimeFrameworkVersion"] = "8.0.1",
+                ["RuntimePackLabels"] = ""
+            });
+
+            var config = new TaskConfiguration
+            {
+                UseCachingEngine = true,
+                TargetFrameworkVersion = "8.0",
+                EnableTargetingPackDownload = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { kfr },
+                KnownRuntimePacks = new[] { conflictingRuntimePack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeFalse("ambiguous runtime pack resolution should produce an error");
+
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Errors.Should().NotBeEmpty();
         }
 
         [Theory]
