@@ -48,4 +48,49 @@ public class FileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(log
         Assert.NotEqual(processIdentifier, processIdentifier2);
         await App.WaitUntilOutputContains("Exiting"); // process should exit after run
     }
+
+    /// <summary>
+    /// Validates `dotnet watch test` scenario: https://github.com/dotnet/sdk/issues/52528
+    /// </summary>
+    [Fact] 
+    public async Task TestCommand()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchXUnit")
+            .WithSource();
+
+        var testFile = Path.Combine(testAsset.Path, "UnitTest1.cs");
+        File.WriteAllText(testFile, """
+            using Xunit;
+
+            public class UnitTest1
+            {
+                [Fact]
+                public void Test1()
+                {
+                    Assert.True(false);
+                }
+            }
+            """);
+
+        App.Start(testAsset, ["test"]);
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains("Failed!");
+        App.Process.ClearOutput();
+
+        UpdateSourceFile(testFile, """
+            using Xunit;
+            
+            public class UnitTest1
+            {
+                [Fact]
+                public void Test1()
+                {
+                    Assert.True(true);
+                }
+            }
+            """);
+
+        await App.WaitUntilOutputContains("Passed!");
+    }
 }

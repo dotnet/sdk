@@ -514,9 +514,10 @@ public class CommandLineOptionsTests
         var runOptions = VerifyOptions(["test", .. args]);
 
         var isShortProperty = args[0].Contains("-p") || args[0].Contains("/p");
-        string[] expectedBuildArgs = isShortProperty
-            ? ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. buildArgs, "--target:VSTest"]
-            : ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", "--target:VSTest", .. buildArgs];
+
+        // `test` subcommand forwards "--target:VSTest" to build, but BuildArguments are used to invoke
+        // `dotnet build` and design-time build and should not specify build targets:
+        string[] expectedBuildArgs = ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. buildArgs];
         AssertEx.SequenceEqual(expectedBuildArgs, runOptions.BuildArguments);
 
         AssertEx.SequenceEqual(commandArgs ?? [], runOptions.CommandArguments);
