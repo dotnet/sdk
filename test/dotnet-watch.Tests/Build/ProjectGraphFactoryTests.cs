@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -45,7 +46,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
         Assert.NotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
-        Assert.Equal(Path.ChangeExtension(entryPointFilePath, ".csproj"), root.ProjectInstance.FullPath);
+        Assert.Equal(VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath), root.ProjectInstance.FullPath);
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
         Assert.NotNull(graph);
 
         AssertEx.SequenceEqual(
-            [projectPath, Path.ChangeExtension(entryPointFilePath, ".csproj")],
+            [projectPath, VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath)],
             graph.Graph.ProjectNodesTopologicallySorted.Select(p => p.ProjectInstance.FullPath));
     }
 }
