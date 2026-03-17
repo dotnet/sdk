@@ -177,7 +177,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         if (alreadyInstalled.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "{0} already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
+                "{0} was already installed at [{1}]{2}[/]", string.Join(", ", alreadyInstalled), accent, escapedPath));
         }
     }
 

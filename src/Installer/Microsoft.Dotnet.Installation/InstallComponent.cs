@@ -65,11 +65,24 @@ public static class InstallComponentExtensions
     public const int DownloadSuffixWidth = 22;
 
     /// <summary>
+    /// Fixed width for action verbs in progress descriptions ("Downloading", "Downloaded",
+    /// "Installing", "Installed"). Matches the longest verb so shorter ones are right-padded.
+    /// </summary>
+    private const int ActionWidth = 11; // "Downloading".Length
+
+    /// <summary>
     /// Builds a progress-bar description such as "Downloading aspnet (runtime)         9.0.312".
     /// Component names and versions are padded so all rows align vertically.
     /// </summary>
     public static string FormatProgressDescription(string action, InstallComponent component, string version) =>
-        $"{action} {component.GetPaddedDisplayName()} {FormatVersionForDisplay(version)}";
+        $"{action.PadRight(ActionWidth)} {component.GetPaddedDisplayName()} {FormatVersionForDisplay(version)}";
+
+    /// <summary>
+    /// Formats bytes as MB, right-aligned to 8 characters (e.g. "  0.7 MB", "290.4 MB").
+    /// Always uses MB so the unit width is consistent across all progress rows.
+    /// </summary>
+    public static string FormatMB(long bytes) =>
+        FormattableString.Invariant($"{bytes / (1024.0 * 1024.0),5:F1} MB");
 
     /// <summary>
     /// Gets the official framework name for the component (e.g., "Microsoft.NETCore.App").

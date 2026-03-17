@@ -129,6 +129,9 @@ internal class DotnetArchiveExtractor : IDisposable
         }
 
         downloadTask.Value = 100;
+        long archiveBytes = new FileInfo(_archivePath).Length;
+        string downloadedDesc = InstallComponentExtensions.FormatProgressDescription("Downloaded", _request.Component, _resolvedVersion.ToString());
+        downloadTask.Description = $"{downloadedDesc} ({InstallComponentExtensions.FormatMB(archiveBytes)} / {InstallComponentExtensions.FormatMB(archiveBytes)})";
     }
 
     public void Commit()
@@ -150,6 +153,9 @@ internal class DotnetArchiveExtractor : IDisposable
         }
 
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
+
+        // Switch to past tense and drop the trailing padding now that the task is complete.
+        installTask.Description = InstallComponentExtensions.FormatProgressDescription("Installed", _request.Component, _resolvedVersion.ToString());
     }
 
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)

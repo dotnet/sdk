@@ -61,10 +61,26 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
-        RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
+        var workflowResult = RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
 
-        // Step 3: Save config
+        // Step 3: Save config — show guidance and "Setup complete!" before migrating admin installs
         SaveConfigAndDisplayResult(pathPreference);
+
+        // Step 4: Migrate admin installs after setup is complete so the user knows they can start working
+        if (workflowResult.DeferredInstalls.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]You may now use dotnetup. In the meantime, we'll install your remaining components.[/]",
+                DotnetupTheme.Current.Dim));
+            InstallExecutor.ExecuteAdditionalInstalls(
+                workflowResult.DeferredInstalls,
+                workflowResult.InstallRoot!,
+                workflowResult.ManifestPath,
+                workflowResult.NoProgress,
+                workflowResult.RequireMuxerUpdate);
+        }
+
         return 0;
     }
 
@@ -96,7 +112,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         return (channel, globalJson, installRoot);
     }
 
-    private void RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)
+    private InstallWorkflow.InstallWorkflowResult RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)
     {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
         var options = new InstallWorkflow.InstallWorkflowOptions(
@@ -112,8 +128,9 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
             RequireMuxerUpdate: _requireMuxerUpdate,
             PathPreference: pathPreference,
-            Verbosity: _verbosity);
-        workflow.Execute(options);
+            Verbosity: _verbosity,
+            DeferAdditionalInstalls: true);
+        return workflow.Execute(options);
     }
 
     private void DisplayInstallLocation(GlobalJsonInfo? globalJson)

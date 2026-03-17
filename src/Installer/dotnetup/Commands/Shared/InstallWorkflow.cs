@@ -38,7 +38,18 @@ internal class InstallWorkflow
         bool RequireMuxerUpdate = false,
         bool Untracked = false,
         PathPreference? PathPreference = null,
-        Verbosity Verbosity = Verbosity.Normal);
+        Verbosity Verbosity = Verbosity.Normal,
+        bool DeferAdditionalInstalls = false);
+
+    /// <summary>
+    /// Result of the install workflow, including any deferred additional installs.
+    /// </summary>
+    public record InstallWorkflowResult(
+        IReadOnlyList<DotnetInstall> DeferredInstalls,
+        DotnetInstallRoot? InstallRoot,
+        string? ManifestPath,
+        bool NoProgress,
+        bool RequireMuxerUpdate);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -56,7 +67,7 @@ internal class InstallWorkflow
         string RequestSource,
         PathSource PathSource);
 
-    public void Execute(InstallWorkflowOptions options)
+    public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
         // Record telemetry for the install request
         Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
@@ -106,11 +117,18 @@ internal class InstallWorkflow
         // Record resolved version
         Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
 
-        var installResult = ExecuteInstallations(context, resolved);
+        var (installResult, deferredInstalls) = ExecuteInstallations(context, resolved);
 
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
+
+        return new InstallWorkflowResult(
+            deferredInstalls,
+            resolved.Request.InstallRoot,
+            options.ManifestPath,
+            options.NoProgress,
+            options.RequireMuxerUpdate);
     }
 
     private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
@@ -225,7 +243,7 @@ internal class InstallWorkflow
             context.Options.Verbosity);
     }
 
-    private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static (InstallExecutor.InstallResult Result, IReadOnlyList<DotnetInstall> DeferredInstalls) ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         // Always install the primary component first so the user can start working quickly.
         var primaryResult = InstallExecutor.ExecuteInstall(
@@ -240,6 +258,11 @@ internal class InstallWorkflow
             resolved.ResolvedVersion,
             context.SetDefaultInstall);
 
+        if (context.Options.DeferAdditionalInstalls)
+        {
+            return (primaryResult, additionalInstalls);
+        }
+
         if (additionalInstalls.Count > 0)
         {
             InstallExecutor.ExecuteAdditionalInstalls(
@@ -250,7 +273,7 @@ internal class InstallWorkflow
                 context.Options.RequireMuxerUpdate);
         }
 
-        return primaryResult;
+        return (primaryResult, []);
     }
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
