@@ -315,6 +315,16 @@ public partial class DefineStaticWebAssets : Task
                     asset.AssetGroups = existingGroups;
                 }
 
+                // Apply group definitions to this individual asset before serializing to ITaskItem.
+                if (groupDefinitions != null)
+                {
+                    ApplyGroupToAsset(ref asset, groupDefinitions, matchContext);
+                    if (Log.HasLoggedErrors)
+                    {
+                        break;
+                    }
+                }
+
                 var item = asset.ToTaskItem();
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -337,12 +347,6 @@ public partial class DefineStaticWebAssets : Task
             {
                 Log.LogErrorFromException(ex);
             }
-        }
-
-        if (!Log.HasLoggedErrors && groupDefinitions != null)
-        {
-            Log.LogMessage(MessageImportance.Low, "Applying group definitions. Definitions count: {0}, Assets count: {1}", groupDefinitions.Count, Assets.Length);
-            ApplyGroupDefinitions(groupDefinitions);
         }
 
         return !Log.HasLoggedErrors;
@@ -617,24 +621,20 @@ public partial class DefineStaticWebAssets : Task
         return computedPath;
     }
 
-    private void ApplyGroupDefinitions(List<GroupDefinition> definitions)
+    private void ApplyGroupToAsset(
+        ref StaticWebAsset asset,
+        List<GroupDefinition> definitions,
+        StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
-        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+        var (groupEntries, newRelativePath, contentRootSuffix) = MatchAssetToDefinitions(asset, definitions, matchContext);
 
-        for (var i = 0; i < Assets.Length; i++)
+        if (groupEntries != null && groupEntries.Count > 0)
         {
-            var asset = StaticWebAsset.FromTaskItem(Assets[i]);
-            var (groupEntries, newRelativePath, contentRootSuffix) = MatchAssetToDefinitions(asset, definitions, matchContext);
-
-            if (groupEntries != null && groupEntries.Count > 0)
+            asset.AssetGroups = string.Join(";", groupEntries);
+            asset.RelativePath = newRelativePath;
+            if (contentRootSuffix != null)
             {
-                asset.AssetGroups = string.Join(";", groupEntries);
-                asset.RelativePath = newRelativePath;
-                if (contentRootSuffix != null)
-                {
-                    ApplyContentRootSuffix(ref asset, contentRootSuffix.Value.Suffix, contentRootSuffix.Value.GroupName);
-                }
-                Assets[i] = asset.ToTaskItem();
+                ApplyContentRootSuffix(ref asset, contentRootSuffix.Value.Suffix, contentRootSuffix.Value.GroupName);
             }
         }
     }
