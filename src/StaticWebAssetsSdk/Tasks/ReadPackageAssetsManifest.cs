@@ -33,6 +33,12 @@ public class ReadPackageAssetsManifest : Task
 
     public override bool Execute()
     {
+        if (string.IsNullOrEmpty(IntermediateOutputPath))
+        {
+            Log.LogError("IntermediateOutputPath is required.");
+            return false;
+        }
+
         var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var allAssets = new List<StaticWebAsset>();
         var allEndpoints = new List<StaticWebAssetEndpoint>();
