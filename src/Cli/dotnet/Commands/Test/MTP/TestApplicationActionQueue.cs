@@ -36,19 +36,16 @@ internal class TestApplicationActionQueue
         }
     }
 
-    public int WaitAllActions()
+    public int CompleteEnqueueAndWait()
     {
+        // Notify readers that no more data will be written
+        _channel.Writer.Complete();
+
         Task.WaitAll(_readers);
 
         // If _aggregateExitCode is null, that means we didn't get any results.
         // So, we exit with "zero tests".
         return _aggregateExitCode ?? ExitCode.ZeroTests;
-    }
-
-    public void EnqueueCompleted()
-    {
-        //Notify readers that no more data will be written
-        _channel.Writer.Complete();
     }
 
     private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
