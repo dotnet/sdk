@@ -803,5 +803,41 @@ class C
                 TestCode = source,
             }.RunAsync();
         }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task DiagnosticForZeroLengthArrayInsideCollectionExpression_CSharpAsync()
+        {
+            const string badSource = @"
+using System;
+using System.Collections.Generic;
+
+class C
+{
+    List<int[]> l1 = [new int[0]];
+}
+";
+            const string fixedSource = @"
+using System;
+using System.Collections.Generic;
+
+class C
+{
+    List<int[]> l1 = [Array.Empty<int>()];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = badSource,
+                FixedCode = fixedSource,
+                ExpectedDiagnostics =
+                {
+#pragma warning disable RS0030 // Do not use banned APIs
+                    VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
+#pragma warning restore RS0030 // Do not use banned APIs
+                },
+            }.RunAsync();
+        }
     }
 }

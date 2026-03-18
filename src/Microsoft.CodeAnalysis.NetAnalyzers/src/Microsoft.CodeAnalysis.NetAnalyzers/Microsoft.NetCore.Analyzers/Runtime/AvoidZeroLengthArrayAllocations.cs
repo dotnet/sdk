@@ -77,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             // Bail out for compiler-generated array creations synthesized
             // during lowering of collection expressions (e.g. `List<int> x = [1, 2, 3]`).
-            if (arrayCreationExpression.Syntax.AncestorsAndSelf().Any(isCollectionExpressionSyntax))
+            if (isCollectionExpressionSyntax(arrayCreationExpression.Syntax))
             {
                 return;
             }
