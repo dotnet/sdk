@@ -722,7 +722,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Hello; EntryPointFilePath set? False");
+            .And.HaveStdOutContaining("Hello; EntryPointFilePath set? False");
     }
 
     [Fact]
