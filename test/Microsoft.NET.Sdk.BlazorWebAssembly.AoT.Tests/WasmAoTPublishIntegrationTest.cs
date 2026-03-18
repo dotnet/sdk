@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
@@ -16,6 +17,106 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         [Fact]
         public void AoT_Publish_InRelease_Works()
         {
+            // Diagnostic: dump SDK layout and environment to diagnose MSB4216 task host failures
+            var sdkFolder = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
+            var dotNetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
+            Log.WriteLine($"[DIAG] SDK folder under test: {sdkFolder}");
+            Log.WriteLine($"[DIAG] DotNetRoot: {dotNetRoot}");
+            Log.WriteLine($"[DIAG] DotNetHostPath: {SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath}");
+            Log.WriteLine($"[DIAG] DOTNET_HOST_PATH env: {Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")}");
+            Log.WriteLine($"[DIAG] DOTNET_ROOT env: {Environment.GetEnvironmentVariable("DOTNET_ROOT")}");
+            Log.WriteLine($"[DIAG] OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+            Log.WriteLine($"[DIAG] Process arch: {RuntimeInformation.ProcessArchitecture}");
+
+            if (sdkFolder != null && Directory.Exists(sdkFolder))
+            {
+                var msbuildFiles = Directory.GetFiles(sdkFolder, "MSBuild*");
+                Log.WriteLine($"[DIAG] MSBuild* files in SDK ({sdkFolder}):");
+                foreach (var f in msbuildFiles)
+                {
+                    var fi = new FileInfo(f);
+                    Log.WriteLine($"[DIAG]   {fi.Name} ({fi.Length} bytes)");
+                }
+
+                // Check if the MSBuild apphost exists (no extension on Unix, .exe on Windows)
+                string apphostName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "MSBuild.exe" : "MSBuild";
+                string apphostPath = Path.Combine(sdkFolder, apphostName);
+                Log.WriteLine($"[DIAG] Apphost path: {apphostPath}");
+                Log.WriteLine($"[DIAG] Apphost exists: {File.Exists(apphostPath)}");
+
+                if (File.Exists(apphostPath) && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Check Unix file permissions via ls
+                    try
+                    {
+                        var lsResult = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ls", $"-la \"{apphostPath}\"")
+                        {
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false
+                        });
+                        if (lsResult != null)
+                        {
+                            string lsOutput = lsResult.StandardOutput.ReadToEnd();
+                            lsResult.WaitForExit();
+                            Log.WriteLine($"[DIAG] ls -la apphost: {lsOutput.Trim()}");
+                        }
+                    }
+                    catch (Exception lsEx)
+                    {
+                        Log.WriteLine($"[DIAG] ls failed: {lsEx.Message}");
+                    }
+
+                    // Try to actually execute the apphost with --help to verify it can run
+                    try
+                    {
+                        var testRun = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(apphostPath, "--help")
+                        {
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            Environment = { ["DOTNET_ROOT"] = dotNetRoot }
+                        });
+                        if (testRun != null)
+                        {
+                            string stdout = testRun.StandardOutput.ReadToEnd();
+                            string stderr = testRun.StandardError.ReadToEnd();
+                            testRun.WaitForExit(5000);
+                            Log.WriteLine($"[DIAG] Apphost test run exit code: {testRun.ExitCode}");
+                            if (!string.IsNullOrEmpty(stdout)) Log.WriteLine($"[DIAG] Apphost stdout: {stdout.Substring(0, Math.Min(500, stdout.Length))}");
+                            if (!string.IsNullOrEmpty(stderr)) Log.WriteLine($"[DIAG] Apphost stderr: {stderr.Substring(0, Math.Min(500, stderr.Length))}");
+                        }
+                    }
+                    catch (Exception runEx)
+                    {
+                        Log.WriteLine($"[DIAG] Apphost test run failed: {runEx.Message}");
+                    }
+                }
+
+                // Check runtimeconfig
+                string rcPath = Path.Combine(sdkFolder, "MSBuild.runtimeconfig.json");
+                Log.WriteLine($"[DIAG] MSBuild.runtimeconfig.json exists: {File.Exists(rcPath)}");
+                if (File.Exists(rcPath))
+                {
+                    Log.WriteLine($"[DIAG] runtimeconfig content: {File.ReadAllText(rcPath)}");
+                }
+
+                // Check dotnet host exists and is executable
+                string dotnetPath = Path.Combine(dotNetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet");
+                Log.WriteLine($"[DIAG] dotnet path: {dotnetPath}");
+                Log.WriteLine($"[DIAG] dotnet exists: {File.Exists(dotnetPath)}");
+            }
+
+            // Diagnostic: dump all DOTNET_* env vars from the test runner process
+            Log.WriteLine($"[DIAG] === Environment variables (DOTNET_*) ===");
+            foreach (System.Collections.DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            {
+                string key = entry.Key?.ToString() ?? "";
+                if (key.StartsWith("DOTNET", StringComparison.OrdinalIgnoreCase) || key.StartsWith("MSBUILD", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.WriteLine($"[DIAG] ENV {key}={entry.Value}");
+                }
+            }
+
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
@@ -24,12 +125,45 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                     var itemGroup = new XElement("PropertyGroup");
                     itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                     doc.Root.Add(itemGroup);
+
+                    // Inject a diagnostic target that dumps task host-relevant MSBuild properties
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var diagTarget = new XElement("Target",
+                            new XAttribute("Name", "DiagDumpTaskHostProps"),
+                            new XAttribute("BeforeTargets", "Build;Publish"),
+                            new XElement("Message",
+                                new XAttribute("Importance", "High"),
+                                new XAttribute("Text", "[DIAG-PROP] DOTNET_HOST_PATH=$(DOTNET_HOST_PATH)")),
+                            new XElement("Message",
+                                new XAttribute("Importance", "High"),
+                                new XAttribute("Text", "[DIAG-PROP] NetCoreSdkRoot=$(NetCoreSdkRoot)")),
+                            new XElement("Message",
+                                new XAttribute("Importance", "High"),
+                                new XAttribute("Text", "[DIAG-PROP] MSBuildToolsPath=$(MSBuildToolsPath)")),
+                            new XElement("Message",
+                                new XAttribute("Importance", "High"),
+                                new XAttribute("Text", "[DIAG-PROP] DOTNET_ROOT=$(DOTNET_ROOT)")),
+                            new XElement("Message",
+                                new XAttribute("Importance", "High"),
+                                new XAttribute("Text", "[DIAG-PROP] MSBUILD_EXE_PATH=$(MSBUILD_EXE_PATH)")));
+                        doc.Root.Add(diagTarget);
+                    }
                 });
 
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
+            var result = publishCommand.Execute("/p:Configuration=Release");
+
+            // Log the full output before asserting, so diagnostics are captured on failure
+            Log.WriteLine($"[DIAG] Publish exit code: {result.ExitCode}");
+            if (result.ExitCode != 0)
+            {
+                Log.WriteLine($"[DIAG] === PUBLISH FAILED - Full output captured above via MSBuild tracing ===");
+            }
+
+            result.Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
 

@@ -199,6 +199,9 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_ROOT(x86)", DotNetRoot);
             }
 
+            // DO NOT set DOTNET_HOST_PATH here — let the dotnet CLI handle it.
+            // This intentionally reproduces the Helix failure to capture diagnostics.
+
             if (!string.IsNullOrEmpty(CliHomePath))
             {
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
@@ -207,6 +210,14 @@ namespace Microsoft.NET.TestFramework
             //  We set this environment variable for in-process tests, but we don't want it to flow to out of process tests
             //  (especially if we're trying to run on full Framework MSBuild)
             environment[Constants.MSBUILD_EXE_PATH] = "";
+
+            // Enable MSBuild debug engine and node communication tracing to diagnose task host
+            // connection issues. Traces are written to MSBUILDDEBUGPATH directory.
+            environment["MSBUILDDEBUGCOMM"] = "1";
+            environment["MSBuildDebugEngine"] = "1";
+            string debugPath = Path.Combine(Path.GetTempPath(), "msbuild-debug-logs");
+            Directory.CreateDirectory(debugPath);
+            environment["MSBUILDDEBUGPATH"] = debugPath;
 
         }
 
