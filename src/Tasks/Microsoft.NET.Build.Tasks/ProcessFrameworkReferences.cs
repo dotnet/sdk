@@ -617,27 +617,29 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private bool KnownFrameworkReferenceAppliesToTargetFramework(NuGetFramework knownFrameworkReferenceTargetFramework)
+        private bool KnownFrameworkReferenceAppliesToTargetFramework(NuGetFramework kfr)
         {
-            if (!knownFrameworkReferenceTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
-                || NormalizeVersion(knownFrameworkReferenceTargetFramework.Version) != _normalizedTargetFrameworkVersion)
-            {
+            if (!kfr.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
+                || NormalizeVersion(kfr.Version) != _normalizedTargetFrameworkVersion)
                 return false;
-            }
 
-            if (!string.IsNullOrEmpty(knownFrameworkReferenceTargetFramework.Platform)
-                && knownFrameworkReferenceTargetFramework.PlatformVersion != null)
-            {
-                if (!knownFrameworkReferenceTargetFramework.Platform.Equals(TargetPlatformIdentifier, StringComparison.OrdinalIgnoreCase))
-                    return false;
+            if (!string.IsNullOrEmpty(kfr.Platform) && kfr.PlatformVersion != null)
+                return TargetPlatformVersionMatches(kfr);
 
-                if (!Version.TryParse(TargetPlatformVersion, out var targetPlatformVersionParsed))
-                    return false;
+            return true;
+        }
 
-                if (NormalizeVersion(targetPlatformVersionParsed) != NormalizeVersion(knownFrameworkReferenceTargetFramework.PlatformVersion)
-                    || NormalizeVersion(knownFrameworkReferenceTargetFramework.Version) != _normalizedTargetFrameworkVersion)
-                    return false;
-            }
+        private bool TargetPlatformVersionMatches(NuGetFramework kfr)
+        {
+            if (!kfr.Platform.Equals(TargetPlatformIdentifier, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (!Version.TryParse(TargetPlatformVersion, out var targetPlatformVersionParsed))
+                return false;
+
+            if (NormalizeVersion(targetPlatformVersionParsed) != NormalizeVersion(kfr.PlatformVersion)
+                || NormalizeVersion(kfr.Version) != _normalizedTargetFrameworkVersion)
+                return false;
 
             return true;
         }
