@@ -283,40 +283,43 @@ namespace Microsoft.NET.Build.Tasks
         {
             // Keep the checked properties in sync with _RequiresILLinkPack in Microsoft.NET.Publish.targets.
             if (PublishAot)
-            {
                 // If PublishAot is set, this should produce a specific error above already.
                 // Also produce one here just in case there are custom KnownILCompilerPack/KnownILLinkPack
                 // items that bypass the error above.
                 Log.LogError(Strings.AotUnsupportedTargetFramework);
-            }
             else if (IsAotCompatible || EnableAotAnalyzer)
-            {
-                if (!SilenceIsAotCompatibleUnsupportedWarning)
-                    Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot!);
-            }
+                WarnAotCompatibleUnsupported();
             else if (PublishTrimmed)
-            {
                 Log.LogError(Strings.PublishTrimmedRequiresVersion30);
-            }
             else if (IsTrimmable || EnableTrimAnalyzer)
-            {
-                if (!SilenceIsTrimmableUnsupportedWarning)
-                    Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming!);
-            }
+                WarnTrimmableUnsupported();
             else if (EnableSingleFileAnalyzer)
-            {
-                // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
-                // recommended way to ensure single-file compatibility for libraries.
-                if (!SilenceEnableSingleFileAnalyzerUnsupportedWarning)
-                    Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported, MinNonEolTargetFrameworkForSingleFile!);
-            }
+                WarnSingleFileAnalyzerUnsupported();
             else
-            {
                 // _RequiresILLinkPack was set. This setting acts as an override for the
                 // user-visible properties, and should generally only be used by
                 // other SDKs that can't use the other properties for some reason.
                 Log.LogError(Strings.ILLinkNoValidRuntimePackageError);
-            }
+        }
+
+        private void WarnAotCompatibleUnsupported()
+        {
+            if (!SilenceIsAotCompatibleUnsupportedWarning)
+                Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot!);
+        }
+
+        private void WarnTrimmableUnsupported()
+        {
+            if (!SilenceIsTrimmableUnsupportedWarning)
+                Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming!);
+        }
+
+        private void WarnSingleFileAnalyzerUnsupported()
+        {
+            // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
+            // recommended way to ensure single-file compatibility for libraries.
+            if (!SilenceEnableSingleFileAnalyzerUnsupportedWarning)
+                Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported, MinNonEolTargetFrameworkForSingleFile!);
         }
 
         private void AssignOutputs(
