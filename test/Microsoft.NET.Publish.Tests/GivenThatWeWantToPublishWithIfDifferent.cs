@@ -486,7 +486,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             var projectContent = File.ReadAllText(projectFile);
             projectContent = projectContent.Replace("</Project>", @"
   <ItemGroup>
-    <Content Include=""Doto-VariableFont_ROND,cwght.ttf"" CopyToPublishDirectory=""IfDifferent"" />Expand commentComment on line R489Resolved
+    <Content Include=""Doto-VariableFont_ROND,cwght.ttf"" CopyToPublishDirectory=""IfDifferent"" />
   </ItemGroup>
 </Project>");
             File.WriteAllText(projectFile, projectContent);
