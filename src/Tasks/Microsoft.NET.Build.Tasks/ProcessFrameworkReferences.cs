@@ -898,8 +898,11 @@ namespace Microsoft.NET.Build.Tasks
             // Add the analyzer package with version taken from KnownILLinkPack if the version is less than 8.0.0.
             // The version comparison doesn't consider prerelease labels, so 8.0.0-foo will be considered equal to 8.0.0 and
             // will not get the extra analyzer package reference.
-            if (toolPackType is ToolPackType.ILLink && IsPreNet8ILLinkPack(packVersion) && EnableRuntimePackDownload)
+            if (toolPackType is ToolPackType.ILLink && IsPreNet8ILLinkPack(packVersion))
             {
+                if (!EnableRuntimePackDownload)
+                    return;
+
                 var analyzerPackage = new TaskItem("Microsoft.NET.ILLink.Analyzers");
                 analyzerPackage.SetMetadata(MetadataKeys.Version, packVersion);
                 implicitPackageReferences.Add(analyzerPackage);
