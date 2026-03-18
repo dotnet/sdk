@@ -838,16 +838,9 @@ namespace Microsoft.NET.Build.Tasks
                         Crossgen2Packs = new[] { hostPackItem };
                         break;
                     case ToolPackType.ILCompiler:
-                        // ILCompiler supports cross-target compilation. If there is a cross-target request,
-                        // we need to download that package as well unless we use KnownRuntimePack entries for the target.
-                        if (!AotUseKnownRuntimePackForTarget)
-                        {
-                            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-                            var crossResult = AddILCompilerCrossTargetPacks(hostRidContext, knownPack, runtimeGraph, packagesToDownload);
-                            if (crossResult != ToolPackSupport.Supported)
-                                return crossResult;
-                        }
-                        HostILCompilerPacks = new[] { hostPackItem };
+                        var ilcResult = TrySetupILCompilerPacks(hostPackItem, hostRidContext, knownPack, packagesToDownload);
+                        if (ilcResult != ToolPackSupport.Supported)
+                            return ilcResult;
                         break;
                 }
             }
@@ -883,6 +876,26 @@ namespace Microsoft.NET.Build.Tasks
                 Log.LogMessage(MessageImportance.Low, $"Added {analyzerPackage.ItemSpec}@{packVersion} for linker analyzers");
             }
 
+            return ToolPackSupport.Supported;
+        }
+
+        private ToolPackSupport TrySetupILCompilerPacks(
+            TaskItem hostPackItem,
+            ToolPackResolutionContext hostRidContext,
+            ITaskItem knownPack,
+            List<ITaskItem> packagesToDownload)
+        {
+            // ILCompiler supports cross-target compilation. If there is a cross-target request,
+            // we need to download that package as well unless we use KnownRuntimePack entries for the target.
+            if (!AotUseKnownRuntimePackForTarget)
+            {
+                var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
+                var crossResult = AddILCompilerCrossTargetPacks(hostRidContext, knownPack, runtimeGraph, packagesToDownload);
+                if (crossResult != ToolPackSupport.Supported)
+                    return crossResult;
+            }
+
+            HostILCompilerPacks = new[] { hostPackItem };
             return ToolPackSupport.Supported;
         }
 
