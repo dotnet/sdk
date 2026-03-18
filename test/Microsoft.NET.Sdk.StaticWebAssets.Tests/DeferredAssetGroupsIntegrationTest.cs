@@ -101,6 +101,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                                     new XAttribute("Include", "BlazorGroup"),
                                     new XAttribute("Value", "enabled"),
                                     new XAttribute("Order", "0"),
+                                    new XAttribute("SourceId", "ClassLibrary"),
                                     new XAttribute("IncludePattern", "deferred.blazor.js"))));
                         document.Root.Add(
                             new XElement("Import",
