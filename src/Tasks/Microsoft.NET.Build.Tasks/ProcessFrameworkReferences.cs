@@ -827,24 +827,27 @@ namespace Microsoft.NET.Build.Tasks
 
         private ITaskItem? FindKnownPackForTargetFramework(ToolPackType toolPackType, Version normalizedTargetFrameworkVersion)
         {
-            var knownPacks = toolPackType switch
-            {
-                ToolPackType.Crossgen2 => KnownCrossgen2Packs,
-                ToolPackType.ILCompiler => KnownILCompilerPacks,
-                ToolPackType.ILLink => KnownILLinkPacks,
-                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
-                ToolPackType.AspNetCore => KnownAspNetCorePacks,
-                _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
-            };
             Log.LogMessage(MessageImportance.Low, $"Adding tool pack {toolPackType} for runtime {normalizedTargetFrameworkVersion}");
 
-            return knownPacks.Where(pack =>
-            {
-                var packTargetFramework = NuGetFramework.Parse(pack.GetMetadata("TargetFramework"));
-                return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
-            }).SingleOrDefault();
+            return GetKnownPacksForType(toolPackType)
+                .Where(pack =>
+                {
+                    var packTargetFramework = NuGetFramework.Parse(pack.GetMetadata("TargetFramework"));
+                    return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
+                        NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
+                })
+                .SingleOrDefault();
         }
+
+        private ITaskItem[] GetKnownPacksForType(ToolPackType toolPackType) => toolPackType switch
+        {
+            ToolPackType.Crossgen2 => KnownCrossgen2Packs,
+            ToolPackType.ILCompiler => KnownILCompilerPacks,
+            ToolPackType.ILLink => KnownILLinkPacks,
+            ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
+            ToolPackType.AspNetCore => KnownAspNetCorePacks,
+            _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
+        };
 
         private ToolPackSupport TryHandleRidSpecificToolPack(
             ToolPackType toolPackType,
