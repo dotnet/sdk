@@ -1001,70 +1001,74 @@ namespace Microsoft.NET.Build.Tasks
             RuntimeGraph runtimeGraph,
             List<ITaskItem> packagesToDownload)
         {
-            var aotPackRuntimeIdentifiers = BuildAotPackRidList();
-
-            foreach (var aotPackRuntimeIdentifier in aotPackRuntimeIdentifiers)
+            foreach (var aotPackRid in BuildAotPackRidList())
             {
-                Log.LogMessage(MessageImportance.Low, $"Checking for cross-targeting compilation packs for {aotPackRuntimeIdentifier}");
-                var targetRid = NuGetUtils.GetBestMatchingRid(runtimeGraph, aotPackRuntimeIdentifier, context.SupportedRuntimeIdentifiers, out _);
+                Log.LogMessage(MessageImportance.Low, $"Checking for cross-targeting compilation packs for {aotPackRid}");
+                var targetRid = NuGetUtils.GetBestMatchingRid(runtimeGraph, aotPackRid, context.SupportedRuntimeIdentifiers, out _);
+
                 if (targetRid == null)
                 {
-                    if (aotPackRuntimeIdentifier == EffectiveRuntimeIdentifier)
-                    {
-                        // We can't find the right pack for AOT, return an error
+                    if (aotPackRid == EffectiveRuntimeIdentifier)
                         return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
-                    }
-                    else
-                    {
-                        // When processing additional RIDs, don't error out during restore, we just won't have a pack to download.
-                        // If a publish is attempted for that RID later, it will fail then.
-                        Log.LogMessage(MessageImportance.Low, $"No compilation pack found for {aotPackRuntimeIdentifier}");
-                        continue;
-                    }
+
+                    // When processing additional RIDs, don't error out during restore, we just won't have a pack to download.
+                    // If a publish is attempted for that RID later, it will fail then.
+                    Log.LogMessage(MessageImportance.Low, $"No compilation pack found for {aotPackRid}");
+                    continue;
                 }
 
-                // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
-                bool useRuntimePackForAllTargets = false;
-                string targetPackNamePattern = context.PackNamePattern;
-                if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
-                {
-                    targetPackNamePattern = runtimePackNamePattern;
-                    useRuntimePackForAllTargets = true;
-                }
-
-                if (ShouldAddCrossTargetILCompilerPack(useRuntimePackForAllTargets, context.HostRuntimeIdentifier, targetRid))
-                {
-                    var targetIlcPackName = targetPackNamePattern.Replace("**RID**", targetRid);
-                    var targetIlcPack = new TaskItem(targetIlcPackName);
-                    targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
-                    targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, context.PackVersion);
-                    if (aotPackRuntimeIdentifier == EffectiveRuntimeIdentifier)
-                    {
-                        TargetILCompilerPacks = new[] { targetIlcPack };
-                        Log.LogMessage(MessageImportance.Low, $"Added {targetIlcPackName}@{context.PackVersion} for cross-targeting compilation for {aotPackRuntimeIdentifier}");
-                    }
-
-                    string? targetILCompilerPackPath = GetPackPath(targetIlcPackName, context.PackVersion);
-                    if (targetILCompilerPackPath != null)
-                    {
-                        targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
-                    }
-                    else if (EnableRuntimePackDownload)
-                    {
-                        // We need to download the runtime pack
-                        var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
-                        targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, context.PackVersion);
-                        packagesToDownload.Add(targetIlcPackToDownload);
-                        Log.LogMessage(MessageImportance.Low, $"Added PackageDownload for {targetIlcPackName}@{context.PackVersion} for cross-targeting compilation for {aotPackRuntimeIdentifier}");
-                    }
-                }
-                else
-                {
-                    Log.LogMessage(MessageImportance.Low, $"No cross-targeting compilation packs required for {aotPackRuntimeIdentifier}.");
-                }
+                var packInfo = new CrossTargetPackInfo(targetRid, aotPackRid);
+                AddCrossTargetPackForRid(packInfo, knownPack, context, packagesToDownload);
             }
 
             return ToolPackSupport.Supported;
+        }
+
+        private void AddCrossTargetPackForRid(
+            CrossTargetPackInfo packInfo,
+            ITaskItem knownPack,
+            ToolPackResolutionContext context,
+            List<ITaskItem> packagesToDownload)
+        {
+            // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
+            bool useRuntimePackForAllTargets = false;
+            string targetPackNamePattern = context.PackNamePattern;
+            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
+            {
+                targetPackNamePattern = runtimePackNamePattern;
+                useRuntimePackForAllTargets = true;
+            }
+
+            if (!ShouldAddCrossTargetILCompilerPack(useRuntimePackForAllTargets, context.HostRuntimeIdentifier, packInfo.TargetRid))
+            {
+                Log.LogMessage(MessageImportance.Low, $"No cross-targeting compilation packs required for {packInfo.AotPackRid}.");
+                return;
+            }
+
+            var targetIlcPackName = targetPackNamePattern.Replace("**RID**", packInfo.TargetRid);
+            var targetIlcPack = new TaskItem(targetIlcPackName);
+            targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
+            targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, context.PackVersion);
+
+            if (packInfo.AotPackRid == EffectiveRuntimeIdentifier)
+            {
+                TargetILCompilerPacks = new[] { targetIlcPack };
+                Log.LogMessage(MessageImportance.Low, $"Added {targetIlcPackName}@{context.PackVersion} for cross-targeting compilation for {packInfo.AotPackRid}");
+            }
+
+            string? targetILCompilerPackPath = GetPackPath(targetIlcPackName, context.PackVersion);
+            if (targetILCompilerPackPath != null)
+            {
+                targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
+            }
+            else if (EnableRuntimePackDownload)
+            {
+                // We need to download the runtime pack
+                var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
+                targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, context.PackVersion);
+                packagesToDownload.Add(targetIlcPackToDownload);
+                Log.LogMessage(MessageImportance.Low, $"Added PackageDownload for {targetIlcPackName}@{context.PackVersion} for cross-targeting compilation for {packInfo.AotPackRid}");
+            }
         }
 
         private List<string> BuildAotPackRidList()
@@ -1460,6 +1464,9 @@ namespace Microsoft.NET.Build.Tasks
             KnownFrameworkReference KnownFrameworkReference,
             KnownRuntimePack? SelectedRuntimePack,
             string TargetingPackVersion);
+
+        /// <summary>Identifies a single cross-target compilation target inside <see cref="AddCrossTargetPackForRid"/>.</summary>
+        private readonly record struct CrossTargetPackInfo(string TargetRid, string AotPackRid);
 
         /// <summary>Carries the context needed by <see cref="ProcessAdditionalRids"/> to process each supplementary RuntimeIdentifier.</summary>
         private readonly record struct AdditionalRidProcessingContext(
