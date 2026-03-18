@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             environmentOptions ??= TestOptions.GetEnvironmentOptions();
 
             var processOutputReporter = new TestProcessOutputReporter();
+            var cmdOptions = TestOptions.GetCommandLineOptions(args ?? []);
+            var projectOptions = TestOptions.GetProjectOptions(cmdOptions);
 
             return new()
             {
@@ -23,7 +25,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 BuildLogger = NullLogger.Instance,
                 ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
-                RootProjectOptions = TestOptions.GetProjectOptions(args),
+                MainProjectOptions = projectOptions,
+                RootProjects = [projectOptions.Representation],
+                BuildArguments = cmdOptions.BuildArguments,
                 EnvironmentOptions = environmentOptions,
                 BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
@@ -108,8 +112,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
             var evaluator = new BuildEvaluator(context);
 
-            AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
