@@ -438,7 +438,7 @@ public class AssetGroupFilteringTest : IDisposable
     }
 
     [Fact]
-    public void ApplyGroupDefinitions_ConflictingContentRootSuffix_ProducesError()
+    public void ApplyGroupDefinitions_MultipleContentRootSuffix_Compose()
     {
         var file = CreateTempFile("wwwroot", "shared", "site.css", "body{}");
 
@@ -466,8 +466,12 @@ public class AssetGroupFilteringTest : IDisposable
 
         var result = task.Execute();
 
-        result.Should().BeFalse();
-        _errorMessages.Should().ContainSingle(m => m.Contains("conflicting ContentRootSuffix"));
+        result.Should().BeTrue();
+        var asset = StaticWebAsset.FromTaskItem(task.Assets[0]);
+        asset.ContentRoot.Should().Contain("suffixA");
+        asset.ContentRoot.Should().Contain("suffixB");
+        // Suffixes compose in order: suffixA/suffixB
+        asset.ContentRoot.Should().Contain(Path.Combine("suffixA", "suffixB"));
     }
 
     [Theory]

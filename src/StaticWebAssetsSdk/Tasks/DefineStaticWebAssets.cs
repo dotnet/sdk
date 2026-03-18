@@ -881,14 +881,17 @@ public partial class DefineStaticWebAssets : Task
 
             if (!string.IsNullOrEmpty(def.ContentRootSuffix))
             {
-                if (contentRootSuffix != null && !string.Equals(contentRootSuffix, def.ContentRootSuffix, StringComparison.Ordinal))
+                // Content root suffixes compose: version=v4 (suffix "v4") + theme=light (suffix "light")
+                // produces "OriginalRoot/v4/light". Definitions are sorted by Order so composition
+                // is deterministic.
+                if (contentRootSuffix != null)
                 {
-                    Log.LogError(
-                        "Asset '{0}' matched group definitions '{1}' and '{2}' with conflicting ContentRootSuffix values '{3}' and '{4}'.",
-                        asset.Identity, contentRootGroupName, def.Name, contentRootSuffix, def.ContentRootSuffix);
-                    return default;
+                    contentRootSuffix = contentRootSuffix.TrimEnd('/', '\\') + "/" + def.ContentRootSuffix.TrimStart('/', '\\');
                 }
-                contentRootSuffix = def.ContentRootSuffix;
+                else
+                {
+                    contentRootSuffix = def.ContentRootSuffix;
+                }
                 contentRootGroupName = def.Name;
             }
         }
