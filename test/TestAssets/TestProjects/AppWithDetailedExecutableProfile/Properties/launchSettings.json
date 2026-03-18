@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "WithEnvironmentVariables": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "--version",
+      "environmentVariables": {
+        "TEST_ENV_VAR": "TestValue",
+        "CUSTOM_VAR": "CustomValue"
+      }
+    },
+    "WithWorkingDirectory": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "--info",
+      "workingDirectory": "."
+    },
+    "WithCommandLineOverride": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "--version"
+    }
+  }
+}

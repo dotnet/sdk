@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -111,4 +111,4 @@ internal sealed class ParallelizableTestModuleGroupWithSequentialInnerModules : 
     }
 }
 
-internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, ProjectLaunchSettingsModel? LaunchSettings, string TargetPath, string? DotnetRootArchVariableName);
+internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, LaunchProfile? LaunchSettings, string TargetPath, string? DotnetRootArchVariableName);

@@ -17,7 +17,7 @@ internal static class WorkloadIntegrityChecker
     {
         var creationResult = new WorkloadResolverFactory().Create();
         var sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
-        var verifySignatures = WorkloadCommandBase.ShouldVerifySignatures();
+        var verifySignatures = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false);
         var tempPackagesDirectory = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
         var packageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
             tempPackagesDirectory,

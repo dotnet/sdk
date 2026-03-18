@@ -126,11 +126,11 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        protected virtual bool ExecuteWithRestoreByDefault => true;
+        public bool ShouldRestore { get; set; } = true;
 
         public override CommandResult Execute(IEnumerable<string> args)
         {
-            if (ExecuteWithRestoreByDefault)
+            if (ShouldRestore)
             {
                 args = new[] { "/restore" }.Concat(args);
             }
