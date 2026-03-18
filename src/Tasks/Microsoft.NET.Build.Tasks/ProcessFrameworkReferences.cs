@@ -537,7 +537,8 @@ namespace Microsoft.NET.Build.Tasks
                 var primaryOptions = new RuntimePackResolutionOptions(
                     additionalRefs, useRuntimePackAndDownloadIfNecessary,
                     WasReferencedDirectly: frameworkReference != null, DownloadOnly: false);
-                ProcessRuntimeIdentifier(primaryRid, runtimePackVersion, runtimePackForRIDProcessing, primaryOptions, packs);
+                var primaryRequest = new RuntimePackLookupRequest(runtimePackVersion, runtimePackForRIDProcessing, primaryOptions);
+                ProcessRuntimeIdentifier(primaryRid, primaryRequest, packs);
                 processedPrimaryRid = true;
             }
 
@@ -613,7 +614,8 @@ namespace Microsoft.NET.Build.Tasks
                 var options = new RuntimePackResolutionOptions(
                     AdditionalFrameworkReferences: null, ctx.UsePackAndDownload,
                     WasReferencedDirectly: ctx.FrameworkReference != null, DownloadOnly: true);
-                ProcessRuntimeIdentifier(runtimeIdentifier, ctx.RuntimePackVersion, ctx.RuntimePackForRID, options, packs);
+                var request = new RuntimePackLookupRequest(ctx.RuntimePackVersion, ctx.RuntimePackForRID, options);
+                ProcessRuntimeIdentifier(runtimeIdentifier, request, packs);
             }
         }
 
@@ -679,11 +681,10 @@ namespace Microsoft.NET.Build.Tasks
 
         private void ProcessRuntimeIdentifier(
             string runtimeIdentifier,
-            string runtimePackVersion,
-            KnownRuntimePack selectedRuntimePack,
-            RuntimePackResolutionOptions options,
+            RuntimePackLookupRequest request,
             PacksAccumulator packs)
         {
+            var (runtimePackVersion, selectedRuntimePack, options) = request;
             var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             var knownRids = selectedRuntimePack.RuntimePackRuntimeIdentifiers.Split(';');
             var excludedRids = selectedRuntimePack.RuntimePackExcludedRuntimeIdentifiers.Split(';');
@@ -698,7 +699,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else if (options.AddPackAndDownloadIfNecessary)
             {
-                AddResolvedRuntimePack(runtimePackRuntimeIdentifier, runtimePackVersion, selectedRuntimePack, options, packs);
+                AddResolvedRuntimePack(runtimePackRuntimeIdentifier, request, packs);
             }
         }
 
@@ -729,11 +730,10 @@ namespace Microsoft.NET.Build.Tasks
 
         private void AddResolvedRuntimePack(
             string runtimePackRid,
-            string runtimePackVersion,
-            KnownRuntimePack selectedRuntimePack,
-            RuntimePackResolutionOptions options,
+            RuntimePackLookupRequest request,
             PacksAccumulator packs)
         {
+            var (runtimePackVersion, selectedRuntimePack, options) = request;
             var isTrimmable = selectedRuntimePack.IsTrimmable;
             foreach (var runtimePackNamePattern in selectedRuntimePack.RuntimePackNamePatterns.Split(';'))
             {
@@ -1454,6 +1454,12 @@ namespace Microsoft.NET.Build.Tasks
             KnownRuntimePack? SelectedRuntimePack,
             string RuntimePackVersion,
             ITaskItem? FrameworkReference);
+
+        /// <summary>Bundles the three inputs that are threaded together from <see cref="ProcessRuntimeIdentifier"/> down to <see cref="AddResolvedRuntimePack"/>.</summary>
+        private readonly record struct RuntimePackLookupRequest(
+            string RuntimePackVersion,
+            KnownRuntimePack SelectedRuntimePack,
+            RuntimePackResolutionOptions Options);
 
         /// <summary>Captures the per-RID resolution options used by <see cref="ProcessRuntimeIdentifier"/>.</summary>
         private readonly record struct RuntimePackResolutionOptions(
