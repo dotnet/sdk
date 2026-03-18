@@ -164,7 +164,7 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
         return
     }
 
-    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked
+    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
         throw "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
