@@ -270,10 +270,10 @@ namespace Microsoft.NET.Build.Tasks
                 AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences);
             }
 
-            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion!.Major >= 10 &&
-                AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
+            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion!.Major >= 10)
             {
-                Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
+                if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
+                    Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
             }
 
             return true;
