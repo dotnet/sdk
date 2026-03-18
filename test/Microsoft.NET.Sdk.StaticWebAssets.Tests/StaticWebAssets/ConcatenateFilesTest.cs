@@ -338,7 +338,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                     "TestFiles/Generated/FetchData.razor.rz.scp.css"),
             };
 
-            await System.Threading.Tasks.Task.Delay(1000);
+            await System.Threading.Tasks.Task.Delay(1000, TestContext.Current.CancellationToken);
             taskInstance.Execute();
 
             // Assert

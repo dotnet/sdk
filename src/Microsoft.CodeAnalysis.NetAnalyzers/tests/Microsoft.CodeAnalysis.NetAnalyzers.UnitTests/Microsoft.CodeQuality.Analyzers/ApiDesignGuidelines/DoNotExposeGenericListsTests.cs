@@ -303,7 +303,7 @@ public class OuterClass
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -359,7 +359,7 @@ End Class"
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)

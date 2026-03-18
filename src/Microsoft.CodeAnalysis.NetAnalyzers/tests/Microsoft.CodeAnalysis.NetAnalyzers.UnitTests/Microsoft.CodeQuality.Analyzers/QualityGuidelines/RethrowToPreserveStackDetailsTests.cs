@@ -169,7 +169,7 @@ class Program
     }
 }",
                 LanguageVersion = languageVersion,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
