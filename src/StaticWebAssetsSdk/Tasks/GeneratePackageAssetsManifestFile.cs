@@ -93,7 +93,7 @@ public class GeneratePackageAssetsManifestFile : Task
         var packagePaths = new string[parsedAssets.Length];
         for (var i = 0; i < parsedAssets.Length; i++)
         {
-            var packagePath = parsedAssets[i].ComputeTargetPath(PackagePathPrefix, '/', tokenResolver);
+            var packagePath = parsedAssets[i].ComputeTargetPath(PackagePathPrefix, '/', tokenResolver, TokenResolveMode.Pack);
             identityToPackagePath[parsedAssets[i].Identity] = packagePath;
             packagePaths[i] = packagePath;
         }

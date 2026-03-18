@@ -1404,10 +1404,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pathWithTokens;
     }
 
-    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens)
+    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pathWithTokens = CreatePathString(pathPrefix, separator);
-        return ReplaceTokens(pathWithTokens, providedTokens);
+        return ReplaceTokens(pathWithTokens, providedTokens, resolveMode);
     }
 
     // Tokens in static web assets represent a similar concept to tokens within routing. They can be used to identify logical
@@ -1432,10 +1432,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // to be embedded in other contexts.
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
-    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
+    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-        return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
+        return pattern.ReplaceTokens(this, tokens, resolveMode).Path;
     }
 
     public string ComputePathWithoutTokens(string pathWithTokens)

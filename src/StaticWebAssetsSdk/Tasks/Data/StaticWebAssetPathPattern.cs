@@ -7,6 +7,19 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+/// <summary>
+/// Controls how token expressions are resolved during path computation.
+/// </summary>
+public enum TokenResolveMode
+{
+    /// <summary>No preferences applied — all segments included as-is.</summary>
+    None,
+    /// <summary>Skip optional non-preferred. Include and resolve pack-only (~) segments. Used for nupkg physical paths.</summary>
+    Pack,
+    /// <summary>Skip optional non-preferred. Strip pack-only (~) segments entirely. Used for routes, dev manifest, copy-to-output.</summary>
+    Serve
+}
+
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0057:Use range operator", Justification = "Can't use range syntax in full framework")]
 #if WASM_TASKS
@@ -19,7 +32,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     private const char PatternEnd = ']';
     private const char PatternOptional = '?';
     private const char PatternPreferred = '!';
-    private const char PatternFileOnly = '~';
+    private const char PatternPackOnly = '~';
     private const char PatternValueSeparator = '=';
     private const char PatternParameterStart = '{';
     private const char PatternParameterEnd = '}';
@@ -112,15 +125,15 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             AddTokenSegmentParts(tokenExpression, token);
             pattern.Segments.Add(token);
 
-            // Check if the segment is optional (ends with ? or !) or file-only (ends with ~)
+            // Check if the segment is optional (ends with ? or !) or pack-only (ends with ~)
             if (tokenEnd < current.Length - 1 &&
-                (current.Span[tokenEnd + 1] == PatternOptional || current.Span[tokenEnd + 1] == PatternPreferred || current.Span[tokenEnd + 1] == PatternFileOnly))
+                (current.Span[tokenEnd + 1] == PatternOptional || current.Span[tokenEnd + 1] == PatternPreferred || current.Span[tokenEnd + 1] == PatternPackOnly))
             {
-                if (current.Span[tokenEnd + 1] == PatternFileOnly)
+                if (current.Span[tokenEnd + 1] == PatternPackOnly)
                 {
                     token.IsOptional = true;
                     token.IsPreferred = true;
-                    token.IsFileOnly = true;
+                    token.IsPackOnly = true;
                 }
                 else
                 {
@@ -220,14 +233,14 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     // Values provided by the asset take precedence over values provided by the global resolvers.
     // Right now the only available value is the fingerprint value.
     // Global values in the future can include user defined tokens, like versions, etc. (For example, dotnet version, blazor web.js version, etc.)
-    // The applyPreferences parameter is used to determine if we should apply the preferences defined in the pattern, for example, if we should
-    // skip optional segments that are not preferred.
-    // Preferences are applied when we are generating file names for the final asset location on disk, in which case we need to reduce the expression
-    // to a single literal path.
+    // The resolveMode parameter controls how optional and pack-only segments are handled:
+    // - None: all segments included as-is.
+    // - Pack: skip optional non-preferred; include and resolve pack-only (~) segments. Used for nupkg paths.
+    // - Serve: skip optional non-preferred; strip pack-only (~) segments entirely. Used for routes, dev manifest, copy-to-output.
 #if WASM_TASKS
-    internal (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, bool applyPreferences = false)
+    internal (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, TokenResolveMode resolveMode = TokenResolveMode.None)
 #else
-    public (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, bool applyPreferences = false)
+    public (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, TokenResolveMode resolveMode = TokenResolveMode.None)
 #endif
     {
         var result = new StringBuilder();
@@ -240,8 +253,15 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             }
             else
             {
-                if (applyPreferences && segment.IsOptional && !segment.IsPreferred)
+                if (resolveMode != TokenResolveMode.None && segment.IsOptional && !segment.IsPreferred)
                 {
+                    // Skip optional non-preferred segments (e.g. ?)
+                    continue;
+                }
+
+                if (resolveMode == TokenResolveMode.Serve && segment.IsPackOnly)
+                {
+                    // Pack-only segments (~) are stripped in serve mode.
                     continue;
                 }
 
@@ -333,20 +353,20 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         // - other#[.{fingerprint}].js produces a single pattern asset#[.{fingerprint}].js
         // - last#[.{fingerprint}]?.txt produces two patterns last#[.{fingerprint}]?.txt and last.txt
         var hasOptionalSegments = false;
-        var hasFileOnlySegments = false;
+        var hasPackOnlySegments = false;
         foreach (var segment in Segments)
         {
             if (segment.IsOptional)
             {
                 hasOptionalSegments = true;
             }
-            if (segment.IsFileOnly)
+            if (segment.IsPackOnly)
             {
-                hasFileOnlySegments = true;
+                hasPackOnlySegments = true;
             }
         }
 
-        if (!hasOptionalSegments && !hasFileOnlySegments)
+        if (!hasOptionalSegments && !hasPackOnlySegments)
         {
             return [this];
         }
@@ -355,9 +375,9 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         for (var i = 0; i < Segments.Count; i++)
         {
             var segment = Segments[i];
-            if (segment.IsFileOnly)
+            if (segment.IsPackOnly)
             {
-                // File-only segments (~) are never included in endpoint routes.
+                // Pack-only segments (~) are never included in endpoint routes.
                 // Skip them entirely — don't fork, don't add.
                 continue;
             }
@@ -490,9 +510,9 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             if (!isLiteral)
             {
                 stringBuilder.Append(PatternEnd);
-                if (segment.IsFileOnly)
+                if (segment.IsPackOnly)
                 {
-                    stringBuilder.Append(PatternFileOnly);
+                    stringBuilder.Append(PatternPackOnly);
                 }
                 else if (segment.IsOptional)
                 {
