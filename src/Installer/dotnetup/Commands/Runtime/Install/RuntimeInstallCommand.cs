@@ -11,7 +11,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 {
     private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-    private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
+    private readonly bool? _replaceSystemInstallConfig = result.GetValue(CommonOptions.SetDefaultInstallOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
@@ -59,14 +59,14 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         var (component, versionOrChannel) = ParseAndValidateComponentSpec(spec);
 
         string componentDescription = component.GetDisplayName();
-        var (pathPreference, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
+        var (pathPreference, replaceSystemConfig) = InstallExecutor.ResolveInstallDefaults(_interactive, _replaceSystemInstallConfig, _installPath);
 
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
         InstallWorkflow.InstallWorkflowOptions options = new(
             versionOrChannel,
             _installPath,
-            setDefault,
+            replaceSystemConfig,
             _manifestPath,
             _interactive,
             _noProgress,
@@ -90,7 +90,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             parsed.Add(ParseAndValidateComponentSpec(spec));
         }
 
-        var (_, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall);
+        var (_, replaceSystemConfig) = InstallExecutor.ResolveInstallDefaults(_interactive, _replaceSystemInstallConfig, _installPath);
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
@@ -112,7 +112,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 }))
             .ToList();
 
-        InstallExecutor.RunMultiInstall(requests, installPath, _noProgress, setDefault, _dotnetInstaller);
+        InstallExecutor.RunMultiInstall(requests, installPath, _noProgress, replaceSystemConfig, _dotnetInstaller);
 
         return 0;
     }

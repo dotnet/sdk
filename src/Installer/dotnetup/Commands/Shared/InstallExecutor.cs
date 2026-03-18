@@ -327,13 +327,21 @@ internal class InstallExecutor
 
     /// <summary>
     /// Resolves the path preference and derives whether to set a default install.
-    /// Shared by SDK and Runtime single-install paths.
+    /// When <paramref name="installPath"/> is explicitly provided the user already knows
+    /// where to install, so the path-preference walkthrough is skipped.
+    /// Shared by SDK and Runtime install paths.
     /// </summary>
-    public static (PathPreference? PathPreference, bool? SetDefault) ResolveInstallDefaults(bool interactive, bool? setDefaultInstall)
+    public static (PathPreference? PathPreference, bool? ReplaceSystemInstallConfiguration) ResolveInstallDefaults(bool interactive, bool? replaceSystemConfig, string? installPath)
     {
+        // Explicit install path: skip path-preference resolution entirely.
+        if (installPath is not null)
+        {
+            return (null, replaceSystemConfig);
+        }
+
         var pathPreference = DotnetupConfig.EnsurePathPreference(interactive);
-        bool? setDefault = setDefaultInstall ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
-        return (pathPreference, setDefault);
+        bool? replaceSystemEnvironment = replaceSystemConfig ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
+        return (pathPreference, replaceSystemEnvironment);
     }
 
     /// <summary>
