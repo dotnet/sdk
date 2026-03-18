@@ -5,7 +5,8 @@ Use it after making source code changes to quickly build only the modified proje
 
 ## Prerequisites
 
-A full build must have been completed at least once (via `build.cmd` or `build.sh`) so that the redist SDK layout exists at `artifacts\bin\redist\Debug\dotnet\sdk\<version>\`.
+- A full build must have been completed at least once (via `build.cmd` or `build.sh`) so that the redist SDK layout exists at `artifacts\bin\redist\Debug\dotnet\sdk\<version>\`.
+- This workflow uses Windows/PowerShell commands and paths. On macOS/Linux, substitute forward slashes and use `cp` instead of `Copy-Item`.
 
 ## When to use
 
@@ -24,24 +25,24 @@ Determine which projects have been modified. Use context from:
 Build each modified project individually using the repo-local dotnet:
 
 ```
-.\.dotnet\dotnet build <path-to-project.csproj>
+.\.dotnet\dotnet build <path-to-project.csproj> -c Debug
 ```
 
 For example:
 ```
-.\.dotnet\dotnet build src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj
+.\.dotnet\dotnet build src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj -c Debug
 ```
 
 If the `dotnet` CLI project itself was modified, build it:
 ```
-.\.dotnet\dotnet build src\Cli\dotnet\dotnet.csproj
+.\.dotnet\dotnet build src\Cli\dotnet\dotnet.csproj -c Debug
 ```
 
 ### Step 3: Copy output DLLs to the redist SDK layout
 
 Discover the SDK version directory name:
 ```powershell
-$sdkVersion = (Get-ChildItem artifacts\bin\redist\Debug\dotnet\sdk -Directory).Name
+$sdkVersion = (Get-ChildItem artifacts\bin\redist\Debug\dotnet\sdk -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1).Name
 ```
 
 For each modified project, copy its output DLL (and any satellite assemblies) from the project's build output to the redist SDK directory:
@@ -63,7 +64,7 @@ Copy-Item artifacts\bin\dotnet\Debug\net10.0\dotnet.dll artifacts\bin\redist\Deb
 ```
 
 **Important notes:**
-- Only copy DLLs that are **already present** in the target directory. If a DLL doesn't exist in the redist SDK dir, it probably doesn't belong there.
+- For typical incremental edits, only copy DLLs that are **already present** in the target directory. If your change introduces a new shipped assembly or moves assemblies, you will need a full `build.cmd`/`build.sh` to update the layout correctly.
 - Some projects multi-target (e.g., `net10.0` and `net472`). Always use the `net10.0` output.
 - If localization resource DLLs were changed (in subdirectories like `cs\`, `de\`, etc.), copy those too.
 
