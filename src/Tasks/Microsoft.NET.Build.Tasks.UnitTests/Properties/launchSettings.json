@@ -1,8 +1,7 @@
 {
   "profiles": {
     "TestTest": {
-      "commandName": "Project",
-      "commandLineArgs": "-wait"
+      "commandName": "Project"
     }
   }
 }

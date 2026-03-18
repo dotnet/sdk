@@ -120,8 +120,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             string assemblyName = Path.GetFileName(targetPath);
 
-            string driver = $"{PathToDotnet}";
-
             // netfx tests should only run on Windows full framework for testing VS scenarios
             // These tests have to be executed slightly differently and we give them a different Identity so ADO can tell them apart
             var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
@@ -137,9 +135,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             // On mac due to https://github.com/dotnet/sdk/issues/3923, we run against workitem directory
             // but on Windows, if we running against working item diretory, we would hit long path.
-            string testExecutionDirectory = IsPosixShell ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory" : "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
+            string testExecutionDirectory = IsPosixShell ? "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
 
-            string msbuildAdditionalSdkResolverFolder = IsPosixShell ? "" : "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
+            string msbuildAdditionalSdkResolverFolder = IsPosixShell ? "" : "DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
 
             if (ExcludeAdditionalParameters.Equals("true"))
             {
@@ -153,18 +151,39 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
+                // Build the test filter using MTP --filter-class syntax (pipe-delimited class names become separate args)
+                string testFilter = "";
+                if (!string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString))
+                {
+                    var classNames = assemblyPartitionInfo.ClassListArgumentString.Split('|');
+                    testFilter = string.Join(" ", classNames.Select(c => $"--filter-class \"{c}\""));
+                }
 
-                var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                // xUnit v3 + MTP tests are standalone executables. On POSIX, the execute bit
+                // is lost when the Helix SDK packages the payload as a zip archive.
+                string testExe = Path.GetFileNameWithoutExtension(assemblyName);
+                string chmodPrefix = IsPosixShell ? $"chmod +x {testExe} && " : "";
+                string testRunner = IsPosixShell ? $"./{testExe}" : $"{testExe}.exe";
 
-                // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
-                // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
-                // so we need to restore it before running.
-                string chmodPrefix = IsPosixShell ? $"chmod +x {Path.GetFileNameWithoutExtension(assemblyName)} && " : "";
+                // Set environment variables as shell exports/sets before the test command
+                var envVars = new List<string> { $"HELIX_WORK_ITEM_TIMEOUT={timeout}" };
+                if (!string.IsNullOrEmpty(testExecutionDirectory))
+                    envVars.Add(testExecutionDirectory);
+                if (!string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder))
+                    envVars.Add(msbuildAdditionalSdkResolverFolder);
 
-                string command = $"{chmodPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
+                string envPrefix;
+                if (IsPosixShell)
+                {
+                    envPrefix = string.Join(" ", envVars.Select(v => $"export {v} &&")) + " ";
+                }
+                else
+                {
+                    envPrefix = string.Join(" & ", envVars.Select(v => $"set \"{v}\"")) + " & ";
+                }
+
+                string command = $"{chmodPrefix}{envPrefix}{testRunner} " +
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m {testFilter} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 

@@ -11,8 +11,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
     <TestRunnerName>XUnitV3</TestRunnerName>
-    <!-- XUnit.V3 migration is incremental. Enabling MTP will come in a later phase.  -->
-    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
