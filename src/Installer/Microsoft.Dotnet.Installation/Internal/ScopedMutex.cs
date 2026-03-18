@@ -12,9 +12,10 @@ public class ScopedMutex : IDisposable
     private static readonly AsyncLocal<Dictionary<string, MutexState>> s_heldMutexCounts = new();
 
     /// <summary>
-    /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
+    /// Timeout in seconds for mutex acquisition. Default is 10 minutes.
+    /// CI agents (especially Helix) can be very slow, so this must be generous.
     /// </summary>
-    public static int TimeoutSeconds { get; set; } = 300;
+    public static int TimeoutSeconds { get; set; } = 600;
 
     /// <summary>
     /// Optional callback invoked when we need to wait for the mutex (another process holds it).
@@ -59,26 +60,36 @@ public class ScopedMutex : IDisposable
 
         _mutex = new Mutex(false, mutexName);
 
-        // First try immediate acquisition to see if we need to wait
-        if (!_mutex.WaitOne(0, false))
+        try
         {
             // Only invoke the callback when an *external* process holds the mutex.
             // Suppress it when another task within this process holds it so we don't
             // show misleading "waiting for mutex" text when we're waiting on ourselves.
             // Volatile.Read ensures we see the latest value written by Interlocked.Increment/Decrement
             // on other threads. While Interlocked operations provide full barriers, the defensive
-            // Volatile.Read makes the cross-thread intent explicit at the read site.
             if (!SuppressWaitingCallback && Volatile.Read(ref s_processActiveHolds) == 0)
             {
                 OnWaitingForMutex?.Invoke();
             }
 
-            // Now wait for the full timeout
-            if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+            // First try immediate acquisition to see if we need to wait
+            if (!_mutex.WaitOne(0, false))
             {
-                _mutex.Dispose();
-                throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                // Another process holds the mutex - notify caller before blocking
+                OnWaitingForMutex?.Invoke();
+
+                // Now wait for the full timeout
+                if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+                {
+                    _mutex.Dispose();
+                    throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                }
             }
+        }
+        catch (AbandonedMutexException)
+        {
+            // A previous process holding the mutex exited without releasing it.
+            // The OS still grants ownership to this thread, so we can proceed safely.
         }
 
         Interlocked.Increment(ref s_processActiveHolds);
