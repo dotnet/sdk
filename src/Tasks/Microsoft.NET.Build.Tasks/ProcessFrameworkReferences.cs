@@ -1200,42 +1200,45 @@ namespace Microsoft.NET.Build.Tasks
 
         private string? GetPackPath(string packName, string packVersion)
         {
-            IEnumerable<string> GetPackFolders()
-            {
-                var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
-                if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
-                {
-                    foreach (var packRoot in packRootEnvironmentVariable.Split(Path.PathSeparator))
-                    {
-                        yield return Path.Combine(packRoot, "packs");
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
-                {
-                    if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
-                        new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath() is { } userProfileDir)
-                    {
-                        yield return Path.Combine(userProfileDir, "packs");
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(TargetingPackRoot))
-                {
-                    yield return TargetingPackRoot;
-                }
-            }
-
             foreach (var packFolder in GetPackFolders())
             {
                 string packPath = Path.Combine(packFolder, packName, packVersion);
                 if (Directory.Exists(packPath))
-                {
                     return packPath;
-                }
             }
 
             return null;
+        }
+
+        private IEnumerable<string> GetPackFolders() =>
+            GetWorkloadRootPackFolders()
+                .Concat(GetUserLocalPackFolders())
+                .Concat(GetTargetingPackRootFolders());
+
+        private IEnumerable<string> GetWorkloadRootPackFolders()
+        {
+            var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+            if (string.IsNullOrEmpty(packRootEnvironmentVariable))
+                return Enumerable.Empty<string>();
+
+            return packRootEnvironmentVariable.Split(Path.PathSeparator)
+                                               .Select(root => Path.Combine(root, "packs"));
+        }
+
+        private IEnumerable<string> GetUserLocalPackFolders()
+        {
+            if (string.IsNullOrEmpty(NetCoreRoot) || string.IsNullOrEmpty(NETCoreSdkVersion))
+                yield break;
+
+            if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
+                new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath() is { } userProfileDir)
+                yield return Path.Combine(userProfileDir, "packs");
+        }
+
+        private IEnumerable<string> GetTargetingPackRootFolders()
+        {
+            if (!string.IsNullOrEmpty(TargetingPackRoot))
+                yield return TargetingPackRoot;
         }
 
         Lazy<WorkloadResolver> _workloadResolver
