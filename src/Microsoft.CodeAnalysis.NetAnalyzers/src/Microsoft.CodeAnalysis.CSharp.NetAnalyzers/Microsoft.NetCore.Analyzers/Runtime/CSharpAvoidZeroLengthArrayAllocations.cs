@@ -17,5 +17,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             return node is AttributeSyntax;
         }
+
+        protected override bool IsCollectionExpressionSyntax(SyntaxNode node)
+        {
+            return node.IsKind(SyntaxKindEx.CollectionExpression);
+        }
     }
 }
