@@ -4,7 +4,6 @@
 using System.Runtime.Versioning;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 

@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
