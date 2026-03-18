@@ -526,68 +526,80 @@ namespace Microsoft.NET.Build.Tasks
         {
             var (knownFrameworkReference, selectedRuntimePack, runtimePackVersion, frameworkReference) = state;
 
-            //  Determine which runtime pack to use for RID processing, and whether to add / download it
-            KnownRuntimePack runtimePackForRIDProcessing;
-            bool useRuntimePackAndDownloadIfNecessary;
+            var (runtimePackForRIDProcessing, useRuntimePackAndDownloadIfNecessary) =
+                DetermineRuntimePackUsage(knownFrameworkReference, selectedRuntimePack);
 
+            bool processedPrimaryRid = false;
+            if (HasRuntimePackRequirement(selectedRuntimePack))
+            {
+                var additionalRefs = FindAdditionalRuntimePackRefs(knownFrameworkReference, knownFrameworkReferencesForTargetFramework);
+                var primaryRid = EffectiveRuntimeIdentifier ?? RuntimeIdentifierForPlatformAgnosticComponents;
+                var primaryOptions = new RuntimePackResolutionOptions(
+                    additionalRefs, useRuntimePackAndDownloadIfNecessary,
+                    WasReferencedDirectly: frameworkReference != null, DownloadOnly: false);
+                ProcessRuntimeIdentifier(primaryRid, runtimePackVersion, runtimePackForRIDProcessing, primaryOptions, packs);
+                processedPrimaryRid = true;
+            }
+
+            var additionalRidContext = new AdditionalRidProcessingContext(
+                runtimePackForRIDProcessing, runtimePackVersion,
+                useRuntimePackAndDownloadIfNecessary, processedPrimaryRid, frameworkReference);
+            ProcessAdditionalRids(additionalRidContext, packs);
+        }
+
+        private static (KnownRuntimePack packForRIDProcessing, bool usePackAndDownload) DetermineRuntimePackUsage(
+            KnownFrameworkReference knownFrameworkReference,
+            KnownRuntimePack? selectedRuntimePack)
+        {
             if (knownFrameworkReference.Name.Equals(knownFrameworkReference.RuntimeFrameworkName, StringComparison.OrdinalIgnoreCase) && selectedRuntimePack != null)
             {
                 //  Only add runtime packs where the framework reference name matches the RuntimeFrameworkName
                 //  Framework references for "profiles" will use the runtime pack from the corresponding non-profile framework
-                runtimePackForRIDProcessing = selectedRuntimePack.Value;
-                useRuntimePackAndDownloadIfNecessary = true;
+                return (selectedRuntimePack.Value, usePackAndDownload: true);
             }
-            else if (!knownFrameworkReference.RuntimePackRuntimeIdentifiers.Equals(selectedRuntimePack?.RuntimePackRuntimeIdentifiers))
+
+            if (!knownFrameworkReference.RuntimePackRuntimeIdentifiers.Equals(selectedRuntimePack?.RuntimePackRuntimeIdentifiers))
             {
                 // If the profile has a different set of runtime identifiers than the runtime pack, use the profile.
-                runtimePackForRIDProcessing = knownFrameworkReference.ToKnownRuntimePack();
-                useRuntimePackAndDownloadIfNecessary = true;
-            }
-            else
-            {
-                // For the remaining profiles, don't include them in package download but add them to unavailable if necessary.
-                runtimePackForRIDProcessing = knownFrameworkReference.ToKnownRuntimePack();
-                useRuntimePackAndDownloadIfNecessary = false;
+                return (knownFrameworkReference.ToKnownRuntimePack(), usePackAndDownload: true);
             }
 
-            var hasRuntimePackAlwaysCopyLocal =
-                selectedRuntimePack != null && selectedRuntimePack.Value.RuntimePackAlwaysCopyLocal;
-            var runtimeRequiredByDeployment =
-                DeploymentModelRequiresRuntimeComponents &&
-                ProjectIsPlatformSpecific &&
-                selectedRuntimePack?.HasRuntimePackages == true;
+            // For the remaining profiles, don't include them in package download but add them to unavailable if necessary.
+            return (knownFrameworkReference.ToKnownRuntimePack(), usePackAndDownload: false);
+        }
 
-            bool processedPrimaryRuntimeIdentifier = false;
-            if (hasRuntimePackAlwaysCopyLocal || runtimeRequiredByDeployment)
+        private bool HasRuntimePackRequirement(KnownRuntimePack? selectedRuntimePack)
+        {
+            if (selectedRuntimePack != null && selectedRuntimePack.Value.RuntimePackAlwaysCopyLocal)
+                return true;
+
+            return DeploymentModelRequiresRuntimeComponents
+                && ProjectIsPlatformSpecific
+                && selectedRuntimePack?.HasRuntimePackages == true;
+        }
+
+        private static List<string>? FindAdditionalRuntimePackRefs(
+            KnownFrameworkReference knownFrameworkReference,
+            List<KnownFrameworkReference> knownFrameworkReferencesForTargetFramework)
+        {
+            List<string>? additionalRefs = null;
+            foreach (var additionalKfr in knownFrameworkReferencesForTargetFramework)
             {
-                //  Find other KnownFrameworkReferences that map to the same runtime pack, if any
-                List<string>? additionalFrameworkReferencesForRuntimePack = null;
-                foreach (var additionalKnownFrameworkReference in knownFrameworkReferencesForTargetFramework)
+                if (additionalKfr.RuntimeFrameworkName.Equals(knownFrameworkReference.RuntimeFrameworkName, StringComparison.OrdinalIgnoreCase) &&
+                    !additionalKfr.RuntimeFrameworkName.Equals(additionalKfr.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (additionalKnownFrameworkReference.RuntimeFrameworkName.Equals(knownFrameworkReference.RuntimeFrameworkName, StringComparison.OrdinalIgnoreCase) &&
-                        !additionalKnownFrameworkReference.RuntimeFrameworkName.Equals(additionalKnownFrameworkReference.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        additionalFrameworkReferencesForRuntimePack ??= [];
-                        additionalFrameworkReferencesForRuntimePack.Add(additionalKnownFrameworkReference.Name);
-                    }
+                    additionalRefs ??= [];
+                    additionalRefs.Add(additionalKfr.Name);
                 }
-
-                //  Process primary runtime identifier
-                var primaryRid = EffectiveRuntimeIdentifier ?? RuntimeIdentifierForPlatformAgnosticComponents;
-                var primaryOptions = new RuntimePackResolutionOptions(
-                    additionalFrameworkReferencesForRuntimePack,
-                    useRuntimePackAndDownloadIfNecessary,
-                    WasReferencedDirectly: frameworkReference != null,
-                    DownloadOnly: false);
-                ProcessRuntimeIdentifier(primaryRid, runtimePackVersion, runtimePackForRIDProcessing, primaryOptions, packs);
-                processedPrimaryRuntimeIdentifier = true;
             }
+            return additionalRefs;
+        }
 
-            //  Process additional RuntimeIdentifiers — null-coalesced so the loop handles the null case
-            //  without requiring a separate null-guard `if`, which would add a bump.
+        private void ProcessAdditionalRids(AdditionalRidProcessingContext ctx, PacksAccumulator packs)
+        {
             foreach (var runtimeIdentifier in RuntimeIdentifiers ?? Array.Empty<string>())
             {
-                if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == EffectiveRuntimeIdentifier)
+                if (ctx.ProcessedPrimaryRid && runtimeIdentifier == EffectiveRuntimeIdentifier)
                     continue;
 
                 if (runtimeIdentifier == RuntimeIdentifierForPlatformAgnosticComponents)
@@ -597,14 +609,11 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                //  Pass downloadOnly: true for additional RIDs — we want to download the runtime
-                //  packs but not use their assets in the primary build output
-                var additionalOptions = new RuntimePackResolutionOptions(
-                    AdditionalFrameworkReferences: null,
-                    useRuntimePackAndDownloadIfNecessary,
-                    WasReferencedDirectly: frameworkReference != null,
-                    DownloadOnly: true);
-                ProcessRuntimeIdentifier(runtimeIdentifier, runtimePackVersion, runtimePackForRIDProcessing, additionalOptions, packs);
+                //  Pass downloadOnly: true — we want to download the runtime packs but not use their assets
+                var options = new RuntimePackResolutionOptions(
+                    AdditionalFrameworkReferences: null, ctx.UsePackAndDownload,
+                    WasReferencedDirectly: ctx.FrameworkReference != null, DownloadOnly: true);
+                ProcessRuntimeIdentifier(runtimeIdentifier, ctx.RuntimePackVersion, ctx.RuntimePackForRID, options, packs);
             }
         }
 
@@ -1405,5 +1414,13 @@ namespace Microsoft.NET.Build.Tasks
             KnownFrameworkReference KnownFrameworkReference,
             KnownRuntimePack? SelectedRuntimePack,
             string TargetingPackVersion);
+
+        /// <summary>Carries the context needed by <see cref="ProcessAdditionalRids"/> to process each supplementary RuntimeIdentifier.</summary>
+        private readonly record struct AdditionalRidProcessingContext(
+            KnownRuntimePack RuntimePackForRID,
+            string RuntimePackVersion,
+            bool UsePackAndDownload,
+            bool ProcessedPrimaryRid,
+            ITaskItem? FrameworkReference);
     }
 }
