@@ -143,7 +143,6 @@
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
-    <PackageVersion Include="Verify.Xunit" Version="25.0.2" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
     <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
