@@ -199,6 +199,13 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_ROOT(x86)", DotNetRoot);
             }
 
+            // MSBuild's apphost task host needs DOTNET_HOST_PATH to derive DOTNET_ROOT
+            // for out-of-proc task host child processes (used by TaskHostFactory tasks).
+            // The Helix test environment does not set this variable, and without it
+            // AddNetHostParamsIfNeeded cannot populate the task host parameters, causing
+            // ResolveAppHostOrFallback to fail with MSB4216.
+            environment["DOTNET_HOST_PATH"] = DotNetHostPath;
+
             if (!string.IsNullOrEmpty(CliHomePath))
             {
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
