@@ -1088,28 +1088,31 @@ namespace Microsoft.NET.Build.Tasks
 
         private ToolPackSupport CheckILLinkAnalyzerSupport(Version normalizedTargetFrameworkVersion)
         {
-            if (FirstTargetFrameworkVersionToSupportAotAnalyzer != null)
-            {
-                var firstVersion = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportAotAnalyzer));
-                if (AotAnalyzerIsEnabled && normalizedTargetFrameworkVersion < firstVersion)
-                    return ToolPackSupport.UnsupportedForTargetFramework;
-            }
+            (string? FirstVersion, bool AnalyzerEnabled)[] analyzerChecks =
+            [
+                (FirstTargetFrameworkVersionToSupportAotAnalyzer,        AotAnalyzerIsEnabled),
+                (FirstTargetFrameworkVersionToSupportSingleFileAnalyzer,  EnableSingleFileAnalyzer),
+                (FirstTargetFrameworkVersionToSupportTrimAnalyzer,        TrimAnalyzerIsEnabled),
+            ];
 
-            if (FirstTargetFrameworkVersionToSupportSingleFileAnalyzer != null)
+            foreach (var (firstVersion, analyzerEnabled) in analyzerChecks)
             {
-                var firstVersion = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportSingleFileAnalyzer));
-                if (EnableSingleFileAnalyzer && normalizedTargetFrameworkVersion < firstVersion)
-                    return ToolPackSupport.UnsupportedForTargetFramework;
-            }
-
-            if (FirstTargetFrameworkVersionToSupportTrimAnalyzer != null)
-            {
-                var firstVersion = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportTrimAnalyzer));
-                if (TrimAnalyzerIsEnabled && normalizedTargetFrameworkVersion < firstVersion)
+                if (IsAnalyzerUnsupportedForTargetFramework(firstVersion, analyzerEnabled, normalizedTargetFrameworkVersion))
                     return ToolPackSupport.UnsupportedForTargetFramework;
             }
 
             return ToolPackSupport.Supported;
+        }
+
+        private bool IsAnalyzerUnsupportedForTargetFramework(
+            string? firstVersionString,
+            bool analyzerEnabled,
+            Version normalizedTargetFrameworkVersion)
+        {
+            if (firstVersionString == null || !analyzerEnabled)
+                return false;
+
+            return normalizedTargetFrameworkVersion < NormalizeVersion(new Version(firstVersionString));
         }
 
         private bool AotAnalyzerIsEnabled => IsAotCompatible || EnableAotAnalyzer;
