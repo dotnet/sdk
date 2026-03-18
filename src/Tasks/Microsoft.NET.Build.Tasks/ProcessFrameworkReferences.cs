@@ -583,29 +583,28 @@ namespace Microsoft.NET.Build.Tasks
                 processedPrimaryRuntimeIdentifier = true;
             }
 
-            if (RuntimeIdentifiers != null)
+            //  Process additional RuntimeIdentifiers — null-coalesced so the loop handles the null case
+            //  without requiring a separate null-guard `if`, which would add a bump.
+            foreach (var runtimeIdentifier in RuntimeIdentifiers ?? Array.Empty<string>())
             {
-                foreach (var runtimeIdentifier in RuntimeIdentifiers)
+                if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == EffectiveRuntimeIdentifier)
+                    continue;
+
+                if (runtimeIdentifier == RuntimeIdentifierForPlatformAgnosticComponents)
                 {
-                    if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == EffectiveRuntimeIdentifier)
-                        continue;
-
-                    if (runtimeIdentifier == RuntimeIdentifierForPlatformAgnosticComponents)
-                    {
-                        // The `any` RID represents a platform-agnostic target. As such, it has no
-                        // platform-specific runtime pack associated with it.
-                        continue;
-                    }
-
-                    //  Pass downloadOnly: true for additional RIDs — we want to download the runtime
-                    //  packs but not use their assets in the primary build output
-                    var additionalOptions = new RuntimePackResolutionOptions(
-                        AdditionalFrameworkReferences: null,
-                        useRuntimePackAndDownloadIfNecessary,
-                        WasReferencedDirectly: frameworkReference != null,
-                        DownloadOnly: true);
-                    ProcessRuntimeIdentifier(runtimeIdentifier, runtimePackVersion, runtimePackForRIDProcessing, additionalOptions, packs);
+                    // The `any` RID represents a platform-agnostic target. As such, it has no
+                    // platform-specific runtime pack associated with it.
+                    continue;
                 }
+
+                //  Pass downloadOnly: true for additional RIDs — we want to download the runtime
+                //  packs but not use their assets in the primary build output
+                var additionalOptions = new RuntimePackResolutionOptions(
+                    AdditionalFrameworkReferences: null,
+                    useRuntimePackAndDownloadIfNecessary,
+                    WasReferencedDirectly: frameworkReference != null,
+                    DownloadOnly: true);
+                ProcessRuntimeIdentifier(runtimeIdentifier, runtimePackVersion, runtimePackForRIDProcessing, additionalOptions, packs);
             }
         }
 
