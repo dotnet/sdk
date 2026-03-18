@@ -797,53 +797,19 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> packagesToDownload,
             List<ITaskItem> implicitPackageReferences)
         {
-            var knownPacks = toolPackType switch
-            {
-                ToolPackType.Crossgen2 => KnownCrossgen2Packs,
-                ToolPackType.ILCompiler => KnownILCompilerPacks,
-                ToolPackType.ILLink => KnownILLinkPacks,
-                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
-                ToolPackType.AspNetCore => KnownAspNetCorePacks,
-                _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
-            };
-            Log.LogMessage(MessageImportance.Low, $"Adding tool pack {toolPackType} for runtime {normalizedTargetFrameworkVersion}");
-
-            var knownPack = knownPacks.Where(pack =>
-            {
-                var packTargetFramework = NuGetFramework.Parse(pack.GetMetadata("TargetFramework"));
-                return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
-            }).SingleOrDefault();
-
+            var knownPack = FindKnownPackForTargetFramework(toolPackType, normalizedTargetFrameworkVersion);
             if (knownPack == null)
                 return ToolPackSupport.UnsupportedForTargetFramework;
 
-            var packName = toolPackType.ToString();
-            var packVersion = knownPack.GetMetadata(packName + "PackVersion");
+            var packVersion = knownPack.GetMetadata(toolPackType.ToString() + "PackVersion");
             if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
                 packVersion = RuntimeFrameworkVersion;
 
             Log.LogMessage(MessageImportance.Low, $"Found {toolPackType} pack '{knownPack.ItemSpec}@{packVersion}'");
 
-            // Crossgen and ILCompiler have RID-specific bits.
-            if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
-            {
-                var (hostPackItem, hostRidContext, hostResult) = ResolveHostRidForToolPack(knownPack, packName, packVersion, packagesToDownload);
-                if (hostResult != ToolPackSupport.Supported)
-                    return hostResult;
-
-                switch (toolPackType)
-                {
-                    case ToolPackType.Crossgen2:
-                        Crossgen2Packs = new[] { hostPackItem };
-                        break;
-                    case ToolPackType.ILCompiler:
-                        var ilcResult = TrySetupILCompilerPacks(hostPackItem, hostRidContext, knownPack, packagesToDownload);
-                        if (ilcResult != ToolPackSupport.Supported)
-                            return ilcResult;
-                        break;
-                }
-            }
+            var ridResult = TryHandleRidSpecificToolPack(toolPackType, knownPack, packVersion, packagesToDownload);
+            if (ridResult != ToolPackSupport.Supported)
+                return ridResult;
 
             if (toolPackType is ToolPackType.ILLink)
             {
@@ -855,6 +821,67 @@ namespace Microsoft.NET.Build.Tasks
                     return analyzerResult;
             }
 
+            AddImplicitPackageReferences(toolPackType, knownPack, packVersion, implicitPackageReferences);
+            return ToolPackSupport.Supported;
+        }
+
+        private ITaskItem? FindKnownPackForTargetFramework(ToolPackType toolPackType, Version normalizedTargetFrameworkVersion)
+        {
+            var knownPacks = toolPackType switch
+            {
+                ToolPackType.Crossgen2 => KnownCrossgen2Packs,
+                ToolPackType.ILCompiler => KnownILCompilerPacks,
+                ToolPackType.ILLink => KnownILLinkPacks,
+                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
+                ToolPackType.AspNetCore => KnownAspNetCorePacks,
+                _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
+            };
+            Log.LogMessage(MessageImportance.Low, $"Adding tool pack {toolPackType} for runtime {normalizedTargetFrameworkVersion}");
+
+            return knownPacks.Where(pack =>
+            {
+                var packTargetFramework = NuGetFramework.Parse(pack.GetMetadata("TargetFramework"));
+                return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
+                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
+            }).SingleOrDefault();
+        }
+
+        private ToolPackSupport TryHandleRidSpecificToolPack(
+            ToolPackType toolPackType,
+            ITaskItem knownPack,
+            string packVersion,
+            List<ITaskItem> packagesToDownload)
+        {
+            // Crossgen and ILCompiler have RID-specific bits; all other pack types need no RID resolution.
+            if (toolPackType is not ToolPackType.Crossgen2 and not ToolPackType.ILCompiler)
+                return ToolPackSupport.Supported;
+
+            var packName = toolPackType.ToString();
+            var (hostPackItem, hostRidContext, hostResult) = ResolveHostRidForToolPack(knownPack, packName, packVersion, packagesToDownload);
+            if (hostResult != ToolPackSupport.Supported)
+                return hostResult;
+
+            switch (toolPackType)
+            {
+                case ToolPackType.Crossgen2:
+                    Crossgen2Packs = new[] { hostPackItem };
+                    break;
+                case ToolPackType.ILCompiler:
+                    var ilcResult = TrySetupILCompilerPacks(hostPackItem, hostRidContext, knownPack, packagesToDownload);
+                    if (ilcResult != ToolPackSupport.Supported)
+                        return ilcResult;
+                    break;
+            }
+
+            return ToolPackSupport.Supported;
+        }
+
+        private void AddImplicitPackageReferences(
+            ToolPackType toolPackType,
+            ITaskItem knownPack,
+            string packVersion,
+            List<ITaskItem> implicitPackageReferences)
+        {
             // Packs with RID-agnostic build packages that contain MSBuild targets.
             if (toolPackType is not ToolPackType.Crossgen2 && EnableRuntimePackDownload)
             {
@@ -875,8 +902,6 @@ namespace Microsoft.NET.Build.Tasks
                 implicitPackageReferences.Add(analyzerPackage);
                 Log.LogMessage(MessageImportance.Low, $"Added {analyzerPackage.ItemSpec}@{packVersion} for linker analyzers");
             }
-
-            return ToolPackSupport.Supported;
         }
 
         private ToolPackSupport TrySetupILCompilerPacks(
