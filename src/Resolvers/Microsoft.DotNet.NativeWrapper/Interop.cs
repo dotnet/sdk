@@ -40,6 +40,9 @@ namespace Microsoft.DotNet.NativeWrapper
         // already be loaded in the process. Unfortunately there are no issues or pull requests tracking the original
         // implementation of this as it was committed directly from a dev branch into main.
 
+        // lpFileName passed to LoadLibraryEx must be a full path.
+        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
+
         private static void PreloadWindowsLibrary(string dllFileName)
         {
             string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
@@ -49,6 +52,9 @@ namespace Microsoft.DotNet.NativeWrapper
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
 #if NET
@@ -71,17 +77,6 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return handle;
         }
-#endif
-
-        // lpFileName passed to LoadLibraryEx must be a full path.
-        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
-
-#if NET
-        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial nint LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
-#else
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
         /// <summary>
@@ -424,26 +419,5 @@ namespace Microsoft.DotNet.NativeWrapper
 #endif
             string? exeDir,
             hostfxr_get_available_sdks_result_fn result);
-
-#if NET
-        public static partial class Unix
-        {
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial nint realpath(string path, nint buffer);
-
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial void free(nint ptr);
-
-            public static string? realpath(string path)
-            {
-                nint ptr = realpath(path, nint.Zero);
-                string? result = Marshal.PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
-        }
-#endif
     }
 }

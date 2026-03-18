@@ -28,6 +28,7 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly FacadeLogger? _binaryLogger;
     private readonly bool _isInteractive;
     private readonly MSBuildArgs _msbuildArgs;
+    private readonly IReadOnlyDictionary<string, string> _environmentVariables;
     
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
@@ -38,20 +39,58 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     public bool HasValidProject { get; private set; }
 
+    /// <summary>
+    /// Gets the IntermediateOutputPath property from the evaluated project.
+    /// This will evaluate the project if it hasn't been evaluated yet.
+    /// Returns null if the project cannot be evaluated or the property is not set.
+    /// </summary>
+    public string? IntermediateOutputPath
+    {
+        get
+        {
+            if (OpenProjectIfNeeded(out var projectInstance))
+            {
+                return projectInstance.GetPropertyValue(Constants.IntermediateOutputPath);
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets whether the project has opted in to receiving environment variables as MSBuild items.
+    /// When true, 'dotnet run -e' will pass environment variables as @(RuntimeEnvironmentVariable) items
+    /// via CustomBeforeMicrosoftCommonProps.
+    /// </summary>
+    public bool HasRuntimeEnvironmentVariableSupport
+    {
+        get
+        {
+            if (OpenProjectIfNeeded(out var projectInstance))
+            {
+                return projectInstance.GetItems(Constants.ProjectCapability)
+                    .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase));
+            }
+            return false;
+        }
+    }
+
     /// <param name="projectFilePath">Path to the project file to evaluate</param>
     /// <param name="isInteractive">Whether to prompt the user for selections</param>
     /// <param name="msbuildArgs">MSBuild arguments containing properties and verbosity settings</param>
+    /// <param name="environmentVariables">Environment variables to pass to MSBuild targets as items</param>
     /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
     public RunCommandSelector(
         string projectFilePath,
         bool isInteractive,
         MSBuildArgs msbuildArgs,
+        IReadOnlyDictionary<string, string> environmentVariables,
         FacadeLogger? binaryLogger = null)
     {
         _projectFilePath = projectFilePath;
         _globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
         _isInteractive = isInteractive;
         _msbuildArgs = msbuildArgs;
+        _environmentVariables = environmentVariables;
         _binaryLogger = binaryLogger;
     }
 
@@ -486,6 +525,12 @@ internal sealed class RunCommandSelector : IDisposable
         {
             // Target doesn't exist, skip deploy step
             return true;
+        }
+
+        // Add environment variables as items before building the target, only if opted in
+        if (HasRuntimeEnvironmentVariableSupport)
+        {
+            EnvironmentVariablesToMSBuild.AddAsItems(projectInstance, _environmentVariables);
         }
 
         // Build the DeployToDevice target

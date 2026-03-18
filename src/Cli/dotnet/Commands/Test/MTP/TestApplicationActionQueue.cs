@@ -15,7 +15,7 @@ internal class TestApplicationActionQueue
 
     private int? _aggregateExitCode;
 
-    private static readonly Lock _lock = new();
+    private readonly Lock _lock = new();
 
     public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
     {
@@ -78,7 +78,7 @@ internal class TestApplicationActionQueue
                 {
                     result = ExitCode.GenericFailure;
                 }
-                
+
                 lock (_lock)
                 {
                     if (_aggregateExitCode is null)

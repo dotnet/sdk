@@ -939,6 +939,10 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="ProjectConvertDryRun" xml:space="preserve">
     <value>Determines changes without actually modifying the file system</value>
   </data>
+  <data name="ProjectConvertDeleteSource" xml:space="preserve">
+    <value>Delete all source files after conversion</value>
+    <comment>This will delete the entry point file and all files included via #:include directives and default item globbing.</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
