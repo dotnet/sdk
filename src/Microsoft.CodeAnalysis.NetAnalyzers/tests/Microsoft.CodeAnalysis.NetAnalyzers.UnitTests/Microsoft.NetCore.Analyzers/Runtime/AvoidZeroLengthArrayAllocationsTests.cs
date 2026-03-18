@@ -764,5 +764,44 @@ End Class
 ";
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_NonArrayTargetType_CSharpAsync()
+        {
+            const string source = @"
+using System.Collections.Generic;
+
+class C
+{
+    List<string> l1 = [""a"", ""b"", ""c""];
+    List<int> l2 = [];
+    IEnumerable<int> l3 = [1, 2, 3];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = source,
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_EmptyArrayTargetType_CSharpAsync()
+        {
+
+            const string source = @"
+class C
+{
+    int[] arr = [];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = source,
+            }.RunAsync();
+        }
     }
 }
