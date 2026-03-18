@@ -90,15 +90,15 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkCommonPackageVersion>11.0.100-preview.3.26153.117</MicrosoftSourceLinkCommonPackageVersion>
     <MicrosoftSourceLinkGitHubPackageVersion>11.0.100-preview.3.26153.117</MicrosoftSourceLinkGitHubPackageVersion>
     <MicrosoftSourceLinkGitLabPackageVersion>11.0.100-preview.3.26153.117</MicrosoftSourceLinkGitLabPackageVersion>
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineAbstractionsPackageVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>
-    <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineMocksXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineMocksXunitV3PackageVersion>
-    <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>
-    <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateEngineUtilsPackageVersion>
-    <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateSearchCommonPackageVersion>
-    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.3.26153.117</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-ci</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>11.0.100-ci</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>
+    <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-ci</MicrosoftTemplateEngineEdgePackageVersion>
+    <MicrosoftTemplateEngineMocksXunitV3PackageVersion>11.0.100-ci</MicrosoftTemplateEngineMocksXunitV3PackageVersion>
+    <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-ci</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
+    <MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>11.0.100-ci</MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>
+    <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-ci</MicrosoftTemplateEngineUtilsPackageVersion>
+    <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-ci</MicrosoftTemplateSearchCommonPackageVersion>
+    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-ci</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
     <MicrosoftTestPlatformBuildPackageVersion>18.5.0-preview-26153-117</MicrosoftTestPlatformBuildPackageVersion>
     <MicrosoftTestPlatformCLIPackageVersion>18.5.0-preview-26153-117</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.3.0-preview.3.26153.117</MicrosoftWebXdtPackageVersion>
