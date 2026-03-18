@@ -204,28 +204,36 @@ namespace Microsoft.NET.Build.Tasks
 
             var implicitPackageReferences = new List<ITaskItem>();
 
+            if (!TryAddToolPacks(packs, implicitPackageReferences))
+                return;
+
+            AssignOutputs(packs, knownRuntimePacksForTargetFramework, implicitPackageReferences);
+        }
+
+        private bool TryAddToolPacks(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
+        {
             if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
-                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
+                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
                     Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
-                    return;
+                    return false;
                 }
             }
 
             if (PublishAot)
             {
-                switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packs.PackagesToDownload, implicitPackageReferences))
+                switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences))
                 {
                     case ToolPackSupport.UnsupportedForTargetFramework:
                         Log.LogError(Strings.AotUnsupportedTargetFramework);
-                        return;
+                        return false;
                     case ToolPackSupport.UnsupportedForHostRuntimeIdentifier:
                         Log.LogError(Strings.AotUnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
-                        return;
+                        return false;
                     case ToolPackSupport.UnsupportedForTargetRuntimeIdentifier when EffectiveRuntimeIdentifier != null:
                         Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, EffectiveRuntimeIdentifier!);
-                        return;
+                        return false;
                     case ToolPackSupport.Supported:
                         break;
                 }
@@ -233,27 +241,23 @@ namespace Microsoft.NET.Build.Tasks
 
             if (RequiresILLinkPack)
             {
-                if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
-                {
+                if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                     HandleILLinkPackUnsupported();
-                }
             }
 
             if (UsingMicrosoftNETSdkWebAssembly)
             {
                 // WebAssemblySdk is used for .NET >= 6, it's ok if no pack is added.
-                AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packs.PackagesToDownload, implicitPackageReferences);
+                AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences);
             }
 
-            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion.Major >= 10)
+            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion!.Major >= 10)
             {
-                if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
-                {
+                if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                     Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
-                }
             }
 
-            AssignOutputs(packs, knownRuntimePacksForTargetFramework, implicitPackageReferences);
+            return true;
         }
 
         private void HandleILLinkPackUnsupported()
