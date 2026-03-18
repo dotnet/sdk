@@ -210,51 +210,70 @@ namespace Microsoft.NET.Build.Tasks
             AssignOutputs(packs, knownRuntimePacksForTargetFramework, implicitPackageReferences);
         }
 
-        private bool TryAddToolPacks(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
+        private bool TryAddToolPacks(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences) =>
+            TryAddCrossgen2Pack(packs, implicitPackageReferences)
+            && TryAddILCompilerPack(packs, implicitPackageReferences)
+            && TryAddILLinkPack(packs, implicitPackageReferences)
+            && TryAddOptionalPacks(packs, implicitPackageReferences);
+
+        private bool TryAddCrossgen2Pack(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
         {
-            if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
+            if (!ReadyToRunEnabled || !ReadyToRunUseCrossgen2)
+                return true;
+
+            if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
             {
-                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
-                {
-                    Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryAddILCompilerPack(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
+        {
+            if (!PublishAot)
+                return true;
+
+            switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences))
+            {
+                case ToolPackSupport.UnsupportedForTargetFramework:
+                    Log.LogError(Strings.AotUnsupportedTargetFramework);
                     return false;
-                }
+                case ToolPackSupport.UnsupportedForHostRuntimeIdentifier:
+                    Log.LogError(Strings.AotUnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
+                    return false;
+                case ToolPackSupport.UnsupportedForTargetRuntimeIdentifier when EffectiveRuntimeIdentifier != null:
+                    Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, EffectiveRuntimeIdentifier!);
+                    return false;
+                default:
+                    return true;
             }
+        }
 
-            if (PublishAot)
-            {
-                switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences))
-                {
-                    case ToolPackSupport.UnsupportedForTargetFramework:
-                        Log.LogError(Strings.AotUnsupportedTargetFramework);
-                        return false;
-                    case ToolPackSupport.UnsupportedForHostRuntimeIdentifier:
-                        Log.LogError(Strings.AotUnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
-                        return false;
-                    case ToolPackSupport.UnsupportedForTargetRuntimeIdentifier when EffectiveRuntimeIdentifier != null:
-                        Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, EffectiveRuntimeIdentifier!);
-                        return false;
-                    case ToolPackSupport.Supported:
-                        break;
-                }
-            }
+        private bool TryAddILLinkPack(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
+        {
+            if (!RequiresILLinkPack)
+                return true;
 
-            if (RequiresILLinkPack)
-            {
-                if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
-                    HandleILLinkPackUnsupported();
-            }
+            if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
+                HandleILLinkPackUnsupported();
 
+            return true;
+        }
+
+        private bool TryAddOptionalPacks(PacksAccumulator packs, List<ITaskItem> implicitPackageReferences)
+        {
             if (UsingMicrosoftNETSdkWebAssembly)
             {
                 // WebAssemblySdk is used for .NET >= 6, it's ok if no pack is added.
                 AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences);
             }
 
-            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion!.Major >= 10)
+            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion!.Major >= 10 &&
+                AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
             {
-                if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion!, packs.PackagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
-                    Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
+                Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
             }
 
             return true;
