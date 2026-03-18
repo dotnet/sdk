@@ -1091,7 +1091,7 @@ namespace Microsoft.NET.Build.Tasks
             if (FirstTargetFrameworkVersionToSupportAotAnalyzer != null)
             {
                 var firstVersion = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportAotAnalyzer));
-                if ((IsAotCompatible || EnableAotAnalyzer) && normalizedTargetFrameworkVersion < firstVersion)
+                if (AotAnalyzerIsEnabled && normalizedTargetFrameworkVersion < firstVersion)
                     return ToolPackSupport.UnsupportedForTargetFramework;
             }
 
@@ -1105,12 +1105,16 @@ namespace Microsoft.NET.Build.Tasks
             if (FirstTargetFrameworkVersionToSupportTrimAnalyzer != null)
             {
                 var firstVersion = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportTrimAnalyzer));
-                if ((IsTrimmable || EnableTrimAnalyzer) && normalizedTargetFrameworkVersion < firstVersion)
+                if (TrimAnalyzerIsEnabled && normalizedTargetFrameworkVersion < firstVersion)
                     return ToolPackSupport.UnsupportedForTargetFramework;
             }
 
             return ToolPackSupport.Supported;
         }
+
+        private bool AotAnalyzerIsEnabled => IsAotCompatible || EnableAotAnalyzer;
+
+        private bool TrimAnalyzerIsEnabled => IsTrimmable || EnableTrimAnalyzer;
 
         private bool IsWindowsOnlyUnsupportedOnCurrentPlatform(KnownFrameworkReference knownFrameworkReference) =>
             knownFrameworkReference.IsWindowsOnly &&
