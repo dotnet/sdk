@@ -26,7 +26,7 @@ public class BinaryLoggerTests
     [InlineData("\"\"\"path{}\"", "path{}.binlog", false)] // wildcard {} not supported
     public void ParseBinaryLogFilePath(string? value, string? expected, bool matchesMSBuildImpl = true)
     {
-        ProjectBuildManager.Test_BuildSemaphore.Wait();
+        ProjectBuildManager.Test_BuildSemaphore.Wait(TestContext.Current.CancellationToken);
         try
         {
             Assert.Equal(expected, CommandLineOptions.ParseBinaryLogFilePath(value));

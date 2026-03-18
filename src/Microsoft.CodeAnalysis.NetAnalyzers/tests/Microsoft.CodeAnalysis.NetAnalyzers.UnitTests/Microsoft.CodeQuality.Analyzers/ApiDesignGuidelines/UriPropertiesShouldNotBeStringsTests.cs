@@ -194,7 +194,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1056CSharpResultAt(6, 19, "A.SampleUri"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -226,7 +226,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1056BasicResultAt(5, 30, "A.SampleUri"));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)

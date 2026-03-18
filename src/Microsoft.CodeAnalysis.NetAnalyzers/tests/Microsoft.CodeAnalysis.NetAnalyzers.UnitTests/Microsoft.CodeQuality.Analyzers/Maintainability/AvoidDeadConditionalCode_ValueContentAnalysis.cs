@@ -2126,7 +2126,7 @@ dotnet_code_quality.copy_analysis = true") },
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -2216,7 +2216,7 @@ dotnet_code_quality.copy_analysis = true") },
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
@@ -2573,7 +2573,7 @@ public static class C
 {editorconfig}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
@@ -2725,7 +2725,7 @@ public class C
 {editorconfig}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -2795,7 +2795,7 @@ namespace TestNamespace
                     GetCSharpResultAt(39, 17, "t.A.IntProperty == 1", "true"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -2835,7 +2835,7 @@ public class Test
                     // Test0.cs(14,20): warning CA1508: 't != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
                     GetCSharpResultAt(14, 20, "t != null", "true")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -2889,7 +2889,7 @@ public class Test
                     // Test0.cs(25,26): warning CA1508: 't == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
                     GetCSharpResultAt(25, 26, "t == null", "true")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
@@ -2921,7 +2921,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
@@ -2991,7 +2991,7 @@ public class Test
                     // Test0.cs(10,20): warning CA1508: '(int)t == 10' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
                     GetCSharpResultAt(10, 20, "(int)t == 10", "true")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -3028,7 +3028,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -3059,7 +3059,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -3096,7 +3096,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -3127,7 +3127,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
 #if NETCOREAPP
@@ -3155,7 +3155,7 @@ internal class Class1
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 #endif
 
@@ -3275,7 +3275,7 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
@@ -3306,7 +3306,7 @@ class C
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
@@ -3378,7 +3378,7 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
@@ -3444,7 +3444,7 @@ class C
             {
                 TestCode = code,
                 ExpectedDiagnostics = { new DiagnosticResult(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule).WithLocation(0).WithArguments("MyConstant == 16", "true") }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

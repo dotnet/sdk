@@ -505,7 +505,7 @@ public enum E3
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(21, 5, "E3", "Zero"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -551,7 +551,7 @@ End Enum"},
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(18, 5, "E3", "Zero"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpMultipleZeroResultAt(int line, int column, string typeName)
