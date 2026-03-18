@@ -22,6 +22,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 "--property:VSTestArtifactsProcessingMode=collect",
                 "--property:VSTestSessionCorrelationId=<testSessionCorrelationId>"
             })]
+        [InlineData(new string[] { "--use-current-runtime" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
+        [InlineData(new string[] { "--ucr" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

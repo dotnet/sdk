@@ -128,6 +128,8 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
 
+        public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
+
         public readonly Option<string[]> VsTestTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("VSTest");
 
         private static Option<string> CreateBlameCrashDumpOption()
@@ -188,6 +190,7 @@ internal abstract partial class TestCommandDefinition
             TargetPlatformOptions.AddTo(Options);
             Options.Add(PropertiesOption);
             Options.Add(DisableBuildServersOption);
+            Options.Add(UseCurrentRuntimeOption);
             Options.Add(VsTestTargetOption);
         }
 

@@ -126,6 +126,8 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
+        public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
+
         public const string BuildTargetName = "_MTPBuild";
 
         public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption(BuildTargetName);
@@ -153,6 +155,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
             Options.Add(ArtifactsPathOption);
+            Options.Add(UseCurrentRuntimeOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
             Options.Add(OutputOption);
