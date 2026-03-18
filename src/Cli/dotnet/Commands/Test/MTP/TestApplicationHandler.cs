@@ -24,8 +24,9 @@ internal sealed class TestApplicationHandler
         _options = options;
     }
 
-    // Only 1.0.0 specifically should redirect output/err.
-    internal bool ShouldRedirectOutputAndError => !_handshakeInfo.HasValue || _handshakeInfo.Value.NegotiatedVersion == "1.0.0";
+    // Only 1.0.0 hides the output.
+    // Otherwise, TerminalTestReporter of the test app will interfere with the output of the test command.
+    internal bool ShouldHideOutputAndError => _handshakeInfo.HasValue && _handshakeInfo.Value.NegotiatedVersion == "1.0.0";
 
     internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, string negotiatedVersion)
     {
@@ -140,7 +141,7 @@ internal sealed class TestApplicationHandler
         }
 
         var handshakeInfo = _handshakeInfo.Value;
-        var shouldRedirect = ShouldRedirectOutputAndError;
+        var shouldHide = ShouldHideOutputAndError;
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
             _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
@@ -153,8 +154,8 @@ internal sealed class TestApplicationHandler
                 exceptions: null,
                 expected: null,
                 actual: null,
-                standardOutput: shouldRedirect ? testResult.StandardOutput : null,
-                errorOutput: shouldRedirect ? testResult.ErrorOutput : null);
+                standardOutput: shouldHide ? testResult.StandardOutput : null,
+                errorOutput: shouldHide ? testResult.ErrorOutput : null);
         }
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
@@ -168,8 +169,8 @@ internal sealed class TestApplicationHandler
                 exceptions: [.. testResult.Exceptions!.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
-                standardOutput: shouldRedirect ? testResult.StandardOutput : null,
-                errorOutput: shouldRedirect ? testResult.ErrorOutput : null);
+                standardOutput: shouldHide ? testResult.StandardOutput : null,
+                errorOutput: shouldHide ? testResult.ErrorOutput : null);
         }
     }
 

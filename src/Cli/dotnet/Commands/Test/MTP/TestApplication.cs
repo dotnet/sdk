@@ -55,60 +55,66 @@ internal sealed class TestApplication(
             using var process = Process.Start(processStartInfo)!;
 
             int exitCode;
-            if (!_handler.ShouldRedirectOutputAndError)
-            {
-                await process.WaitForExitAsync();
-                exitCode = process.ExitCode;
-                _handler.OnTestProcessExited(exitCode, null, null);
-            }
-            else
-            {
-                // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
-                // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
-                // many TP threads just doing synchronous IO, slowing down the progress of the test run.
-                // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-                // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
-                // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-                var stdOutBuilder = new ConcurrentQueue<string>();
-                var stdErrBuilder = new ConcurrentQueue<string>();
 
-                var stdOutTask = Task.Factory.StartNew(() =>
+            // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
+            // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
+            // many TP threads just doing synchronous IO, slowing down the progress of the test run.
+            // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
+            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
+            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
+            var stdOutBuilder = new ConcurrentQueue<string>();
+            var stdErrBuilder = new ConcurrentQueue<string>();
+
+            var stdOutTask = Task.Factory.StartNew(() =>
+            {
+                var stdOut = process.StandardOutput;
+                string? currentLine;
+                while ((currentLine = stdOut.ReadLine()) is not null)
                 {
-                    var stdOut = process.StandardOutput;
-                    string? currentLine;
-                    while ((currentLine = stdOut.ReadLine()) is not null)
+                    if (_handler.ShouldHideOutputAndError)
                     {
                         stdOutBuilder.Enqueue(currentLine);
                     }
-                }, TaskCreationOptions.LongRunning);
+                    else
+                    {
+                        Console.WriteLine(currentLine);
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
 
-                var stdErrTask = Task.Factory.StartNew(() =>
+            var stdErrTask = Task.Factory.StartNew(() =>
+            {
+                var stdErr = process.StandardError;
+                string? currentLine;
+                while ((currentLine = stdErr.ReadLine()) is not null)
                 {
-                    var stdErr = process.StandardError;
-                    string? currentLine;
-                    while ((currentLine = stdErr.ReadLine()) is not null)
+                    if (_handler.ShouldHideOutputAndError)
                     {
                         stdErrBuilder.Enqueue(currentLine);
                     }
-                }, TaskCreationOptions.LongRunning);
-
-                // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
-                // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
-                await process.WaitForExitAsync();
-
-                // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
-                // We might not be able to consume all the output if the test app has exited but left a child process alive.
-                try
-                {
-                    await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
+                    else
+                    {
+                        Console.WriteLine(currentLine);
+                    }
                 }
-                catch (TimeoutException)
-                {
-                }
+            }, TaskCreationOptions.LongRunning);
 
-                exitCode = process.ExitCode;
-                _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
+            // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
+            // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
+            await process.WaitForExitAsync();
+
+            // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
+            // We might not be able to consume all the output if the test app has exited but left a child process alive.
+            try
+            {
+                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
             }
+            catch (TimeoutException)
+            {
+            }
+
+            exitCode = process.ExitCode;
+            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -131,7 +137,6 @@ internal sealed class TestApplication(
 
     private ProcessStartInfo CreateProcessStartInfo()
     {
-        var shouldRedirect = _handler.ShouldRedirectOutputAndError;
         var processStartInfo = new ProcessStartInfo
         {
             // We should get correct RunProperties right away.
@@ -139,8 +144,8 @@ internal sealed class TestApplication(
             // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
             FileName = Module.RunProperties.Command,
             Arguments = GetArguments(),
-            RedirectStandardOutput = shouldRedirect,
-            RedirectStandardError = shouldRedirect,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
             // False is already the default on .NET Core, but prefer to be explicit.
             UseShellExecute = false,
         };
