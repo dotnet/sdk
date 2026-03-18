@@ -29,14 +29,12 @@ internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
     public PathPreference PathPreference { get; set; } = PathPreference.FullPathReplacement;
-    public ThemeColors? Theme { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(DotnetupConfigData))]
 [JsonSerializable(typeof(PathPreference))]
-[JsonSerializable(typeof(ThemeColors))]
 internal partial class DotnetupConfigJsonContext : JsonSerializerContext { }
 
 /// <summary>
