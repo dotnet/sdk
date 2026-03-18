@@ -674,6 +674,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
 
         // Run the packed tool.
         new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", packageDir.FullName)
+            .WithEnvironmentVariable("NUGET_PACKAGES", Path.Join(testInstance.Path, "packages"))
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -717,10 +718,11 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
 
         // Run the packed tool.
         new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", outputDir)
+            .WithEnvironmentVariable("NUGET_PACKAGES", Path.Join(testInstance.Path, "packages"))
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("Hello; EntryPointFilePath set? False");
+            .And.HaveStdOut("Hello; EntryPointFilePath set? False");
     }
 
     [Fact]
