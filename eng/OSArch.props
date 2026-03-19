@@ -1,0 +1,32 @@
+<Project>
+
+  <!-- Host architecture detection -->
+  <PropertyGroup Label="CalculateArch">
+    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 's390x' OR '$(BuildArchitecture)' == 'ppc64le' OR '$(BuildArchitecture)' == 'loongarch64')">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+  </PropertyGroup>
+
+  <!-- Host and target OS detection -->
+  <PropertyGroup Label="CalculateTargetOS">
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">linux</HostOSName>
+    <IsLinux Condition="'$(HostOSName)' == 'linux'">true</IsLinux>
+
+    <!-- TargetOS defaults to HostOSName; overridable via /p:TargetOS from build scripts.
+         Uses RID-style OS names (win, osx, linux) for compatibility with existing SDK code. -->
+    <TargetOS Condition="'$(TargetOS)' == ''">$(HostOSName)</TargetOS>
+
+    <!-- OSName preserved for backward compatibility with Layout projects -->
+    <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
+  </PropertyGroup>
+
+</Project>
