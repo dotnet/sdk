@@ -13,7 +13,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
-    public bool BuildIfNeeded()
+    public bool Initialize()
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 

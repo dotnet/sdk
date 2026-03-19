@@ -14,7 +14,7 @@ internal sealed class TestModulesFilterHandler : ITestHandler
 {
     private readonly string _testModules;
     private readonly string? _testModulesRoot;
-    private readonly IEnumerable<string> _testModulePaths;
+    private readonly List<string> _testModulePaths;
 
     public TestModulesFilterHandler(string testModules, ParseResult parseResult)
     {
@@ -35,7 +35,7 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         _testModulePaths = GetMatchedModulePaths(_testModules, _testModulesRoot);
     }
 
-    public bool BuildIfNeeded()
+    public bool Initialize()
     {
         // If the root directory is not valid, we simply return
         if (string.IsNullOrEmpty(_testModulesRoot) || !Directory.Exists(_testModulesRoot))
@@ -45,7 +45,7 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         }
 
         // If no matches were found, we simply return
-        if (!_testModulePaths.Any())
+        if (_testModulePaths.Count == 0)
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.CmdNoTestModulesErrorDescription, _testModules, _testModulesRoot).Yellow());
             return false;
@@ -74,11 +74,11 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         return actionQueue.CompleteEnqueueAndWait();
     }
 
-    private static IEnumerable<string> GetMatchedModulePaths(string testModules, string? rootDirectory)
+    private static List<string> GetMatchedModulePaths(string testModules, string? rootDirectory)
     {
         if (string.IsNullOrEmpty(rootDirectory))
         {
-            return Array.Empty<string>();
+            return new List<string>();
         }
 
         var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
@@ -86,6 +86,13 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         Matcher matcher = new();
         matcher.AddIncludePatterns(testModulePatterns);
 
-        return matcher.GetResultsInFullPath(rootDirectory);
+        // Make sure we have a non-lazy collection, so that if we enumerate multiple times we guarantee the same result.
+        var results = matcher.GetResultsInFullPath(rootDirectory);
+        if (results is List<string> resultsList)
+        {
+            return resultsList;
+        }
+
+        return results.ToList();
     }
 }

@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal interface ITestHandler
 {
-    bool BuildIfNeeded();
+    bool Initialize();
 
     int RunTestApplications(TestApplicationActionQueue actionQueue);
 }
