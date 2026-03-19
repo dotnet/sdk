@@ -23,14 +23,11 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
 
         fileOrDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, fileOrDirectory));
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
-        {
-            return ExecuteForFileBasedApp(fileOrDirectory);
-        }
+        bool isFileBasedApp = allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory);
 
-        Debug.Assert(allowedAppKinds.HasFlag(AppKinds.ProjectBased));
+        Debug.Assert(isFileBasedApp || allowedAppKinds.HasFlag(AppKinds.ProjectBased));
 
-        string projectFile = GetProjectOrSolution(fileOrDirectory);
+        string projectFile = isFileBasedApp ? Path.GetFullPath(fileOrDirectory) : GetProjectOrSolution(fileOrDirectory);
         bool noRestore = _parseResult.HasOption(Definition.NoRestore);
         int restoreExitCode = 0;
 
@@ -38,37 +35,55 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             ReportOutputFormat formatOption = _parseResult.GetValue(Definition.FormatOption);
             bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
-            restoreExitCode = RunRestore(projectFile, formatOption, interactive);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp);
         }
 
         return restoreExitCode == 0
-            ? NuGetCommand.Run(TransformArgs(projectFile))
+            ? NuGetCommand.Run(TransformArgs(projectFile), isFileBasedApp)
             : restoreExitCode;
     }
 
-    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
+    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp)
     {
-        List<string> args = ["-target:Restore", projectOrSolution];
-
-        if (formatOption == ReportOutputFormat.json)
+        CommandBase command;
+        if (isFileBasedApp)
         {
-            args.Add("-noConsoleLogger");
+            command = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: projectOrSolution,
+                msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>
+                {
+                    ["NuGetInteractive"] = interactive.ToString(),
+                }.AsReadOnly()))
+            {
+                NoCache = true,
+                NoBuild = true,
+                NoConsoleLogger = formatOption == ReportOutputFormat.json,
+            };
         }
         else
         {
-            args.Add("-consoleLoggerParameters:NoSummary");
-            args.Add("-verbosity:minimal");
+            List<string> args = ["-target:Restore", projectOrSolution];
+
+            if (formatOption == ReportOutputFormat.json)
+            {
+                args.Add("-noConsoleLogger");
+            }
+            else
+            {
+                args.Add("-consoleLoggerParameters:NoSummary");
+                args.Add("-verbosity:minimal");
+            }
+
+            args.Add($"-interactive:{interactive.ToString().ToLower()}");
+
+            command = new MSBuildForwardingApp(rawMSBuildArgs: args);
         }
-
-        args.Add($"-interactive:{interactive.ToString().ToLower()}");
-
-        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(rawMSBuildArgs: args);
 
         int exitCode = 0;
 
         try
         {
-            exitCode = restoringCommand.Execute();
+            exitCode = command.Execute();
         }
         catch (Exception)
         {
@@ -79,14 +94,7 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             if (formatOption == ReportOutputFormat.json)
             {
-                Console.WriteLine(GetJsonRestoreError());
-            }
-        }
-
-        return exitCode;
-    }
-
-    private static string GetJsonRestoreError() => $$"""
+                string jsonError = $$"""
 {
    "version": 1,
    "problems": [
@@ -97,6 +105,12 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
    ]
 }
 """;
+                Console.WriteLine(jsonError);
+            }
+        }
+
+        return exitCode;
+    }
 
     private string[] TransformArgs(string projectOrSolution)
     {
@@ -169,44 +183,5 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         }
 
         return resultPath;
-    }
-
-    private int ExecuteForFileBasedApp(string path)
-    {
-        var fullPath = Path.GetFullPath(path);
-
-        // Restore.
-        bool noRestore = _parseResult.HasOption(Definition.NoRestore);
-        if (!noRestore)
-        {
-            ReportOutputFormat formatOption = _parseResult.GetValue(Definition.FormatOption);
-            bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
-
-            var command = new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: fullPath,
-                msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>
-                {
-                    ["NuGetInteractive"] = interactive.ToString(),
-                }.AsReadOnly()))
-            {
-                NoCache = true,
-                NoBuild = true,
-                NoConsoleLogger = formatOption == ReportOutputFormat.json,
-            };
-
-            int exitCode = command.Execute();
-
-            if (exitCode != 0)
-            {
-                if (formatOption == ReportOutputFormat.json)
-                {
-                    Console.WriteLine(GetJsonRestoreError());
-                }
-
-                return exitCode;
-            }
-        }
-
-        return NuGetCommand.Run(TransformArgs(fullPath));
     }
 }
