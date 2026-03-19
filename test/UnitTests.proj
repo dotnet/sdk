@@ -85,6 +85,9 @@
 
       <Testpackages Include="$(TestLayoutDir)testpackages\**\*.*" />
 
+      <!-- include binaries folder referenced as a NuGet source in NuGet.config -->
+      <BinariesPackages Include="$(RepoRoot)binaries\**\*.*" />
+
       <!-- include Container artifacts for running test in Helix -->
       <ContainerFiles Include="$(TestLayoutDir)Container\**\*.*" />
 
@@ -128,6 +131,7 @@
     <Copy SourceFiles="@(ContainerFiles)" DestinationFiles="@(ContainerFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Container\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(LockFiles)" DestinationFiles="@(LockFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\LockFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(BinariesPackages)" DestinationFiles="@(BinariesPackages->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\binaries\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
