@@ -335,7 +335,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         /// Ensure server respects keep alive and shuts down after processing simultaneous connections.
         /// </summary>
         [Fact]
-        public void Dispatcher_ProcessSimultaneousConnections_HitsKeepAliveTimeout()
+        public async Task Dispatcher_ProcessSimultaneousConnections_HitsKeepAliveTimeout()
         {
             // Arrange
             var totalCount = 2;
@@ -395,16 +395,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 dispatcher.Run();
             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-            // Wait for all connections to be created and compilations to complete.
-            // Use Task.Wait with timeout to avoid hanging under thread pool starvation.
-            if (!readySource.Task.Wait(TimeSpan.FromSeconds(60)))
-            {
-                throw new Xunit.Sdk.XunitException("Timed out waiting for connections to be created.");
-            }
-            if (!allCompilationsComplete.Task.Wait(TimeSpan.FromSeconds(60)))
-            {
-                throw new Xunit.Sdk.XunitException("Timed out waiting for compilations to complete.");
-            }
+            // Wait for all connections to be created.
+            await readySource.Task;
+
+            // Wait for all compilations to complete.
+            await allCompilationsComplete.Task;
 
             // Now allow all the connections to be disconnected.
             foreach (var source in list)
@@ -414,16 +409,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             // Act
             // Now dispatcher should be in an idle state with no active connections.
-            // Use Task.Wait(timeout) instead of WaitAsync because under extreme thread
-            // pool starvation on Helix CI, even WaitAsync's timer callback can't schedule
-            // its continuation, causing the test to hang for 60+ minutes. Task.Wait uses
-            // a kernel wait (ManualResetEventSlim) that doesn't depend on the thread pool.
-            if (!dispatcherTask.Wait(TimeSpan.FromSeconds(60)))
+            // Use a dedicated thread to enforce the timeout, since under extreme thread pool
+            // starvation on Helix CI, even WaitAsync's timer continuations can't be scheduled.
+            // A dedicated OS thread with Thread.Join(timeout) uses a kernel wait that works
+            // regardless of thread pool state.
+            var completed = false;
+            var timeoutThread = new Thread(() =>
             {
-                throw new Xunit.Sdk.XunitException(
-                    "Dispatcher did not shut down within 60 seconds. This likely indicates " +
-                    "thread pool starvation preventing Task.Delay timer callbacks from firing.");
-            }
+                completed = dispatcherTask.Wait(TimeSpan.FromSeconds(60));
+            }) { IsBackground = true };
+            timeoutThread.Start();
+            timeoutThread.Join(TimeSpan.FromSeconds(65));
+            Assert.True(completed,
+                "Dispatcher did not shut down within 60 seconds. This likely indicates " +
+                "thread pool starvation preventing Task.Delay timer callbacks from firing.");
 
             // Assert
             Assert.False(eventBus.HasDetectedBadConnection);
