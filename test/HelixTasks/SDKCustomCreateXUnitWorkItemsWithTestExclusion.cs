@@ -183,7 +183,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 }
 
                 string command = $"{chmodPrefix}{envPrefix}{testRunner} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m --ignore-exit-code 8 {testFilter} {arguments}";
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m --ignore-exit-code 8" +
+                          $" --crashdump --crashdump-type Full" +
+                          $" --hangdump --hangdump-timeout 60m --hangdump-type Full" +
+                          $" {testFilter} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
