@@ -198,6 +198,9 @@
   <data name="PathDescriptionShellProfile" xml:space="preserve">
     <value>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</value>
   </data>
+  <data name="PathDescriptionShellProfileBase" xml:space="preserve">
+    <value>Configure the current shell profile to use installs managed by dotnetup.</value>
+  </data>
   <data name="PathDescriptionFullReplacement" xml:space="preserve">
     <value>The system will be configured to use dotnetup installs over any other installs.</value>
   </data>

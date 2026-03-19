@@ -132,6 +132,11 @@
         <target state="new">Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PathDescriptionShellProfileBase">
+        <source>Configure the current shell profile to use installs managed by dotnetup.</source>
+        <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PathGuidanceDotnetupDotnet">
         <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
         <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
