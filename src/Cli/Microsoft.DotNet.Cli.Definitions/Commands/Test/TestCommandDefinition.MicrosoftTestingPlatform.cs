@@ -145,7 +145,6 @@ internal abstract partial class TestCommandDefinition
             Options.Add(MaxParallelTestModulesOption);
             Options.Add(MinimumExpectedTestsOption);
             Options.Add(EnvOption);
-            ImplicitRestoreOptions.AddTo(Options);
             Options.Add(ConfigurationOption);
             Options.Add(FrameworkOption);
             TargetPlatformOptions.AddTo(Options);
@@ -153,6 +152,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
             Options.Add(ArtifactsPathOption);
+            ImplicitRestoreOptions.AddTo(Options);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
             Options.Add(OutputOption);
