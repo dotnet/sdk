@@ -5,8 +5,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Semantic color names used throughout dotnetup output.
-/// All values are Spectre.Console color strings (named colors like "green",
-/// hex values like "#9780E5", or RGB like "rgb(151,128,229)").
+/// All values are standard ANSI color names supported by Spectre.Console
+/// (e.g. "green", "red", "blue", "magenta", "yellow", "grey").
 /// </summary>
 internal sealed class ThemeColors
 {
@@ -20,19 +20,19 @@ internal sealed class ThemeColors
     public string Warning { get; set; } = "yellow";
 
     /// <summary>Color for emphasis on versions, paths, and key values.</summary>
-    public string Accent { get; set; } = "#9780E5";
+    public string Accent { get; set; } = "blue";
 
     /// <summary>Color for the dotnet bot banner and branding elements.</summary>
-    public string Brand { get; set; } = "#9780E5";
+    public string Brand { get; set; } = "magenta";
 
     /// <summary>Color for completion/finished highlights (e.g. progress bar at 100%).</summary>
-    public string SuccessAlt { get; set; } = "gold1";
+    public string SuccessAlt { get; set; } = "green";
 
     /// <summary>Color for secondary/de-emphasized text.</summary>
-    public string Dim { get; set; } = "dim";
+    public string Dim { get; set; } = "grey";
 
     /// <summary>Color for success emphasis (installed versions/paths in success messages).</summary>
-    public string SuccessAccent { get; set; } = "#9780E5";
+    public string SuccessAccent { get; set; } = "green";
 }
 
 /// <summary>
