@@ -189,15 +189,25 @@ internal class InstallWorkflow
     }
 
     /// <summary>
-    /// Determines whether the installation should be set as the system default.
-    /// Checks the saved config first; only shows prompts when the config is absent.
-    /// </summary>
-    /// <summary>
     /// Returns true when the given <see cref="PathPreference"/> implies we should
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
-    internal static bool ShouldSetAsDefaultInstall(PathPreference preference) =>
+    internal static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
+
+    /// <summary>
+    /// Returns true when the user chose to convert existing system-level .NET installs
+    /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
+    /// </summary>
+    internal static bool ShouldConvertSystemInstalls(PathPreference preference) =>
         preference != PathPreference.DotnetupDotnet;
+
+    /// <summary>
+    /// Returns true when the user chose full PATH replacement (Windows-only),
+    /// meaning the system PATH entry for dotnet is replaced with the dotnetup path.
+    /// </summary>
+    internal static bool ShouldReplacePath(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
 
     private static bool DeriveSetDefaultInstall(
         InstallWorkflowOptions options)
@@ -212,7 +222,7 @@ internal class InstallWorkflow
         var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
         if (savedPreference is not null)
         {
-            return ShouldSetAsDefaultInstall(savedPreference.Value);
+            return ShouldReplaceSystemConfiguration(savedPreference.Value);
         }
 
         // No config yet. If interactive, show the full path preference selector
@@ -222,7 +232,7 @@ internal class InstallWorkflow
             var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
             if (preference is not null)
             {
-                return ShouldSetAsDefaultInstall(preference.Value);
+                return ShouldReplaceSystemConfiguration(preference.Value);
             }
         }
 

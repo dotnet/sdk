@@ -17,7 +17,6 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Theme;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -66,7 +65,6 @@ internal class Parser
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetAliasCommand());
         rootCommand.Subcommands.Add(WalkthroughCommandParser.GetCommand());
-        rootCommand.Subcommands.Add(ThemeCommandParser.GetCommand());
 
         ConfigureHelp(rootCommand);
 
@@ -106,7 +104,7 @@ internal class Parser
         [
             (Strings.HelpInstallCommandsTitle, ["sdk", "runtime", "install", "update", "uninstall"]),
             (Strings.HelpQueryCommandsTitle, ["list"]),
-            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall", "theme"]),
+            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall"]),
             (Strings.HelpUtilityCommandsTitle, ["dotnet", "walkthrough"]),
         ];
 

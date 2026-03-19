@@ -20,9 +20,9 @@ public interface IDotnetInstallManager
 
     DotnetInstallRootConfiguration? GetConfiguredInstallType();
 
-    string? GetLatestInstalledAdminVersion();
+    string? GetLatestInstalledSystemVersion();
 
-    List<string> GetInstalledAdminSdkVersions();
+    List<string> GetInstalledSystemSdkVersions();
 
     List<DotnetInstall> GetExistingSystemInstalls();
 

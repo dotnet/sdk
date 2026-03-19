@@ -124,6 +124,41 @@ internal class InstallerOrchestratorSingleton
     }
 
     /// <summary>
+    /// Validates all requests upfront by checking channel format and resolving versions.
+    /// Returns a new list with <see cref="DotnetInstallRequest.ResolvedVersion"/> set so
+    /// the download phase can skip redundant resolution.
+    /// Throws <see cref="DotnetInstallException"/> if any request is invalid, reporting all
+    /// errors at once so the user can fix them in a single pass.
+    /// </summary>
+    private static List<DotnetInstallRequest> ValidateAndPreResolveAll(IReadOnlyList<DotnetInstallRequest> requests)
+    {
+        var resolved = new List<DotnetInstallRequest>(requests.Count);
+        var errors = new List<string>();
+
+        foreach (var request in requests)
+        {
+            try
+            {
+                var (_, version, _) = ResolveInstall(request);
+                resolved.Add(request with { ResolvedVersion = version });
+            }
+            catch (DotnetInstallException ex)
+            {
+                errors.Add(ex.Message);
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                string.Join(Environment.NewLine, errors));
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
     /// Prepares and commits all install requests concurrently where possible: downloads run in parallel,
     /// and commits serialize through the install-state mutex.
     /// </summary>
@@ -131,6 +166,10 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822
     public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
     {
+        // Validate all requests and resolve versions upfront before any downloads begin.
+        // This prevents partial downloads when a later request has an invalid channel.
+        requests = ValidateAndPreResolveAll(requests);
+
         var results = new List<InstallResult>();
         var exceptions = new List<Exception>();
         var lockObj = new object();

@@ -46,7 +46,7 @@ internal class InstallWalkthrough
         // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3)
         // AND set-default-install is on. Option 1 (DotnetupDotnet) doesn't touch PATH,
         // so admin installs remain accessible.
-        if (_options.PathPreference == PathPreference.DotnetupDotnet || !setDefaultInstall)
+        if (!InstallWorkflow.ShouldConvertSystemInstalls(_options.PathPreference ?? PathPreference.DotnetupDotnet) || !setDefaultInstall)
         {
             return [];
         }

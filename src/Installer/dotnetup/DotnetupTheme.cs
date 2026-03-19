@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -35,80 +33,22 @@ internal sealed class ThemeColors
 
     /// <summary>Color for success emphasis (installed versions/paths in success messages).</summary>
     public string SuccessAccent { get; set; } = "#9780E5";
-
-    /// <summary>
-    /// Built-in preset themes keyed by name.
-    /// The "standard" preset uses simple ANSI color names (green, red, blue, etc.) that
-    /// map to the user's terminal palette and will respect custom terminal color schemes.
-    /// The "default" preset uses hex values (#9780E5) for brand consistency but overrides
-    /// user terminal themes. Spectre.Console's Color.Default could be explored in the future
-    /// to use the terminal's native foreground/background colors for some properties.
-    /// </summary>
-    internal static readonly IReadOnlyDictionary<string, ThemeColors> s_presets =
-        new Dictionary<string, ThemeColors>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["default"] = new ThemeColors(),
-            ["standard"] = new ThemeColors
-            {
-                Success = "green",
-                Error = "red",
-                Warning = "yellow",
-                Accent = "blue",
-                Brand = "blue",
-                SuccessAlt = "gold1",
-                Dim = "dim",
-                SuccessAccent = "green",
-            },
-            ["monokai"] = new ThemeColors
-            {
-                Success = "#A6E22E",
-                Error = "#F92672",
-                Warning = "#FD971F",
-                Accent = "#66D9EF",
-                Brand = "#AE81FF",
-                SuccessAlt = "#E6DB74",
-                Dim = "#75715E",
-                SuccessAccent = "#A6E22E",
-            },
-        };
-
-    /// <summary>All recognized color property names and their getters/setters.</summary>
-    internal static readonly IReadOnlyDictionary<string, (Func<ThemeColors, string> Get, Action<ThemeColors, string> Set)> s_properties =
-        new Dictionary<string, (Func<ThemeColors, string>, Action<ThemeColors, string>)>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["success"] = (t => t.Success, (t, v) => t.Success = v),
-            ["error"] = (t => t.Error, (t, v) => t.Error = v),
-            ["warning"] = (t => t.Warning, (t, v) => t.Warning = v),
-            ["accent"] = (t => t.Accent, (t, v) => t.Accent = v),
-            ["brand"] = (t => t.Brand, (t, v) => t.Brand = v),
-            ["successalt"] = (t => t.SuccessAlt, (t, v) => t.SuccessAlt = v),
-            ["dim"] = (t => t.Dim, (t, v) => t.Dim = v),
-            ["successaccent"] = (t => t.SuccessAccent, (t, v) => t.SuccessAccent = v),
-        };
 }
 
 /// <summary>
 /// Provides access to the current theme and helpers for building Spectre markup strings.
-/// Thread-safe singleton; loads from config on first access.
 /// </summary>
 internal static class DotnetupTheme
 {
     /// <summary>
-    /// Gets the current theme colors. Loaded from the config file on first access;
-    /// falls back to defaults if the config is missing or has no theme section.
+    /// Gets the current theme colors (default theme).
     /// </summary>
-    public static ThemeColors Current { get; private set; } = Load();
+    public static ThemeColors Current { get; private set; } = new ThemeColors();
 
     /// <summary>
-    /// Forces a reload from the config file (e.g., after the theme command modifies it).
+    /// Resets to the default theme.
     /// </summary>
-    public static void Reload() => Current = Load();
-
-    private static ThemeColors Load()
-    {
-        var config = DotnetupConfig.Read();
-        return config?.Theme ?? new ThemeColors();
-    }
+    public static void Reload() => Current = new ThemeColors();
 
     // ── Markup helpers ──────────────────────────────────────────────
 
@@ -132,31 +72,4 @@ internal static class DotnetupTheme
 
     /// <summary>Wraps text in the theme's success-accent color markup (versions/paths in success messages).</summary>
     public static string SuccessAccent(string text) => $"[{Current.SuccessAccent}]{text}[/]";
-
-    /// <summary>
-    /// Validates that a color string is acceptable for Spectre.Console markup.
-    /// Accepts named colors (green, red, blue, dim, bold, ...), hex (#RRGGBB), and rgb().
-    /// </summary>
-    public static bool IsValidColor(string color)
-    {
-        if (string.IsNullOrWhiteSpace(color))
-        {
-            return false;
-        }
-
-        // Hex: #RRGGBB
-        if (color.StartsWith('#'))
-        {
-            return Regex.IsMatch(color, "^#[0-9A-Fa-f]{6}$");
-        }
-
-        // rgb(r,g,b)
-        if (color.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase))
-        {
-            return Regex.IsMatch(color, @"^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$", RegexOptions.IgnoreCase);
-        }
-
-        // Named color / style: must be a simple word or underscore-separated (e.g. "mediumpurple1", "bold")
-        return Regex.IsMatch(color, "^[a-zA-Z][a-zA-Z0-9_]*$");
-    }
 }

@@ -9,6 +9,15 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
+/// <summary>
+/// Central manager for discovering and configuring .NET installations.
+/// Responsibilities:
+/// - Detecting the current install type (user vs. system/admin) via PATH and registry.
+/// - Resolving the default dotnetup-managed install path.
+/// - Enumerating existing system-level .NET installs across platforms (Windows registry,
+///   macOS /etc/dotnet/install_location files, Linux well-known paths).
+/// - Delegating SDK installation and global.json management.
+/// </summary>
 public class DotnetInstallManager : IDotnetInstallManager
 {
     private readonly IEnvironmentProvider _environmentProvider;
@@ -75,7 +84,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         return GlobalJsonModifier.GetGlobalJsonInfo(initialDirectory);
     }
 
-    public string? GetLatestInstalledAdminVersion()
+    public string? GetLatestInstalledSystemVersion()
     {
         var sdkInstalls = GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)
@@ -83,7 +92,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         return sdkInstalls.Count > 0 ? sdkInstalls[0].Version.ToString() : null;
     }
 
-    public List<string> GetInstalledAdminSdkVersions()
+    public List<string> GetInstalledSystemSdkVersions()
     {
         return [.. GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)

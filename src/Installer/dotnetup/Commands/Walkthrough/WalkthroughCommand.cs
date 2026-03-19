@@ -48,11 +48,11 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         // Both FullPathReplacement and ShellProfile shadow the system PATH, so
         // dotnetup needs to be the default install for both modes.
         // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool? setDefaultInstall = pathPreference != PathPreference.DotnetupDotnet;
+        bool? setDefaultInstall = InstallWorkflow.ShouldReplaceSystemConfiguration(pathPreference);
 
         // Step 2: Prompt about admin installs before setting up the environment.
         // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
-        if (pathPreference != PathPreference.DotnetupDotnet && OperatingSystem.IsWindows())
+        if (InstallWorkflow.ShouldConvertSystemInstalls(pathPreference) && OperatingSystem.IsWindows())
         {
             setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
         }
@@ -232,7 +232,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         PathPreference pathPreference,
         bool? setDefaultInstall)
     {
-        if (pathPreference == PathPreference.DotnetupDotnet || setDefaultInstall != true)
+        if (!InstallWorkflow.ShouldConvertSystemInstalls(pathPreference) || setDefaultInstall != true)
         {
             return;
         }
