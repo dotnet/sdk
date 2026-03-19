@@ -7,6 +7,14 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
+
+REM Enable crash dump collection for .NET processes. xUnit v3 runs tests out-of-process
+REM so --blame-crash monitors the wrong process; these env vars are inherited by the
+REM child AppHost where crashes actually occur.
+set DOTNET_DbgEnableMiniDump=1
+set DOTNET_DbgMiniDumpType=4
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
+set DOTNET_EnableCrashReport=1
 set TestFullMSBuild=%1
 
 REM Ensure Visual Studio instances allow preview SDKs

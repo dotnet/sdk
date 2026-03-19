@@ -9,6 +9,14 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
+# Enable crash dump collection for .NET processes. xUnit v3 runs tests out-of-process
+# so --blame-crash monitors the wrong process; these env vars are inherited by the
+# child AppHost where crashes actually occur.
+export DOTNET_DbgEnableMiniDump=1
+export DOTNET_DbgMiniDumpType=4
+export DOTNET_DbgMiniDumpName=$HELIX_WORKITEM_UPLOAD_ROOT/coredump.%p
+export DOTNET_EnableCrashReport=1
+
 export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
