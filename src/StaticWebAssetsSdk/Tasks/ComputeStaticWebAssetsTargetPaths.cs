@@ -29,6 +29,8 @@ public class ComputeStaticWebAssetsTargetPaths : Task
             AssetsWithTargetPath = new ITaskItem[Assets.Length];
             var separator = UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar;
 
+            var resolveMode = AdjustPathsForPack ? TokenResolveMode.Pack : TokenResolveMode.Serve;
+
             for (var i = 0; i < Assets.Length; i++)
             {
                 var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
@@ -36,7 +38,7 @@ public class ComputeStaticWebAssetsTargetPaths : Task
 
                 var targetPath = staticWebAsset.ComputeTargetPath(
                     PathPrefix,
-                    separator, StaticWebAssetTokenResolver.Instance);
+                    separator, StaticWebAssetTokenResolver.Instance, resolveMode);
 
                 if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                 {
