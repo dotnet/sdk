@@ -48,14 +48,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         // Both FullPathReplacement and ShellProfile shadow the system PATH, so
         // dotnetup needs to be the default install for both modes.
         // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool? setDefaultInstall = InstallWorkflow.ShouldReplaceSystemConfiguration(pathPreference);
+        bool? replaceSystemConfig = InstallWalkthrough.ShouldReplaceSystemConfiguration(pathPreference);
 
         // Step 2: Prompt about admin installs before setting up the environment.
         // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
-        if (InstallWorkflow.ShouldConvertSystemInstalls(pathPreference) && OperatingSystem.IsWindows())
-        {
-            setDefaultInstall = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller);
-        }
+        // Track the migration decision separately — accepting migration should copy installs
+        // but only FullPathReplacement should trigger system PATH changes (elevation).
+        bool userAcceptedInstallMigration = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, pathPreference);
 
         // Install SDK — validate the install path early so the user sees any conflict
         // before the download output, not after.
@@ -64,13 +63,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
 
-        var workflowResult = RunInstallWorkflow(channel, pathPreference, setDefaultInstall);
+        var workflowResult = RunInstallWorkflow(channel, pathPreference, replaceSystemConfig);
 
         // Step 3: Save config — show guidance and "Setup complete!" before migrating admin installs
         SaveConfigAndDisplayResult(pathPreference);
 
         // Step 4: Migrate admin installs after setup is complete so the user knows they can start working
-        RunDeferredAdminInstalls(workflowResult, pathPreference, setDefaultInstall);
+        RunDeferredAdminInstalls(workflowResult, pathPreference, userAcceptedInstallMigration);
 
         return 0;
     }
@@ -204,13 +203,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         return (channel, globalJson, installRoot);
     }
 
-    private InstallWorkflow.InstallWorkflowResult RunInstallWorkflow(string channel, PathPreference pathPreference, bool? setDefaultInstall)
+    private InstallWorkflow.InstallWorkflowResult RunInstallWorkflow(string channel, PathPreference pathPreference, bool? replaceSystemConfig)
     {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
         var options = new InstallWorkflow.InstallWorkflowOptions(
             VersionOrChannel: channel,
             InstallPath: _installPath,
-            SetDefaultInstall: setDefaultInstall,
+            ReplaceSystemConfig: replaceSystemConfig,
             ManifestPath: _manifestPath,
             Interactive: true,
             NoProgress: _noProgress,
@@ -230,9 +229,9 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
     private void RunDeferredAdminInstalls(
         InstallWorkflow.InstallWorkflowResult workflowResult,
         PathPreference pathPreference,
-        bool? setDefaultInstall)
+        bool migrateAdminInstalls)
     {
-        if (!InstallWorkflow.ShouldConvertSystemInstalls(pathPreference) || setDefaultInstall != true)
+        if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference) || !migrateAdminInstalls)
         {
             return;
         }
@@ -322,7 +321,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         var options = new List<SelectableOption>
         {
             new("i", Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
-            new("t", Strings.PathPreferenceShellProfile,   Strings.PathDescriptionShellProfile,   terminalTooltip),
+            new("t", Strings.PathPreferenceShellProfile,   isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase,   terminalTooltip),
         };
 
         if (isWindows)

@@ -28,7 +28,7 @@ internal class InstallWorkflow
     public record InstallWorkflowOptions(
         string? VersionOrChannel,
         string? InstallPath,
-        bool? SetDefaultInstall,
+        bool? ReplaceSystemConfig,
         string? ManifestPath,
         bool Interactive,
         bool NoProgress,
@@ -62,7 +62,7 @@ internal class InstallWorkflow
         string InstallPath,
         string? InstallPathFromGlobalJson,
         string Channel,
-        bool SetDefaultInstall,
+        bool ReplaceSystemConfig,
         bool? UpdateGlobalJson,
         string RequestSource,
         PathSource PathSource);
@@ -80,11 +80,13 @@ internal class InstallWorkflow
         var resolved = CreateInstallRequest(context);
         RecordTelemetry(options, context, resolved);
 
-        var installResult = ExecuteInstallations(context, resolved);
+        var installResult = ExecuteInstallation(context, resolved);
 
         ApplyPostInstallConfiguration(context, resolved);
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
+
+        InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, context.PathPreference);
 
         return new InstallWorkflowResult(
             resolved.ResolvedVersion,
@@ -128,7 +130,7 @@ internal class InstallWorkflow
         // Resolved context tags
         Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
         Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.SetDefaultInstall);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.ReplaceSystemConfig);
         Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
         Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
 
@@ -188,41 +190,20 @@ internal class InstallWorkflow
             pathResolution.PathSource);
     }
 
-    /// <summary>
-    /// Returns true when the given <see cref="PathPreference"/> implies we should
-    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
-    /// </summary>
-    internal static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference == PathPreference.FullPathReplacement;
-
-    /// <summary>
-    /// Returns true when the user chose to convert existing system-level .NET installs
-    /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
-    /// </summary>
-    internal static bool ShouldConvertSystemInstalls(PathPreference preference) =>
-        preference != PathPreference.DotnetupDotnet;
-
-    /// <summary>
-    /// Returns true when the user chose full PATH replacement (Windows-only),
-    /// meaning the system PATH entry for dotnet is replaced with the dotnetup path.
-    /// </summary>
-    internal static bool ShouldReplacePath(PathPreference preference) =>
-        preference == PathPreference.FullPathReplacement;
-
-    private static bool DeriveSetDefaultInstall(
+    private static bool DeriveReplaceSystemConfig(
         InstallWorkflowOptions options)
     {
         // If the caller already determined this (e.g. WalkthroughCommand), use it directly.
-        if (options.SetDefaultInstall is not null)
+        if (options.ReplaceSystemConfig is not null)
         {
-            return options.SetDefaultInstall.Value;
+            return options.ReplaceSystemConfig.Value;
         }
 
         // If a PathPreference was passed in options or is already saved in config, derive silently — no prompts.
         var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
         if (savedPreference is not null)
         {
-            return ShouldReplaceSystemConfiguration(savedPreference.Value);
+            return InstallWalkthrough.ShouldReplaceSystemConfiguration(savedPreference.Value);
         }
 
         // No config yet. If interactive, show the full path preference selector
@@ -232,7 +213,7 @@ internal class InstallWorkflow
             var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
             if (preference is not null)
             {
-                return ShouldReplaceSystemConfiguration(preference.Value);
+                return InstallWalkthrough.ShouldReplaceSystemConfiguration(preference.Value);
             }
         }
 
@@ -261,36 +242,9 @@ internal class InstallWorkflow
             context.Options.Verbosity);
     }
 
-    private static InstallExecutor.InstallResult ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
-    {
-        // Always install the primary component first so the user can start working quickly.
-        var primaryResult = InstallExecutor.ExecuteInstall(
-            resolved.Request,
-            resolved.ResolvedVersion?.ToString(),
-            context.Options.ComponentDescription,
-            context.Options.NoProgress);
-
-        // Copy admin installs after the primary install completes.
-        var additionalInstalls = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
-            resolved.ResolvedVersion,
-            context.SetDefaultInstall);
-
-        if (additionalInstalls.Count > 0)
-        {
-            InstallExecutor.ExecuteAdditionalInstalls(
-                additionalInstalls,
-                resolved.Request.InstallRoot,
-                context.Options.ManifestPath,
-                context.Options.NoProgress,
-                context.Options.RequireMuxerUpdate);
-        }
-
-        return primaryResult;
-    }
-
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
-        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, context.SetDefaultInstall, context.InstallPath);
+        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, context.ReplaceSystemConfig, context.InstallPath);
 
         if (context.UpdateGlobalJson == true && context.GlobalJson?.GlobalJsonPath is not null)
         {

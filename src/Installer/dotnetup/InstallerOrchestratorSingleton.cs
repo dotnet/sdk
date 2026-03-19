@@ -163,7 +163,6 @@ internal class InstallerOrchestratorSingleton
     /// and commits serialize through the install-state mutex.
     /// </summary>
     /// <returns>All results, including already-installed entries.</returns>
-#pragma warning disable CA1822
     public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
     {
         // Validate all requests and resolve versions upfront before any downloads begin.
@@ -201,7 +200,6 @@ internal class InstallerOrchestratorSingleton
 
         return results;
     }
-#pragma warning restore CA1822
 
     /// <summary>
     /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.

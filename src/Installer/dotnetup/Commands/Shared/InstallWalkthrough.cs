@@ -24,55 +24,33 @@ internal class InstallWalkthrough
     private readonly IDotnetInstallManager _dotnetInstaller;
     private readonly InstallWorkflow.InstallWorkflowOptions _options;
 
+    /// <summary>
+    /// Returns true when the given <see cref="PathPreference"/> implies we should
+    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
+    /// </summary>
+    public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
+
+    /// <summary>
+    /// Returns true when the user chose to convert existing system-level .NET installs
+    /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
+    /// </summary>
+    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference) =>
+        preference != PathPreference.DotnetupDotnet;
+
+    /// <summary>
+    /// Returns true when the user chose full PATH replacement (Windows-only),
+    /// meaning the system PATH entry for dotnet is replaced with the dotnetup path.
+    /// </summary>
+    public static bool ShouldReplaceSystemPath(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
+
     public InstallWalkthrough(
         IDotnetInstallManager dotnetInstaller,
         InstallWorkflow.InstallWorkflowOptions options)
     {
         _dotnetInstaller = dotnetInstaller;
         _options = options;
-    }
-
-    /// <summary>
-    /// Prompts the user to install a higher admin version when switching to user install.
-    /// This is relevant when the user is setting up a user install and has a higher version in admin install.
-    /// </summary>
-    /// <param name="resolvedVersion">The version being installed.</param>
-    /// <param name="setDefaultInstall">Whether the install will be set as default.</param>
-    /// <returns>List of additional installs to migrate, empty if none.</returns>
-    public List<DotnetInstall> GetAdditionalAdminVersionsToMigrate(
-        ReleaseVersion? resolvedVersion,
-        bool setDefaultInstall)
-    {
-        // Only prompt about admin installs when the user chose to modify PATH (options 2 or 3)
-        // AND set-default-install is on. Option 1 (DotnetupDotnet) doesn't touch PATH,
-        // so admin installs remain accessible.
-        if (!InstallWorkflow.ShouldConvertSystemInstalls(_options.PathPreference ?? PathPreference.DotnetupDotnet) || !setDefaultInstall)
-        {
-            return [];
-        }
-
-        // Non-interactive fallback: copy all admin installs.
-        var systemInstalls = _dotnetInstaller.GetExistingSystemInstalls();
-        if (systemInstalls.Count == 0)
-        {
-            return [];
-        }
-
-        Activity.Current?.SetTag(TelemetryTagNames.InstallMigratingFromAdmin, true);
-
-        var seenAll = new HashSet<(InstallComponent, string)>();
-        if (resolvedVersion is not null)
-        {
-            seenAll.Add((InstallComponent.SDK, resolvedVersion.ToString()));
-        }
-
-        var uniqueInstalls = systemInstalls.Where(i => seenAll.Add((i.Component, i.Version.ToString()))).ToList();
-        if (uniqueInstalls.Count > 0)
-        {
-            Activity.Current?.SetTag(TelemetryTagNames.InstallAdminVersionCopied, true);
-        }
-
-        return uniqueInstalls;
     }
 
     /// <summary>
@@ -128,8 +106,13 @@ internal class InstallWalkthrough
     /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
     /// <returns>True if the user wants to copy system installs, false if they decline or no system installs exist.</returns>
-    internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller)
+    internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller, PathPreference pathPreference)
     {
+        if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference))
+        {
+            return false;
+        }
+
         var systemInstalls = dotnetInstaller.GetExistingSystemInstalls();
         if (systemInstalls.Count == 0)
         {
@@ -166,5 +149,22 @@ internal class InstallWalkthrough
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
         }
         return userAcceptedMigration;
+    }
+
+    /// <summary>
+    /// Configures the default .NET installation if requested.
+    /// </summary>
+    /// <param name="dotnetInstaller">The install manager.</param>
+    /// <param name="setDefaultInstall">Whether to set as default install.</param>
+    /// <param name="installPath">The installation path.</param>
+    public static void ConfigureDefaultInstallIfRequested(
+        IDotnetInstallManager dotnetInstaller,
+        bool setDefaultInstall,
+        string installPath)
+    {
+        if (setDefaultInstall)
+        {
+            dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
+        }
     }
 }

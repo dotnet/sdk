@@ -131,7 +131,7 @@ internal class InstallExecutor
     /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
     /// <param name="primaryRequest">Optional primary install request to batch with the appropriate phase.</param>
     /// <returns>The primary install result when <paramref name="primaryRequest"/> is supplied; null otherwise.</returns>
-    public static InstallResult? ExecuteAdditionalInstalls(
+    public static InstallResult[] ExecuteAdditionalInstalls(
         IEnumerable<DotnetInstall> additionalInstalls,
         DotnetInstallRoot installRoot,
         string? manifestPath,
@@ -142,7 +142,7 @@ internal class InstallExecutor
         var installsList = additionalInstalls.ToList();
         if (installsList.Count == 0 && primaryRequest is null)
         {
-            return null;
+            return Array.Empty<InstallResult>();
         }
 
         var sdkInstalls = installsList.Where(i => i.Component == InstallComponent.SDK).ToList();
@@ -155,13 +155,13 @@ internal class InstallExecutor
         DisplayBatchSummary(primaryRequest, installsList, installRoot);
 
         // Phase 1: install SDKs first — their archives typically bundle runtime binaries.
-        var primaryResult = RunInstallBatch(sdkInstalls, installRoot, manifestPath, noProgress, requireMuxerUpdate, sdkPrimary);
+        var sdkResults = RunInstallBatch(sdkInstalls, installRoot, manifestPath, noProgress, requireMuxerUpdate, sdkPrimary);
 
         // Phase 2: skip runtimes whose files already landed on disk via an SDK archive.
         var remainingRuntimes = runtimeInstalls.Where(r => !RuntimeFolderExistsOnDisk(installRoot, r)).ToList();
-        var runtimeResult = RunInstallBatch(remainingRuntimes, installRoot, manifestPath, noProgress, requireMuxerUpdate, runtimePrimary);
+        var runtimeResults = RunInstallBatch(remainingRuntimes, installRoot, manifestPath, noProgress, requireMuxerUpdate, runtimePrimary);
 
-        return primaryResult ?? runtimeResult;
+        return [sdkResults, runtimeResults];
     }
 
     private static void DisplayBatchSummary(
@@ -185,7 +185,7 @@ internal class InstallExecutor
             installRoot.Path.EscapeMarkup()));
     }
 
-    private static InstallResult? RunInstallBatch(
+    private static InstallResult[] RunInstallBatch(
         List<DotnetInstall> installs,
         DotnetInstallRoot installRoot,
         string? manifestPath,
@@ -196,7 +196,7 @@ internal class InstallExecutor
         var requests = BuildBatchRequestsFromInstalls(primaryRequest, installs, installRoot, manifestPath, requireMuxerUpdate);
         if (requests.Count == 0)
         {
-            return null;
+            return Array.Empty<InstallResult>();
         }
 
         IReadOnlyList<OrchestratorInstallResult> results;
@@ -209,7 +209,8 @@ internal class InstallExecutor
             results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        return DisplayBatchResults(results, primaryRequest);
+        DisplayBatchResults(results, primaryRequest);
+        return results.ToArray();
     }
 
     private static bool RuntimeFolderExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
@@ -284,14 +285,14 @@ internal class InstallExecutor
 
             sharedPath ??= result.Install.InstallRoot.Path;
             string successAccent = DotnetupTheme.Current.SuccessAccent;
-            string label = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), successAccent, result.Install.Version.ToString().EscapeMarkup());
+            string installDetailLine = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), successAccent, result.Install.Version.ToString().EscapeMarkup());
             if (result.WasAlreadyInstalled)
             {
-                alreadyInstalled.Add(label);
+                alreadyInstalled.Add(installDetailLine);
             }
             else
             {
-                installed.Add(label);
+                installed.Add(installDetailLine);
             }
         }
 
@@ -325,14 +326,6 @@ internal class InstallExecutor
                     "  {0}", item));
             }
         }
-    }
-
-    /// <summary>
-    /// Displays results for a multi-install batch (used by SDK and Runtime install commands).
-    /// </summary>
-    public static void DisplayMultiInstallResults(IReadOnlyList<OrchestratorInstallResult> results)
-    {
-        DisplayBatchResults(results, primaryRequest: null);
     }
 
     /// <summary>
@@ -374,150 +367,11 @@ internal class InstallExecutor
             results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayMultiInstallResults(results);
+        DisplayBatchResults(results, null);
 
         if (setDefaultInstall == true)
         {
             dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
         }
-    }
-
-    /// <summary>
-    /// Configures the default .NET installation if requested.
-    /// </summary>
-    /// <param name="dotnetInstaller">The install manager.</param>
-    /// <param name="setDefaultInstall">Whether to set as default install.</param>
-    /// <param name="installPath">The installation path.</param>
-    public static void ConfigureDefaultInstallIfRequested(
-        IDotnetInstallManager dotnetInstaller,
-        bool setDefaultInstall,
-        string installPath)
-    {
-        if (setDefaultInstall)
-        {
-            dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
-        }
-    }
-
-    /// <summary>
-    /// Displays completion message.
-    /// </summary>
-    public static void DisplayComplete()
-    {
-        SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.SuccessAccent}]Complete![/]");
-    }
-
-    /// <summary>
-    /// Determines whether the given path is an admin/system-managed .NET install location.
-    /// These locations are managed by system package managers or OS installers and should not
-    /// be used by dotnetup for user-level installations.
-    /// </summary>
-    public static bool IsAdminInstallPath(string path)
-    {
-        var fullPath = Path.GetFullPath(path);
-
-        if (OperatingSystem.IsWindows())
-        {
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-
-            if ((!string.IsNullOrEmpty(programFiles) && IsOrIsUnder(fullPath, Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(programFilesX86) && IsOrIsUnder(fullPath, Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-        }
-        else
-        {
-            // Standard system/package-manager locations on Linux and macOS.
-            // See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
-            if (IsOrIsUnder(fullPath, "/usr/share/dotnet", StringComparison.Ordinal) ||
-                IsOrIsUnder(fullPath, "/usr/lib/dotnet", StringComparison.Ordinal) ||
-                IsOrIsUnder(fullPath, "/usr/lib64/dotnet", StringComparison.Ordinal) ||
-                IsOrIsUnder(fullPath, "/usr/local/share/dotnet", StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // Checks whether fullPath equals adminPath or is a child directory of it.
-    // A separate equality check prevents false matches on path prefixes
-    // (e.g. "C:\Program Files\dotnet is cool" matching "C:\Program Files\dotnet").
-    private static bool IsOrIsUnder(string fullPath, string adminPath, StringComparison comparison)
-    {
-        return string.Equals(fullPath, adminPath, comparison) ||
-               fullPath.StartsWith(adminPath + Path.DirectorySeparatorChar, comparison);
-    }
-
-    /// <summary>
-    /// Classifies the install path for telemetry (no PII - just the type of location).
-    /// When pathSource is provided, global_json paths are distinguished from other path types.
-    /// </summary>
-    /// <param name="path">The install path to classify.</param>
-    /// <param name="pathSource">How the path was determined (e.g., "global_json", "explicit"). Null to skip source-based classification.</param>
-    public static string ClassifyInstallPath(string path, PathSource? pathSource = null)
-    {
-        var fullPath = Path.GetFullPath(path);
-
-        // Check for admin/system .NET paths first — these are the most important to distinguish
-        if (IsAdminInstallPath(path))
-        {
-            return "admin";
-        }
-
-        if (OperatingSystem.IsWindows())
-        {
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-
-            if (!string.IsNullOrEmpty(programFiles) && fullPath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase))
-            {
-                return "system_programfiles";
-            }
-            if (!string.IsNullOrEmpty(programFilesX86) && fullPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase))
-            {
-                return "system_programfiles_x86";
-            }
-
-            // Check more-specific paths before less-specific ones:
-            // LocalApplicationData (e.g., C:\Users\x\AppData\Local) is under UserProfile (C:\Users\x)
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (!string.IsNullOrEmpty(localAppData) && fullPath.StartsWith(localAppData, StringComparison.OrdinalIgnoreCase))
-            {
-                return "local_appdata";
-            }
-
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
-            {
-                return "user_profile";
-            }
-        }
-        else
-        {
-            if (fullPath.StartsWith("/usr/", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/opt/", StringComparison.Ordinal))
-            {
-                return "system_path";
-            }
-
-            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(home) && fullPath.StartsWith(home, StringComparison.Ordinal))
-            {
-                return "user_home";
-            }
-        }
-
-        // If the path was specified by global.json and doesn't match a well-known location,
-        // classify it as global_json rather than generic "other"
-        if (pathSource == PathSource.GlobalJson)
-        {
-            return "global_json";
-        }
-
-        return "other";
     }
 }
