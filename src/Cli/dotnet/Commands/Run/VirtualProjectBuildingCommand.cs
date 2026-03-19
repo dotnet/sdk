@@ -1224,8 +1224,7 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 
         builder.CreateProjectInstance(
             projectCollection,
-            static (text, path, textSpan, message, ex) => throw new InvalidOperationException(
-                $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}", ex),
+            ErrorReporters.IgnoringReporter,
             out _,
             out var projectRootElement,
             out _);
