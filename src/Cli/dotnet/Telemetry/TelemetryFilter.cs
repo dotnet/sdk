@@ -15,32 +15,32 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
     private const string ExceptionEventName = "mainCatchException/exception";
     private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResult parseResult) =>
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResult parseResult) =>
         Hash(FilterImpl(parseResult, globalJsonState: null));
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) =>
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) =>
         Hash(FilterImpl(parseData.ParseResult, parseData.GlobalJsonState));
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(InstallerSuccessReport report)
+    public IEnumerable<TelemetryEntryFormat> Filter(InstallerSuccessReport report)
     {
         var reportProperties = new Dictionary<string, string?>
         {
             { "exeName", report.ExeName }
         };
-        return Hash([new ApplicationInsightsEntryFormat("install/reportsuccess", reportProperties)]);
+        return Hash([new TelemetryEntryFormat("install/reportsuccess", reportProperties)]);
     }
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(Exception exception)
+    public IEnumerable<TelemetryEntryFormat> Filter(Exception exception)
     {
         var exceptionProperties = new Dictionary<string, string?>
         {
             { "exceptionType", exception.GetType().ToString() },
             { "detail", ExceptionToStringWithoutMessage(exception) }
         };
-        return Hash([new ApplicationInsightsEntryFormat(ExceptionEventName, exceptionProperties)]);
+        return Hash([new TelemetryEntryFormat(ExceptionEventName, exceptionProperties)]);
     }
 
-    private static IEnumerable<ApplicationInsightsEntryFormat> FilterImpl(ParseResult parseResult, string? globalJsonState)
+    private static IEnumerable<TelemetryEntryFormat> FilterImpl(ParseResult parseResult, string? globalJsonState)
     {
         var topLevelCommandName = parseResult.RootSubCommandResult();
         if (topLevelCommandName is null)
@@ -54,7 +54,7 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
             properties["globalJson"] = globalJsonState;
         }
 
-        yield return new ApplicationInsightsEntryFormat("toplevelparser/command", properties);
+        yield return new TelemetryEntryFormat("toplevelparser/command", properties);
 
         if (parseResult.IsDotnetBuiltInCommand() &&
             parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
@@ -64,7 +64,7 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
                 { "verb", topLevelCommandName},
                 { "verbosity", Enum.GetName(verbosity)}
             };
-            yield return new ApplicationInsightsEntryFormat("sublevelparser/command", verbosityProperties);
+            yield return new TelemetryEntryFormat("sublevelparser/command", verbosityProperties);
         }
 
         if (topLevelCommandName == "package" &&
@@ -77,19 +77,19 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
                 { "verb", "package update" },
                 { "vulnerable", hasVulnerableOption.ToString()}
             };
-            yield return new ApplicationInsightsEntryFormat("sublevelparser/command", vulnerableProperties);
+            yield return new TelemetryEntryFormat("sublevelparser/command", vulnerableProperties);
         }
 
         foreach (IParseResultLogRule rule in ParseResultLogRules)
         {
-            foreach (ApplicationInsightsEntryFormat allowList in rule.AllowList(parseResult))
+            foreach (TelemetryEntryFormat allowList in rule.AllowList(parseResult))
             {
                 yield return allowList;
             }
         }
     }
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Hash(IEnumerable<ApplicationInsightsEntryFormat> entries) =>
+    public IEnumerable<TelemetryEntryFormat> Hash(IEnumerable<TelemetryEntryFormat> entries) =>
         entries.Select(entry => entry.EventName == ExceptionEventName ? entry : entry.WithAppliedToPropertiesValue(_hash));
 
     private static List<IParseResultLogRule> ParseResultLogRules =>

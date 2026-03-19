@@ -12,9 +12,9 @@ internal class AllowListToSendVerbSecondVerbFirstArgument(HashSet<string> topLev
 {
     private HashSet<string> TopLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
+    public List<TelemetryEntryFormat> AllowList(ParseResult parseResult)
     {
-        var result = new List<ApplicationInsightsEntryFormat>();
+        var result = new List<TelemetryEntryFormat>();
         var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
 
         if (topLevelCommandNameFromParse != null)
@@ -26,7 +26,7 @@ internal class AllowListToSendVerbSecondVerbFirstArgument(HashSet<string> topLev
                 var firstArgument = parseResult.Tokens.FirstOrDefault(t => t.Type.Equals(TokenType.Argument))?.Value ?? "";
                 if (secondVerb != null)
                 {
-                    result.Add(new ApplicationInsightsEntryFormat(
+                    result.Add(new TelemetryEntryFormat(
                         "sublevelparser/command",
                         new Dictionary<string, string?>
                         {

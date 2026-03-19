@@ -27,9 +27,9 @@ public static class TelemetryEventEntry
     public static void SendFiltered(Exception exception) =>
         SendFiltered(TelemetryFilter.Filter(exception));
 
-    private static void SendFiltered(IEnumerable<ApplicationInsightsEntryFormat> entries)
+    private static void SendFiltered(IEnumerable<TelemetryEntryFormat> entries)
     {
-        foreach (ApplicationInsightsEntryFormat entry in entries)
+        foreach (TelemetryEntryFormat entry in entries)
         {
             TrackEvent(entry.EventName, entry.Properties);
         }
@@ -48,42 +48,32 @@ public static class TelemetryEventEntry
 
 public class BlockFilter : ITelemetryFilter
 {
-    private static readonly ApplicationInsightsEntryFormat[] s_emptyEntries = [];
+    private static readonly TelemetryEntryFormat[] s_emptyEntries = [];
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResult parseResult) => s_emptyEntries;
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResult parseResult) => s_emptyEntries;
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) => s_emptyEntries;
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) => s_emptyEntries;
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(InstallerSuccessReport report) => s_emptyEntries;
+    public IEnumerable<TelemetryEntryFormat> Filter(InstallerSuccessReport report) => s_emptyEntries;
 
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(Exception exception) => s_emptyEntries;
+    public IEnumerable<TelemetryEntryFormat> Filter(Exception exception) => s_emptyEntries;
 }
 
-public class InstrumentationEventArgs : EventArgs
+public class InstrumentationEventArgs(string eventName, IDictionary<string, string?>? properties = null) : EventArgs
 {
-    internal InstrumentationEventArgs(
-        string eventName,
-        IDictionary<string, string?>? properties)
-    {
-        EventName = eventName;
-        Properties = properties;
-    }
-
-    public string EventName { get; }
-    public IDictionary<string, string?>? Properties { get; }
+    public string EventName { get; } = eventName;
+    public IDictionary<string, string?>? Properties { get; } = properties;
 }
 
-public class ApplicationInsightsEntryFormat(
-    string eventName,
-    IDictionary<string, string?>? properties = null)
+public class TelemetryEntryFormat(string eventName, IDictionary<string, string?>? properties = null)
 {
     public string EventName { get; } = eventName;
     public IDictionary<string, string?>? Properties { get; } = properties;
 
-    public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
+    public TelemetryEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
     {
         var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value ?? string.Empty));
-        return new ApplicationInsightsEntryFormat(EventName, appliedProperties);
+        return new TelemetryEntryFormat(EventName, appliedProperties);
     }
 }
 

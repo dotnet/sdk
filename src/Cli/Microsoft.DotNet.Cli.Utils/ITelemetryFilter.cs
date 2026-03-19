@@ -7,11 +7,11 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 public interface ITelemetryFilter
 {
-    IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResult parseResult);
+    IEnumerable<TelemetryEntryFormat> Filter(ParseResult parseResult);
 
-    IEnumerable<ApplicationInsightsEntryFormat> Filter(ParseResultWithGlobalJsonState parseData);
+    IEnumerable<TelemetryEntryFormat> Filter(ParseResultWithGlobalJsonState parseData);
 
-    IEnumerable<ApplicationInsightsEntryFormat> Filter(InstallerSuccessReport report);
+    IEnumerable<TelemetryEntryFormat> Filter(InstallerSuccessReport report);
 
-    IEnumerable<ApplicationInsightsEntryFormat> Filter(Exception exception);
+    IEnumerable<TelemetryEntryFormat> Filter(Exception exception);
 }

@@ -14,10 +14,10 @@ internal class TopLevelCommandNameAndOptionToLog(HashSet<string> topLevelCommand
     private HashSet<string> _topLevelCommandName { get; } = topLevelCommandName;
     private HashSet<string> _optionsToLog { get; } = optionsToLog;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
+    public List<TelemetryEntryFormat> AllowList(ParseResult parseResult)
     {
         var topLevelCommandName = parseResult.RootSubCommandResult();
-        var result = new List<ApplicationInsightsEntryFormat>();
+        var result = new List<TelemetryEntryFormat>();
         foreach (var optionName in _optionsToLog)
         {
             if (_topLevelCommandName.Contains(topLevelCommandName)
@@ -26,7 +26,7 @@ internal class TopLevelCommandNameAndOptionToLog(HashSet<string> topLevelCommand
                 && optionResult.GetValueOrDefault<object>() is object optionValue
                 && optionValue is not null)
             {
-                result.Add(new ApplicationInsightsEntryFormat(
+                result.Add(new TelemetryEntryFormat(
                     "sublevelparser/command",
                     new Dictionary<string, string?>
                     {

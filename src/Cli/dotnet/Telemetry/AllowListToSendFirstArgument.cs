@@ -11,9 +11,9 @@ internal class AllowListToSendFirstArgument(HashSet<string> topLevelCommandNameA
 {
     private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult)
+    public List<TelemetryEntryFormat> AllowList(ParseResult parseResult)
     {
-        var result = new List<ApplicationInsightsEntryFormat>();
+        var result = new List<TelemetryEntryFormat>();
         var topLevelCommandNameFromParse = parseResult.RootCommandResult.Children.FirstOrDefault() switch
         {
             System.CommandLine.Parsing.CommandResult commandResult => commandResult.Command.Name,
@@ -29,7 +29,7 @@ internal class AllowListToSendFirstArgument(HashSet<string> topLevelCommandNameA
                     .Where(t => t.Type.Equals(TokenType.Argument)).FirstOrDefault()?.Value ?? null;
                 if (firstArgument != null)
                 {
-                    result.Add(new ApplicationInsightsEntryFormat(
+                    result.Add(new TelemetryEntryFormat(
                         "sublevelparser/command",
                         new Dictionary<string, string?>
                         {
