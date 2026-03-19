@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             };
 
             _toolPackageDownloader = new ToolPackageDownloaderMock2(_store,
-                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                 currentWorkingDirectory: null,
                 fileSystem: _fileSystem);
 

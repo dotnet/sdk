@@ -26,13 +26,13 @@ internal static class MSBuildUtility
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (buildExitCode != 0)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
@@ -73,16 +73,16 @@ internal static class MSBuildUtility
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
-        return (projects, isBuiltOrRestored);
+        return (projects, buildExitCode);
     }
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (buildExitCode != 0)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
@@ -94,7 +94,7 @@ internal static class MSBuildUtility
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
-        return (projects, isBuiltOrRestored);
+        return (projects, buildExitCode);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
@@ -103,7 +103,9 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
+
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(binLogArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
@@ -124,9 +126,19 @@ internal static class MSBuildUtility
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
+        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+
+        if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
+            (testModulesFilterOptionValue is not null && positionalTestModules is not null))
+        {
+            throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
+        }
+
         PathOptions pathOptions = new(
-            parseResult.GetValue(definition.ProjectOrSolutionOption),
+            positionalProjectOrSolution ?? parseResult.GetValue(definition.ProjectOrSolutionOption),
             parseResult.GetValue(definition.SolutionOption),
+            positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
@@ -142,12 +154,89 @@ internal static class MSBuildUtility
             msbuildArgs);
     }
 
-    private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
+    {
+        string? positionalProjectOrSolution = null;
+        string? positionalTestModules = null;
+
+        // In case there is a valid case, users can opt-out.
+        // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+        // So, disabling validation is okay if the user scenario is valid.
+        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
+
+        for (int i = 0; i < otherArgs.Count; i++)
+        {
+            var token = otherArgs[i];
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+                }
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+                }
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalTestModules = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+                }
+            }
+            else if (Directory.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+                }
+            }
+        }
+
+        return (positionalProjectOrSolution, positionalTestModules);
+    }
+
+    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
         {
-            return true;
+            return 0;
         }
+
         List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
 
         if (buildOptions.Verbosity is null)
@@ -159,13 +248,11 @@ internal static class MSBuildUtility
             msbuildArgs,
             CommonOptions.CreatePropertyOption(),
             CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
+            CommonOptions.CreateRequiredMSBuildTargetOption(TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
-        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
-
-        return result == (int)BuildResultCode.Success;
+        return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
     private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
