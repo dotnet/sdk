@@ -305,7 +305,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var restoreRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
-                    targetsToBuild: ["Restore"],
+                    targetsToBuild: Builder.RequestedTargets ?? ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
@@ -1208,12 +1208,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 }
 
-/// <summary>
-/// Loaded via reflection by NuGet XPlat CLI. Needs to be <see langword="public"/>.
-/// </summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
-public sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
+internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 {
+    public ProjectRootElement? LastCreatedProject { get; private set; }
+
     public bool IsValidEntryPointPath(string entryPointFilePath) => VirtualProjectBuilder.IsValidEntryPointPath(entryPointFilePath);
 
     public string GetVirtualProjectPath(string entryPointFilePath) => VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
@@ -1231,6 +1229,8 @@ public sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
             out _,
             out var projectRootElement,
             out _);
+
+        LastCreatedProject = projectRootElement;
 
         return projectRootElement;
     }
