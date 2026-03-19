@@ -66,17 +66,9 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             tempDgFilePath,
             projectFilePath);
 
-        var virtualProjectBuilder = isFileBasedApp ? new NuGetVirtualProjectBuilder() : null;
-
-        var result = NuGetCommand.Run(args, virtualProjectBuilder);
+        var result = NuGetCommand.Run(args, isFileBasedApp);
 
         DisposeTemporaryFile(tempDgFilePath);
-
-        if (virtualProjectBuilder?.LastCreatedProject is { } modifiedProject)
-        {
-            // Read back the modified ProjectRootElement and update the directives.
-            VirtualProjectPackageReflector.ReflectChangesToDirectives(modifiedProject, projectFilePath);
-        }
 
         return result;
     }

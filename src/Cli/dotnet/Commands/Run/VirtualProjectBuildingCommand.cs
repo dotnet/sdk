@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -20,7 +19,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
-using NuGet.CommandLine.XPlat;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -1205,33 +1203,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         (modifiedFile with { Path = targetFilePath }).Save();
-    }
-}
-
-internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
-{
-    public ProjectRootElement? LastCreatedProject { get; private set; }
-
-    public bool IsValidEntryPointPath(string entryPointFilePath) => VirtualProjectBuilder.IsValidEntryPointPath(entryPointFilePath);
-
-    public string GetVirtualProjectPath(string entryPointFilePath) => VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
-
-    public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
-    {
-        var fullPath = Path.GetFullPath(entryPointFilePath);
-
-        var builder = new VirtualProjectBuilder(fullPath, VirtualProjectBuildingCommand.TargetFramework);
-
-        builder.CreateProjectInstance(
-            projectCollection,
-            ErrorReporters.IgnoringReporter,
-            out _,
-            out var projectRootElement,
-            out _);
-
-        LastCreatedProject = projectRootElement;
-
-        return projectRootElement;
     }
 }
 

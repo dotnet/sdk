@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -12,10 +11,10 @@ namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 internal class NuGetCommand
 {
-    public static int Run(string[] args, NuGetVirtualProjectBuilder virtualProjectBuilder = null)
+    public static int Run(string[] args, bool isFileBasedApp = false)
     {
-        return Run(args, virtualProjectBuilder != null
-            ? new InProcessNuGetCommandRunner(virtualProjectBuilder)
+        return Run(args, isFileBasedApp
+            ? new InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder.Instance)
             : new NuGetCommandRunner());
     }
 

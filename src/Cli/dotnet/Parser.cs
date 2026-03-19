@@ -127,7 +127,7 @@ public static class Parser
         // TODO: https://github.com/dotnet/sdk/issues/52661
         // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGetCommands.cs
         // Add `package` subcommands to the definition instead.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true), NuGetVirtualProjectBuilder.Instance);
 
         rootCommand.SetAction(parseResult =>
         {

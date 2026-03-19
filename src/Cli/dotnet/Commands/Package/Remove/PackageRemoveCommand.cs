@@ -43,15 +43,7 @@ internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBas
 
         projectFilePath = Path.GetFullPath(projectFilePath);
 
-        var virtualProjectBuilder = isFileBasedApp ? new NuGetVirtualProjectBuilder() : null;
-
-        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), virtualProjectBuilder);
-
-        // Read back the modified ProjectRootElement and update the directives.
-        if (virtualProjectBuilder?.LastCreatedProject is { } modifiedProject)
-        {
-            VirtualProjectPackageReflector.ReflectChangesToDirectives(modifiedProject, projectFilePath);
-        }
+        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), isFileBasedApp);
 
         return result;
     }

@@ -11,6 +11,7 @@ using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -5927,10 +5928,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
 
-        typeof(NuGetVirtualProjectBuilder).IsPublic.Should().BeTrue();
-
         using var projectCollection = new ProjectCollection();
-        var projectRootElement = new NuGetVirtualProjectBuilder().CreateProjectRootElement(appPath, projectCollection);
+        var projectRootElement = NuGetVirtualProjectBuilder.Instance.CreateProjectRootElement(appPath, projectCollection);
 
         var xml = projectRootElement.RawXml;
         Log.WriteLine(xml);
