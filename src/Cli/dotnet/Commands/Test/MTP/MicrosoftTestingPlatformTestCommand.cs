@@ -22,7 +22,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ? new TestModulesFilterHandler(testModules, parseResult)
             : new MSBuildHandler(buildOptions);
 
-        if (!testHandler.BuildIfNeeded())
+        if (!testHandler.Initialize())
         {
             return ExitCode.GenericFailure;
         }
