@@ -6,7 +6,6 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
-using OrchestratorInstallResult = Microsoft.DotNet.Tools.Bootstrapper.InstallResult;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -19,12 +18,6 @@ internal class InstallExecutor
     // ── Shared format strings for install result messages ──
     private const string InstalledAtFormat = "Installed {0} at [{1}]{2}[/]";
     private const string AlreadyInstalledAtFormat = "{0} was already installed at [{1}]{2}[/]";
-
-    /// <summary>
-    /// Result of an installation execution.
-    /// </summary>
-    public record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled = false);
-
     /// <summary>
     /// Result of creating and resolving an install request.
     /// </summary>
@@ -38,7 +31,7 @@ internal class InstallExecutor
     /// <param name="component">The component type (SDK, Runtime, ASPNETCore, WindowsDesktop).</param>
     /// <param name="manifestPath">Optional manifest path for tracking installations.</param>
     /// <param name="channelVersionResolver">The resolver to use for version resolution.</param>
-    /// <param name="requireMuxerUpdate">If true, fail when the muxer cannot be updated.</param>
+    /// <param name="requireMuxerUptrue, fail when the muxer cannot be updated.</param>
     /// <param name="installSource">The source of this install request.</param>
     /// <param name="globalJsonPath">The path to the global.json that triggered this install.</param>
     /// <param name="untracked">If true, install without recording in the manifest.</param>
@@ -53,7 +46,7 @@ internal class InstallExecutor
         bool requireMuxerUpdate = false,
         InstallRequestSource installSource = InstallRequestSource.Explicit,
         string? globalJsonPath = null,
-        bool untracked = false,
+        bool untracked = false,date">If 
         Verbosity verbosity = Verbosity.Normal)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
@@ -345,33 +338,5 @@ internal class InstallExecutor
         var pathPreference = DotnetupConfig.EnsurePathPreference(interactive);
         bool? replaceSystemEnvironment = replaceSystemConfig ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
         return (pathPreference, replaceSystemEnvironment);
-    }
-
-    /// <summary>
-    /// Runs a multi-install batch: creates progress reporting, calls InstallMany,
-    /// displays results, and optionally configures the default install type.
-    /// Shared by SDK and Runtime multi-install paths.
-    /// </summary>
-    public static void RunMultiInstall(
-        List<DotnetInstallRequest> requests,
-        string installPath,
-        bool noProgress,
-        bool? setDefaultInstall,
-        IDotnetInstallManager dotnetInstaller)
-    {
-        IReadOnlyList<OrchestratorInstallResult> results;
-
-        {
-            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
-            using var sharedReporter = new LazyProgressReporter(progressTarget);
-            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
-        }
-
-        DisplayBatchResults(results, null);
-
-        if (setDefaultInstall == true)
-        {
-            dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
-        }
     }
 }

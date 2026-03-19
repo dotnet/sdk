@@ -29,47 +29,13 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
-        ShowBanner();
 
-        // Step 0: Explain channels and let the user pick one
-        string selectedChannel = PromptChannel();
 
-        var (channel, globalJson, installRoot) = ResolveChannelAndStartPredownload(selectedChannel);
-
-        // Step 1: Choose how to access .NET
-        var pathPreference = PromptPathPreference();
-
-        if (pathPreference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Error(Strings.PathReplacementModeUnixError));
-            return 1;
-        }
-
-        // Both FullPathReplacement and ShellProfile shadow the system PATH, so
-        // dotnetup needs to be the default install for both modes.
-        // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool? replaceSystemConfig = InstallWalkthrough.ShouldReplaceSystemConfiguration(pathPreference);
-
-        // Step 2: Prompt about admin installs before setting up the environment.
-        // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
-        // Track the migration decision separately — accepting migration should copy installs
-        // but only FullPathReplacement should trigger system PATH changes (elevation).
-        bool userAcceptedInstallMigration = InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, pathPreference);
 
         // Install SDK — validate the install path early so the user sees any conflict
         // before the download output, not after.
-        SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine("Setting up your environment.");
-        ValidateInstallPathOrThrow(installRoot, _manifestPath);
-        DisplayInstallLocation(globalJson);
-
         var workflowResult = RunInstallWorkflow(channel, pathPreference, replaceSystemConfig);
 
-        // Step 3: Save config — show guidance and "Setup complete!" before migrating admin installs
-        SaveConfigAndDisplayResult(pathPreference);
-
-        // Step 4: Migrate admin installs after setup is complete so the user knows they can start working
-        RunDeferredAdminInstalls(workflowResult, pathPreference, userAcceptedInstallMigration);
 
         return 0;
     }
@@ -255,14 +221,6 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
             return;
         }
 
-        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-            "You may now use dotnetup. In the meantime, we'll install your remaining components."));
-        InstallExecutor.ExecuteAdditionalInstalls(
-            toMigrate,
-            workflowResult.InstallRoot,
-            workflowResult.ManifestPath,
-            workflowResult.NoProgress,
-            workflowResult.RequireMuxerUpdate);
     }
 
     private void DisplayInstallLocation(GlobalJsonInfo? globalJson)

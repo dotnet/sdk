@@ -53,39 +53,14 @@ internal class InstallWalkthrough
         _options = options;
     }
 
-    /// <summary>
-    /// Resolves the channel or version to install, considering global.json and user input.
-    /// </summary>
-    /// <param name="channelFromGlobalJson">The channel resolved from global.json, if any.</param>
-    /// <param name="globalJsonPath">Path to the global.json file, for display purposes.</param>
-    /// <param name="defaultChannel">The default channel to use if none specified (typically "latest").</param>
-    /// <returns>The resolved channel or version string.</returns>
-    public string ResolveChannel(
-        string? channelFromGlobalJson,
-        string? globalJsonPath,
-        string defaultChannel = "latest")
-    {
-        // Explicit version/channel from the user always takes priority
-        if (_options.VersionOrChannel is not null)
-        {
-            return _options.VersionOrChannel;
-        }
 
-        if (channelFromGlobalJson is not null)
-        {
-            SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
-            return channelFromGlobalJson;
-        }
-
-        return defaultChannel;
-    }
 
     /// <summary>
     /// Determines whether global.json should be updated based on channel mismatch.
     /// </summary>
     /// <param name="channelFromGlobalJson">The channel from global.json.</param>
     /// <returns>True if global.json should be updated, false otherwise, or null if not determined.</returns>
-    public bool? ResolveUpdateGlobalJson(string? channelFromGlobalJson)
+    public bool? ShouldUpdateGlobalJsonFile(string? channelFromGlobalJson)
     {
         if (channelFromGlobalJson is not null && _options.VersionOrChannel is not null &&
             //  TODO: Should channel comparison be case-sensitive?
@@ -105,19 +80,19 @@ internal class InstallWalkthrough
     /// <summary>
     /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
-    /// <returns>True if the user wants to copy system installs, false if they decline or no system installs exist.</returns>
-    internal static bool PromptAdminMigration(IDotnetInstallManager dotnetInstaller, PathPreference pathPreference)
+    /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no system installs exist.</returns>
+    internal static List<DotnetInstall> GetInstallsToMigrateIfDesired(IDotnetInstallManager dotnetInstaller, PathPreference pathPreference)
     {
         if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference))
         {
-            return false;
+            return [];
         }
 
         var systemInstalls = dotnetInstaller.GetExistingSystemInstalls();
         if (systemInstalls.Count == 0)
         {
             // Nothing to migrate — don't override the caller's initial choice.
-            return false;
+            return [];
         }
 
         // Find the system install path for display purposes
@@ -148,23 +123,10 @@ internal class InstallWalkthrough
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
         }
-        return userAcceptedMigration;
-    }
 
-    /// <summary>
-    /// Configures the default .NET installation if requested.
-    /// </summary>
-    /// <param name="dotnetInstaller">The install manager.</param>
-    /// <param name="setDefaultInstall">Whether to set as default install.</param>
-    /// <param name="installPath">The installation path.</param>
-    public static void ConfigureDefaultInstallIfRequested(
-        IDotnetInstallManager dotnetInstaller,
-        bool setDefaultInstall,
-        string installPath)
-    {
-        if (setDefaultInstall)
-        {
-            dotnetInstaller.ConfigureInstallType(InstallType.User, installPath);
-        }
+        // Separate out spacing for the next prompt
+        SpectreAnsiConsole.WriteLine();
+
+        return userAcceptedMigration ? systemInstalls : [];
     }
 }

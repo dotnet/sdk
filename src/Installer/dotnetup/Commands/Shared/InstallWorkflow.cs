@@ -86,7 +86,6 @@ internal class InstallWorkflow
 
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
 
-        InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, context.PathPreference);
 
         return new InstallWorkflowResult(
             resolved.ResolvedVersion,
@@ -163,7 +162,7 @@ internal class InstallWorkflow
         if (options.ResolveChannelFromGlobalJson is not null && globalJson?.GlobalJsonPath is not null)
         {
             channelFromGlobalJson = options.ResolveChannelFromGlobalJson(globalJson.GlobalJsonPath);
-            updateGlobalJson = walkthrough.ResolveUpdateGlobalJson(channelFromGlobalJson);
+            updateGlobalJson = walkthrough.ShouldUpdateGlobalJsonFile(channelFromGlobalJson);
         }
 
         string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
@@ -175,6 +174,8 @@ internal class InstallWorkflow
             : channelFromGlobalJson is not null
                 ? "default-globaljson"
                 : "default-latest";
+
+        InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, context.PathPreference);
 
         return new WorkflowContext(
             options,
@@ -190,6 +191,32 @@ internal class InstallWorkflow
             pathResolution.PathSource);
     }
 
+    /// <summary>
+    /// Resolves the channel or version to install, considering global.json and user input.
+    /// </summary>
+    /// <param name="channelFromGlobalJson">The channel resolved from global.json, if any.</param>
+    /// <param name="globalJsonPath">Path to the global.json file, for display purposes.</param>
+    /// <param name="defaultChannel">The default channel to use if none specified (typically "latest").</param>
+    /// <returns>The resolved channel or version string.</returns>
+    public string ResolveChannel(
+        string? channelFromGlobalJson,
+        string? globalJsonPath,
+        string defaultChannel = "latest")
+    {
+        // Explicit version/channel from the user always takes priority
+        if (_options.VersionOrChannel is not null)
+        {
+            return _options.VersionOrChannel;
+        }
+
+        if (channelFromGlobalJson is not null)
+        {
+            SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
+            return channelFromGlobalJson;
+        }
+
+        return defaultChannel;
+    }
     private static bool DeriveReplaceSystemConfig(
         InstallWorkflowOptions options)
     {
@@ -244,7 +271,10 @@ internal class InstallWorkflow
 
     private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
-        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, context.ReplaceSystemConfig, context.InstallPath);
+        if (context.ReplaceSystemConfig)
+        {
+            _dotnetInstaller.ConfigureInstallType(InstallType.User, context.InstallPath);
+        }
 
         if (context.UpdateGlobalJson == true && context.GlobalJson?.GlobalJsonPath is not null)
         {
