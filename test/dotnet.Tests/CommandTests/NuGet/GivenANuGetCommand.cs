@@ -180,5 +180,50 @@ namespace Microsoft.DotNet.Tools.Run.Tests
 
             updatedVersion.Should().BeGreaterThan(v1);
         }
+
+        [Fact]
+        public void ItCanUpdatePackages_FileBasedApp()
+        {
+            // Arrange
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(file, """
+                Console.WriteLine();
+                """);
+
+            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+
+            new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Act
+            var commandResult = new DotnetCommand(Log, "package", "update", "dotnet-hello", "--project", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Assert
+            var listPackageCommandResult = new DotnetCommand(Log, "package", "list", "--format", "json", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+            listPackageCommandResult.Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            var updatedPackageVersionString = JObject.Parse(listPackageCommandResult.StdOut)
+                .SelectToken("$.projects[0].frameworks[0].topLevelPackages[?(@.id == 'dotnet-hello')].requestedVersion")
+                .ToString();
+
+            var v1 = NuGetVersion.Parse("1.0.0");
+            var updatedVersion = NuGetVersion.Parse(updatedPackageVersionString);
+
+            updatedVersion.Should().BeGreaterThan(v1);
+        }
     }
 }
