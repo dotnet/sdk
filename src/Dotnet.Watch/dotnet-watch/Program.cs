@@ -265,8 +265,8 @@ internal sealed class Program(
 
             if (IsHotReloadEnabled())
             {
-                var tfmPrompt = context.Options.NonInteractive ? null
-                    : new SpectreTargetFrameworkSelectionPrompt();
+                using var tfmPrompt = context.Options.NonInteractive ? null
+                    : new SpectreTargetFrameworkSelectionPrompt(console);
                 var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, tfmPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }

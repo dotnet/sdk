@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Watch;
 
-internal abstract class TargetFrameworkSelectionPrompt
+internal abstract class TargetFrameworkSelectionPrompt : IDisposable
 {
     public IReadOnlyList<string>? PreviousTargetFrameworks { get; set; }
     public string? PreviousSelection { get; set; }
@@ -23,4 +23,6 @@ internal abstract class TargetFrameworkSelectionPrompt
     }
 
     protected abstract Task<string> PromptAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken);
+
+    public virtual void Dispose() { }
 }
