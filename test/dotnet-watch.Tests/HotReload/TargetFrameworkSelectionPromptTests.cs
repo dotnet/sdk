@@ -22,7 +22,7 @@ public class TargetFrameworkSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0" };
-        var prompt = new TargetFrameworkSelectionPrompt("Select:", "more", "search", console);
+        var prompt = new SpectreTargetFrameworkSelectionPrompt(console);
 
         var result = await prompt.SelectAsync(frameworks, CancellationToken.None);
         Assert.Equal(frameworks[index], result);
@@ -44,7 +44,7 @@ public class TargetFrameworkSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0" };
-        var prompt = new TargetFrameworkSelectionPrompt("Select:", "more", "search", console);
+        var prompt = new SpectreTargetFrameworkSelectionPrompt(console);
 
         var first = await prompt.SelectAsync(frameworks, CancellationToken.None);
         Assert.Equal(frameworks[index], first);
@@ -66,7 +66,7 @@ public class TargetFrameworkSelectionPromptTests
         console.Input.PushKey(ConsoleKey.DownArrow);
         console.Input.PushKey(ConsoleKey.Enter);
 
-        var prompt = new TargetFrameworkSelectionPrompt("Select:", "more", "search", console);
+        var prompt = new SpectreTargetFrameworkSelectionPrompt(console);
 
         var first = await prompt.SelectAsync(["net7.0", "net8.0", "net9.0"], CancellationToken.None);
         Assert.Equal("net7.0", first);
@@ -87,7 +87,7 @@ public class TargetFrameworkSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0", "net10.0" };
-        var prompt = new TargetFrameworkSelectionPrompt("Select:", "more", "search", console);
+        var prompt = new SpectreTargetFrameworkSelectionPrompt(console);
 
         var result = await prompt.SelectAsync(frameworks, CancellationToken.None);
         Assert.Equal("net9.0", result);

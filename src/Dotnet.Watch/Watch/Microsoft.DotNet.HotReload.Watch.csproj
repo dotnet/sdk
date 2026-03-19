@@ -32,7 +32,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" />
     <PackageReference Include="Microsoft.DotNet.ProjectTools" Condition="'$(ProjectToolsProjectDir)' == ''" />
-    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
   <ItemGroup>

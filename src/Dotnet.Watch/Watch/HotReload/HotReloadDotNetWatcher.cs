@@ -25,7 +25,7 @@ internal sealed class HotReloadDotNetWatcher
 
     internal Task? Test_FileChangesCompletedTask { get; set; }
 
-    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory, TargetFrameworkSelectionPrompt? targetFrameworkSelectionPrompt = null)
+    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory, TargetFrameworkSelectionPrompt? targetFrameworkSelectionPrompt)
     {
         _context = context;
         _console = console;
