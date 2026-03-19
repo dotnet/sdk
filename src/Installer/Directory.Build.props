@@ -1,9 +1,10 @@
 <Project>
-  <!-- Pin RepoRoot to the real repo root BEFORE importing the parent Directory.Build.props,
-       so the Arcade SDK (imported by the parent) does not infer it from this directory's global.json. -->
   <PropertyGroup>
+    <!-- Pin RepoRoot to the real repo root so Arcade does not infer it from this directory's global.json. -->
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..'))</RepoRoot>
   </PropertyGroup>
+  <!-- Important - this Import needs to happen _after_ the RepoRoot is set so that Arcade doesn't set a bunch of incorrect properties.
+       Loading the repo-level D.B.props causes the Arcade SDK to be loaded, which computes load-bearing properties from this value -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library -->
