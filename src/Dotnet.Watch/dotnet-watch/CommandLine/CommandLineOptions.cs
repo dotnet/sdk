@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
@@ -116,10 +117,14 @@ internal sealed class CommandLineOptions
             out var binLogToken,
             out var binLogPath);
 
-        // We assume that forwarded options, if any, are intended for dotnet build.
+        // We assume that forwarded options, if any, are intended for `dotnet build`.
+        // Exclude --target option since we need to control the targets being built.
+        var msbuildCommandDefinition = new MSBuildCommandDefinition();
+
         var buildArguments = buildOptions
             .Select(option => option.ForwardingFunction!(parseResult))
             .SelectMany(args => args)
+            .Where(arg => !msbuildCommandDefinition.Parse(arg).HasOption(msbuildCommandDefinition.TargetOption))
             .ToList();
 
         if (binLogToken != null)
