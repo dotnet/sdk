@@ -265,7 +265,9 @@ internal sealed class Program(
 
             if (IsHotReloadEnabled())
             {
-                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
+                var tfmPrompt = context.Options.NonInteractive ? null
+                    : new TargetFrameworkSelectionPrompt(Resources.SelectTargetFrameworkPrompt, Resources.MoreFrameworksText, Resources.SearchPlaceholderText);
+                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, tfmPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }
             else if (mainProjectOptions.Representation.EntryPointFilePath != null)

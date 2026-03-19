@@ -1,16 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class TargetFrameworkSelectionPrompt(ConsoleInputReader inputReader)
+internal sealed class TargetFrameworkSelectionPrompt(string title, string moreChoicesText, string searchPlaceholderText, IAnsiConsole? console = null)
 {
     public IReadOnlyList<string>? PreviousTargetFrameworks { get; set; }
     public string? PreviousSelection { get; set; }
 
     public async ValueTask<string> SelectAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken)
     {
-        var orderedTargetFrameworks = targetFrameworks.Order().ToArray();
+        var orderedTargetFrameworks = targetFrameworks.Order(StringComparer.OrdinalIgnoreCase).ToArray();
 
         if (PreviousSelection != null && PreviousTargetFrameworks?.SequenceEqual(orderedTargetFrameworks, StringComparer.OrdinalIgnoreCase) == true)
         {
@@ -19,21 +21,15 @@ internal sealed class TargetFrameworkSelectionPrompt(ConsoleInputReader inputRea
 
         PreviousTargetFrameworks = orderedTargetFrameworks;
 
-        var keyInfo = await inputReader.GetKeyAsync(
-            $"Select target framework:{Environment.NewLine}{string.Join(Environment.NewLine, targetFrameworks.Select((tfm, i) => $"{i + 1}) {tfm}"))}",
-            AcceptKey,
-            cancellationToken);
+        var prompt = new SelectionPrompt<string>()
+            .Title($"[cyan]{Markup.Escape(title)}[/]")
+            .PageSize(10)
+            .MoreChoicesText($"[gray]({Markup.Escape(moreChoicesText)})[/]")
+            .AddChoices(targetFrameworks)
+            .EnableSearch()
+            .SearchPlaceholderText(searchPlaceholderText);
 
-        _ = TryGetIndex(keyInfo, out var index);
-        return PreviousSelection = targetFrameworks[index];
-
-        bool TryGetIndex(ConsoleKeyInfo info, out int index)
-        {
-            index = info.KeyChar - '1';
-            return index >= 0 && index < targetFrameworks.Count;
-        }
-
-        bool AcceptKey(ConsoleKeyInfo info)
-            => info is { Modifiers: ConsoleModifiers.None } && TryGetIndex(info, out _);
+        PreviousSelection = await prompt.ShowAsync(console ?? AnsiConsole.Console, cancellationToken);
+        return PreviousSelection;
     }
 }
