@@ -62,21 +62,16 @@ public class ScopedMutex : IDisposable
 
         try
         {
-            // Only invoke the callback when an *external* process holds the mutex.
-            // Suppress it when another task within this process holds it so we don't
-            // show misleading "waiting for mutex" text when we're waiting on ourselves.
-            // Volatile.Read ensures we see the latest value written by Interlocked.Increment/Decrement
-            // on other threads. While Interlocked operations provide full barriers, the defensive
-            if (!SuppressWaitingCallback && Volatile.Read(ref s_processActiveHolds) == 0)
-            {
-                OnWaitingForMutex?.Invoke();
-            }
-
             // First try immediate acquisition to see if we need to wait
             if (!_mutex.WaitOne(0, false))
             {
-                // Another process holds the mutex - notify caller before blocking
-                OnWaitingForMutex?.Invoke();
+                // Another process holds the mutex — only invoke the callback when an
+                // *external* process holds the mutex. Suppress when another task within
+                // this process holds it so we don't show misleading "waiting" text.
+                if (!SuppressWaitingCallback && Volatile.Read(ref s_processActiveHolds) == 0)
+                {
+                    OnWaitingForMutex?.Invoke();
+                }
 
                 // Now wait for the full timeout
                 if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
