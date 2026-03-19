@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../CliCommandStrings.resx">
     <body>
@@ -2386,21 +2386,43 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">プロジェクト コンテキスト</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">変換後にすべてのソース ファイルを削除しますか?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">ファイルベースのプログラムをプロジェクトベースのプログラムに変換します。</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">出力ディレクトリを指定します (Enter キーを押すと既定値に設定されます: '{0}'、ディレクトリは存在してはなりません):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">いいえ - すべてのソース ファイルを保持する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">はい - すべてのソース ファイルを削除する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">削除されたソース ファイル: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">ファイル システムを実際に変更せずに変更を決定します</target>
         <note />
       </trans-unit>
+
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
         <target state="translated">ドライ ラン: ファイルからファイル レベルのディレクティブを削除します: {0}</target>
@@ -2421,6 +2443,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">ドライ ラン: ファイルを作成します: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">ドライ ラン: 次のソース ファイルを削除します: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
         <target state="translated">ドライ ラン: ファイルを削除します: {0}</target>
@@ -2440,6 +2467,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>The XML file that contains the list of packages to be stored.</source>
         <target state="translated">格納されるパッケージのリストを含む XML ファイル。</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
