@@ -58,6 +58,7 @@ internal sealed partial class CSharpCompilerCommand
 
     public string BaseDirectory => field ??= Path.GetDirectoryName(EntryPointFileFullPath)!;
     internal string BaseDirectoryWithTrailingSeparator => field ??= BaseDirectory + Path.DirectorySeparatorChar;
+    internal string FileName => field ??= Path.GetFileName(EntryPointFileFullPath);
     internal string FileNameWithoutExtension => field ??= Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
     /// <summary>
@@ -205,15 +206,24 @@ internal sealed partial class CSharpCompilerCommand
         }
     }
 
+    internal static string WriteCscRspFile(string artifactsPath, ImmutableArray<string> cscArguments)
+    {
+        string rspPath = GetCscRspPath(artifactsPath);
+        File.WriteAllLines(rspPath, cscArguments);
+        return rspPath;
+    }
+
+    private static string GetCscRspPath(string artifactsPath) => Path.Join(artifactsPath, "csc.rsp");
+
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
-
         if (!CscArguments.IsDefaultOrEmpty)
         {
-            File.WriteAllLines(rspPath, CscArguments);
+            rspPath = WriteCscRspFile(ArtifactsPath, CscArguments);
             return;
         }
+
+        rspPath = GetCscRspPath(ArtifactsPath);
 
         // Note that Release builds won't go through this optimized code path because `-c Release` translates to global property `Configuration=Release`
         // and customizing global properties triggers a full MSBuild run.
@@ -228,19 +238,19 @@ internal sealed partial class CSharpCompilerCommand
             File.WriteAllText(assemblyAttributes, GetAssemblyAttributesContent());
         }
 
-        string globalUsings = Path.Join(objDir, $"{FileNameWithoutExtension}.GlobalUsings.g.cs");
+        string globalUsings = Path.Join(objDir, $"{FileName}.GlobalUsings.g.cs");
         if (ShouldEmit(globalUsings))
         {
             File.WriteAllText(globalUsings, GetGlobalUsingsContent());
         }
 
-        string assemblyInfo = Path.Join(objDir, $"{FileNameWithoutExtension}.AssemblyInfo.cs");
+        string assemblyInfo = Path.Join(objDir, $"{FileName}.AssemblyInfo.cs");
         if (ShouldEmit(assemblyInfo))
         {
             File.WriteAllText(assemblyInfo, GetAssemblyInfoContent());
         }
 
-        string editorconfig = Path.Join(objDir, $"{FileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig");
+        string editorconfig = Path.Join(objDir, $"{FileName}.GeneratedMSBuildEditorConfig.editorconfig");
         if (ShouldEmit(editorconfig))
         {
             File.WriteAllText(editorconfig, GetGeneratedMSBuildEditorConfigContent());

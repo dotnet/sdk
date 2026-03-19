@@ -137,7 +137,8 @@ public class UpdatePackageStaticWebAssets : Task
         var oldIdentity = asset.Identity;
 
         var fxDir = Path.Combine(IntermediateOutputPath, "fx", originalSourceId);
-        var destPath = Path.Combine(fxDir, StaticWebAsset.Normalize(relativePath));
+        var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
+        var destPath = Path.Combine(fxDir, StaticWebAsset.Normalize(fileSystemRelativePath));
         destPath = Path.GetFullPath(destPath);
 
         var sourceFile = asset.Identity;
