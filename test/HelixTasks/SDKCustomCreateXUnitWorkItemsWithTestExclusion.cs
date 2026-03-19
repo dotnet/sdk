@@ -149,44 +149,67 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
+            bool isNetFramework = runtimeTargetFrameworkParsed.Framework == ".NETFramework";
+
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                // Build the test filter using MTP --filter-class syntax (pipe-delimited class names become separate args)
-                string testFilter = "";
-                if (!string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString))
+                string command;
+
+                if (isNetFramework)
                 {
-                    var classNames = assemblyPartitionInfo.ClassListArgumentString.Split('|');
-                    testFilter = string.Join(" ", classNames.Select(c => $"--filter-class \"{c}\""));
-                }
+                    // .NET Framework tests run via dotnet test (vstest) since they are DLLs,
+                    // not standalone MTP executables. MTP CrashDump/HangDump extensions are
+                    // also not compatible with .NET Framework.
+                    string enableDiagLogging = $"-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
+                    var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
 
-                // xUnit v3 + MTP tests are standalone executables. On POSIX, the execute bit
-                // is lost when the Helix SDK packages the payload as a zip archive.
-                string testExe = Path.GetFileNameWithoutExtension(assemblyName);
-                string chmodPrefix = IsPosixShell ? $"chmod +x {testExe} && " : "";
-                string testRunner = IsPosixShell ? $"./{testExe}" : $"{testExe}.exe";
-
-                // Set environment variables as shell exports/sets before the test command
-                var envVars = new List<string> { $"HELIX_WORK_ITEM_TIMEOUT={timeout}" };
-                if (!string.IsNullOrEmpty(testExecutionDirectory))
-                    envVars.Add(testExecutionDirectory);
-                if (!string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder))
-                    envVars.Add(msbuildAdditionalSdkResolverFolder);
-
-                string envPrefix;
-                if (IsPosixShell)
-                {
-                    envPrefix = string.Join(" ", envVars.Select(v => $"export {v} &&")) + " ";
+                    command = $"{PathToDotnet} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout}" +
+                              $" -e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%" +
+                              $" -e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r" +
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")}" +
+                              $" --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\"" +
+                              $" --blame-hang --blame-hang-timeout 60m" +
+                              $" {testFilter} {enableDiagLogging} {arguments}";
                 }
                 else
                 {
-                    envPrefix = string.Join(" & ", envVars.Select(v => $"set \"{v}\"")) + " & ";
-                }
+                    // .NET Core tests are standalone MTP executables (xUnit v3 + MTP).
+                    // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive.
+                    string testExe = Path.GetFileNameWithoutExtension(assemblyName);
+                    string chmodPrefix = IsPosixShell ? $"chmod +x {testExe} && " : "";
+                    string testRunner = IsPosixShell ? $"./{testExe}" : $"{testExe}.exe";
 
-                string command = $"{chmodPrefix}{envPrefix}{testRunner} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m --ignore-exit-code 8" +
-                          $" --crashdump --crashdump-type Full" +
-                          $" --hangdump --hangdump-timeout 60m --hangdump-type Full" +
-                          $" {testFilter} {arguments}";
+                    // Build the test filter using MTP --filter-class syntax
+                    string testFilter = "";
+                    if (!string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString))
+                    {
+                        var classNames = assemblyPartitionInfo.ClassListArgumentString.Split('|');
+                        testFilter = string.Join(" ", classNames.Select(c => $"--filter-class \"{c}\""));
+                    }
+
+                    // Set environment variables as shell exports/sets before the test command
+                    var envVars = new List<string> { $"HELIX_WORK_ITEM_TIMEOUT={timeout}" };
+                    if (!string.IsNullOrEmpty(testExecutionDirectory))
+                        envVars.Add(testExecutionDirectory);
+                    if (!string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder))
+                        envVars.Add(msbuildAdditionalSdkResolverFolder);
+
+                    string envPrefix;
+                    if (IsPosixShell)
+                    {
+                        envPrefix = string.Join(" ", envVars.Select(v => $"export {v} &&")) + " ";
+                    }
+                    else
+                    {
+                        envPrefix = string.Join(" & ", envVars.Select(v => $"set \"{v}\"")) + " & ";
+                    }
+
+                    command = $"{chmodPrefix}{envPrefix}{testRunner} " +
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m --ignore-exit-code 8" +
+                              $" --crashdump --crashdump-type Full" +
+                              $" --hangdump --hangdump-timeout 60m --hangdump-type Full" +
+                              $" {testFilter} {arguments}";
+                }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
