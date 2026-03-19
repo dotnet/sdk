@@ -6,6 +6,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
@@ -20,7 +21,18 @@ internal class NuGetCommand
 
     public static int Run(ParseResult parseResult)
     {
-        return Run(parseResult.GetArguments(), new NuGetCommandRunner());
+        ICommandRunner runner;
+
+        if (parseResult.GetArguments() is ["why", { } path, _, ..] && VirtualProjectBuilder.IsValidEntryPointPath(path))
+        {
+            runner = new InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder.Instance);
+        }
+        else
+        {
+            runner = new NuGetCommandRunner();
+        }
+
+        return Run(parseResult.GetArguments(), runner);
     }
 
     public static int Run(string[] args, ICommandRunner nugetCommandRunner)

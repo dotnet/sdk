@@ -97,7 +97,7 @@ public static class Parser
         // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/Commands/Why/WhyCommand.cs
         // Add `why` subcommand to the definition instead.
         var nugetCommand = rootCommand.NuGetCommand;
-        NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(nugetCommand);
+        NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(nugetCommand, NuGetVirtualProjectBuilder.Instance);
 
         NuGetCommandParser.ConfigureCommand(nugetCommand);
 
