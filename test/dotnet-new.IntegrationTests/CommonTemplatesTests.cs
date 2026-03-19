@@ -80,6 +80,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.UnixifyNewlines(), "out")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                     .AddScrubber((path, content) =>
                     {
                         if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
@@ -224,6 +225,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.Replace($"<TargetFramework>{currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
 
             VerificationEngine engine = new(_logger);
@@ -424,6 +426,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace($"<LangVersion>{langVersion}</LangVersion>", "<LangVersion>%LANG%</LangVersion>"))
                     .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
 
             VerificationEngine engine = new(_logger);

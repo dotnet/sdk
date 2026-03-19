@@ -63,7 +63,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
-               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
+               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****"))
+               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt"));
 
             VerificationEngine engine = new(_log);
             await engine.Execute(options);
