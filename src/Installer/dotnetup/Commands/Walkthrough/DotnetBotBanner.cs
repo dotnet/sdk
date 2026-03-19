@@ -33,7 +33,7 @@ internal static class DotnetBotBanner
         return new Panel(content)
         {
             Border = BoxBorder.Rounded,
-            BorderStyle = new Style(Color.FromHex(brand)),
+            BorderStyle = Style.Parse(brand),
             Padding = new Padding(1, 0),
         };
     }
