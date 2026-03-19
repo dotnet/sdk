@@ -85,8 +85,8 @@
 
       <Testpackages Include="$(TestLayoutDir)testpackages\**\*.*" />
 
-      <!-- include binaries folder referenced as a NuGet source in NuGet.config -->
-      <BinariesPackages Include="$(RepoRoot)binaries\**\*.*" />
+      <!-- include binaries folder so the ./binaries NuGet source in NuGet.config resolves on Helix -->
+      <BinariesPackages Include="$(TestLayoutDir)binaries\**\*.*" />
 
       <!-- include Container artifacts for running test in Helix -->
       <ContainerFiles Include="$(TestLayoutDir)Container\**\*.*" />
