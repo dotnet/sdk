@@ -30,11 +30,6 @@ namespace Microsoft.DotNet.Watch
         public required ProjectOptions? MainProjectOptions { get; init; }
 
         /// <summary>
-        /// Default target framework.
-        /// </summary>
-        public required string? TargetFramework { get; init; }
-
-        /// <summary>
         /// Additional arguments passed to `dotnet build` when building projects.
         /// </summary>
         public required IReadOnlyList<string> BuildArguments { get; init; }

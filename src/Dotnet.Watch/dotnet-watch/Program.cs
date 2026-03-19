@@ -310,7 +310,6 @@ namespace Microsoft.DotNet.Watch
                 MainProjectOptions = mainProjectOptions,
                 RootProjects = [mainProjectOptions.Representation],
                 BuildArguments = options.BuildArguments,
-                TargetFramework = options.TargetFramework,
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
                 BrowserLauncher = new BrowserLauncher(logger, processOutputReporter, environmentOptions),
             };
