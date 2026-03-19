@@ -307,13 +307,23 @@ internal class InstallExecutor
         if (installed.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                InstalledAtFormat, string.Join(", ", installed), successAccent, escapedPath));
+                "Installed at [{0}]{1}[/]:", successAccent, escapedPath));
+            foreach (var item in installed)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                    "  {0}", item));
+            }
         }
 
         if (alreadyInstalled.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                AlreadyInstalledAtFormat, string.Join(", ", alreadyInstalled), successAccent, escapedPath));
+                "Already installed at [{0}]{1}[/]:", successAccent, escapedPath));
+            foreach (var item in alreadyInstalled)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                    "  {0}", item));
+            }
         }
     }
 
