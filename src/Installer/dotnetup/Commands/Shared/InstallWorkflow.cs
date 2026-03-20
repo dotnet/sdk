@@ -91,80 +91,94 @@ internal class InstallWorkflow
         var requests = new List<ResolvedInstallRequest>();
         foreach (var spec in componentSpecs)
         {
-            var component = spec.Component;
-            var explicitChannel = spec.VersionOrChannel;
-
-            // Resolve channel: if not provided, try global.json (SDK only), then default to "latest"
-            string channel;
-            bool isFromGlobalJson = false;
-            if (explicitChannel is not null)
-            {
-                channel = explicitChannel;
-            }
-            else
-            {
-                string? channelFromGlobalJson = null;
-                if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
-                {
-                    channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
-                }
-
-                if (channelFromGlobalJson is not null)
-                {
-                    SpectreAnsiConsole.MarkupLine(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
-                        DotnetupTheme.Current.Dim,
-                        component.GetDisplayName(),
-                        channelFromGlobalJson,
-                        globalJson!.GlobalJsonPath!));
-                    channel = channelFromGlobalJson;
-                    isFromGlobalJson = true;
-                }
-                else
-                {
-                    channel = ChannelVersionResolver.LatestChannel;
-                }
-            }
-
-            var installSource = isFromGlobalJson
-                ? InstallRequestSource.GlobalJson
-                : InstallRequestSource.Explicit;
-
-            var request = new DotnetInstallRequest(
-                installRoot,
-                new UpdateChannel(channel),
-                component,
-                new InstallRequestOptions
-                {
-                    ManifestPath = _command.ManifestPath,
-                    RequireMuxerUpdate = _command.RequireMuxerUpdate,
-                    InstallSource = installSource,
-                    GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
-                    Untracked = _command.Untracked,
-                    Verbosity = _command.Verbosity
-                });
-
-            var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
-
-            if (resolvedVersion is null)
-            {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.VersionNotFound,
-                    $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
-            }
-
-            var resolved = new ResolvedInstallRequest(request, resolvedVersion);
-
-            RecordInstallTelemetry(
-                component, explicitChannel,
-                _command.InstallPath, globalJson, currentInstallRoot,
-                pathResolution, channel, resolved);
-
+            var resolved = ResolveSpec(spec, installRoot, globalJson, currentInstallRoot, pathResolution);
             requests.Add(resolved);
         }
 
         return requests;
+    }
+
+    /// <summary>
+    /// Resolves a single <see cref="MinimalInstallSpec"/> to a <see cref="ResolvedInstallRequest"/>
+    /// by inferring the channel (from global.json or "latest"), resolving the version, and recording telemetry.
+    /// </summary>
+    private ResolvedInstallRequest ResolveSpec(
+        MinimalInstallSpec spec,
+        DotnetInstallRoot installRoot,
+        GlobalJsonInfo? globalJson,
+        DotnetInstallRootConfiguration? currentInstallRoot,
+        InstallPathResolver.InstallPathResolutionResult pathResolution)
+    {
+        var component = spec.Component;
+        var explicitChannel = spec.VersionOrChannel;
+
+        var (channel, isFromGlobalJson) = ResolveChannel(component, explicitChannel, globalJson);
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel(channel),
+            component,
+            new InstallRequestOptions
+            {
+                ManifestPath = _command.ManifestPath,
+                RequireMuxerUpdate = _command.RequireMuxerUpdate,
+                InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
+                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
+                Untracked = _command.Untracked,
+                Verbosity = _command.Verbosity
+            });
+
+        var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
+
+        if (resolvedVersion is null)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.VersionNotFound,
+                $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
+        }
+
+        var resolved = new ResolvedInstallRequest(request, resolvedVersion);
+
+        RecordInstallTelemetry(
+            component, explicitChannel,
+            _command.InstallPath, globalJson, currentInstallRoot,
+            pathResolution, channel, resolved);
+
+        return resolved;
+    }
+
+    /// <summary>
+    /// Determines the channel for an install spec. If the user provided an explicit channel, uses that.
+    /// For SDK installs with no explicit channel, tries to infer from global.json.
+    /// Falls back to "latest" if nothing else applies.
+    /// </summary>
+    private static (string Channel, bool IsFromGlobalJson) ResolveChannel(
+        InstallComponent component,
+        string? explicitChannel,
+        GlobalJsonInfo? globalJson)
+    {
+        if (explicitChannel is not null)
+        {
+            return (explicitChannel, false);
+        }
+
+        if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
+        {
+            string? channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
+            if (channelFromGlobalJson is not null)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
+                    DotnetupTheme.Current.Dim,
+                    component.GetDisplayName(),
+                    channelFromGlobalJson,
+                    globalJson.GlobalJsonPath));
+                return (channelFromGlobalJson, true);
+            }
+        }
+
+        return (ChannelVersionResolver.LatestChannel, false);
     }
 
     /// <summary>

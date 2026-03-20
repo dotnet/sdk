@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Spectre.Console;
 using Xunit;
 

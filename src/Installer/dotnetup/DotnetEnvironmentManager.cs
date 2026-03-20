@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///   macOS /etc/dotnet/install_location files, Linux well-known paths).
 /// - Delegating SDK installation and global.json management.
 /// </summary>
-public class DotnetEnvironmentManager : IDotnetEnvironmentManager
+internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 {
 
     public DotnetEnvironmentManager()

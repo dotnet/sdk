@@ -151,12 +151,11 @@ internal class WalkthroughWorkflows
         }
     }
 
-    private PathPreference GetPathPreference(bool interactive)
+    private static PathPreference GetPathPreference(bool interactive)
     {
-               // If the user already configured their preference (e.g. prior walkthrough), reuse it.
+        // If the user already configured their preference (e.g. prior walkthrough), reuse it.
         // In non-interactive mode, use the existing config or default to ShellProfile.
         PathPreference? existingPreference = DotnetupConfig.ReadPathPreference();
-        PathPreference pathPreference;
         if (existingPreference is not null)
         {
             return existingPreference.Value;
@@ -165,17 +164,16 @@ internal class WalkthroughWorkflows
         {
             return PathPreference.ShellProfile;
         }
-        else
-        {
-            var pathPreference = PromptPathPreference();
-                    if (pathPreference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
+
+        var preference = PromptPathPreference();
+        if (preference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
                 Strings.PathReplacementModeUnixError);
         }
-        return pathPreference;
-        }
+
+        return preference;
     }
 
     // ── Prompt Functions ──

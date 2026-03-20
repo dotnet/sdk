@@ -27,6 +27,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
   </ItemGroup>
 

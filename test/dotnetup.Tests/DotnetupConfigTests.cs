@@ -55,30 +55,30 @@ public class DotnetupConfigTests : IDisposable
     [InlineData(PathPreference.DotnetupDotnet)]
     [InlineData(PathPreference.ShellProfile)]
     [InlineData(PathPreference.FullPathReplacement)]
-    internal void EnsurePathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
+    internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
     {
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
 
-        var result = DotnetupConfig.EnsurePathPreference(interactive: false);
+        var result = DotnetupConfig.ReadPathPreference();
 
         result.Should().Be(preference);
     }
 
     [Fact]
-    public void EnsurePathPreference_ReturnsNull_WhenNoConfigAndNonInteractive()
+    public void ReadPathPreference_ReturnsNull_WhenNoConfig()
     {
-        var result = DotnetupConfig.EnsurePathPreference(interactive: false);
+        var result = DotnetupConfig.ReadPathPreference();
 
         result.Should().BeNull();
     }
 
     [Fact]
-    public void EnsurePathPreference_ReturnsStoredPreference_EvenWhenInteractive()
+    public void ReadPathPreference_ReturnsStoredPreference_Regardless()
     {
-        // When config already exists, interactive flag doesn't matter — no prompt needed
+        // When config already exists, ReadPathPreference returns it
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.DotnetupDotnet });
 
-        var result = DotnetupConfig.EnsurePathPreference(interactive: true);
+        var result = DotnetupConfig.ReadPathPreference();
 
         result.Should().Be(PathPreference.DotnetupDotnet);
     }

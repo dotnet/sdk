@@ -38,7 +38,7 @@ internal record DotnetInstallRequest(
     InstallRequestOptions Options);
 
 /// <summary>
-/// An install request whose <see cref="Channel"/> has been resolved to a concrete
+/// An install request whose <see cref="DotnetInstallRequest.Channel"/> has been resolved to a concrete
 /// <see cref="ResolvedVersion"/>. Created by the install workflow after version
 /// resolution succeeds. The <see cref="ResolvedVersion"/> is guaranteed non-null.
 /// </summary>

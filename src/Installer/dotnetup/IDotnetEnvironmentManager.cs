@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 // - Orchestrate installation so that only one install happens at a time
 // - Call into installer implementation
 
-public interface IDotnetEnvironmentManager
+internal interface IDotnetEnvironmentManager
 {
     string GetDefaultDotnetInstallPath();
 

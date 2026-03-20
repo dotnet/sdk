@@ -8,6 +8,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
+using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using DotnetForwardCommand = Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet.DotnetCommand;
 
