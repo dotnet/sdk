@@ -132,27 +132,26 @@ internal class WalkthroughWorkflows
             _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(requests[0]);
         }
 
-        // Step 1: Choose how to access .NET
+        // User chooses how to access .NET
         var pathPreference = GetPathPreference(interactive);
         string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
-        // (Deferable) Step 2: Prompt about admin installs before setting up the environment
+        // (Can Defer) Step 2: Prompt about admin installs before setting up the environment
         // In non-interactive mode, skip the migration prompt entirely.
         List<DotnetInstall> toMigrate = deferAdminMigrationUntilEnd
             ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath)
             : [];
-        // Show the user where installs will land
-        SpectreAnsiConsole.WriteLine();
+
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
         if (requests.Count > 0)
         {
             DisplayInstallLocation(requests[0]);
         }
 
-        // Step 2: Run the primary action (typically installing the base SDK from global.json/latest)
+        // Run the primary action (typically installing the base SDK from global.json/latest)
         primaryActionAfterConfigured();
 
-        // Step 3: Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
+        // Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
         SaveConfigAndDisplayResult(pathPreference);
 
         // NOTE: Global.json modification is intentionally NOT done here.
@@ -231,8 +230,6 @@ internal class WalkthroughWorkflows
                 brand,
                 globalJsonInfo.GlobalJsonPath.EscapeMarkup()));
         }
-
-        SpectreAnsiConsole.WriteLine();
 
         var examples = BuildChannelExamples();
 
