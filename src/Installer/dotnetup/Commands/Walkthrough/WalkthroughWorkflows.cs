@@ -59,7 +59,6 @@ internal class WalkthroughWorkflows()
     // call this from install commands if and only if we arent in interactive mode or full path is specified
     public BaseConfigurationWalkthrough(channel, installfunction)
     {
-        // Step 1: Choose how to access .NET
         var pathPreference = PromptPathPreference();
 
         if (pathPreference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
@@ -373,9 +372,13 @@ internal class WalkthroughWorkflows()
         {
             PathPreference = pathPreference,
         };
+
         DotnetupConfig.Write(config);
         DisplayPathGuidance(pathPreference);
         SpectreAnsiConsole.WriteLine();
+
+        ApplyPostInstallConfiguration(context, resolved);
+
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 

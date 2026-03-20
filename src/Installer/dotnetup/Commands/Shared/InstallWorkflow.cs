@@ -80,8 +80,6 @@ internal class InstallWorkflow
 
         var installResult = ExecuteInstallation(context, resolved);
 
-        ApplyPostInstallConfiguration(context, resolved);
-
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
 
 
