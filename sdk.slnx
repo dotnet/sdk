@@ -40,11 +40,13 @@
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets" />
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" />
   </Folder>
+  <Folder Name="/src/Dotnet.Format/">
+    <Project Path="src/Dotnet.Format/dotnet-format/dotnet-format.csproj" />
+  </Folder>
   <Folder Name="/src/Dotnet.Watch/">
     <Project Path="src/Dotnet.Watch/AspireService/Microsoft.WebTools.AspireService.Package.csproj" />
     <Project Path="src/Dotnet.Watch/AspireService/Microsoft.WebTools.AspireService.shproj" />
     <Project Path="src/Dotnet.Watch/BrowserRefresh/Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
-    <Project Path="src/Dotnet.Format/dotnet-format/dotnet-format.csproj" />
     <Project Path="src/Dotnet.Watch/dotnet-watch/dotnet-watch.csproj" />
     <Project Path="src/Dotnet.Watch/DotNetDeltaApplier/Microsoft.Extensions.DotNetDeltaApplier.csproj" />
     <Project Path="src/Dotnet.Watch/DotNetWatchTasks/DotNetWatchTasks.csproj" />

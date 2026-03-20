@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -46,6 +45,8 @@ internal sealed class WatchControlReader : IAsyncDisposable
         {
             // Pipe may already be broken if the server disconnected
         }
+
+        _disposalCancellationSource.Dispose();
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)
