@@ -15,21 +15,27 @@ public record DotnetInstall(
     InstallComponent Component);
 
 /// <summary>
-/// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
+/// Represents a request for a .NET installation.
+/// <see cref="Channel"/> is the unresolved version channel string provided by the user
+/// (e.g. "latest", "10.0", "9.0.3xx", or a specific version like "9.0.304").
+/// It has NOT been resolved to a concrete <see cref="ReleaseVersion"/>.
+/// To obtain a resolved version, create a <see cref="ResolvedInstallRequest"/>
+/// by resolving this request through a <c>ChannelVersionResolver</c>.
 /// </summary>
 internal record DotnetInstallRequest(
     DotnetInstallRoot InstallRoot,
     UpdateChannel Channel,
     InstallComponent Component,
-    InstallRequestOptions Options)
-{
-    /// <summary>
-    /// Optional pre-resolved version. When set, the orchestrator uses this directly
-    /// instead of resolving the channel again. The Channel is still needed for
-    /// recording the install spec in the manifest.
-    /// </summary>
-    public ReleaseVersion? ResolvedVersion { get; init; }
-}
+    InstallRequestOptions Options);
+
+/// <summary>
+/// An install request whose <see cref="Channel"/> has been resolved to a concrete
+/// <see cref="ResolvedVersion"/>. Created by the install workflow after version
+/// resolution succeeds. The <see cref="ResolvedVersion"/> is guaranteed non-null.
+/// </summary>
+internal record ResolvedInstallRequest(
+    DotnetInstallRequest Request,
+    ReleaseVersion ResolvedVersion);
 
 internal record InstallRequestOptions()
 {

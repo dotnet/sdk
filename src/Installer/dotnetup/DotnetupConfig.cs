@@ -94,7 +94,7 @@ internal static class DotnetupConfig
             return null;
         }
 
-        var preference = Commands.Walkthrough.WalkthroughCommand.PromptPathPreference();
+        var preference = Commands.Walkthrough.WalkthroughWorkflows.PromptPathPreference();
         return preference;
     }
 
