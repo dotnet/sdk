@@ -16,7 +16,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
     private ImmutableHashSet<ProjectInstanceId> _browserLaunchAttempted = [];
 
     /// <summary>
-    /// Retruns an output observing action that triggers the launch of the browser, or null if the browser should not be launched.
+    /// Returns an output observing action that triggers the launch of the browser, or null if the browser should not be launched.
     /// </summary>
     public Action<OutputLine>? TryGetBrowserLaunchOutputObserver(
         ProjectGraphNode projectNode,
