@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .And.NotHaveStdErr();
 
             // Act
-            var commandResult = new DotnetCommand(Log, "package", "update", "dotnet-hello", "--project", "Program.cs")
+            var commandResult = new DotnetCommand(Log, "package", "update", "dotnet-hello", "--file", "Program.cs")
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should()
