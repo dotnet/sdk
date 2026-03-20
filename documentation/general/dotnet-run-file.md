@@ -212,7 +212,7 @@ The directives are processed as follows:
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
   where `{0}` is the directive's value and `{1}` is determined by its extension.
   The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
-  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content`.
+  which is by default set to `.cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content`.
   (The mapping customization is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableItemMapping=true`.)
 
   It is an error if the value is empty.

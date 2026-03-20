@@ -605,7 +605,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
-        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
+        public static string DefaultMappingString => ".cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content";
 
         public static ImmutableArray<(string Extension, string ItemType)> DefaultMapping
         {
@@ -738,7 +738,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public override string ToString() => $"#:{KindToString()} {Name}";
 
         /// <summary>
-        /// Parses a <paramref name="value"/> in the format <c>.protobuf=Protobuf;.cshtml=Content</c>.
+        /// Parses a <paramref name="value"/> in the format <c>.protobuf=Protobuf,.cshtml=Content</c>.
         /// Should come from MSBuild property with name <see cref="MappingPropertyName"/>.
         /// </summary>
         public static ImmutableArray<(string Extension, string ItemType)> ParseMapping(
@@ -746,7 +746,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             SourceFile sourceFile,
             ErrorReporter errorReporter)
         {
-            var pairs = value.Split(';');
+            var pairs = value.Split(',');
 
             var builder = ImmutableArray.CreateBuilder<(string Extension, string ItemType)>(pairs.Length);
 

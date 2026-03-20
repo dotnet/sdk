@@ -3747,7 +3747,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         File.WriteAllText(programPath, """
-            #:property FileBasedProgramsItemMapping=.=X;y
+            #:property FileBasedProgramsItemMapping=.=X,y
             #:include *.*
             """);
 
@@ -3762,7 +3762,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         File.WriteAllText(programPath, """
-            #:property FileBasedProgramsItemMapping=.cs=;y
+            #:property FileBasedProgramsItemMapping=.cs=,y
             #:include *.*
             """);
 
@@ -3777,7 +3777,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         File.WriteAllText(programPath, """
-            #:property FileBasedProgramsItemMapping=.x=X;y
+            #:property FileBasedProgramsItemMapping=.x=X,y
             #:include *.*
             """);
 
@@ -5734,7 +5734,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <OutputType>Exe</OutputType>
@@ -5826,7 +5826,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -5901,7 +5901,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -5975,7 +5975,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile,.resx=EmbeddedResource,.json=None,.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
