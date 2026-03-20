@@ -57,7 +57,7 @@ internal class NuGetCommand
         public int Run(string[] args)
         {
             var nugetApp = new NuGetForwardingApp(args);
-            nugetApp.WithEnvironmentVariable("DOTNET_HOST_PATH", GetDotnetPath());
+            nugetApp.WithEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH, GetDotnetPath());
             return nugetApp.Execute();
         }
     }
@@ -66,7 +66,16 @@ internal class NuGetCommand
     {
         public int Run(string[] args)
         {
-            return global::NuGet.CommandLine.XPlat.Program.Run(args, virtualProjectBuilder);
+            var originalDotNetHostPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH);
+            Environment.SetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH, GetDotnetPath());
+            try
+            {
+                return global::NuGet.CommandLine.XPlat.Program.Run(args, virtualProjectBuilder);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH, originalDotNetHostPath);
+            }
         }
     }
 
