@@ -194,7 +194,7 @@ internal class InstallWorkflow
         }
     }
 
-    private static void ValidateInstallPath(string installPath, PathSource pathSource, string? manifestPath)
+    private void ValidateInstallPath(string installPath, PathSource pathSource, string? manifestPath)
     {
         // Block install paths that point to existing files (not directories)
         if (File.Exists(installPath))
@@ -217,17 +217,20 @@ internal class InstallWorkflow
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
 
-        // Check for untracked .NET artifacts at the install path
-        var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
-        if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
-            && InstallerOrchestratorSingleton.HasDotnetArtifacts(installRoot.Path))
+        if(!_command.Untracked)
         {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
-                $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
-                "To avoid conflicts, use a different install path or remove the existing installation first.");
+            // Check for untracked .NET artifacts at the install path
+            var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
+            if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
+                && InstallerOrchestratorSingleton.HasDotnetArtifacts(installRoot.Path))
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.Unknown,
+                    $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                    "To avoid conflicts, use a different install path or remove the existing installation first.");
+            }
         }
     }
 
