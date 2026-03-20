@@ -344,7 +344,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             // On Unix the file write time is in 1s increments;
             // if we don't wait, there's a chance that the polling
             // watcher will not detect the change
-            await Task.Delay(1000);
+            await Task.Delay(1000, TestContext.Current.CancellationToken);
         }
         File.WriteAllText(testFileFullPath, string.Empty);
 

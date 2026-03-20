@@ -884,7 +884,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 },
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static Task VerifyVisualBasicAsync(string code, string fixedCode)
@@ -904,7 +904,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0)
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

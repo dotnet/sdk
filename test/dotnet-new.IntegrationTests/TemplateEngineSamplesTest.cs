@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         private string GetScenarioName(string[]? args)

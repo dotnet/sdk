@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -379,7 +378,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -416,7 +415,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -637,7 +636,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -687,7 +686,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 #:package A
                 Console.WriteLine();
                 """;

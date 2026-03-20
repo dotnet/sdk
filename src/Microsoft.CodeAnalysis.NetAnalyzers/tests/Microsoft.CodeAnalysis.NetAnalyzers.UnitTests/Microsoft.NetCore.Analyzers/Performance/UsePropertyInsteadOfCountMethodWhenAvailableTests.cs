@@ -64,7 +64,7 @@ public static class C
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
         [Fact]
         public static Task Basic_AsMethodArgument_TestsAsync()
@@ -108,7 +108,7 @@ End Class
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
         [Fact]
         public static Task CSharp_ImmutableArray_TestsAsync()
@@ -144,7 +144,7 @@ public static class C
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
         [Fact]
         public static Task Basic_ImmutableArray_TestsAsync()
@@ -190,7 +190,7 @@ End Module
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
         [Theory]
         [InlineData("string[]", nameof(Array.Length))]
@@ -707,7 +707,7 @@ public class C
 
     public static bool IsDirectorySeparator(char c) => false;
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -739,7 +739,7 @@ Public Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

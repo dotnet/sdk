@@ -25,6 +25,12 @@
           Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'"
           >
     <Copy SourceFiles="$(RepoRoot)NuGet.config" DestinationFiles="$(TestLayoutDir)NuGet.config" />
+    <!-- Copy binaries folder so the ./binaries NuGet source in NuGet.config resolves
+         correctly when tests run from TestLayoutDir or test execution directories. -->
+    <ItemGroup>
+      <_BinariesPackages Include="$(RepoRoot)binaries\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_BinariesPackages)" DestinationFiles="@(_BinariesPackages->'$(TestLayoutDir)binaries\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>
