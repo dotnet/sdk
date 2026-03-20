@@ -1551,7 +1551,7 @@ If command is specified without the argument, it lists all the template packages
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSource">
         <source>Delete all source files after conversion</source>
-        <target state="new">Delete all source files after conversion</target>
+        <target state="translated">轉換後刪除所有來源檔案</target>
         <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">

@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
-            NuGetConfigWriter.Write(projectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(projectDirectory, SdkTestContext.Current.TestPackages);
 
             new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0")
                 .WithWorkingDirectory(projectDirectory)
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 Console.WriteLine();
                 """);
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0", "--file", "Program.cs")
                 .WithWorkingDirectory(testInstance.Path)

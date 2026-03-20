@@ -24,7 +24,11 @@ internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBas
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
 
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_definition.FileOption, _definition.ProjectOption, projectOrFileArgument: null, _parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
+            _definition.FileOption,
+            _definition.ProjectOption,
+            _definition.GetProjectOrFileArgument(),
+            _parseResult);
 
         bool isFileBasedApp = allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory);
 
