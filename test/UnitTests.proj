@@ -25,9 +25,7 @@
     <!-- Projects suffixed with UnitTests or IntegrationTests are not matched by *.Tests.csproj above, so include them with a separate glob. -->
     <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
 
-    <!-- The src task test projects are outside the test/ directory, so they must be included explicitly. -->
-    <SDKCustomXUnitProject Include="..\src\Tasks\Microsoft.NET.Build.Extensions.Tasks.UnitTests\Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" ExcludeAdditionalParameters="true" />
-    <SDKCustomXUnitProject Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj" ExcludeAdditionalParameters="true" />
+    <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.UnitTests\Microsoft.NET.Build.Containers.UnitTests.csproj" />
 
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
@@ -93,7 +91,7 @@
       <!-- include Container artifacts for running test in Helix -->
       <ContainerFiles Include="$(TestLayoutDir)Container\**\*.*" />
 
-      <LockFiles Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\LockFiles\**\*.*" />
+      <LockFiles Include="Microsoft.NET.Build.Tasks.Tests\LockFiles\**\*.*" />
 
       <AssetFiles Include="TestAssets\**\*.*" />
 
