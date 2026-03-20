@@ -30,7 +30,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
+        private static readonly string? PackagesJsonPath = CodeBaseRoot is not null
+            ? Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json")
+            : null;
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -233,6 +235,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private void RecordPackages(string projectDirectory)
         {
+            // Not in a repository environment (e.g. Helix CI); skip recording packages.
+            if (PackagesJsonPath is null)
+            {
+                return;
+            }
+
             // Get all project files with a single directory search, then filter to specific types
             var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
                 .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||

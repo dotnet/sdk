@@ -60,6 +60,12 @@ namespace Microsoft.NET.TestFramework
         public string? ShippingPackagesDirectory { get; set; }
 
         /// <summary>
+        /// Gets the path to the template_feed directory maintained in the repository root.
+        /// In Helix environments, this is set via the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.
+        /// </summary>
+        public string? RepoTemplatePackages { get; set; }
+
+        /// <summary>
         /// Finds a single SDK acquisition artifact (tar.gz, pkg, deb, rpm) matching the specified pattern
         /// in the <see cref="ShippingPackagesDirectory"/>.
         /// </summary>
@@ -264,6 +270,12 @@ namespace Microsoft.NET.TestFramework
                     testContext.ShippingPackagesDirectory = Path.Combine(dotnetRoot, ".nuget");
                 }
             }
+
+            string? envRepoTemplatePackages = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES");
+            string? repoTemplatePackagesFallback = repoRoot != null ? Path.Combine(repoRoot, "template_feed") : null;
+            testContext.RepoTemplatePackages =
+                (!string.IsNullOrEmpty(envRepoTemplatePackages) && Directory.Exists(envRepoTemplatePackages) ? envRepoTemplatePackages : null)
+                ?? (repoTemplatePackagesFallback != null && Directory.Exists(repoTemplatePackagesFallback) ? repoTemplatePackagesFallback : null);
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 

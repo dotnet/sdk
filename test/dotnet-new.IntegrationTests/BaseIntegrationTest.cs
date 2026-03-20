@@ -32,14 +32,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static string DotnetNewTestTemplatePackageProjectPath { get; } = VerifyFileExists(Path.Combine(DotnetNewTestAssets, "Microsoft.TemplateEngine.TestTemplates.csproj"));
 
         /// <summary>
-        /// Gets a path to the repo root folder.
+        /// Gets a path to the repo root folder, or null if not running in a repository environment (e.g. Helix).
         /// </summary>
-        public static string CodeBaseRoot { get; } = GetAndVerifyRepoRoot();
+        public static string? CodeBaseRoot { get; } = SdkTestContext.GetRepoRoot();
 
         /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
+        public static string RepoTemplatePackages { get; } = VerifyExists(
+            SdkTestContext.Current.RepoTemplatePackages
+            ?? throw new InvalidOperationException("The template_feed directory path is not configured. " +
+                "Set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable to the template_feed directory path."));
 
 #if DEBUG
         /// <summary>
@@ -176,18 +179,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return file;
         }
 
-        private static string GetAndVerifyRepoRoot()
-        {
-            string repoRoot = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "..", ".."));
-            if (!Directory.Exists(repoRoot))
-            {
-                Assert.Fail($"The repo root cannot be evaluated.");
-            }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
-            {
-                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
-            }
-            return repoRoot;
-        }
     }
 }
