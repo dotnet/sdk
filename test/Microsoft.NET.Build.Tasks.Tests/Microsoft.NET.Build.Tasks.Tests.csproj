@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\Common\Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
