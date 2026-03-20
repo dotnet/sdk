@@ -12,8 +12,7 @@ public class FakeRecordEventNameTelemetry : ITelemetryClient
 
     public string? EventName { get; set; }
 
-    public void TrackEvent(string eventName,
-        IDictionary<string, string?>? properties)
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
         LogEntries.Add(new LogEntry
         {
