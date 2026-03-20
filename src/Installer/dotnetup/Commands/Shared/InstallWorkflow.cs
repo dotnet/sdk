@@ -112,6 +112,17 @@ internal class InstallWorkflow
                 "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
+        if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
+            && InstallerOrchestratorSingleton.HasDotnetArtifacts(installRoot.Path))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                "To avoid conflicts, use a different install path or remove the existing installation first.");
+        }
     }
 
     private static void RecordTelemetry(InstallWorkflowOptions options, WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)

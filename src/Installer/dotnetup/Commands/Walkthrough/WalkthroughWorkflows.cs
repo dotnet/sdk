@@ -16,8 +16,32 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 /// and records the user's path replacement preference to <c>dotnetup.config.json</c>.
 /// </summary>
 internal class WalkthroughWorkflows()
-
 {
+    private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
+
+    /// <summary>
+    /// Returns true when the given <see cref="PathPreference"/> implies we should
+    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
+    /// </summary>
+    public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
+
+    /// <summary>
+    /// Returns true when the user chose to convert existing system-level .NET installs
+    /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
+    /// </summary>
+    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference) =>
+        preference != PathPreference.DotnetupDotnet;
+
+    /// <summary>
+    /// Returns true when the user chose full PATH replacement (Windows-only),
+    /// meaning the system PATH entry for dotnet is replaced with the dotnetup path.
+    /// </summary>
+    public static bool ShouldReplaceSystemPath(PathPreference preference) =>
+        preference == PathPreference.FullPathReplacement;
+
+    // Walkthrough Wrappers
+    // These functions orchestrate the overall flow of the walkthrough, calling into the shared InstallWorkflow and InstallWalkthrough functions as needed.
 
     // call this from walkthrough command / initial program.cs walkthrough setup
     public FullIntroductionWalkthrough()
@@ -80,12 +104,7 @@ internal class WalkthroughWorkflows()
             workflowResult.RequireMuxerUpdate);
     }
 
-
-    private static void ShowBanner()
-    {
-        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
-        SpectreAnsiConsole.WriteLine();
-    }
+    // Prompt Functions (Interactive Engagements)
 
     /// <summary>
     /// Explains how dotnetup channels work and lets the user pick a channel.
@@ -150,7 +169,7 @@ internal class WalkthroughWorkflows()
         return selected.Channel;
     }
 
-/// <summary>
+    /// <summary>
     /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
     /// using an interactive selector that shows all options with descriptions and tooltips.
     /// </summary>
@@ -188,8 +207,84 @@ internal class WalkthroughWorkflows()
         };
     }
 
+    /// <summary>
+    /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
+    /// </summary>
+    /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no system installs exist.</returns>
+    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetInstallManager dotnetInstaller, PathPreference pathPreference)
+    {
+        if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference))
+        {
+            return [];
+        }
 
-        private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+        var systemInstalls = dotnetInstaller.GetExistingSystemInstalls();
+        if (systemInstalls.Count == 0)
+        {
+            // Nothing to migrate — don't override the caller's initial choice.
+            return [];
+        }
+
+        // Find the system install path for display purposes
+        var currentInstall = dotnetInstaller.GetConfiguredInstallType();
+        string systemPath = currentInstall?.InstallType == InstallType.Admin
+            ? currentInstall.Path
+            : DotnetInstallManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
+
+        SpectreAnsiConsole.WriteLine();
+        SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
+
+        var displayItems = systemInstalls
+            .OrderBy(i => i.Component)
+            .ThenByDescending(i => i.Version)
+            .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
+            .ToList();
+
+        bool userAcceptedMigration = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
+            displayItems,
+            visibleCount: 3,
+            "Do you want to copy the following installs into the dotnetup managed directory?");
+
+        if (userAcceptedMigration)
+        {
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes. You can change this later with \"dotnetup defaultinstall\".[/]");
+        }
+        else
+        {
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+        }
+
+        // Separate out spacing for the next prompt
+        SpectreAnsiConsole.WriteLine();
+
+        return userAcceptedMigration ? systemInstalls : [];
+    }
+
+    // Save Settings
+
+
+    /// <summary>
+    /// Determines whether global.json should be updated based on channel mismatch.
+    /// </summary>
+    /// <param name="channelFromGlobalJson">The channel from global.json.</param>
+    /// <returns>True if global.json should be updated, false otherwise, or null if not determined.</returns>
+    public bool? ShouldUpdateGlobalJsonFile(string? channelFromGlobalJson)
+    {
+        if (channelFromGlobalJson is not null && _options.VersionOrChannel is not null &&
+            !channelFromGlobalJson.Equals(_options.VersionOrChannel, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_options.Interactive && _options.UpdateGlobalJson == null)
+            {
+                return SpectreAnsiConsole.Confirm(
+                    $"The channel specified in global.json ({channelFromGlobalJson}) does not match the channel specified ({_options.VersionOrChannel}). Do you want to update global.json to match the specified channel?",
+                    defaultValue: true);
+            }
+        }
+
+        return null;
+    }
+
+    private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
         if (context.ReplaceSystemConfig)
         {
@@ -201,6 +296,112 @@ internal class WalkthroughWorkflows()
             _dotnetInstaller.UpdateGlobalJson(
                 context.GlobalJson.GlobalJsonPath,
                 resolved.ResolvedVersion!.ToString());
+        }
+    }
+
+    // Display Functions:
+
+    private static void ShowBanner()
+    {
+        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
+        SpectreAnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Builds a list of example channels with descriptions and resolved versions.
+    /// Uses the release manifest to find the latest major version dynamically.
+    /// </summary>
+    private List<ChannelExample> BuildChannelExamples()
+    {
+        var resolver = _channelVersionResolver;
+
+        var latestResolved = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.LatestChannel), InstallComponent.SDK);
+        string? ltsVersion = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.LtsChannel), InstallComponent.SDK)?.ToString();
+        string? previewVersion = resolver.GetLatestVersionForChannel(
+            new UpdateChannel(ChannelVersionResolver.PreviewChannel), InstallComponent.SDK)?.ToString();
+
+        var examples = new List<ChannelExample>
+        {
+            new(ChannelVersionResolver.LatestChannel, "Latest stable release", latestResolved?.ToString()),
+            new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
+            new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
+        };
+
+        if (latestResolved is not null)
+        {
+            string latestVersion = latestResolved.ToString();
+            string majorMinor = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}");
+            string featureBand = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}.{latestResolved.SdkFeatureBand / 100}xx");
+
+            examples.Add(new(majorMinor, "Major.Minor channel", latestVersion));
+            examples.Add(new(featureBand, "SDK feature band", latestVersion));
+            examples.Add(new(latestVersion, "Explicit version", latestVersion));
+        }
+
+        return examples;
+    }
+
+    private void DisplayInstallLocation(GlobalJsonInfo? globalJson)
+    {
+        if (globalJson?.SdkPath is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]Installing to [{1}]{2}[/] as controlled by global.json file [{1}]{3}[/].[/]",
+                DotnetupTheme.Current.Dim,
+                DotnetupTheme.Current.Accent,
+                globalJson.SdkPath.EscapeMarkup(),
+                globalJson.GlobalJsonPath!.EscapeMarkup()));
+        }
+        else
+        {
+            string resolvedInstallPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]You can find dotnetup managed installs at [{1}]{2}[/].[/]",
+                DotnetupTheme.Current.Dim,
+                DotnetupTheme.Current.Accent,
+                resolvedInstallPath.EscapeMarkup()));
+        }
+    }
+
+    private static void SaveConfigAndDisplayResult(PathPreference pathPreference)
+    {
+        var config = new DotnetupConfigData
+        {
+            PathPreference = pathPreference,
+        };
+        DotnetupConfig.Write(config);
+        DisplayPathGuidance(pathPreference);
+        SpectreAnsiConsole.WriteLine();
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
+    }
+
+
+
+    /// <summary>
+    /// Shows guidance based on the chosen path preference.
+    /// </summary>
+    private static void DisplayPathGuidance(PathPreference preference)
+    {
+        SpectreAnsiConsole.WriteLine();
+        string? guidance = preference switch
+        {
+            PathPreference.DotnetupDotnet => Strings.PathGuidanceDotnetupDotnet,
+            PathPreference.ShellProfile => Strings.PathGuidanceShellProfile,
+            PathPreference.FullPathReplacement => Strings.PathGuidanceFullReplacement,
+            _ => null,
+        };
+
+        if (guidance is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]{1}[/]",
+                DotnetupTheme.Current.Dim,
+                guidance.EscapeMarkup()));
         }
     }
 }
