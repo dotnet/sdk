@@ -46,15 +46,23 @@ internal class WalkthroughWorkflows
     /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
     /// Also returns false if the user previously opted out via <see cref="DotnetupConfigData.DisableInstallConversion"/>.
     /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
+    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference, bool ignoreConfig = false)
     {
         if (preference == PathPreference.DotnetupDotnet)
         {
             return false;
         }
 
-        var existingConfig = DotnetupConfig.Read();
-        return existingConfig?.DisableInstallConversion != true;
+        if (!ignoreConfig)
+        {
+            var existingConfig = DotnetupConfig.Read();
+            if (existingConfig?.DisableInstallConversion == true)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -134,13 +142,13 @@ internal class WalkthroughWorkflows
         }
 
         // User chooses how to access .NET
-        var pathPreference = GetPathPreference(interactive);
+        var pathPreference = GetPathPreference(interactive, askEvenIfConfigured);
         string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
         // (Can Defer) Step 2: Prompt about admin installs before setting up the environment
         // In non-interactive mode, skip the migration prompt entirely.
         List<DotnetInstall> toMigrate = deferAdminMigrationUntilEnd
-            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath)
+            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured)
             : [];
 
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
@@ -166,7 +174,7 @@ internal class WalkthroughWorkflows
         }
 
         // Step 4: Prompt (or use old prompt) migrating admin installs now that the environment is configured.
-        toMigrate ??= PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath);
+        toMigrate ??= PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
         if (toMigrate.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
@@ -176,12 +184,12 @@ internal class WalkthroughWorkflows
         }
     }
 
-    private static PathPreference GetPathPreference(bool interactive)
+    private static PathPreference GetPathPreference(bool interactive, bool askEvenIfConfigured)
     {
         // If the user already configured their preference (e.g. prior walkthrough), reuse it.
         // In non-interactive mode, use the existing config or default to ShellProfile.
         PathPreference? existingPreference = DotnetupConfig.ReadPathPreference();
-        if (existingPreference is not null)
+        if (existingPreference is not null && !askEvenIfConfigured)
         {
             return existingPreference.Value;
         }
@@ -300,9 +308,9 @@ internal class WalkthroughWorkflows
     /// Installs already tracked in the dotnetup manifest for <paramref name="installRoot"/> are excluded.
     /// </summary>
     /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no unconverted system installs exist.</returns>
-    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference, DotnetInstallRoot installRoot, string? manifestPath = null)
+    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference, DotnetInstallRoot installRoot, string? manifestPath = null, bool askEvenIfConfigured = false)
     {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!ShouldPromptToConvertSystemInstalls(pathPreference, ignoreConfig: askEvenIfConfigured))
         {
             return [];
         }
@@ -349,8 +357,29 @@ internal class WalkthroughWorkflows
             "Do you want to copy the following installs into the dotnetup managed directory?",
             allowNeverAsk: true);
 
+        HandleMigrationConfirmResult(confirmResult, askEvenIfConfigured);
+        return confirmResult == ConfirmResult.Yes ? systemInstalls : [];
+    }
+
+    /// <summary>
+    /// Persists the user's migration-prompt decision: clears a prior opt-out on accept,
+    /// sets <see cref="DotnetupConfigData.DisableInstallConversion"/> on "never ask again",
+    /// or shows a hint on decline.
+    /// </summary>
+    private static void HandleMigrationConfirmResult(ConfirmResult confirmResult, bool askEvenIfConfigured)
+    {
         if (confirmResult == ConfirmResult.Yes)
         {
+            if (askEvenIfConfigured)
+            {
+                var config = DotnetupConfig.Read() ?? new DotnetupConfigData();
+                if (config.DisableInstallConversion)
+                {
+                    config.DisableInstallConversion = false;
+                    DotnetupConfig.Write(config);
+                }
+            }
+
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes. You can change this later with \"dotnetup defaultinstall\".[/]");
         }
         else if (confirmResult == ConfirmResult.NeverAskAgain)
@@ -363,8 +392,6 @@ internal class WalkthroughWorkflows
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
         }
-
-        return confirmResult == ConfirmResult.Yes ? systemInstalls : [];
     }
 
     // ── Migration Batch ──
