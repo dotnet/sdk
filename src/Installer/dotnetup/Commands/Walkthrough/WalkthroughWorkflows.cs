@@ -143,6 +143,7 @@ internal class WalkthroughWorkflows
         }
 
         // User chooses how to access .NET
+        PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
         var pathPreference = GetPathPreference(interactive, askEvenIfConfigured);
         string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
@@ -162,7 +163,7 @@ internal class WalkthroughWorkflows
         primaryActionAfterConfigured();
 
         // Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
-        SaveConfigAndDisplayResult(pathPreference);
+        SaveConfigAndDisplayResult(pathPreference, previousPreference);
 
         // NOTE: Global.json modification is intentionally NOT done here.
         // The walkthrough does not own global.json updates — that responsibility
@@ -569,7 +570,7 @@ internal class WalkthroughWorkflows
             resolved);
     }
 
-    private static void SaveConfigAndDisplayResult(PathPreference pathPreference)
+    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, PathPreference? previousPreference)
     {
         var config = new DotnetupConfigData
         {
@@ -577,7 +578,13 @@ internal class WalkthroughWorkflows
         };
 
         DotnetupConfig.Write(config);
-        DisplayPathGuidance(pathPreference);
+
+        // Only show guidance when the preference actually changed (or first-time setup).
+        if (previousPreference != pathPreference)
+        {
+            DisplayPathGuidance(pathPreference);
+        }
+
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 
