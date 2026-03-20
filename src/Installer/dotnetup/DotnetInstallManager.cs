@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -10,7 +9,7 @@ using Spectre.Console;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Central manager for discovering and configuring .NET installations.
+/// Central manager for discovering and configuring the environment.
 /// Responsibilities:
 /// - Detecting the current install type (user vs. system/admin) via PATH and registry.
 /// - Resolving the default dotnetup-managed install path.
@@ -18,14 +17,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///   macOS /etc/dotnet/install_location files, Linux well-known paths).
 /// - Delegating SDK installation and global.json management.
 /// </summary>
-public class DotnetInstallManager : IDotnetInstallManager
+public class DotnetEnvironmentManager : IDotnetEnvironmentManager
 {
 
-    public DotnetInstallManager()
+    public DotnetEnvironmentManager()
     {
     }
 
-    public static DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
+    public DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
     {
         var environmentProvider = new EnvironmentProvider();
         string? foundDotnet = environmentProvider.GetCommandPath("dotnet");
@@ -230,39 +229,12 @@ public class DotnetInstallManager : IDotnetInstallManager
             paths.Add(path);
         }
     }
-
-    public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
-    {
-        foreach (var channelVersion in sdkVersions)
-        {
-            InstallSDK(dotnetRoot, new UpdateChannel(channelVersion));
-        }
-    }
-
-    private static void InstallSDK(DotnetInstallRoot dotnetRoot, UpdateChannel channel)
-    {
-        DotnetInstallRequest request = new DotnetInstallRequest(
-            dotnetRoot,
-            channel,
-            InstallComponent.SDK,
-            new InstallRequestOptions()
-        );
-
-        InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
-        Spectre.Console.AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Success}]Installed .NET SDK {installResult.Install.Version} at {installResult.Install.InstallRoot.Path}[/]");
-    }
-
-    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
-    {
-        GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, sdkVersion);
-    }
-
     internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
     {
         return GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(jsonText, newVersion);
     }
 
-    public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         if (OperatingSystem.IsWindows())
         {
