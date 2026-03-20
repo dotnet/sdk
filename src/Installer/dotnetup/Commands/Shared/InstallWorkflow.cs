@@ -2,191 +2,199 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 /// <summary>
 /// Shared installation workflow that handles the common installation logic for SDK and Runtime commands.
+/// Generates install requests, validates paths, and either executes directly or delegates to the
+/// walkthrough for environment configuration.
 /// </summary>
 internal class InstallWorkflow
 {
-    private readonly IDotnetInstallManager _dotnetInstaller;
-    private readonly ChannelVersionResolver _channelVersionResolver;
+    private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
 
-    public InstallWorkflow(IDotnetInstallManager dotnetInstaller, ChannelVersionResolver channelVersionResolver)
+    public InstallWorkflow(InstallCommand command)
     {
-        _dotnetInstaller = dotnetInstaller;
-        _channelVersionResolver = channelVersionResolver;
-        _installPathResolver = new InstallPathResolver(dotnetInstaller);
+        _command = command;
+        _installPathResolver = new InstallPathResolver(command.DotnetInstaller);
     }
-
-    public record InstallWorkflowOptions(
-        string? VersionOrChannel,
-        string? InstallPath,
-        bool? ReplaceSystemConfig,
-        string? ManifestPath,
-        bool Interactive,
-        bool NoProgress,
-        InstallComponent Component,
-        string ComponentDescription,
-        bool? UpdateGlobalJson = null,
-        Func<string, string?>? ResolveChannelFromGlobalJson = null,
-        bool RequireMuxerUpdate = false,
-        bool Untracked = false,
-        PathPreference? PathPreference = null,
-        Verbosity Verbosity = Verbosity.Normal);
 
     /// <summary>
-    /// Result of the install workflow, including any deferred additional installs.
+    /// Executes the install workflow for the given channels/versions and component type.
+    /// When an explicit install path is provided, installs directly.
+    /// When interactive and no explicit path, wraps execution in the walkthrough
+    /// for environment configuration (path preference, admin migration, etc.).
+    /// Otherwise, installs to the default/resolved path without prompting.
     /// </summary>
-    public record InstallWorkflowResult(
-        ReleaseVersion? ResolvedVersion,
-        DotnetInstallRoot? InstallRoot);
+    public void Execute(string[] versionsOrChannels, InstallComponent component)
+    {
+        var requests = GenerateInstallRequests(versionsOrChannels, component);
+
+        if (_command.InstallPath is not null || !_command.Interactive)
+        {
+            // Explicit path or non-interactive — skip walkthrough entirely
+            ExecuteInstallRequests(requests);
+        }
+        else
+        {
+            // Interactive with no explicit path — walkthrough for path preference, admin migration, etc.
+            var workflows = new WalkthroughWorkflows(_command.DotnetInstaller, _command.ChannelVersionResolver);
+            workflows.BaseConfigurationWalkthrough(
+                requests,
+                () => ExecuteInstallRequests(requests),
+                _command.NoProgress);
+        }
+    }
 
     /// <summary>
-    /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
+    /// Generates resolved install requests for the given channels/versions.
+    /// Handles path resolution, global.json channel inference (for SDK), install path validation,
+    /// and version resolution via the channel version resolver.
     /// </summary>
-    private record WorkflowContext(
-        InstallWorkflowOptions Options,
-        GlobalJsonInfo? GlobalJson,
-        DotnetInstallRootConfiguration? CurrentInstallRoot,
-        string InstallPath,
-        string? InstallPathFromGlobalJson,
-        string Channel,
-        string RequestSource,
-        PathSource PathSource);
-
-
-    /**
-     - Validates the install path - an invalid path may be ok to send to this function
-    **/
-    public InstallWorkflowResult Execute(InstallWorkflowOptions options)
-    {
-        // RF: this function should really be calling the minimal walkthrough and wrapping this existing function in another function given to the walkthrough
-        // Call the minimal walkthrough and send it the install function to run
-        // If the install path is not null, then don't call the walkthrough and  simply execute the install
-        
-    }
-
-    public InstallWorkflowResult Install()
-    {
-        var resolved = GenerateInstallRequest(options);
-        RecordTelemetry(options, context, resolved);
-
-        var installResult = ExecuteInstallation(context, resolved);
-
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, installResult.WasAlreadyInstalled ? "already_installed" : "installed");
-
-        return new InstallWorkflowResult(
-            resolved.ResolvedVersion,
-            resolved.Request.InstallRoot);
-    }
-
-        public static InstallRequest? GenerateInstallRequest(InstallWorkflowOptions options, out string? error)
+    public List<ResolvedInstallRequest> GenerateInstallRequests(
+        string[] versionsOrChannels,
+        InstallComponent component)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var currentInstallRoot = DotnetInstallManager.GetCurrentPathConfiguration();
+        var currentInstallRoot = _command.DotnetInstaller.GetCurrentPathConfiguration();
 
-        var pathToInstallTo = _installPathResolver.Resolve(
-            options.InstallPath,
+        var pathResolution = _installPathResolver.Resolve(
+            _command.InstallPath,
             globalJson,
-            currentInstallRoot,
-            out error);
+            currentInstallRoot);
 
-        if (pathToInstallTo is null)
+        ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
+
+        // Resolve channels: if none provided, try global.json (SDK only), then default to "latest"
+        string[] resolvedChannels;
+        if (versionsOrChannels.Length > 0)
         {
-            return null;
+            resolvedChannels = versionsOrChannels;
         }
-
-        ValidateInstallPath(pathToInstallTo);
-
-        string? channelFromGlobalJson = null;
-
-        if (options.ResolveChannelFromGlobalJson is not null && globalJson?.GlobalJsonPath is not null)
+        else
         {
-            channelFromGlobalJson = options.ResolveChannelFromGlobalJson(globalJson.GlobalJsonPath);
-        }
-
-        string channel = ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
-
-        // Classify how the version/channel was determined for telemetry
-        string requestSource = options.VersionOrChannel is not null
-            ? "explicit"
-            : channelFromGlobalJson is not null
-                ? "default-globaljson"
-                : "default-latest";
-
-        return CreateInstallRequest();
-    }
-
-     private static List<DotnetInstallRequest> GetMultipleInstallRequests(
-        DotnetInstallRequest? primaryRequest,
-        List<DotnetInstall> additionalInstalls,
-        DotnetInstallRoot installRoot,
-        string? manifestPath,
-        bool requireMuxerUpdate)
-    {
-        var requests = new List<DotnetInstallRequest>();
-        // Track (Component, VersionString) pairs already included so duplicates are skipped.
-        var seen = new HashSet<(InstallComponent, string)>();
-
-        if (primaryRequest is not null)
-        {
-            requests.Add(primaryRequest);
-            string primaryVersion = primaryRequest.ResolvedVersion?.ToString()
-                ?? primaryRequest.Channel.ToString() ?? string.Empty;
-            seen.Add((primaryRequest.Component, primaryVersion));
-        }
-
-        foreach (var install in additionalInstalls)
-        {
-            if (!seen.Add((install.Component, install.Version.ToString())))
+            string? channelFromGlobalJson = null;
+            if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
             {
-                continue;
+                channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
             }
 
-            requests.Add(new DotnetInstallRequest(
+            if (channelFromGlobalJson is not null)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
+                    DotnetupTheme.Current.Dim,
+                    component.GetDisplayName(),
+                    channelFromGlobalJson,
+                    globalJson!.GlobalJsonPath!));
+                resolvedChannels = [channelFromGlobalJson];
+            }
+            else
+            {
+                resolvedChannels = [ChannelVersionResolver.LatestChannel];
+            }
+        }
+
+        var installRoot = new DotnetInstallRoot(
+            pathResolution.ResolvedInstallPath,
+            InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var requests = new List<ResolvedInstallRequest>();
+        foreach (string channel in resolvedChannels)
+        {
+            // Determine install source for manifest tracking
+            bool isFromGlobalJson = versionsOrChannels.Length == 0
+                && globalJson?.GlobalJsonPath is not null
+                && component == InstallComponent.SDK;
+            var installSource = isFromGlobalJson
+                ? InstallRequestSource.GlobalJson
+                : InstallRequestSource.Explicit;
+
+            var request = new DotnetInstallRequest(
                 installRoot,
-                new UpdateChannel(install.Version.ToString()),
-                install.Component,
+                new UpdateChannel(channel),
+                component,
                 new InstallRequestOptions
                 {
-                    ManifestPath = manifestPath,
-                    RequireMuxerUpdate = requireMuxerUpdate
-                }));
+                    ManifestPath = _command.ManifestPath,
+                    RequireMuxerUpdate = _command.RequireMuxerUpdate,
+                    InstallSource = installSource,
+                    GlobalJsonPath = isFromGlobalJson ? globalJson?.GlobalJsonPath : null,
+                    Untracked = _command.Untracked,
+                    Verbosity = _command.Verbosity
+                });
+
+            var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
+
+            if (resolvedVersion is null)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.VersionNotFound,
+                    $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
+            }
+
+            var resolved = new ResolvedInstallRequest(request, resolvedVersion);
+
+            RecordInstallTelemetry(
+                component, versionsOrChannels.Length > 0 ? channel : null,
+                _command.InstallPath, globalJson, currentInstallRoot,
+                pathResolution, channel, resolved);
+
+            requests.Add(resolved);
         }
 
         return requests;
     }
 
-    private static void ValidateInstallPath(WorkflowContext context)
+    /// <summary>
+    /// Executes resolved install requests via the install executor as a concurrent batch.
+    /// </summary>
+    private void ExecuteInstallRequests(List<ResolvedInstallRequest> requests)
+    {
+        var results = InstallExecutor.ExecuteInstalls(requests, _command.NoProgress);
+
+        foreach (var result in results)
+        {
+            Activity.Current?.SetTag(TelemetryTagNames.InstallResult, result.WasAlreadyInstalled ? "already_installed" : "installed");
+        }
+    }
+
+    private static void ValidateInstallPath(string installPath, PathSource pathSource, string? manifestPath)
     {
         // Block install paths that point to existing files (not directories)
-        if (File.Exists(context.InstallPath))
+        if (File.Exists(installPath))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InstallPathIsFile,
-                $"The install path '{context.InstallPath}' is an existing file, not a directory. " +
+                $"The install path '{installPath}' is an existing file, not a directory. " +
                 "Please specify a directory path for the installation.");
         }
 
         // Block admin/system-managed install paths — dotnetup should not install there
-        if (InstallPathClassifier.IsAdminInstallPath(context.InstallPath))
+        if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
+            Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,
-                $"The install path '{context.InstallPath}' is a system-managed .NET location. " +
+                $"The install path '{installPath}' is a system-managed .NET location. " +
                 "dotnetup cannot install to the default system .NET directory (Program Files\\dotnet on Windows, /usr/share/dotnet on Linux/macOS). " +
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
 
+        // Check for untracked .NET artifacts at the install path
+        var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
         if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
@@ -199,74 +207,36 @@ internal class InstallWorkflow
         }
     }
 
-    private static void RecordInstallTelemetry(InstallWorkflowOptions options, WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    private static void RecordInstallTelemetry(
+        InstallComponent component,
+        string? requestedVersionOrChannel,
+        string? explicitInstallPath,
+        GlobalJsonInfo? globalJson,
+        DotnetInstallRootConfiguration? currentInstallRoot,
+        InstallPathResolver.InstallPathResolutionResult pathResolution,
+        string resolvedChannel,
+        ResolvedInstallRequest resolved)
     {
         // Request-level tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, options.Component.ToString());
-        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(options.VersionOrChannel));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, options.InstallPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, component.ToString());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, explicitInstallPath is not null);
 
         // Resolved context tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, context.GlobalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallSetDefault, context.ReplaceSystemConfig);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
+        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, globalJson?.GlobalJsonPath is not null);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
 
         // Resolved version tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion?.ToString());
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, context.RequestSource);
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(context.Channel));
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
+
+        string requestSource = requestedVersionOrChannel is not null
+            ? "explicit"
+            : globalJson?.GlobalJsonPath is not null
+                ? "default-globaljson"
+                : "default-latest";
+        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, requestSource);
+        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
     }
-
-    /// <summary>
-    /// Resolves the channel or version to install, considering global.json and user input.
-    /// </summary>
-    /// <param name="channelFromGlobalJson">The channel resolved from global.json, if any.</param>
-    /// <param name="globalJsonPath">Path to the global.json file, for display purposes.</param>
-    /// <param name="defaultChannel">The default channel to use if none specified (typically "latest").</param>
-    /// <returns>The resolved channel or version string.</returns>
-    public string ResolveChannel(
-        string? channelFromGlobalJson,
-        string? globalJsonPath,
-        string defaultChannel = "latest")
-    {
-        // Explicit version/channel from the user always takes priority
-        if (_options.VersionOrChannel is not null)
-        {
-            return _options.VersionOrChannel;
-        }
-
-        if (channelFromGlobalJson is not null)
-        {
-            SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
-            return channelFromGlobalJson;
-        }
-
-        return defaultChannel;
-    }
-
-    private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
-    {
-        // Only tag as GlobalJson source if the channel/version actually came from global.json,
-        // not just because a global.json file exists in the directory.
-        var installSource = context.RequestSource == "default-globaljson"
-            ? InstallRequestSource.GlobalJson
-            : InstallRequestSource.Explicit;
-
-        return InstallExecutor.CreateAndResolveRequest(
-            context.InstallPath,
-            context.Channel,
-            context.Options.Component,
-            context.Options.ManifestPath,
-            _channelVersionResolver,
-            context.Options.RequireMuxerUpdate,
-            installSource,
-            installSource == InstallRequestSource.GlobalJson ? context.GlobalJson?.GlobalJsonPath : null,
-            context.Options.Untracked,
-            context.Options.Verbosity);
-    }
-
-
-
 }

@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 public interface IDotnetInstallManager
 {
-    GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory);
-
     string GetDefaultDotnetInstallPath();
 
     DotnetInstallRootConfiguration? GetCurrentPathConfiguration();
@@ -27,8 +25,6 @@ public interface IDotnetInstallManager
     List<DotnetInstall> GetExistingSystemInstalls();
 
     void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
-
-    void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null);
 
     void ConfigureInstallType(InstallType installType, string? dotnetRoot = null);
 

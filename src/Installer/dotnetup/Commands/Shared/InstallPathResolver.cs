@@ -38,15 +38,13 @@ internal class InstallPathResolver
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
     /// <param name="currentDotnetInstallRoot">Current .NET installation configuration, if any.</param>
-    /// <param name="error">Output parameter for any error message.</param>
-    /// <returns>The resolution result, or null if an error occurred.</returns>
-    public InstallPathResolutionResult? Resolve(
+    /// <returns>The resolution result.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the install path cannot be resolved.</exception>
+    public InstallPathResolutionResult Resolve(
         string? explicitInstallPath,
         GlobalJsonInfo? globalJsonInfo,
-        DotnetInstallRootConfiguration? currentDotnetInstallRoot,
-        out string? error)
+        DotnetInstallRootConfiguration? currentDotnetInstallRoot)
     {
-        error = null;
         string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
             ? globalJsonInfo.SdkPath
             : null;
