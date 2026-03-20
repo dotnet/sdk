@@ -7,6 +7,15 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
+
+REM Enable crash dump collection for .NET processes. The MTP CrashDump extension's test host
+REM controller IPC fails on POSIX (NamedPipeServer.WaitConnectionAsync times out), so we use
+REM the runtime's built-in crash dump support instead. These env vars are inherited by the
+REM child test process where crashes actually occur.
+set DOTNET_DbgEnableMiniDump=1
+set DOTNET_DbgMiniDumpType=4
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
+set DOTNET_EnableCrashReport=1
 set TestFullMSBuild=%1
 
 REM Ensure Visual Studio instances allow preview SDKs

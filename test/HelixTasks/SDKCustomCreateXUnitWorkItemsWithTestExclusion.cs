@@ -206,8 +206,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                     command = $"{chmodPrefix}{envPrefix}{testRunner} " +
                               $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --report-trx --output Detailed --timeout 60m --ignore-exit-code 8" +
-                              $" --crashdump --crashdump-type Full" +
-                              $" --hangdump --hangdump-timeout 60m --hangdump-type Full" +
                               $" {testFilter} {arguments}";
                 }
 
