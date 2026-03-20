@@ -6,7 +6,6 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-
 internal class InstallerOrchestratorSingleton
 {
     public static InstallerOrchestratorSingleton Instance { get; } = new();
@@ -29,24 +28,11 @@ internal class InstallerOrchestratorSingleton
     /// Exceptions are intentionally swallowed — a failed predownload simply means the
     /// real install will download normally.
     /// </remarks>
-    public static async Task PredownloadToCacheAsync(string channel, InstallComponent component, DotnetInstallRoot installRoot)
+    public static async Task PredownloadToCacheAsync(ResolvedInstallRequest resolvedRequest)
     {
         try
         {
-            if (!ChannelVersionResolver.IsValidChannelFormat(channel))
-            {
-                return;
-            }
-
             ReleaseManifest releaseManifest = new();
-            var resolver = new ChannelVersionResolver(releaseManifest);
-            var request = new DotnetInstallRequest(installRoot, new UpdateChannel(channel), component, new InstallRequestOptions());
-            var version = resolver.Resolve(request);
-
-            if (version is null)
-            {
-                return;
-            }
 
             // Download to a temp file, which populates the download cache as a side effect.
             // The temp file is cleaned up afterwards — only the cache entry matters.
@@ -55,7 +41,7 @@ internal class InstallerOrchestratorSingleton
             {
                 var archivePath = Path.Combine(tempDir, $"predownload{DotnetupUtilities.GetArchiveFileExtensionForPlatform()}");
                 using var downloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
-                await Task.Run(() => downloader.DownloadArchiveWithVerification(request, version, archivePath)).ConfigureAwait(false);
+                await Task.Run(() => downloader.DownloadArchiveWithVerification(resolvedRequest.Request, resolvedRequest.ResolvedVersion, archivePath)).ConfigureAwait(false);
             }
             finally
             {
@@ -71,11 +57,11 @@ internal class InstallerOrchestratorSingleton
 
     // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
-    public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
+    public InstallResult Install(ResolvedInstallRequest resolvedRequest, bool noProgress = false)
     {
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
         using var reporter = new LazyProgressReporter(progressTarget);
-        using var prepared = PrepareInstall(installRequest, reporter, out var alreadyInstalledResult);
+        using var prepared = PrepareInstall(resolvedRequest, reporter, out var alreadyInstalledResult);
 
         if (alreadyInstalledResult is not null)
         {
@@ -87,81 +73,12 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Validates the channel format, resolves the version, and constructs the install object.
-    /// Throws <see cref="DotnetInstallException"/> if the channel is invalid or the version cannot be found.
-    /// </summary>
-    private static (ReleaseManifest Manifest, ReleaseVersion Version, DotnetInstall Install) ResolveInstall(DotnetInstallRequest request)
-    {
-        if (!ChannelVersionResolver.IsValidChannelFormat(request.Channel.Name))
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.InvalidChannel,
-                $"'{request.Channel.Name}' is not a valid .NET version or channel. " +
-                $"Use a version like '9.0', '9.0.100', or a channel keyword: {string.Join(", ", ChannelVersionResolver.KnownChannelKeywords)}.",
-                version: null,
-                component: request.Component.ToString());
-        }
-
-        ReleaseManifest manifest = new();
-        ReleaseVersion? version = request.ResolvedVersion ?? new ChannelVersionResolver(manifest).Resolve(request);
-
-        if (version is null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.VersionNotFound,
-                $"Could not find .NET version '{request.Channel.Name}'. The version may not exist or may not be supported.",
-                version: null,
-                component: request.Component.ToString());
-        }
-
-        return (manifest, version, new DotnetInstall(request.InstallRoot, version, request.Component));
-    }
-
-    /// <summary>
-    /// Validates all requests upfront by checking channel format and resolving versions.
-    /// Returns a new list with <see cref="DotnetInstallRequest.ResolvedVersion"/> set so
-    /// the download phase can skip redundant resolution.
-    /// Throws <see cref="DotnetInstallException"/> if any request is invalid, reporting all
-    /// errors at once so the user can fix them in a single pass.
-    /// </summary>
-    private static List<DotnetInstallRequest> ValidateAndPreResolveAll(IReadOnlyList<DotnetInstallRequest> requests)
-    {
-        var resolved = new List<DotnetInstallRequest>(requests.Count);
-        var errors = new List<string>();
-
-        foreach (var request in requests)
-        {
-            try
-            {
-                var (_, version, _) = ResolveInstall(request);
-                resolved.Add(request with { ResolvedVersion = version });
-            }
-            catch (DotnetInstallException ex)
-            {
-                errors.Add(ex.Message);
-            }
-        }
-
-        if (errors.Count > 0)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.InvalidChannel,
-                string.Join(Environment.NewLine, errors));
-        }
-
-        return resolved;
-    }
-
-    /// <summary>
     /// Prepares and commits all install requests concurrently where possible: downloads run in parallel,
     /// and commits serialize through the install-state mutex.
     /// </summary>
     /// <returns>All results, including already-installed entries.</returns>
-    public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<DotnetInstallRequest> requests, IProgressReporter sharedReporter)
+    public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<ResolvedInstallRequest> requests, IProgressReporter sharedReporter)
     {
-        // Validate all requests and resolve versions upfront before any downloads begin.
-        // This prevents partial downloads when a later request has an invalid channel.
-        requests = ValidateAndPreResolveAll(requests);
 
         var results = new List<InstallResult>();
         var exceptions = new List<Exception>();
@@ -199,7 +116,7 @@ internal class InstallerOrchestratorSingleton
     /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.
     /// </summary>
     private void DownloadAll(
-        IReadOnlyList<DotnetInstallRequest> requests,
+        IReadOnlyList<ResolvedInstallRequest> requests,
         IProgressReporter sharedReporter,
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
         List<InstallResult> results,
@@ -276,18 +193,18 @@ internal class InstallerOrchestratorSingleton
     /// </summary>
     internal sealed class PreparedInstall : IDisposable
     {
-        public DotnetInstallRequest Request { get; }
-        public ReleaseVersion Version { get; }
+        public ResolvedInstallRequest ResolvedRequest { get; }
+        public DotnetInstallRequest Request => ResolvedRequest.Request;
+        public ReleaseVersion Version => ResolvedRequest.ResolvedVersion;
         public DotnetInstall Install { get; }
         public DotnetArchiveExtractor Extractor { get; }
         public ReleaseManifest ReleaseManifest { get; }
         public bool WasAlreadyInstalled { get; init; }
 
-        public PreparedInstall(DotnetInstallRequest request, ReleaseVersion version, DotnetInstall install,
+        public PreparedInstall(ResolvedInstallRequest resolvedRequest, DotnetInstall install,
             DotnetArchiveExtractor extractor, ReleaseManifest releaseManifest)
         {
-            Request = request;
-            Version = version;
+            ResolvedRequest = resolvedRequest;
             Install = install;
             Extractor = extractor;
             ReleaseManifest = releaseManifest;
@@ -302,19 +219,21 @@ internal class InstallerOrchestratorSingleton
     /// Returns null if the install was already present (the result is returned via the out parameter).
     /// Used for concurrent multi-install scenarios where downloads happen in parallel.
     /// </summary>
-    /// <param name="installRequest">The installation request.</param>
+    /// <param name="resolvedRequest">The resolved installation request with a concrete version.</param>
     /// <param name="sharedReporter">A shared progress reporter for displaying download progress.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
-        DotnetInstallRequest installRequest,
+        ResolvedInstallRequest resolvedRequest,
         IProgressReporter sharedReporter,
         out InstallResult? alreadyInstalledResult)
     {
         alreadyInstalledResult = null;
-
-        var (releaseManifest, versionToInstall, install) = ResolveInstall(installRequest);
+        var installRequest = resolvedRequest.Request;
+        var versionToInstall = resolvedRequest.ResolvedVersion;
+        var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
+        ReleaseManifest releaseManifest = new();
         string? customManifestPath = installRequest.Options.ManifestPath;
 
         using (var finalizeLock = ModifyInstallStateMutex())
@@ -360,7 +279,7 @@ internal class InstallerOrchestratorSingleton
         DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
         extractor.Prepare();
 
-        return new PreparedInstall(installRequest, versionToInstall, install, extractor, releaseManifest);
+        return new PreparedInstall(resolvedRequest, install, extractor, releaseManifest);
     }
 #pragma warning restore CA1822
 
