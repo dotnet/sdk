@@ -248,15 +248,11 @@ internal class InstallerOrchestratorSingleton
         var versionToInstall = resolvedRequest.ResolvedVersion;
         var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
         ReleaseManifest releaseManifest = new();
-        string? customManifestPath = installRequest.Options.ManifestPath;
+        var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            var manifestData = installRequest.Options.Untracked
-                ? new DotnetupManifestData()
-                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
-
-            if (InstallAlreadyExists(manifestData, install))
+            if (manifest?.InstallAlreadyExists(install) == true)
             {
                 // Validate that the installation actually exists on disk.
                 // If the files were deleted but the manifest still records it,
@@ -264,17 +260,17 @@ internal class InstallerOrchestratorSingleton
                 ArchiveInstallationValidator validator = new();
                 if (validator.Validate(install))
                 {
-                    RecordInstallSpec(installRequest, customManifestPath);
+                    manifest.RecordInstallSpec(installRequest);
                     alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
                     return null;
                 }
 
-                RemoveStaleManifestEntry(installRequest, manifestData, install, customManifestPath);
+                manifest.RemoveStaleInstallation(install);
             }
 
             if (!installRequest.Options.Untracked
-                && !IsRootInManifest(manifestData, installRequest.InstallRoot)
-                && HasDotnetArtifacts(installRequest.InstallRoot.Path))
+                && !manifest!.IsRootTracked(installRequest.InstallRoot)
+                && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.Unknown,
@@ -298,32 +294,6 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Removes a stale manifest entry for an install whose on-disk files no longer exist.
-    /// </summary>
-    private static void RemoveStaleManifestEntry(
-        DotnetInstallRequest installRequest,
-        DotnetupManifestData manifestData,
-        DotnetInstall install,
-        string? customManifestPath)
-    {
-        if (installRequest.Options.Untracked)
-        {
-            return;
-        }
-
-        var staleRoot = manifestData.DotnetRoots.First(r =>
-            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        var staleInstallation = staleRoot.Installations.First(i =>
-            i.Version == install.Version.ToString() && i.Component == install.Component);
-        var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        manifestManager.RemoveInstallation(install.InstallRoot, new Installation
-        {
-            Component = staleInstallation.Component,
-            Version = staleInstallation.Version
-        });
-    }
-
-    /// <summary>
     /// Commits a previously prepared installation: extracts the archive to the target directory
     /// and records it in the manifest. Must be called sequentially (not concurrently).
     /// </summary>
@@ -331,15 +301,11 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822
     public InstallResult CommitPreparedInstall(PreparedInstall prepared)
     {
-        string? customManifestPath = prepared.Request.Options.ManifestPath;
+        var manifest = prepared.Request.Options.Untracked ? null : new DotnetupSharedManifest(prepared.Request.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            var manifestData = prepared.Request.Options.Untracked
-                ? new DotnetupManifestData()
-                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
-
-            if (InstallAlreadyExists(manifestData, prepared.Install))
+            if (manifest?.InstallAlreadyExists(prepared.Install) == true)
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
@@ -349,18 +315,14 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(prepared.Install, out string? validationFailure))
             {
-                RecordInstallSpec(prepared.Request, customManifestPath);
+                manifest?.RecordInstallSpec(prepared.Request);
 
-                if (!prepared.Request.Options.Untracked)
+                manifest?.AddInstallation(prepared.Request.InstallRoot, new Installation
                 {
-                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
-                    manifestManager.AddInstallation(prepared.Request.InstallRoot, new Installation
-                    {
-                        Component = prepared.Request.Component,
-                        Version = prepared.Version.ToString(),
-                        Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents]
-                    });
-                }
+                    Component = prepared.Request.Component,
+                    Version = prepared.Version.ToString(),
+                    Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents]
+                });
             }
             else
             {
@@ -375,56 +337,4 @@ internal class InstallerOrchestratorSingleton
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
     }
 #pragma warning restore CA1822
-
-    /// <summary>
-    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
-    /// </summary>
-    private static void RecordInstallSpec(DotnetInstallRequest installRequest, string? customManifestPath)
-    {
-        if (installRequest.Options.Untracked || installRequest.Options.SkipInstallSpecRecording)
-        {
-            return;
-        }
-
-        var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
-        {
-            Component = installRequest.Component,
-            VersionOrChannel = installRequest.Channel.Name,
-            InstallSource = installRequest.Options.InstallSource switch
-            {
-                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                _ => InstallSource.Explicit,
-            },
-            GlobalJsonPath = installRequest.Options.GlobalJsonPath
-        });
-    }
-
-    internal static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
-    {
-        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        return root?.Installations.Any(existing =>
-            existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component) ?? false;
-    }
-
-    internal static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
-    {
-        return manifestData.DotnetRoots.Any(root =>
-            DotnetupUtilities.PathsEqual(root.Path, installRoot.Path));
-    }
-
-    internal static bool HasDotnetArtifacts(string? path)
-    {
-        if (path is null || !Directory.Exists(path))
-        {
-            return false;
-        }
-
-        // Check for common .NET installation markers
-        return File.Exists(Path.Combine(path, DotnetupUtilities.GetDotnetExeName()))
-            || Directory.Exists(Path.Combine(path, "sdk"))
-            || Directory.Exists(Path.Combine(path, "shared"));
-    }
 }

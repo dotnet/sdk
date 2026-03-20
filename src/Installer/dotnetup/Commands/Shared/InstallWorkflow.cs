@@ -239,9 +239,9 @@ internal class InstallWorkflow
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var manifestData = new DotnetupSharedManifest(manifestPath).ReadManifest();
-        if (!InstallerOrchestratorSingleton.IsRootInManifest(manifestData, installRoot)
-            && InstallerOrchestratorSingleton.HasDotnetArtifacts(installRoot.Path))
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        if (!manifest.IsRootTracked(installRoot)
+            && DotnetupSharedManifest.HasDotnetArtifacts(installRoot.Path))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.Unknown,

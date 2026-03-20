@@ -377,4 +377,82 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         WriteManifest(manifest);
     }
 
+    /// <summary>
+    /// Returns true if the manifest already records an installation matching the given install.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal bool InstallAlreadyExists(DotnetInstall install)
+    {
+        var manifestData = ReadManifest();
+        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        return root?.Installations.Any(existing =>
+            existing.Version == install.Version.ToString() &&
+            existing.Component == install.Component) ?? false;
+    }
+
+    /// <summary>
+    /// Returns true if the manifest tracks the given install root.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal bool IsRootTracked(DotnetInstallRoot installRoot)
+    {
+        var manifestData = ReadManifest();
+        return manifestData.DotnetRoots.Any(root =>
+            DotnetupUtilities.PathsEqual(root.Path, installRoot.Path));
+    }
+
+    /// <summary>
+    /// Checks whether a directory contains common .NET installation markers
+    /// (dotnet executable, sdk/ or shared/ subdirectories).
+    /// </summary>
+    internal static bool HasDotnetArtifacts(string? path)
+    {
+        if (path is null || !Directory.Exists(path))
+        {
+            return false;
+        }
+
+        return File.Exists(Path.Combine(path, DotnetupUtilities.GetDotnetExeName()))
+            || Directory.Exists(Path.Combine(path, "sdk"))
+            || Directory.Exists(Path.Combine(path, "shared"));
+    }
+
+    /// <summary>
+    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal void RecordInstallSpec(DotnetInstallRequest installRequest)
+    {
+        if (installRequest.Options.Untracked || installRequest.Options.SkipInstallSpecRecording)
+        {
+            return;
+        }
+
+        AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+        {
+            Component = installRequest.Component,
+            VersionOrChannel = installRequest.Channel.Name,
+            InstallSource = installRequest.Options.InstallSource switch
+            {
+                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                _ => InstallSource.Explicit,
+            },
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+        });
+    }
+
+    /// <summary>
+    /// Removes a stale manifest entry for an install whose on-disk files no longer exist.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal void RemoveStaleInstallation(DotnetInstall install)
+    {
+        RemoveInstallation(install.InstallRoot, new Installation
+        {
+            Component = install.Component,
+            Version = install.Version.ToString()
+        });
+    }
+
 }
