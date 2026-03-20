@@ -54,7 +54,7 @@ internal class InstallWorkflow
                 requests,
                 () => ExecuteInstallRequests(requests),
                 _command.NoProgress,
-                _command.interactive,
+                _command.Interactive,
                 false);
         }
 
