@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// </summary>
 public class InstallPathResolverTests(ITestOutputHelper output)
 {
-    private readonly InstallPathResolver _resolver = new(new DotnetInstallManager());
+    private readonly InstallPathResolver _resolver = new(new DotnetEnvironmentManager());
 
     // Use platform-appropriate temp paths for test data
     private static readonly string TempDir = Path.GetTempPath();
@@ -99,7 +99,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     [Fact]
     public void Resolve_UsesDefaultPath_WhenNothingSpecified()
     {
-        var installManager = new DotnetInstallManager();
+        var installManager = new DotnetEnvironmentManager();
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: null,

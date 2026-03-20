@@ -9,11 +9,11 @@ using Spectre.Console;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 
 /// <summary>
-/// Minimal mock of <see cref="IDotnetInstallManager"/> for tests.
+/// Minimal mock of <see cref="IDotnetEnvironmentManager"/> for tests.
 /// Only implements <see cref="GetDefaultDotnetInstallPath"/> and <see cref="GetCurrentPathConfiguration"/>.
 /// All other members throw <see cref="NotImplementedException"/> so tests fail fast if unexpectedly called.
 /// </summary>
-internal class MockDotnetInstallManager : IDotnetInstallManager
+internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 {
     private readonly string _defaultInstallPath;
     private readonly DotnetInstallRootConfiguration? _configuredRoot;
@@ -31,5 +31,5 @@ internal class MockDotnetInstallManager : IDotnetInstallManager
     public List<string> GetInstalledSystemSdkVersions() => throw new NotImplementedException();
     public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
-    public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
 }

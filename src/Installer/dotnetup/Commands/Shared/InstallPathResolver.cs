@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal class InstallPathResolver
 {
-    private readonly IDotnetInstallManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetInstaller;
 
-    public InstallPathResolver(IDotnetInstallManager dotnetInstaller)
+    public InstallPathResolver(IDotnetEnvironmentManager dotnetInstaller)
     {
         _dotnetInstaller = dotnetInstaller;
     }

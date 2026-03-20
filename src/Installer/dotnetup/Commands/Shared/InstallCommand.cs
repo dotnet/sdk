@@ -21,7 +21,7 @@ internal abstract class InstallCommand : CommandBase
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
 
-    public IDotnetInstallManager DotnetInstaller { get; }
+    public IDotnetEnvironmentManager DotnetInstaller { get; }
     public ChannelVersionResolver ChannelVersionResolver { get; }
 
     protected InstallCommand(ParseResult parseResult)
@@ -35,7 +35,7 @@ internal abstract class InstallCommand : CommandBase
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
 
-        DotnetInstaller = new DotnetInstallManager();
+        DotnetInstaller = new DotnetEnvironmentManager();
         ChannelVersionResolver = new ChannelVersionResolver();
     }
 }

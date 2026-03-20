@@ -10,7 +10,7 @@ internal class DefaultInstallCommand : CommandBase
     private readonly string _installType;
     private readonly InstallRootManager _installRootManager;
 
-    public DefaultInstallCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
+    public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetInstaller = null) : base(result)
     {
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
         _installRootManager = new InstallRootManager(dotnetInstaller);

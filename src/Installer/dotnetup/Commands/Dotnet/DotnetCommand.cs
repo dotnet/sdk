@@ -15,12 +15,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 /// </summary>
 internal class DotnetCommand : CommandBase
 {
-    private readonly IDotnetInstallManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetInstaller;
     private readonly string[] _forwardedArgs;
 
-    public DotnetCommand(ParseResult parseResult, IDotnetInstallManager? dotnetInstaller = null) : base(parseResult)
+    public DotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? dotnetInstaller = null) : base(parseResult)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
+        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
 
         // Collect all unmatched/forwarded tokens after the "dotnet" or "do" subcommand.
         _forwardedArgs = [.. parseResult.UnmatchedTokens];

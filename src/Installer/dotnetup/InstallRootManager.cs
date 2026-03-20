@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal class InstallRootManager
 {
-    private readonly IDotnetInstallManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetInstaller;
 
-    public InstallRootManager(IDotnetInstallManager? dotnetInstaller = null)
+    public InstallRootManager(IDotnetEnvironmentManager? dotnetInstaller = null)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
+        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
     }
 
     /// <summary>

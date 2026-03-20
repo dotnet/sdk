@@ -9,11 +9,11 @@ internal class PrintEnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
-    private readonly IDotnetInstallManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetInstaller;
 
-    public PrintEnvScriptCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
+    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetInstaller = null) : base(result)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
+        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
     }

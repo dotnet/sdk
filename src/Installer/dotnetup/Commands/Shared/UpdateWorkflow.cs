@@ -198,14 +198,13 @@ internal class UpdateWorkflow
                 installRoot,
                 channel,
                 spec.Component,
-                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity })
-            {
-                ResolvedVersion = latestVersion
-            };
+                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity });
+
+            var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
 
             try
             {
-                InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+                InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
                 AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
                 updated = true;
             }
