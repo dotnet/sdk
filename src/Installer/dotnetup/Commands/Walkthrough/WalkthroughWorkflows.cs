@@ -116,7 +116,8 @@ internal class WalkthroughWorkflows
         Action primaryActionAfterConfigured,
         bool noProgress,
         bool interactive = true,
-        bool deferAdminMigrationUntilEnd = false)
+        bool deferAdminMigrationUntilEnd = false,
+        bool askEvenIfConfigured = true)
     {
         // Determine the install root for environment configuration and migration.
         // Use the first request's root if available, otherwise fall back to the default path.
@@ -549,7 +550,6 @@ internal class WalkthroughWorkflows
 
         DotnetupConfig.Write(config);
         DisplayPathGuidance(pathPreference);
-        SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 
@@ -558,7 +558,6 @@ internal class WalkthroughWorkflows
     /// </summary>
     private static void DisplayPathGuidance(PathPreference preference)
     {
-        SpectreAnsiConsole.WriteLine();
         string? guidance = preference switch
         {
             PathPreference.DotnetupDotnet => Strings.PathGuidanceDotnetupDotnet,
