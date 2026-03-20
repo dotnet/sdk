@@ -22,6 +22,10 @@
     <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
+    <!-- template engine tests use UnitTests/IntegrationTests suffixes, therefore included manually -->
+    <SDKCustomXUnitProject Include="Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj" />
+    <SDKCustomXUnitProject Include="dotnet-new.IntegrationTests\dotnet-new.IntegrationTests.csproj" />
+
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Include="containerize.UnitTests\containerize.UnitTests.csproj" />
     <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
