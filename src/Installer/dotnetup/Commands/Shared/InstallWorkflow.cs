@@ -46,10 +46,7 @@ internal class InstallWorkflow
     /// </summary>
     public record InstallWorkflowResult(
         ReleaseVersion? ResolvedVersion,
-        DotnetInstallRoot? InstallRoot,
-        string? ManifestPath,
-        bool NoProgress,
-        bool RequireMuxerUpdate);
+        DotnetInstallRoot? InstallRoot);
 
     /// <summary>
     /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
@@ -69,6 +66,7 @@ internal class InstallWorkflow
 
     public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
+        // RF: this function should really be calling the minimal walkthrough and wrapping this existing function in another function given to the walkthrough
         var context = ResolveWorkflowContext(options, out string? error);
         if (context is null)
         {
@@ -89,10 +87,7 @@ internal class InstallWorkflow
 
         return new InstallWorkflowResult(
             resolved.ResolvedVersion,
-            resolved.Request.InstallRoot,
-            options.ManifestPath,
-            options.NoProgress,
-            options.RequireMuxerUpdate);
+            resolved.Request.InstallRoot);
     }
 
     private static void ValidateInstallPath(WorkflowContext context)
@@ -107,7 +102,7 @@ internal class InstallWorkflow
         }
 
         // Block admin/system-managed install paths — dotnetup should not install there
-        if (InstallExecutor.IsAdminInstallPath(context.InstallPath))
+        if (InstallPathClassifier.IsAdminInstallPath(context.InstallPath))
         {
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, context.PathSource.ToString().ToLowerInvariant());
@@ -166,7 +161,6 @@ internal class InstallWorkflow
         }
 
         string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
-        bool setDefaultInstall = DeriveSetDefaultInstall(options);
 
         // Classify how the version/channel was determined for telemetry
         string requestSource = options.VersionOrChannel is not null
@@ -174,8 +168,6 @@ internal class InstallWorkflow
             : channelFromGlobalJson is not null
                 ? "default-globaljson"
                 : "default-latest";
-
-        InstallWalkthrough.PromptAdminMigration(_dotnetInstaller, context.PathPreference);
 
         return new WorkflowContext(
             options,
@@ -217,36 +209,6 @@ internal class InstallWorkflow
 
         return defaultChannel;
     }
-    private static bool DeriveReplaceSystemConfig(
-        InstallWorkflowOptions options)
-    {
-        // If the caller already determined this (e.g. WalkthroughCommand), use it directly.
-        if (options.ReplaceSystemConfig is not null)
-        {
-            return options.ReplaceSystemConfig.Value;
-        }
-
-        // If a PathPreference was passed in options or is already saved in config, derive silently — no prompts.
-        var savedPreference = options.PathPreference ?? DotnetupConfig.Read()?.PathPreference;
-        if (savedPreference is not null)
-        {
-            return InstallWalkthrough.ShouldReplaceSystemConfiguration(savedPreference.Value);
-        }
-
-        // No config yet. If interactive, show the full path preference selector
-        // (delegates to WalkthroughCommand.PromptPathPreference), saves to config, and returns the choice.
-        if (options.Interactive)
-        {
-            var preference = DotnetupConfig.EnsurePathPreference(interactive: true);
-            if (preference is not null)
-            {
-                return InstallWalkthrough.ShouldReplaceSystemConfiguration(preference.Value);
-            }
-        }
-
-        // Non-interactive with no config: default to not setting the default install.
-        return false;
-    }
 
     private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
     {
@@ -269,19 +231,6 @@ internal class InstallWorkflow
             context.Options.Verbosity);
     }
 
-    private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
-    {
-        if (context.ReplaceSystemConfig)
-        {
-            _dotnetInstaller.ConfigureInstallType(InstallType.User, context.InstallPath);
-        }
 
-        if (context.UpdateGlobalJson == true && context.GlobalJson?.GlobalJsonPath is not null)
-        {
-            _dotnetInstaller.UpdateGlobalJson(
-                context.GlobalJson.GlobalJsonPath,
-                resolved.ResolvedVersion!.ToString());
-        }
-    }
 
 }

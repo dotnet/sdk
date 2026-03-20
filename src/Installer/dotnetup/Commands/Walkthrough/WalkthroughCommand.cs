@@ -32,81 +32,8 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
 
 
 
-        // Install SDK — validate the install path early so the user sees any conflict
-        // before the download output, not after.
-        var workflowResult = RunInstallWorkflow(channel, pathPreference, replaceSystemConfig);
-
 
         return 0;
-    }
-
-    private static void ShowBanner()
-    {
-        SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
-        SpectreAnsiConsole.WriteLine();
-    }
-
-    /// <summary>
-    /// Explains how dotnetup channels work and lets the user pick a channel.
-    /// Builds example channels dynamically from the release manifest and shows
-    /// what each one currently resolves to.
-    /// </summary>
-    private string PromptChannel()
-    {
-        string brand = DotnetupTheme.Current.Brand;
-        string dim = DotnetupTheme.Current.Dim;
-
-        SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
-        SpectreAnsiConsole.WriteLine();
-
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
-            brand));
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "[{0}]Channels may be implied from your global.json.[/]",
-            dim));
-        SpectreAnsiConsole.WriteLine();
-
-        var examples = BuildChannelExamples();
-
-        var prompt = new SelectionPrompt<ChannelExample>()
-            .Title("[bold]Select an example channel to get started:[/]")
-            .PageSize(examples.Count - 1)
-            .HighlightStyle(Style.Parse(brand))
-            .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
-            .UseConverter(ex =>
-            {
-                string resolved = ex.ResolvedVersion is not null
-                    ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
-                    : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
-                string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
-                    ? " [white](suggested)[/]"
-                    : "";
-                return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
-                    brand,
-                    ex.Channel.EscapeMarkup().PadRight(12),
-                    suggested,
-                    dim,
-                    ex.Description.EscapeMarkup(),
-                    resolved);
-            });
-
-        prompt.AddChoices(examples);
-
-        if (Console.IsInputRedirected)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]Using default channel: [{1}]latest[/][/]",
-                dim, brand));
-            return ChannelVersionResolver.LatestChannel;
-        }
-
-        var selected = SpectreAnsiConsole.Prompt(prompt);
-        SpectreAnsiConsole.WriteLine();
-        return selected.Channel;
     }
 
     /// <summary>
@@ -189,40 +116,6 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         return workflow.Execute(options);
     }
 
-    /// <summary>
-    /// Gets admin installs that should be migrated and installs them after the primary setup is complete.
-    /// </summary>
-    private void RunDeferredAdminInstalls(
-        InstallWorkflow.InstallWorkflowResult workflowResult,
-        PathPreference pathPreference,
-        bool migrateAdminInstalls)
-    {
-        if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference) || !migrateAdminInstalls)
-        {
-            return;
-        }
-
-        var adminInstalls = _dotnetInstaller.GetExistingSystemInstalls();
-        if (adminInstalls.Count == 0 || workflowResult.InstallRoot is null)
-        {
-            return;
-        }
-
-        // Exclude the version we just installed
-        var seen = new HashSet<(InstallComponent, string)>();
-        if (workflowResult.ResolvedVersion is not null)
-        {
-            seen.Add((InstallComponent.SDK, workflowResult.ResolvedVersion.ToString()));
-        }
-
-        var toMigrate = adminInstalls.Where(i => seen.Add((i.Component, i.Version.ToString()))).ToList();
-        if (toMigrate.Count == 0)
-        {
-            return;
-        }
-
-    }
-
     private void DisplayInstallLocation(GlobalJsonInfo? globalJson)
     {
         if (globalJson?.SdkPath is not null)
@@ -259,43 +152,7 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 
-    /// <summary>
-    /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
-    /// using an interactive selector that shows all options with descriptions and tooltips.
-    /// </summary>
-    internal static PathPreference PromptPathPreference()
-    {
-        bool isWindows = OperatingSystem.IsWindows();
 
-        string isolationTooltip = string.Format(
-            CultureInfo.InvariantCulture,
-            Strings.PathTooltipDotnetupDotnet,
-            isWindows ? "Program Files" : "/usr/local");
-
-        string terminalTooltip = isWindows
-            ? Strings.PathTooltipShellProfile + " " + Strings.PathTooltipShellProfileWindowsNote
-            : Strings.PathTooltipShellProfile;
-
-        var options = new List<SelectableOption>
-        {
-            new("i", Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
-            new("t", Strings.PathPreferenceShellProfile,   isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase,   terminalTooltip),
-        };
-
-        if (isWindows)
-        {
-            options.Add(new("r", Strings.PathPreferenceFullReplacement, Strings.PathDescriptionFullReplacement, Strings.PathTooltipFullReplacement));
-        }
-
-        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
-
-        return selected switch
-        {
-            0 => PathPreference.DotnetupDotnet,
-            1 => PathPreference.ShellProfile,
-            _ => PathPreference.FullPathReplacement,
-        };
-    }
 
     /// <summary>
     /// Shows guidance based on the chosen path preference.
