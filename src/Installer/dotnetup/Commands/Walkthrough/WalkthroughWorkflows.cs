@@ -195,10 +195,18 @@ internal class WalkthroughWorkflows
             CultureInfo.InvariantCulture,
             "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
             brand));
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "[{0}]Channels may be implied from your global.json.[/]",
-            dim));
+
+        var globalJsonInfo = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        if (globalJsonInfo.GlobalJsonPath is not null)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]Channels may be implied from your global.json at [{1}]{2}[/].[/]",
+                dim,
+                brand,
+                globalJsonInfo.GlobalJsonPath.EscapeMarkup()));
+        }
+
         SpectreAnsiConsole.WriteLine();
 
         var examples = BuildChannelExamples();
