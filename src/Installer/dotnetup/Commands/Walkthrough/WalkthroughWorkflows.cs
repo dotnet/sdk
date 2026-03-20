@@ -119,6 +119,7 @@ internal class WalkthroughWorkflows
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="interactive">Whether to prompt the user. When false, uses existing config or defaults — no prompts are shown.</param>
     /// <param name="deferAdminMigrationUntilEnd">When true, defers the admin migration prompt until the end of the walkthrough.</param>
+    /// <param name="askEvenIfConfigured">When true, prompts the user even if a preference was previously saved.</param>
     public void BaseConfigurationWalkthrough(
         List<ResolvedInstallRequest> requests,
         Action primaryActionAfterConfigured,
