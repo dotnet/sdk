@@ -20,6 +20,7 @@ internal abstract class InstallCommand : CommandBase
     public Verbosity Verbosity { get; }
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
+    public virtual bool UpdateGlobalJson => false;
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver { get; }

@@ -323,4 +323,17 @@ public class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var newPath = string.Join(Path.PathSeparator, pathEntries);
         Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
+
+    /// <inheritdoc />
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
+    {
+        foreach (var request in requests)
+        {
+            string? globalJsonPath = request.Request.Options.GlobalJsonPath;
+            if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
+            {
+                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, request.ResolvedVersion.ToString());
+            }
+        }
+    }
 }

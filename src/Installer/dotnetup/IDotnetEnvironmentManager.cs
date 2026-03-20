@@ -26,6 +26,11 @@ public interface IDotnetEnvironmentManager
 
     void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
 
+    /// <summary>
+    /// Updates the global.json file to reflect the installed SDK version,
+    /// if a global.json exists and the install was global.json-sourced.
+    /// </summary>
+    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests);
 }
 
 public class GlobalJsonInfo

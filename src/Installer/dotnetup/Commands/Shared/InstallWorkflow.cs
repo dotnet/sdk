@@ -55,6 +55,15 @@ internal class InstallWorkflow
                 () => ExecuteInstallRequests(requests),
                 _command.NoProgress);
         }
+
+        // Global.json update runs after install in all code paths, but only when
+        // the command opted in (e.g. `sdk install --update-global-json`).
+        // The walkthrough intentionally does NOT own this — only command-level
+        // flags control whether the global.json file is mutated.
+        if (_command.UpdateGlobalJson)
+        {
+            _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests);
+        }
     }
 
     /// <summary>
@@ -131,7 +140,7 @@ internal class InstallWorkflow
                     ManifestPath = _command.ManifestPath,
                     RequireMuxerUpdate = _command.RequireMuxerUpdate,
                     InstallSource = installSource,
-                    GlobalJsonPath = isFromGlobalJson ? globalJson?.GlobalJsonPath : null,
+                    GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
                     Untracked = _command.Untracked,
                     Verbosity = _command.Verbosity
                 });

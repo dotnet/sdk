@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 /// </summary>
 internal class WalkthroughWorkflows
 {
-    private readonly IDotnetEnvironmentManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly ChannelVersionResolver _channelVersionResolver;
 
     private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
 
-    public WalkthroughWorkflows(IDotnetEnvironmentManager dotnetInstaller, ChannelVersionResolver channelVersionResolver)
+    public WalkthroughWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
     {
-        _dotnetInstaller = dotnetInstaller;
+        _dotnetEnvironment = dotnetEnvironment;
         _channelVersionResolver = channelVersionResolver;
     }
 
@@ -99,7 +99,7 @@ internal class WalkthroughWorkflows
         DotnetInstallRoot installRoot = requests.Count > 0
             ? requests[0].Request.InstallRoot
             : new DotnetInstallRoot(
-                _dotnetInstaller.GetDefaultDotnetInstallPath(),
+                _dotnetEnvironment.GetDefaultDotnetInstallPath(),
                 InstallerUtilities.GetDefaultInstallArchitecture());
 
         // Fire off background predownload while the user answers prompts
@@ -114,7 +114,7 @@ internal class WalkthroughWorkflows
         // Step 2: Prompt about admin installs before setting up the environment
         // In non-interactive mode, skip the migration prompt entirely.
         List<DotnetInstall> toMigrate = interactive
-            ? PromptInstallsToMigrateIfDesired(_dotnetInstaller, pathPreference)
+            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference)
             : [];
 
         // Show the user where installs will land
@@ -131,9 +131,14 @@ internal class WalkthroughWorkflows
         // Step 4: Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
         SaveConfigAndDisplayResult(pathPreference);
 
+        // NOTE: Global.json modification is intentionally NOT done here.
+        // The walkthrough does not own global.json updates — that responsibility
+        // belongs to InstallWorkflow, gated on the --update-global-json flag
+        // which only the SDK install command exposes.
+
         if (ShouldReplaceSystemConfiguration(pathPreference))
         {
-            _dotnetInstaller.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
+            _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
 
         // Step 5: Batch-install migrated system installs (SDKs first, then runtimes)
@@ -280,21 +285,21 @@ internal class WalkthroughWorkflows
     /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
     /// </summary>
     /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no system installs exist.</returns>
-    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetInstaller, PathPreference pathPreference)
+    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference)
     {
         if (!ShouldPromptToConvertSystemInstalls(pathPreference))
         {
             return [];
         }
 
-        var systemInstalls = dotnetInstaller.GetExistingSystemInstalls();
+        var systemInstalls = dotnetEnvironment.GetExistingSystemInstalls();
         if (systemInstalls.Count == 0)
         {
             return [];
         }
 
         // Find the system install path for display purposes
-        var currentInstall = dotnetInstaller.GetCurrentPathConfiguration();
+        var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
         string systemPath = currentInstall?.InstallType == InstallType.Admin
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
