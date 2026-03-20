@@ -1,13 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using FluentAssertions;
 using FluentAssertions.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -15,7 +13,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -229,7 +226,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "1.0.0",
                 []);
             string mainProjectDirectory = Path.GetDirectoryName(mainProject.ProjectPath);
-
 
             ITaskItem[] referencePaths = dllReference ? references.Select(reference =>
                 new MockTaskItem($"/usr/Path/{reference}.dll", new Dictionary<string, string> {

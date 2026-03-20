@@ -1,13 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.Common;
 using NuGet.ProjectModel;
-using Xunit;
 using static Microsoft.NET.Build.Tasks.UnitTests.LockFileSnippets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests

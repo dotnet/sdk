@@ -1,11 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Reflection;
-using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -50,7 +48,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // this test compiles against a sufficiently high System.Runtime
             task.DependsOnNETStandard.Should().BeTrue();
         }
-
 
         [Fact]
         public void ReturnsFalseForNonPE()

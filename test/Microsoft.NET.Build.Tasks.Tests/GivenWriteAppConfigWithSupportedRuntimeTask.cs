@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using FluentAssertions;
 using NuGet.Frameworks;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {

@@ -1,8 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -17,7 +14,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     {"CopyToPublishDirectory", "Always"},
                     {"TargetPath", "WindowsDesktopSdkTest_without_ProjectSdk_set.exe"},
                 });
-
 
         private readonly MockTaskItem _dll =
             new(@"obj\Debug\net5.0\WindowsDesktopSdkTest_without_ProjectSdk_set.dll",

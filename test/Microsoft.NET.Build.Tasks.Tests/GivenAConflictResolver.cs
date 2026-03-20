@@ -1,14 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
 using Microsoft.NET.Build.Tasks.UnitTests.Mocks;
 using NuGet.Versioning;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -49,7 +47,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.Conflicts.Should().BeEmpty();
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
-
 
         [Fact]
         public void WhenAnItemDoesntExistButDoesNotConflictWithAnythingItIsNotReported()
@@ -201,7 +198,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.Conflicts.Should().Equal(item1);
             result.UnresolvedConflicts.Should().BeEmpty();
         }
-
 
         [Fact]
         public void WhenItemsConflictThePackageRankIsUsedToResolveTheConflict()

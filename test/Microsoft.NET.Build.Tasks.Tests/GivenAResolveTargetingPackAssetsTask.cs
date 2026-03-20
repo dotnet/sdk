@@ -1,15 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using FluentAssertions;
 using Microsoft.Build.Framework;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -178,7 +174,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
   <File Type=""Analyzer"" Language=""cs"" Path=""analyzers/dotnet/cs/csAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""csAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
   <File Type=""Analyzer"" Language=""vb"" Path=""analyzers/dotnet/vb/vbAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""vbAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
 </FileList>";
-
 
         [Fact]
         public void It_Hashes_All_Inputs()

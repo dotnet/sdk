@@ -1,9 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -958,7 +954,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
                 $"Should have runtime pack in output for scenario: {scenario}");
         }
-
 
         [Fact]
         public void It_handles_complex_cross_compilation_RuntimeIdentifiers()
