@@ -33,7 +33,7 @@ internal class WorkloadInstallerFactory
 
         if (installType == InstallType.Msi)
         {
-#if DOT_NET_BUILD_FROM_SOURCE
+#if !TARGET_WINDOWS
             throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
 #else
             if (!OperatingSystem.IsWindows())
