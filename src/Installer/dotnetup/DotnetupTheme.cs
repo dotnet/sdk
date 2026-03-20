@@ -20,7 +20,7 @@ internal sealed class ThemeColors
     public string Warning { get; set; } = "yellow";
 
     /// <summary>Color for emphasis on versions, paths, and key values.</summary>
-    public string Accent { get; set; } = "blue";
+    public string Accent { get; set; } = "magenta";
 
     /// <summary>Color for the dotnet bot banner and branding elements.</summary>
     public string Brand { get; set; } = "magenta";
