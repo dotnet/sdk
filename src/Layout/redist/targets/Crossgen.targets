@@ -91,6 +91,10 @@
       <!-- Don't CrossGen .NET Framework components of DotnetTools -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\BuildHost-net472\**\*" />
 
+      <!-- Don't CrossGen assemblies injected by dotnet-watch into user apps at runtime -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.Extensions.DotNetDeltaApplier.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" />
+
       <!-- Don't crossgen satellite assemblies -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
       <FSharpFiles Remove="$(InstallerOutputDirectory)FSharp\**\*.resources.dll" />

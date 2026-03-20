@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -31,7 +30,6 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
             EnvironmentOptions = EnvironmentOptions,
             MainProjectOptions = null,
             BuildArguments = [],
-            TargetFramework = null,
             RootProjects = rootProjects,
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
             BrowserLauncher = new BrowserLauncher(logger, Reporter, EnvironmentOptions),
