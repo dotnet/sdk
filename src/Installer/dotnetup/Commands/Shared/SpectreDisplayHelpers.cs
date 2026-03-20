@@ -76,7 +76,7 @@ internal static class SpectreDisplayHelpers
             }
 
             string promptSuffix = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/])[/] ", confirmPrompt, brand)
+                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/] ", confirmPrompt, brand)
                 : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand);
             SpectreAnsiConsole.Markup(promptSuffix);
             var result = ReadConfirm(defaultValue: ConfirmResult.Yes, allowNeverAsk: allowNeverAsk);
@@ -279,7 +279,7 @@ internal static class SpectreDisplayHelpers
         if (confirmPrompt is not null)
         {
             string promptHint = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/])[/]", confirmPrompt, DotnetupTheme.Current.Brand)
+                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
                 : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
             SpectreAnsiConsole.MarkupLine(promptHint);
             lineCount++;

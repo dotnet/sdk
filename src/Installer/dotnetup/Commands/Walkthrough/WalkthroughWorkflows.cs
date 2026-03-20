@@ -149,8 +149,8 @@ internal class WalkthroughWorkflows
         // (Can Defer) Step 2: Prompt about admin installs before setting up the environment
         // In non-interactive mode, skip the migration prompt entirely.
         List<DotnetInstall> toMigrate = deferAdminMigrationUntilEnd
-            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured)
-            : [];
+            ? []
+            : PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
 
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
         if (requests.Count > 0)
