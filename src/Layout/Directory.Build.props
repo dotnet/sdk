@@ -30,7 +30,6 @@
     <ExeExtension>.exe</ExeExtension>
     <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
 
-    <!-- TargetRid and PortableTargetRid are now set centrally in eng/RuntimeIdentifier.props -->
     <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
 
     <PortableProductMonikerRid>$(PortableTargetRid)</PortableProductMonikerRid>

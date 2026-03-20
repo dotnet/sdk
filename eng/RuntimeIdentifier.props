@@ -6,13 +6,10 @@
     <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
   </PropertyGroup>
 
-  <!-- Boolean targeting properties -->
-  <PropertyGroup Label="CalculateTargetOSName">
-    <TargetsWindows Condition="'$(TargetOS)' == 'win'">true</TargetsWindows>
-    <TargetsLinux Condition="'$(TargetOS)' == 'linux'">true</TargetsLinux>
-    <TargetsOSX Condition="'$(TargetOS)' == 'osx'">true</TargetsOSX>
-    <TargetsFreeBSD Condition="'$(TargetOS)' == 'freebsd'">true</TargetsFreeBSD>
-    <TargetsUnix Condition="'$(TargetsLinux)' == 'true' OR '$(TargetsOSX)' == 'true' OR '$(TargetsFreeBSD)' == 'true'">true</TargetsUnix>
+  <!-- Platform-specific C# preprocessor defines (VB uses different syntax, so scope to C# only) -->
+  <PropertyGroup Condition="'$(Language)' == 'C#'">
+    <DefineConstants Condition="'$(TargetsWindows)' == 'true'">$(DefineConstants);TARGET_WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(TargetsUnix)' == 'true'">$(DefineConstants);TARGET_UNIX</DefineConstants>
   </PropertyGroup>
 
 </Project>

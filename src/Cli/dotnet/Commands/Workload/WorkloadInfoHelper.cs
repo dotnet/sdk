@@ -77,7 +77,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
     {
         InstalledWorkloadsCollection installedWorkloads = new(sdkWorkloadIds, $"SDK {_currentSdkFeatureBand}");
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);

@@ -48,6 +48,8 @@ if ($properties) { $arguments += " " + ($properties -join " ") }
 
 $arguments += " /tlp:summary"
 
+$env:DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT = "true"
+
 foreach ($config in $configuration) {
   $argumentsWithConfig = $arguments + " -configuration $config"
   Invoke-Expression "& `"$PSScriptRoot/common/build.ps1`" $argumentsWithConfig"
