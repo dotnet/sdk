@@ -110,6 +110,7 @@ internal class WalkthroughWorkflows
     /// <param name="primaryActionAfterConfigured">The action to execute after environment configuration (typically the install).</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="interactive">Whether to prompt the user. When false, uses existing config or defaults — no prompts are shown.</param>
+    /// <param name="deferAdminMigrationUntilEnd">When true, defers the admin migration prompt until the end of the walkthrough.</param>
     public void BaseConfigurationWalkthrough(
         List<ResolvedInstallRequest> requests,
         Action primaryActionAfterConfigured,
