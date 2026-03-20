@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -96,7 +95,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
 
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
@@ -117,7 +116,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// Checks the specified error code to determine whether it indicates a success result. If not, additional extended information
     /// is retrieved before throwing a <see cref="WorkloadException"/>.
-    /// 
+    ///
     /// The <see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
     /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
     /// </summary>
@@ -167,7 +166,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// Logs a message if the specified error code does not indicate a success result. The <see cref="Restart"/>
     /// property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
     /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
-    /// 
+    ///
     /// No exception is thrown by this method. See <see cref="ExitOnError(uint, string)"/> for more detail.
     /// </summary>
     /// <param name="error">The error code to log.</param>
@@ -196,7 +195,9 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     static InstallerBase()
     {
         CurrentProcess = Process.GetCurrentProcess();
+#if !DOT_NET_BUILD_FROM_SOURCE
         ParentProcess = CurrentProcess.GetParentProcess();
+#endif
         ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
     }
 }

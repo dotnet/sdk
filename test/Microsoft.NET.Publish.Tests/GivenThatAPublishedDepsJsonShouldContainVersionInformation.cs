@@ -38,7 +38,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var testProject = GetTestProject();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -120,7 +120,7 @@ static class Program
             }
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -210,7 +210,7 @@ static class Program
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod);
 
             MSBuildCommand command;
             if (build)

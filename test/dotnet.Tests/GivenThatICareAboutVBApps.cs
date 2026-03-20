@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ICanBuildVBApps()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ICanRunVBApps()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ICanPublicAndRunVBApps()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")
                 .WithSource();
 
             var publishCommand = new PublishCommand(testInstance);

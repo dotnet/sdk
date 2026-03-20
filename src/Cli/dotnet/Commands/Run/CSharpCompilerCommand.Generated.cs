@@ -20,8 +20,8 @@ partial class CSharpCompilerCommand
             "/fullpaths",
             "/nostdlib+",
             "/errorreport:prompt",
-            "/warn:10",
-            "/define:TRACE;DEBUG;NET;NET10_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER",
+            "/warn:11",
+            "/define:TRACE;DEBUG;NET;NET11_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER",
             "/highentropyva+",
             "/nullable:enable",
             .. GetFrameworkReferenceArguments(),
@@ -37,8 +37,9 @@ partial class CSharpCompilerCommand
             "/deterministic+",
             "/langversion:14.0",
             "/features:FileBasedProgram",
+            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/codestyle/cs/build/config/analysislevelstyle_default.globalconfig",
             $"/analyzerconfig:{objDir}/{FileName}.GeneratedMSBuildEditorConfig.editorconfig",
-            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig",
+            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_11_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll",
             $"/analyzer:{NuGetCachePath}/microsoft.net.illink.tasks/{RuntimeVersion}/analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
@@ -46,7 +47,7 @@ partial class CSharpCompilerCommand
             .. GetFrameworkAnalyzerArguments(),
             $"{EntryPointFileFullPath}",
             $"{objDir}/{FileName}.GlobalUsings.g.cs",
-            $"{objDir}/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            $"{objDir}/.NETCoreApp,Version=v{TargetFrameworkVersion}.AssemblyAttributes.cs",
             $"{objDir}/{FileName}.AssemblyInfo.cs",
             "/warnaserror+:NU1605,SYSLIB0011",
         ];
@@ -69,14 +70,14 @@ partial class CSharpCompilerCommand
         return $$"""
 {
   "runtimeOptions": {
-    "tfm": {{JsonSerializer.Serialize(TargetFramework)}},
+    "tfm": {{JsonSerializer.Serialize(TargetFramework, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
     "framework": {
       "name": "Microsoft.NETCore.App",
-      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion)}}
+      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion, CSharpCompilerCommandJsonSerializerContext.Default.String)}}
     },
     "configProperties": {
-      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
-      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(BaseDirectory)}},
+      "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
+      "EntryPointFileDirectoryPath": {{JsonSerializer.Serialize(BaseDirectory, CSharpCompilerCommandJsonSerializerContext.Default.String)}},
       "Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability": true,
       "System.ComponentModel.DefaultValueAttribute.IsSupported": false,
       "System.ComponentModel.Design.IDesignerHost.IsSupported": false,
@@ -153,6 +154,7 @@ is_global = true
 build_property.EnableAotAnalyzer = true
 build_property.EnableSingleFileAnalyzer = true
 build_property.EnableTrimAnalyzer = true
+build_property.EnableUnsafeAnalyzer = 
 build_property.IncludeAllContentForSelfExtract = 
 build_property.VerifyReferenceTrimCompatibility = 
 build_property.VerifyReferenceAotCompatibility = 

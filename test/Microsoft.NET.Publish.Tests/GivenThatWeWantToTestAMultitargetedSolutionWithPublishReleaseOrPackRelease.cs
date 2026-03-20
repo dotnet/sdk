@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProjects.Add(testProject);
             testProjects.Add(libraryProject);
-            var testAsset = _testAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: identifier);
 
             return (testAsset, testProjects);
         }
@@ -77,9 +77,9 @@ namespace Microsoft.NET.Publish.Tests
         {
             var secondProjectTfm = ToolsetInfo.CurrentTargetFramework; // Net8 here is a 'net 8+' project
             var expectedConfiguration = Release;
-            var expectedTfm = "net10.0";
+            var expectedTfm = "net11.0";
 
-            var (testAsset, testProjects) = Setup(new List<string> { "net6.0", "net7.0", "net8.0", "net9.0", "net10.0" }, new List<string> { secondProjectTfm }, PublishRelease, "", "", identifier: string.Join('-', args));
+            var (testAsset, testProjects) = Setup(new List<string> { "net6.0", "net7.0", "net8.0", "net9.0", "net10.0", "net11.0" }, new List<string> { secondProjectTfm }, PublishRelease, "", "", identifier: string.Join('-', args));
 
             var dotnetCommand = new DotnetCommand(Log, publish);
             dotnetCommand
@@ -357,7 +357,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.RecordProperties("Configuration");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))

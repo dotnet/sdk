@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xunit;
 
 // Copied from
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Memory/tests/ArrayBufferWriter/ArrayBufferWriterTests.T.cs and
