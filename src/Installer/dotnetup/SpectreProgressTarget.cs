@@ -21,7 +21,7 @@ public class SpectreProgressTarget : IProgressTarget
             var successAltStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt);
             progress.Columns(
                 new SpinnerColumn(Spinner.Known.Line) { Style = Style.Parse(DotnetupTheme.Current.Brand) },
-                new TaskDescriptionColumn(),
+                new TaskDescriptionColumn { Alignment = Justify.Left },
                 new ProgressBarColumn
                 {
                     CompletedStyle = Style.Parse(DotnetupTheme.Current.Brand),
