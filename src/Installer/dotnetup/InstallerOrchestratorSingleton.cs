@@ -17,7 +17,7 @@ internal class InstallerOrchestratorSingleton
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
     /// <summary>
-    /// Resolves the version for a channel and downloads the archive into the download cache
+    /// Downloads the archive for an already-resolved install request into the download cache
     /// without installing. This allows a background task to warm the cache while the user
     /// interacts with walkthrough prompts, so the subsequent <see cref="Install"/> call
     /// finds the archive already cached and skips the download.
@@ -32,14 +32,13 @@ internal class InstallerOrchestratorSingleton
     {
         try
         {
-            ReleaseManifest releaseManifest = new();
-
             // Download to a temp file, which populates the download cache as a side effect.
             // The temp file is cleaned up afterwards — only the cache entry matters.
             var tempDir = Directory.CreateTempSubdirectory("dotnetup-predownload").FullName;
             try
             {
                 var archivePath = Path.Combine(tempDir, $"predownload{DotnetupUtilities.GetArchiveFileExtensionForPlatform()}");
+                ReleaseManifest releaseManifest = new();
                 using var downloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
                 await Task.Run(() => downloader.DownloadArchiveWithVerification(resolvedRequest.Request, resolvedRequest.ResolvedVersion, archivePath)).ConfigureAwait(false);
             }
@@ -75,13 +74,16 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Prepares and commits all install requests concurrently where possible: downloads run in parallel,
     /// and commits serialize through the install-state mutex.
+    /// Individual <see cref="DotnetInstallException"/> failures are captured and returned
+    /// so that other installs in the batch can continue.
     /// </summary>
-    /// <returns>All results, including already-installed entries.</returns>
-    public IReadOnlyList<InstallResult> InstallMany(IReadOnlyList<ResolvedInstallRequest> requests, IProgressReporter sharedReporter)
+    /// <returns>A batch result containing both successes and per-request failures.</returns>
+    public InstallBatchResult InstallMany(IReadOnlyList<ResolvedInstallRequest> requests, IProgressReporter sharedReporter)
     {
 
         var results = new List<InstallResult>();
-        var exceptions = new List<Exception>();
+        var failures = new List<InstallFailure>();
+        var fatalExceptions = new List<Exception>();
         var lockObj = new object();
 
         // Use a BlockingCollection so commits can start as soon as downloads finish,
@@ -94,8 +96,8 @@ internal class InstallerOrchestratorSingleton
         ScopedMutex.SuppressWaitingCallback = true;
         try
         {
-            var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, exceptions, lockObj));
-            ConsumeAndCommit(readyQueue, results, exceptions, lockObj);
+            var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, lockObj));
+            ConsumeAndCommit(readyQueue, results, failures, fatalExceptions, lockObj);
             downloadTask.Wait();
         }
         finally
@@ -103,24 +105,26 @@ internal class InstallerOrchestratorSingleton
             ScopedMutex.SuppressWaitingCallback = false;
         }
 
-        if (exceptions.Count > 0)
+        // Fatal (non-DotnetInstallException) errors still abort the batch entirely.
+        if (fatalExceptions.Count > 0)
         {
-            if (exceptions[0] is DotnetInstallException) { throw exceptions[0]; }
-            throw new AggregateException(exceptions);
+            throw new AggregateException(fatalExceptions);
         }
 
-        return results;
+        return new InstallBatchResult(results, failures);
     }
 
     /// <summary>
     /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.
+    /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
     /// </summary>
     private void DownloadAll(
         IReadOnlyList<ResolvedInstallRequest> requests,
         IProgressReporter sharedReporter,
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
         List<InstallResult> results,
-        List<Exception> exceptions,
+        List<InstallFailure> failures,
+        List<Exception> fatalExceptions,
         object lockObj)
     {
         const int maxConcurrentDownloads = 3;
@@ -142,9 +146,13 @@ internal class InstallerOrchestratorSingleton
                     }
                 }
             }
+            catch (DotnetInstallException ex)
+            {
+                lock (lockObj) { failures.Add(new InstallFailure(request, ex)); }
+            }
             catch (Exception ex)
             {
-                lock (lockObj) { exceptions.Add(ex); }
+                lock (lockObj) { fatalExceptions.Add(ex); }
             }
         });
 
@@ -154,11 +162,13 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Consumes the ready queue and commits (extracts + records) each install as it arrives.
     /// CommitPreparedInstall acquires the install-state mutex, so commits are serialized.
+    /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
     /// </summary>
     private void ConsumeAndCommit(
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
         List<InstallResult> results,
-        List<Exception> exceptions,
+        List<InstallFailure> failures,
+        List<Exception> fatalExceptions,
         object lockObj)
     {
         var committedInstalls = new List<PreparedInstall>();
@@ -167,7 +177,7 @@ internal class InstallerOrchestratorSingleton
             foreach (var prepared in readyQueue.GetConsumingEnumerable())
             {
                 committedInstalls.Add(prepared);
-                if (exceptions.Count > 0)
+                if (fatalExceptions.Count > 0)
                 {
                     continue;
                 }
@@ -176,9 +186,13 @@ internal class InstallerOrchestratorSingleton
                 {
                     results.Add(CommitPreparedInstall(prepared));
                 }
+                catch (DotnetInstallException ex)
+                {
+                    lock (lockObj) { failures.Add(new InstallFailure(prepared.ResolvedRequest, ex)); }
+                }
                 catch (Exception ex)
                 {
-                    lock (lockObj) { exceptions.Add(ex); }
+                    lock (lockObj) { fatalExceptions.Add(ex); }
                 }
             }
         }

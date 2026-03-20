@@ -16,18 +16,18 @@ internal class InstallExecutor
 {
     /// <summary>
     /// Executes a batch of resolved install requests concurrently via <see cref="InstallerOrchestratorSingleton.InstallMany"/>,
-    /// then displays a unified result summary.
+    /// then displays a unified result summary including any per-request failures.
     /// </summary>
     /// <param name="requests">The resolved install requests to execute.</param>
     /// <param name="noProgress">Whether to suppress progress display.</param>
-    /// <returns>The installation results, one per request.</returns>
-    public static InstallResult[] ExecuteInstalls(
+    /// <returns>The batch result containing successes and failures.</returns>
+    public static InstallBatchResult ExecuteInstalls(
         List<ResolvedInstallRequest> requests,
         bool noProgress)
     {
         if (requests.Count == 0)
         {
-            return Array.Empty<InstallResult>();
+            return new InstallBatchResult(Array.Empty<InstallResult>(), Array.Empty<InstallFailure>());
         }
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
@@ -45,27 +45,27 @@ internal class InstallExecutor
             accent,
             escapedPath));
 
-        IReadOnlyList<InstallResult> results;
+        InstallBatchResult batchResult;
         {
             IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
             using var sharedReporter = new LazyProgressReporter(progressTarget);
-            results = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
+            batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayBatchResults(results);
-        return results.ToArray();
+        DisplayBatchResults(batchResult);
+        return batchResult;
     }
 
     /// <summary>
-    /// Displays a summary of batch install results, grouping by newly installed vs already installed.
+    /// Displays a summary of batch install results, grouping by newly installed, already installed, and failed.
     /// </summary>
-    private static void DisplayBatchResults(IReadOnlyList<InstallResult> results)
+    private static void DisplayBatchResults(InstallBatchResult batchResult)
     {
         var installed = new List<string>();
         var alreadyInstalled = new List<string>();
         string? sharedPath = null;
 
-        foreach (var result in results)
+        foreach (var result in batchResult.Successes)
         {
             sharedPath ??= result.Install.InstallRoot.Path;
             string successAccent = DotnetupTheme.Current.SuccessAccent;
@@ -81,6 +81,21 @@ internal class InstallExecutor
         }
 
         EmitBatchSummaryLines(installed, alreadyInstalled, sharedPath);
+
+        if (batchResult.Failures.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                "[{0}]The following installs failed:[/]", DotnetupTheme.Current.Error));
+            foreach (var failure in batchResult.Failures)
+            {
+                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                    "  [{0}]{1} {2}: {3}[/]",
+                    DotnetupTheme.Current.Error,
+                    failure.Request.Request.Component.GetDisplayName(),
+                    failure.Request.ResolvedVersion.ToString().EscapeMarkup(),
+                    failure.Exception.Message.EscapeMarkup()));
+            }
+        }
     }
 
     private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)

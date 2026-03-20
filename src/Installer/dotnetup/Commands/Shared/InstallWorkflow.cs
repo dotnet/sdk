@@ -186,11 +186,16 @@ internal class InstallWorkflow
     /// </summary>
     private void ExecuteInstallRequests(List<ResolvedInstallRequest> requests)
     {
-        var results = InstallExecutor.ExecuteInstalls(requests, _command.NoProgress);
+        var batchResult = InstallExecutor.ExecuteInstalls(requests, _command.NoProgress);
 
-        foreach (var result in results)
+        foreach (var result in batchResult.Successes)
         {
             Activity.Current?.SetTag(TelemetryTagNames.InstallResult, result.WasAlreadyInstalled ? "already_installed" : "installed");
+        }
+
+        if (batchResult.Failures.Count > 0)
+        {
+            throw batchResult.Failures[0].Exception;
         }
     }
 
