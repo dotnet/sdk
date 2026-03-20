@@ -30,8 +30,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string? PackagesJsonPath = CodeBaseRoot is not null
-            ? Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json")
+        private static readonly string? PackagesJsonPath = SdkTestContext.Current.TestPackages is not null
+            ? Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json")
             : null;
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)

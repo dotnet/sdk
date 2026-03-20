@@ -32,17 +32,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static string DotnetNewTestTemplatePackageProjectPath { get; } = VerifyFileExists(Path.Combine(DotnetNewTestAssets, "Microsoft.TemplateEngine.TestTemplates.csproj"));
 
         /// <summary>
-        /// Gets a path to the repo root folder, or null if not running in a repository environment (e.g. Helix).
-        /// </summary>
-        public static string? CodeBaseRoot { get; } = SdkTestContext.GetRepoRoot();
-
-        /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(
-            SdkTestContext.Current.RepoTemplatePackages
-            ?? throw new InvalidOperationException("The template_feed directory path is not configured. " +
-                "Set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable to the template_feed directory path."));
+        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages!;
 
 #if DEBUG
         /// <summary>

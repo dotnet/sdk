@@ -272,10 +272,18 @@ namespace Microsoft.NET.TestFramework
             }
 
             string? envRepoTemplatePackages = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES");
-            string? repoTemplatePackagesFallback = repoRoot != null ? Path.Combine(repoRoot, "template_feed") : null;
-            testContext.RepoTemplatePackages =
-                (!string.IsNullOrEmpty(envRepoTemplatePackages) && Directory.Exists(envRepoTemplatePackages) ? envRepoTemplatePackages : null)
-                ?? (repoTemplatePackagesFallback != null && Directory.Exists(repoTemplatePackagesFallback) ? repoTemplatePackagesFallback : null);
+            if (!string.IsNullOrEmpty(envRepoTemplatePackages) && Directory.Exists(envRepoTemplatePackages))
+            {
+                testContext.RepoTemplatePackages = envRepoTemplatePackages;
+            }
+            else if (repoRoot != null)
+            {
+                string repoTemplatePackagesFallback = Path.Combine(repoRoot, "template_feed");
+                if (Directory.Exists(repoTemplatePackagesFallback))
+                {
+                    testContext.RepoTemplatePackages = repoTemplatePackagesFallback;
+                }
+            }
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 

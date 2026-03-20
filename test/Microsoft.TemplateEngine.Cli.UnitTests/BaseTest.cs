@@ -23,10 +23,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(
-            SdkTestContext.Current.RepoTemplatePackages
-            ?? throw new InvalidOperationException("The template_feed directory path is not configured. " +
-                "Set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable to the template_feed directory path."));
+        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages!;
 
         /// <summary>
         /// Gets a path to the test template with a <paramref name="templateName"/> name.
