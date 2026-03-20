@@ -23,6 +23,9 @@ internal class WalkthroughWorkflows
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly ChannelVersionResolver _channelVersionResolver;
 
+    /// <summary>Sentinel channel value indicating the user wants to skip the initial install.</summary>
+    internal const string NoneChannel = "none";
+
     private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
 
     public WalkthroughWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
@@ -41,9 +44,18 @@ internal class WalkthroughWorkflows
     /// <summary>
     /// Returns true when the user chose to convert existing system-level .NET installs
     /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
+    /// Also returns false if the user previously opted out via <see cref="DotnetupConfigData.DisableInstallConversion"/>.
     /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference) =>
-        preference != PathPreference.DotnetupDotnet;
+    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
+    {
+        if (preference == PathPreference.DotnetupDotnet)
+        {
+            return false;
+        }
+
+        var existingConfig = DotnetupConfig.Read();
+        return existingConfig?.DisableInstallConversion != true;
+    }
 
     /// <summary>
     /// Returns true when the user chose full PATH replacement (Windows-only),
@@ -65,6 +77,16 @@ internal class WalkthroughWorkflows
 
         // Step 0: Explain channels and let the user pick one
         string selectedChannel = PromptChannel();
+
+        if (selectedChannel == NoneChannel)
+        {
+            // User chose to skip installation — just configure the environment.
+            BaseConfigurationWalkthrough(
+                [],
+                () => { },
+                command.NoProgress);
+            return;
+        }
 
         // Generate the install request via the workflow (handles path resolution, global.json, validation)
         var workflow = new InstallWorkflow(command);
@@ -92,7 +114,8 @@ internal class WalkthroughWorkflows
         List<ResolvedInstallRequest> requests,
         Action primaryActionAfterConfigured,
         bool noProgress,
-        bool interactive = true)
+        bool interactive = true,
+        bool deferAdminMigrationUntilEnd = false)
     {
         // Determine the install root for environment configuration and migration.
         // Use the first request's root if available, otherwise fall back to the default path.
@@ -110,13 +133,13 @@ internal class WalkthroughWorkflows
 
         // Step 1: Choose how to access .NET
         var pathPreference = GetPathPreference(interactive);
+        string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
-        // Step 2: Prompt about admin installs before setting up the environment
+        // (Deferable) Step 2: Prompt about admin installs before setting up the environment
         // In non-interactive mode, skip the migration prompt entirely.
-        List<DotnetInstall> toMigrate = interactive
-            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference)
+        List<DotnetInstall> toMigrate = deferAdminMigrationUntilEnd
+            ? PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath)
             : [];
-
         // Show the user where installs will land
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
@@ -125,10 +148,10 @@ internal class WalkthroughWorkflows
             DisplayInstallLocation(requests[0]);
         }
 
-        // Step 3: Run the primary action (typically installing the base SDK from global.json/latest)
+        // Step 2: Run the primary action (typically installing the base SDK from global.json/latest)
         primaryActionAfterConfigured();
 
-        // Step 4: Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
+        // Step 3: Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented
         SaveConfigAndDisplayResult(pathPreference);
 
         // NOTE: Global.json modification is intentionally NOT done here.
@@ -141,7 +164,8 @@ internal class WalkthroughWorkflows
             _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
 
-        // Step 5: Batch-install migrated system installs (SDKs first, then runtimes)
+        // Step 4: Prompt (or use old prompt) migrating admin installs now that the environment is configured.
+        toMigrate ??= PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath);
         if (toMigrate.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
@@ -213,25 +237,10 @@ internal class WalkthroughWorkflows
 
         var prompt = new SelectionPrompt<ChannelExample>()
             .Title("[bold]Select an example channel to get started:[/]")
-            .PageSize(examples.Count - 1)
+            .PageSize(5)
             .HighlightStyle(Style.Parse(brand))
             .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
-            .UseConverter(ex =>
-            {
-                string resolved = ex.ResolvedVersion is not null
-                    ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
-                    : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
-                string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
-                    ? " [white](suggested)[/]"
-                    : "";
-                return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
-                    brand,
-                    ex.Channel.EscapeMarkup().PadRight(12),
-                    suggested,
-                    dim,
-                    ex.Description.EscapeMarkup(),
-                    resolved);
-            });
+            .UseConverter(ex => FormatChannelExample(ex, brand, dim));
 
         prompt.AddChoices(examples);
 
@@ -289,9 +298,10 @@ internal class WalkthroughWorkflows
 
     /// <summary>
     /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
+    /// Installs already tracked in the dotnetup manifest for <paramref name="installRoot"/> are excluded.
     /// </summary>
-    /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no system installs exist.</returns>
-    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference)
+    /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no unconverted system installs exist.</returns>
+    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference, DotnetInstallRoot installRoot, string? manifestPath = null)
     {
         if (!ShouldPromptToConvertSystemInstalls(pathPreference))
         {
@@ -304,13 +314,28 @@ internal class WalkthroughWorkflows
             return [];
         }
 
+        // Filter out installs already tracked in the dotnetup manifest
+        List<Installation> trackedInstalls;
+        using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            trackedInstalls = [.. new DotnetupSharedManifest(manifestPath).GetInstallations(installRoot)];
+        }
+
+        systemInstalls = [.. systemInstalls
+            .Where(unfilteredSystemInstall => !trackedInstalls.Exists(tracked =>
+                tracked.Component == unfilteredSystemInstall.Component && tracked.Version == unfilteredSystemInstall.Version.ToString())),];
+
+        if (systemInstalls.Count == 0)
+        {
+            return [];
+        }
+
         // Find the system install path for display purposes
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
         string systemPath = currentInstall?.InstallType == InstallType.Admin
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 
-        SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
 
         var displayItems = systemInstalls
@@ -319,23 +344,28 @@ internal class WalkthroughWorkflows
             .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
             .ToList();
 
-        bool userAcceptedMigration = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
+        var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
             visibleCount: 3,
-            "Do you want to copy the following installs into the dotnetup managed directory?");
+            "Do you want to copy the following installs into the dotnetup managed directory?",
+            allowNeverAsk: true);
 
-        if (userAcceptedMigration)
+        if (confirmResult == ConfirmResult.Yes)
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes. You can change this later with \"dotnetup defaultinstall\".[/]");
+        }
+        else if (confirmResult == ConfirmResult.NeverAskAgain)
+        {
+            var config = DotnetupConfig.Read() ?? new DotnetupConfigData();
+            config.DisableInstallConversion = true;
+            DotnetupConfig.Write(config);
         }
         else
         {
             SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
         }
 
-        SpectreAnsiConsole.WriteLine();
-
-        return userAcceptedMigration ? systemInstalls : [];
+        return confirmResult == ConfirmResult.Yes ? systemInstalls : [];
     }
 
     // ── Migration Batch ──
@@ -343,11 +373,13 @@ internal class WalkthroughWorkflows
     /// <summary>
     /// Installs migrated system installs in two phases: SDKs first (their archives
     /// typically bundle runtimes), then runtimes that aren't already on disk.
+    /// Failures are collected from both phases and reported at the end.
     /// </summary>
     private static void ExecuteMigrationBatch(List<DotnetInstall> toMigrate, DotnetInstallRoot installRoot, bool noProgress)
     {
         var sdks = toMigrate.Where(i => i.Component == InstallComponent.SDK).ToList();
         var runtimes = toMigrate.Where(i => i.Component != InstallComponent.SDK).ToList();
+        var allFailures = new List<InstallFailure>();
 
         // Phase 1: Install SDKs first — their archives typically bundle runtime binaries.
         if (sdks.Count > 0)
@@ -360,8 +392,11 @@ internal class WalkthroughWorkflows
                     new InstallRequestOptions()),
                 i.Version)).ToList();
 
-            InstallExecutor.ExecuteInstalls(sdkRequests, noProgress);
+            var sdkResult = InstallExecutor.ExecuteInstalls(sdkRequests, noProgress);
+            allFailures.AddRange(sdkResult.Failures);
         }
+
+        SpectreAnsiConsole.WriteLine();
 
         // Phase 2: Skip runtimes whose folders already landed on disk via SDK archives.
         var remainingRuntimes = runtimes.Where(r => !RuntimeFolderExistsOnDisk(installRoot, r)).ToList();
@@ -376,7 +411,19 @@ internal class WalkthroughWorkflows
                     new InstallRequestOptions()),
                 i.Version)).ToList();
 
-            InstallExecutor.ExecuteInstalls(runtimeRequests, noProgress);
+            var runtimeResult = InstallExecutor.ExecuteInstalls(runtimeRequests, noProgress);
+            allFailures.AddRange(runtimeResult.Failures);
+        }
+
+        if (allFailures.Count > 0)
+        {
+            SpectreAnsiConsole.MarkupLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "\n[{0}]{1} of {2} migration install(s) failed. " +
+                "You can retry them later with \"dotnetup install\".[/]",
+                DotnetupTheme.Current.Warning,
+                allFailures.Count,
+                toMigrate.Count));
         }
     }
 
@@ -450,6 +497,7 @@ internal class WalkthroughWorkflows
         var examples = new List<ChannelExample>
         {
             new(ChannelVersionResolver.LatestChannel, "Latest stable release", latestResolved?.ToString()),
+            new(NoneChannel, "I'll tell you what to install later.", null),
             new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
             new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
         };
@@ -466,6 +514,32 @@ internal class WalkthroughWorkflows
         }
 
         return examples;
+    }
+
+    private static string FormatChannelExample(ChannelExample ex, string brand, string dim)
+    {
+        if (ex.Channel == NoneChannel)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]  [{2}]{3}[/]",
+                brand,
+                ex.Channel.EscapeMarkup().PadRight(12),
+                dim,
+                ex.Description.EscapeMarkup());
+        }
+
+        string resolved = ex.ResolvedVersion is not null
+            ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
+            : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
+        string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
+            ? " [white](suggested)[/]"
+            : "";
+        return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
+            brand,
+            ex.Channel.EscapeMarkup().PadRight(12),
+            suggested,
+            dim,
+            ex.Description.EscapeMarkup(),
+            resolved);
     }
 
     private static void SaveConfigAndDisplayResult(PathPreference pathPreference)

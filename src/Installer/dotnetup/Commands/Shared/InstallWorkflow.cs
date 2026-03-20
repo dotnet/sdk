@@ -53,7 +53,9 @@ internal class InstallWorkflow
             workflows.BaseConfigurationWalkthrough(
                 requests,
                 () => ExecuteInstallRequests(requests),
-                _command.NoProgress);
+                _command.NoProgress,
+                _command.interactive,
+                false);
         }
 
         // Global.json update runs after install in all code paths, but only when
