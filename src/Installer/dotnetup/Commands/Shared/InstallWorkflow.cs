@@ -26,7 +26,7 @@ internal class InstallWorkflow
     public InstallWorkflow(InstallCommand command)
     {
         _command = command;
-        _installPathResolver = new InstallPathResolver(command.DotnetInstaller);
+        _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ internal class InstallWorkflow
         else
         {
             // Interactive with no explicit path — walkthrough for path preference, admin migration, etc.
-            var workflows = new WalkthroughWorkflows(_command.DotnetInstaller, _command.ChannelVersionResolver);
+            var workflows = new WalkthroughWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
             workflows.BaseConfigurationWalkthrough(
                 requests,
                 () => ExecuteInstallRequests(requests),
@@ -66,7 +66,7 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var currentInstallRoot = _command.DotnetInstaller.GetCurrentPathConfiguration();
+        var currentInstallRoot = _command.DotnetEnvironment.GetCurrentPathConfiguration();
 
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,

@@ -28,8 +28,8 @@ internal class UninstallWorkflow
         var manifest = new DotnetupSharedManifest(manifestPath);
         var manifestData = manifest.ReadManifest();
 
-        var dotnetInstaller = new DotnetEnvironmentManager();
-        string resolvedInstallPath = ResolveInstallPath(installPath, dotnetInstaller);
+        var dotnetEnvironment = new DotnetEnvironmentManager();
+        string resolvedInstallPath = ResolveInstallPath(installPath, dotnetEnvironment);
 
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(resolvedInstallPath)));
@@ -156,19 +156,19 @@ internal class UninstallWorkflow
     /// Resolves the install path for uninstall using the same logic as the install command:
     /// only use the configured path if it's a user install, otherwise fall back to default.
     /// </summary>
-    internal static string ResolveInstallPath(string? explicitInstallPath, IDotnetEnvironmentManager dotnetInstaller)
+    internal static string ResolveInstallPath(string? explicitInstallPath, IDotnetEnvironmentManager dotnetEnvironment)
     {
         if (explicitInstallPath is not null)
         {
             return explicitInstallPath;
         }
 
-        var configuredInstall = dotnetInstaller.GetCurrentPathConfiguration();
+        var configuredInstall = dotnetEnvironment.GetCurrentPathConfiguration();
         if (configuredInstall is { InstallType: InstallType.User })
         {
             return configuredInstall.Path;
         }
 
-        return dotnetInstaller.GetDefaultDotnetInstallPath();
+        return dotnetEnvironment.GetDefaultDotnetInstallPath();
     }
 }

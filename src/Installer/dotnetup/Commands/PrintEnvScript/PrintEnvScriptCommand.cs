@@ -9,11 +9,11 @@ internal class PrintEnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
-    private readonly IDotnetEnvironmentManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetInstaller = null) : base(result)
+    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
+        _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
     }
@@ -44,7 +44,7 @@ internal class PrintEnvScriptCommand : CommandBase
             }
 
             // Determine the dotnet install path
-            string installPath = _dotnetInstallPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
+            string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
             // Generate the shell script
             string script = _shellProvider.GenerateEnvScript(installPath);

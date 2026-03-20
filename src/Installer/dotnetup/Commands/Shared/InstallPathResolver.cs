@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal class InstallPathResolver
 {
-    private readonly IDotnetEnvironmentManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    public InstallPathResolver(IDotnetEnvironmentManager dotnetInstaller)
+    public InstallPathResolver(IDotnetEnvironmentManager dotnetEnvironment)
     {
-        _dotnetInstaller = dotnetInstaller;
+        _dotnetEnvironment = dotnetEnvironment;
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ internal class InstallPathResolver
         }
         else
         {
-            return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
+            return new InstallPathResolutionResult(_dotnetEnvironment.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
         }
     }
 }

@@ -32,4 +32,5 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
 }

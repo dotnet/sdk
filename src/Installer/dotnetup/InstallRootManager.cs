@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal class InstallRootManager
 {
-    private readonly IDotnetEnvironmentManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    public InstallRootManager(IDotnetEnvironmentManager? dotnetInstaller = null)
+    public InstallRootManager(IDotnetEnvironmentManager? dotnetEnvironment = null)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
+        _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ internal class InstallRootManager
             throw new PlatformNotSupportedException("User install root configuration is only supported on Windows.");
         }
 
-        string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
+        string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
         bool needToRemoveAdminPath = WindowsPathHelper.AdminPathContainsProgramFilesDotnet(out var foundDotnetPaths);
 
         // Read both expanded and unexpanded user PATH from registry
@@ -65,7 +65,7 @@ internal class InstallRootManager
             .Contains(programFilesDotnetPaths.First(), StringComparer.OrdinalIgnoreCase);
 
         // Get the user dotnet installation path
-        string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
+        string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
         // Read both expanded and unexpanded user PATH from registry to preserve environment variables
         string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);

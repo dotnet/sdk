@@ -15,12 +15,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 /// </summary>
 internal class DotnetCommand : CommandBase
 {
-    private readonly IDotnetEnvironmentManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly string[] _forwardedArgs;
 
-    public DotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? dotnetInstaller = null) : base(parseResult)
+    public DotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(parseResult)
     {
-        _dotnetInstaller = dotnetInstaller ?? new DotnetEnvironmentManager();
+        _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
 
         // Collect all unmatched/forwarded tokens after the "dotnet" or "do" subcommand.
         _forwardedArgs = [.. parseResult.UnmatchedTokens];
@@ -49,13 +49,13 @@ internal class DotnetCommand : CommandBase
     /// </summary>
     private string ResolveDotnetPath()
     {
-        var configuredRoot = _dotnetInstaller.GetCurrentPathConfiguration();
+        var configuredRoot = _dotnetEnvironment.GetCurrentPathConfiguration();
         if (configuredRoot is not null && configuredRoot.InstallType == InstallType.User)
         {
             return configuredRoot.Path;
         }
 
-        return _dotnetInstaller.GetDefaultDotnetInstallPath();
+        return _dotnetEnvironment.GetDefaultDotnetInstallPath();
     }
 
     /// <summary>
