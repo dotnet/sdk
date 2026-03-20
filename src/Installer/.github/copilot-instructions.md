@@ -37,6 +37,17 @@ Concurrency:
   ```
 - Clean up temporary artifacts directories when you are done: `Remove-Item -Recurse -Force d:\sdk\artifacts\tmp\<descriptive-name>`
 
+Terminal output handling:
+- The `run_in_terminal` tool uses a **single shared shell** for all non-background calls. It reads the entire accumulated buffer — NOT just your command's output. After many commands, the buffer exceeds 60KB and gets truncated with `[... PREVIOUS OUTPUT TRUNCATED ...]`.
+- **Do NOT** try to work around this by launching a sub-shell (`pwsh -Command "..."`). The tool still reads the outer terminal's full buffer.
+- **Recommended: redirect to file**. Pipe output to a temp file, then use `read_file` to read the results:
+  ```
+  d:\sdk\.dotnet\dotnet build <project> "/p:ArtifactsDir=..." 2>&1 | Out-File d:\sdk\artifacts\tmp\<name>\build-output.txt
+  ```
+  Then use the `read_file` tool on `d:\sdk\artifacts\tmp\<name>\build-output.txt` to inspect results. Read the last ~50 lines first to check for errors.
+- **Alternative: filter inline** if you only need pass/fail: `2>&1 | Select-String "error|Build succeeded" | Select-Object -Last 15`
+- **Alternative: background terminal**. Use `isBackground: true` and then `get_terminal_output` with the returned ID. Each background call gets a fresh terminal with no buffer pollution.
+
 PR Feedback Resolution:
 - When asked to resolve PR feedback (e.g., "resolve PR feedback for https://github.com/dotnet/sdk/pull/12345"), follow this workflow:
 
