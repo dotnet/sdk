@@ -12,10 +12,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static void Init()
         {
             DerivePathInfo(
-                   (_, _, type, method) => new(
-                       directory: "Approvals",
-                       typeName: type.Name,
-                       methodName: method.Name));
+                (sourceFile, _, type, method) =>
+                {
+                    // When the source directory is unavailable (e.g., Helix CI), the Verify library cannot
+                    // resolve the snapshot directory from the [CallerFilePath] embedded in the PDB.
+                    // Fall back to an absolute path next to the test DLL, which the project copies the
+                    // Approvals directory to via CopyToOutputDirectory.
+                    var sourceDir = Path.GetDirectoryName(sourceFile);
+                    string directory = sourceDir is not null && Directory.Exists(sourceDir)
+                        ? "Approvals"
+                        : Path.Combine(AppContext.BaseDirectory, "ParserTests", "Approvals");
+                    return new PathInfo(
+                        directory: directory,
+                        typeName: type.Name,
+                        methodName: method.Name);
+                });
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
