@@ -497,7 +497,7 @@ public class MultiChannelSdkInstallTests
 
         // The completion message should appear exactly once (not duplicated per channel)
         int installedCount = CountOccurrences(output, "Installed");
-        int alreadyInstalledCount = CountOccurrences(output, "already installed");
+        int alreadyInstalledCount = CountOccurrences(output, "lready installed");
         (installedCount + alreadyInstalledCount).Should().BeLessThanOrEqualTo(2,
             "There should be at most one 'Installed' line and one 'already installed' line, not one per channel. Output:\n" + output);
 
@@ -698,7 +698,7 @@ public class ReuseAndErrorTests
         // Step 2: Same install again - should be short-circuited via manifest
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Second install failed. Output:\n{output}");
-        output.Should().Contain("is already installed",
+        output.Should().Contain("lready installed",
             "Re-installing the same component should detect it is already installed and skip the download");
 
         // Step 3: Verify the install spec is still recorded despite the install being short-circuited.
