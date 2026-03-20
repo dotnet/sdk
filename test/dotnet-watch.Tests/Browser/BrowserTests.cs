@@ -16,13 +16,12 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
         // check that all app output is printed out:
+        await App.WaitUntilOutputContains("Application started. Press Ctrl+C to shut down.");
+        await App.WaitUntilOutputContains("Hosting environment: Development");
         await App.WaitUntilOutputContains("Content root path:");
 
-        Assert.Contains(App.Process.Output, line => line.Contains("Application started. Press Ctrl+C to shut down."));
-        Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
-
         // Verify we launched the browser.
-        App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
