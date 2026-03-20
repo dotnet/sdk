@@ -41,7 +41,7 @@ internal class WalkthroughWorkflows()
         preference == PathPreference.FullPathReplacement;
 
     // Walkthrough Wrappers
-    // These functions orchestrate the overall flow of the walkthrough, calling into the shared InstallWorkflow and InstallWalkthrough functions as needed.
+    // These functions orchestrate the overall flow of the walkthrough, calling into the shared InstallWorkflow as needed.
 
     // call this from walkthrough command / initial program.cs walkthrough setup
     public FullIntroductionWalkthrough()
@@ -74,7 +74,7 @@ internal class WalkthroughWorkflows()
         // Both FullPathReplacement and ShellProfile shadow the system PATH, so
         // dotnetup needs to be the default install for both modes.
         // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool replaceSystemConfig = InstallWalkthrough.ShouldReplaceSystemConfiguration(pathPreference);
+        bool replaceSystemConfig = WalkthroughWorkflows.ShouldReplaceSystemConfiguration(pathPreference);
 
         // Step 2: Prompt about admin installs before setting up the environment.
         // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
@@ -215,7 +215,7 @@ internal class WalkthroughWorkflows()
     /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no system installs exist.</returns>
     internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetInstallManager dotnetInstaller, PathPreference pathPreference)
     {
-        if (!InstallWalkthrough.ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(pathPreference))
         {
             return [];
         }

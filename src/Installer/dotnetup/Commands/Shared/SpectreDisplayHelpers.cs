@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 /// <summary>
 /// Reusable Spectre.Console display helpers for interactive scrollable lists and confirmations.
-/// Extracted from <see cref="InstallWalkthrough"/> to keep UI rendering separate from decision logic.
+/// Extracted to keep UI rendering separate from decision logic.
 /// </summary>
 internal static class SpectreDisplayHelpers
 {
