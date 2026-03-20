@@ -97,7 +97,7 @@ public class DotnetCommandTests
     public void DotnetCommand_WhenDotnetNotFound_ReturnsExitCode1()
     {
         // Arrange - point to a non-existent directory so dotnet.exe won't be found
-        var mock = new MockDotnetInstallManager(installPath: Path.Combine(Path.GetTempPath(), "nonexistent_dotnetup_test_" + Guid.NewGuid()));
+        var mock = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(Path.GetTempPath(), "nonexistent_dotnetup_test_" + Guid.NewGuid()));
         var parseResult = Parser.Parse(["dotnet", "--version"]);
 
         // Act
@@ -119,7 +119,7 @@ public class DotnetCommandTests
         {
             CreateFakeDotnetExecutable(tempDir.FullName);
 
-            var mock = new MockDotnetInstallManager(installPath: tempDir.FullName);
+            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet", "--version"]);
 
             var command = new DotnetForwardCommand(parseResult, mock);
@@ -143,7 +143,7 @@ public class DotnetCommandTests
         {
             CreateFakeDotnetExecutable(tempDir.FullName);
 
-            var mock = new MockDotnetInstallManager(installPath: tempDir.FullName);
+            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet", "build", "--configuration", "Release"]);
 
             var command = new DotnetForwardCommand(parseResult, mock);
@@ -170,7 +170,7 @@ public class DotnetCommandTests
             CreateFakeDotnetExecutable(userDir.FullName);
 
             var mock = new MockDotnetInstallManager(
-                installPath: defaultDir.FullName,
+                defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(userDir.FullName, InstallArchitecture.x64),
                     InstallType.User,
@@ -200,7 +200,7 @@ public class DotnetCommandTests
             CreateFakeDotnetExecutable(defaultDir.FullName);
 
             var mock = new MockDotnetInstallManager(
-                installPath: defaultDir.FullName,
+                defaultInstallPath: defaultDir.FullName,
                 configuredRoot: null);
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
@@ -227,7 +227,7 @@ public class DotnetCommandTests
             CreateFakeDotnetExecutable(defaultDir.FullName);
 
             var mock = new MockDotnetInstallManager(
-                installPath: defaultDir.FullName,
+                defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(adminDir.FullName, InstallArchitecture.x64),
                     InstallType.Admin,
@@ -256,7 +256,7 @@ public class DotnetCommandTests
         {
             CreateFakeDotnetExecutable(tempDir.FullName);
 
-            var mock = new MockDotnetInstallManager(installPath: tempDir.FullName);
+            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["do", "--version"]);
 
             var command = new DotnetForwardCommand(parseResult, mock);
@@ -279,7 +279,7 @@ public class DotnetCommandTests
         {
             CreateFakeDotnetExecutable(tempDir.FullName);
 
-            var mock = new MockDotnetInstallManager(installPath: tempDir.FullName);
+            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet"]);
 
             var command = new DotnetForwardCommand(parseResult, mock);
@@ -478,31 +478,5 @@ public class DotnetCommandTests
                 UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
                 UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
         }
-    }
-
-    /// <summary>
-    /// Minimal mock of <see cref="IDotnetInstallManager"/> for DotnetCommand tests.
-    /// Only implements <see cref="GetDefaultDotnetInstallPath"/> and <see cref="GetCurrentPathConfiguration"/>.
-    /// </summary>
-    private class MockDotnetInstallManager : IDotnetInstallManager
-    {
-        private readonly string _installPath;
-        private readonly DotnetInstallRootConfiguration? _configuredRoot;
-
-        public MockDotnetInstallManager(string installPath, DotnetInstallRootConfiguration? configuredRoot = null)
-        {
-            _installPath = installPath;
-            _configuredRoot = configuredRoot;
-        }
-
-        public string GetDefaultDotnetInstallPath() => _installPath;
-        public DotnetInstallRootConfiguration? GetCurrentPathConfiguration() => _configuredRoot;
-
-        // Unused members — throw so tests fail fast if unexpectedly called
-        public string? GetLatestInstalledSystemVersion() => throw new NotImplementedException();
-        public List<string> GetInstalledSystemSdkVersions() => throw new NotImplementedException();
-        public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
-        public void InstallSdks(DotnetInstallRoot dotnetRoot, Spectre.Console.ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
-        public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
     }
 }

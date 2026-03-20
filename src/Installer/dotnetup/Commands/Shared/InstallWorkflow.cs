@@ -30,15 +30,16 @@ internal class InstallWorkflow
     }
 
     /// <summary>
-    /// Executes the install workflow for the given channels/versions and component type.
+    /// Executes the install workflow for the given component specifications.
+    /// Each spec is a (component, channel) pair where channel may be null (defaults to global.json or "latest").
     /// When an explicit install path is provided, installs directly.
     /// When interactive and no explicit path, wraps execution in the walkthrough
     /// for environment configuration (path preference, admin migration, etc.).
     /// Otherwise, installs to the default/resolved path without prompting.
     /// </summary>
-    public void Execute(string[] versionsOrChannels, InstallComponent component)
+    public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        var requests = GenerateInstallRequests(versionsOrChannels, component);
+        var requests = GenerateInstallRequests(componentSpecs);
 
         if (_command.InstallPath is not null || !_command.Interactive)
         {
@@ -57,13 +58,12 @@ internal class InstallWorkflow
     }
 
     /// <summary>
-    /// Generates resolved install requests for the given channels/versions.
-    /// Handles path resolution, global.json channel inference (for SDK), install path validation,
-    /// and version resolution via the channel version resolver.
+    /// Generates resolved install requests for the given component specifications.
+    /// Handles path resolution, global.json channel inference (for SDK when no channel specified),
+    /// install path validation, and version resolution via the channel version resolver.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        string[] versionsOrChannels,
-        InstallComponent component)
+        MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var currentInstallRoot = _command.DotnetInstaller.GetCurrentPathConfiguration();
@@ -75,48 +75,49 @@ internal class InstallWorkflow
 
         ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
 
-        // Resolve channels: if none provided, try global.json (SDK only), then default to "latest"
-        string[] resolvedChannels;
-        if (versionsOrChannels.Length > 0)
-        {
-            resolvedChannels = versionsOrChannels;
-        }
-        else
-        {
-            string? channelFromGlobalJson = null;
-            if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
-            {
-                channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
-            }
-
-            if (channelFromGlobalJson is not null)
-            {
-                SpectreAnsiConsole.MarkupLine(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
-                    DotnetupTheme.Current.Dim,
-                    component.GetDisplayName(),
-                    channelFromGlobalJson,
-                    globalJson!.GlobalJsonPath!));
-                resolvedChannels = [channelFromGlobalJson];
-            }
-            else
-            {
-                resolvedChannels = [ChannelVersionResolver.LatestChannel];
-            }
-        }
-
         var installRoot = new DotnetInstallRoot(
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
 
         var requests = new List<ResolvedInstallRequest>();
-        foreach (string channel in resolvedChannels)
+        foreach (var spec in componentSpecs)
         {
-            // Determine install source for manifest tracking
-            bool isFromGlobalJson = versionsOrChannels.Length == 0
-                && globalJson?.GlobalJsonPath is not null
-                && component == InstallComponent.SDK;
+            var component = spec.Component;
+            var explicitChannel = spec.VersionOrChannel;
+
+            // Resolve channel: if not provided, try global.json (SDK only), then default to "latest"
+            string channel;
+            bool isFromGlobalJson = false;
+            if (explicitChannel is not null)
+            {
+                channel = explicitChannel;
+            }
+            else
+            {
+                string? channelFromGlobalJson = null;
+                if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
+                {
+                    channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
+                }
+
+                if (channelFromGlobalJson is not null)
+                {
+                    SpectreAnsiConsole.MarkupLine(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
+                        DotnetupTheme.Current.Dim,
+                        component.GetDisplayName(),
+                        channelFromGlobalJson,
+                        globalJson!.GlobalJsonPath!));
+                    channel = channelFromGlobalJson;
+                    isFromGlobalJson = true;
+                }
+                else
+                {
+                    channel = ChannelVersionResolver.LatestChannel;
+                }
+            }
+
             var installSource = isFromGlobalJson
                 ? InstallRequestSource.GlobalJson
                 : InstallRequestSource.Explicit;
@@ -147,7 +148,7 @@ internal class InstallWorkflow
             var resolved = new ResolvedInstallRequest(request, resolvedVersion);
 
             RecordInstallTelemetry(
-                component, versionsOrChannels.Length > 0 ? channel : null,
+                component, explicitChannel,
                 _command.InstallPath, globalJson, currentInstallRoot,
                 pathResolution, channel, resolved);
 

@@ -26,8 +26,8 @@ public class UninstallWorkflowTests
     [Fact]
     public void ResolveInstallPath_AdminInstall_FallsBackToDefault()
     {
-        var mock = new MockInstallManager(
-            defaultPath: DefaultUserPath,
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: DefaultUserPath,
             configuredRoot: CreateConfig(AdminPath, InstallType.Admin));
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
@@ -42,8 +42,8 @@ public class UninstallWorkflowTests
     public void ResolveInstallPath_UserInstall_UsesConfiguredPath()
     {
         string userPath = "/home/user/custom-dotnet";
-        var mock = new MockInstallManager(
-            defaultPath: DefaultUserPath,
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: DefaultUserPath,
             configuredRoot: CreateConfig(userPath, InstallType.User));
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
@@ -57,8 +57,8 @@ public class UninstallWorkflowTests
     [Fact]
     public void ResolveInstallPath_ExplicitPath_TakesPrecedence()
     {
-        var mock = new MockInstallManager(
-            defaultPath: DefaultUserPath,
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: DefaultUserPath,
             configuredRoot: CreateConfig(AdminPath, InstallType.Admin));
 
         var result = UninstallWorkflow.ResolveInstallPath(ExplicitPath, mock);
@@ -72,8 +72,8 @@ public class UninstallWorkflowTests
     [Fact]
     public void ResolveInstallPath_NoConfiguredInstall_UsesDefault()
     {
-        var mock = new MockInstallManager(
-            defaultPath: DefaultUserPath,
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: DefaultUserPath,
             configuredRoot: null);
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
@@ -85,26 +85,5 @@ public class UninstallWorkflowTests
     {
         var installRoot = new DotnetInstallRoot(path, InstallerUtilities.GetDefaultInstallArchitecture());
         return new DotnetInstallRootConfiguration(installRoot, installType, IsFullyConfigured: true);
-    }
-
-    private class MockInstallManager : IDotnetInstallManager
-    {
-        private readonly string _defaultPath;
-        private readonly DotnetInstallRootConfiguration? _configuredRoot;
-
-        public MockInstallManager(string defaultPath, DotnetInstallRootConfiguration? configuredRoot)
-        {
-            _defaultPath = defaultPath;
-            _configuredRoot = configuredRoot;
-        }
-
-        public string GetDefaultDotnetInstallPath() => _defaultPath;
-        public DotnetInstallRootConfiguration? GetCurrentPathConfiguration() => _configuredRoot;
-
-        public string? GetLatestInstalledSystemVersion() => throw new NotImplementedException();
-        public List<string> GetInstalledSystemSdkVersions() => throw new NotImplementedException();
-        public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
-        public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
-        public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
     }
 }

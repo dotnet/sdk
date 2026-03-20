@@ -15,6 +15,15 @@ public record DotnetInstall(
     InstallComponent Component);
 
 /// <summary>
+/// A lightweight specification for an install request before path resolution and
+/// version resolution have occurred. Holds only the component type and an optional
+/// version/channel string as provided by the user (e.g. "10.0", "latest", or null).
+/// </summary>
+internal record MinimalInstallSpec(
+    InstallComponent Component,
+    string? VersionOrChannel);
+
+/// <summary>
 /// Represents a request for a .NET installation.
 /// <see cref="Channel"/> is the unresolved version channel string provided by the user
 /// (e.g. "latest", "10.0", "9.0.3xx", or a specific version like "9.0.304").
