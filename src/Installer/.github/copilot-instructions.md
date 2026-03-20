@@ -6,6 +6,11 @@ applyTo: "**"
 - Never use `&&` to chain commands; use semicolon (`;`) for PowerShell command chaining
 - Prefer PowerShell cmdlets over external utilities when available
 - Use PowerShell-style parameter syntax (-Parameter) rather than Unix-style flags
+- New class definitions should live inside a separate file. Unless specified, you should almost NEVER create a new class or type definition inside of an existing class. If you do, it should NEVER be public - if that's the case it should live in a separate class file.
+- Refrain from returning tuples from methods in most cases - either separate the method, or if it makes sense to share the responsibility, then a record, struct, or class should be returned.
+- Always look for existing code which can be used to make sure you're not inventing something already done.
+- Follow the single responsibility principle. The name of a class should strictly delegate its purpose. A class should NEVER solve more than one core purpose or type of logic. Example: a class named `InstallPathResolver` should only be responsible for resolving install paths, and should not also be responsible for prompting the user for input. Add comments to the top of classes specifically outlining their responsibility and assumptions.
+- If you're about to add a compiler or style warning disable inline, RECONSIDER. Please see if you can minimally fix the code to follow the rule instead. If you still decide to add something like #pragma warning disable, STOP and ask for permission stating why you want to do this.
 
 Code Style:
 - An `.editorconfig` at `src/Installer/.editorconfig` governs all dotnetup code. Follow it strictly for new code.
