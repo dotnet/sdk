@@ -22,7 +22,7 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var projectOptions = TestOptions.GetProjectOptions(cmdOptions);
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory);
 
-        var factory = new ProjectGraphFactory([hostProjectRepr], targetFramework: null, buildProperties: [], NullLogger.Instance);
+        var factory = new ProjectGraphFactory([hostProjectRepr], virtualProjectTargetFramework: null, buildProperties: [], NullLogger.Instance);
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, CancellationToken.None);
         Assert.NotNull(projectGraph);
 
@@ -39,7 +39,6 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
             MainProjectOptions = TestOptions.ProjectOptions,
             RootProjects = [hostProjectRepr],
             BuildArguments = [],
-            TargetFramework = null,
             EnvironmentOptions = environmentOptions,
             BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory()

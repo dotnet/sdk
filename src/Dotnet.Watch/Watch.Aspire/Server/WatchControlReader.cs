@@ -46,6 +46,8 @@ internal sealed class WatchControlReader : IAsyncDisposable
         {
             // Pipe may already be broken if the server disconnected
         }
+
+        _disposalCancellationSource.Dispose();
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)

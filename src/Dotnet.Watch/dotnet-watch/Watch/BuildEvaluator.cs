@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Watch
 
             return new(
                 MainProjectOptions.Representation.PhysicalPath,
-                _context.TargetFramework,
+                MainProjectOptions.TargetFramework,
                 _context.BuildArguments,
                 _context.ProcessRunner,
                 _context.BuildLogger,
@@ -56,6 +56,7 @@ namespace Microsoft.DotNet.Watch
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
+            var noRestore = false;
             if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
                 MainProjectOptions.IsCodeExecutionCommand)
@@ -67,11 +68,29 @@ namespace Microsoft.DotNet.Watch
                 else
                 {
                     _context.Logger.LogDebug("Modifying command to use --no-restore");
-                    return [MainProjectOptions.Command, "--no-restore", .. MainProjectOptions.CommandArguments];
+                    noRestore = true;
                 }
             }
 
-            return [MainProjectOptions.Command, .. MainProjectOptions.CommandArguments];
+            var arguments = new List<string>()
+            {
+                MainProjectOptions.Command
+            };
+
+            if (noRestore)
+            {
+                arguments.Add("--no-restore");
+            }
+
+            if (MainProjectOptions.TargetFramework != null)
+            {
+                arguments.Add("--framework");
+                arguments.Add(MainProjectOptions.TargetFramework);
+            }
+
+            arguments.AddRange(MainProjectOptions.CommandArguments);
+
+            return arguments;
         }
 
         public async ValueTask<MSBuildFileSetFactory.EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)

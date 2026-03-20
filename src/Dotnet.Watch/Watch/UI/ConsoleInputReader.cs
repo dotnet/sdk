@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Watch
     {
         private readonly object _writeLock = new();
 
-        public async Task<ConsoleKey> GetKeyAsync(string prompt, Func<ConsoleKeyInfo, bool> validateInput, CancellationToken cancellationToken)
+        public async Task<ConsoleKeyInfo> GetKeyAsync(string prompt, Func<ConsoleKeyInfo, bool> validateInput, CancellationToken cancellationToken)
         {
             if (logLevel > LogLevel.Information)
             {
-                return ConsoleKey.Escape;
+                return new ConsoleKeyInfo('\u001b', ConsoleKey.Escape, shift: false, alt: false, control: false);
             }
 
             var questionMark = suppressEmojis ? "?" : "❔";
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch
             {
                 // Start listening to the key before printing the prompt to avoid race condition
                 // in tests that wait for the prompt before sending the key press.
-                var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource<ConsoleKeyInfo>(TaskCreationOptions.RunContinuationsAsynchronously);
                 console.KeyPressed += KeyPressed;
 
                 WriteLine($"  {questionMark} {prompt}");
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Watch
                     if (validateInput(key))
                     {
                         WriteLine(keyDisplay);
-                        tcs.TrySetResult(key.Key);
+                        tcs.TrySetResult(key);
                     }
                     else
                     {
