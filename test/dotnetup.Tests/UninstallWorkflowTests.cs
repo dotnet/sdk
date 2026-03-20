@@ -99,7 +99,7 @@ public class UninstallWorkflowTests
         }
 
         public string GetDefaultDotnetInstallPath() => _defaultPath;
-        public DotnetInstallRootConfiguration? GetConfiguredInstallType() => _configuredRoot;
+        public DotnetInstallRootConfiguration? GetCurrentPathConfiguration() => _configuredRoot;
 
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory) => throw new NotImplementedException();
         public string? GetLatestInstalledSystemVersion() => throw new NotImplementedException();

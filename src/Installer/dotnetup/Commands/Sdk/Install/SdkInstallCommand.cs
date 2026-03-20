@@ -40,7 +40,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private int ExecuteSingleInstall(string? versionOrChannel)
     {
-        var (pathPreference, setDefault) = InstallExecutor.ResolveInstallDefaults(_interactive, _setDefaultInstall, _installPath);
 
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
 

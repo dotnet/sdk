@@ -81,7 +81,7 @@ internal static class DotnetupConfig
     /// saves the result, and returns it.
     /// When non-interactive and no config exists, returns <c>null</c>.
     /// </summary>
-    public static PathPreference? EnsurePathPreference(bool interactive)
+    public static PathPreference? GetExistingPathPreference(bool interactive)
     {
         var config = Read();
         if (config is not null)
@@ -95,7 +95,6 @@ internal static class DotnetupConfig
         }
 
         var preference = Commands.Walkthrough.WalkthroughCommand.PromptPathPreference();
-        Write(new DotnetupConfigData { PathPreference = preference });
         return preference;
     }
 

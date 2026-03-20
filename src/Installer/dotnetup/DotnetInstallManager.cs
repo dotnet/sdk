@@ -20,16 +20,15 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public class DotnetInstallManager : IDotnetInstallManager
 {
-    private readonly IEnvironmentProvider _environmentProvider;
 
-    public DotnetInstallManager(IEnvironmentProvider? environmentProvider = null)
+    public DotnetInstallManager()
     {
-        _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
 
-    public DotnetInstallRootConfiguration? GetConfiguredInstallType()
+    public static DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
     {
-        string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
+        var environmentProvider = new EnvironmentProvider();
+        string? foundDotnet = environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
             return null;
@@ -67,7 +66,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         else
         {
             // For non-Windows platforms, determine based on path location
-            bool isAdminInstall = InstallExecutor.IsAdminInstallPath(currentInstallRoot.Path);
+            bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
 
             // For now, we consider it fully configured if it's on PATH
             return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
@@ -77,11 +76,6 @@ public class DotnetInstallManager : IDotnetInstallManager
     public string GetDefaultDotnetInstallPath()
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
-    }
-
-    public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
-    {
-        return GlobalJsonModifier.GetGlobalJsonInfo(initialDirectory);
     }
 
     public string? GetLatestInstalledSystemVersion()

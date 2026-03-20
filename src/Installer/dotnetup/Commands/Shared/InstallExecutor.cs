@@ -46,7 +46,7 @@ internal class InstallExecutor
         bool requireMuxerUpdate = false,
         InstallRequestSource installSource = InstallRequestSource.Explicit,
         string? globalJsonPath = null,
-        bool untracked = false,date">If 
+        bool untracked = false,
         Verbosity verbosity = Verbosity.Normal)
     {
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
@@ -216,46 +216,6 @@ internal class InstallExecutor
         return Directory.Exists(frameworkDir);
     }
 
-    private static List<DotnetInstallRequest> BuildBatchRequestsFromInstalls(
-        DotnetInstallRequest? primaryRequest,
-        List<DotnetInstall> additionalInstalls,
-        DotnetInstallRoot installRoot,
-        string? manifestPath,
-        bool requireMuxerUpdate)
-    {
-        var requests = new List<DotnetInstallRequest>();
-        // Track (Component, VersionString) pairs already included so duplicates are skipped.
-        var seen = new HashSet<(InstallComponent, string)>();
-
-        if (primaryRequest is not null)
-        {
-            requests.Add(primaryRequest);
-            string primaryVersion = primaryRequest.ResolvedVersion?.ToString()
-                ?? primaryRequest.Channel.ToString() ?? string.Empty;
-            seen.Add((primaryRequest.Component, primaryVersion));
-        }
-
-        foreach (var install in additionalInstalls)
-        {
-            if (!seen.Add((install.Component, install.Version.ToString())))
-            {
-                continue;
-            }
-
-            requests.Add(new DotnetInstallRequest(
-                installRoot,
-                new UpdateChannel(install.Version.ToString()),
-                install.Component,
-                new InstallRequestOptions
-                {
-                    ManifestPath = manifestPath,
-                    RequireMuxerUpdate = requireMuxerUpdate
-                }));
-        }
-
-        return requests;
-    }
-
     private static InstallResult? DisplayBatchResults(
         IReadOnlyList<OrchestratorInstallResult> results,
         DotnetInstallRequest? primaryRequest)
@@ -319,24 +279,5 @@ internal class InstallExecutor
                     "  {0}", item));
             }
         }
-    }
-
-    /// <summary>
-    /// Resolves the path preference and derives whether to set a default install.
-    /// When <paramref name="installPath"/> is explicitly provided the user already knows
-    /// where to install, so the path-preference walkthrough is skipped.
-    /// Shared by SDK and Runtime install paths.
-    /// </summary>
-    public static (PathPreference? PathPreference, bool? ReplaceSystemInstallConfiguration) ResolveInstallDefaults(bool interactive, bool? replaceSystemConfig, string? installPath)
-    {
-        // Explicit install path: skip path-preference resolution entirely.
-        if (installPath is not null)
-        {
-            return (null, replaceSystemConfig);
-        }
-
-        var pathPreference = DotnetupConfig.EnsurePathPreference(interactive);
-        bool? replaceSystemEnvironment = replaceSystemConfig ?? (pathPreference == PathPreference.FullPathReplacement ? true : null);
-        return (pathPreference, replaceSystemEnvironment);
     }
 }

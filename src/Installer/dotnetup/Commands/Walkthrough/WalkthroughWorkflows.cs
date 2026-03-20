@@ -51,14 +51,18 @@ internal class WalkthroughWorkflows()
         // Step 0: Explain channels and let the user pick one
         string selectedChannel = PromptChannel();
 
-        var (channel, globalJson, installRoot) = ResolveChannelAndStartPredownload(selectedChannel);
+        // ask install workflow to create a resolved install request based on the channel without duplicating code
+        // install workflow should handle the global.json parsing, and path resolution
 
         BaseConfigurationWalkthrough();
     }
 
     // call this from install commands if and only if we arent in interactive mode or full path is specified
-    public BaseConfigurationWalkthrough(channel, installfunction)
+    public BaseConfigurationWalkthrough(resolvedInstallRequest, installfunction)
     {
+        _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
+            channel, InstallComponent.SDK, installRoot);
+
         var pathPreference = PromptPathPreference();
 
         if (pathPreference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
@@ -70,18 +74,16 @@ internal class WalkthroughWorkflows()
         // Both FullPathReplacement and ShellProfile shadow the system PATH, so
         // dotnetup needs to be the default install for both modes.
         // DotnetupDotnet (isolation) doesn't touch PATH at all.
-        bool? replaceSystemConfig = InstallWalkthrough.ShouldReplaceSystemConfiguration(pathPreference);
+        bool replaceSystemConfig = InstallWalkthrough.ShouldReplaceSystemConfiguration(pathPreference);
 
         // Step 2: Prompt about admin installs before setting up the environment.
         // Both ShellProfile and FullPathReplacement shadow admin installs, so offer migration for both.
         // Track the migration decision separately — accepting migration should copy installs
         // but only FullPathReplacement should trigger system PATH changes (elevation).
-        List<DotnetInstall> toMigrate = InstallWalkthrough.GetInstallsToMigrateIfDesired(_dotnetInstaller, pathPreference);
+        List<DotnetInstall> toMigrate = PromptInstallsToMigrateIfDesired(_dotnetInstaller, pathPreference);
 
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
-        ValidateInstallPathOrThrow(installRoot, _manifestPath);
         DisplayInstallLocation(globalJson);
-
 
         // Step 2: Run the install workflow, which will download and set up the SDK
         // Install SDK — validate the install path early so the user sees any conflict
@@ -174,6 +176,7 @@ internal class WalkthroughWorkflows()
     /// </summary>
     internal static PathPreference PromptPathPreference()
     {
+        DotnetupConfig.GetExistingPathPreference();
         bool isWindows = OperatingSystem.IsWindows();
 
         string isolationTooltip = string.Format(
@@ -198,7 +201,7 @@ internal class WalkthroughWorkflows()
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
 
-        return selected switch
+        var selectedPreference = selected switch
         {
             0 => PathPreference.DotnetupDotnet,
             1 => PathPreference.ShellProfile,
@@ -225,7 +228,7 @@ internal class WalkthroughWorkflows()
         }
 
         // Find the system install path for display purposes
-        var currentInstall = dotnetInstaller.GetConfiguredInstallType();
+        var currentInstall = dotnetInstaller.GetCurrentPathConfiguration();
         string systemPath = currentInstall?.InstallType == InstallType.Admin
             ? currentInstall.Path
             : DotnetInstallManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";

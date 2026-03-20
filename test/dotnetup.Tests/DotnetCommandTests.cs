@@ -482,7 +482,7 @@ public class DotnetCommandTests
 
     /// <summary>
     /// Minimal mock of <see cref="IDotnetInstallManager"/> for DotnetCommand tests.
-    /// Only implements <see cref="GetDefaultDotnetInstallPath"/> and <see cref="GetConfiguredInstallType"/>.
+    /// Only implements <see cref="GetDefaultDotnetInstallPath"/> and <see cref="GetCurrentPathConfiguration"/>.
     /// </summary>
     private class MockDotnetInstallManager : IDotnetInstallManager
     {
@@ -496,7 +496,7 @@ public class DotnetCommandTests
         }
 
         public string GetDefaultDotnetInstallPath() => _installPath;
-        public DotnetInstallRootConfiguration? GetConfiguredInstallType() => _configuredRoot;
+        public DotnetInstallRootConfiguration? GetCurrentPathConfiguration() => _configuredRoot;
 
         // Unused members — throw so tests fail fast if unexpectedly called
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory) => throw new NotImplementedException();

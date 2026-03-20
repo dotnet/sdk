@@ -129,7 +129,7 @@ internal class UninstallWorkflow
             AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Dereferenced {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] [{DotnetupTheme.Current.Dim}](source: {spec.InstallSource})[/]");
         }
 
-        // Run garbage collection 
+        // Run garbage collection
         GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, showEmptyMessage: true);
     }
 
@@ -163,7 +163,7 @@ internal class UninstallWorkflow
             return explicitInstallPath;
         }
 
-        var configuredInstall = dotnetInstaller.GetConfiguredInstallType();
+        var configuredInstall = dotnetInstaller.GetCurrentPathConfiguration();
         if (configuredInstall is { InstallType: InstallType.User })
         {
             return configuredInstall.Path;

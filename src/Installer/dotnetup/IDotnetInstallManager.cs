@@ -18,7 +18,7 @@ public interface IDotnetInstallManager
 
     string GetDefaultDotnetInstallPath();
 
-    DotnetInstallRootConfiguration? GetConfiguredInstallType();
+    DotnetInstallRootConfiguration? GetCurrentPathConfiguration();
 
     string? GetLatestInstalledSystemVersion();
 

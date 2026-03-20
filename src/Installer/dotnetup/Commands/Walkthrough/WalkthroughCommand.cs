@@ -32,40 +32,4 @@ internal class WalkthroughCommand(ParseResult result) : CommandBase(result)
         // Invoke the full walkthrough workflow passing in the given command options
         return 0;
     }
-
-    /// <summary>
-    /// Resolves the install channel from global.json (or the user's selection) and fires off a
-    /// background predownload to warm the cache while the user answers prompts.
-    /// </summary>
-    private (string Channel, GlobalJsonInfo? GlobalJson, DotnetInstallRoot InstallRoot) ResolveChannelAndStartPredownload(string selectedChannel)
-    {
-
-
-        _ = InstallerOrchestratorSingleton.PredownloadToCacheAsync(
-            channel, InstallComponent.SDK, installRoot);
-
-        return (channel, globalJson, installRoot);
-    }
-
-    private InstallWorkflow.InstallWorkflowResult RunInstallWorkflow(string channel, PathPreference pathPreference, bool? replaceSystemConfig)
-    {
-        var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
-        var options = new InstallWorkflow.InstallWorkflowOptions(
-            VersionOrChannel: channel,
-            InstallPath: _installPath,
-            ReplaceSystemConfig: replaceSystemConfig,
-            ManifestPath: _manifestPath,
-            Interactive: true,
-            NoProgress: _noProgress,
-            Component: InstallComponent.SDK,
-            ComponentDescription: InstallComponent.SDK.GetDisplayName(),
-            UpdateGlobalJson: null,
-            ResolveChannelFromGlobalJson: GlobalJsonChannelResolver.ResolveChannel,
-            RequireMuxerUpdate: _requireMuxerUpdate,
-            PathPreference: pathPreference,
-            Verbosity: _verbosity);
-        return workflow.Execute(options);
-    }
-
-
 }

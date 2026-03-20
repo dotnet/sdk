@@ -59,7 +59,6 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         var (component, versionOrChannel) = ParseAndValidateComponentSpec(spec);
 
         string componentDescription = component.GetDisplayName();
-        var (pathPreference, replaceSystemConfig) = InstallExecutor.ResolveInstallDefaults(_interactive, _replaceSystemInstallConfig, _installPath);
 
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
@@ -90,7 +89,6 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             parsed.Add(ParseAndValidateComponentSpec(spec));
         }
 
-        var (_, replaceSystemConfig) = InstallExecutor.ResolveInstallDefaults(_interactive, _replaceSystemInstallConfig, _installPath);
         string installPath = _installPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
         var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
 

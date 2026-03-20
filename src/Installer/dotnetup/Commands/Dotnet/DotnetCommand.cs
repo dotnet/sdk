@@ -49,7 +49,7 @@ internal class DotnetCommand : CommandBase
     /// </summary>
     private string ResolveDotnetPath()
     {
-        var configuredRoot = _dotnetInstaller.GetConfiguredInstallType();
+        var configuredRoot = _dotnetInstaller.GetCurrentPathConfiguration();
         if (configuredRoot is not null && configuredRoot.InstallType == InstallType.User)
         {
             return configuredRoot.Path;
