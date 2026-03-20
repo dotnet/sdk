@@ -77,25 +77,12 @@ internal static class DotnetupConfig
 
     /// <summary>
     /// Returns the user's <see cref="PathPreference"/> from the config file if it exists,
-    /// otherwise prompts interactively (when <paramref name="interactive"/> is true),
-    /// saves the result, and returns it.
-    /// When non-interactive and no config exists, returns <c>null</c>.
+    /// otherwise returns <c>null</c>.
     /// </summary>
-    public static PathPreference? GetExistingPathPreference(bool interactive)
+    public static PathPreference? ReadPathPreference()
     {
         var config = Read();
-        if (config is not null)
-        {
-            return config.PathPreference;
-        }
-
-        if (!interactive)
-        {
-            return null;
-        }
-
-        var preference = Commands.Walkthrough.WalkthroughWorkflows.PromptPathPreference();
-        return preference;
+        return config?.PathPreference;
     }
 
     /// <summary>
