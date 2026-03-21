@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -90,101 +91,134 @@ internal static class SpectreDisplayHelpers
     /// <summary>
     /// Returns true (accept) or false (decline) when <paramref name="confirmPrompt"/> is set;
     /// always returns true when <paramref name="confirmPrompt"/> is null (plain scroll).
+    /// Uses Spectre.Console's LiveDisplay for reliable rendering without manual ANSI cursor management.
     /// </summary>
     private static ConfirmResult RunInteractiveScrollLoop(List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk = false)
     {
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
         int offset = 0;
         int maxOffset = items.Count - visibleCount;
-        int lastLineCount = 0;
+        bool done = false;
+        ConfirmResult result = ConfirmResult.Yes;
 
-        Console.Write(Constants.Ansi.HideCursor);
-        try
-        {
-            lastLineCount = RenderListWindow(items, offset, visibleCount, lastLineCount, firstRender: true, confirmPrompt: confirmPrompt, allowNeverAsk: allowNeverAsk);
-
-            while (true)
+        SpectreAnsiConsole.Live(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk))
+            .AutoClear(true)
+            .Start(ctx =>
             {
-                if (!Console.KeyAvailable)
-                {
-                    Thread.Sleep(50);
-                    continue;
-                }
+                ctx.Refresh();
 
-                var result = HandleScrollKey(items, visibleCount, confirmPrompt, allowNeverAsk, dim, accent, ref offset, maxOffset, ref lastLineCount);
-                if (result is not null)
+                while (!done)
                 {
-                    return result.Value;
+                    if (!Console.KeyAvailable)
+                    {
+                        Thread.Sleep(50);
+                        continue;
+                    }
+
+                    var key = Console.ReadKey(intercept: true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            if (offset > 0)
+                            {
+                                offset--;
+                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                            }
+
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (offset < maxOffset)
+                            {
+                                offset++;
+                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                            }
+
+                            break;
+                        case ConsoleKey.Enter:
+                            result = ConfirmResult.Yes;
+                            done = true;
+                            break;
+                        case ConsoleKey.N:
+                            if (confirmPrompt is not null)
+                            {
+                                result = ConfirmResult.No;
+                                done = true;
+                            }
+
+                            break;
+                        case ConsoleKey.P:
+                            if (confirmPrompt is not null && allowNeverAsk)
+                            {
+                                result = ConfirmResult.NeverAskAgain;
+                                done = true;
+                            }
+
+                            break;
+                    }
                 }
-            }
-        }
-        finally
-        {
-            Console.Write(Constants.Ansi.ShowCursor);
-        }
+            });
+
+        // Render final collapsed view after LiveDisplay clears its region
+        RenderFinalScrollView(items, confirmPrompt, result);
+
+        return result;
     }
 
     /// <summary>
-    /// Processes a single keypress during the interactive scroll loop.
-    /// Returns the <see cref="ConfirmResult"/> when the user makes a final choice, or <c>null</c> to keep looping.
+    /// Builds a Spectre <see cref="Rows"/> renderable for the current scroll window.
     /// </summary>
-    private static ConfirmResult? HandleScrollKey(
-        List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk,
-        string dim, string accent, ref int offset, int maxOffset, ref int lastLineCount)
+    private static Rows BuildScrollRenderable(List<string> items, int offset, int visibleCount, string? confirmPrompt, bool allowNeverAsk)
     {
-        var key = Console.ReadKey(intercept: true);
-        switch (key.Key)
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+        var rows = new List<IRenderable>();
+
+        if (offset > 0)
         {
-            case ConsoleKey.UpArrow:
-                if (offset > 0)
-                {
-                    offset--;
-                    lastLineCount = RenderListWindow(items, offset, visibleCount, lastLineCount, firstRender: false, confirmPrompt: confirmPrompt, allowNeverAsk: allowNeverAsk);
-                }
-
-                return null;
-            case ConsoleKey.DownArrow:
-                if (offset < maxOffset)
-                {
-                    offset++;
-                    lastLineCount = RenderListWindow(items, offset, visibleCount, lastLineCount, firstRender: false, confirmPrompt: confirmPrompt, allowNeverAsk: allowNeverAsk);
-                }
-
-                return null;
-            case ConsoleKey.Enter:
-                CollapseToFinalView(items, lastLineCount, dim, accent, confirmPrompt, ConfirmResult.Yes);
-                return ConfirmResult.Yes;
-            case ConsoleKey.N:
-                if (confirmPrompt is not null)
-                {
-                    CollapseToFinalView(items, lastLineCount, dim, accent, confirmPrompt, ConfirmResult.No);
-                    return ConfirmResult.No;
-                }
-
-                return null;
-            case ConsoleKey.P:
-                if (confirmPrompt is not null && allowNeverAsk)
-                {
-                    CollapseToFinalView(items, lastLineCount, dim, accent, confirmPrompt, ConfirmResult.NeverAskAgain);
-                    return ConfirmResult.NeverAskAgain;
-                }
-
-                return null;
-            default:
-                return null;
+            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more above[/]", dim, Constants.Symbols.UpTriangle, offset)));
         }
+        else
+        {
+            rows.Add(Text.Empty);
+        }
+
+        for (int i = offset; i < offset + visibleCount && i < items.Count; i++)
+        {
+            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, items[i].EscapeMarkup())));
+        }
+
+        int remaining = items.Count - offset - visibleCount;
+        if (remaining > 0)
+        {
+            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more below (use {3}{4} arrows)[/]", dim, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow)));
+        }
+        else
+        {
+            rows.Add(Text.Empty);
+        }
+
+        if (confirmPrompt is not null)
+        {
+            string promptHint = allowNeverAsk
+                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
+                : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
+            rows.Add(new Markup(promptHint));
+        }
+        else if (remaining <= 0)
+        {
+            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim)));
+        }
+
+        return new Rows(rows);
     }
 
-    private static void CollapseToFinalView(List<string> items, int lastLineCount, string dim, string accent, string? confirmPrompt, ConfirmResult result)
+    /// <summary>
+    /// Renders the final collapsed view after the user makes a choice.
+    /// </summary>
+    private static void RenderFinalScrollView(List<string> items, string? confirmPrompt, ConfirmResult result)
     {
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
         string brand = DotnetupTheme.Current.Brand;
-
-        // Move up by the number of lines rendered and clear everything below
-        if (lastLineCount > 0)
-        {
-            Console.Write(string.Format(CultureInfo.InvariantCulture, "\x1b[{0}A\r\x1b[J", lastLineCount));
-        }
 
         if (result == ConfirmResult.Yes)
         {
@@ -238,58 +272,5 @@ internal static class SpectreDisplayHelpers
                     break;
             }
         }
-    }
-
-    /// <summary>
-    /// Renders the visible window of items and returns the number of lines written.
-    /// Uses relative cursor movement for reliable re-rendering.
-    /// </summary>
-    private static int RenderListWindow(List<string> items, int offset, int visibleCount, int previousLineCount, bool firstRender, string? confirmPrompt, bool allowNeverAsk = false)
-    {
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-
-        if (!firstRender && previousLineCount > 0)
-        {
-            // Move cursor up by the number of lines from the last render, then clear to end of screen
-            Console.Write(string.Format(CultureInfo.InvariantCulture, "\x1b[{0}A\r\x1b[J", previousLineCount));
-        }
-
-        int lineCount = 0;
-
-        if (offset > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more above[/]", dim, Constants.Symbols.UpTriangle, offset));
-            lineCount++;
-        }
-
-        for (int i = offset; i < offset + visibleCount && i < items.Count; i++)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, items[i].EscapeMarkup()));
-            lineCount++;
-        }
-
-        int remaining = items.Count - offset - visibleCount;
-        if (remaining > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more below (use {3}{4} arrows)[/]", dim, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow));
-            lineCount++;
-        }
-
-        if (confirmPrompt is not null)
-        {
-            string promptHint = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
-                : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
-            SpectreAnsiConsole.MarkupLine(promptHint);
-            lineCount++;
-        }
-        else if (remaining <= 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim));
-            lineCount++;
-        }
-
-        return lineCount;
     }
 }
