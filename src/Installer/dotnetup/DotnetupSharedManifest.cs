@@ -83,7 +83,9 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 ex);
         }
 
-        return ParseManifestJson(json);
+        var manifest = ParseManifestJson(json);
+        PruneStaleInstallations(manifest);
+        return manifest;
     }
 
     private DotnetupManifestData ParseManifestJson(string json)
@@ -453,6 +455,74 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             Component = install.Component,
             Version = install.Version.ToString()
         });
+    }
+
+    /// <summary>
+    /// Checks each installation across all roots and removes entries whose
+    /// on-disk component directory no longer exists. Roots whose directory
+    /// no longer exists are removed entirely. Writes the manifest if any
+    /// entries were pruned.
+    /// </summary>
+    private void PruneStaleInstallations(DotnetupManifestData manifest)
+    {
+        bool anyPruned = false;
+
+        // Remove entire roots whose directory no longer exists.
+        int removedRoots = manifest.DotnetRoots.RemoveAll(root =>
+            !string.IsNullOrEmpty(root.Path) && !Directory.Exists(root.Path));
+        if (removedRoots > 0)
+        {
+            anyPruned = true;
+        }
+
+        // For surviving roots, prune individual installations that are missing on disk.
+        foreach (var root in manifest.DotnetRoots)
+        {
+            if (string.IsNullOrEmpty(root.Path))
+            {
+                continue;
+            }
+
+            int removed = root.Installations.RemoveAll(installation =>
+                !InstallationExistsOnDisk(root.Path, installation));
+
+            if (removed > 0)
+            {
+                anyPruned = true;
+            }
+        }
+
+        if (anyPruned)
+        {
+            WriteManifest(manifest);
+        }
+    }
+
+    /// <summary>
+    /// Returns true if the primary on-disk directory for the given installation
+    /// still exists under <paramref name="rootPath"/>.
+    /// </summary>
+    private static bool InstallationExistsOnDisk(string rootPath, Installation installation)
+    {
+        string? componentDir = GetComponentDirectory(rootPath, installation);
+        return componentDir is not null && Directory.Exists(componentDir);
+    }
+
+    private static string? GetComponentDirectory(string rootPath, Installation installation)
+    {
+        if (string.IsNullOrEmpty(installation.Version))
+        {
+            return null;
+        }
+
+        return installation.Component switch
+        {
+            InstallComponent.SDK => Path.Combine(rootPath, "sdk", installation.Version),
+            InstallComponent.Runtime => Path.Combine(rootPath, "shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
+            InstallComponent.ASPNETCore => Path.Combine(rootPath, "shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
+            InstallComponent.WindowsDesktop => Path.Combine(rootPath, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
+            _ => null,
+        };
     }
 
 }
