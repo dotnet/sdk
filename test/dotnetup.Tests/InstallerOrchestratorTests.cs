@@ -27,7 +27,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.InstallAlreadyExists(install).Should().BeTrue();
     }
 
@@ -38,7 +38,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var install = MakeInstall(TestRoot, "10.0.101", InstallComponent.SDK);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
@@ -49,7 +49,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.Runtime);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
@@ -60,7 +60,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var install = MakeInstall(TestAltRoot, "10.0.100", InstallComponent.SDK);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
@@ -71,7 +71,7 @@ public class InstallerOrchestratorTests
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
@@ -82,7 +82,7 @@ public class InstallerOrchestratorTests
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
         manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
         manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
@@ -102,7 +102,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.IsRootTracked(root).Should().BeTrue();
     }
 
@@ -113,7 +113,7 @@ public class InstallerOrchestratorTests
         var manifest = CreateManifestWithInstallation(testEnv, TestRoot, InstallComponent.SDK, "10.0.100");
         var root = new DotnetInstallRoot(TestAltRoot, InstallArchitecture.x64);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.IsRootTracked(root).Should().BeFalse();
     }
 
@@ -124,7 +124,7 @@ public class InstallerOrchestratorTests
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
 
-        using var mutex = testEnv.AcquireMutex();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         manifest.IsRootTracked(root).Should().BeFalse();
     }
 
