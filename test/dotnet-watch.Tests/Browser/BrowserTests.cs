@@ -16,13 +16,12 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
         // check that all app output is printed out:
+        await App.WaitUntilOutputContains("Application started. Press Ctrl+C to shut down.");
+        await App.WaitUntilOutputContains("Hosting environment: Development");
         await App.WaitUntilOutputContains("Content root path:");
 
-        Assert.Contains(App.Process.Output, line => line.Contains("Application started. Press Ctrl+C to shut down."));
-        Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
-
         // Verify we launched the browser.
-        App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
@@ -34,7 +33,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.UseTestBrowser();
 
         var url = $"http://localhost:{TestOptions.GetTestPort()}";
-        var tfm = ToolsetInfo.CurrentTargetFramework;
+        var projectDisplay = $"RazorApp ({ToolsetInfo.CurrentTargetFramework})";
 
         App.Start(testAsset, ["--urls", url], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
@@ -57,7 +56,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             public virtual int F() => 1;
             """));
 
-        var errorMessage = $"{homePagePath}(13,9): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.";
+        var errorMessage = $"[{projectDisplay}] {homePagePath}(13,9): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.";
         var jsonErrorMessage = JsonSerializer.Serialize(errorMessage);
 
         await App.WaitUntilOutputContains(errorMessage);
@@ -72,7 +71,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.SendKey('a');
 
         // browser page is reloaded when the app restarts:
-        await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser, $"RazorApp ({tfm})");
+        await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser, projectDisplay);
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
@@ -89,8 +88,8 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         // another rude edit:
         UpdateSourceFile(homePagePath, src => src.Replace("public virtual int F() => 1;", "/* member placeholder */"));
 
-        errorMessage = $"{homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
-        await App.WaitUntilOutputContains("[auto-restart] " + errorMessage);
+        errorMessage = $"[{projectDisplay}] [auto-restart] {homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
+        await App.WaitUntilOutputContains(errorMessage);
 
         await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}

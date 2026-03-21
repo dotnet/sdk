@@ -140,11 +140,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 disposalCompletionSource.Token,
                 timeoutCancellation.Token);
 
-            if (!Debugger.IsAttached)
-            {
-                outputReadCancellation.CancelAfter(s_timeout);
-            }
-
             try
             {
                 while (!outputReadCancellation.IsCancellationRequested)
