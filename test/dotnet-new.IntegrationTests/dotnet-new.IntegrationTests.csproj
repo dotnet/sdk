@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
   <ItemGroup>
     <Compile Remove="Approvals\**\*" />
-    <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
+    <None Include="Approvals\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
