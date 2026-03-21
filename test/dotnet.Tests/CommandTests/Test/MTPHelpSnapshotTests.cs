@@ -33,17 +33,7 @@ public class MTPHelpSnapshotTests : SdkTest
         helpOutput.Should().Contain("Extension Options:");
         
         var settings = new VerifySettings();
-        if (Environment.GetEnvironmentVariable("USER") is string user && user.Contains("helix", StringComparison.OrdinalIgnoreCase)
-            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
-        {
-            Log.WriteLine($"CI environment detected, using snapshots directory in the current working directory {Environment.CurrentDirectory}");
-            settings.UseDirectory(Path.Combine(Environment.CurrentDirectory, "snapshots"));
-        }
-        else
-        {
-            Log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not helix-related");
-            settings.UseDirectory("snapshots");
-        }
+        settings.UseDirectory(Path.Combine(AppContext.BaseDirectory, "snapshots"));
         
         await Verify(helpOutput, settings);
     }

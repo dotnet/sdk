@@ -14,14 +14,11 @@ public static class VerifyConfiguration
     {
         VerifyDiffPlex.Initialize(VerifyTests.DiffPlex.OutputType.Compact);
 
-        if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
-        {
-            Verifier.DerivePathInfo((sourceFile, projectDirectory, type, method) => new(
-                directory: Path.Combine(Environment.CurrentDirectory, "snapshots"),
-                typeName: type.Name,
-                methodName: method.Name)
-            );
-        }
+        Verifier.DerivePathInfo((sourceFile, projectDirectory, type, method) => new(
+            directory: Path.Combine(AppContext.BaseDirectory, "snapshots"),
+            typeName: type.Name,
+            methodName: method.Name)
+        );
 
         EmptyFiles.FileExtensions.AddTextExtension("ps1");
         EmptyFiles.FileExtensions.AddTextExtension("nu");
