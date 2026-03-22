@@ -473,6 +473,10 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        ios-arm64;
+        iossimulator-arm64;
+        android-arm64;
+        android-x64;
         " />
 
       <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
