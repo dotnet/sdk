@@ -13,13 +13,24 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
     </Exec>
 
+    <PropertyGroup>
+      <!-- When cross-compiling (e.g., building arm64 on an x64 host), the stage0 shared frameworks
+           are for the host architecture, not the target architecture. Including them in the testhost
+           would cause architecture mismatches: the stage0's older runtime version (x64) would be
+           picked by roll-forward instead of the installer layout's correct target-architecture version,
+           causing failures like "mach-o file, but is an incompatible architecture". -->
+      <_Stage0SharedExclude Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64' and '$(TargetArchitecture)' == 'arm64'">$(_DotNetHiveRoot)shared\**\*;</_Stage0SharedExclude>
+    </PropertyGroup>
+
     <!-- Copy artifacts from the stage0 SDK folder.
-         Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
+         Ignore the sdk, templates and host files for which only live built artifacts should be used.
+         When cross-compiling, also ignore shared frameworks (wrong architecture for target). -->
     <ItemGroup>
       <_OverlaySDKFile Include="$(_DotNetHiveRoot)\**\*"
                        Exclude="$(_DotNetHiveRoot)sdk\**\*;
                                 $(_DotNetHiveRoot)templates\**\*;
-                                $(_DotNetHiveRoot)host\**\*"/>
+                                $(_DotNetHiveRoot)host\**\*;
+                                $(_Stage0SharedExclude)"/>
       <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
