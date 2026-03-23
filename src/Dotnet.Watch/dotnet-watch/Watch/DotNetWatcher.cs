@@ -58,8 +58,7 @@ internal static class DotNetWatcher
                 {
                     [EnvironmentVariables.Names.DotnetWatch] = "1",
                     [EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture),
-                },
-                OnOutput = line => context.ProcessOutputReporter.ReportOutput(line)
+                }
             };
 
             var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
@@ -68,15 +67,18 @@ internal static class DotNetWatcher
 
             browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
 
-            foreach (var (name, value) in environmentBuilder)
-            {
-                processSpec.EnvironmentVariables.Add(name, value);
-            }
-
+            Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)
             {
                 Debug.Assert(context.MainProjectOptions != null);
-                context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.MainProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                outputObserver = context.BrowserLauncher.TryGetBrowserLaunchOutputObserver(projectRootNode, context.MainProjectOptions, browserRefreshServer, shutdownCancellationToken);
+            }
+
+            processSpec.RedirectOutput(outputObserver, context.ProcessOutputReporter, context.EnvironmentOptions, projectRootNode?.GetDisplayName() ?? "");
+
+            foreach (var (name, value) in environmentBuilder)
+            {
+                processSpec.EnvironmentVariables.Add(name, value);
             }
 
             // Reset for next run
