@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -67,6 +70,10 @@ namespace Microsoft.TemplateSearch.Common
             public override TemplatePackageSearchData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
                 => throw new NotImplementedException();
 
+#if NET7_0_OR_GREATER
+            [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Templates and AdditionalData are serialized with known types.")]
+            [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Templates and AdditionalData are serialized with known types.")]
+#endif
             public override void Write(Utf8JsonWriter writer, TemplatePackageSearchData value, JsonSerializerOptions options)
             {
                 if (value == null)

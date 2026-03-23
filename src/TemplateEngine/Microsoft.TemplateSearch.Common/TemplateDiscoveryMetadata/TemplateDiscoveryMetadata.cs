@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine;
@@ -31,6 +34,10 @@ namespace Microsoft.TemplateSearch.Common
         [JsonInclude]
         internal IReadOnlyDictionary<string, object> AdditionalData { get; }
 
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Serializes a known internal type (TemplateDiscoveryMetadata).")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Serializes a known internal type (TemplateDiscoveryMetadata).")]
+#endif
         internal JsonObject ToJObject()
         {
             return JExtensions.FromObject(this);

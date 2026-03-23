@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
 #if NET
@@ -18,6 +21,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2057", Justification = "Component types are resolved by assembly-qualified name from the settings store.")]
+#endif
         public ComponentManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
             _engineEnvironmentSettings = engineEnvironmentSettings;
@@ -119,6 +125,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Components are resolved by name and instantiated via reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL2067", Justification = "Component type is resolved at runtime from stored assembly-qualified name.")]
+        [UnconditionalSuppressMessage("AOT", "IL2072", Justification = "Component type is resolved at runtime from stored assembly-qualified name.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Component instantiation uses Activator.CreateInstance with runtime-resolved types.")]
+#endif
         public bool TryGetComponent<T>(Guid id, out T? component)
                     where T : class, IIdentifiedComponent
         {
@@ -173,6 +185,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         // This method does not save the settings, it just registers into the memory cache.
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Component registration inspects and instantiates types via reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL2067", Justification = "Component type metadata is inspected at runtime.")]
+        [UnconditionalSuppressMessage("AOT", "IL2070", Justification = "Component type interfaces are enumerated at runtime.")]
+        [UnconditionalSuppressMessage("AOT", "IL3000", Justification = "Assembly.Location is used to register probing paths for component resolution.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Component instantiation uses Activator.CreateInstance with runtime-resolved types.")]
+#endif
         private bool RegisterType(Type type)
         {
             if (!typeof(IIdentifiedComponent).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) == null || !type.IsClass)
@@ -239,7 +258,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    _engineEnvironmentSettings.Host.FileSystem.WriteObject(_paths.SettingsFile, _settings);
+                    _engineEnvironmentSettings.Host.FileSystem.WriteObject(_paths.SettingsFile, _settings, SettingsStoreJsonSerializerContext.Default.SettingsStore);
                     successfulWrite = true;
                 }
                 catch (IOException)
@@ -273,6 +292,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ids.Add(component.Id);
         }
 
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Assembly loading resolves assemblies by name at runtime.")]
+        [UnconditionalSuppressMessage("AOT", "IL2057", Justification = "Component type is resolved by stored assembly-qualified name.")]
+#endif
         private Type GetType(string typeName)
         {
             int commaIndex = typeName.IndexOf(',');

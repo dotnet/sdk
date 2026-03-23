@@ -3,6 +3,7 @@
 
 using System.Reflection;
 #if NET
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 #endif
 using Microsoft.Extensions.Logging;
@@ -128,6 +129,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             throw new Exception(string.Format(LocalizableStrings.Scanner_Error_TemplatePackageLocationIsNotSupported, sourceLocation));
         }
 
+#if NET
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Component scanning uses Assembly.GetTypes() on dynamically loaded assemblies.")]
+#endif
         private void ScanForComponents(MountPointScanSource source)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
@@ -258,6 +262,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <param name="pattern">Filename pattern to use when searching for files.</param>
         /// <param name="searchOption"><see cref="SearchOption"/> to use when searching for files.</param>
         /// <returns>The list of loaded assemblies in format (filename, loaded assembly).</returns>
+#if NET
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Assembly loading via AssemblyLoadContext.LoadFromStream() is inherently reflection-based.")]
+#endif
         private IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(
             out IEnumerable<string> loadFailures,
             string path,

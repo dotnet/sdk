@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -371,6 +374,9 @@ namespace Microsoft.TemplateEngine.IDE
         }
 
         [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Obsolete method; Assembly.GetTypes() is inherently reflection-based.")]
+#endif
         public void Register(Assembly assembly)
         {
             _engineEnvironmentSettings.Components.RegisterMany(assembly.GetTypes());
