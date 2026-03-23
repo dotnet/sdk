@@ -83,11 +83,15 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             {
                 if (!diagnostic.IsSuppressed &&
                     diagnostic.Severity >= severity &&
-                    diagnostic.Location.IsInSource &&
-                    diagnostic.Location.SourceTree != null &&
-                    formattableDocumentPaths.Contains(diagnostic.Location.SourceTree.FilePath))
+                    diagnostic.Location.SourceTree != null)
                 {
-                    result.AddDiagnostic(project, diagnostic);
+                    // Include diagnostics from both user-written and source-generated code
+                    // IsInSource check is removed to properly handle partial classes with source-generated members
+                    // This fixes CS0660 false positives on Linux when using source generators with partial classes
+                    if (formattableDocumentPaths.Contains(diagnostic.Location.SourceTree.FilePath))
+                    {
+                        result.AddDiagnostic(project, diagnostic);
+                    }
                 }
             }
 
