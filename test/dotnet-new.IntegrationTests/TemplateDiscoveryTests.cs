@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [SkipOnPlatformFact(TestPlatforms.OSX, Architecture.Arm64, "https://github.com/dotnet/sdk/issues/46647")]
+        [SkipOnPlatformFact(TestPlatforms.OSX, Architecture.Arm64, "https://github.com/dotnet/sdk/issues/53569")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task CanRunDiscoveryTool()
         {
