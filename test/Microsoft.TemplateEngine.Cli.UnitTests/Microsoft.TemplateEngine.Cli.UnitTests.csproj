@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="Always" />
-    <!-- Approvals (Verify snapshot files) must be alongside the DLL so they're shipped to Helix. -->
+    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ParserTests/Approvals/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
