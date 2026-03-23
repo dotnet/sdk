@@ -126,6 +126,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 out var evaluatedDirectives,
                 validateAllDirectives: !_force);
 
+            // Pre-validate: ensure all ref target directories don't already exist before writing any files.
+            if (isEntryPointFile)
+            {
+                ValidateRefTargetDirectories(evaluatedDirectives, sourceDirectory, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            }
+
             CreateDirectory(outputDirectory);
 
             // Copy the .cs file with directives removed.
@@ -223,13 +229,50 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
                 if (Directory.Exists(refTargetDirectory))
                 {
-                    continue;
+                    throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, refTargetDirectory);
                 }
 
                 var (_, _, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, outputType: "Library", isEntryPointFile: false);
 
                 // Recursively convert referenced files in the referenced file.
                 ConvertReferencedFiles(refEvaluatedDirectives, refDir);
+            }
+        }
+
+        void ValidateRefTargetDirectories(ImmutableArray<CSharpDirective> directives, string sourceDirectory, HashSet<string> visited)
+        {
+            foreach (var directive in directives)
+            {
+                if (directive is not CSharpDirective.Ref refDirective)
+                {
+                    continue;
+                }
+
+                var refPath = refDirective.ResolvedPath ?? Path.GetFullPath(Path.Combine(sourceDirectory, refDirective.Name.Replace('\\', '/')));
+
+                if (!visited.Add(refPath))
+                {
+                    continue;
+                }
+
+                var refName = Path.GetFileNameWithoutExtension(refPath);
+                var refDir = Path.GetDirectoryName(refPath)!;
+                var refTargetDirectory = Path.Combine(refDir, refName);
+
+                if (Directory.Exists(refTargetDirectory))
+                {
+                    throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, refTargetDirectory);
+                }
+
+                // Recursively validate transitive refs.
+                var refBuilder = new VirtualProjectBuilder(refPath, VirtualProjectBuildingCommand.TargetFramework, outputType: "Library");
+                refBuilder.CreateProjectInstance(
+                    projectCollection,
+                    VirtualProjectBuildingCommand.ThrowingReporter,
+                    out _,
+                    out var refDirectives,
+                    validateAllDirectives: !_force);
+                ValidateRefTargetDirectories(refDirectives, refDir, visited);
             }
         }
 

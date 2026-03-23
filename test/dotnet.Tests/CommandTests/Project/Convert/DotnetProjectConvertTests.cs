@@ -333,6 +333,50 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void RefDirective_DirectoryAlreadyExists()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        // Pre-create the directory that the ref conversion would target.
+        var libTargetDirectory = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libTargetDirectory);
+
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", "Project")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, libTargetDirectory));
+
+        // Nothing should have been converted.
+        Directory.Exists(Path.Join(testInstance.Path, "Project")).Should().BeFalse();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(d => d.Name).Order()
+            .Should().BeEquivalentTo(["app.cs", "Directory.Build.props", "lib", "lib.cs"]);
+    }
+
+    [Fact]
     public void ProjectReference_FullPath_WithVars()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
