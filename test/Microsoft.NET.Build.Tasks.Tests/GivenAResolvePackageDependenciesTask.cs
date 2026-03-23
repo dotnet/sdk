@@ -841,6 +841,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ProjectLanguage = null,
                 TargetFramework = target
             };
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(
+                Path.GetDirectoryName(_projectPath));
 
             task.Execute().Should().BeTrue();
 
