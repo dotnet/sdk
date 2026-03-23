@@ -36,6 +36,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages!;
 
+        /// <summary>
+        /// Gets the path to the Approvals snapshot directory, resolved relative to the test output directory.
+        /// </summary>
+        public static string ApprovalsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Approvals");
+
 #if DEBUG
         /// <summary>
         /// Gets configuration name.
