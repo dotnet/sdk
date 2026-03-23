@@ -14,12 +14,16 @@
     </Exec>
 
     <!-- Copy artifacts from the stage0 SDK folder.
-         Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
+         Ignore the sdk, templates and host files for which only live built artifacts should be used.
+         Also exclude stage0 shared frameworks in the current major.minor band that don't match the
+         built runtime version, as they may have a different architecture than the target. -->
     <ItemGroup>
       <_OverlaySDKFile Include="$(_DotNetHiveRoot)\**\*"
                        Exclude="$(_DotNetHiveRoot)sdk\**\*;
                                 $(_DotNetHiveRoot)templates\**\*;
-                                $(_DotNetHiveRoot)host\**\*"/>
+                                $(_DotNetHiveRoot)host\**\*;
+                                $(_DotNetHiveRoot)shared\Microsoft.NETCore.App\$(MajorMinorVersion).*\**\*;
+                                $(_DotNetHiveRoot)shared\Microsoft.AspNetCore.App\$(MajorMinorVersion).*\**\*"/>
       <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
