@@ -146,6 +146,24 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
+    private static void EnableRefDirective(TestDirectory testInstance)
+    {
+        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        var propsContent = File.Exists(propsPath) ? File.ReadAllText(propsPath) : null;
+        if (propsContent is not null && propsContent.Contains(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective))
+        {
+            return;
+        }
+
+        File.WriteAllText(propsPath, $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+    }
+
     /// <summary>
     /// <c>dotnet run file.cs</c> succeeds without a project file.
     /// </summary>
@@ -613,6 +631,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "-")
             .WithWorkingDirectory(appDir)
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
@@ -629,6 +648,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "-")
             .WithWorkingDirectory(appDir)
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
                 #:ref ../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
@@ -3171,6 +3191,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             namespace MyLib;
@@ -3196,6 +3217,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_Subdirectory()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
@@ -3229,6 +3251,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_Errors(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
         var relativeFilePath = Path.Join(subdir, "Program.cs");
         var filePath = Path.Join(testInstance.Path, relativeFilePath);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -3265,6 +3288,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_InternalsNotAccessible()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             namespace MyLib;
@@ -3311,6 +3335,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_Transitive()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
             namespace Lib2;
@@ -3353,6 +3378,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_PathFormats(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         var libDir = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libDir);
@@ -3400,6 +3426,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void RefDirective_Duplicate(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
         var relativeFilePath = Path.Join(subdir, "Program.cs");
         var filePath = Path.Join(testInstance.Path, relativeFilePath);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -3446,6 +3473,48 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate ref
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello!");
+    }
+
+    /// <summary>
+    /// <c>#:ref</c> is an experimental feature that must be opted into.
+    /// Analogous to <see cref="IncludeDirective_FeatureFlags"/>.
+    /// </summary>
+    [Fact]
+    public void RefDirective_FeatureFlag()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(libPath, """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello!");
@@ -5091,6 +5160,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void UpToDate_RefDirectives()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """
@@ -5841,6 +5911,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void CscOnly_AfterMSBuild_RefDirectives()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """

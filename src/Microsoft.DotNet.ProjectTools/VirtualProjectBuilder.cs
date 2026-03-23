@@ -412,12 +412,18 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
+        bool? refEnabled = null;
         bool? includeEnabled = null;
         bool? excludeEnabled = null;
         bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
+            if (directive is CSharpDirective.Ref)
+            {
+                CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
+            }
+
             if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
             {
                 if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)

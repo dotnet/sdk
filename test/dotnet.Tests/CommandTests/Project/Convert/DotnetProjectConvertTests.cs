@@ -208,6 +208,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             namespace MyLib;
             public static class Greeter
@@ -260,6 +268,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void RefDirective_Transitive_Convert()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
             namespace Lib2;

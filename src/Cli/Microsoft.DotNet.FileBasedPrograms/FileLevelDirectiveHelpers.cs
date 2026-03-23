@@ -593,6 +593,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class Ref : Named
     {
+        public const string ExperimentalFileBasedProgramEnableRefDirective = nameof(ExperimentalFileBasedProgramEnableRefDirective);
+
         [SetsRequiredMembers]
         public Ref(in ParseInfo info, string name) : base(info)
         {
