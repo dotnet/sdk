@@ -1,5 +1,5 @@
 {
-  "marketplaces": {
+  "extraKnownMarketplaces": {
     "dotnet-arcade-skills": {
       "source": {
         "source": "github",
