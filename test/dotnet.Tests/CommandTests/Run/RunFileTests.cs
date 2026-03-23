@@ -587,6 +587,58 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(errorParts[1]);
     }
 
+    /// <summary>
+    /// <c>dotnet run -</c> with <c>#:ref</c> uses <c>$(MSBuildStartupDirectory)</c> to resolve paths.
+    /// Relative paths don't work from stdin since the file is in an isolated temp directory.
+    /// Analogous to <see cref="ReadFromStdin_ProjectReference"/>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello from lib!";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput("""
+                #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
+                Console.WriteLine(MyLib.Greeter.Greet());
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from lib!");
+
+        // Relative paths are resolved from the isolated temp directory, hence they don't work.
+
+        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidRefDirective,
+            string.Format(FileBasedProgramsResources.CouldNotFindRefFile, "{}")).Split("{}");
+        errorParts.Should().HaveCount(2);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput("""
+                #:ref ../lib/mylib.cs
+                Console.WriteLine(MyLib.Greeter.Greet());
+                """)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(errorParts[0])
+            .And.HaveStdErrContaining(errorParts[1]);
+    }
+
     [Fact]
     public void ReadFromStdin_NoBuild()
     {
@@ -3168,18 +3220,25 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello, World!");
     }
 
-    [Fact]
-    public void RefDirective_Errors()
+    /// <summary>
+    /// Analogous to <see cref="ProjectReference_Errors"/> but for <c>#:ref</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void RefDirective_Errors(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
         // Missing name.
         File.WriteAllText(filePath, """
             #:ref
             """);
 
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
@@ -3190,12 +3249,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:ref nonexistent.cs
             """);
 
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidRefDirective,
-                string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, "nonexistent.cs"))));
+                string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, subdir, "nonexistent.cs"))));
     }
 
     /// <summary>
@@ -3280,6 +3339,116 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("from lib1 and from lib2");
+    }
+
+    /// <summary>
+    /// <c>#:ref</c> with various path formats (forward slashes, backslashes, MSBuild properties, parent dirs).
+    /// Analogous to <see cref="ProjectReference"/>.
+    /// </summary>
+    [Theory]
+    [InlineData("../Lib/lib.cs")]
+    [InlineData(@"..\Lib\lib.cs")]
+    [InlineData("$(MSBuildProjectDirectory)/../$(LibDirName)/lib.cs")]
+    [InlineData(@"$(MSBuildProjectDirectory)\..\Lib\lib.cs")]
+    public void RefDirective_PathFormats(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        File.WriteAllText(Path.Join(appDir, "app.cs"), $"""
+            #:ref {arg}
+            #:property LibDirName=Lib
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        var expectedOutput = "Hello, World!";
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Running from a different working directory shouldn't affect handling of the relative paths.
+        new DotnetCommand(Log, "run", "App/app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    /// <summary>
+    /// <c>#:ref</c> duplicate detection.
+    /// Analogous to <see cref="ProjectReference_Duplicate"/>.
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void RefDirective_Duplicate(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "lib.cs"), """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        File.WriteAllText(filePath, """
+            #:ref lib.cs
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:ref lib.cs"));
+
+        File.WriteAllText(filePath, """
+            #:ref lib.cs
+            #:ref ./lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate ref
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello!");
+
+        File.WriteAllText(filePath, """
+            #:ref lib.cs
+            #:ref $(MSBuildProjectDirectory)/lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate ref
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello!");
     }
 
     [Theory, CombinatorialData]
@@ -4915,6 +5084,48 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <see cref="UpToDate"/> optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
+    /// Analogous to <see cref="UpToDate_ProjectReferences"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_RefDirectives()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var programCode = """
+            #:ref lib.cs
+            Console.WriteLine("Hello " + MyLib.Greeter.Greet());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, programCode);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        // We cannot detect changes in referenced files, so we always rebuild.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v2");
+    }
+
+    /// <summary>
     /// <see cref="UpToDate"/> optimization considers default items.
     /// Also tests <see cref="CscOnly_AfterMSBuild"/> optimization.
     /// (We cannot test <see cref="CscOnly"/> because that optimization doesn't support neither <c>#:property</c> nor <c>#:sdk</c> which we need to enable default items.)
@@ -5619,6 +5830,50 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Cannot use CSC because we cannot detect updates in the referenced project.
         Build(testInstance, BuildLevel.All, expectedOutput: "v2 Hello from Lib v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
+    /// Analogous to <see cref="CscOnly_AfterMSBuild_ProjectReferences"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_RefDirectives()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var programCode = """
+            #:ref lib.cs
+            Console.WriteLine("Hello " + MyLib.Greeter.Greet());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, programCode);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        programCode = programCode.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, programCode);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        // Cannot use CSC because we cannot detect updates in the referenced file.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hi v2");
     }
 
     /// <summary>
