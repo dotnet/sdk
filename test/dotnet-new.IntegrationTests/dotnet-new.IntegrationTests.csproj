@@ -76,8 +76,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
   <!-- Copy template package .nupkg files from NuGet cache to test output so they are
        available on Helix test machines (which don't have the build machine's NuGet cache). -->
   <ItemGroup>
-    <None Include="$(NuGetPackageRoot)microsoft.dotnet.common.projecttemplates.*/*/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(NuGetPackageRoot)microsoft.dotnet.web.projecttemplates.*/*/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_10_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_10_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="AddGeneratedFile" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)GeneratedFile.cs">
