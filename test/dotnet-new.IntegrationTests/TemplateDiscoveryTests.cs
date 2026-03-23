@@ -16,7 +16,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _templateDiscoveryTool = templateDiscoveryTool;
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [SkipOnMacOSArm64Fact("https://github.com/dotnet/sdk/issues/46647")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
