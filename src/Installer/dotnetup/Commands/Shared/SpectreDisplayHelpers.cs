@@ -115,45 +115,7 @@ internal static class SpectreDisplayHelpers
                     }
 
                     var key = Console.ReadKey(intercept: true);
-                    switch (key.Key)
-                    {
-                        case ConsoleKey.UpArrow:
-                            if (offset > 0)
-                            {
-                                offset--;
-                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                            }
-
-                            break;
-                        case ConsoleKey.DownArrow:
-                            if (offset < maxOffset)
-                            {
-                                offset++;
-                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                            }
-
-                            break;
-                        case ConsoleKey.Enter:
-                            result = ConfirmResult.Yes;
-                            done = true;
-                            break;
-                        case ConsoleKey.N:
-                            if (confirmPrompt is not null)
-                            {
-                                result = ConfirmResult.No;
-                                done = true;
-                            }
-
-                            break;
-                        case ConsoleKey.P:
-                            if (confirmPrompt is not null && allowNeverAsk)
-                            {
-                                result = ConfirmResult.NeverAskAgain;
-                                done = true;
-                            }
-
-                            break;
-                    }
+                    (done, result, offset) = HandleScrollKey(key, offset, maxOffset, items, visibleCount, confirmPrompt, allowNeverAsk, ctx);
                 }
             });
 
@@ -161,6 +123,52 @@ internal static class SpectreDisplayHelpers
         RenderFinalScrollView(items, confirmPrompt, result);
 
         return result;
+    }
+
+    /// <summary>
+    /// Processes a single key press during the interactive scroll loop.
+    /// Returns the updated (done, result, offset) state.
+    /// </summary>
+    private static (bool Done, ConfirmResult Result, int Offset) HandleScrollKey(
+        ConsoleKeyInfo key, int offset, int maxOffset, List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk, LiveDisplayContext ctx)
+    {
+        switch (key.Key)
+        {
+            case ConsoleKey.UpArrow:
+                if (offset > 0)
+                {
+                    offset--;
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            case ConsoleKey.DownArrow:
+                if (offset < maxOffset)
+                {
+                    offset++;
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            case ConsoleKey.Enter:
+                return (true, ConfirmResult.Yes, offset);
+            case ConsoleKey.N:
+                if (confirmPrompt is not null)
+                {
+                    return (true, ConfirmResult.No, offset);
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            case ConsoleKey.P:
+                if (confirmPrompt is not null && allowNeverAsk)
+                {
+                    return (true, ConfirmResult.NeverAskAgain, offset);
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            default:
+                return (false, ConfirmResult.Yes, offset);
+        }
     }
 
     /// <summary>
