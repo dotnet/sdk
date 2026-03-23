@@ -12,10 +12,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static void Init()
         {
             DerivePathInfo(
-                (_, _, type, method) => new PathInfo(
-                    directory: Path.Combine(AppContext.BaseDirectory, "ParserTests", "Approvals"),
-                    typeName: type.Name,
-                    methodName: method.Name));
+                   (_, _, type, method) => new(
+                       directory: Path.Combine(AppContext.BaseDirectory, "ParserTests", "Approvals"),
+                       typeName: type.Name,
+                       methodName: method.Name));
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
