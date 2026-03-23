@@ -110,8 +110,8 @@ If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the 
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
 However, the current working directory is still used as the working directory for building and executing the program.
-To reference projects relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
-you can use something like `#:project $(MSBuildStartupDirectory)/relative/path`.
+To reference projects or files relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
+you can use something like `#:project $(MSBuildStartupDirectory)/relative/path` or `#:ref $(MSBuildStartupDirectory)/relative/lib.cs`.
 
 `dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported)
 and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch` invokes the `dotnet-watch` tool
@@ -178,11 +178,12 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
 #:project ../MyLibrary
+#:ref ../lib/lib.cs
 #:include ./**/*.cs
 ```
 
 Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
-The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:include`.  
+The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:ref`/`#:include`.  
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
@@ -209,6 +210,24 @@ The directives are processed as follows:
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
+- Each `#:ref` references another `.cs` file as a compiled library.
+  A virtual project with `OutputType=Library` is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
+  and a `<ProjectReference Include="lib.cs.csproj" SkipGetTargetFrameworkProperties="true" />` is injected in an `<ItemGroup>`.
+  It is an error if the name is empty or if the referenced file does not exist.
+  Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
+
+  Because the referenced file is compiled as a separate assembly, internal members of the referenced file are not accessible from the referencing file.
+  The `#:ref` directive is transitive: a referenced file can itself contain `#:ref` directives.
+
+  Relative paths are resolved relative to the file containing the directive.
+  MSBuild variables (like `$(MSBuildProjectDirectory)`) can be used in the path.
+
+  During [conversion](#grow-up), each `#:ref` directive creates a separate library project in a sibling directory
+  and is replaced by a `#:project` directive pointing to that project.
+  The conversion is recursive: any `#:ref` directives in the referenced files are also converted.
+
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableRefDirective=true`.
+
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
   where `{0}` is the directive's value and `{1}` is determined by its extension.
   The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
@@ -228,9 +247,9 @@ The directives are processed as follows:
 - Other directive kinds result in an error, reserving them for future use.
 
 Directive values support MSBuild variables (like `$(..)`) normally as they are translated literally and left to MSBuild engine to process.
-However, in `#:project` directives, variables might not be preserved during [grow up](#grow-up),
+However, in `#:project` and `#:ref` directives, variables might not be preserved during [grow up](#grow-up),
 because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
-(project directive values need to be resolved to be relative to the target directory
+(project and ref directive values need to be resolved to be relative to the target directory
 and also to point to a project file rather than a directory).
 Note that it is not expected that variables inside the path change their meaning during the conversion,
 so for example `#:project ../$(LibName)` is translated to `<ProjectReference Include="../../$(LibName)/Lib.csproj" />` (i.e., the variable is preserved).
