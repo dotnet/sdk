@@ -1,12 +1,8 @@
-# CLAUDE.md
+# .NET SDK Repo Instructions
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Overview
 
-## Repository Overview
-
-This is the .NET SDK repository (dotnet/sdk) — the toolchain for building, running, and publishing .NET applications. It contains the `dotnet` CLI, MSBuild tasks/targets, project system SDKs (Web, Razor, Blazor, Containers, StaticWebAssets, Wasm), template engine, workload management, and related tooling.
-
-Uses the Arcade build infrastructure (Microsoft.DotNet.Arcade.Sdk). C# language version is Preview with nullable enabled and warnings as errors.
+This is the .NET SDK repository (dotnet/sdk). It contains the `dotnet` CLI, MSBuild tasks/targets, project system SDKs (Web, Razor, Blazor, Containers, StaticWebAssets, Wasm), template engine, workload management, and related tooling. Uses the Arcade build infrastructure.
 
 ## Local Development Workflow
 
@@ -73,11 +69,10 @@ Test projects live in `test/` with naming conventions `<ProjectName>.Tests` (uni
 - **`eng/`** — Build infrastructure (Arcade, pipelines, dogfood scripts)
 - **`documentation/`** — Developer guide, CLI UX guidelines, snapshot testing docs
 
-Filtered solution files for focused work: `cli.slnf`, `tasks.slnf`, `containers.slnf`, `TemplateEngine.slnf`.
-
 ## Key Conventions
 
-- Tests use XUnit. Some tests use the Verify library for snapshot-based assertion (e.g., CLI completion tests in `test/dotnet.Tests/CompletionTests/`).
-- The repo builds with a specific preview SDK version pinned in `global.json`, which `build.sh`/`build.cmd` installs automatically. Don't update this manually.
-- CI runs on Azure DevOps with tests distributed via Helix. Test orchestration is in `test/UnitTests.proj`.
+- Some tests use the Verify library for snapshot-based assertion (e.g., CLI completion tests in `test/dotnet.Tests/CompletionTests/`).
+- The repo builds with a specific preview SDK version pinned in `global.json`, which `build.sh`/`build.cmd` install automatically. Don't update this manually.
+- CI runs on Azure DevOps with distributed testing via Helix. Test orchestration is in `test/UnitTests.proj`.
 - Centralized package versioning via `Directory.Packages.props`.
+
