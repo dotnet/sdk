@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -92,7 +91,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
 
         // Handle deletion of source files if requested.
-        bool shouldDelete = _deleteSource || TryAskForDeleteSource(file);
+        bool shouldDelete = _deleteSource || TryAskForDeleteSource();
         if (shouldDelete)
         {
             // Delete the entry point file
@@ -378,11 +377,11 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             return result.DrainToImmutable();
         }
 
-        IEnumerable<(string name, string value)> GetDefaultProperties(ProjectInstance pi, string outputType)
+        IEnumerable<(string name, string value)> GetDefaultProperties(ProjectInstance projectInstance, string outputType)
         {
             foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework, outputType))
             {
-                string projectValue = pi.GetPropertyValue(name);
+                string projectValue = projectInstance.GetPropertyValue(name);
                 if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return (name, defaultValue);
@@ -446,7 +445,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return targetDirectory;
     }
 
-    private bool TryAskForDeleteSource(string sourceFile)
+    private bool TryAskForDeleteSource()
     {
         if (!_interactive)
         {
