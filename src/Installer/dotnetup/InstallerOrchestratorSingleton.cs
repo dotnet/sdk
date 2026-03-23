@@ -254,18 +254,9 @@ internal class InstallerOrchestratorSingleton
         {
             if (manifest?.InstallAlreadyExists(install) == true)
             {
-                // Validate that the installation actually exists on disk.
-                // If the files were deleted but the manifest still records it,
-                // silently remove the stale record and proceed with re-installation.
-                ArchiveInstallationValidator validator = new();
-                if (validator.Validate(install))
-                {
-                    manifest.RecordInstallSpec(installRequest);
-                    alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
-                    return null;
-                }
-
-                manifest.RemoveStaleInstallation(install);
+                manifest.RecordInstallSpec(installRequest);
+                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
+                return null;
             }
 
             if (!installRequest.Options.Untracked

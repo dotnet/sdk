@@ -323,11 +323,16 @@ internal class WalkthroughWorkflows
             return [];
         }
 
-        // Filter out installs already tracked in the dotnetup manifest
+        // Filter out installs already tracked in the dotnetup manifest.
+        // Prune stale entries first so manually-deleted installs don't persist.
         List<Installation> trackedInstalls;
         using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            trackedInstalls = [.. new DotnetupSharedManifest(manifestPath).GetInstallations(installRoot)];
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            var manifestData = manifest.ReadManifest();
+            var root = manifestData.DotnetRoots.FirstOrDefault(r =>
+                DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+            trackedInstalls = root?.Installations ?? [];
         }
 
         systemInstalls = [.. systemInstalls

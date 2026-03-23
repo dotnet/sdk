@@ -477,7 +477,7 @@ public class ManifestTests
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
         // Should NOT throw — checksum matches so validation is skipped
-        var result = manifest.ReadManifest();
+        var result = manifest.ReadManifestWithoutPruning();
         result.DotnetRoots.Should().HaveCount(1);
         result.DotnetRoots[0].Installations.Should().HaveCount(1);
     }
@@ -532,7 +532,7 @@ public class ManifestTests
         DotnetupManifestData result;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            result = manifest.ReadManifest();
+            result = manifest.ReadManifestWithoutPruning();
         }
 
         result.DotnetRoots.Should().HaveCount(1);
