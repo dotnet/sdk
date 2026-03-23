@@ -12,8 +12,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAResolvePackageDependenciesTask
     {
-        private static readonly string _packageRoot = "\\root\\packages".Replace('\\', Path.DirectorySeparatorChar);
-        private static readonly string _projectPath = "\\root\\anypath\\solutiondirectory\\myprojectdir\\myproject.csproj".Replace('\\', Path.DirectorySeparatorChar);
+        private static readonly string _drivePrefix = OperatingSystem.IsWindows() ? "C:" : "";
+        private static readonly string _packageRoot = (_drivePrefix + "\\root\\packages").Replace('\\', Path.DirectorySeparatorChar);
+        private static readonly string _projectPath = (_drivePrefix + "\\root\\anypath\\solutiondirectory\\myprojectdir\\myproject.csproj").Replace('\\', Path.DirectorySeparatorChar);
 
         [Theory]
         [MemberData(nameof(ItemCounts))]
