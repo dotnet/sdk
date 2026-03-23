@@ -12,11 +12,11 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 
-internal class WorkloadUninstallCommand : WorkloadCommandBase
+internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUninstallCommandDefinition>
 {
     private readonly IReadOnlyCollection<WorkloadId> _workloadIds;
     private readonly IInstaller _workloadInstaller;
-    protected readonly IWorkloadResolverFactory _workloadResolverFactory;
+    private readonly IWorkloadResolverFactory _workloadResolverFactory;
     private readonly string _dotnetPath;
     private readonly ReleaseVersion _sdkVersion;
     private readonly string _userProfileDir;
@@ -27,14 +27,14 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
         IReporter reporter = null,
         IWorkloadResolverFactory workloadResolverFactory = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: WorkloadUninstallCommandParser.VerbosityOption)
+        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
-        _workloadIds = parseResult.GetValue(WorkloadUninstallCommandParser.WorkloadIdArgument)
+        _workloadIds = parseResult.GetValue(Definition.WorkloadIdArgument)
             .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(Definition.VersionOption)))
         {
             throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
