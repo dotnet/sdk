@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -95,13 +96,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(CommandDefinition.Install.NameArgument));
+                     .WithArgument(c => c.Definition.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(CommandDefinition.Install.NameArgument, packageIdToShow));
+                       .WithArguments(packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
@@ -191,10 +192,10 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                           .ThenBy(d => d.TemplateGroupInfo.Name, StringComparer.CurrentCultureIgnoreCase))
                     .DefineColumn(r => r.TemplateGroupInfo.Name, out object? nameColumn, LocalizableStrings.ColumnNameTemplateName, showAlways: true, shrinkIfNeeded: true, minWidth: 15)
                     .DefineColumn(r => r.TemplateGroupInfo.ShortNames, LocalizableStrings.ColumnNameShortName, showAlways: true)
-                    .DefineColumn(r => r.TemplateGroupInfo.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettings.ColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 12)
-                    .DefineColumn(r => r.TemplateGroupInfo.Languages, LocalizableStrings.ColumnNameLanguage, TabularOutputSettings.ColumnNames.Language, defaultColumn: true)
-                    .DefineColumn(r => r.TemplateGroupInfo.Type, LocalizableStrings.ColumnNameType, TabularOutputSettings.ColumnNames.Type, defaultColumn: false)
-                    .DefineColumn(r => r.TemplateGroupInfo.Classifications, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
+                    .DefineColumn(r => r.TemplateGroupInfo.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettingsColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 12)
+                    .DefineColumn(r => r.TemplateGroupInfo.Languages, LocalizableStrings.ColumnNameLanguage, TabularOutputSettingsColumnNames.Language, defaultColumn: true)
+                    .DefineColumn(r => r.TemplateGroupInfo.Type, LocalizableStrings.ColumnNameType, TabularOutputSettingsColumnNames.Type, defaultColumn: false)
+                    .DefineColumn(r => r.TemplateGroupInfo.Classifications, LocalizableStrings.ColumnNameTags, TabularOutputSettingsColumnNames.Tags, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
                     .DefineColumn(r => GetPackageInfo(r.PackageName, r.PackageOwners), out object? packageColumn, LocalizableStrings.ColumnNamePackageNameAndOwners, showAlways: true)
                     .DefineColumn(r => GetReservedMark(r.Reserved), LocalizableStrings.ColumnNameTrusted, showAlways: true, textAlign: TextAlign.Center)
                     .DefineColumn(r => r.PrintableTotalDownloads, out object? downloadsColumn, LocalizableStrings.ColumnNameTotalDownloads, showAlways: true, textAlign: TextAlign.Center);
@@ -253,26 +254,26 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", CommandDefinition.Search.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", FilterOptions.GetAllNames(NewSearchCommandDefinition.HasSupportedPackageFilterOption).Select(static optionName => $"'{optionName}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(CommandDefinition.Search.NameArgument, "web"));
+                        .WithArguments("web"));
 
                 Reporter.Error.WriteCommand(
                      Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithOption(SharedOptionsFactory.CreateAuthorOption(), "Microsoft"));
+                        .WithOption(c => c.Definition.FilterOptions.AuthorOption, "Microsoft"));
 
                 Reporter.Error.WriteCommand(
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(CommandDefinition.Search.NameArgument, "web")
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
+                    .WithArguments("web")
+                    .WithOption(c => c.Definition.FilterOptions.LanguageOption, "C#"));
 
                 return false;
             }

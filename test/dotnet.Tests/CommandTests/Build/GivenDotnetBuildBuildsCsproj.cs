@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItBuildsARunnableOutput()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var buildCommand = new DotnetBuildCommand(Log, testInstance.Path);
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItBuildsOnlyTheSpecifiedTarget()
         {
             var testAppName = "NonDefaultTarget";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItImplicitlyRestoresAProjectWhenBuilding()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [Fact]
         public void ItCanBuildAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "NETFrameworkReferenceNETStandard20",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItDoesNotImplicitlyRestoreAProjectWhenBuildingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log)
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItDoesNotImplicitlyRestoreFromResponseFileWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             string responseFilePath = Path.Combine(testInstance.Path, "Directory.Build.rsp");
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [Fact]
         public void ItRunsWhenRestoringToSpecificPackageDir()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
             var rootPath = testInstance.Path;
 
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItPrintsBuildSummary()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .Restore(Log);
 
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [Fact]
         public void DotnetBuildDoesNotPrintCopyrightInfo()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .Restore(Log);
 
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             cmd.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [Fact]
         public void It_no_longer_warns_on_rid_without_self_contained_options()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 SelfContained = "true"
             };
 
-            var testInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testInstance = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetBuildCommand(Log)
                .WithWorkingDirectory(Path.Combine(testInstance.Path, testProject.Name ?? string.Empty))
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [InlineData("run")]
         public void It_does_not_warn_on_rid_with_self_contained_options(string commandName)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
@@ -246,7 +246,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [Fact]
         public void It_does_not_warn_on_rid_with_self_contained_options_prior_to_net6()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netcoreapp3.1")
                 .Restore(Log);
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             };
 
             testProject.RecordProperties("RuntimeIdentifier");
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
 
             new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name ?? string.Empty))
@@ -304,7 +304,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             };
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetCommand(Log)
                .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name ?? string.Empty))
@@ -339,9 +339,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 project.Root?.Add(itemGroup);
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var command = new GetValuesCommand(testAsset,
                 "Analyzer",
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
         static readonly List<string?> nugetRoots = new()
         {
-            TestContext.Current.NuGetCachePath,
+            SdkTestContext.Current.NuGetCachePath,
             Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 

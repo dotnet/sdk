@@ -21,7 +21,7 @@ public class AssetToCompressTest : IDisposable
 
     public AssetToCompressTest()
     {
-        _testDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(AssetToCompressTest), Guid.NewGuid().ToString("N"));
+        _testDirectory = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(AssetToCompressTest), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_testDirectory);
         _testFilePath = Path.Combine(_testDirectory, "test-asset.js");
         File.WriteAllText(_testFilePath, "// test content");

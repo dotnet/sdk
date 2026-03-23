@@ -110,6 +110,51 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     }
 
     [Fact]
+    public void LeadingWhiteSpace()
+    {
+        Verify(
+            """
+
+            #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+
+            Console.WriteLine();
+            """));
+
+        Verify(
+            """
+              #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            Console.WriteLine();
+            """));
+    }
+
+    [Fact]
+    public void WhiteSpaceOutsideLines()
+    {
+        Verify(
+            $"""
+            // trailing{"  "}
+
+            #:package MyPackage@1.0.0
+
+              // leading
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            $"""
+            // trailing{"  "}
+
+              // leading
+            """));
+    }
+
+    [Fact]
     public void Comments()
     {
         Verify(
@@ -525,7 +570,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesNoBomEncoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file without BOM
@@ -556,7 +601,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesBomEncoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with BOM
@@ -582,7 +627,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesNonUtf8Encoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with UTF-16 encoding (includes BOM by default)

@@ -71,3 +71,8 @@
 *.verified.zsh text eol=lf working-tree-encoding=UTF-8
 *.verified.nu text eol=lf working-tree-encoding=UTF-8
 *.verified.fish text eol=lf working-tree-encoding=UTF-8
+
+###############################################################################
+# Ensure files are included in git archive
+###############################################################################
+/template_feed/Microsoft.DotNet.Common.ItemTemplates/content/Gitattributes/.gitattributes -export-ignore

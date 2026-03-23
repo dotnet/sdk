@@ -2,27 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseSearchCommand : BaseCommand<SearchCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewSearchCommandDefinition definition)
+        : BaseCommand<SearchCommandArgs, NewSearchCommandDefinition>(hostBuilder, definition),
+          IFilterableCommand,
+          ITabularOutputCommand
     {
-        private readonly CommandDefinition.Search _definition;
+        public IEnumerable<Option> FilterOptions => Definition.FilterOptions.AllOptions;
 
-        internal BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition.Search definition)
-            : base(hostBuilder, definition)
-        {
-            _definition = definition;
-        }
+        public Option<bool> ColumnsAllOption => Definition.ColumnsAllOption;
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters => _definition.Filters;
-
-        public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
-
-        public Option<string[]> ColumnsOption => _definition.ColumnsOption;
+        public Option<string[]> ColumnsOption => Definition.ColumnsOption;
 
         protected override Task<NewCommandStatus> ExecuteAsync(
             SearchCommandArgs args,

@@ -26,6 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunPerfmapFormatVersion Condition="'$(PublishReadyToRunPerfmapFormatVersion)' == ''">1</PublishReadyToRunPerfmapFormatVersion>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and ('$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos' or '$(TargetPlatformIdentifier)' == 'maccatalyst')">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunContainerFormat Condition="'$(PublishReadyToRunContainerFormat)' == '' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 11.0))">pe</PublishReadyToRunContainerFormat>
+    <PublishReadyToRunCreateSharedLibrary Condition="'$(PublishReadyToRunCreateSharedLibrary)' == ''">true</PublishReadyToRunCreateSharedLibrary>
 
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">false</PublishReadyToRunEmitSymbols>
@@ -33,6 +34,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
+
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('ios-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('tvos-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
+
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('ios-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('tvos-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -649,7 +662,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_FindMachOToolchain"
     Inputs="@(_ReadyToRunNativeObjectOutputs->'%(NativeLinkerInputPath)')"
     Outputs="%(_ReadyToRunNativeObjectOutputs.Identity)"
-    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho'">
+    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho' And '$(PublishReadyToRunCreateSharedLibrary)' != 'false'">
 
     <PropertyGroup>
       <SharedLibraryInstallName Condition="'$(SharedLibraryInstallName)' == ''">@rpath/%(_ReadyToRunNativeObjectOutputs.Filename)%(_ReadyToRunNativeObjectOutputs.Extension)</SharedLibraryInstallName>

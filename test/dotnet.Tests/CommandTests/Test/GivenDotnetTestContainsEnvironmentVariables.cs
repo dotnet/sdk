@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaCsproj()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain(EnvironmentVariable2)
                   .And.Contain(EnvironmentVariable3);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaDll()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain(EnvironmentVariable2)
                   .And.Contain(EnvironmentVariable3);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")

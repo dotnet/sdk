@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -11,6 +12,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -64,7 +66,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var sdkVersion = Product.Version;
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
-        var tempPackagesDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
+        var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                                       filePermissionSetter: null,
                                       new FirstPartyNuGetPackageSigningVerifier(),
@@ -86,7 +88,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         else
         {
-            // this updates all the manifests 
+            // this updates all the manifests
             var manifests = _workloadResolver.GetInstalledManifests();
             await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
@@ -137,7 +139,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
         var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
         var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray());
+        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
         if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -163,7 +165,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
             if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
             {
-                var updatableWorkloads = JsonSerializer.Deserialize<string[]>(File.ReadAllText(adUpdatesFile));
+                var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
@@ -353,7 +355,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
                     throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
                 }
 
-                var workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(band, downloadedPackageVersion.ToString());
+                var workloadSetVersion = band.GetWorkloadSetPackageVersion(downloadedPackageVersion.ToString());
                 File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
             }
 
@@ -528,3 +530,6 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
     private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
 }
+
+[JsonSerializable(typeof(string[]))]
+internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;

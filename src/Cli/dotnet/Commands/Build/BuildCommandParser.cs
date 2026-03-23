@@ -2,21 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
 internal static class BuildCommandParser
 {
-    private static readonly Command Command = SetAction(BuildCommandDefinition.Create());
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command SetAction(Command command)
+    public static void ConfigureCommand(BuildCommandDefinition command)
     {
         command.SetAction(BuildCommand.Run);
-        return command;
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
     }
 }

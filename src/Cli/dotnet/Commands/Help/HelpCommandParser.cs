@@ -7,16 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.Help;
 
 internal static class HelpCommandParser
 {
-    private static readonly Command Command = SetAction(HelpCommandDefinition.Create());
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command SetAction(Command command)
+    public static void ConfigureCommand(HelpCommandDefinition command)
     {
         command.SetAction(HelpCommand.Run);
-        return command;
     }
 }

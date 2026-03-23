@@ -374,6 +374,11 @@
         <target state="translated">NETSDK1156: 找不到 .NET 主機可執行檔 '{0}'。</target>
         <note>{StrBegins="NETSDK1156: "}</note>
       </trans-unit>
+      <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
+        <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
+        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
+      </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
         <target state="translated">NETSDK1055: DotnetTool 並不支援低於 netcoreapp2.1 的目標架構。</target>
@@ -863,7 +868,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
         <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
-        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <target state="translated">NETSDK1234: RoslynCompilerType 'Framework' 已遭棄用，並將在未來版本中移除。如需詳細資訊，請參閱 {0}。</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
@@ -1047,11 +1052,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="translated">NETSDK1200: 如果 UseArtifactsPath 設定為 true 且未設定 ArtifactsPath，則必須有 Directory.Build.props 檔案，才能判斷成品資料夾的位置。</target>
         <note>{StrBegins="NETSDK1200: "}</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: 目前的 Visual Studio 版本不支援將 {0} {1} 設定為目標。請將 {0} {2} 或更低版本設定為目標，或是使用 Visual Studio 版本 {3} 或更新版本</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>

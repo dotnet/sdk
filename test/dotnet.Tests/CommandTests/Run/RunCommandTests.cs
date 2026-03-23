@@ -23,23 +23,22 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             entryPointFileFullPath: null,
             launchProfile: null,
             noLaunchProfile: false,
-            noLaunchProfileArguments,
+            noLaunchProfileArguments: noLaunchProfileArguments,
             device: null,
             listDevices: false,
             noRestore: false,
             noCache: false,
             interactive: false,
-            MSBuildArgs.FromOtherArgs([]),
+            msbuildArgs: MSBuildArgs.FromOtherArgs([]),
             applicationArgs: applicationArgs ?? [],
             readCodeFromStdin: false,
-            environmentVariables: new Dictionary<string, string>(),
-            msbuildRestoreProperties: new(new Dictionary<string, string>()));
+            environmentVariables: new Dictionary<string, string>());
 
     [Fact]
     public void EnvironmentVariableExpansion_Project()
     {
         var testAppName = "AppThatOutputsDotnetLaunchProfile";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
 
         var testProjectDirectory = testInstance.Path;
@@ -75,7 +74,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Executable_DefaultWorkingDirectory()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
@@ -99,7 +98,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Executable_NoLaunchProfileArguments()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
@@ -122,7 +121,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Executable_ApplicationArguments()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");

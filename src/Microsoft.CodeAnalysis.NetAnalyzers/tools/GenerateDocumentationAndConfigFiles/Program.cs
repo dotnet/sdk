@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -270,7 +271,7 @@ namespace GenerateDocumentationAndConfigFiles
                     fileContents =
                         $"""
                         <Project>
-                          <!-- 
+                          <!--
                             PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
                             This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
                           -->
@@ -292,7 +293,7 @@ namespace GenerateDocumentationAndConfigFiles
                     {
                         return $"""
 
-                              <!-- 
+                              <!--
                                 This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
                                 This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
                               -->
@@ -318,7 +319,7 @@ namespace GenerateDocumentationAndConfigFiles
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $"""
 
-                      <!-- 
+                      <!--
                         This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
                       -->
                       <PropertyGroup>
@@ -1153,7 +1154,7 @@ namespace GenerateDocumentationAndConfigFiles
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
             string actual = File.ReadAllText(fileWithPath);
-            if (actual != fileContents)
+            if (actual.Trim() != fileContents.Trim())
             {
                 fileNamesWithValidationFailures.Add(fileWithPath);
             }
@@ -1560,7 +1561,7 @@ namespace GenerateDocumentationAndConfigFiles
                 {
                     builder.AppendLine($"""
 
-                          <!-- MSBuild properties to thread to the analyzers as options --> 
+                          <!-- MSBuild properties to thread to the analyzers as options -->
                           <ItemGroup>
                         """);
                     foreach (var compilerVisibleProperty in compilerVisibleProperties)

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -10,7 +11,7 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>
+    internal partial class InstantiateCommand
     {
         internal static List<InvalidTemplateOptionResult> GetInvalidOptions(IEnumerable<TemplateResult> templates)
         {
@@ -153,13 +154,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 reporter.WriteLine(LocalizableStrings.InvalidParameterTemplateHint);
                 var example = Example
                     .For<NewCommand>(args.ParseResult)
-                    .WithArgument(CommandDefinition.New.ShortNameArgument, templateGroup.ShortNames[0]);
-                var language = matchInfos.Where(mi => mi.Language != null).FirstOrDefault()?.Language;
+                    .WithArguments(templateGroup.ShortNames[0]);
+
+                var language = matchInfos.FirstOrDefault(mi => mi.Language != null)?.Language;
                 if (language != null)
                 {
-                    example.WithOption(language.Option, language.GetValueOrDefault<string>()!);
+                    example = example.WithOption(_ => language.Option, language.GetValueOrDefault<string>());
                 }
-                example.WithHelpOption();
+                example = example.WithHelpOption();
                 reporter.WriteCommand(example);
             }
 

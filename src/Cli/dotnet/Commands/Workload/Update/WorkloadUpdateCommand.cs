@@ -16,7 +16,9 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
-internal class WorkloadUpdateCommand : InstallingWorkloadCommand
+// Does not specialize the definition to WorkloadUpdateCommandDefinition
+// since it's used from both `restore` and `update` commands.
+internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
 {
     private readonly bool _adManifestOnlyOption;
     private readonly bool _printRollbackDefinitionOnly;
@@ -24,6 +26,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
     private readonly WorkloadHistoryRecorder _recorder;
     private readonly bool _isRestoring;
     private readonly bool _shouldShutdownInstaller;
+
     public WorkloadUpdateCommand(
         ParseResult parseResult,
         IReporter reporter = null,
@@ -37,12 +40,18 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson, verbosityOptions: WorkloadUpdateCommandParser.VerbosityOption)
+              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
 
     {
-        _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
-        _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
-        _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
+        if (Definition is WorkloadUpdateCommandDefinition updateDef)
+        {
+            _fromPreviousSdk = parseResult.GetValue(updateDef.FromPreviousSdkOption);
+            _adManifestOnlyOption = parseResult.GetValue(updateDef.AdManifestOnlyOption);
+            _printRollbackDefinitionOnly = parseResult.GetValue(updateDef.PrintRollbackOption);
+            _fromHistorySpecified = parseResult.GetValue(updateDef.FromHistoryOption);
+            _historyManifestOnlyOption = !string.IsNullOrWhiteSpace(parseResult.GetValue(updateDef.HistoryManifestOnlyOption));
+        }
+
         var resolvedReporter = _printDownloadLinkOnly || _printRollbackDefinitionOnly ? NullReporter.Instance : Reporter;
 
         _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter,
@@ -63,8 +72,6 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
         }
 
-        _fromHistorySpecified = parseResult.GetValue(WorkloadUpdateCommandParser.FromHistoryOption);
-        _historyManifestOnlyOption = !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadUpdateCommandParser.HistoryManifestOnlyOption));
         _isRestoring = isRestoring;
     }
 
@@ -93,14 +100,14 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
                 verifySignatures: VerifySignatures);
 
             var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
         else if (_adManifestOnlyOption)
         {
             bool? shouldUseWorkloadSetsPerGlobalJson = _shouldUseWorkloadSets ?? (SpecifiedWorkloadSetVersionInGlobalJson ? true : null);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                 _includePreviews,
-                shouldUseWorkloadSetsPerGlobalJson ?? ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
+                shouldUseWorkloadSetsPerGlobalJson ?? WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                 string.IsNullOrWhiteSpace(_fromCacheOption) ?
                     null :
                     new DirectoryPath(_fromCacheOption))

@@ -17,13 +17,19 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitionBase>
 {
-    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandDefinition.CmdPackageArgument)!;
+    private readonly PackageIdentityWithRange _packageId;
+
+    public PackageAddCommand(ParseResult parseResult)
+        : base(parseResult)
+    {
+        _packageId = parseResult.GetValue(Definition.PackageIdArgument);
+    }
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
@@ -44,7 +50,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         var tempDgFilePath = string.Empty;
 
-        if (!_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
+        if (!_parseResult.GetValue(Definition.NoRestoreOption))
         {
 
             try
@@ -134,7 +140,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
-        if (_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
+        if (_parseResult.GetValue(Definition.NoRestoreOption))
         {
             args.Add("--no-restore");
         }
@@ -153,9 +159,9 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         // Check disallowed options.
         ReadOnlySpan<Option> disallowedOptions =
         [
-            PackageAddCommandDefinition.FrameworkOption,
-            PackageAddCommandDefinition.SourceOption,
-            PackageAddCommandDefinition.PackageDirOption,
+            Definition.FrameworkOption,
+            Definition.SourceOption,
+            Definition.PackageDirOption,
         ];
         foreach (var option in disallowedOptions)
         {
@@ -167,8 +173,8 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         string? specifiedVersion = _packageId.HasVersion
             ? _packageId.VersionRange?.OriginalString ?? string.Empty
-            : _parseResult.GetValue(PackageAddCommandDefinition.VersionOption);
-        bool prerelease = _parseResult.GetValue(PackageAddCommandDefinition.PrereleaseOption);
+            : _parseResult.GetValue(Definition.VersionOption);
+        bool prerelease = _parseResult.GetValue(Definition.PrereleaseOption);
 
         if (specifiedVersion != null && prerelease)
         {
@@ -178,7 +184,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         var fullPath = Path.GetFullPath(path);
 
         // Create restore command, used also for obtaining MSBuild properties.
-        bool interactive = _parseResult.GetValue(PackageAddCommandDefinition.InteractiveOption);
+        bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(2)
@@ -203,7 +209,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         var central = SetCentralVersion(version);
         var local = SetLocalVersion(central != null ? null : version);
 
-        if (!_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
+        if (!_parseResult.GetValue(Definition.NoRestoreOption))
         {
             // Restore.
             int exitCode = command.Execute();
@@ -226,7 +232,11 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
                 {
                     var lockFile = new LockFileFormat().Read(projectAssetsFile);
                     var library = lockFile.Libraries.FirstOrDefault(l => string.Equals(l.Name, _packageId.Id, StringComparison.OrdinalIgnoreCase));
-                    if (library != null)
+                    if (library == null)
+                    {
+                        Reporter.Verbose.WriteLine($"Package '{_packageId.Id}' not found in assets file: {projectAssetsFile}");
+                    }
+                    else
                     {
                         var restoredVersion = library.Version.ToString();
                         if (central is { } centralValue)
@@ -323,8 +333,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             {
                 // Get the ItemGroup to add a PackageVersion to or create a new one.
                 var itemGroup = directoryPackagesPropsProject.Xml.ItemGroups
-                        .Where(e => e.Items.Any(i => string.Equals(i.ItemType, packageVersionItemType, StringComparison.OrdinalIgnoreCase)))
-                        .FirstOrDefault()
+                        .FirstOrDefault(e => e.Items.Any(i => string.Equals(i.ItemType, packageVersionItemType, StringComparison.OrdinalIgnoreCase)))
                     ?? directoryPackagesPropsProject.Xml.AddItemGroup();
 
                 // Add a PackageVersion item.
