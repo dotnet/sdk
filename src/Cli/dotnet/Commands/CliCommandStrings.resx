@@ -867,6 +867,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
     <value>No - keep all source files</value>
   </data>
+  <data name="ProjectConvertDuplicateRefFolderName" xml:space="preserve">
+    <value>Multiple referenced files would be converted into the same directory: '{0}'</value>
+    <comment>{0} is the target directory path.</comment>
+  </data>
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>

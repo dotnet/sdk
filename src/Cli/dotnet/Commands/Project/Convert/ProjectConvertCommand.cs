@@ -48,7 +48,29 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
 
-        var (builder, projectInstance, evaluatedDirectives) = ConvertFile(file, targetDirectory, outputType: "Exe", isEntryPointFile: true);
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework, outputType: "Exe");
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            out var projectInstance,
+            out var evaluatedDirectives,
+            validateAllDirectives: !_force);
+
+        // When the entry point has #:ref directives, place all converted projects in subfolders.
+        bool hasRefs = evaluatedDirectives.Any(static d => d is CSharpDirective.Ref);
+        string entryPointName = Path.GetFileNameWithoutExtension(file);
+        string entryPointOutputDir = hasRefs ? Path.Combine(targetDirectory, entryPointName) : targetDirectory;
+
+        // Pre-validate ref target directories (check for duplicates and existing dirs).
+        if (hasRefs)
+        {
+            var usedFolderNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { entryPointName };
+            ValidateRefTargetDirectories(evaluatedDirectives, Path.GetDirectoryName(file)!,
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase), usedFolderNames);
+        }
+
+        ConvertFile(file, entryPointOutputDir, outputType: "Exe", isEntryPointFile: true);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
@@ -60,7 +82,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Copy or move over included items.
         foreach (var item in includeItems)
         {
-            string targetItemFullPath = Path.Combine(targetDirectory, item.RelativePath);
+            string targetItemFullPath = Path.Combine(entryPointOutputDir, item.RelativePath);
 
             // Ignore already-copied files.
             if (File.Exists(targetItemFullPath))
@@ -117,19 +139,26 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         {
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
 
-            var builder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework, outputType: outputType);
+            VirtualProjectBuilder fileBuilder;
+            ProjectInstance fileProjectInstance;
+            ImmutableArray<CSharpDirective> fileDirectives;
 
-            builder.CreateProjectInstance(
-                projectCollection,
-                VirtualProjectBuildingCommand.ThrowingReporter,
-                out var projectInstance,
-                out var evaluatedDirectives,
-                validateAllDirectives: !_force);
-
-            // Pre-validate: ensure all ref target directories don't already exist before writing any files.
             if (isEntryPointFile)
             {
-                ValidateRefTargetDirectories(evaluatedDirectives, sourceDirectory, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                fileBuilder = builder;
+                fileProjectInstance = projectInstance;
+                fileDirectives = evaluatedDirectives;
+            }
+            else
+            {
+                fileBuilder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework, outputType: outputType);
+
+                fileBuilder.CreateProjectInstance(
+                    projectCollection,
+                    VirtualProjectBuildingCommand.ThrowingReporter,
+                    out fileProjectInstance,
+                    out fileDirectives,
+                    validateAllDirectives: !_force);
             }
 
             CreateDirectory(outputDirectory);
@@ -143,7 +172,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
-                VirtualProjectBuildingCommand.RemoveDirectivesFromFile(builder.EntryPointSourceFile, targetFile);
+                VirtualProjectBuildingCommand.RemoveDirectivesFromFile(fileBuilder.EntryPointSourceFile, targetFile);
             }
 
             // Create project file.
@@ -158,13 +187,13 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
                 VirtualProjectBuilder.WriteProjectFile(
                     writer,
-                    UpdateDirectives(evaluatedDirectives, sourceDirectory, outputDirectory),
+                    UpdateDirectives(fileDirectives, sourceDirectory, outputDirectory),
                     isVirtualProject: false,
-                    userSecretsId: isEntryPointFile ? DetermineUserSecretsId(projectInstance) : null,
-                    defaultProperties: GetDefaultProperties(projectInstance, outputType));
+                    userSecretsId: isEntryPointFile ? DetermineUserSecretsId(fileProjectInstance) : null,
+                    defaultProperties: GetDefaultProperties(fileProjectInstance, outputType));
             }
 
-            return (builder, projectInstance, evaluatedDirectives);
+            return (fileBuilder, fileProjectInstance, fileDirectives);
         }
 
         void CreateDirectory(string path)
@@ -225,12 +254,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
                 var refName = Path.GetFileNameWithoutExtension(refPath);
                 var refDir = Path.GetDirectoryName(refPath)!;
-                var refTargetDirectory = Path.Combine(refDir, refName);
-
-                if (Directory.Exists(refTargetDirectory))
-                {
-                    throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, refTargetDirectory);
-                }
+                var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
                 var (_, _, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, outputType: "Library", isEntryPointFile: false);
 
@@ -239,7 +263,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        void ValidateRefTargetDirectories(ImmutableArray<CSharpDirective> directives, string sourceDirectory, HashSet<string> visited)
+        void ValidateRefTargetDirectories(ImmutableArray<CSharpDirective> directives, string sourceDirectory, HashSet<string> visited, HashSet<string> usedFolderNames)
         {
             foreach (var directive in directives)
             {
@@ -257,7 +281,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
                 var refName = Path.GetFileNameWithoutExtension(refPath);
                 var refDir = Path.GetDirectoryName(refPath)!;
-                var refTargetDirectory = Path.Combine(refDir, refName);
+                var refTargetDirectory = Path.Combine(targetDirectory, refName);
+
+                if (!usedFolderNames.Add(refName))
+                {
+                    throw new GracefulException(CliCommandStrings.ProjectConvertDuplicateRefFolderName, refTargetDirectory);
+                }
 
                 if (Directory.Exists(refTargetDirectory))
                 {
@@ -272,7 +301,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     out _,
                     out var refDirectives,
                     validateAllDirectives: !_force);
-                ValidateRefTargetDirectories(refDirectives, refDir, visited);
+                ValidateRefTargetDirectories(refDirectives, refDir, visited, usedFolderNames);
             }
         }
 
@@ -396,15 +425,14 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 // Convert #:ref directives to #:project directives pointing to the referenced file's
-                // expected converted project location (i.e., sibling directory named after the .cs file).
+                // expected converted project location (i.e., subfolder of the output directory named after the .cs file).
                 if (directive is CSharpDirective.Ref refDirective)
                 {
                     var refPath = refDirective.ResolvedPath ?? Path.GetFullPath(Path.Combine(sourceDirectory, refDirective.Name.Replace('\\', '/')));
                     var refName = Path.GetFileNameWithoutExtension(refPath);
-                    var refDir = Path.GetDirectoryName(refPath)!;
 
-                    // The referenced file's converted project is expected at: <refDir>/<refName>/<refName>.csproj
-                    var convertedProjectPath = Path.Combine(refDir, refName, refName + ".csproj");
+                    // The referenced file's converted project is expected at: <targetDirectory>/<refName>/<refName>.csproj
+                    var convertedProjectPath = Path.Combine(targetDirectory, refName, refName + ".csproj");
                     var relativePath = Path.GetRelativePath(relativeTo: outputDirectory, path: convertedProjectPath);
 
                     result.Add(new CSharpDirective.Project(refDirective.Info, relativePath)

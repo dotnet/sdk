@@ -244,13 +244,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Pass();
 
         // #:ref lib.cs should become a ProjectReference to ../lib/lib.csproj
-        File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
+        File.ReadAllText(Path.Join(outputDirFullPath, "app", "app.csproj"))
             .Should().Contain($"""
                 <ProjectReference Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj" />
                 """);
 
         // The referenced library should have been converted too.
-        var libProjectDir = Path.Join(testInstance.Path, "lib");
+        var libProjectDir = Path.Join(outputDirFullPath, "lib");
         File.Exists(Path.Join(libProjectDir, "lib.csproj")).Should().BeTrue();
         File.Exists(Path.Join(libProjectDir, "lib.cs")).Should().BeTrue();
         File.ReadAllText(Path.Join(libProjectDir, "lib.csproj"))
@@ -258,7 +258,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         // The converted project should build and produce the same output.
         new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(outputDirFullPath)
+            .WithWorkingDirectory(Path.Join(outputDirFullPath, "app"))
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(expectedOutput);
@@ -314,26 +314,26 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Pass();
 
         // All three projects should exist.
-        File.Exists(Path.Join(outputDirFullPath, "app.csproj")).Should().BeTrue();
-        File.Exists(Path.Join(testInstance.Path, "lib1", "lib1.csproj")).Should().BeTrue();
-        File.Exists(Path.Join(testInstance.Path, "lib2", "lib2.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(outputDirFullPath, "app", "app.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(outputDirFullPath, "lib1", "lib1.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(outputDirFullPath, "lib2", "lib2.csproj")).Should().BeTrue();
 
         // lib1.csproj should reference lib2.
-        File.ReadAllText(Path.Join(testInstance.Path, "lib1", "lib1.csproj"))
+        File.ReadAllText(Path.Join(outputDirFullPath, "lib1", "lib1.csproj"))
             .Should().Contain($"""
                 <ProjectReference Include="..{Path.DirectorySeparatorChar}lib2{Path.DirectorySeparatorChar}lib2.csproj" />
                 """);
 
         // The converted project should build and produce the same output.
         new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(outputDirFullPath)
+            .WithWorkingDirectory(Path.Join(outputDirFullPath, "app"))
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(expectedOutput);
     }
 
     [Fact]
-    public void RefDirective_DirectoryAlreadyExists()
+    public void RefDirective_DuplicateFolderName()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
@@ -345,35 +345,142 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             </Project>
             """);
 
-        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
-            namespace MyLib;
-            public static class Greeter
-            {
-                public static string Greet(string name) => $"Hello, {name}!";
-            }
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
+        File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            namespace A;
+            public static class Lib { public static string Get() => "a"; }
+            """);
+
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
+        File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            namespace B;
+            public static class Lib { public static string Get() => "b"; }
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
-            #:ref lib.cs
-            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            #:ref a/lib.cs
+            #:ref b/lib.cs
+            Console.WriteLine(A.Lib.Get() + B.Lib.Get());
             """);
 
-        // Pre-create the directory that the ref conversion would target.
-        var libTargetDirectory = Path.Join(testInstance.Path, "lib");
-        Directory.CreateDirectory(libTargetDirectory);
-
-        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", "Project")
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        var duplicateTargetDirectory = Path.Join(outputDirFullPath, "lib");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, libTargetDirectory));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.ProjectConvertDuplicateRefFolderName, duplicateTargetDirectory));
 
         // Nothing should have been converted.
-        Directory.Exists(Path.Join(testInstance.Path, "Project")).Should().BeFalse();
+        Directory.Exists(outputDirFullPath).Should().BeFalse();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["app.cs", "Directory.Build.props", "lib", "lib.cs"]);
+            .Should().BeEquivalentTo(["a", "app.cs", "b", "Directory.Build.props"]);
+    }
+
+    [Fact]
+    public void RefDirective_DuplicateFolderName_Transitive()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // a/lib.cs is referenced by mid.cs
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
+        File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            namespace A;
+            public static class Lib { public static string Get() => "a"; }
+            """);
+
+        // mid.cs references a/lib.cs
+        File.WriteAllText(Path.Join(testInstance.Path, "mid.cs"), """
+            #:ref a/lib.cs
+            namespace Mid;
+            public static class Mid { public static string Get() => A.Lib.Get(); }
+            """);
+
+        // b/lib.cs would conflict with a/lib.cs (both "lib")
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
+        File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            namespace B;
+            public static class Lib { public static string Get() => "b"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref mid.cs
+            #:ref b/lib.cs
+            Console.WriteLine(Mid.Mid.Get() + B.Lib.Get());
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        var duplicateTargetDirectory = Path.Join(outputDirFullPath, "lib");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.ProjectConvertDuplicateRefFolderName, duplicateTargetDirectory));
+
+        // Nothing should have been converted.
+        Directory.Exists(outputDirFullPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void RefDirective_DuplicateFolderName_ViaInclude()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // a/lib.cs is referenced by the app directly
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
+        File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            namespace A;
+            public static class Lib { public static string Get() => "a"; }
+            """);
+
+        // b/lib.cs would conflict (same name "lib") - referenced via #:include-d file
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
+        File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            namespace B;
+            public static class Lib { public static string Get() => "b"; }
+            """);
+
+        // extra.cs is included and references b/lib.cs
+        File.WriteAllText(Path.Join(testInstance.Path, "extra.cs"), """
+            #:ref b/lib.cs
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref a/lib.cs
+            #:include extra.cs
+            Console.WriteLine(A.Lib.Get() + B.Lib.Get());
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        var duplicateTargetDirectory = Path.Join(outputDirFullPath, "lib");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.ProjectConvertDuplicateRefFolderName, duplicateTargetDirectory));
+
+        // Nothing should have been converted.
+        Directory.Exists(outputDirFullPath).Should().BeFalse();
     }
 
     [Fact]
