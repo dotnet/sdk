@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _templateDiscoveryTool = templateDiscoveryTool;
         }
 
-        [Fact]
+        [SkipOnOSXArm64Fact("dotnet tool run is not supported on macOS arm64 with this SDK configuration.")]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
