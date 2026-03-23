@@ -142,11 +142,32 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData("path$with$dollar", "%24")]
         [InlineData("path@with@at", "%40")]
         [InlineData("path'with'apostrophe", "%27")]
-        [InlineData("path*with*asterisk", "%2A")]
-        [InlineData("path?with?question", "%3F")]
         public void OutputPathWithSpecialCharactersIsEscaped(string pathPart, string expectedEscapeSequence)
         {
             // Test that MSBuild special characters in the output path are properly escaped
+            var workingDirectory = TestPathUtilities.FormatAbsolutePath(pathPart);
+            CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (PublishCommand)PublishCommand.FromArgs(new[] { "-o", "dist" }, msbuildPath);
+                
+                var tokens = command.GetArgumentTokensToMSBuild();
+                
+                // Find the PublishDir property token
+                var publishDirToken = tokens.FirstOrDefault(t => t.StartsWith("--property:PublishDir="));
+                publishDirToken.Should().NotBeNull("PublishDir property should be set");
+                
+                // The path should contain the expected escape sequence
+                publishDirToken.Should().Contain(expectedEscapeSequence, $"special characters should be escaped as {expectedEscapeSequence}");
+            });
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.AnyUnix)]
+        [InlineData("path*with*asterisk", "%2A")]
+        [InlineData("path?with?question", "%3F")]
+        public void OutputPathWithUnixOnlySpecialCharactersIsEscaped(string pathPart, string expectedEscapeSequence)
+        {
+            // Test that MSBuild special characters (* and ?) that are invalid on Windows are properly escaped on Unix
             var workingDirectory = TestPathUtilities.FormatAbsolutePath(pathPart);
             CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
             {
