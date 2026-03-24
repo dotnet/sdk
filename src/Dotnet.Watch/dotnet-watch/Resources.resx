@@ -138,6 +138,15 @@
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="-p"}{Locked="--project"}</comment>
   </data>
+  <data name="SelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="MoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="SearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
   <data name="Help_NonInteractive" xml:space="preserve">
     <value>
       Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
