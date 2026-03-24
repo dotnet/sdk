@@ -11,7 +11,7 @@ public class DotnetCliSnapshotTests : SdkTest
     public DotnetCliSnapshotTests(ITestOutputHelper log) : base(log) { }
 
     [MemberData(nameof(ShellNames))]
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/48817")]
     public async Task VerifyCompletions(string shellName)
     {
         var provider = CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);

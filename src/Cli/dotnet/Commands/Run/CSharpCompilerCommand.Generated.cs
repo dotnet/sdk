@@ -15,7 +15,7 @@ partial class CSharpCompilerCommand
         [
             "/unsafe-",
             "/checked-",
-            "/nowarn:1701,1702,IL2121,1701,1702",
+            "/nowarn:1701,1702,IL2121,1701,1702,8002",
             "/fullpaths",
             "/nostdlib+",
             "/errorreport:prompt",
