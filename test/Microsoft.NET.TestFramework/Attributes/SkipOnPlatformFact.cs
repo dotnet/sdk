@@ -12,7 +12,7 @@ namespace Microsoft.NET.TestFramework
     {
         public SkipOnPlatformFact(TestPlatforms platforms, string issue)
         {
-            if (PlatformMatchesCurrentOS(platforms))
+            if (PlatformsMatchCurrentOS(platforms))
             {
                 Skip = issue;
             }
@@ -20,13 +20,13 @@ namespace Microsoft.NET.TestFramework
 
         public SkipOnPlatformFact(TestPlatforms platforms, Architecture architecture, string issue)
         {
-            if (PlatformMatchesCurrentOS(platforms) && RuntimeInformation.ProcessArchitecture == architecture)
+            if (PlatformsMatchCurrentOS(platforms) && RuntimeInformation.ProcessArchitecture == architecture)
             {
                 Skip = issue;
             }
         }
 
-        private static bool PlatformMatchesCurrentOS(TestPlatforms platforms) =>
+        private static bool PlatformsMatchCurrentOS(TestPlatforms platforms) =>
             (platforms.HasFlag(TestPlatforms.Windows) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 || (platforms.HasFlag(TestPlatforms.Linux) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 || (platforms.HasFlag(TestPlatforms.OSX) && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
