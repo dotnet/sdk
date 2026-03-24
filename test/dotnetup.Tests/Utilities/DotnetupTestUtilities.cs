@@ -259,7 +259,7 @@ internal static class DotnetupTestUtilities
             {
                 throw new InvalidOperationException(
                     $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
-                    $"Delete the stale TFM directory and rebuild.");
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", tfmDirs)}");
             }
 
             foreach (string tfmDir in tfmDirs)
@@ -292,7 +292,7 @@ internal static class DotnetupTestUtilities
             {
                 throw new InvalidOperationException(
                     $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
-                    $"Delete the stale TFM directory and rebuild.");
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", fallbackTfmDirs)}");
             }
 
             foreach (string tfmDir in fallbackTfmDirs)
