@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -97,6 +98,33 @@ internal class TestEnvironment : IDisposable
                 // Files might be locked, but we tried our best to clean up
                 Console.WriteLine($"Warning: Could not clean up temp directory: {TempRoot}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Creates the on-disk component directories that <c>PruneStaleInstallations</c>
+    /// checks, so manifest entries are not discarded during tests.
+    /// Call this before adding installations via the manifest API.
+    /// TODO: Replace with a file-system mock so tests don't depend on real directories.
+    /// </summary>
+    /// <param name="rootPath">Install root (defaults to <see cref="InstallPath"/>).</param>
+    /// <param name="installations">One or more (component, version) pairs to stub.</param>
+    public void StubComponentDirectories(string? rootPath, params (InstallComponent Component, string Version)[] installations)
+    {
+        rootPath ??= InstallPath;
+        Directory.CreateDirectory(rootPath);
+
+        foreach (var (component, version) in installations)
+        {
+            string subPath = component switch
+            {
+                InstallComponent.SDK => Path.Combine("sdk", version),
+                InstallComponent.Runtime => Path.Combine("shared", InstallComponentExtensions.RuntimeFrameworkName, version),
+                InstallComponent.ASPNETCore => Path.Combine("shared", InstallComponentExtensions.AspNetCoreFrameworkName, version),
+                InstallComponent.WindowsDesktop => Path.Combine("shared", InstallComponentExtensions.WindowsDesktopFrameworkName, version),
+                _ => throw new ArgumentException($"Unknown component: {component}"),
+            };
+            Directory.CreateDirectory(Path.Combine(rootPath, subPath));
         }
     }
 

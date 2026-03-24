@@ -18,22 +18,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ManifestTests
 {
-    // Creates the on-disk directory that PruneStaleInstallations checks for a given
-    // installation. Without this, ReadManifest() prunes the entry immediately.
-    // TODO: Replace with a file-system mock so tests don't depend on real directories.
-    private static void CreateComponentDirectory(string rootPath, Installation installation)
-    {
-        string subPath = installation.Component switch
-        {
-            InstallComponent.SDK => Path.Combine("sdk", installation.Version),
-            InstallComponent.Runtime => Path.Combine("shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
-            InstallComponent.ASPNETCore => Path.Combine("shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
-            InstallComponent.WindowsDesktop => Path.Combine("shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
-            _ => throw new ArgumentException($"Unknown component: {installation.Component}"),
-        };
-        Directory.CreateDirectory(Path.Combine(rootPath, subPath));
-    }
-
     [Fact]
     public void NewManifestCreatesValidJson()
     {
@@ -177,7 +161,7 @@ public class ManifestTests
         };
 
         // Create the component directory so ReadManifest() pruning doesn't discard it.
-        CreateComponentDirectory(testEnv.InstallPath, installation);
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.103"));
 
         manifest.AddInstallation(installRoot, installation);
         var installations = manifest.GetInstallations(installRoot).ToList();
@@ -203,15 +187,14 @@ public class ManifestTests
         // Use real temp directories so pruning doesn't discard them.
         var root1Path = Path.Combine(testEnv.TempRoot, "dotnet-x64");
         var root2Path = Path.Combine(testEnv.TempRoot, "dotnet-arm64");
-        Directory.CreateDirectory(root1Path);
-        Directory.CreateDirectory(root2Path);
         var root1 = new DotnetInstallRoot(root1Path, InstallArchitecture.x64);
         var root2 = new DotnetInstallRoot(root2Path, InstallArchitecture.arm64);
 
+        testEnv.StubComponentDirectories(root1Path, (InstallComponent.SDK, "10.0.100"));
+        testEnv.StubComponentDirectories(root2Path, (InstallComponent.SDK, "10.0.100"));
+
         var sdk1 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
         var sdk2 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
-        CreateComponentDirectory(root1Path, sdk1);
-        CreateComponentDirectory(root2Path, sdk2);
 
         manifest.AddInstallation(root1, sdk1);
         manifest.AddInstallation(root2, sdk2);
@@ -295,8 +278,7 @@ public class ManifestTests
         var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
 
         // Create component directories so ReadManifest() pruning keeps them.
-        CreateComponentDirectory(testEnv.InstallPath, install100);
-        CreateComponentDirectory(testEnv.InstallPath, install200);
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
 
         // Initial state: GlobalJson spec + installation at 9.0.100
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -333,8 +315,7 @@ public class ManifestTests
         var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
 
         // Create component directories so ReadManifest() pruning keeps them.
-        CreateComponentDirectory(testEnv.InstallPath, install100);
-        CreateComponentDirectory(testEnv.InstallPath, install200);
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
 
         // Initial state: Explicit spec + installation at 9.0.100
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -645,9 +626,10 @@ public class ManifestTests
         var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
 
         // Create component directories so ReadManifest() pruning keeps them.
-        CreateComponentDirectory(testEnv.InstallPath, sdk);
-        CreateComponentDirectory(testEnv.InstallPath, runtime);
-        CreateComponentDirectory(testEnv.InstallPath, aspnet);
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.SDK, "9.0.100"),
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
 
         // Add SDK, Runtime, ASPNETCore
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
@@ -680,8 +662,9 @@ public class ManifestTests
         var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
 
         // Create component directories so ReadManifest() pruning keeps them.
-        CreateComponentDirectory(testEnv.InstallPath, runtime);
-        CreateComponentDirectory(testEnv.InstallPath, aspnet);
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
 
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
