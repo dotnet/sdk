@@ -22,6 +22,20 @@ internal enum ConfirmResult
     NeverAskAgain,
 }
 
+/// <summary>
+/// The logical action a keypress maps to inside a scroll loop.
+/// Pure data — no side effects, no nullable-string discrimination.
+/// </summary>
+internal enum ScrollAction
+{
+    None,
+    ScrollUp,
+    ScrollDown,
+    Accept,
+    Decline,
+    NeverAskAgain,
+}
+
 internal static class SpectreDisplayHelpers
 {
     /// <summary>
@@ -115,7 +129,41 @@ internal static class SpectreDisplayHelpers
                     }
 
                     var key = Console.ReadKey(intercept: true);
-                    (done, result, offset) = HandleScrollKey(key, offset, maxOffset, items, visibleCount, confirmPrompt, allowNeverAsk, ctx);
+                    var action = confirmPrompt is not null
+                        ? MapConfirmScrollKey(key, allowNeverAsk)
+                        : MapPlainScrollKey(key);
+
+                    switch (action)
+                    {
+                        case ScrollAction.ScrollUp:
+                            if (offset > 0)
+                            {
+                                offset--;
+                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                            }
+
+                            break;
+                        case ScrollAction.ScrollDown:
+                            if (offset < maxOffset)
+                            {
+                                offset++;
+                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                            }
+
+                            break;
+                        case ScrollAction.Accept:
+                            result = ConfirmResult.Yes;
+                            done = true;
+                            break;
+                        case ScrollAction.Decline:
+                            result = ConfirmResult.No;
+                            done = true;
+                            break;
+                        case ScrollAction.NeverAskAgain:
+                            result = ConfirmResult.NeverAskAgain;
+                            done = true;
+                            break;
+                    }
                 }
             });
 
@@ -126,49 +174,35 @@ internal static class SpectreDisplayHelpers
     }
 
     /// <summary>
-    /// Processes a single key press during the interactive scroll loop.
-    /// Returns the updated (done, result, offset) state.
+    /// Maps a keypress to a <see cref="ScrollAction"/> for a plain (non-confirm) scrollable list.
+    /// Only arrows and Enter are meaningful.
     /// </summary>
-    private static (bool Done, ConfirmResult Result, int Offset) HandleScrollKey(
-        ConsoleKeyInfo key, int offset, int maxOffset, List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk, LiveDisplayContext ctx)
+    internal static ScrollAction MapPlainScrollKey(ConsoleKeyInfo key)
     {
-        switch (key.Key)
+        return key.Key switch
         {
-            case ConsoleKey.UpArrow:
-                if (offset > 0)
-                {
-                    offset--;
-                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                }
+            ConsoleKey.UpArrow => ScrollAction.ScrollUp,
+            ConsoleKey.DownArrow => ScrollAction.ScrollDown,
+            ConsoleKey.Enter => ScrollAction.Accept,
+            _ => ScrollAction.None,
+        };
+    }
 
-                return (false, ConfirmResult.Yes, offset);
-            case ConsoleKey.DownArrow:
-                if (offset < maxOffset)
-                {
-                    offset++;
-                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                }
-
-                return (false, ConfirmResult.Yes, offset);
-            case ConsoleKey.Enter:
-                return (true, ConfirmResult.Yes, offset);
-            case ConsoleKey.N:
-                if (confirmPrompt is not null)
-                {
-                    return (true, ConfirmResult.No, offset);
-                }
-
-                return (false, ConfirmResult.Yes, offset);
-            case ConsoleKey.P:
-                if (confirmPrompt is not null && allowNeverAsk)
-                {
-                    return (true, ConfirmResult.NeverAskAgain, offset);
-                }
-
-                return (false, ConfirmResult.Yes, offset);
-            default:
-                return (false, ConfirmResult.Yes, offset);
-        }
+    /// <summary>
+    /// Maps a keypress to a <see cref="ScrollAction"/> for a scrollable list with a Y/N confirmation prompt.
+    /// </summary>
+    internal static ScrollAction MapConfirmScrollKey(ConsoleKeyInfo key, bool allowNeverAsk)
+    {
+        return key.Key switch
+        {
+            ConsoleKey.UpArrow => ScrollAction.ScrollUp,
+            ConsoleKey.DownArrow => ScrollAction.ScrollDown,
+            ConsoleKey.Enter => ScrollAction.Accept,
+            ConsoleKey.Y => ScrollAction.Accept,
+            ConsoleKey.N => ScrollAction.Decline,
+            ConsoleKey.P when allowNeverAsk => ScrollAction.NeverAskAgain,
+            _ => ScrollAction.None,
+        };
     }
 
     /// <summary>
