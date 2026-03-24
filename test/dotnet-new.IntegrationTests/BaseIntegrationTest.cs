@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages!;
+        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages;
 
         /// <summary>
         /// Gets the path to the Approvals snapshot directory, resolved relative to the test output directory.

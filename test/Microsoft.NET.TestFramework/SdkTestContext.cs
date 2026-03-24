@@ -8,8 +8,30 @@ namespace Microsoft.NET.TestFramework
 {
     public class SdkTestContext
     {
+        private string? _repoTemplatePackages;
+        private string? _testAssetsDirectory;
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
+
+        /// <summary>
+        /// Gets the path to the template_feed directory maintained in the repository root.
+        /// In Helix environments, this is set via the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.
+        /// </summary>
+        public string RepoTemplatePackages
+        {
+            get
+            {
+                if (_repoTemplatePackages == null)
+                {
+                    throw new InvalidOperationException("RepoTemplatePackages is not set. Ensure the 'template_feed' directory exists in the repo root or set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.");
+                }
+                return _repoTemplatePackages;
+            }
+            set
+            {
+                _repoTemplatePackages = value;
+            }
+        }
 
         public string TestExecutionDirectory
         {
@@ -27,7 +49,6 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private string? _testAssetsDirectory;
 
         public string TestAssetsDirectory
         {
@@ -58,12 +79,6 @@ namespace Microsoft.NET.TestFramework
         public string? NuGetExePath { get; set; }
 
         public string? ShippingPackagesDirectory { get; set; }
-
-        /// <summary>
-        /// Gets the path to the template_feed directory maintained in the repository root.
-        /// In Helix environments, this is set via the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.
-        /// </summary>
-        public string? RepoTemplatePackages { get; set; }
 
         /// <summary>
         /// Finds a single SDK acquisition artifact (tar.gz, pkg, deb, rpm) matching the specified pattern
