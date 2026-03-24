@@ -144,17 +144,17 @@ Exemples :
       </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Montez et descendez pour afficher plus de frameworks</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Entrer le texte à rechercher</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Sélectionner le framework cible pour exécuter :</target>
         <note />
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
