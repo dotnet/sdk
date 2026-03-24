@@ -32,20 +32,24 @@ internal class InstallerOrchestratorSingleton
     {
         try
         {
-            // Download to a temp file, which populates the download cache as a side effect.
-            // The temp file is cleaned up afterwards — only the cache entry matters.
-            var tempDir = Directory.CreateTempSubdirectory("dotnetup-predownload").FullName;
-            try
+            await Task.Run(() =>
             {
-                var archivePath = Path.Combine(tempDir, $"predownload{DotnetupUtilities.GetArchiveFileExtensionForPlatform()}");
-                ReleaseManifest releaseManifest = new();
-                using var downloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
-                await Task.Run(() => downloader.DownloadArchiveWithVerification(resolvedRequest.Request, resolvedRequest.ResolvedVersion, archivePath)).ConfigureAwait(false);
-            }
-            finally
-            {
-                try { Directory.Delete(tempDir, recursive: true); } catch { /* best-effort cleanup */ }
-            }
+                // Suppress the "another process is waiting" message — the real install
+                // may hold the mutex concurrently and that contention is expected.
+                ScopedMutex.SuppressWaitingCallback = true;
+                try
+                {
+                    // Reuse PrepareInstall which checks if already installed and populates the download cache.
+                    // The PreparedInstall is disposed immediately — only the cache side effect matters.
+                    // Use NullProgressTarget to avoid any console output from the background predownload.
+                    using var reporter = new LazyProgressReporter(new NullProgressTarget());
+                    using var prepared = Instance.PrepareInstall(resolvedRequest, reporter, out _);
+                }
+                finally
+                {
+                    ScopedMutex.SuppressWaitingCallback = false;
+                }
+            }).ConfigureAwait(false);
         }
         catch
         {
@@ -84,7 +88,7 @@ internal class InstallerOrchestratorSingleton
         var results = new List<InstallResult>();
         var failures = new List<InstallFailure>();
         var fatalExceptions = new List<Exception>();
-        var lockObj = new object();
+        var installResultCollectionLock = new object();
 
         // Use a BlockingCollection so commits can start as soon as downloads finish,
         // overlapping extraction/commit with still-running downloads.
@@ -96,8 +100,8 @@ internal class InstallerOrchestratorSingleton
         ScopedMutex.SuppressWaitingCallback = true;
         try
         {
-            var downloadTask = Task.Run(() => DownloadAll(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, lockObj));
-            ConsumeAndCommit(readyQueue, results, failures, fatalExceptions, lockObj);
+            var downloadTask = Task.Run(() => PrepareConcurrent(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
+            ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
             downloadTask.Wait();
         }
         finally
@@ -118,45 +122,50 @@ internal class InstallerOrchestratorSingleton
     /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.
     /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
     /// </summary>
-    private void DownloadAll(
+    private void PrepareConcurrent(
         IReadOnlyList<ResolvedInstallRequest> requests,
         IProgressReporter sharedReporter,
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
-        object lockObj)
+        object installResultCollectionLock)
     {
         const int maxConcurrentDownloads = 3;
 
-        Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
+        try
         {
-            try
+            Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
             {
-                var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
-                lock (lockObj)
+                try
                 {
-                    if (prepared is not null)
+                    var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
+                    lock (installResultCollectionLock)
                     {
-                        readyQueue.Add(prepared);
-                    }
-                    else if (existingResult is not null)
-                    {
-                        results.Add(existingResult);
+                        if (prepared is not null)
+                        {
+                            readyQueue.Add(prepared);
+                        }
+                        else if (existingResult is not null)
+                        {
+                            results.Add(existingResult);
+                        }
                     }
                 }
-            }
-            catch (DotnetInstallException ex)
-            {
-                lock (lockObj) { failures.Add(new InstallFailure(request, ex)); }
-            }
-            catch (Exception ex)
-            {
-                lock (lockObj) { fatalExceptions.Add(ex); }
-            }
-        });
-
-        readyQueue.CompleteAdding();
+                catch (DotnetInstallException ex)
+                {
+                    lock (installResultCollectionLock) { failures.Add(new InstallFailure(request, ex)); }
+                }
+                catch (Exception ex)
+                {
+                    lock (installResultCollectionLock) { fatalExceptions.Add(ex); }
+                }
+            });
+        }
+        finally
+        {
+            readyQueue.CompleteAdding();
+        }
     }
 
     /// <summary>
@@ -164,12 +173,12 @@ internal class InstallerOrchestratorSingleton
     /// CommitPreparedInstall acquires the install-state mutex, so commits are serialized.
     /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
     /// </summary>
-    private void ConsumeAndCommit(
+    private void ConsumeConcurrentPreparedInstallsAndCommit(
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
-        object lockObj)
+        object installResultCollectionLock)
     {
         var committedInstalls = new List<PreparedInstall>();
         try
@@ -177,7 +186,12 @@ internal class InstallerOrchestratorSingleton
             foreach (var prepared in readyQueue.GetConsumingEnumerable())
             {
                 committedInstalls.Add(prepared);
-                if (fatalExceptions.Count > 0)
+
+                // Skip committing if a fatal error has already occurred on another thread.
+                // Read under the lock because the download threads write fatalExceptions under the same lock.
+                bool facedFatalError;
+                lock (installResultCollectionLock) { facedFatalError = fatalExceptions.Count > 0; }
+                if (facedFatalError)
                 {
                     continue;
                 }
@@ -188,11 +202,11 @@ internal class InstallerOrchestratorSingleton
                 }
                 catch (DotnetInstallException ex)
                 {
-                    lock (lockObj) { failures.Add(new InstallFailure(prepared.ResolvedRequest, ex)); }
+                    lock (installResultCollectionLock) { failures.Add(new InstallFailure(prepared.ResolvedRequest, ex)); }
                 }
                 catch (Exception ex)
                 {
-                    lock (lockObj) { fatalExceptions.Add(ex); }
+                    lock (installResultCollectionLock) { fatalExceptions.Add(ex); }
                 }
             }
         }
@@ -212,16 +226,13 @@ internal class InstallerOrchestratorSingleton
         public ReleaseVersion Version => ResolvedRequest.ResolvedVersion;
         public DotnetInstall Install { get; }
         public DotnetArchiveExtractor Extractor { get; }
-        public ReleaseManifest ReleaseManifest { get; }
-        public bool WasAlreadyInstalled { get; init; }
 
         public PreparedInstall(ResolvedInstallRequest resolvedRequest, DotnetInstall install,
-            DotnetArchiveExtractor extractor, ReleaseManifest releaseManifest)
+            DotnetArchiveExtractor extractor)
         {
             ResolvedRequest = resolvedRequest;
             Install = install;
             Extractor = extractor;
-            ReleaseManifest = releaseManifest;
         }
 
         public void Dispose() => Extractor.Dispose();
@@ -280,7 +291,7 @@ internal class InstallerOrchestratorSingleton
         DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
         extractor.Prepare();
 
-        return new PreparedInstall(resolvedRequest, install, extractor, releaseManifest);
+        return new PreparedInstall(resolvedRequest, install, extractor);
     }
 #pragma warning restore CA1822
 
@@ -312,7 +323,7 @@ internal class InstallerOrchestratorSingleton
                 {
                     Component = prepared.Request.Component,
                     Version = prepared.Version.ToString(),
-                    Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents]
+                    Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents],
                 });
             }
             else
