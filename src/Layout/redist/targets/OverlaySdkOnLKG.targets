@@ -49,14 +49,25 @@
       <_BuiltNETCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)/**/*" />
     </ItemGroup>
 
-    <Copy Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0NETCoreSharedFxDir)' != ''"
-          SourceFiles="@(_BuiltNETCoreSharedFxFile)"
-          DestinationFiles="@(_BuiltNETCoreSharedFxFile->'%(_Stage0NETCoreSharedFxDir.Identity)/%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="false" />
-
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+  </Target>
+
+  <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).
+       The target runs once per _Stage0NETCoreSharedFxDir item, capturing its Identity in a property
+       that can be safely used inside the @(_BuiltNETCoreSharedFxFile) transform. -->
+  <Target Name="OverwriteStage0SharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0NETCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0NETCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0NETCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltNETCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltNETCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
   </Target>
 
   <Target Name="PublishTestWorkloads"
