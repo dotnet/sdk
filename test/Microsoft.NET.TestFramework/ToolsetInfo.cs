@@ -199,6 +199,12 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_ROOT(x86)", DotNetRoot);
             }
 
+            // MSBuild's task host needs DOTNET_HOST_PATH to locate the dotnet
+            // executable when launching out-of-proc TaskHostFactory tasks (e.g.
+            // ILLink's ComputeManagedAssemblies). Without it the task host falls
+            // back to an incorrect path and fails with MSB4216.
+            environment["DOTNET_HOST_PATH"] = DotNetHostPath;
+
             if (!string.IsNullOrEmpty(CliHomePath))
             {
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
