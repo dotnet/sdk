@@ -25,7 +25,7 @@ internal sealed class HotReloadDotNetWatcher
 
     internal Task? Test_FileChangesCompletedTask { get; set; }
 
-    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
+    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory, TargetFrameworkSelectionPrompt? targetFrameworkSelectionPrompt)
     {
         _context = context;
         _console = console;
@@ -41,7 +41,7 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             _rudeEditRestartPrompt = new RestartPrompt(context.Logger, consoleInput, noPrompt ? true : null);
-            _targetFrameworkSelectionPrompt = new TargetFrameworkSelectionPrompt(consoleInput);
+            _targetFrameworkSelectionPrompt = targetFrameworkSelectionPrompt;
         }
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(

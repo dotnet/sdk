@@ -32,8 +32,14 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
 
         if (selectTfm)
         {
-            await App.WaitUntilOutputContains("❔ Select target framework");
-            App.SendKey(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? '2' : '1');
+            await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+            // Type the target framework to search and select it via Spectre.Console's search
+            foreach (var c in tfm)
+            {
+                App.SendKey(c);
+            }
+            App.SendKey('\r');
         }
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
