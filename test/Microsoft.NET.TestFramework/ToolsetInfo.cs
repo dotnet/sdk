@@ -155,7 +155,7 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
+        public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
             if (ShouldUseFullFrameworkMSBuild)
             {

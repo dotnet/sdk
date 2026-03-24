@@ -4,6 +4,30 @@
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     /// <summary>
+    /// Specifies how the manifest provider should handle corrupt or missing workload manifests.
+    /// </summary>
+    public enum ManifestCorruptionFailureMode
+    {
+        /// <summary>
+        /// Attempt to repair using the CorruptionRepairer if available, otherwise throw.
+        /// This is the default mode for commands that modify workloads.
+        /// </summary>
+        Repair,
+
+        /// <summary>
+        /// Throw a helpful error message suggesting how to fix the issue.
+        /// Use this for read-only/info commands.
+        /// </summary>
+        Throw,
+
+        /// <summary>
+        /// Silently ignore missing manifests and continue.
+        /// Use this for history recording or other scenarios where missing manifests are acceptable.
+        /// </summary>
+        Ignore
+    }
+
+    /// <summary>
     /// This abstracts out the process of locating and loading a set of manifests to be loaded into a
     /// workload manifest resolver and resolved into a single coherent model.
     /// </summary>

@@ -23,6 +23,7 @@
     <File Path="test.sh" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.shproj" Id="374c251e-bf99-45b2-a58e-40229ed8aaca" />
     <Project Path="src/Microsoft.DotNet.ProjectTools/Microsoft.DotNet.ProjectTools.csproj" />
     <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
@@ -39,29 +40,31 @@
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets" />
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" />
   </Folder>
-  <Folder Name="/src/BuiltInTools/">
-    <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.Package.csproj" />
-    <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.shproj" />
-    <Project Path="src/BuiltInTools/BrowserRefresh/Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
-    <Project Path="src/BuiltInTools/dotnet-format/dotnet-format.csproj" />
-    <Project Path="src/BuiltInTools/dotnet-watch/dotnet-watch.csproj" />
-    <Project Path="src/BuiltInTools/DotNetDeltaApplier/Microsoft.Extensions.DotNetDeltaApplier.csproj" />
-    <Project Path="src/BuiltInTools/DotNetWatchTasks/DotNetWatchTasks.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.Package.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.shproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.Package.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.shproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.Package.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
-    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.Package.csproj" />
-    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" />
-    <Project Path="src/BuiltInTools/Watch.Aspire/Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
-    <Project Path="src/BuiltInTools/Watch/Microsoft.DotNet.HotReload.Watch.csproj" />
-    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
-    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
+  <Folder Name="/src/Dotnet.Format/">
+    <Project Path="src/Dotnet.Format/dotnet-format/dotnet-format.csproj" />
+  </Folder>
+  <Folder Name="/src/Dotnet.Watch/">
+    <Project Path="src/Dotnet.Watch/AspireService/Microsoft.WebTools.AspireService.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/AspireService/Microsoft.WebTools.AspireService.shproj" />
+    <Project Path="src/Dotnet.Watch/BrowserRefresh/Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
+    <Project Path="src/Dotnet.Watch/dotnet-watch/dotnet-watch.csproj" />
+    <Project Path="src/Dotnet.Watch/DotNetDeltaApplier/Microsoft.Extensions.DotNetDeltaApplier.csproj" />
+    <Project Path="src/Dotnet.Watch/DotNetWatchTasks/DotNetWatchTasks.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.shproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.Host/Microsoft.DotNet.HotReload.Agent.Host.shproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadClient/Microsoft.DotNet.HotReload.Client.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" />
+    <Project Path="src/Dotnet.Watch/Watch.Aspire/Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
+    <Project Path="src/Dotnet.Watch/Watch/Microsoft.DotNet.HotReload.Watch.csproj" />
+    <Project Path="src/Dotnet.Watch/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
+    <Project Path="src/Dotnet.Watch/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
@@ -200,7 +203,6 @@
   </Folder>
   <Folder Name="/src/Tasks/">
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj" />
-    <Project Path="src/Tasks/Microsoft.NET.Build.Tasks.UnitTests/Microsoft.NET.Build.Tasks.UnitTests.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj" />
     <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
@@ -318,7 +320,8 @@
     <Project Path="benchmarks/MicroBenchmark/MicroBenchmark.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Extensions.Tasks.Tests/Microsoft.NET.Build.Extensions.Tasks.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Tasks.Tests/Microsoft.NET.Build.Tasks.Tests.csproj" />
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
     <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
     <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />
