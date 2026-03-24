@@ -47,6 +47,11 @@
       <_Stage0NETCoreSharedFxDir Remove="$(TestHostDotNetRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
       <_BuiltNETCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)/**/*" />
+
+      <_Stage0AspNetCoreSharedFxDir Include="$([System.IO.Directory]::GetDirectories('$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App', '$(MajorMinorVersion).*'))" />
+      <_Stage0AspNetCoreSharedFxDir Remove="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+
+      <_BuiltAspNetCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)/**/*" />
     </ItemGroup>
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
@@ -55,8 +60,8 @@
   </Target>
 
   <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).
-       The target runs once per _Stage0NETCoreSharedFxDir item, capturing its Identity in a property
-       that can be safely used inside the @(_BuiltNETCoreSharedFxFile) transform. -->
+       Each target runs once per stage0 shared framework directory, capturing its Identity in a
+       property that can be safely used inside the item transform. -->
   <Target Name="OverwriteStage0SharedFxForCrossCompilation"
           AfterTargets="OverlaySdkOnLKG"
           Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0NETCoreSharedFxDir)' != ''"
@@ -67,6 +72,19 @@
 
     <Copy SourceFiles="@(_BuiltNETCoreSharedFxFile)"
           DestinationFiles="@(_BuiltNETCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="OverwriteStage0AspNetCoreSharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0AspNetCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0AspNetCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0AspNetCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltAspNetCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltAspNetCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="false" />
   </Target>
 
