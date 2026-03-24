@@ -6,7 +6,7 @@ using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTests(ITestOutputHelper log) : RunFileTestBase(log)
+public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBase(log)
 {
     /// <summary>
     /// <c>dotnet run file.cs</c> succeeds without a project file.
