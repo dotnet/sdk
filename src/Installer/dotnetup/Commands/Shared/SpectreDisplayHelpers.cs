@@ -133,37 +133,7 @@ internal static class SpectreDisplayHelpers
                         ? MapConfirmScrollKey(key, allowNeverAsk)
                         : MapPlainScrollKey(key);
 
-                    switch (action)
-                    {
-                        case ScrollAction.ScrollUp:
-                            if (offset > 0)
-                            {
-                                offset--;
-                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                            }
-
-                            break;
-                        case ScrollAction.ScrollDown:
-                            if (offset < maxOffset)
-                            {
-                                offset++;
-                                ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
-                            }
-
-                            break;
-                        case ScrollAction.Accept:
-                            result = ConfirmResult.Yes;
-                            done = true;
-                            break;
-                        case ScrollAction.Decline:
-                            result = ConfirmResult.No;
-                            done = true;
-                            break;
-                        case ScrollAction.NeverAskAgain:
-                            result = ConfirmResult.NeverAskAgain;
-                            done = true;
-                            break;
-                    }
+                    (done, result, offset) = ApplyScrollAction(action, offset, maxOffset, items, visibleCount, confirmPrompt, allowNeverAsk, ctx);
                 }
             });
 
@@ -171,6 +141,41 @@ internal static class SpectreDisplayHelpers
         RenderFinalScrollView(items, confirmPrompt, result);
 
         return result;
+    }
+
+    /// <summary>
+    /// Applies a <see cref="ScrollAction"/> to the current scroll state and returns the updated state.
+    /// </summary>
+    private static (bool Done, ConfirmResult Result, int Offset) ApplyScrollAction(
+        ScrollAction action, int offset, int maxOffset, List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk, LiveDisplayContext ctx)
+    {
+        switch (action)
+        {
+            case ScrollAction.ScrollUp:
+                if (offset > 0)
+                {
+                    offset--;
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            case ScrollAction.ScrollDown:
+                if (offset < maxOffset)
+                {
+                    offset++;
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                }
+
+                return (false, ConfirmResult.Yes, offset);
+            case ScrollAction.Accept:
+                return (true, ConfirmResult.Yes, offset);
+            case ScrollAction.Decline:
+                return (true, ConfirmResult.No, offset);
+            case ScrollAction.NeverAskAgain:
+                return (true, ConfirmResult.NeverAskAgain, offset);
+            default:
+                return (false, ConfirmResult.Yes, offset);
+        }
     }
 
     /// <summary>
