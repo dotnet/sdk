@@ -311,14 +311,14 @@ namespace Microsoft.TemplateEngine.TestHelper
                 {
                     var finishedTask = await Task.WhenAny(tasks);
                     tasks.Remove(finishedTask);
-                    (PackageSource foundSource, IEnumerable<IPackageSearchMetadata> foundPackages) = await finishedTask;
-                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {foundPackages.Count()} packages.");
+                    (PackageSource foundSource, IEnumerable<IPackageSearchMetadata>? foundPackages) = await finishedTask;
+                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {foundPackages?.Count()} packages.");
                     if (foundPackages == null)
                     {
                         continue;
                     }
                     atLeastOneSourceValid = true;
-                    IPackageSearchMetadata? matchedVersion = foundPackages!.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                    IPackageSearchMetadata? matchedVersion = foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
                     if (matchedVersion != null)
                     {
                         _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {matchedVersion.Identity.Id}@{matchedVersion.Identity.Version} package, cancelling other tasks.");
