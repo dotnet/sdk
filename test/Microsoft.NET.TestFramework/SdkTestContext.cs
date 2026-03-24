@@ -12,6 +12,7 @@ namespace Microsoft.NET.TestFramework
         private string? _testAssetsDirectory;
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
+        private string? _testPackages;
 
         /// <summary>
         /// Gets the path to the template_feed directory maintained in the repository root.
@@ -66,7 +67,21 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public string? TestPackages { get; set; }
+        public string TestPackages
+        {
+            get
+            {
+                if (_testPackages == null)
+                {
+                    throw new InvalidOperationException("TestPackages should never be null.");
+                }
+                return _testPackages;
+            }
+            set
+            {
+                _testPackages = value;
+            }
+        }
 
         //  For tests which want the global packages folder isolated in the repo, but
         //  can share it with other tests
