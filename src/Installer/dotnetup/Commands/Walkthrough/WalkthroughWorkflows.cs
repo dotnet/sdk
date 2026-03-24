@@ -245,7 +245,7 @@ internal class WalkthroughWorkflows
         var examples = BuildChannelExamples();
 
         var prompt = new SelectionPrompt<ChannelExample>()
-            .Title("[bold]Select an example channel to get started:[/]")
+            .Title(string.Format(CultureInfo.InvariantCulture, "[bold]Select an example channel to get started:[/] [{0}](Enter to confirm)[/]", dim))
             .PageSize(5)
             .HighlightStyle(Style.Parse(brand))
             .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
