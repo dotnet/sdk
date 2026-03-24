@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
@@ -19,6 +20,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     private readonly string? _outputDirectory;
     private readonly bool _force;
     private readonly bool _dryRun;
+    private readonly bool _deleteSource;
+    private readonly bool _interactive;
 
     public ProjectConvertCommand(ParseResult parseResult)
         : base(parseResult)
@@ -27,6 +30,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _outputDirectory = parseResult.GetValue(Definition.OutputOption)?.FullName;
         _force = parseResult.GetValue(Definition.ForceOption);
         _dryRun = parseResult.GetValue(Definition.DryRunOption);
+        _deleteSource = parseResult.GetValue(Definition.DeleteSourceOption);
+        _interactive = parseResult.GetValue(Definition.InteractiveOption);
     }
 
     public override int Execute()
@@ -43,7 +48,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
 
-        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFrameworkVersion);
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -54,7 +59,6 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
-
 
         CreateDirectory(targetDirectory);
 
@@ -68,7 +72,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
         else
         {
-            VirtualProjectBuilder.RemoveDirectivesFromFile(evaluatedDirectives, builder.EntryPointSourceFile.Text, targetFile);
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(builder.EntryPointSourceFile, targetFile);
         }
 
         // Create project file.
@@ -81,7 +85,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuilder.WriteProjectFile(writer, UpdateDirectives(evaluatedDirectives), isVirtualProject: false,
+            VirtualProjectBuilder.WriteProjectFile(
+                writer,
+                UpdateDirectives(evaluatedDirectives),
+                isVirtualProject: false,
                 userSecretsId: DetermineUserSecretsId(),
                 defaultProperties: GetDefaultProperties());
         }
@@ -99,7 +106,38 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
             CreateDirectory(targetItemDirectory);
-            CopyFile(item.FullPath, targetItemFullPath);
+
+            if (item.ItemType == "Compile")
+            {
+                if (_dryRun)
+                {
+                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, item.FullPath, targetItemFullPath);
+                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetItemFullPath);
+                }
+                else
+                {
+                    var sourceFile = SourceFile.Load(item.FullPath);
+                    VirtualProjectBuildingCommand.RemoveDirectivesFromFile(sourceFile, targetItemFullPath);
+                }
+            }
+            else
+            {
+                CopyFile(item.FullPath, targetItemFullPath);
+            }
+        }
+
+        // Handle deletion of source files if requested.
+        bool shouldDelete = _deleteSource || TryAskForDeleteSource(file);
+        if (shouldDelete)
+        {
+            // Delete the entry point file
+            DeleteFile(file);
+
+            // Delete all included items (e.g., via #:include directives and default items)
+            foreach (var item in includeItems)
+            {
+                DeleteFile(item.FullPath);
+            }
         }
 
         return 0;
@@ -131,13 +169,29 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
+        void DeleteFile(string path)
         {
-            string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
+            if (_dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldDeleteSourceFile, path);
+            }
+            else
+            {
+                File.Delete(path);
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertDeletedSourceFile, path);
+            }
+        }
+
+        IEnumerable<(string ItemType, string FullPath, string RelativePath)> FindIncludedItems()
+        {
+            string entryPointFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
 
             // Include only items we know are files.
-            string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
-            var items = itemTypes.SelectMany(t => projectInstance.GetItems(t));
+            var mapping = builder.GetItemMapping(projectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
+
+            var items = mapping.SelectMany(e => projectInstance.GetItems(e.ItemType));
+
+            var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in items)
             {
@@ -148,12 +202,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
-                // Exclude items that are not contained within the entry point file directory.
                 string itemFullPath = Path.GetFullPath(path: item.GetMetadataValue("FullPath"), basePath: entryPointFileDirectory);
-                if (!itemFullPath.StartsWith(entryPointFileDirectory, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
 
                 // Exclude items that do not exist.
                 if (!File.Exists(itemFullPath))
@@ -162,7 +211,32 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
-                yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
+
+                // Files outside the source directory should be copied into the target directory at the top level.
+                // Possibly with a number suffix to avoid conflicts.
+                // For C# files, this is needed so we can remove directives from them.
+                // For others, this is consistent but also we can omit the item groups from the converted project file and keep it simple.
+                if (itemRelativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+                {
+                    itemRelativePath = Path.GetFileName(itemFullPath);
+                    string fileNameWithoutExtension;
+                    string extension;
+                    if (!topLevelFileNames.Add(itemRelativePath))
+                    {
+                        fileNameWithoutExtension = Path.GetFileNameWithoutExtension(itemRelativePath);
+                        extension = Path.GetExtension(itemRelativePath);
+
+                        var counter = 1;
+                        do
+                        {
+                            counter++;
+                            itemRelativePath = $"{fileNameWithoutExtension}_{counter}{extension}";
+                        }
+                        while (!topLevelFileNames.Add(itemRelativePath));
+                    }
+                }
+
+                yield return (item.ItemType, FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
         }
 
@@ -234,7 +308,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         IEnumerable<(string name, string value)> GetDefaultProperties()
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion))
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
                 if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
@@ -249,9 +323,49 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     {
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
-        string targetDirectory = _outputDirectory
-            ?? TryAskForOutputDirectory(defaultValueRelative)
-            ?? defaultValue;
+
+        string targetDirectory;
+
+        // Use CLI-provided output directory if specified
+        if (_outputDirectory != null)
+        {
+            targetDirectory = _outputDirectory;
+        }
+        // In interactive mode, prompt for output directory
+        else if (_interactive)
+        {
+            try
+            {
+                var prompt = new TextPrompt<string>(string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative))
+                    .AllowEmpty()
+                    .Validate(path =>
+                    {
+                        // Determine the actual path to validate
+                        string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
+
+                        if (Directory.Exists(pathToValidate))
+                        {
+                            return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
+                        }
+
+                        return ValidationResult.Success();
+                    });
+
+                var answer = Spectre.Console.AnsiConsole.Prompt(prompt);
+                targetDirectory = string.IsNullOrWhiteSpace(answer) ? defaultValue : Path.GetFullPath(answer);
+            }
+            catch (Exception)
+            {
+                targetDirectory = defaultValue;
+            }
+        }
+        // Non-interactive mode, use default
+        else
+        {
+            targetDirectory = defaultValue;
+        }
+
+        // Validate that directory doesn't exist
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
@@ -260,26 +374,26 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return targetDirectory;
     }
 
-    private string? TryAskForOutputDirectory(string defaultValueRelative)
+    private bool TryAskForDeleteSource(string sourceFile)
     {
-        return InteractiveConsole.Ask<string?>(
-            string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
-            _parseResult,
-            (path, out result, [NotNullWhen(returnValue: false)] out error) =>
-            {
-                if (Directory.Exists(path))
-                {
-                    result = null;
-                    error = string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path));
-                    return false;
-                }
+        if (!_interactive)
+        {
+            return false;
+        }
 
-                result = path is null ? null : Path.GetFullPath(path);
-                error = null;
-                return true;
-            },
-            out var result)
-            ? result
-            : null;
+        try
+        {
+            var choice = Spectre.Console.AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[cyan]{Markup.Escape(CliCommandStrings.ProjectConvertAskDeleteSource)}[/]")
+                    .AddChoices([CliCommandStrings.ProjectConvertDeleteSourceChoiceYes, CliCommandStrings.ProjectConvertDeleteSourceChoiceNo])
+            );
+
+            return choice == CliCommandStrings.ProjectConvertDeleteSourceChoiceYes;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

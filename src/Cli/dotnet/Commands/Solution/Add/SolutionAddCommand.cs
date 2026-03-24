@@ -46,7 +46,7 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         _solutionFolderPath = parseResult.GetValue(Definition.SolutionFolderOption);
         _includeReferences = parseResult.GetValue(Definition.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
-        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
     }
 
     public override int Execute()
@@ -59,14 +59,22 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         // Get project paths from the command line arguments
         PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
 
-        IEnumerable<string> fullProjectPaths = _projects.Select(project =>
+        List<string> fullProjectPaths = _projects.Select(project =>
         {
             var fullPath = Path.GetFullPath(project);
             return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath) : fullPath;
-        });
+        }).ToList();
 
-        // Add projects to the solution
-        AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        // Check if we're working with a solution filter file
+        if (_solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
+        {
+            AddProjectsToSolutionFilter(fullProjectPaths);
+        }
+        else
+        {
+            // Add projects to the solution
+            AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        }
         return 0;
     }
 
@@ -103,9 +111,17 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
             relativeSolutionFolderPath = _solutionFolderPath;
         }
 
-        return string.IsNullOrEmpty(relativeSolutionFolderPath)
-            ? null
-            : solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath));
+        if (string.IsNullOrEmpty(relativeSolutionFolderPath))
+        {
+            return null;
+        }
+
+        // Check if a solution folder with this path already exists
+        // Solution folder paths should be unique, so use SingleOrDefault
+        var solutionFolderPath = GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath);
+        var existingFolder = solution.SolutionFolders.SingleOrDefault(f => f.Path == solutionFolderPath);
+        
+        return existingFolder ?? solution.AddFolder(solutionFolderPath);
     }
 
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
@@ -224,5 +240,69 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
                 AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
             }
         }
+    }
+
+    private void AddProjectsToSolutionFilter(IEnumerable<string> projectPaths)
+    {
+        // Solution filter files don't support --in-root or --solution-folder options
+        if (_inRoot || !string.IsNullOrEmpty(_solutionFolderPath))
+        {
+            throw new GracefulException(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
+        }
+
+        // Load the filtered solution to get the parent solution path and existing projects
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(_solutionFileFullPath);
+        string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
+
+        // Load the parent solution to validate projects exist in it
+        SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
+
+        // Get existing projects in the filter (already normalized to OS separator by CreateFromFilteredSolutionFile)
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+
+        // Get solution-relative paths for new projects
+        var newProjects = ValidateAndGetNewProjects(projectPaths, parentSolution, parentSolutionPath, existingProjects);
+
+        // Add new projects to the existing list and save
+        var allProjects = existingProjects.Concat(newProjects).OrderBy(p => p);
+        SlnfFileHelper.SaveSolutionFilter(_solutionFileFullPath, parentSolutionPath, allProjects);
+    }
+
+    private List<string> ValidateAndGetNewProjects(
+        IEnumerable<string> projectPaths,
+        SolutionModel parentSolution,
+        string parentSolutionPath,
+        HashSet<string> existingProjects)
+    {
+        var newProjects = new List<string>();
+        string parentSolutionDirectory = Path.GetDirectoryName(parentSolutionPath) ?? string.Empty;
+        
+        foreach (var projectPath in projectPaths)
+        {
+            string parentSolutionRelativePath = Path.GetRelativePath(parentSolutionDirectory, projectPath);
+
+            // Normalize to OS separator for consistent comparison
+            parentSolutionRelativePath = SlnfFileHelper.NormalizePathSeparatorsToOS(parentSolutionRelativePath);
+
+            // Check if project exists in parent solution
+            var projectInParent = parentSolution.FindProject(parentSolutionRelativePath);
+            if (projectInParent is null)
+            {
+                Reporter.Error.WriteLine(CliStrings.ProjectNotFoundInTheSolution, parentSolutionRelativePath, parentSolutionPath);
+                continue;
+            }
+
+            // Check if project is already in the filter
+            if (existingProjects.Contains(parentSolutionRelativePath))
+            {
+                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, parentSolutionRelativePath);
+                continue;
+            }
+
+            newProjects.Add(parentSolutionRelativePath);
+            Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, parentSolutionRelativePath);
+        }
+
+        return newProjects;
     }
 }

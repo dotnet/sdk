@@ -5,7 +5,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;

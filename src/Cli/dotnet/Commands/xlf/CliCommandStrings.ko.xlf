@@ -22,11 +22,6 @@
         <target state="translated">실제</target>
         <note />
       </trans-unit>
-      <trans-unit id="AdManifestOnlyOptionDescription">
-        <source>Only update advertising manifests.</source>
-        <target state="translated">광고 매니페스트만 업데이트합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdManifestPackageDoesNotExist">
         <source>Advertising manifest not updated. Manifest package for {0} doesn't exist.</source>
         <target state="translated">광고 매니페스트가 업데이트되지 않았습니다. {0}에 대한 매니페스트 패키지가 없습니다.</target>
@@ -35,26 +30,6 @@
       <trans-unit id="AdManifestUpdated">
         <source>Updated advertising manifest {0}.</source>
         <target state="translated">광고 매니페스트 {0}(을)를 업데이트했습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddAppFullName">
-        <source>Add one or more projects to a solution file.</source>
-        <target state="translated">솔루션 파일에 하나 이상의 프로젝트를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddProjectPathArgumentDescription">
-        <source>The paths to the projects to add to the solution.</source>
-        <target state="translated">솔루션에 추가할 프로젝트의 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddProjectPathArgumentName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddProjectSolutionFolderArgumentDescription">
-        <source>The destination solution folder path to add the projects to.</source>
-        <target state="translated">프로젝트를 추가하려는 대상 솔루션 폴더 경로입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalDeps">
@@ -72,11 +47,6 @@
         <target state="translated">번들 도구의 추가 명령:</target>
         <note />
       </trans-unit>
-      <trans-unit id="AllowPackageDowngradeOptionDescription">
-        <source>Allow package downgrade when installing a .NET tool package.</source>
-        <target state="translated">.NET 도구 패키지를 설치할 때 패키지 다운그레이드를 허용합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
         <target state="translated">Aspire 워크로드는 더 이상 사용되지 않으며 필요하지 않습니다. Aspire는 이제 NuGet 패키지로 제공되어 프로젝트에 직접 추가할 수 있습니다. 자세한 내용은 https://aka.ms/aspire/support-policy를 참조하세요.</target>
@@ -87,19 +57,24 @@
         <target state="translated">작성자</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="BuildAppFullName">
-        <source>.NET Builder</source>
-        <target state="translated">.NET 작성기</target>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="translated">테스트 프로젝트를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="translated">애플리케이션 실행에 사용할 장치 식별자입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildConfigurationOptionDescription">
-        <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
-        <target state="translated">프로젝트 빌드에 사용할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="translated">장치</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="translated">애플리케이션을 실행하는 데 사용할 수 있는 장치를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
@@ -107,34 +82,14 @@
         <target state="translated">.NET 프로젝트를 빌드합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildFrameworkOptionDescription">
-        <source>The target framework to build for. The target framework must also be specified in the project file.</source>
-        <target state="translated">빌드할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="BuildOutputOptionDescription">
-        <source>The output directory to place built artifacts in.</source>
-        <target state="translated">빌드된 아티팩트를 배치할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildRuntimeOptionDescription">
         <source>The target runtime to build for.</source>
         <target state="translated">빌드할 대상 런타임입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildServerCommandDescription">
-        <source>Interact with servers started from a build.</source>
-        <target state="translated">서버와 상호 작용이 빌드에서 시작되었습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildServerDefinition">
         <source>Interact with servers started by a build.</source>
         <target state="translated">빌드에 의해 서버와 상호 작용이 시작되었습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="BuildServerShutdownCommandDescription">
-        <source>Shuts down build servers that are started from dotnet. By default, all servers are shut down.</source>
-        <target state="translated">dotnet에서 시작한 빌드 서버를 종료합니다. 기본적으로 모든 서버가 종료됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BundleUpToDateMessage">
@@ -167,11 +122,6 @@ Paths searched: '{1}', '{2}'.</source>
       <trans-unit id="CannotCombineOptions">
         <source>Cannot use the {0} and {1} options together.</source>
         <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotCombineSearchStringAndVersion">
-        <source>Cannot specify both the {0} and {1} arguments.</source>
-        <target state="translated">{0} 인수와 {1} 인수를 모두 지정할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndRollback">
@@ -219,55 +169,15 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">업데이트된 워크로드 버전을 확인하는 중입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanAllOptionDescription">
-        <source>Causes clean to remove and uninstall all workload components from all SDK versions.</source>
-        <target state="translated">정리를 수행하여 모든 SDK 버전에서 모든 워크로드 구성 요소를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanAppFullName">
-        <source>.NET Clean Command</source>
-        <target state="translated">.NET 정리 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdOutputDirDescription">
-        <source>The directory containing the build artifacts to clean.</source>
-        <target state="translated">정리할 빌드 아티팩트를 포함하는 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanConfigurationOptionDescription">
-        <source>The configuration to clean for. The default for most projects is 'Debug'.</source>
-        <target state="translated">정리할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanDefinition">
         <source>Clean build outputs of a .NET project.</source>
         <target state="translated">.NET 프로젝트의 빌드 출력을 정리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
-        <source>Removes artifacts created for file-based apps</source>
-        <target state="translated">파일 기반 앱에 대해 만든 아티팩트 제거</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanFileBasedAppArtifactsDays">
-        <source>How many days an artifact folder needs to be unused in order to be removed</source>
-        <target state="translated">아티팩트 폴더를 제거하기 위해 사용하지 않아야 하는 일 수</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
         <source>Warning: Artifacts directory does not exist: {0}</source>
         <target state="translated">경고: 아티팩트 디렉터리가 없음: {0}</target>
         <note>{0} is directory path.</note>
-      </trans-unit>
-      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
-        <source>Determines changes without actually modifying the file system</source>
-        <target state="translated">파일 시스템을 실제로 수정하지 않고 변경 내용을 결정합니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
         <source>Error removing folder '{0}': {1}</source>
@@ -289,138 +199,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">제거할 폴더 수: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
-      <trans-unit id="CleanFrameworkOptionDescription">
-        <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
-        <target state="translated">정리할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanRuntimeOptionDescription">
-        <source>The target runtime to clean for.</source>
-        <target state="translated">정리할 대상 런타임입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
-        <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
-        <target state="translated">예상된 테스트 호스트 종료와 예기치 않은 테스트 호스트 종료 시 크래시 덤프 수집을 사용하도록 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameCrashDescription">
-        <source>Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
-
-For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
-
-Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
-
-The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
-
-To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
-
-Implies --blame.</source>
-        <target state="translated">테스트를 블레임 모드로 실행하고 테스트 호스트가 예기치 않게 종료되면 크래시 덤프를 수집합니다. 이 옵션은 사용된 .NET 버전, 오류 유형 및 운영 체제에 따라 달라집니다.
-
-관리 코드 예외의 경우 .NET 5.0 이상 버전에서 덤프가 자동으로 수집됩니다. 역시 .NET 5.0에서 실행되어 작동이 중단된 testhost 또는 자식 프로세스에 대한 덤프를 생성합니다. 네이티브 코드의 크래시는 덤프를 생성하지 않습니다. 이 옵션은 Windows, macOS 및 Linux에서 작동합니다.
-
-네이티브 코드의 크래시 덤프나 .NET Framework 또는 .NET Core 3.1 이하 버전을 대상으로 하는 경우 Procdump를 사용하여 Windows에서만 수집할 수 있습니다. procdump.exe 및 procdump64.exe가 포함된 디렉터리는 PATH 또는 PROCDUMP_PATH 환경 변수에 있어야 합니다.
-
-도구는 다음 페이지에서 다운로드할 수 있습니다. https://docs.microsoft.com/sysinternals/downloads/procdump
-
-.NET 5.0 이상에서 실행되는 네이티브 애플리케이션에서 크래시 덤프를 수집하려면 VSTEST_DUMP_FORCEPROCDUMP 환경 변수를 1로 설정하여 Procdump를 강제로 사용할 수 있습니다.
-
---blame을 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameCrashDumpTypeDescription">
-        <source>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</source>
-        <target state="translated">수집할 크래시 덤프의 유형입니다. 지원되는 값은 full(기본값) 및 mini입니다. --blame-crash를 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameDescription">
-        <source>Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
-
-When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
-
-Based on the additional settings, hang dump or crash dump can also be collected.
-
-Example:
-  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.
-  (Crash dumps require additional setup, see below.)
-  dotnet test --blame-hang --blame-crash
-Example:
-  Timeout the test run when a test takes more than 20 minutes and collect hang dump.
-  dotnet test --blame-hang-timeout 20min
-</source>
-        <target state="translated">테스트를 블레임 모드로 실행합니다. 이 옵션은 테스트 호스트의 크래시 또는 중단을 유발하는 문제 있는 테스트를 격리하는 데 유용하지만 기본적으로 메모리 덤프를 생성하지는 않습니다.
-
-크래시가 탐지되면 크래시 전에 실행된 테스트의 순서를 캡처하는 시퀀스 파일이 TestResults/guid/guid_Sequence.xml에 생성됩니다.
-
-추가 설정에 따라 중단 덤프 또는 크래시 덤프가 수집될 수도 있습니다.
-
-예: 
-  테스트에 걸리는 시간이 기본 시간 제한인 1시간보다 길면 테스트 실행이 시간 초과되고, 테스트 호스트가 예기치 않게 종료되면 크래시 덤프를 수집합니다.
-  (크래시 덤프에는 추가 설정이 필요합니다. 아래를 참조하세요.)
-  dotnet test --blame-hang --blame-crash
-예: 
-  테스트에 걸리는 시간이 20분보다 길면 테스트 실행이 시간 초과되고 중단 덤프를 수집합니다.
-  dotnet test --blame-hang-timeout 20min
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameHangDescription">
-        <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
-        <target state="translated">테스트를 블레임 모드로 실행하고 테스트가 지정된 시간제한을 초과하는 경우 중단 덤프 수집을 사용하도록 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameHangDumpTypeDescription">
-        <source>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</source>
-        <target state="translated">수집할 크래시 덤프의 유형입니다. 지원되는 값은 full(기본값), mini, none입니다. 'none'이 사용된 경우 테스트 호스트가 시간 초과될 때 종료되지만 덤프는 수집되지 않습니다. --blame-hang을 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdBlameHangTimeoutDescription">
-        <source>Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
-The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
-When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
-For MSTest before 2.2.4, the timeout is used for all testcases.</source>
-        <target state="translated">중단 덤프가 트리거되고 테스트 호스트 프로세스가 종료되는 테스트별 시간 제한입니다. 기본값은 1h입니다.
-이 시간 제한 값은 1.5h/90m/5400s/5400000ms 형식으로 지정됩니다. 단위가 사용되지 않는 경우(예: 5400000) 값은 밀리초 단위로 간주됩니다.
-데이터 기반 테스트와 함께 사용하는 경우 시간제한 동작은 사용되는 테스트 어댑터에 따라 달라집니다. xUnit, NUnit 및 MSTest 2.2.4 이상의 경우 테스트 사례마다 시간제한이 갱신됩니다.
-MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfig">
-        <source>CONFIG_FILE</source>
-        <target state="translated">CONFIG_FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfigDescription">
-        <source>The path to the NuGet config file to use. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
-        <target state="translated">사용할 NuGet 구성 파일의 경로입니다. '--outdated', '--deprecated' 또는 '--vulnerable' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfigFileDescription">
-        <source>Specifies a testconfig.json file.</source>
-        <target state="translated">testconfig.json 파일을 지정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfigFileOption">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">사용할 NuGet 구성 파일입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdConfigFilePath">
-        <source>CONFIG_FILE</source>
-        <target state="translated">CONFIG_FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdCurrentRuntimeOptionDescription">
-        <source>Use current runtime as the target runtime.</source>
-        <target state="translated">현재 런타임을 대상 런타임으로 사용합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDGFileException">
         <source>Unable to create dependency graph file for project '{0}'. Cannot add package reference.</source>
         <target state="translated">'{0}' 프로젝트에 대한 종속성 그래프 파일을 만들 수 없습니다. 패키지 참조를 추가할 수 없습니다.</target>
@@ -431,78 +209,9 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
         <target state="translated">'{0}' 프로젝트에 대한 임시 파일을 생성할 수 없습니다. 패키지 참조를 추가할 수 없습니다. 임시 디렉터리를 지우고 다시 시도하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDeprecatedDescription">
-        <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
-        <target state="translated">사용되지 않는 패키지를 나열합니다. '--vulnerable' 또는 '--outdated' 옵션과 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
-        <source>Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="translated">진단 로깅의 출력 디렉터리입니다.
-지정하지 않으면 파일이 기본 'TestResults' 디렉터리 내에 생성됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
-        <source>DIAGNOSTIC_DIR</source>
-        <target state="translated">DIAGNOSTIC_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDisableParallelOptionDescription">
-        <source>Prevent restoring multiple projects in parallel.</source>
-        <target state="translated">여러 프로젝트를 병렬로 복원하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdExpressionName">
-        <source>EXPRESSION</source>
-        <target state="translated">EXPRESSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFileDescription">
-        <source>Path to the file-based program.</source>
-        <target state="translated">파일 기반 프로그램의 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdForceRestoreOptionDescription">
-        <source>Force all dependencies to be resolved even if the last restore was successful.
-This is equivalent to deleting project.assets.json.</source>
-        <target state="translated">마지막 복원이 성공적인 경우에도 모든 종속성을 확인합니다.
-project.assets.json을 삭제하는 것과 동일합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFormatDescription">
-        <source>Specifies the output format type for the list packages command.</source>
-        <target state="translated">목록 패키지 명령의 출력 형식 유형을 지정합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdHelpUsageTitle">
         <source>Usage:</source>
         <target state="translated">사용법:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdHighestMinorDescription">
-        <source>Consider only the packages with a matching major version number when searching for newer packages. Requires the '--outdated' option.</source>
-        <target state="translated">최신 패키지를 검색할 때 주 버전 번호가 일치하는 패키지만 고려합니다. '--outdated' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdHighestPatchDescription">
-        <source>Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '--outdated' option.</source>
-        <target state="translated">최신 패키지를 검색할 때 주 버전 번호와 부 버전 번호가 일치하는 패키지만 고려합니다. '--outdated' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdIgnoreFailedSourcesOptionDescription">
-        <source>Treat package source failures as warnings.</source>
-        <target state="translated">패키지 소스 오류를 경고로 처리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdIncludeSourceDescription">
-        <source>Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</source>
-        <target state="translated">PDB 및 소스 파일을 포함합니다. 소스 파일이 결과 nuget 패키지의 'src' 폴더로 이동합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdIncludeSymbolsDescription">
-        <source>Include packages with symbols in addition to regular packages in output directory.</source>
-        <target state="translated">일반 패키지 외에 기호가 포함된 패키지를 출력 디렉터리에 포함합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
@@ -515,57 +224,9 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">제공된 솔루션 파일의 확장명이 잘못되었습니다. {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdLockFilePathOption">
-        <source>LOCK_FILE_PATH</source>
-        <target state="translated">LOCK_FILE_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdLockFilePathOptionDescription">
-        <source>Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</source>
-        <target state="translated">프로젝트 잠금 파일이 작성되는 출력 위치입니다. 기본적으로 'PROJECT_ROOT\packages.lock.json'입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdLockedModeOptionDescription">
-        <source>Don't allow updating project lock file.</source>
-        <target state="translated">프로젝트 잠금 파일 업데이트를 허용하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdLoggerDescription">
-        <source>The logger to use for test results.
-                                        Examples:
-                                        Log in trx format using a unique file name: --logger trx
-                                        Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
-                                        See https://aka.ms/vstest-report for more information on logger arguments.</source>
-        <target state="translated">테스트 결과에 사용할 로거입니다.
-                                        예:
-                                        고유한 파일 이름을 사용하여 trx 형식으로 기록합니다. --logger trx
-                                        지정된 파일 이름을 사용하여 trx 형식으로 기록합니다. --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
-                                        로거 인수에 대한 자세한 내용은 https://aka.ms/vstest-report를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdLoggerOption">
-        <source>LOGGER</source>
-        <target state="translated">LOGGER</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">MSBuild를 사용하여 프로젝트 가져오기 속성이 종료 코드에서 제대로 실행되지 않았습니다. {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdMaxParallelTestModulesDescription">
-        <source>The max number of test modules that can run in parallel.</source>
-        <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="translated">실행될 것으로 예상되는 최소 테스트 수를 지정합니다.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="translated">종료 코드 {0}(으)로 인해 빌드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -578,49 +239,9 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">이 폴더에 프로젝트 또는 솔루션 파일이 두 개 이상 있으므로 사용할 프로젝트 또는 솔루션 파일을 지정하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoAnsiDescription">
-        <source>Disable ANSI output.</source>
-        <target state="translated">ANSI 출력을 비활성화합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoBuildDescription">
-        <source>Do not build the project before testing. Implies --no-restore.</source>
-        <target state="translated">테스트하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoBuildOptionDescription">
-        <source>Do not build the project before packing. Implies --no-restore.</source>
-        <target state="translated">압축하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoCacheOptionDescription">
-        <source>Do not cache packages and http requests.</source>
-        <target state="translated">패키지 및 http 요청을 캐시하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoDependenciesOptionDescription">
-        <source>Do not restore project-to-project references and only restore the specified project.</source>
-        <target state="translated">p2p(프로젝트 간) 참조를 복원하지 않고 지정한 프로젝트만 복원합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoHttpCacheOptionDescription">
-        <source>Disable Http Caching for packages.</source>
-        <target state="translated">패키지에 대해 HTTP 캐싱을 사용하지 않도록 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoProgressDescription">
-        <source>Disable progress reporting.</source>
-        <target state="translated">진행률 보고를 비활성화합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
         <target state="translated">프로젝트 또는 솔루션 파일을 지정하세요. 현재 작업 디렉터리에 프로젝트 또는 솔루션 파일이 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoRestoreDescription">
-        <source>Do not restore before running the command.</source>
-        <target state="translated">명령을 실행하기 전에 복원하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
@@ -643,224 +264,15 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">제공된 루트 디렉터리가 존재하지 않습니다. {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNumberName">
-        <source>NUMBER</source>
-        <target state="translated">NUMBER</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
         <target state="translated">옵션 아키텍처, 구성, 프레임워크, 운영 체제 및 런타임은 '--test-modules' 옵션과 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOptionForceDescription">
-        <source>Force conversion even if there are malformed directives.</source>
-        <target state="translated">잘못된 형식의 지시문이 있는 경우에도 강제로 변환합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutdatedDescription">
-        <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
-        <target state="translated">최신 버전이 포함된 패키지를 나열합니다. '--deprecated' 또는 '--vulnerable' 옵션과 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDescription">
-        <source>The output directory to place built artifacts in.</source>
-        <target state="translated">빌드된 아티팩트를 배치할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputVersionDescription">
-        <source>Specifies the version of machine-readable output. Requires the '--format json' option.</source>
-        <target state="translated">컴퓨터에서 읽을 수 있는 출력의 버전을 지정합니다. '--format json' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackage">
-        <source>PACKAGE_NAME</source>
-        <target state="translated">PACKAGE_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">추가할 패키지 참조입니다. 패키지 식별자(예: 'Newtonsoft.Json') 또는 '@'로 구분된 패키지 식별자 및 버전(예: 'Newtonsoft.Json@13.0.3') 형식일 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDirectory">
-        <source>PACKAGE_DIR</source>
-        <target state="translated">PACKAGE_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDirectoryDescription">
-        <source>The directory to restore packages to.</source>
-        <target state="translated">패키지를 복원할 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackagesOption">
-        <source>PACKAGES_DIR</source>
-        <target state="translated">PACKAGES_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackagesOptionDescription">
-        <source>The directory to restore packages to.</source>
-        <target state="translated">패키지를 복원할 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPathToLogFile">
-        <source>LOG_FILE</source>
-        <target state="translated">LOG_FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPathToResultsDirectory">
-        <source>RESULTS_DIR</source>
-        <target state="translated">RESULTS_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPathTologFileDescription">
-        <source>Enable verbose logging to the specified file.</source>
-        <target state="translated">지정한 파일에 대해 자세한 정보 로깅을 사용합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPrereleaseDescription">
-        <source>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</source>
-        <target state="translated">최신 패키지를 검색할 때 시험판 버전이 있는 패키지를 고려합니다. '--outdated' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdProjectDescriptionFormat">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 프로젝트 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdProjectOrSolutionPathName">
-        <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdReevaluateOptionDescription">
-        <source>Forces restore to reevaluate all dependencies even if a lock file already exists.</source>
-        <target state="translated">잠금 파일이 이미 존재하는 경우에도 모든 종속성을 다시 평가하기 위해 복원합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdResultsDirectoryDescription">
-        <source>The directory where the test results will be placed.
-The specified directory will be created if it does not exist.</source>
-        <target state="translated">테스트 결과를 배치할 디렉터리입니다.
-지정한 디렉터리가 존재하지 않는 경우 생성됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdRootPathName">
-        <source>ROOT_PATH</source>
-        <target state="translated">ROOT_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdRuntimeOption">
-        <source>RUNTIME_IDENTIFIER</source>
-        <target state="translated">RUNTIME_IDENTIFIER</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdRuntimeOptionDescription">
-        <source>The target runtime to restore packages for.</source>
-        <target state="translated">패키지를 복원할 대상 런타임입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdServiceableDescription">
-        <source>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</source>
-        <target state="translated">패키지에서 서비스 가능 플래그를 설정합니다. 자세한 내용은 https://aka.ms/nupkgservicing을 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSettingsDescription">
-        <source>The settings file to use when running tests.</source>
-        <target state="translated">테스트를 실행할 때 사용할 설정 파일입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSettingsFile">
-        <source>SETTINGS_FILE</source>
-        <target state="translated">SETTINGS_FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">테스트할 솔루션 파일의 경로를 정의합니다. 솔루션 파일의 경로 또는 솔루션 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSolutionPathName">
-        <source>SOLUTION_PATH</source>
-        <target state="translated">SOLUTION_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSourceOption">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSourceOptionDescription">
-        <source>The NuGet package source to use for the restore.</source>
-        <target state="translated">복원에 사용할 NuGet 패키지 소스입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestAdapterPath">
-        <source>ADAPTER_PATH</source>
-        <target state="translated">ADAPTER_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestAdapterPathDescription">
-        <source>The path to the custom adapters to use for the test run.</source>
-        <target state="translated">테스트 실행에 사용할 사용자 지정 어댑터의 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestCaseFilterDescription">
-        <source>Run tests that match the given expression.
-                                        Examples:
-                                        Run tests with priority set to 1: --filter "Priority = 1"
-                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
-                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
-                                        See https://aka.ms/vstest-filtering for more information on filtering support.
-                                        </source>
-        <target state="translated">지정된 식과 일치하는 테스트를 실행합니다.
-                                        예:
-                                        우선순위가 1로 설정된 테스트 실행: --filter "Priority = 1"
-                                        지정된 전체 이름이 있는 테스트 실행: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
-                                        지정된 이름을 포함하는 테스트 실행: --filter "FullyQualifiedName~Namespace.Class"
-                                        필터링 지원에 대한 자세한 내용은 https://aka.ms/vstest-filtering을 참조하세요.
-                                        </target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestCaseFilterExpression">
-        <source>EXPRESSION</source>
-        <target state="translated">EXPRESSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestModulesDescription">
-        <source>Run tests for the specified test modules.</source>
-        <target state="translated">지정된 테스트 모듈에 대한 테스트를 실행합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestModulesRootDirectoryDescription">
-        <source>The test modules have the specified root directory.</source>
-        <target state="translated">테스트 모듈에 지정된 루트 디렉터리가 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestOutputDescription">
-        <source>Verbosity of test output.</source>
-        <target state="translated">테스트 출력의 세부 정보 표시입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTransitiveDescription">
-        <source>Lists transitive and top-level packages.</source>
-        <target state="translated">전이적 패키지 및 최상위 패키지를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
         <source>Message Request type '{0}' is unsupported.</source>
         <target state="translated">메시지 요청 유형 '{0}'은(는) 지원되지 않습니다.</target>
         <note>{0} - message request type</note>
-      </trans-unit>
-      <trans-unit id="CmdUnsupportedTestRunnerDescription">
-        <source>Test runner '{0}' is not supported.</source>
-        <target state="translated">Test Runner '{0}'은(는) 지원되지 않습니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
         <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
@@ -876,39 +288,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
-      <trans-unit id="CmdUseLockFileOptionDescription">
-        <source>Enables project lock file to be generated and used with restore.</source>
-        <target state="translated">복원에 사용되고 생성될 프로젝트 잠금 파일을 사용합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdVersion">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdVersionDescription">
-        <source>The version of the package to add.</source>
-        <target state="translated">추가할 패키지의 버전입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdVulnerableDescription">
-        <source>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</source>
-        <target state="translated">알려진 취약성이 있는 패키지를 나열합니다. '--deprecated' 또는 '--outdated' 옵션과 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Command">
         <source>Command</source>
         <target state="translated">명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandArgumentDescription">
-        <source>The SDK command to launch online help for.</source>
-        <target state="translated">온라인 도움말을 시작하는 SDK 명령입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandArgumentName">
-        <source>COMMAND_NAME</source>
-        <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">
@@ -921,61 +303,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">최신 .Net 버전은 https://aka.ms/dotnet-core-download에서 설치할 수 있습니다. .NET 수명 주기에 대한 자세한 내용은 https://aka.ms/dotnet-core-support를 참조하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandNameArgumentDescription">
-        <source>The command name of the tool to run.</source>
-        <target state="translated">실행할 도구의 명령 이름입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandNameArgumentName">
-        <source>COMMAND_NAME</source>
-        <target state="translated">COMMAND_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionFileDescription">
-        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
-        <target state="translated">실행할 파일 기반 앱의 경로입니다(현재 디렉터리에 프로젝트가 없는 경우 첫 번째 인수로도 전달할 수 있습니다).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionFileHelpName">
-        <source>FILE_PATH</source>
-        <target state="translated">FILE_PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionLaunchProfileDescription">
-        <source>The name of the launch profile (if any) to use when launching the application.</source>
-        <target state="translated">애플리케이션을 시작할 때 사용하는 시작 프로필(있는 경우)의 이름입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionLaunchProfileHelpName">
-        <source>LAUNCH_PROFILE</source>
-        <target state="translated">LAUNCH_PROFILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionNoBuildDescription">
-        <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="translated">실행하기 전에 프로젝트를 빌드하지 않습니다. --no-restore 의미합니다.</target>
-        <note>{Locked="--no-restore"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionNoCacheDescription">
-        <source>Skip up to date checks and always build the program before running.</source>
-        <target state="translated">최신 검사를 건너뛰고 실행하기 전에 항상 프로그램을 빌드합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
-        <source>Do not use arguments specified in launch profile to run the application.</source>
-        <target state="translated">시작 프로필에 지정된 인수를 사용하여 애플리케이션을 실행하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="translated">launchSettings.json 또는 [app].run.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
-        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectHelpName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Commands">
         <source>SDK commands</source>
         <target state="translated">SDK 명령</target>
@@ -984,16 +311,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="CommandsMismatch">
         <source>The command {0} specified in the tool manifest file is not contained in the package with Package Id {1}. The commands contained in the package are {2}.</source>
         <target state="translated">도구 매니페스트 파일에 지정된 {0} 명령이 패키지 ID가 {1}인 패키지에 포함되지 않았습니다. 패키지에 포함된 명령은 {2}입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileArgumentName">
-        <source>ConfigFile</source>
-        <target state="translated">ConfigFile</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileDescription">
-        <source>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</source>
-        <target state="translated">NuGet 구성 파일. 지정한 경우 이 파일의 설정만 사용됩니다. 지정하지 않은 경우 현재 디렉터리의 구성 파일 계층 구조가 사용됩니다. 자세한 내용은 https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
@@ -1016,34 +333,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">콘솔이 이미 일괄 처리 모드에 있습니다.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">'{0}' 속성 값을 부울로 변환할 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">'{0}' 속성 값을 문자열로 변환할 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">프로젝트를 찾을 수 없습니다. 프로젝트가 {0}에 있는지 확인하거나 {1}을(를) 사용하여 프로젝트에 경로를 전달하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CrashDumpTypeArgumentName">
-        <source>DUMP_TYPE</source>
-        <target state="translated">DUMP_TYPE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CreateManifestIfNeededOptionDescription">
-        <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
-        <target state="translated">도구 설치 중에 도구 매니페스트를 찾을 수 없는 경우 도구 매니페스트를 만드세요. 매니페스트의 위치는 https://aka.ms/dotnet/tools/create-manifest-if-needed를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CurrentRuntimeOptionDescription">
-        <source>Use current runtime as the target runtime.</source>
-        <target state="translated">현재 런타임을 대상 런타임으로 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
@@ -1081,19 +373,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">설명</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailDescription">
-        <source>Show detail result of the query.</source>
-        <target state="translated">쿼리의 세부 결과를 표시합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DevCertsDefinition">
         <source>Create and manage development certificates.</source>
         <target state="translated">개발 인증서를 만들고 관리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
@@ -1107,16 +389,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">대상 디렉터리가 이미 있습니다. '{0}'</target>
         <note />
       </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">MSBuild를 사용하여 프로젝트 컨텍스트 평가를 사용하지 않도록 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">있는 경우 SDK에 번들로 제공되는 템플릿이 표시되지 않도록 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
         <source>Discovered {0} tests in assembly</source>
         <target state="translated">어셈블리에서 {0}개의 테스트가 검색됨</target>
@@ -1126,16 +398,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Discovering tests from</source>
         <target state="translated">다음에서 테스트 검색하는 중</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestCommandMTPDescription">
-        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="translated">Microsoft.Testing.Platform용 .NET 테스트 명령입니다('global.json' 파일을 통해 옵트인). 이는 Microsoft.Testing.Platform만 지원하며 VSTest를 지원하지 않습니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
-        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
-      </trans-unit>
-      <trans-unit id="DotnetTestCommandVSTestDescription">
-        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="translated">VSTest에 대한 .NET 테스트 명령입니다. Microsoft.Testing.Platform을 사용하려면 global.json을 통해 Microsoft.Testing.Platform 기반 명령을 옵트인합니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
-        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1160,16 +422,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
         <target state="translated">'dotnet'이 'dotnet test'로 명명된 파이프에서 예기치 않게 겹치는 메시지를 받았습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DownloadToCacheOptionArgumentName">
-        <source>DIRECTORY</source>
-        <target state="translated">디렉터리</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DownloadToCacheOptionDescription">
-        <source>Download packages needed to install a workload to a folder that can be used for offline installation.</source>
-        <target state="translated">오프라인 설치에 사용할 수 있는 폴더에 워크로드를 설치하는 데 필요한 패키지를 다운로드합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
@@ -1206,11 +458,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
         <target state="translated">복원하지 못했습니다. 문제에 대한 자세한 내용을 보려면 'dotnet restore'를 실행하세요.</target>
         <note>{Locked="dotnet restore"}</note>
-      </trans-unit>
-      <trans-unit id="ExactMatchDescription">
-        <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
-        <target state="translated">검색 용어가 패키지 이름과 정확히 일치해야 합니다. '--take' 및 '--skip' 옵션을 무시합니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ExecutionUsageDescription">
         <source>Execute a .NET application.</source>
@@ -1287,80 +534,20 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">{0} 오류로 실패</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">{0} 오류와 {1} 경고와 함께 실패</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">{0} 경고와 함께 실패</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">테스트용</target>
         <note>is followed by test name</note>
-      </trans-unit>
-      <trans-unit id="FormatArgumentName">
-        <source>Format</source>
-        <target state="translated">형식</target>
-        <note />
       </trans-unit>
       <trans-unit id="FormatDefinition">
         <source>Apply style preferences to a project or solution.</source>
         <target state="translated">프로젝트 또는 솔루션에 스타일 기본 설정을 적용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FormatDescription">
-        <source>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</source>
-        <target state="translated">출력의 서식을 적절하게 지정하세요. 'table' 또는 'json'입니다. 기본값은 'table'입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FormatOptionDescription">
-        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
-        <target state="translated">출력된 워크로드 버전의 형식을 변경합니다. 'json' 또는 'list'를 사용할 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkVersionOption">
-        <source>FRAMEWORK_VERSION</source>
-        <target state="translated">FRAMEWORK_VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkVersionOptionDescription">
-        <source>The Microsoft.NETCore.App package version that will be used to run the assemblies.</source>
-        <target state="translated">어셈블리를 실행하는 데 사용되는 Microsoft.NETCore.App 패키지 버전입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FromCacheOptionArgumentName">
-        <source>DIRECTORY</source>
-        <target state="translated">디렉터리</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FromCacheOptionDescription">
-        <source>Complete the operation from cache (offline).</source>
-        <target state="translated">캐시에서 작업을 완료합니다(오프라인).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FromFile">
         <source>from</source>
         <target state="translated">출처</target>
         <note>from followed by a file name to point to the file from which test is originating</note>
-      </trans-unit>
-      <trans-unit id="FromHistoryOptionDescription">
-        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="translated">인수에 지정된 이전 버전으로 워크로드를 업데이트합니다. 'dotnet 워크로드 기록'을 사용하여 사용 가능한 워크로드 기록 레코드를 확인합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FromPreviousSdkOptionDescription">
-        <source>Include workloads installed with earlier SDK versions in update.</source>
-        <target state="translated">업데이트에 이전 SDK 버전과 함께 설치된 워크로드를 포함합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FromRollbackDefinitionOptionDescription">
-        <source>Update workloads based on specified rollback definition file.</source>
-        <target state="translated">지정된 롤백 정의 파일을 기반으로 워크로드를 업데이트합니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="FsiDefinition">
         <source>Start F# Interactive / execute F# scripts.</source>
@@ -1385,21 +572,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
         <target state="translated">Global.json 버전</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HangDumpTypeArgumentName">
-        <source>DUMP_TYPE</source>
-        <target state="translated">DUMP_TYPE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HangTimeoutArgumentName">
-        <source>TIMESPAN</source>
-        <target state="translated">TIMESPAN</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HelpAppFullName">
-        <source>.NET CLI help utility</source>
-        <target state="translated">.NET CLI 도움말 유틸리티</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
@@ -1457,11 +629,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">옵션 및 확장을 기다리는 중...</target>
         <note />
       </trans-unit>
-      <trans-unit id="HistoryManifestOnlyOptionDescription">
-        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="translated">설치된 워크로드를 변경하지 않고 기록에 지정된 워크로드 버전으로 업데이트합니다. 현재 설치된 워크로드는 지정된 기록 버전과 일치하도록 업데이트됩니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HostFxrCouldNotBeLoaded">
         <source>Could not load hostfxr from '{0}'.</source>
         <target state="translated">'{0}'에서 hostfxr를 로드할 수 없습니다.</target>
@@ -1482,19 +649,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">생성된 In process 파일 아티팩트:</target>
         <note />
       </trans-unit>
-      <trans-unit id="InRoot">
-        <source>Place project in root of the solution, rather than creating a solution folder.</source>
-        <target state="translated">솔루션 폴더를 만드는 대신, 솔루션의 루트에 프로젝트를 배치하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InadequatePermissions">
         <source>Inadequate permissions. Run the command with elevated privileges.</source>
         <target state="translated">권한이 부족합니다. 관리자 권한으로 명령을 실행합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IncludePreviewOptionDescription">
-        <source>Allow prerelease workload manifests.</source>
-        <target state="translated">시험판 워크로드 매니페스트를 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallToolCommandInvalidGlobalAndLocalAndToolPath">
@@ -1522,16 +679,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">서버를 시작할 권한이 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateWorkingDirOption">
-        <source>WORKING_DIR</source>
-        <target state="translated">WORKING_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IntermediateWorkingDirOptionDescription">
-        <source>The working directory used by the command to execute.</source>
-        <target state="translated">실행할 명령에서 사용하는 작업 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
         <target state="translated">'{0}' 메서드가 성공적으로 종료되지 않았습니다.</target>
@@ -1552,11 +699,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">'-'를 사용하여 표준 입력에서 파일을 읽는 경우에도 '{0}' 옵션을 지정할 수 없습니다.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">'{0}'을(를) 의미 체계 버전으로 구문 분석하지 못했습니다.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
-      </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
         <target state="translated">도구의 NuGet 패키지에 있는 설정 파일이 잘못되었습니다. {0}</target>
@@ -1571,16 +713,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Latest Version</source>
         <target state="translated">최신 버전</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="ListAppFullName">
-        <source>List all projects in a solution file.</source>
-        <target state="translated">솔루션 파일의 프로젝트를 모두 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListSolutionFoldersArgumentDescription">
-        <source>Display solution folder paths.</source>
-        <target state="translated">솔루션 폴더 경로를 표시합니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListToolCommandInvalidGlobalAndLocalAndToolPath">
         <source>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</source>
@@ -1619,11 +751,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">프로젝트 '{0}'은(는) SDK 스타일 프로젝트이지만 프레임워크를 지정하지 않습니다.</target>
         <note>{0} - the full path to the project.</note>
       </trans-unit>
-      <trans-unit id="MSBuildOptionDescription">
-        <source>Shut down the MSBuild build server.</source>
-        <target state="translated">MSBuild 빌드 서버를 종료합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MaintenanceMessage">
         <source>.NET {0} is going out of support soon.</source>
         <target state="translated">.NET {0}은(는) 곧 지원이 중단됩니다.</target>
@@ -1639,24 +766,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">NuGet 패키지 {0}에서 매니페스트 MSI를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestOption">
-        <source>MANIFEST</source>
-        <target state="translated">MANIFEST</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestOptionDescription">
-        <source>The path to a target manifest file that contains the list of packages to be excluded from the publish step.</source>
-        <target state="translated">게시 단계에서 제외할 패키지 목록이 들어 있는 대상 매니페스트 파일의 경로입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestPackageUrlNotResolved">
         <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
         <target state="translated">매니페스트 패키지가 해결되지 않았습니다. {0}에 대한 매니페스트 패키지 또는 URL이 존재하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MigrateAppFullName">
-        <source>Generate a .slnx file from a .sln file.</source>
-        <target state="translated">.sln 파일에서 .slnx 파일을 생성합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MinimumExpectedTestsPolicyViolation">
@@ -1713,21 +825,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
         <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
       </trans-unit>
-      <trans-unit id="NetAddCommand">
-        <source>.NET Add Command</source>
-        <target state="translated">.NET 추가 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NetListCommand">
-        <source>List references or packages of a .NET project.</source>
-        <target state="translated">.NET 프로젝트의 참조 또는 패키지를 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NetRemoveCommand">
-        <source>.NET Remove Command</source>
-        <target state="translated">.NET 제거 명령</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NewDefinition">
         <source>Create a new .NET project or file.</source>
         <target state="translated">새 .NET 프로젝트 또는 파일을 만듭니다.</target>
@@ -1758,24 +855,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">경고: 이진 로그 옵션이 지정되었지만 출력이 최신 상태이므로 빌드를 건너뜁니다. 빌드를 강제로 진행하려면 '--no-cache'를 지정하세요.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
-      <trans-unit id="NoBuildOptionDescription">
-        <source>Do not build the project before publishing. Implies --no-restore.</source>
-        <target state="translated">게시하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoDependenciesOptionDescription">
-        <source>Do not build project-to-project references and only build the specified project.</source>
-        <target state="translated">p2p(프로젝트 간) 참조를 빌드하지 않고 지정한 프로젝트만 빌드합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
         <target state="translated">워크로드 기록을 찾을 수 없음</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoIncrementalOptionDescription">
-        <source>Do not use incremental building.</source>
-        <target state="translated">증분 빌드를 사용하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoManifestFileContainPackageId">
@@ -1863,11 +945,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">도구 매니페스트 옵션(--tool-manifest) 지정은 로컬 옵션(--local 또는 기본값)에만 유효합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="OptionsCannotBeCombined">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">'--outdated', '--deprecated' 및 '--vulnerable' 옵션은 함께 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OutOfProcessArtifactsProduced">
         <source>Out of process file artifacts produced:</source>
         <target state="translated">생성된 Out of process 파일 아티팩트:</target>
@@ -1878,74 +955,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET {0}은(는) 지원되지 않습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="OutputOptionName">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAppFullName">
-        <source>.NET Core NuGet Package Packer</source>
-        <target state="translated">.NET Core NuGet 패키지 패커</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdOutputDirDescription">
-        <source>The output directory to place built packages in.</source>
-        <target state="translated">빌드된 패키지를 배치할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdVersion">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdVersionDescription">
-        <source>The version of the package to create</source>
-        <target state="translated">생성할 패키지의 버전</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackConfigurationOptionDescription">
-        <source>The configuration to use for building the package. The default is 'Release'.</source>
-        <target state="translated">패키지를 빌드하는 데 사용할 구성입니다. 기본값은 'Release'입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackDefinition">
         <source>Create a NuGet package.</source>
         <target state="translated">NuGet 패키지를 만듭니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddAppFullName">
-        <source>Add a NuGet package reference to the project.</source>
-        <target state="translated">프로젝트에 NuGet 패키지 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddCmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddCmdFrameworkDescription">
-        <source>Add the reference only when targeting a specific framework.</source>
-        <target state="translated">특정 프레임워크를 대상으로 지정할 때에만 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddCmdNoRestoreDescription">
-        <source>Add the reference without performing restore preview and compatibility check.</source>
-        <target state="translated">미리 보기 복원 및 호환성 검사를 수행하지 않고 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddCmdSource">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddCmdSourceDescription">
-        <source>The NuGet package source to use during the restore.</source>
-        <target state="translated">복원 중 사용할 NuGet 패키지 소스입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDefinition">
@@ -1963,89 +975,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">패키지 ID</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="PackageListAppFullName">
-        <source>List all package references of the project or solution.</source>
-        <target state="translated">프로젝트 또는 솔루션의 모든 패키지 참조를 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageListCmdFramework">
-        <source>FRAMEWORK | FRAMEWORK\RID</source>
-        <target state="translated">FRAMEWORK | FRAMEWORK\RID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageListCmdFrameworkDescription">
-        <source>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</source>
-        <target state="translated">프레임워크를 선택하여 패키지를 표시합니다. 여러 프레임워크의 경우 옵션을 여러 번 사용합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageListCmdSource">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageListCmdSourceDescription">
-        <source>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
-        <target state="translated">최신 패키지를 검색할 때 사용하는 NuGet 소스입니다. '--outdated', '--deprecated' 또는 '--vulnerable' 옵션이 필요합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageListFileNotFound">
         <source>Could not find file or directory '{0}'.</source>
         <target state="translated">'{0}' 파일 또는 디렉터리를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackageRemoveAppFullName">
-        <source>Remove a NuGet package reference from the project.</source>
-        <target state="translated">프로젝트에서 NuGet 패키지 참조를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageRemoveAppHelpText">
-        <source>The package reference to remove.</source>
-        <target state="translated">제거할 패키지 참조입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageRemoveSpecifyExactlyOnePackageReference">
         <source>Specify only one package reference to remove.</source>
         <target state="translated">제거할 패키지 참조를 하나만 지정하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchCommandDescription">
-        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
-        <target state="translated">하나 이상의 패키지 원본에서 검색어와 일치하는 패키지를 검색합니다. 원본을 지정하지 않으면 NuGet.Config에 정의된 모든 원본이 사용됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchPrereleaseDescription">
-        <source>Include prerelease packages.</source>
-        <target state="translated">시험판 패키지를 포함합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchSearchTermArgumentName">
-        <source>SearchTerm</source>
-        <target state="translated">SearchTerm</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchSearchTermDescription">
-        <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
-        <target state="translated">용어를 검색하여 패키지 이름, 설명 및 태그를 필터링합니다. 리터럴 값으로 사용됩니다. 예: 'dotnet package search some.package'. `--exact-match`도 확인합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchSkipArgumentName">
-        <source>Skip</source>
-        <target state="translated">건너뛰기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchSkipDescription">
-        <source>Number of results to skip, to allow pagination. Default 0.</source>
-        <target state="translated">페이지 매김을 허용하기 위해 건너뛸 결과 수입니다. 기본값 0.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchTakeArgumentName">
-        <source>Take</source>
-        <target state="translated">가져오기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageSearchTakeDescription">
-        <source>Number of results to return. Default 20.</source>
-        <target state="translated">반환할 결과 수입니다. 기본값 20.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagesCommandNameCollisionConclusion">
@@ -2230,72 +1167,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">--prerelease 및 --version 옵션은 같은 명령에서 지원되지 않습니다</target>
         <note />
       </trans-unit>
-      <trans-unit id="PrintDownloadLinkOnlyDescription">
-        <source>Only print the list of links to download without downloading.</source>
-        <target state="translated">다운로드할 링크 목록을 다운로드하지 않고 인쇄만 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PrintSetVersionsDescription">
-        <source>'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
-           dotnet workload search version --take 2 --format json
-           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
-           dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
-           ------------------------------------------------------------------------------------------------
-           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
-           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
-           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
-           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
-           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
-           9.0.201
-    </source>
-        <target state="translated">'dotnet workload search version'에는 인수에 따라 세 가지 기능이 있습니다.
-      1. 인수를 지정하지 않으면 이 기능 밴드에서 릴리스된 최신 워크로드 버전 목록을 출력합니다. --take 옵션을 사용하여 얼마나 제공할지 지정하고 --format을 사용하여 형식을 변경합니다.
-         예:
-           dotnet workload search version --take 2 --format json
-           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. 특정 워크로드 버전이 인수로 제공되는 경우 지정된 워크로드 버전에 대한 다양한 워크로드 및 해당 버전의 테이블을 출력합니다. --format 옵션을 사용하여 출력 형식을 변경합니다.
-         예: 
-           dotnet workload search version 9.0.201
-           워크로드 매니페스트 ID                               매니페스트 기능 밴드      매니페스트 버전
-           ------------------------------------------------------------------------------------------------
-           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
-           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
-           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
-           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
-           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
-           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-      3. 하나 이상의 워크로드가 해당 버전과 함께 제공되는 경우('@' 문자와 조인하여) 제공된 버전과 일치하는 워크로드 버전을 출력합니다. --take 옵션을 사용하여 얼마나 제공할지 지정하고 --format을 사용하여 형식을 변경합니다.
-         예: 
-           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
-           9.0.201
-    </target>
-        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
-      </trans-unit>
       <trans-unit id="ProjectCapabilityConstraintFactory_Exception_EvaluationFailed">
         <source>Failed to create constraint '{0}': failed to evaluate the project: {1}</source>
         <target state="translated">제약 조건 '{0}' 생성 실패: 프로젝트 평가 실패: {1}</target>
@@ -2366,20 +1237,30 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">프로젝트 컨텍스트</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectConvertAppFullName">
-        <source>Convert a file-based program to a project-based program.</source>
-        <target state="translated">파일 기반 프로그램을 프로젝트 기반 프로그램으로 변환합니다.</target>
-        <note />
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">변환 후 모든 원본 파일을 삭제하시겠습니까?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">출력 디렉터리를 지정합니다(Enter 키를 누르면 '{0}' 기본값 사용, 기존 디렉터리가 없어야 함).</target>
         <note>{0} is the default value</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertDryRun">
-        <source>Determines changes without actually modifying the file system</source>
-        <target state="translated">파일 시스템을 실제로 수정하지 않고 변경 내용을 결정합니다.</target>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">아니요 - 모든 원본 파일 유지</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">예 - 모든 원본 파일 삭제</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">원본 파일을 삭제함: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -2401,39 +1282,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">시험 실행: 파일을 만듭니다. {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">시험 실행: 파일을 삭제합니다. {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">시험 실행: '{0}' 파일을 '{1}'(으)로 이동합니다.</target>
-        <note>{0} and {1} are file full paths.</note>
-      </trans-unit>
-      <trans-unit id="ProjectManifest">
-        <source>PROJECT_MANIFEST</source>
-        <target state="translated">PROJECT_MANIFEST</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectManifestDescription">
-        <source>The XML file that contains the list of packages to be stored.</source>
-        <target state="translated">저장될 패키지 목록을 포함하는 XML 파일입니다.</target>
-        <note />
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">시험 실행: 원본 파일을 삭제함: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
         <target state="translated">프로젝트</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishAppDescription">
-        <source>Publisher for the .NET Platform</source>
-        <target state="translated">.NET 플랫폼용 게시자입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishConfigurationOptionDescription">
-        <source>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</source>
-        <target state="translated">게시할 구성입니다. 기본값은 NET 8.0 프로젝트의 경우 'Release'이지만, 이전 프로젝트의 경우 'Debug'입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDefinition">
@@ -2441,101 +1297,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">배포에 대해 .NET 프로젝트를 게시합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PublishFrameworkOptionDescription">
-        <source>The target framework to publish for. The target framework has to be specified in the project file.</source>
-        <target state="translated">게시할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에서 지정해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishOutputOption">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishOutputOptionDescription">
-        <source>The output directory to place the published artifacts in.</source>
-        <target state="translated">게시된 아티팩트를 배치할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishRuntimeOptionDescription">
-        <source>The target runtime to publish for. This is used when creating a self-contained deployment.
-The default is to publish a framework-dependent application.</source>
-        <target state="translated">게시할 대상 런타임입니다. 자체 포함 배포를 만들 때 사용됩니다.
-기본값은 프레임워크 종속 애플리케이션을 게시하는 것입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RazorOptionDescription">
-        <source>Shut down the Razor build server.</source>
-        <target state="translated">Razor 빌드 서버를 종료합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceAddAppFullName">
-        <source>Add a project-to-project reference to the project.</source>
-        <target state="translated">프로젝트에 프로젝트 간 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceAddCmdFrameworkDescription">
-        <source>Add the reference only when targeting a specific framework.</source>
-        <target state="translated">특정 프레임워크를 대상으로 지정할 때에만 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceAddProjectPathArgumentDescription">
-        <source>The paths to the projects to add as references.</source>
-        <target state="translated">참조로 추가할 프로젝트의 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceAddProjectPathArgumentName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReferenceDefinition">
         <source>Add, remove, or list ProjectReferences for a .NET project.</source>
         <target state="translated">.NET 프로젝트에 대한 ProjectReferences를 추가, 제거 또는 나열합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceListAppFullName">
-        <source>List all project-to-project references of the project.</source>
-        <target state="translated">프로젝트의 모든 프로젝트 간 참조를 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoveAppFullName">
-        <source>Remove a project-to-project reference from the project.</source>
-        <target state="translated">프로젝트에서 프로젝트 간 참조를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoveCmdFrameworkDescription">
-        <source>Remove the reference only when targeting a specific framework.</source>
-        <target state="translated">특정 프레임워크를 대상으로 지정할 때에만 참조를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoveProjectPathArgumentDescription">
-        <source>The paths to the referenced projects to remove.</source>
-        <target state="translated">제거할 참조된 프로젝트의 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoveProjectPathArgumentName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReleasesLibraryFailed">
         <source>Unable to get releases information: {0}</source>
         <target state="translated">릴리스 정보를 가져올 수 없음: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveAppFullName">
-        <source>Remove one or more projects from a solution file.</source>
-        <target state="translated">솔루션 파일에서 하나 이상의 프로젝트를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveProjectPathArgumentDescription">
-        <source>The project paths or names to remove from the solution.</source>
-        <target state="translated">솔루션에서 제거할 프로젝트 경로 또는 이름입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveProjectPathArgumentName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="RemovingWorkloadInstallationRecord">
@@ -2556,11 +1325,6 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RequiresWindows">
         <source>This command can only be run on Windows</source>
         <target state="translated">이 명령은 Windows에서만 실행할 수 있습니다</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RestoreAppFullName">
-        <source>.NET dependency restorer</source>
-        <target state="translated">.NET 의존성 복원 도구</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreDefinition">
@@ -2593,11 +1357,6 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">프레임워크 버전(LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable)으로 롤포워드합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollForwardOptionDescription">
-        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
-        <target state="translated">대상으로 하는 런타임이 설치되지 않은 경우 .NET 도구가 최신 버전의 .NET 런타임으로 롤포워드하도록 허용합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">롤백 정의가 잘못되었습니다. 롤백 정의 {0}의 매니페스트 ID {1}와(과) 일치하지 않습니다.</target>
@@ -2613,9 +1372,9 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">팩 {0} 설치를 롤백 중...</target>
         <note />
       </trans-unit>
-      <trans-unit id="RunAppFullName">
-        <source>.NET Run Command</source>
-        <target state="translated">.NET 실행 명령</target>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="translated">사용 가능한 장치:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -2626,6 +1385,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">빌드하는 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="translated">장치에 배포하지 못했습니다. 배포 오류를 수정하고 다시 실행하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -2678,6 +1442,11 @@ The current OutputType is '{2}'.</source>
 현재 OutputType은(는) '{2}'입니다.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="translated">여러 장치를 사용할 수 있어 이 프로젝트를 실행할 수 없습니다. 다음 값 중 하나를 사용해 {0} 인수를 전달하여 사용할 장치를 지정하세요.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2685,9 +1454,19 @@ Your project targets multiple frameworks. Specify which framework to run using '
 프로젝트에서 여러 프레임워크를 대상으로 합니다. '{0}'을(를) 사용하여 실행할 프레임워크를 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">위아래로 이동하여 더 많은 장치 보기</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
         <target state="translated">더 많은 프레임워크를 보려면 위아래로 이동하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="translated">이 프로젝트에 사용할 수 있는 장치가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2698,6 +1477,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
         <target state="translated">검색할 형식</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">실행할 장치 선택:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -2715,11 +1499,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">경고: '{0}'의 설정은 '{1}'이(가) 우선하므로 사용되지 않습니다.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
-      <trans-unit id="RunConfigurationOptionDescription">
-        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
-        <target state="translated">실행할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">.NET 프로젝트 출력을 빌드하고 실행합니다.</target>
@@ -2728,11 +1507,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="RunDotnetCommandHelpForMore">
         <source>Run 'dotnet [command] --help' for more information on a command.</source>
         <target state="translated">명령에 대한 자세한 정보를 보려면 'dotnet [명령] --help'를 실행합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunFrameworkOptionDescription">
-        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
-        <target state="translated">실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunRuntimeOptionDescription">
@@ -2797,16 +1571,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
 {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkAppFullName">
-        <source>.NET SDK Command</source>
-        <target state="translated">.NET SDK 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SdkCheckAppFullName">
-        <source>.NET SDK Check Command</source>
-        <target state="translated">.NET SDK 확인 명령</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SdkDefinition">
         <source>Manage .NET SDK installation.</source>
         <target state="translated">.NET SDK 설치를 관리합니다.</target>
@@ -2867,29 +1631,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">{0}(프로세스 {1})을(를) 종료하는 중...</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipManifestUpdateOptionDescription">
-        <source>Skip updating the workload manifests.</source>
-        <target state="translated">워크로드 매니페스트 업데이트 건너뛰기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipOptimizationOptionDescription">
-        <source>Skip the optimization phase.</source>
-        <target state="translated">최적화 단계를 건너뜁니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
         <source>Unable to bypass signature verification. The specified option conflicts with a global policy.</source>
         <target state="translated">서명 확인을 무시할 수 없습니다. 지정한 옵션이 전역 정책과 충돌합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipSignCheckOptionDescription">
-        <source>Skip signature verification of workload packages and installers.</source>
-        <target state="translated">워크로드 패키지 및 설치 관리자의 서명 확인을 건너뜁니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipSymbolsOptionDescription">
-        <source>Skip creating symbol files which can be used for profiling the optimized assemblies.</source>
-        <target state="translated">최적화된 어셈블리 프로파일링에 대해 사용할 수 있는 기호 파일 만들기를 건너뜁니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedColon">
@@ -2917,24 +1661,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">.slnx 파일 {0}이(가) 생성되었습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
-        <source>Recursively add projects' ReferencedProjects to solution</source>
-        <target state="translated">프로젝트의 ReferencedProjects를 솔루션에 재귀적으로 추가</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionAppFullName">
-        <source>.NET modify solution file command</source>
-        <target state="translated">.NET 솔루션 파일 수정 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionArgumentDescription">
-        <source>The solution file to operate on. If not specified, the command will search the current directory for one.</source>
-        <target state="translated">수행할 솔루션 파일입니다. 파일을 지정하지 않으면 명령이 현재 디렉터리에서 파일을 검색합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionArgumentName">
-        <source>SLN_FILE</source>
-        <target state="translated">SLN_FILE</target>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="translated">솔루션 필터 파일(.slnf)은 --in-root 또는 --solution-folder 옵션을 지원하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -2945,16 +1674,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="SolutionFolderHeader">
         <source>Solution Folder(s)</source>
         <target state="translated">솔루션 폴더</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceArgumentName">
-        <source>Source</source>
-        <target state="translated">원본</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceDescription">
-        <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
-        <target state="translated">검색할 패키지 원본입니다. 여러 '--source' 옵션을 전달하여 여러 패키지 원본을 검색할 수 있습니다. 예: '--source https://api.nuget.org/v3/index.json'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion">
@@ -2997,34 +1716,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">상태</target>
         <note />
       </trans-unit>
-      <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">.NET 플랫폼에 대해 지정된 어셈블리를 저장합니다. 기본적으로 대상 런타임 및 프레임워크에 대해 최적화됩니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="StoreDefinition">
         <source>Store the specified assemblies in the runtime package store.</source>
         <target state="translated">지정된 어셈블리를 런타임 패키지 저장소에 저장합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="StoreFrameworkOptionDescription">
-        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
-        <target state="translated">패키지를 저장할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에서 지정해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="StoreOutputOption">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="StoreOutputOptionDescription">
-        <source>The output directory to store the given assemblies in.</source>
-        <target state="translated">지정된 어셈블리를 저장할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="StoreRuntimeOptionDescription">
-        <source>The target runtime to store packages for.</source>
-        <target state="translated">패키지를 저장할 대상 런타임입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SucceededColon">
@@ -3041,21 +1735,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>Tags</source>
         <target state="translated">태그</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="TempDirOptionDescription">
-        <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
-        <target state="translated">NuGet 패키지를 다운로드하고 추출하려면 이 명령의 임시 디렉터리를 지정합니다(보안이 있어야 합니다).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Microsoft Testplatform 배너를 표시하지 않고 테스트 실행</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestCmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
@@ -3075,11 +1754,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCommandUseTestModules">
         <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
         <target state="translated">'dotnet test'에 대한 dll 또는 실행 파일을 지정하는 것은 '--test-modules'를 통해 지정해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestConfigurationOptionDescription">
-        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
-        <target state="translated">테스트 실행에 사용할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestDefinition">
@@ -3102,11 +1776,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">{0}개 테스트가 검색됨</target>
         <note>0 is number of tests</note>
       </trans-unit>
-      <trans-unit id="TestFrameworkOptionDescription">
-        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
-        <target state="translated">테스트를 실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
         <target state="translated">성공하지 않은 종료 코드로 테스트 실행이 완료되었습니다. {0}(참조: https://aka.ms/testingplatform/exitcodes)</target>
@@ -3117,19 +1786,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">테스트 실행 요약:</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestRuntimeOptionDescription">
-        <source>The target runtime to test for.</source>
-        <target state="translated">테스트할 대상 런타임입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' is already installed.</source>
         <target state="translated">'{0}' 도구가 이미 설치되어 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolCommandDescription">
-        <source>Install or work with tools that extend the .NET experience.</source>
-        <target state="translated">.NET 환경을 확장하는 도구를 설치하거나 도구로 작업합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
@@ -3140,68 +1799,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="ToolDefinition">
         <source>Install or manage tools that extend the .NET experience.</source>
         <target state="translated">.NET 환경을 확장하는 도구를 설치하거나 관리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadCanceled">
-        <source>Tool package download canceled</source>
-        <target state="translated">도구 패키지 다운로드가 취소됨</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</source>
-        <target state="translated">도구 패키지 {0}@{1}이(가) 원본 {2}에서 다운로드됩니다.
-계속하시겠습니까?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolDownloadNeedsConfirmation">
-        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="translated">도구 패키지 다운로드를 확인해야 합니다. 대화형 모드에서 실행하거나 "--yes" 명령줄 옵션을 사용하여 확인하세요.</target>
-        <note>{Locked="--yes"}</note>
-      </trans-unit>
-      <trans-unit id="ToolExecuteCommandDescription">
-        <source>Executes a tool from source without permanently installing it.</source>
-        <target state="translated">영구적으로 설치하지 않고 원본에서 도구를 실행합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to use during installation.</source>
-        <target state="translated">설치 중 사용할 추가 NuGet 패키지 소스를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallAddSourceOptionName">
-        <source>ADDSOURCE</source>
-        <target state="translated">ADDSOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallCommandDescription">
-        <source>Install global or local tool. Local tools are added to manifest and restored.</source>
-        <target state="translated">전역 또는 로컬 도구를 설치합니다. 로컬 도구는 매니페스트에 추가되고 복원됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">사용할 NuGet 구성 파일입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallFrameworkOptionDescription">
-        <source>The target framework to install the tool for.</source>
-        <target state="translated">도구를 설치할 대상 프레임워크입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallFrameworkOptionName">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallGlobalOptionDescription">
-        <source>Install the tool for the current user.</source>
-        <target state="translated">현재 사용자에 대해 도구를 설치합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
@@ -3216,64 +1813,9 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">지정된 버전 '{0}'이(가) 유효한 NuGet 버전 범위가 아닙니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallLocalOptionDescription">
-        <source>Install the tool and add to the local tool manifest (default).</source>
-        <target state="translated">도구를 설치하고 로컬 도구 매니페스트에 추가합니다(기본값).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallManifestPathOptionDescription">
-        <source>Path to the manifest file.</source>
-        <target state="translated">매니페스트 파일 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallManifestPathOptionName">
-        <source>PATH</source>
-        <target state="translated">PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="translated">NuGet 구성 파일 '{0}'이(가) 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">설치할 도구의 NuGet 패키지 ID입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallSourceOptionDescription">
-        <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="translated">설치 중에 사용할 모든 NuGet 패키지 원본을 이러한 패키지 원본으로 바꿉니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallToolPathOptionDescription">
-        <source>The directory where the tool will be installed. The directory will be created if it does not exist.</source>
-        <target state="translated">도구를 설치할 디렉터리입니다. 디렉터리가 존재하지 않는 경우 생성됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallToolPathOptionName">
-        <source>PATH</source>
-        <target state="translated">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallVersionOptionDescription">
-        <source>The version of the tool package to install.</source>
-        <target state="translated">설치할 도구 패키지 버전입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallVersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationFailed">
@@ -3291,24 +1833,9 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">도구 패키지를 복원할 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolListCommandDescription">
-        <source>List tools installed globally or locally.</source>
-        <target state="translated">전역으로 또는 로컬로 설치된 도구를 나열합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolListCommandsColumn">
         <source>Commands</source>
         <target state="translated">명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolListFormatOptionDescription">
-        <source>The output format for the list of tools.</source>
-        <target state="translated">도구 목록의 출력 형식입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolListGlobalOptionDescription">
-        <source>List tools installed for the current user.</source>
-        <target state="translated">현재 사용자에 대해 설치된 도구를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolListInvalidPackageWarning">
@@ -3323,29 +1850,9 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">'{0}' 도구 경로가 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolListLocalOptionDescription">
-        <source>List the tools installed in the local tool manifest.</source>
-        <target state="translated">로컬 도구 매니페스트에 설치된 도구를 나열합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolListPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to list</source>
-        <target state="translated">나열할 도구의 NuGet 패키지 ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolListPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolListPackageIdColumn">
         <source>Package Id</source>
         <target state="translated">패키지 ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolListToolPathOptionDescription">
-        <source>The directory containing the tools to list.</source>
-        <target state="translated">나열할 도구를 포함하는 디렉터리입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolListVersionColumn">
@@ -3353,89 +1860,9 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">버전</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolRestoreCommandDescription">
-        <source>Restore tools defined in the local tool manifest.</source>
-        <target state="translated">로컬 도구 매니페스트에 정의된 도구를 복원합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreManifestPathOptionDescription">
-        <source>Path to the manifest file.</source>
-        <target state="translated">매니페스트 파일 경로입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRunArgumentsDescription">
-        <source>Arguments forwarded to the tool</source>
-        <target state="translated">도구에 전달된 인수</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRunCommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">로컬 도구를 실행합니다. 이 명령은 전역 도구를 실행하는 데 사용할 수 없습니다. </target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">nuget.org에서 dotnet 도구 검색</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchPrereleaseDescription">
-        <source>Include pre-release packages.</source>
-        <target state="translated">시험판 패키지를 포함합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSearchTermArgumentName">
-        <source>SEARCH_TERM</source>
-        <target state="translated">SEARCH_TERM</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSearchTermDescription">
-        <source>Search term from package id or package description. Require at least one character.</source>
-        <target state="translated">패키지 ID 또는 패키지 설명에서 가져온 검색어입니다. 1자 이상이어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSkipArgumentName">
-        <source>Skip</source>
-        <target state="translated">건너뛰기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSkipDescription">
-        <source>The number of results to skip, for pagination.</source>
-        <target state="translated">페이지 매김을 위해 건너뛸 결과 수입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchTakeArgumentName">
-        <source>Take</source>
-        <target state="translated">가져오기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchTakeDescription">
-        <source>The number of results to return, for pagination.</source>
-        <target state="translated">페이지 매김을 위해 반환할 결과 수입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallCommandDescription">
-        <source>Uninstall a global tool or local tool.</source>
-        <target state="translated">전역 도구 또는 로컬 도구를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallGlobalOptionDescription">
-        <source>Uninstall the tool from the current user's tools directory.</source>
-        <target state="translated">현재 사용자의 도구 디렉터리에서 도구를 제거합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUninstallInvalidToolPathOption">
         <source>Tool path '{0}' does not exist.</source>
         <target state="translated">'{0}' 도구 경로가 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallLocalOptionDescription">
-        <source>Uninstall the tool and remove it from the local tool manifest.</source>
-        <target state="translated">도구를 제거하고 로컬 도구 매니페스트에서 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallManifestPathOptionDescription">
-        <source>Path to the manifest file.</source>
-        <target state="translated">매니페스트 파일 경로입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUninstallToolHasMultipleVersionsInstalled">
@@ -3458,29 +1885,9 @@ and the corresponding package Ids for installed tools using the command
 확인할 수 있습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUninstallToolPathOptionDescription">
-        <source>The directory containing the tool to uninstall.</source>
-        <target state="translated">제거할 도구를 포함하는 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUninstallUninstallSucceeded">
         <source>Tool '{0}' (version '{1}') was successfully uninstalled.</source>
         <target state="translated">도구 '{0}'(버전 '{1}')을(를) 제거했습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdateCommandDescription">
-        <source>Update a global or local tool.</source>
-        <target state="translated">전역 또는 로컬 도구를 업데이트합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">업데이트할 도구의 NuGet 패키지 ID입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
@@ -3538,11 +1945,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateAllOptionDescription">
-        <source>Update all tools.</source>
-        <target state="translated">모든 도구를 업데이트합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
         <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
         <target state="translated">롤백 파일로 업데이트하는 것은 워크로드 집합과 호환되지 않습니다. 이제 설치 및 업데이트에서 느슨한 매니페스트를 사용합니다. 특정 워크로드 버전으로 업데이트하려면 --version을 사용합니다.</target>
@@ -3561,11 +1963,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
         <target state="translated">요청된 {0} 버전이 기존 {1} 버전(매니페스트 파일 {2})보다 낮습니다. --allow-downgrade 옵션을 사용하여 이 업데이트를 허용하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateModeDescription">
-        <source>Controls whether updates should look for workload sets or the latest version of each individual manifest.</source>
-        <target state="translated">업데이트에서 워크로드 집합을 찾을지 또는 각 개별 매니페스트의 최신 버전을 찾을지 여부를 제어합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
@@ -3638,49 +2035,14 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">{0}의 시작 설정을 사용하는 중...</target>
         <note />
       </trans-unit>
-      <trans-unit id="VBCSCompilerOptionDescription">
-        <source>Shut down the VB/C# compiler build server.</source>
-        <target state="translated">VB/C# 컴파일러 빌드 서버를 종료합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">'{0}' 워크로드는 '{1}' Visual Studio 설치 관리자에서 설치하고 관리하므로 제거되지 않았습니다. Visual Studio 설치 관리자를 사용하여 이 워크로드를 제거하여 완전히 제거하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ValidationFailedDuplicateVersion">
-        <source>Cannot specify --version when the package argument already contains a version.</source>
-        <target state="translated">패키지 인수에 이미 버전이 포함되어 있을 때는 --version을 지정할 수 없습니다.</target>
-        <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">'{0}' 속성이 지정된 경우 개체여야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbosityArgumentName">
-        <source>Verbosity</source>
-        <target state="translated">세부 정보 표시</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbosityDescription">
-        <source>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</source>
-        <target state="translated">출력에 'normal', 'minimal', 'detailed'의 세부 정보 정도를 표시합니다. 기본값은 'normal'입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">세부 정보 표시 수준을 설정합니다. 허용되는 값은 q[uiet], m[inimal], n[ormal] 및 diag[nostic]입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Verified">
         <source>Verified</source>
         <target state="translated">확인됨</target>
-        <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="Version">
-        <source>Version</source>
-        <target state="translated">버전</target>
         <note>Table lable</note>
       </trans-unit>
       <trans-unit id="VersionCheckFailure">
@@ -3713,36 +2075,9 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">'{0}' 워크로드가 이미 설치되어 있습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadCleanCommandDescription">
-        <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
-        <target state="translated">이전 업데이트 및 제거에서 남아 있을 수 있는 워크로드 구성 요소를 제거합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCommandDescription">
-        <source>Install or work with workloads that extend the .NET experience.</source>
-        <target state="translated">.NET 환경을 확장하는 워크로드를 설치하거나 워크로드로 작업합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadConfigCommandDescription">
-        <source>Modify or display workload configuration values.
-To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
-        <target state="translated">워크로드 구성 값을 수정하거나 표시합니다.
-값을 표시하려면 값을 제공하지 않고 해당 명령줄 옵션을 지정합니다.  예: "dotnet workload config --update-mode"</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadDefinition">
         <source>Manage optional workloads.</source>
         <target state="translated">선택적 워크로드를 관리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadElevateCommandDescription">
-        <source>Start the elevated server process to facilitate MSI based installations.</source>
-        <target state="translated">MSI 기반 설치를 용이하게 하도록 관리자 권한 서버 프로세스를 시작합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadHistoryCommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">워크로드 설치 작업의 기록을 표시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
@@ -3755,16 +2090,6 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드 버전</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadIdArgumentDescription">
-        <source>The NuGet package ID of the workload to install.</source>
-        <target state="translated">설치할 워크로드의 NuGet 패키지 ID입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadIdArgumentName">
-        <source>WORKLOAD_ID</source>
-        <target state="translated">WORKLOAD_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadIdColumn">
         <source>Installed Workload Id</source>
         <target state="translated">설치된 워크로드 ID</target>
@@ -3775,40 +2100,10 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드 ID</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadIdStubArgumentDescription">
-        <source>The text to search for in the IDs and descriptions of available workloads.</source>
-        <target state="translated">ID에서 검색할 텍스트 및 사용 가능한 워크로드에 대한 설명입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadIdStubArgumentName">
-        <source>SEARCH_STRING</source>
-        <target state="translated">SEARCH_STRING</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInfoDescription">
-        <source>Display information about installed workloads.</source>
-        <target state="translated">설치된 워크로드에 대한 정보를 표시합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInfoProvider_Message_AddWorkloads">
         <source>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</source>
         <target state="translated">'dotnet workload search'을 실행하여 SDK에 설치할 수 있는 워크로드를 검색합니다.</target>
         <note>{Locked="dotnet workload search"}</note>
-      </trans-unit>
-      <trans-unit id="WorkloadInstallCommandDescription">
-        <source>Install one or more workloads.</source>
-        <target state="translated">하나 이상의 워크로드를 설치합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">사용할 NuGet 구성 파일입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
@@ -3825,29 +2120,9 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드를 설치하지 못했습니다. 설치된 팩을 롤백하는 중...</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadInstallSourceOptionDescription">
-        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
-        <target state="translated">복원 중에 사용할 NuGet 패키지 원본입니다. 여러 원본을 지정하려면 옵션을 반복합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInstallTypeColumn">
         <source>Install Type</source>
         <target state="translated">설치 유형</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallVersionOptionDescription">
-        <source>The version of the SDK.</source>
-        <target state="translated">SDK의 버전입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallVersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
@@ -3868,11 +2143,6 @@ To display a value, specify the corresponding command-line option without provid
       <trans-unit id="WorkloadIntegrityCheck">
         <source>Checking the state of installed workloads...</source>
         <target state="translated">설치된 워크로드의 상태를 확인하는 중...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadListCommandDescription">
-        <source>List workloads available.</source>
-        <target state="translated">사용 가능한 워크로드를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadListFooter">
@@ -3940,24 +2210,9 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">{0} 팩 버전 {1}이(가) 이미 설치되었습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadRepairCommandDescription">
-        <source>Repair workload installations.</source>
-        <target state="translated">워크로드 설치를 복구합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadRepairFailed">
         <source>Workload repair failed: {0}</source>
         <target state="translated">워크로드를 복구하지 못했습니다. {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadRestoreCommandDescription">
-        <source>Restore workloads required for a project.</source>
-        <target state="translated">프로젝트에 필요한 워크로드를 복원합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">사용 가능한 워크로드를 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
@@ -3975,19 +2230,9 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드 집합 버전 {0}에 패키지 관리에 의해 제거될 수 있는 매니페스트가 누락되었습니다. 이 문제를 해결하려면 "dotnet workload repair"를 실행하세요.</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="translated">표시할 워크로드 버전 또는 '@' 문자로 결합된 하나 이상의 워크로드와 해당 버전입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">설치 원본</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUninstallCommandDescription">
-        <source>Uninstall one or more workloads.</source>
-        <target state="translated">하나 이상의 워크로드를 제거합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUninstallFailed">
@@ -4003,11 +2248,6 @@ To display a value, specify the corresponding command-line option without provid
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">알림 매니페스트를 업데이트했습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUpdateCommandDescription">
-        <source>Update all installed workloads.</source>
-        <target state="translated">설치된 모든 워크로드를 업데이트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateFailed">
@@ -4033,21 +2273,6 @@ To display a value, specify the corresponding command-line option without provid
       <trans-unit id="WorkloadUpdateWorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">캐시할 워크로드 업데이트 패키지를 다운로드하지 못했습니다. {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadVersionArgument">
-        <source>WORKLOAD_VERSION</source>
-        <target state="translated">WORKLOAD_VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadVersionArgumentDescription">
-        <source>Output workload manifest versions associated with the provided workload version.</source>
-        <target state="translated">제공된 워크로드 버전과 연결된 워크로드 매니페스트 버전을 출력합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadVersionDescription">
-        <source>Display the currently installed workload version.</source>
-        <target state="translated">현재 설치된 워크로드 버전을 표시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionNotInstalledShort">
@@ -4083,18 +2308,6 @@ To display a value, specify the corresponding command-line option without provid
       <trans-unit id="ZeroTestsRan">
         <source>Zero tests ran</source>
         <target state="translated">테스트가 0개 실행됨</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdCollectDescription">
-        <source>The friendly name of the data collector to use for the test run.
-                                        More info here: https://aka.ms/vstest-collect</source>
-        <target state="translated">테스트 실행에 사용할 데이터 수집기의 이름입니다.
-                                        자세한 정보: https://aka.ms/vstest-collect</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdCollectFriendlyName">
-        <source>DATA_COLLECTOR_NAME</source>
-        <target state="translated">DATA_COLLECTOR_NAME</target>
         <note />
       </trans-unit>
     </body>
