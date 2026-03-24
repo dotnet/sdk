@@ -396,6 +396,96 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
+        [Fact]
+        public void ItFallsBackToHighestSdkBelowMaximumVSDefinedVersion()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.300");
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200");
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateMaximumVSDefinedSDKVersionFile("10.0.200");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext { ProjectFileDirectory = environment.TestDirectory },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("9.0.300");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItFallsBackToHighestSdkBelowMaximumVSDefinedVersionWhenGlobalJsonResolvedToHigherVersion()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.300");
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200");
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.200");
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateMaximumVSDefinedSDKVersionFile("10.0.200");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext { ProjectFileDirectory = environment.TestDirectory },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("9.0.300");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItDoesNotFallBackWhenVersionIsBelowMaximumVSDefinedVersion()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.300");
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateMaximumVSDefinedSDKVersionFile("10.0.200");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext { ProjectFileDirectory = environment.TestDirectory },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("9.0.300");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItSelectsHighestBelowMaximumWhenMultipleSdksInstalled()
+        {
+            var environment = new TestEnvironment(_testAssetsManager);
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.200");
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.300");
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200");
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.300");
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateMaximumVSDefinedSDKVersionFile("10.0.200");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext { ProjectFileDirectory = environment.TestDirectory },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("9.0.300");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -599,6 +689,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     testName: callingMethod).Path);
 
                 DeleteMinimumVSDefinedSDKVersionFile();
+                DeleteMaximumVSDefinedSDKVersionFile();
 
                 PathEnvironmentVariable = string.Empty;
             }
@@ -714,6 +805,22 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             {
                 string baseDirectory = AppContext.BaseDirectory;
                 return Path.Combine(baseDirectory, "minimumVSDefinedSDKVersion");
+            }
+
+            public void CreateMaximumVSDefinedSDKVersionFile(string version)
+            {
+                File.WriteAllText(GetMaximumVSDefinedSDKVersionFilePath(), version);
+            }
+
+            public void DeleteMaximumVSDefinedSDKVersionFile()
+            {
+                File.Delete(GetMaximumVSDefinedSDKVersionFilePath());
+            }
+
+            private string GetMaximumVSDefinedSDKVersionFilePath()
+            {
+                string baseDirectory = AppContext.BaseDirectory;
+                return Path.Combine(baseDirectory, "maximumVSDefinedSDKVersion");
             }
 
             public void CreateVSSettingsFile(bool disallowPreviews)

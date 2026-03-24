@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 });
         }
 
-        public SdkResolutionResult ResolveNETCoreSdkDirectory(string? globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string? dotnetExeDir)
+        public SdkResolutionResult ResolveNETCoreSdkDirectory(string? globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string? dotnetExeDir, string? maximumSdkVersion = null)
         {
             var result = NETCoreSdkResolverNativeWrapper.ResolveSdk(dotnetExeDir, globalJsonStartDir, _vsSettings.DisallowPrerelease());
 
@@ -162,6 +162,14 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 result.FailedToResolveSDKSpecifiedInGlobalJson = true;
                 // We need the SDK to be version 5 or higher to ensure that we generate a build error when we fail to resolve the SDK specified by global.json
                 mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion, 5);
+            }
+            else if (result.ResolvedSdkDirectory != null
+                     && maximumSdkVersion != null
+                     && !IsSdkVersionSmallerThan(new DirectoryInfo(result.ResolvedSdkDirectory).Name, maximumSdkVersion))
+            {
+                // The resolved SDK version is >= the maximum supported version; fall back to the highest
+                // compatible SDK below the maximum.
+                mostCompatible = GetMostCompatibleSdkBelowMaxVersion(dotnetExeDir, msbuildVersion, maximumSdkVersion);
             }
             else if (result.ResolvedSdkDirectory != null
                      && result.GlobalJsonPath == null
@@ -176,6 +184,79 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns the directory of the highest installed SDK that is both compatible with the given
+        /// MSBuild version and has a version strictly less than <paramref name="maximumSdkVersion"/>.
+        /// Returns <see langword="null"/> when no such SDK is found.
+        /// </summary>
+        private string? GetMostCompatibleSdkBelowMaxVersion(string? dotnetExeDirectory, Version msbuildVersion, string maximumSdkVersion)
+        {
+            string? mostRecent = null;
+            string? mostRecentNonPreview = null;
+
+            string[] availableSdks = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(dotnetExeDirectory)!;
+            for (int i = availableSdks.Length - 1; i >= 0; i--)
+            {
+                string netcoreSdkDir = availableSdks[i];
+                string netcoreSdkVersion = new DirectoryInfo(netcoreSdkDir).Name;
+
+                if (!IsSdkVersionSmallerThan(netcoreSdkVersion, maximumSdkVersion))
+                {
+                    continue;
+                }
+
+                Version minimumMSBuildVersion = GetMinimumMSBuildVersion(netcoreSdkDir);
+                if (msbuildVersion < minimumMSBuildVersion)
+                {
+                    continue;
+                }
+
+                if (mostRecent == null)
+                {
+                    mostRecent = netcoreSdkDir;
+                }
+
+                if (netcoreSdkVersion.IndexOf('-') < 0)
+                {
+                    mostRecentNonPreview = netcoreSdkDir;
+                    break;
+                }
+            }
+
+            return _vsSettings.DisallowPrerelease() ? mostRecentNonPreview : mostRecent;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="sdkVersion"/> is strictly less than
+        /// <paramref name="maximumVersion"/> using a numeric major.minor.patch comparison (prerelease
+        /// suffixes are ignored so that e.g. "10.0.200-preview1" is treated as equal to "10.0.200").
+        /// </summary>
+        private static bool IsSdkVersionSmallerThan(string? sdkVersion, string? maximumVersion)
+        {
+            if (string.IsNullOrEmpty(maximumVersion))
+            {
+                return false; // No upper limit defined; treat everything as below the maximum.
+            }
+
+            if (string.IsNullOrEmpty(sdkVersion))
+            {
+                return true; // Unknown SDK version; assume it is below the maximum (safe default).
+            }
+
+            int dashIndex = sdkVersion.IndexOf('-');
+            string sdkBase = dashIndex >= 0 ? sdkVersion.Substring(0, dashIndex) : sdkVersion;
+
+            int maxDashIndex = maximumVersion.IndexOf('-');
+            string maxBase = maxDashIndex >= 0 ? maximumVersion.Substring(0, maxDashIndex) : maximumVersion;
+
+            if (Version.TryParse(sdkBase, out Version? sdk) && Version.TryParse(maxBase, out Version? max))
+            {
+                return sdk < max;
+            }
+
+            return true;
         }
     }
 }

@@ -123,7 +123,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 logger?.LogString("Resolving .NET Core SDK directory");
                 string? globalJsonStartDir = GetGlobalJsonStartDir(context);
                 logger?.LogMessage($"\tglobal.json start directory: {globalJsonStartDir}");
-                var resolverResult = _netCoreSdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetRoot);
+                string? maximumVSDefinedSDKVersion = GetMaximumVSDefinedSDKVersion();
+                var resolverResult = _netCoreSdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetRoot, maximumVSDefinedSDKVersion);
 
                 if (resolverResult.ResolvedSdkDirectory == null)
                 {
@@ -369,6 +370,22 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return File.ReadLines(minimumVSDefinedSdkVersionFilePath).First().Trim();
+        }
+
+        private static string? GetMaximumVSDefinedSDKVersion()
+        {
+            string? dotnetMSBuildSdkResolverDirectory =
+                Path.GetDirectoryName(typeof(DotNetMSBuildSdkResolver).GetTypeInfo().Assembly.Location);
+
+            string maximumVSDefinedSdkVersionFilePath =
+                Path.Combine(dotnetMSBuildSdkResolverDirectory ?? string.Empty, "maximumVSDefinedSDKVersion");
+
+            if (!File.Exists(maximumVSDefinedSdkVersionFilePath))
+            {
+                return null;
+            }
+
+            return File.ReadLines(maximumVSDefinedSdkVersionFilePath).First().Trim();
         }
 
         private bool IsNetCoreSDKSmallerThanTheMinimumVersion(string? netcoreSdkVersion, string minimumVersion)
