@@ -89,17 +89,15 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
 
+    private ExtractorProgressTracker ProgressTracker => _progressTracker ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString());
+    private ExtractorProgressTracker? _progressTracker;
+
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
-        activity?.SetTag("download.version", _resolvedVersion.ToString());
-
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string description = ProgressFormatting.FormatProgressDescription("Downloading", _request.Component, _resolvedVersion.ToString());
-        var downloadTask = ProgressReporter.AddTask(description, 100);
-        var reporter = new DownloadProgressReporter(downloadTask, description);
+        var (reporter, downloadTask) = ProgressTracker.BeginDownload();
 
         try
         {
@@ -128,10 +126,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 component: _request.Component.ToString());
         }
 
-        downloadTask.Value = 100;
-        long archiveBytes = new FileInfo(_archivePath).Length;
-        string downloadedDesc = ProgressFormatting.FormatProgressDescription("Downloaded", _request.Component, _resolvedVersion.ToString());
-        downloadTask.Description = $"{downloadedDesc} ({ProgressFormatting.FormatMB(archiveBytes)} / {ProgressFormatting.FormatMB(archiveBytes)})";
+        ProgressTracker.CompleteDownload(downloadTask, _archivePath);
     }
 
     public void Commit()
@@ -141,11 +136,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         _extractedSubcomponents.Clear();
 
-        string description = ProgressFormatting.FormatProgressDescription("Installing", _request.Component, _resolvedVersion.ToString());
-        // Pad to match the width of "Downloading" rows (which have an MB suffix)
-        // so all progress rows stay aligned within the shared Spectre column.
-        string paddedDescription = description + new string(' ', ProgressFormatting.DownloadSuffixWidth);
-        var installTask = ProgressReporter.AddTask(paddedDescription, maxValue: 100);
+        var installTask = ProgressTracker.BeginExtraction();
 
         if (_archivePath is null)
         {
@@ -154,8 +145,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
 
-        // Switch to past tense and drop the trailing padding now that the task is complete.
-        installTask.Description = ProgressFormatting.FormatProgressDescription("Installed", _request.Component, _resolvedVersion.ToString());
+        ProgressTracker.CompleteExtraction(installTask);
     }
 
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)
@@ -309,14 +299,6 @@ internal class DotnetArchiveExtractor : IDisposable
     }
 
     /// <summary>
-    /// Initializes progress tracking for extraction by setting the max value.
-    /// </summary>
-    private static void InitializeExtractionProgress(IProgressTask? installTask, long totalEntries)
-    {
-        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
-    }
-
-    /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
     private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
@@ -325,7 +307,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            InitializeExtractionProgress(installTask, CountTarEntries(decompressedPath));
+            long totalEntries = CountTarEntries(decompressedPath);
+            if (installTask is not null) { installTask.MaxValue = totalEntries > 0 ? totalEntries : 1; }
             ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
         }
         finally
@@ -459,7 +442,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
-        InitializeExtractionProgress(installTask, zip.Entries.Count);
+        if (installTask is not null) { installTask.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1; }
 
         foreach (var entry in zip.Entries)
         {

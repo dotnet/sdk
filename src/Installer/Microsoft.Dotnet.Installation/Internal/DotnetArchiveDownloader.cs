@@ -119,7 +119,9 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
         long? totalBytes = response.Content.Headers.ContentLength;
         using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+        // Default FileStream buffer size (matching .NET's internal default)
+        const int fileStreamBufferSize = 8192;
+        using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, fileStreamBufferSize, useAsync: true);
 
         await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
 
@@ -186,9 +188,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
+        activity?.SetTag("download.version", resolvedVersion.ToString());
+
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
 
-        Activity.Current?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        activity?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
@@ -199,8 +204,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        Activity.Current?.SetTag("download.bytes", fileInfo.Length);
-        Activity.Current?.SetTag("download.from_cache", false);
+        activity?.SetTag("download.bytes", fileInfo.Length);
+        activity?.SetTag("download.from_cache", false);
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
