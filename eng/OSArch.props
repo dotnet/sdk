@@ -23,15 +23,19 @@
          Uses RID-style OS names (win, osx, linux) for compatibility with existing SDK code. -->
     <TargetOS Condition="'$(TargetOS)' == ''">$(HostOS)</TargetOS>
 
-    <!-- OSName preserved for backward compatibility with Layout projects -->
+    <!-- OSName preserved for backward compatibility with Layout projects.
+         Uses RID-style names (win, not windows) for downstream RID construction. -->
     <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetOS)' == 'windows'">win</OSName>
     <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
   </PropertyGroup>
 
-  <!-- Boolean targeting properties -->
+  <!-- Boolean targeting properties.
+       TargetOS may be set externally with either RID-style names (win, osx, linux)
+       or full names (windows, osx, linux) as used by the runtime repo and the VMR. -->
   <PropertyGroup Label="CalculateTargetOSFlags">
-    <TargetsWindows Condition="'$(TargetOS)' == 'win'">true</TargetsWindows>
+    <TargetsWindows Condition="'$(TargetOS)' == 'win' OR '$(TargetOS)' == 'windows'">true</TargetsWindows>
     <TargetsLinux Condition="'$(TargetOS)' == 'linux'">true</TargetsLinux>
     <TargetsOSX Condition="'$(TargetOS)' == 'osx'">true</TargetsOSX>
     <TargetsFreeBSD Condition="'$(TargetOS)' == 'freebsd'">true</TargetsFreeBSD>
