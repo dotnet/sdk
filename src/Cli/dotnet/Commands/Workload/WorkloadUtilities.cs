@@ -44,7 +44,7 @@ internal static class WorkloadUtilities
     /// <exception cref="GracefulException" />
     public static bool ShouldVerifySignatures(bool skipSignCheck)
     {
-#if DOT_NET_BUILD_FROM_SOURCE
+#if !TARGET_WINDOWS
         // Never signed on Unix
         return false;
 #else
