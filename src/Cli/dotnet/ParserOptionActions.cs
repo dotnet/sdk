@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
@@ -75,6 +76,24 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
         }
 
         return false;
+    }
+}
+
+internal class PrintHelpAction(Option option, HelpBuilder builder) : InvocableOptionAction(option)
+{
+    public override bool Terminating => true;
+    public override bool ClearsParseErrors => true;
+
+    private HelpBuilder Builder { get; } = builder;
+
+    public override int Invoke(ParseResult parseResult)
+    {
+        var command = parseResult.CommandResult.Command;
+        var output = parseResult.InvocationConfiguration.Output;
+        var helpContext = new HelpContext(Builder, command, output, parseResult);
+        Builder.Write(helpContext);
+
+        return 0;
     }
 }
 

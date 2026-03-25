@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands;
@@ -44,7 +45,6 @@ using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
@@ -63,13 +63,9 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is System.CommandLine.Help.HelpOption helpOption)
+            else if (option is HelpOption helpOption)
             {
-                helpOption.Action = new DotnetHelpAction()
-                {
-                    Builder = DotnetHelpBuilder.Instance.Value
-                };
-
+                helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
                 option.Description = CliStrings.ShowHelpDescription;
             }
         }

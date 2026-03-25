@@ -1,25 +1,64 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
 public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
 {
-    [Fact]
-    public void ItWritesTelemetryLogs()
+    public static TheoryData<string[], string> CommandsWithExitCode => new()
+    {
+        { new[] { "--help" }, "0" },
+        { new[] { "--info" }, "0" },
+        { new[] { "workload", "list" }, "0" },
+        { new[] { "sdk", "check" }, "0" },
+        { new[] { "build-server", "shutdown" }, "0" },
+        { new[] { "solution", "list" }, "1" },
+        { new[] { "clean" }, "1" },
+        { new[] { "run" }, "1" }
+    };
+
+    [Theory]
+    [MemberData(nameof(CommandsWithExitCode))]
+    public void ItProcessesTelemetryData(string[] commandArgs, string exitCodeExpected)
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;
-        var logFile = Path.Combine(testDir, "TelemLog.json");
+        var commandString = string.Join(' ', commandArgs);
+        var logFile = Path.Combine(testDir, $"TelemLog_{commandString}.json");
 
-        new DotnetCommand(Log, "--info")
+        new DotnetCommand(Log, commandArgs)
             .WithWorkingDirectory(testDir)
-            // TODO: Make mechanism to run test without actually sending telemetry to App Insights.
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "true")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH", logFile)
-            .Execute().Should().Pass();
+            .Execute();
 
-        new FileInfo(logFile)
-            .Should()
-            .Exist();
+        var logFileInfo = new FileInfo(logFile);
+        logFileInfo.Should().Exist();
+
+        var telemetryJson = JsonNode.Parse(logFileInfo.ReadAllText());
+        telemetryJson.Should().NotBeNull();
+
+        var activities = telemetryJson["activities"]?.AsArray();
+        activities.Should().NotBeNull();
+
+        var mainOperation = activities.FirstOrDefault(n => n?["operationName"]?.GetValue<string>() == "main");
+        mainOperation.Should().NotBeNull();
+
+        var displayName = mainOperation["displayName"]?.GetValue<string>();
+        displayName.Should().Be($"dotnet {commandString}");
+
+        var events = mainOperation["events"]?.AsArray();
+        events.Should().NotBeNull();
+
+        var finishEvent = events.FirstOrDefault(n => n?["name"]?.GetValue<string>() == "dotnet/cli/command/finish");
+        finishEvent.Should().NotBeNull();
+
+        var tags = finishEvent["tags"];
+        tags.Should().NotBeNull();
+
+        var exitCode = tags["exitCode"]?.GetValue<string>();
+        exitCode.Should().Be(exitCodeExpected);
     }
 }

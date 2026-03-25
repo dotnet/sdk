@@ -30,6 +30,7 @@ public class TelemetryClient : ITelemetryClient
     // TODO: TelemetryInstance takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
+    private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     private static readonly int s_flushTimeoutMs = 200;
 
     public static string? CurrentSessionId { get; private set; } = null;
@@ -60,20 +61,24 @@ public class TelemetryClient : ITelemetryClient
             .AddRuntimeInstrumentation()
             .AddOtlpExporter();
 
-        var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
-            .AddAzureMonitorTraceExporter(o =>
+            .AddInMemoryExporter(s_activities)
+            .SetSampler(new AlwaysOnSampler());
+
+        if (!s_disableTraceExport)
+        {
+            var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
+            s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
             {
                 o.ConnectionString = s_connectionString;
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = storageDirectory;
-            })
-            .AddInMemoryExporter(s_activities)
-            .SetSampler(new AlwaysOnSampler());
+            });
+        }
 
         var parentActivityContext = GetParentActivityContext();
         ActivityKind = GetActivityKind(parentActivityContext);
@@ -84,13 +89,17 @@ public class TelemetryClient : ITelemetryClient
 
     public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
+        // This is some kind of special condition for MSBuild-related tests.
         if (DisabledForTests)
         {
             return;
         }
 
         environmentProvider ??= new EnvironmentProvider();
-        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
+        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
+            // When building in the official CI pipeline, this makes the complier enable telemetry by default. Otherwise, it is disabled.
+            // It is the reason tests don't send telemetry, because we don't run tests in the official CI pipeline.
+            defaultValue: CompileOptions.TelemetryOptOutDefault);
         if (!Enabled)
         {
             return;
@@ -100,8 +109,8 @@ public class TelemetryClient : ITelemetryClient
         {
             // Create a new OTel meter and tracer provider.
             // It is important to keep the provider instances active throughout the process lifetime.
-            s_metricsProvider = s_metricsProviderBuilder.Build();
-            s_tracerProvider = s_tracerProviderBuilder.Build();
+            s_metricsProvider ??= s_metricsProviderBuilder.Build();
+            s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
