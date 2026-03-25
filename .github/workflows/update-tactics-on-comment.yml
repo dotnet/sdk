@@ -1,0 +1,479 @@
+name: Update Tactics on command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+env:
+  REPO_NAME: ${{ github.event.repository.name }}
+  RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  AI_MODEL: gpt-4o-mini
+
+jobs:
+  authorize:
+    name: Authorize Request
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    outputs:
+      should_run: ${{ steps.command-filter.outputs.should_run }}
+      issue_number: ${{ steps.command-filter.outputs.issue_number }}
+      pr_number: ${{ steps.metadata.outputs.pr_number }}
+
+    steps:
+      - name: Evaluate comment command
+        id: command-filter
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }} # GH Has a Character Limit which prevents overflow issues. https://github.com/dead-claudia/github-limits
+        with:
+          script: |
+            const body = (process.env.COMMENT_BODY || '').trim();
+            const match = body.match(/^\/tactics(?:\s+(\d+))?(?:\s|$)/i);
+            const shouldRun = !!match;
+            core.setOutput('should_run', String(shouldRun));
+            core.setOutput('issue_number', (match && match[1]) ? match[1] : '');
+            if (!shouldRun) {
+              core.info('Comment does not invoke /tactics. Skipping workflow.');
+            }
+
+      - name: Ensure commenter is trusted
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.payload.comment.user.login;
+
+            if (!username) {
+              throw new Error('Unable to resolve commenter username from event payload.');
+            }
+
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username,
+              });
+
+              const allowed = ['admin', 'write'];
+              if (!allowed.includes(permission.permission)) {
+                throw new Error(`@${username} has "${permission.permission}" access.`);
+              }
+
+              core.info(`Verified ${username} has ${permission.permission} access.`);
+            } catch (error) {
+              throw new Error(`Only collaborators with write access may trigger this workflow. ${error.message || error}`);
+            }
+
+      - name: React to comment
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: 'eyes',
+            });
+
+      - name: Comment on PR - Started
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ format('▶️ Tactics update workflow started. Track progress in [this workflow run]({0}).', env.RUN_URL) }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(context.payload.issue.number),
+              body: process.env.COMMENT_BODY,
+            });
+
+      - name: Capture PR metadata
+        id: metadata
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number,
+            });
+
+            core.setOutput('pr_number', String(pr.data.number));
+
+  update:
+    name: Generate and Apply Tactics
+    needs: authorize
+    if: needs.authorize.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+
+    steps:
+      - name: Gather PR and issue data
+        id: gather
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          EXPLICIT_ISSUE_NUMBER: ${{ needs.authorize.outputs.issue_number }}
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = Number(process.env.PR_NUMBER);
+
+            // Get PR details
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+            // Get PR comments (issue-level)
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: prNumber, per_page: 100,
+            });
+
+            // Get PR review comments (code-level)
+            const { data: reviewComments } = await github.rest.pulls.listReviewComments({
+              owner, repo, pull_number: prNumber, per_page: 100,
+            });
+
+            // Get files changed for context
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner, repo, pull_number: prNumber, per_page: 100,
+            });
+
+            // Find linked issue: explicit argument takes priority, then parse PR body
+            let issueNumber = process.env.EXPLICIT_ISSUE_NUMBER
+              ? Number(process.env.EXPLICIT_ISSUE_NUMBER)
+              : null;
+
+            if (!issueNumber) {
+              const body = pr.body || '';
+              const pattern = /(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+#(\d+)/gi;
+              const match = pattern.exec(body);
+              if (match) {
+                issueNumber = Number(match[1]);
+                core.info(`Auto-detected linked issue #${issueNumber} from PR body.`);
+              }
+            }
+
+            // Limit text fields to avoid exceeding GitHub Actions output size and AI token limits
+            const MAX_TEXT_LENGTH = 4000;
+            const MAX_REVIEW_COMMENT_LENGTH = 2000;
+
+            let issueTitle = '';
+            let issueBody = '';
+            if (issueNumber) {
+              try {
+                const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+                issueTitle = issue.title;
+                issueBody = (issue.body || '').substring(0, MAX_TEXT_LENGTH);
+                core.info(`Fetched issue #${issueNumber}: ${issueTitle}`);
+              } catch (e) {
+                core.warning(`Could not fetch issue #${issueNumber}: ${e.message}`);
+                issueNumber = null;
+              }
+            } else {
+              core.warning('No linked issue found. Specify one explicitly with /tactics <issue-number>.');
+            }
+
+            const filesSummary = files
+              .slice(0, 20)
+              .map(f => `${f.filename} (+${f.additions}/-${f.deletions})`)
+              .join('\n');
+
+            // Exclude bot comments and the triggering /tactics comment itself
+            const triggeringCommentId = context.payload.comment.id;
+            const userComments = comments
+              .filter(c => c.id !== triggeringCommentId && !c.user.login.includes('[bot]'))
+              .map(c => `@${c.user.login}: ${c.body}`)
+              .join('\n\n---\n\n')
+              .substring(0, MAX_TEXT_LENGTH);
+
+            const reviewCommentsSummary = reviewComments
+              .filter(c => !c.user.login.includes('[bot]'))
+              .map(c => `@${c.user.login} on \`${c.path}\`: ${c.body}`)
+              .join('\n\n---\n\n')
+              .substring(0, MAX_REVIEW_COMMENT_LENGTH);
+
+            core.setOutput('pr_title', pr.title);
+            core.setOutput('pr_body', (pr.body || '').substring(0, MAX_TEXT_LENGTH));
+            core.setOutput('pr_author', pr.user.login);
+            core.setOutput('pr_base_ref', pr.base.ref);
+            core.setOutput('files_summary', filesSummary);
+            core.setOutput('comments_summary', userComments);
+            core.setOutput('review_comments_summary', reviewCommentsSummary);
+            core.setOutput('issue_number', issueNumber ? String(issueNumber) : '');
+            core.setOutput('issue_title', issueTitle);
+            core.setOutput('issue_body', issueBody);
+
+      - name: Generate tactics with AI
+        id: ai-generate
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          GH_MODELS_TOKEN: ${{ github.token }}
+          PR_TITLE: ${{ steps.gather.outputs.pr_title }}
+          PR_BODY: ${{ steps.gather.outputs.pr_body }}
+          PR_AUTHOR: ${{ steps.gather.outputs.pr_author }}
+          PR_BASE_REF: ${{ steps.gather.outputs.pr_base_ref }}
+          FILES_SUMMARY: ${{ steps.gather.outputs.files_summary }}
+          COMMENTS_SUMMARY: ${{ steps.gather.outputs.comments_summary }}
+          REVIEW_COMMENTS_SUMMARY: ${{ steps.gather.outputs.review_comments_summary }}
+          ISSUE_TITLE: ${{ steps.gather.outputs.issue_title }}
+          ISSUE_BODY: ${{ steps.gather.outputs.issue_body }}
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+        with:
+          script: |
+            const n = '\n';
+            const prNumber = process.env.PR_NUMBER;
+            const prTitle = process.env.PR_TITLE;
+            const prAuthor = process.env.PR_AUTHOR;
+            const prBaseRef = process.env.PR_BASE_REF;
+            const prBody = process.env.PR_BODY || '(no description)';
+            const filesSummary = process.env.FILES_SUMMARY || '(none)';
+            const commentsSummary = process.env.COMMENTS_SUMMARY || '(none)';
+            const reviewComments = process.env.REVIEW_COMMENTS_SUMMARY || '(none)';
+            const issueTitle = process.env.ISSUE_TITLE || '(none)';
+            const issueBody = process.env.ISSUE_BODY || '(none)';
+
+            const prompt = [
+              'You are helping fill in a "tactics" template for a servicing pull request in the dotnet/sdk repository.',
+              '',
+              'A servicing PR targets a release branch and requires extra scrutiny. Fill in five sections based on the provided context.',
+              '',
+              `## PR #${prNumber}: ${prTitle}`,
+              `**Author:** @${prAuthor}`,
+              `**Target branch:** ${prBaseRef}`,
+              '',
+              '### PR Description',
+              prBody,
+              '',
+              '### Files Changed',
+              filesSummary,
+              '',
+              '### PR Comments (may include manual testing details)',
+              commentsSummary,
+              '',
+              '### Code Review Comments',
+              reviewComments,
+              '',
+              '## Linked Issue',
+              `**Title:** ${issueTitle}`,
+              '**Description:**',
+              issueBody,
+              '',
+              '---',
+              '',
+              'Based on all of the above, fill in the tactics template. Be concise but accurate.',
+              '',
+              'Guidelines per section:',
+              '- **Summary**: 1-3 sentences describing what change is being made and why.',
+              '- **Customer Impact**: How does this affect customers? Include the type of failure (build error, runtime error, etc.), severity, and affected SDK version(s).',
+              '- **Regression?**: Was this introduced by a specific PR or SDK version? Answer "Yes, from #N" or "Yes, from vX.Y.Z" if known, otherwise "No" or "Unknown".',
+              '- **Testing**: What automated and/or manual testing was done? Check PR comments for evidence of private or manual validation.',
+              '- **Risk**: Rate as Low, Medium, or High with a one-sentence justification.',
+              '',
+              'Respond with ONLY the filled template in exactly this format. Do not include any preamble or text outside the sections:',
+              '',
+              '### Summary',
+              '',
+              '[your text here]',
+              '',
+              '### Customer Impact',
+              '',
+              '[your text here]',
+              '',
+              '### Regression?',
+              '',
+              '[your text here]',
+              '',
+              '### Testing',
+              '',
+              '[your text here]',
+              '',
+              '### Risk',
+              '',
+              '[your text here]',
+            ].join(n);
+
+            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GH_MODELS_TOKEN}`,
+              },
+              body: JSON.stringify({
+                model: process.env.AI_MODEL,
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: 800, // Five short sections; 800 tokens is sufficient
+                temperature: 0.2, // Low temperature for factual, consistent output
+              }),
+            });
+
+            if (!response.ok) {
+              const text = await response.text();
+              throw new Error(`AI API call failed (${response.status}): ${text}`);
+            }
+
+            const data = await response.json();
+            const tactics = data.choices[0].message.content.trim();
+            core.info('AI-generated tactics content:\n' + tactics);
+            core.setOutput('tactics_content', tactics);
+
+      - name: Update issue with tactics
+        id: update-issue
+        if: steps.gather.outputs.issue_number != ''
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          ISSUE_NUMBER: ${{ steps.gather.outputs.issue_number }}
+          ISSUE_BODY: ${{ steps.gather.outputs.issue_body }}
+          TACTICS_CONTENT: ${{ steps.ai-generate.outputs.tactics_content }}
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            const prNumber = Number(process.env.PR_NUMBER);
+            const tacticsContent = process.env.TACTICS_CONTENT;
+            const currentBody = process.env.ISSUE_BODY || '';
+
+            const beginMarker = '<!-- tactics-begin -->';
+            const endMarker = '<!-- tactics-end -->';
+            const tacticsBlock = `${beginMarker}\n## Tactics\n\n*Generated from PR #${prNumber}*\n\n${tacticsContent}\n${endMarker}`;
+
+            let newBody;
+            if (currentBody.includes(beginMarker)) {
+              // Replace existing tactics section if present (idempotent re-runs)
+              const regex = new RegExp(`${beginMarker}[\\s\\S]*?${endMarker}`, 'g');
+              newBody = currentBody.replace(regex, tacticsBlock);
+            } else {
+              // Append new tactics section to the existing issue body
+              newBody = currentBody.trimEnd() + '\n\n' + tacticsBlock;
+            }
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: newBody,
+            });
+
+            core.info(`Updated issue #${issueNumber} with tactics content.`);
+
+      - name: Add Servicing-consider label to issue
+        if: steps.gather.outputs.issue_number != ''
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          ISSUE_NUMBER: ${{ steps.gather.outputs.issue_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            try {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: ['Servicing-consider'],
+              });
+              core.info(`Added 'Servicing-consider' label to issue #${issueNumber}.`);
+            } catch (error) {
+              core.warning(`Could not add 'Servicing-consider' label to issue #${issueNumber}: ${error.message}`);
+            }
+
+      - name: Comment on PR - Success
+        if: steps.gather.outputs.issue_number != ''
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          ISSUE_NUMBER: ${{ steps.gather.outputs.issue_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = process.env.ISSUE_NUMBER;
+            const body = `✅ Tactics have been added to issue #${issueNumber} and the \`Servicing-consider\` label has been applied. See [workflow details](${process.env.RUN_URL}).`;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(context.payload.issue.number),
+              body,
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(context.payload.comment.id),
+              content: '+1',
+            });
+
+      - name: Comment on PR - No linked issue found
+        if: steps.gather.outputs.issue_number == ''
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(context.payload.issue.number),
+              body: '⚠️ Could not find a linked issue for this PR. Please specify the issue number explicitly using `/tactics <issue-number>`.',
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(context.payload.comment.id),
+              content: 'confused',
+            });
+
+  report-failure:
+    name: Report Failure
+    needs: [authorize, update]
+    if: needs.authorize.outputs.should_run == 'true' && needs.authorize.result == 'success' && failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Comment on PR - Failure
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(context.payload.issue.number),
+              body: `❌ Failed to generate or apply tactics. Please check [the workflow run](${process.env.RUN_URL}) for details.`,
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(context.payload.comment.id),
+              content: 'confused',
+            });
