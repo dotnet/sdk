@@ -132,7 +132,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                 if (current.Span[tokenEnd + 1] == PatternPackOnly)
                 {
                     token.IsOptional = true;
-                    token.IsPreferred = true;
+                    token.IsPreferred = false;
                     token.IsPackOnly = true;
                 }
                 else
@@ -253,15 +253,16 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             }
             else
             {
-                if (resolveMode != TokenResolveMode.None && segment.IsOptional && !segment.IsPreferred)
+                if (resolveMode != TokenResolveMode.None && segment.IsOptional && !segment.IsPreferred && !segment.IsPackOnly)
                 {
-                    // Skip optional non-preferred segments (e.g. ?)
+                    // Skip optional non-preferred segments (e.g. ?), but never pack-only segments here —
+                    // they are included in Pack mode and stripped by the explicit check below in Serve mode.
                     continue;
                 }
 
                 if (resolveMode == TokenResolveMode.Serve && segment.IsPackOnly)
                 {
-                    // Pack-only segments (~) are stripped in serve mode.
+                    // Pack-only segments (~) are stripped in serve mode (routes, dev manifest, copy-to-output).
                     continue;
                 }
 

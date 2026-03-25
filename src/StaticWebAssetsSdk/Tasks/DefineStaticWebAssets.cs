@@ -743,13 +743,9 @@ public partial class DefineStaticWebAssets : Task
             var relativePathPrefix = def.GetMetadata("RelativePathPrefix");
             var contentRootSuffix = def.GetMetadata("ContentRootSuffix");
 
-            StaticWebAssetGlobMatcher includeMatcher = null;
-            if (!string.IsNullOrEmpty(includePattern))
-            {
-                includeMatcher = new StaticWebAssetGlobMatcherBuilder()
-                    .AddIncludePatterns(includePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
-                    .Build();
-            }
+            var includeMatcher = new StaticWebAssetGlobMatcherBuilder()
+                .AddIncludePatterns(includePattern.Split(GroupPatternSeparator, StringSplitOptions.RemoveEmptyEntries))
+                .Build();
 
             StaticWebAssetGlobMatcher excludeMatcher = null;
             if (!string.IsNullOrEmpty(excludePattern))
