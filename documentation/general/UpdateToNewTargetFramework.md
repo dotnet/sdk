@@ -5,7 +5,7 @@
   - Recommend doing in the VMR and fixing tests on backflow
   - We had to disable a bunch of tests to merge the branding flow
 - [KnownFrameworkReference](https://github.com/dotnet/sdk/blob/main/src/Layout/redist/targets/BundledTemplates.targets) update
-  - Should be wrote but tricky to get right
+  - Should be rote but tricky to get right
   - Can be done at any time
 - Retarget to net11
   - Can be done before runtime work as you typically pin the new TFM to the N-1 versions before you have a runtime
@@ -19,16 +19,16 @@
 
 **Miscellaneous**
 - Fix versions after the N-1 GA as there should be RC placeholders
-- Likely will need to ping to N-1 templates
+- Likely will need to pin to N-1 templates
 - Will need to update restore-toolset for the N-1 runtime
 - Will need to update global.json for a new SDK
 
 
-Example PRs from net11 update
-[Backflow from VMR](https://github.com/dotnet/sdk/pull/52242)
-[unwind test changes](https://github.com/dotnet/sdk/pull/52512)
-[Branding](https://github.com/dotnet/sdk/pull/50468)
-[BundledVersions](https://github.com/dotnet/sdk/pull/50329)
+### Example PRs from net11 update
+- [Backflow from VMR](https://github.com/dotnet/sdk/pull/52242)
+- [unwind test changes](https://github.com/dotnet/sdk/pull/52512)
+- [Branding](https://github.com/dotnet/sdk/pull/50468)
+- [BundledVersions](https://github.com/dotnet/sdk/pull/50329)
 
 ### Net7 TFM update list
 
