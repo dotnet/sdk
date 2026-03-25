@@ -108,7 +108,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild" BeforeTargets="_RazorPrepareForRun">
+    <!-- Check if blazor.webassembly.js is already provided as a static web asset (e.g., from a package or framework reference).
+         If so, prefer the existing asset and skip the BlazorJsFile fallback logic. -->
     <ItemGroup>
+      <_ExistingBlazorWebAssemblyJsAsset Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'WasmResource' and '%(StaticWebAsset.AssetTraitValue)' == 'boot' and '%(Filename)%(Extension)' == 'blazor.webassembly.js'" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(_ExistingBlazorWebAssemblyJsAsset)' == ''">
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
       <_BlazorJsFile>
@@ -125,6 +132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <DefineStaticWebAssets
+      Condition="'@(_ExistingBlazorWebAssemblyJsAsset)' == ''"
       CandidateAssets="@(_BlazorJSFile)"
       FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
       FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
@@ -144,6 +152,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
+      Condition="'@(_ExistingBlazorWebAssemblyJsAsset)' == ''"
       CandidateAssets="@(_BlazorJSStaticWebAsset)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
@@ -151,7 +160,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="_BlazorStaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
-    <ItemGroup>
+    <ItemGroup Condition="'@(_ExistingBlazorWebAssemblyJsAsset)' == ''">
       <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_BlazorStaticWebAssetEndpoint)" />
     </ItemGroup>
