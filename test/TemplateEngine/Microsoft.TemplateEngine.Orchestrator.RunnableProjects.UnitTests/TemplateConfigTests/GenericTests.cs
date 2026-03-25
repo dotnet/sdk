@@ -54,5 +54,44 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(2, templateConfigModel.PrimaryOutputs.Count);
             Assert.Equal(new[] { "bar.cs", "bar/bar.cs" }, templateConfigModel.PrimaryOutputs.Select(po => po.Path).OrderBy(po => po));
         }
+
+        [Fact]
+        public void CanReadTemplateWithDuplicateCaseInsensitiveSymbolKeys()
+        {
+            // Regression test: template.json with symbols that differ only by case
+            // (e.g. "Empty" and "empty") should load without throwing.
+            // See https://github.com/dotnet/templating/issues/10047
+            string templateWithDuplicateKeys = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithDuplicateKeys",
+                  "identity": "TestAssets.TemplateWithDuplicateKeys",
+                  "shortName": "dupkeys",
+                  "symbols": {
+                    "Empty": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "defaultValue": "false",
+                      "description": "PascalCase variant"
+                    },
+                    "empty": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "defaultValue": "false",
+                      "description": "lowercase variant"
+                    }
+                  }
+                }
+                """;
+
+            var exception = Record.Exception(() => TemplateConfigModel.FromString(templateWithDuplicateKeys));
+            Assert.Null(exception);
+
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateWithDuplicateKeys);
+            Assert.Equal("TemplateWithDuplicateKeys", configModel.Name);
+            // Both symbols should be accessible (last-in-wins for case-sensitive dict, both kept)
+            Assert.NotEmpty(configModel.Symbols);
+        }
     }
 }
