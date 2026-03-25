@@ -10,4 +10,10 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
+  <!-- Windows-only test files that reference types excluded on non-Windows -->
+  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
+    <Compile Remove="DotDefaultPathCorrectorTests.cs" />
+    <Compile Remove="ProcessExtensionsTests.cs" />
+  </ItemGroup>
+
 </Project>

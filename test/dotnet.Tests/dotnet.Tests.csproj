@@ -32,6 +32,14 @@
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
+  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
+    <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
+    <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MSTestVersion</_Parameter1>
