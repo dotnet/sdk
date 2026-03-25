@@ -95,7 +95,15 @@
                             LayoutDnxShim;
                             CrossgenLayout;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          AfterTargets="AfterBuild" />
+          AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <!-- Use hard links on Windows, symbolic links on non-Windows -->
+      <_UseHardLinks Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</_UseHardLinks>
+      <_UseHardLinks Condition="!$([MSBuild]::IsOSPlatform('Windows'))">false</_UseHardLinks>
+    </PropertyGroup>
+
+    <DeduplicateAssembliesWithLinks LayoutDirectory="$(RedistInstallerLayoutPath)sdk\" UseHardLinks="$(_UseHardLinks)" />
+  </Target>
 
   <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
        necessary for the msi/pkg to install correctly and put the content under that sub path. -->
@@ -109,14 +117,12 @@
       <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(SdkOutputFile)"
-          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"
-          UseHardLinksIfPossible="true"
-          SkipUnchangedFiles="true" />
+    <CopyPreservingRelativeSymlinks
+          SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
     <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
-    
   </Target>
 
 </Project>

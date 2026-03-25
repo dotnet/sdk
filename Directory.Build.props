@@ -1,31 +1,19 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
+  <!-- OS/arch detection (before Arcade) -->
+  <Import Project="$(MSBuildThisFileDirectory)/eng/OSArch.props" />
+
   <PropertyGroup>
-    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <!-- RID and boolean targeting (after Arcade) -->
+  <Import Project="$(RepositoryEngineeringDir)RuntimeIdentifier.props" />
+
   <PropertyGroup>
-    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
-
-    <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
-
     <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
     <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
   </PropertyGroup>
@@ -46,16 +34,10 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net10.0</SdkTargetFramework>
-    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
-    <NetCurrent>net10.0</NetCurrent>
-    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
-    <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
-    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
+    <!-- TFMs -->
+    <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
+    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->

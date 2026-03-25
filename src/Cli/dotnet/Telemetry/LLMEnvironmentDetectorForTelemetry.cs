@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Linq;
+
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
@@ -12,12 +15,16 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("cursor", new AnyPresentEnvironmentRule("CURSOR_EDITOR", "CURSOR_AI")),
         // Gemini
         new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
-        // GitHub Copilot
-        new EnvironmentDetectionRuleWithResult<string>("copilot", new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE")),
+        // GitHub Copilot (legacy gh extension: GITHUB_COPILOT_CLI_MODE=true; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY is set)
+        new EnvironmentDetectionRuleWithResult<string>("copilot", new AnyMatchEnvironmentRule(
+            new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE"),
+            new AnyPresentEnvironmentRule("GH_COPILOT_WORKING_DIRECTORY"))),
         // Codex CLI
         new EnvironmentDetectionRuleWithResult<string>("codex", new AnyPresentEnvironmentRule("CODEX_CLI", "CODEX_SANDBOX")),
         // Aider
         new EnvironmentDetectionRuleWithResult<string>("aider", new EnvironmentVariableValueRule("OR_APP_NAME", "Aider")),
+        // Plandex
+        new EnvironmentDetectionRuleWithResult<string>("plandex", new EnvironmentVariableValueRule("OR_APP_NAME", "plandex")),
         // Amp
         new EnvironmentDetectionRuleWithResult<string>("amp", new AnyPresentEnvironmentRule("AMP_HOME")),
         // Qwen Code

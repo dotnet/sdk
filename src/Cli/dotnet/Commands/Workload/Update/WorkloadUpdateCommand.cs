@@ -100,7 +100,7 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
                 verifySignatures: VerifySignatures);
 
             var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
         else if (_adManifestOnlyOption)
         {

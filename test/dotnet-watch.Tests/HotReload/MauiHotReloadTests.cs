@@ -45,8 +45,8 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // only the selected target framework is built:
-        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", "net10.0-windows10.0.19041.0", "win-x64", "maui-blazor.dll")));
-        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", "net10.0-maccatalyst", "maccatalyst-x64", "maui-blazor.dll")));
+        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "win-x64", "maui-blazor.dll")));
+        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "maccatalyst-x64", "maui-blazor.dll")));
 
         // update code file:
         var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");

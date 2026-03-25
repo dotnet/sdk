@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 

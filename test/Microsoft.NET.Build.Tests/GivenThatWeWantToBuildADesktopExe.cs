@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_a_simple_desktop_app()
         {
             var targetFramework = "net45";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_not_pass_excess_references_to_the_compiler()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
-            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFrameworks(tfm);
+            var testAsset = TestAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFrameworks(tfm);
             var getValues =
                 new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm)
                 {
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NETCore.Platforms", "2.1.0"));
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: packageName + "_" + referencePlatformPackage.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: packageName + "_" + referencePlatformPackage.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -193,7 +193,7 @@ namespace Microsoft.NET.Build.Tests
         {
             foreach (bool multiTarget in new[] { false, true })
             {
-                var testAsset = _testAssetsManager
+                var testAsset = TestAssetsManager
                    .CopyTestAsset("DesktopMinusRid", identifier: Path.DirectorySeparatorChar + identifier + (multiTarget ? "Multi" : ""))
                    .WithSource()
                    .WithProjectChanges(project =>
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("", false)]
         public void It_includes_platform_in_output_path_if_requested(string appendPlatformValue, bool shouldIncludePlatform)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopMinusRid")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -266,7 +266,7 @@ namespace Microsoft.NET.Build.Tests
         {
             foreach (bool multiTarget in new[] { false, true })
             {
-                var testAsset = _testAssetsManager
+                var testAsset = TestAssetsManager
                     .CopyTestAsset("DesktopMinusRid", identifier: Path.DirectorySeparatorChar + identifier + (multiTarget ? "Multi" : ""))
                     .WithSource()
                     .WithProjectChanges(project =>
@@ -348,7 +348,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("arm-something", "AnyCPU")]
         public void It_builds_with_inferred_platform_target(string runtimeIdentifier, string expectedPlatformTarget)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopMinusRid", identifier: Path.DirectorySeparatorChar + runtimeIdentifier)
                 .WithSource();
 
@@ -369,7 +369,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_respects_explicit_platform_target()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopMinusRid")
                 .WithSource();
 
@@ -414,7 +414,7 @@ namespace DefaultReferences
 }";
             testProject.SourceFiles.Add("TestClass.cs", sourceFile);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset, "DefaultReferences");
 
@@ -438,7 +438,7 @@ namespace DefaultReferences
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -467,7 +467,7 @@ namespace DefaultReferences
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -498,7 +498,7 @@ namespace DefaultReferences
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -538,7 +538,7 @@ namespace DefaultReferences
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Net.Http", "4.1.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -563,7 +563,7 @@ namespace DefaultReferences
 
             testProject.AdditionalProperties["PlatformTarget"] = "AnyCPU";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -648,7 +648,7 @@ class Program
                                 (useAlias ? "alias" : "") +
                                 httpPackageVersion;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -717,7 +717,7 @@ class Program
     }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -743,7 +743,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_binding_redirects_if_needed()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -768,7 +768,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_supportedRuntime_when_no_appconfig_in_source_require_binding_redirect()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -779,7 +779,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_appconfig_incrementally()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -809,7 +809,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_supportedRuntime_when_no_appconfig_in_source_does_not_require_binding_redirect()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -829,7 +829,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_supportedRuntime_when_there_is_appconfig_with_supportedRuntime_in_source_require_binding_redirect()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -853,7 +853,7 @@ class Program
         [WindowsOnlyFact]
         public void It_generates_supportedRuntime_when_there_is_appconfig_without_supportedRuntime_in_source_require_binding_redirect()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -904,7 +904,7 @@ class Program
 
             testProject.PackageReferences.Add(new TestPackageReference("FluentValidation", "5.5.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     if (crossTarget)
@@ -939,7 +939,7 @@ class Program
                 TargetFrameworkVersion = "V4.6.2"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -969,7 +969,7 @@ class Program
             // by the framework reference and the xml file will not be copied.
             testProject.AdditionalProperties.Add("RestoreEnablePackagePruning", "false");
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -1005,7 +1005,7 @@ class Program
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", enableDocumentationFilesFromPackages);
 
             string testPath = enableCopyDebugSymbolFilesFromPackages + enableDocumentationFilesFromPackages;
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: testPath);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: testPath);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -1048,7 +1048,7 @@ class Program
             consumerProject.ReferencedProjects.Add(libraryProject);
 
             string testPath = enableCopyDebugSymbolFilesFromPackages + enableDocumentationFilesFromPackages;
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(consumerProject, consumerProject.Name, identifier: testPath);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(consumerProject, consumerProject.Name, identifier: testPath);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -1082,7 +1082,7 @@ class Program
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", enableDocumentationFilesFromPackages);
 
             string testPath = enableCopyDebugSymbolFilesFromPackages + enableDocumentationFilesFromPackages;
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: testPath);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: testPath);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -1118,7 +1118,7 @@ class Program
             testProject.AdditionalProperties.Add("PublishReferencesDocumentationFiles", "false");
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", "true");
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
