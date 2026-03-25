@@ -650,4 +650,265 @@ public class DefineStaticWebAssetEndpointsTest
             Selectors = responseSelector ?? []
         }.ToTaskItem();
     }
+
+    private static TaskItem CreateAdditionalEndpointDefinition(string name, string pattern, string replacement, string order = "")
+    {
+        return new TaskItem(name, new Dictionary<string, string>
+        {
+            { "Pattern", pattern },
+            { "Replacement", replacement },
+            { "Order", order }
+        });
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_DefaultDocument_CreatesEndpointWithoutSuffix()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "index.html"),
+                "MyPackage",
+                "Discovered",
+                "index.html",
+                "All",
+                "All",
+                fileLength: 100,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
+            AdditionalEndpointDefinitions = [
+                CreateAdditionalEndpointDefinition("DefaultDocument", "**/index.html", "")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        // Should have original endpoint + additional endpoint
+        endpoints.Length.Should().Be(2);
+
+        var original = endpoints.First(e => e.Route == "index.html");
+        original.Should().NotBeNull();
+        original.Order.Should().BeNullOrEmpty();
+
+        // The additional endpoint should have the suffix stripped (index.html matches **/index.html, stem is empty -> route is empty -> normalized to "/")
+        var additional = endpoints.First(e => e.Route != "index.html");
+        additional.AssetFile.Should().Be(original.AssetFile);
+        additional.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_DefaultDocument_NestedPath_CapturesStem()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "admin", "index.html"),
+                "MyPackage",
+                "Discovered",
+                "admin/index.html",
+                "All",
+                "All",
+                fileLength: 100,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
+            AdditionalEndpointDefinitions = [
+                CreateAdditionalEndpointDefinition("DefaultDocument", "**/index.html", "")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(2);
+
+        var original = endpoints.First(e => e.Route == "admin/index.html");
+        original.Should().NotBeNull();
+
+        // The stem is "admin", replacement is empty -> new route is "admin"
+        var additional = endpoints.First(e => e.Route != "admin/index.html");
+        additional.Route.Should().Be("admin");
+        additional.AssetFile.Should().Be(original.AssetFile);
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_SpaFallback_CreatesEndpointWithFallbackRoute()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "index.html"),
+                "MyPackage",
+                "Discovered",
+                "index.html",
+                "All",
+                "All",
+                fileLength: 100,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
+            AdditionalEndpointDefinitions = [
+                CreateAdditionalEndpointDefinition("SpaFallback", "index.html", "{**fallback:nonfile}", "2147483647")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(2);
+
+        var original = endpoints.First(e => e.Route == "index.html");
+        original.Should().NotBeNull();
+        original.Order.Should().BeNullOrEmpty();
+
+        var fallback = endpoints.First(e => e.Route != "index.html");
+        fallback.Route.Should().Be("{**fallback:nonfile}");
+        fallback.AssetFile.Should().Be(original.AssetFile);
+        fallback.Order.Should().Be("2147483647");
+        fallback.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_DoesNotMatchNonMatchingRoutes()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "app.js"),
+                "MyPackage",
+                "Discovered",
+                "app.js",
+                "All",
+                "All",
+                fileLength: 50,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+            AdditionalEndpointDefinitions = [
+                CreateAdditionalEndpointDefinition("DefaultDocument", "**/index.html", ""),
+                CreateAdditionalEndpointDefinition("SpaFallback", "index.html", "{**fallback:nonfile}", "2147483647")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        // Only the original endpoint, no additional ones
+        endpoints.Should().ContainSingle();
+        endpoints[0].Route.Should().Be("app.js");
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_BothRules_CreateMultipleAdditionalEndpoints()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "index.html"),
+                "MyPackage",
+                "Discovered",
+                "index.html",
+                "All",
+                "All",
+                fileLength: 100,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
+            AdditionalEndpointDefinitions = [
+                CreateAdditionalEndpointDefinition("DefaultDocument", "**/index.html", ""),
+                CreateAdditionalEndpointDefinition("SpaFallback", "index.html", "{**fallback:nonfile}", "2147483647")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        // Original + DefaultDocument + SpaFallback
+        endpoints.Length.Should().Be(3);
+
+        endpoints.Should().Contain(e => e.Route == "index.html");
+        endpoints.Should().Contain(e => e.Route == "{**fallback:nonfile}" && e.Order == "2147483647");
+    }
+
+    [Fact]
+    public void AdditionalEndpointDefinitions_EmptyArray_NoAdditionalEndpoints()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "index.html"),
+                "MyPackage",
+                "Discovered",
+                "index.html",
+                "All",
+                "All",
+                fileLength: 100,
+                lastWriteTime: lastWrite)],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
+            AdditionalEndpointDefinitions = [],
+        };
+
+        var result = task.Execute();
+
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Should().ContainSingle();
+        endpoints[0].Route.Should().Be("index.html");
+    }
 }
