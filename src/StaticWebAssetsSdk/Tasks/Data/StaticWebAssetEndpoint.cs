@@ -237,7 +237,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     public override int GetHashCode()
     {
-#if NET472_OR_GREATER
+#if NETFRAMEWORK
         var hashCode = -604019124;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Route);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetFile);
@@ -403,7 +403,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
         public int GetHashCode(StaticWebAssetEndpoint obj)
         {
-#if NET472_OR_GREATER
+#if NETFRAMEWORK
             var hashCode = -604019124;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(obj.Route);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(obj.AssetFile);
