@@ -1,0 +1,153 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.Versioning;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+namespace Microsoft.DotNet.Watch;
+
+internal sealed class ProjectGraphFactory(
+    ImmutableArray<ProjectRepresentation> rootProjects,
+    string? virtualProjectTargetFramework,
+    ImmutableDictionary<string, string> buildProperties,
+    ILogger logger)
+{
+    /// <summary>
+    /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
+    ///
+    /// The cache is automatically updated when build files change.
+    /// https://github.com/dotnet/msbuild/blob/b6f853defccd64ae1e9c7cf140e7e4de68bff07c/src/Build/Definition/ProjectCollection.cs#L343-L354
+    /// </summary>
+    private readonly ProjectCollection _collection = new(
+        globalProperties: buildProperties,
+        loggers: [],
+        remoteLoggers: [],
+        ToolsetDefinitionLocations.Default,
+        maxNodeCount: 1,
+        onlyLogCriticalEvents: false,
+        loadProjectsReadOnly: false,
+        useAsynchronousLogging: false,
+        reuseProjectRootElementCache: true);
+
+    private readonly string _virtualProjectTargetFramework = virtualProjectTargetFramework ?? GetProductTargetFramework();
+
+    public ILogger Logger => logger;
+
+    private static string GetProductTargetFramework()
+    {
+        var attribute = typeof(VirtualProjectBuilder).Assembly.GetCustomAttribute<TargetFrameworkAttribute>() ?? throw new InvalidOperationException();
+        var version = new FrameworkName(attribute.FrameworkName).Version;
+        return $"net{version.Major}.{version.Minor}";
+    }
+
+    /// <summary>
+    /// Tries to create a project graph by running the build evaluation phase on root projects.
+    /// </summary>
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
+    {
+        var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var graph = new LoadedProjectGraph(
+                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
+                _collection,
+                logger);
+
+            logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+            return graph;
+        }
+        catch (ProjectCreationFailedException)
+        {
+            // Errors have already been reported.
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            // ProjectGraph aggregates OperationCanceledException exception,
+            // throw here to propagate the cancellation.
+            cancellationToken.ThrowIfCancellationRequested();
+
+            logger.LogDebug("Failed to load project graph.");
+
+            if (e is AggregateException { InnerExceptions: var innerExceptions })
+            {
+                foreach (var inner in innerExceptions)
+                {
+                    if (inner is not ProjectCreationFailedException)
+                    {
+                        Report(inner);
+                    }
+                }
+            }
+            else
+            {
+                Report(e);
+            }
+
+            void Report(Exception e)
+            {
+                if (projectGraphRequired)
+                {
+                    logger.LogError(e.Message);
+                }
+                else
+                {
+                    logger.LogWarning(e.Message);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
+    {
+        if (!File.Exists(projectPath))
+        {
+            // The virtual project path is the entry-point file path with ".csproj" appended (e.g., "App.cs.csproj" for "App.cs").
+            if (!VirtualProjectBuilder.TryGetEntryPointFilePathFromVirtualProjectPath(projectPath, out string? entryPointFilePath))
+            {
+                // `dotnet build` reports a warning when the reference project is missing.
+                // However, ProjectGraph doesn't allow us to return null to skip the project so we need to be stricter.
+                logger.LogError("The project file could not be loaded. Could not find a part of the path '{Path}'.", projectPath);
+                throw new ProjectCreationFailedException();
+            }
+
+            var anyError = false;
+
+            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+                entryPointFilePath,
+                _virtualProjectTargetFramework,
+                projectCollection,
+                (path, line, message) =>
+                {
+                    anyError = true;
+                    logger.LogError("{Path}({Line}): {Message}", path, line, message);
+                });
+
+            if (anyError)
+            {
+                throw new ProjectCreationFailedException();
+            }
+
+            return projectInstance;
+        }
+
+        return new ProjectInstance(
+            projectPath,
+            globalProperties,
+            toolsVersion: "Current",
+            subToolsetVersion: null,
+            projectCollection);
+    }
+
+    private sealed class ProjectCreationFailedException() : Exception();
+}

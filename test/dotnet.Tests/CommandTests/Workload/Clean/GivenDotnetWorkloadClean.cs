@@ -9,6 +9,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             var packRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkBand);
             var packPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, packPath, "Test.Pack.A"));
+            var packRecordContents = JsonSerializer.Serialize(new WorkloadResolver.PackInfo(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, packPath, "Test.Pack.A"), PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(packRecordPath, packRecordContents);
             return packRecordPath;
         }

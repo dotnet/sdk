@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--my-arg", filename);
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(expectedErrorStart);
             }
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--myarg", "test_directory");
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.");
             }
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--my-arg", "test.dll");
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain("Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.");
             }

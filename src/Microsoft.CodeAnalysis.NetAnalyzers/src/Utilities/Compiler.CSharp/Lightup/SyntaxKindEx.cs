@@ -12,5 +12,6 @@ namespace Analyzer.Utilities.Lightup
         public const SyntaxKind UnsignedRightShiftExpression = (SyntaxKind)8692;
         public const SyntaxKind Utf8StringLiteralExpression = (SyntaxKind)8756;
         public const SyntaxKind CollectionExpression = (SyntaxKind)9076;
+        public const SyntaxKind ExtensionBlockDeclaration = (SyntaxKind)9079;
     }
 }

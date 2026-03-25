@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Gets a path to the folder with dotnet new test assets.
         /// </summary>
-        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(TestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
+        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
 
         /// <summary>
         /// Gets a path to the folder with dotnet new test NuGet template packages.
@@ -32,14 +32,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static string DotnetNewTestTemplatePackageProjectPath { get; } = VerifyFileExists(Path.Combine(DotnetNewTestAssets, "Microsoft.TemplateEngine.TestTemplates.csproj"));
 
         /// <summary>
-        /// Gets a path to the repo root folder.
-        /// </summary>
-        public static string CodeBaseRoot { get; } = GetAndVerifyRepoRoot();
-
-        /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
+        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages;
+
+        /// <summary>
+        /// Gets the path to the Approvals snapshot directory, resolved relative to the test output directory.
+        /// </summary>
+        public static string ApprovalsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Approvals");
 
 #if DEBUG
         /// <summary>
@@ -176,18 +176,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return file;
         }
 
-        private static string GetAndVerifyRepoRoot()
-        {
-            string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
-            if (!Directory.Exists(repoRoot))
-            {
-                Assert.Fail($"The repo root cannot be evaluated.");
-            }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
-            {
-                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
-            }
-            return repoRoot;
-        }
     }
 }

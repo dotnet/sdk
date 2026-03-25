@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -32,13 +33,18 @@ internal class WorkloadInstallerFactory
 
         if (installType == InstallType.Msi)
         {
+#if !TARGET_WINDOWS
+            throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
+#else
             if (!OperatingSystem.IsWindows())
             {
                 throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
             }
+
             // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
             return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
                 nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath, shouldLog: shouldLog);
+#endif
         }
 
         if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))
@@ -48,7 +54,7 @@ internal class WorkloadInstallerFactory
 
         userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
-        return new FileBasedInstaller(
+        var installer = new FileBasedInstaller(
             reporter,
             sdkFeatureBand,
             workloadResolver,
@@ -59,6 +65,25 @@ internal class WorkloadInstallerFactory
             verbosity: verbosity,
             packageSourceLocation: packageSourceLocation,
             restoreActionConfig: restoreActionConfig);
+
+        // Attach corruption repairer to recover from corrupt workload sets
+        if (nugetPackageDownloader is not null &&
+            workloadResolver?.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider sdkProvider &&
+            sdkProvider.CorruptionRepairer is null)
+        {
+            sdkProvider.CorruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                reporter,
+                installer,
+                workloadResolver,
+                sdkFeatureBand,
+                dotnetDir,
+                userProfileDir,
+                nugetPackageDownloader,
+                packageSourceLocation,
+                verbosity);
+        }
+
+        return installer;
     }
 
     private static bool CanWriteToDotnetRoot(string dotnetDir = null)

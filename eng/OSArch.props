@@ -1,0 +1,41 @@
+<Project>
+
+  <!-- Host architecture detection -->
+  <PropertyGroup Label="CalculateArch">
+    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 's390x' OR '$(BuildArchitecture)' == 'ppc64le' OR '$(BuildArchitecture)' == 'loongarch64')">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+  </PropertyGroup>
+
+  <!-- Host and target OS detection -->
+  <PropertyGroup Label="CalculateTargetOS">
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">linux</HostOS>
+    <IsLinux Condition="'$(HostOS)' == 'linux'">true</IsLinux>
+
+    <!-- TargetOS defaults to HostOS; overridable via /p:TargetOS from build scripts.
+         Uses RID-style OS names (win, osx, linux) for compatibility with existing SDK code. -->
+    <TargetOS Condition="'$(TargetOS)' == ''">$(HostOS)</TargetOS>
+
+    <!-- OSName preserved for backward compatibility with Layout projects -->
+    <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
+  </PropertyGroup>
+
+  <!-- Boolean targeting properties -->
+  <PropertyGroup Label="CalculateTargetOSFlags">
+    <TargetsWindows Condition="'$(TargetOS)' == 'win'">true</TargetsWindows>
+    <TargetsLinux Condition="'$(TargetOS)' == 'linux'">true</TargetsLinux>
+    <TargetsOSX Condition="'$(TargetOS)' == 'osx'">true</TargetsOSX>
+    <TargetsFreeBSD Condition="'$(TargetOS)' == 'freebsd'">true</TargetsFreeBSD>
+    <TargetsUnix Condition="'$(TargetsLinux)' == 'true' OR '$(TargetsOSX)' == 'true' OR '$(TargetsFreeBSD)' == 'true'">true</TargetsUnix>
+  </PropertyGroup>
+
+</Project>

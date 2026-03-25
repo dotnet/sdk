@@ -281,7 +281,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             //  Set up test workload manifest that will suply targeting and runtime pack versions
-            string sdkVersionBand = GetVersionBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            string sdkVersionBand = GetVersionBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             string manifestRoot = Path.Combine(testAsset.TestRoot, "manifests");
             string manifestFolder = Path.Combine(manifestRoot, sdkVersionBand, "RuntimePackVersionTestWorkload");
             Directory.CreateDirectory(manifestFolder);
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
         {
 
             // There's a bug when using the 6.0 SDK with 17.4 but we have limited control over the VS version used in helix
-            Version.TryParse(TestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion);
+            Version.TryParse(SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion);
             Version.TryParse("17.4.0", out Version maximumVersion);
             if (msbuildVersion >= maximumVersion)
                 return;

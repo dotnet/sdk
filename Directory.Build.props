@@ -1,30 +1,21 @@
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
+  <!-- OS/arch detection (before Arcade) -->
+  <Import Project="$(MSBuildThisFileDirectory)/eng/OSArch.props" />
+
   <PropertyGroup>
-    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <PropertyGroup>
-    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
+  <!-- RID and boolean targeting (after Arcade) -->
+  <Import Project="$(RepositoryEngineeringDir)RuntimeIdentifier.props" />
 
-    <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+  <PropertyGroup>
+    <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
+    <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -73,8 +64,18 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51465 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Global usings -->

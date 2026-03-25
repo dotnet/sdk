@@ -269,6 +269,10 @@
       <Net110AppHostRids Include="
         @(Net100AppHostRids);
         haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
         " />
 
       <Net110RuntimePackRids Include="
@@ -282,6 +286,10 @@
         maccatalyst-x64;
         maccatalyst-arm64;
         haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
         browser-wasm;
         " />
 
@@ -407,7 +415,16 @@
         @(Net90Crossgen2SupportedRids);
         " />
 
-      <Crossgen2SupportedRids Include="@(Net100Crossgen2SupportedRids);" />
+      <Net110Crossgen2SupportedRids Include="
+        @(Net100Crossgen2SupportedRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
+
+      <Crossgen2SupportedRids Include="@(Net110Crossgen2SupportedRids);" />
 
       <Net100Crossgen2SupportedPortableRids Include="@(Net100Crossgen2SupportedRids)" />
 
@@ -449,10 +466,19 @@
         linux-musl-riscv64;
         " />
 
+      <Net110ILCompilerSupportedRids Include="
+        @(Net100ILCompilerSupportedRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
+
       <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <ILCompilerSupportedRids Include="
-        @(Net100ILCompilerSupportedRids);
+        @(Net110ILCompilerSupportedRids);
         " />
 
       <Net100ILCompilerSupportedPortableRids Include="@(Net100ILCompilerSupportedRids)" />
@@ -506,8 +532,17 @@
         android-x64;
         " />
 
-      <NativeAOTRuntimePackRids Include="
+      <Net110NativeAOTRuntimePackRids Include="
         @(Net100NativeAOTRuntimePackRids);
+        haiku-x64;
+        illumos-x64;
+        solaris-x64;
+        openbsd-x64;
+        openbsd-arm64;
+        " />
+
+      <NativeAOTRuntimePackRids Include="
+        @(Net110NativeAOTRuntimePackRids);
         "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
@@ -518,17 +553,18 @@
       <AspNetCore80RuntimePackRids Remove="win-arm" />
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;" />
       <AspNetCore100RuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
+      <AspNetCore110RuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore110RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
-      <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
+      <_KnownRuntimeIdentifierPlatforms Include="any;aot;freebsd;openbsd;illumos;solaris;haiku;unix" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -1543,8 +1579,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
-    <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
-    <_ExcludedKnownRuntimeIdentiferPlatforms Include="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
+    <_KnownRuntimeIdentifierPlatforms Include="@(_KnownRuntimeIdentifierPlatforms, '%3B')" />
+    <_ExcludedKnownRuntimeIdentifierPlatforms Include="@(_ExcludedKnownRuntimeIdentifierPlatforms, '%3B')" />
   </ItemGroup>
 
 </Project>

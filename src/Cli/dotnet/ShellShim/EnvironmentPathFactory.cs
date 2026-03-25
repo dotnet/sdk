@@ -15,7 +15,7 @@ internal static class EnvironmentPathFactory
     {
         IEnvironmentPath? environmentPath = null;
 
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             // On Windows MSI will in charge of appending ToolShimPath
@@ -65,6 +65,7 @@ internal static class EnvironmentPathFactory
                 environmentProvider: environmentProvider);
         }
 
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             return new WindowsEnvironmentPath(
@@ -74,6 +75,7 @@ internal static class EnvironmentPathFactory
                 environmentPathEditor: new WindowsRegistryEnvironmentPathEditor(),
                 reporter: Reporter.Output);
         }
+#endif
 
         return CreateEnvironmentPath(true, environmentProvider);
     }

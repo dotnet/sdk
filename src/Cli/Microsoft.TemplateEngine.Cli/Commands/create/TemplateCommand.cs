@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static readonly string[] _helpAliases = ["-h", "/h", "--help", "-?", "/?"];
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly BaseCommand _instantiateCommand;
+        private readonly Command _instantiateCommand;
         private readonly TemplateGroup _templateGroup;
         private readonly CliTemplateInfo _template;
         private Dictionary<string, TemplateOption> _templateSpecificOptions = new();
@@ -30,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// </summary>
         /// <exception cref="InvalidTemplateParametersException">when <paramref name="template"/> has invalid template parameters.</exception>
         public TemplateCommand(
-            BaseCommand instantiateCommand,
+            Command instantiateCommand,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
             TemplateGroup templateGroup,
@@ -50,11 +51,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Aliases.Add(item);
             }
 
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.NameOption);
-            Options.Add(SharedOptions.DryRunOption);
-            Options.Add(SharedOptions.ForceOption);
-            Options.Add(SharedOptions.NoUpdateCheckOption);
+            OutputOption = SharedOptionsFactory.CreateOutputOption();
+            NameOption = SharedOptionsFactory.CreateNameOption();
+            DryRunOption = SharedOptionsFactory.CreateDryRunOption();
+            ForceOption = SharedOptionsFactory.CreateForceOption();
+            NoUpdateCheckOption = SharedOptionsFactory.CreateNoUpdateCheckOption();
+
+            Options.Add(OutputOption);
+            Options.Add(NameOption);
+            Options.Add(DryRunOption);
+            Options.Add(ForceOption);
+            Options.Add(NoUpdateCheckOption);
 
             string? templateLanguage = template.GetLanguage();
             string? defaultLanguage = environmentSettings.GetDefaultLanguage();
@@ -114,6 +121,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
 
         internal static IReadOnlyList<string> KnownHelpAliases => _helpAliases;
+
+        internal Option<FileInfo> OutputOption { get; }
+
+        internal Option<string> NameOption { get; }
+
+        internal Option<bool> DryRunOption { get; }
+
+        internal Option<bool> ForceOption { get; }
+
+        internal Option<bool> NoUpdateCheckOption { get; }
 
         internal Option<AllowRunScripts>? AllowScriptsOption { get; }
 
@@ -239,8 +256,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (!templateArgs.IsForceFlagSpecified)
             {
-                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Name);
-                reporter.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
+                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, ForceOption.Name);
+                reporter.WriteCommand(Example.FromExistingTokens<TemplateCommand>(templateArgs.ParseResult).WithOption(c => c.ForceOption));
             }
             else
             {

@@ -302,6 +302,8 @@ public partial class StaticWebAssetsBaselineFactory
                 TemplatizeNugetPath(restorePath, fromPackage),
             var fromProject when projectPath is not null && file.StartsWith(projectPath, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeProjectPath(projectPath, fromProject, runtimeIdentifier),
+            var fromWebAssemblySdk when file.Replace('\\', '/').Contains("/Sdks/Microsoft.NET.Sdk.WebAssembly", StringComparison.OrdinalIgnoreCase) =>
+                TemplatizeWebAssemblySdkPath(fromWebAssemblySdk),
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
                 {
@@ -312,6 +314,35 @@ public partial class StaticWebAssetsBaselineFactory
         };
 
         return ReplaceFileName(updated).Replace('/', '\\');
+    }
+
+    private string TemplatizeWebAssemblySdkPath(string file)
+    {
+        var normalized = file.Replace('\\', '/');
+        var marker = "/Sdks/Microsoft.NET.Sdk.WebAssembly";
+        var idx = normalized.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0)
+        {
+            return file;
+        }
+
+        // Replace everything up to and including the SDK folder with the token
+        var remainder = normalized.Substring(idx + marker.Length);
+        if (remainder.StartsWith('/'))
+        {
+            remainder = remainder[1..];
+        }
+
+        var templated = "${WebAssemblySdkPath}" + (string.IsNullOrEmpty(remainder) ? string.Empty : "/" + remainder);
+
+        // Replace filename hashes if any
+        templated = ReplaceSegments(templated, (i, segments) => i switch
+        {
+            _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
+            _ => segments[i]
+        });
+
+        return templated;
     }
 
     private static string ReplaceFileName(string path)

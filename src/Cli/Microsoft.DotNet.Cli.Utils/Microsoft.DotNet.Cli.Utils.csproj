@@ -1,11 +1,4 @@
-﻿<Project>
-
-  <PropertyGroup>
-    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-  </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -20,8 +13,6 @@
 
     <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
-
-    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOTNET_BUILDSOURCEONLY</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' != 'net472'">
@@ -40,17 +31,14 @@
     <None Include="**/Framework/**/*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
     <Compile Remove="Windows\**" />
-    <Compile Remove="DangerousFileDetector.cs" />
     <Compile Remove="WindowsRegistryEnvironmentPathEditor.cs" />
     <Compile Remove="Extensions\ProcessExtensions.cs" />
     <Compile Remove="DotDefaultPathCorrector.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <None Include="**/*_SourceBuild.cs" />
-    <Compile Remove="**/*_SourceBuild.cs" />
+    <!-- Framework/ COM interop files that depend on CsWin32 -->
+    <Compile Remove="Framework\System\Com\**" />
+    <Compile Remove="Framework\Windows\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -85,7 +73,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Hashing" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(TargetsWindows)' == 'true'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -93,6 +81,10 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
   </ItemGroup>
 
   <!--
@@ -115,5 +107,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

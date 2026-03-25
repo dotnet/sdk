@@ -14,7 +14,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
 
     <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
          on a valid layout. -->
@@ -31,6 +30,14 @@
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
+  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
+    <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
+    <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

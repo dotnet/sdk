@@ -77,6 +77,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 return;
                             }
 
+                            // Do not report diagnostic for extension members
+                            if (nestedType.TypeKind == ITypeSymbolExtensions.ExtensionTypeKind)
+                            {
+                                return;
+                            }
+
                             // The Framework Design Guidelines (see 4.9 Nested Types) say that it is okay
                             // to expose nested types for advanced customization and subclassing scenarios,
                             // so, following FxCop's implementation of this rule, we allow protected and

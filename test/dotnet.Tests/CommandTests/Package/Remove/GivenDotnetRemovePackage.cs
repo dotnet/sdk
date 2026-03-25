@@ -15,7 +15,7 @@ Usage:
   dotnet remove [<PROJECT | FILE>] package <PACKAGE_NAME>... [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PACKAGE_NAME>    The package reference to remove.
 
 Options:
@@ -29,7 +29,7 @@ Usage:
   dotnet remove <PROJECT | FILE> [command] [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.
@@ -83,6 +83,33 @@ Commands:
 
             remove.Should().Pass();
             remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{projectDirectory + Path.DirectorySeparatorChar}TestAppSimple.csproj'.");
+            remove.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
+        {
+            const string testAsset = "TestAppSimple";
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource().Path;
+
+            var packageName = "Newtonsoft.Json";
+            var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
+            var parentDirectory = Directory.GetParent(projectDirectory)!.FullName;
+            var relativeProjectPath = Path.GetRelativePath(parentDirectory, projectFilePath);
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("add", "package", packageName)
+                .Should().Pass();
+
+            var remove = new DotnetCommand(Log)
+                .WithWorkingDirectory(parentDirectory)
+                .Execute("remove", relativeProjectPath, "package", packageName);
+
+            remove.Should().Pass();
+            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{relativeProjectPath}'.");
             remove.StdErr.Should().BeEmpty();
         }
 

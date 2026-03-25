@@ -24,7 +24,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
-            var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
+            var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
-            var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
+            var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand

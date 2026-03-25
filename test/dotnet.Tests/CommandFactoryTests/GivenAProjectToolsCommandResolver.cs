@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Tests
                 .WithSource()
                 .WithRepoGlobalPackages();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.Tests
                 ProjectDirectory = testInstance.Path
             };
 
-            var nugetPackagesRoot = TestContext.Current.TestGlobalPackagesFolder;
+            var nugetPackagesRoot = SdkTestContext.Current.TestGlobalPackagesFolder;
 
             var toolPathCalculator = new ToolPathCalculator(nugetPackagesRoot);
 
@@ -265,11 +265,11 @@ namespace Microsoft.DotNet.Tests
                 .WithSource()
                 .WithRepoGlobalPackages();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
-            var toolPathCalculator = new ToolPathCalculator(TestContext.Current.TestGlobalPackagesFolder);
+            var toolPathCalculator = new ToolPathCalculator(SdkTestContext.Current.TestGlobalPackagesFolder);
 
             var lockFilePath = toolPathCalculator.GetLockFilePath(
                 "dotnet-portable",
@@ -302,7 +302,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -331,7 +331,7 @@ namespace Microsoft.DotNet.Tests
             var testProjectDirectory = testInstance.Path;
             var fallbackFolder = Path.Combine(testProjectDirectory, "fallbackFolder");
 
-            var nugetConfig = UseNuGetConfigWithFallbackFolder(testInstance, fallbackFolder, TestContext.Current.TestPackages);
+            var nugetConfig = UseNuGetConfigWithFallbackFolder(testInstance, fallbackFolder, SdkTestContext.Current.TestPackages);
 
             PopulateFallbackFolder(testProjectDirectory, fallbackFolder);
 
@@ -357,7 +357,7 @@ namespace Microsoft.DotNet.Tests
             var fallbackFolder = Path.Combine(testProjectDirectory, "fallbackFolder");
             var nugetPackages = Path.Combine(testProjectDirectory, "nugetPackages");
 
-            var nugetConfig = UseNuGetConfigWithFallbackFolder(testInstance, fallbackFolder, TestContext.Current.TestPackages);
+            var nugetConfig = UseNuGetConfigWithFallbackFolder(testInstance, fallbackFolder, SdkTestContext.Current.TestPackages);
 
             PopulateFallbackFolder(testProjectDirectory, fallbackFolder);
 
@@ -429,7 +429,7 @@ namespace Microsoft.DotNet.Tests
         {
             //  When using the product, the ToolDepsJsonGeneratorProject property is used to get this path, but for testing
             //  we'll hard code the path inside the SDK since we don't have a project to evaluate here
-            return Path.Combine(TestContext.Current.ToolsetUnderTest.SdksPath, "Microsoft.NET.Sdk", "targets", "GenerateDeps", "GenerateDeps.proj");
+            return Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdksPath, "Microsoft.NET.Sdk", "targets", "GenerateDeps", "GenerateDeps.proj");
         }
     }
 }

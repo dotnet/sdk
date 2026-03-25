@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
             cmd.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }

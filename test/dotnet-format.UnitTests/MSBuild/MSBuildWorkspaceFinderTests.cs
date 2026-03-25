@@ -3,7 +3,6 @@
 
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {

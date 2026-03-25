@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--no-build", "-v:m");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Restore");
             }
@@ -705,7 +705,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             result.Should().Pass()
                 .And.HaveStdOutContaining("Hello World!");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().HaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("CoreCompile");
@@ -1035,7 +1035,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--project", nonExistentProject, "--no-build");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // After the fix, we should get a clear error message about the file not existing
                 var stderr = result.StdErr;
@@ -1048,6 +1048,44 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                                               
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibrary()
+        {
+            // Reproduces https://github.com/dotnet/sdk/issues/53488 with explicit --framework:
+            // dotnet run -f <platform-specific-TFM> fails with NETSDK1005 when
+            // the project references a library that targets only the base TFM.
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute("--framework", $"{ToolsetInfo.CurrentTargetFramework}-windows")
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibraryWithoutExplicitFramework()
+        {
+            // Same scenario as above but without --framework: exercises the
+            // auto-selected TFM path (saved pre-TF project reuse).
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            // Reduce to a single-entry TargetFrameworks so the framework is auto-selected.
+            var appCsproj = Path.Combine(testInstance.Path, "App", "App.csproj");
+            File.WriteAllText(appCsproj, File.ReadAllText(appCsproj)
+                .Replace(
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>",
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows</TargetFrameworks>"));
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
         }
 
         [Fact]
@@ -1079,7 +1117,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
         }
     }
 }

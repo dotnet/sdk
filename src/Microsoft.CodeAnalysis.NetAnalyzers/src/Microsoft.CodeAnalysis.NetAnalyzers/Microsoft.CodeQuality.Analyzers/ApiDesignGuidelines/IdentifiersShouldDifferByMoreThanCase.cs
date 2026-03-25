@@ -143,11 +143,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             using var membersByName = PooledDictionary<string, PooledHashSet<ISymbol>>.GetInstance(StringComparer.OrdinalIgnoreCase);
             foreach (var member in members)
             {
-                // Ignore constructors, indexers, operators and destructors for name check
+                // Ignore constructors, indexers, operators, destructors and extension blocks for name check
                 if (member.IsConstructor() ||
                     member.IsDestructor() ||
                     member.IsIndexer() ||
                     member.IsUserDefinedOperator() ||
+                    member.IsExtension() ||
                     overloadsToSkip.Contains(member))
                 {
                     continue;

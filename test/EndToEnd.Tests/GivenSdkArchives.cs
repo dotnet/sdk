@@ -11,19 +11,20 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ItHasDeduplicatedAssemblies()
     {
-        // TODO: Windows is not supported yet - blocked on signing support (https://github.com/dotnet/sdk/issues/52182).
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return;
-        }
-
         // Find and extract archive
-        string archivePath = TestContext.FindSdkAcquisitionArtifact("dotnet-sdk-*.tar.gz");
+        string archivePath = SdkTestContext.FindSdkAcquisitionArtifact("dotnet-sdk-*.tar.gz");
         Log.WriteLine($"Found SDK archive: {Path.GetFileName(archivePath)}");
         string extractedPath = ExtractArchive(archivePath);
 
-        // Verify deduplication worked by checking for symbolic links
-        SymbolicLinkHelpers.VerifyDirectoryHasRelativeSymlinks(extractedPath, Log, "archive");
+        // Verify deduplication worked - Windows uses hardlinks, Unix uses symbolic links
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            FileLinkHelpers.VerifyDirectoryHasHardlinks(extractedPath, Log, "archive");
+        }
+        else
+        {
+            FileLinkHelpers.VerifyDirectoryHasRelativeSymlinks(extractedPath, Log, "archive");
+        }
     }
 
     private string ExtractArchive(string archivePath)
@@ -34,7 +35,7 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
 
         Log.WriteLine($"Extracting archive to: {extractPath}");
 
-        SymbolicLinkHelpers.ExtractTarGz(archivePath, extractPath, Log);
+        FileLinkHelpers.ExtractTar(archivePath, extractPath, Log);
 
         return extractPath;
     }

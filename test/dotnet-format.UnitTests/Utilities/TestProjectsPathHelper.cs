@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         {
             if (s_projectsDirectory == null)
             {
-                var assetsDirectory = Path.Combine(TestContext.Current.TestAssetsDirectory, "dotnet-format");
+                var assetsDirectory = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "dotnet-format");
                 if (Directory.Exists(assetsDirectory))
                 {
                     s_projectsDirectory = assetsDirectory;

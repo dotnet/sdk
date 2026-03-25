@@ -6,7 +6,7 @@
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
 
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
 
@@ -151,7 +151,7 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
         if (VerifySignatures)
         {
             // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
 #pragma warning disable CA1416
             unsafe
             {

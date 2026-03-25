@@ -42,6 +42,13 @@
     Detail: The project that should be used for context evaluation.
   },
   {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: --no-update-check,
     Kind: Keyword,
     SortText: --no-update-check,

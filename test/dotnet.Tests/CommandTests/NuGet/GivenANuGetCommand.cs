@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
-            NuGetConfigWriter.Write(projectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(projectDirectory, SdkTestContext.Current.TestPackages);
 
             new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0")
                 .WithWorkingDirectory(projectDirectory)

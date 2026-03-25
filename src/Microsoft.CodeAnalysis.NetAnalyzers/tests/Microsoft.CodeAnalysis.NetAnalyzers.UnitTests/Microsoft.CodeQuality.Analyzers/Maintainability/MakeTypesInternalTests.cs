@@ -756,6 +756,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
+        [Theory]
+        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        public Task ExtensionMembers_NoDiagnostic(OutputKind outputKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                           internal static class E
+                           {
+                               public static void Main() {}
+
+                               extension(int x)
+                               {
+                                   public int M() => x + 1;
+                               }
+                           }
+                           """,
+                TestState =
+                {
+                    OutputKind = outputKind,
+                },
+                LanguageVersion = LanguageVersion.CSharp14
+            }.RunAsync();
+        }
+
         private Task VerifyCsAsync(OutputKind outputKind, string testCode, string fixedCode = null)
         {
             return new VerifyCS.Test

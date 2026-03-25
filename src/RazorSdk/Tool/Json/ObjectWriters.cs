@@ -24,12 +24,4 @@ internal static partial class ObjectWriters
         writer.WriteIfNotZero(nameof(span.CharacterIndex), span.CharacterIndex);
         writer.WriteIfNotZero(nameof(span.Length), span.Length);
     }
-
-    public static void Write(JsonDataWriter writer, RazorExtension? value)
-        => writer.WriteObject(value, WriteProperties);
-
-    public static void WriteProperties(JsonDataWriter writer, RazorExtension value)
-    {
-        writer.Write(nameof(value.ExtensionName), value.ExtensionName);
-    }
 }
