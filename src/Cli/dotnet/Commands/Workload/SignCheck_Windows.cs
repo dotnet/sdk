@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
 
@@ -28,7 +28,7 @@ internal static class SignCheck
     {
         if (OperatingSystem.IsWindows())
         {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
             Debug.Assert(s_dotnet is not null, "Environment.ProcessPath should not be null when running in the dotnet host.");
 
             if (s_dotnet is null)

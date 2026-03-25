@@ -21,14 +21,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         public static string DotnetNewTestTemplatesBasePath { get; } = VerifyExists(Path.Combine(DotnetNewTestAssets, "test_templates"));
 
         /// <summary>
-        /// Gets a path to the repo root folder.
-        /// </summary>
-        public static string CodeBaseRoot { get; } = GetAndVerifyRepoRoot();
-
-        /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
+        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages;
 
         /// <summary>
         /// Gets a path to the test template with a <paramref name="templateName"/> name.
@@ -51,20 +46,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 Assert.Fail($"The folder '{folder}' does not exist.");
             }
             return folder;
-        }
-
-        private static string GetAndVerifyRepoRoot()
-        {
-            string repoRoot = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "..", ".."));
-            if (!Directory.Exists(repoRoot))
-            {
-                Assert.Fail($"The repo root cannot be evaluated.");
-            }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
-            {
-                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
-            }
-            return repoRoot;
         }
     }
 }

@@ -30,10 +30,8 @@
     <ExeExtension>.exe</ExeExtension>
     <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
 
-    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
     <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
 
-    <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
     <PortableProductMonikerRid>$(PortableTargetRid)</PortableProductMonikerRid>
   </PropertyGroup>
 
