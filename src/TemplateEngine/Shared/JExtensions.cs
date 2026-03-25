@@ -17,7 +17,6 @@ namespace Microsoft.TemplateEngine
     internal static class JExtensions
     {
         private static readonly JsonDocumentOptions DocOptions = new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
-        private static readonly JsonNodeOptions NodeOptions = new() { PropertyNameCaseInsensitive = true };
         private static readonly JsonSerializerOptions SerializerOptions = new()
         {
             PropertyNameCaseInsensitive = true,
@@ -387,7 +386,7 @@ namespace Microsoft.TemplateEngine
             using Stream s = file.OpenRead();
             using TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true);
             string json = tr.ReadToEnd();
-            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+            return (JsonObject?)JsonNode.Parse(json, null, DocOptions)
                 ?? throw new InvalidOperationException("Failed to parse JSON from file.");
         }
 
@@ -396,7 +395,7 @@ namespace Microsoft.TemplateEngine
             using Stream fileStream = fileSystem.OpenRead(path);
             using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
             string json = textReader.ReadToEnd();
-            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+            return (JsonObject?)JsonNode.Parse(json, null, DocOptions)
                 ?? throw new InvalidOperationException($"Failed to parse JSON from '{path}'.");
         }
 
@@ -480,7 +479,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static JsonObject ParseJsonObject(string json)
         {
-            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+            return (JsonObject?)JsonNode.Parse(json, null, DocOptions)
                 ?? throw new InvalidOperationException("Failed to parse JSON string as JsonObject.");
         }
 
@@ -489,7 +488,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static JsonNode? ParseJsonNode(string json)
         {
-            return JsonNode.Parse(json, NodeOptions, DocOptions);
+            return JsonNode.Parse(json, null, DocOptions);
         }
 
         /// <summary>
@@ -503,7 +502,7 @@ namespace Microsoft.TemplateEngine
         internal static JsonObject FromObject(object obj)
         {
             string json = JsonSerializer.Serialize(obj, SerializerOptions);
-            return (JsonObject?)JsonNode.Parse(json, NodeOptions, DocOptions)
+            return (JsonObject?)JsonNode.Parse(json, null, DocOptions)
                 ?? throw new InvalidOperationException("Failed to round-trip object to JsonObject.");
         }
 
@@ -512,7 +511,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static JsonObject DeepCloneObject(this JsonObject source)
         {
-            return (JsonObject?)JsonNode.Parse(source.ToJsonString(), NodeOptions, DocOptions)
+            return (JsonObject?)JsonNode.Parse(source.ToJsonString(), null, DocOptions)
                 ?? throw new InvalidOperationException("Failed to deep clone JsonObject.");
         }
 
