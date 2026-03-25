@@ -12,6 +12,7 @@
     <IsShipping Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">false</IsShipping>
     <IsShippingPackage>$(IsShipping)</IsShippingPackage>
     <IncludeSymbols>false</IncludeSymbols>
+    <PackageVersion Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">$(DotNet1xxWorkloadManifestVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
