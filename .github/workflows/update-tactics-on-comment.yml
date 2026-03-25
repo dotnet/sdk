@@ -132,7 +132,7 @@ jobs:
       contents: read
       issues: write
       models: read
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - name: Gather PR and issue data
