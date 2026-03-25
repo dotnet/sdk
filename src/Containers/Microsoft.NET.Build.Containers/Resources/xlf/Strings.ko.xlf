@@ -400,8 +400,8 @@
         <note>{1} is the registry name</note>
       </trans-unit>
       <trans-unit id="RepositoryNotFound">
-        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
-        <target state="translated">CONTAINER1015: '{2}' 레지스트리의 '{1}' 태그에서 '{0}' 리포지토리에 액세스할 수 없습니다. 이 이름 및 태그가 레지스트리에 있는지 확인하세요.</target>
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' (digest: '{2}') in the registry '{3}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="new">CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' (digest: '{2}') in the registry '{3}'. Please confirm that this name and tag are present in the registry.</target>
         <note>{StrBegins="CONTAINER1015: "}</note>
       </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
