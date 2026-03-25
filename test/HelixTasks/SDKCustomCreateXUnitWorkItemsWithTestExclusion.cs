@@ -37,6 +37,11 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         public bool IsPosixShell { get; set; }
 
         /// <summary>
+        /// The runtime identifier of the target Helix queue (e.g. osx-arm64, linux-x64).
+        /// </summary>
+        public string TargetRid { get; set; } = "";
+
+        /// <summary>
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
@@ -161,9 +166,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
                 // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
                 // so we need to restore it before running.
-                string chmodPrefix = IsPosixShell ? $"chmod +x {Path.GetFileNameWithoutExtension(assemblyName)} && " : "";
+                string exeName = Path.GetFileNameWithoutExtension(assemblyName);
+                string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
+                // On macOS, ad-hoc sign the test exe so createdump can attach via task_for_pid for crash dumps.
+                string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f {exeName} && " : "";
 
-                string command = $"{chmodPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                string command = $"{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");

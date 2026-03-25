@@ -94,6 +94,7 @@
     <SDKCustomCreateXUnitWorkItemsWithTestExclusion
         XUnitProjects="@(SDKCustomXUnitProject)"
         IsPosixShell="$(IsPosixShell)"
+        TargetRid="$(TargetRid)"
         XUnitArguments="$(SDKCustomXUnitArgument)"
         XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
