@@ -131,6 +131,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      models: read
       pull-requests: read
 
     steps:
