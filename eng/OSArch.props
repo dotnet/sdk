@@ -7,9 +7,11 @@
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
   </PropertyGroup>
 
-  <!-- Host and target OS detection -->
+  <!-- Host and target OS detection.
+       Uses full OS names (windows, linux, osx, freebsd, etc.) matching the VMR convention.
+       See https://github.com/dotnet/dotnet/blob/main/docs/VMR-Controls.md#output-controls -->
   <PropertyGroup Label="CalculateTargetOS">
-    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">windows</HostOS>
     <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOS>
     <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOS>
     <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOS>
@@ -19,19 +21,19 @@
     <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">linux</HostOS>
     <IsLinux Condition="'$(HostOS)' == 'linux'">true</IsLinux>
 
-    <!-- TargetOS defaults to HostOS; overridable via /p:TargetOS from build scripts.
-         Uses RID-style OS names (win, osx, linux) for compatibility with existing SDK code. -->
+    <!-- TargetOS defaults to HostOS; overridable via /p:TargetOS from build scripts. -->
     <TargetOS Condition="'$(TargetOS)' == ''">$(HostOS)</TargetOS>
 
-    <!-- OSName preserved for backward compatibility with Layout projects -->
+    <!-- OSName uses RID-style names (win, not windows) for downstream RID construction. -->
     <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetOS)' == 'windows'">win</OSName>
     <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
   </PropertyGroup>
 
   <!-- Boolean targeting properties -->
   <PropertyGroup Label="CalculateTargetOSFlags">
-    <TargetsWindows Condition="'$(TargetOS)' == 'win'">true</TargetsWindows>
+    <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
     <TargetsLinux Condition="'$(TargetOS)' == 'linux'">true</TargetsLinux>
     <TargetsOSX Condition="'$(TargetOS)' == 'osx'">true</TargetsOSX>
     <TargetsFreeBSD Condition="'$(TargetOS)' == 'freebsd'">true</TargetsFreeBSD>
