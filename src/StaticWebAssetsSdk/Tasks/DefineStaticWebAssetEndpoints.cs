@@ -122,34 +122,17 @@ public class DefineStaticWebAssetEndpoints : Task
             builder.AddIncludePatterns(pattern);
             var matcher = builder.Build();
 
-            // Compute the suffix after the recursive wildcard so we can strip it
-            // from the matched route to get the portion captured by **.
-            // For "**/index.html" the suffix is "index.html".
-            // For "index.html" (no **) the suffix is empty.
-            var suffix = "";
-            var rwcIndex = pattern.IndexOf("**", StringComparison.Ordinal);
-            if (rwcIndex >= 0)
-            {
-                var afterRwc = pattern.AsSpan().Slice(rwcIndex + 2);
-                if (afterRwc.Length > 0 && (afterRwc[0] == '/' || afterRwc[0] == '\\'))
-                {
-                    afterRwc = afterRwc.Slice(1);
-                }
-                suffix = afterRwc.ToString();
-            }
-
-            result[i] = new AdditionalEndpointDefinition(pattern, replacement, order, suffix, matcher);
+            result[i] = new AdditionalEndpointDefinition(pattern, replacement, order, matcher);
         }
 
         return result;
     }
 
-    internal readonly struct AdditionalEndpointDefinition(string pattern, string replacement, string order, string suffix, StaticWebAssetGlobMatcher matcher)
+    internal readonly struct AdditionalEndpointDefinition(string pattern, string replacement, string order, StaticWebAssetGlobMatcher matcher)
     {
         public string Pattern { get; } = pattern;
         public string Replacement { get; } = replacement;
         public string Order { get; } = order;
-        public string Suffix { get; } = suffix;
         public StaticWebAssetGlobMatcher Matcher { get; } = matcher;
     }
 
@@ -256,14 +239,13 @@ public class DefineStaticWebAssetEndpoints : Task
                 // Generate additional endpoints from definitions
                 if (AdditionalEndpointDefinitions.Length > 0)
                 {
-                    CreateAdditionalEndpoints(endpoint);
+                    CreateAdditionalEndpoints(endpoint, matchContext);
                 }
             }
         }
 
-        private void CreateAdditionalEndpoints(StaticWebAssetEndpoint sourceEndpoint)
+        private void CreateAdditionalEndpoints(StaticWebAssetEndpoint sourceEndpoint, StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
             for (var d = 0; d < AdditionalEndpointDefinitions.Length; d++)
             {
                 var definition = AdditionalEndpointDefinitions[d];
@@ -274,54 +256,28 @@ public class DefineStaticWebAssetEndpoints : Task
                     continue;
                 }
 
-                // The glob matcher's Stem captures everything from the ** start to the
-                // end of the path, including the literal suffix of the pattern.
-                // For example, **/index.html matching admin/index.html produces
-                // stem="admin/index.html". We need to strip the suffix ("index.html")
-                // to get the actual ** captured portion ("admin").
-                var route = sourceEndpoint.Route;
-                string stem;
-                if (!string.IsNullOrEmpty(definition.Suffix))
-                {
-                    // Strip the suffix from the route to get the ** portion.
-                    if (route.Length > definition.Suffix.Length &&
-                        route.EndsWith(definition.Suffix, StringComparison.OrdinalIgnoreCase) &&
-                        route[route.Length - definition.Suffix.Length - 1] == '/')
-                    {
-                        // e.g., "admin/index.html" → "admin"
-                        stem = route.Substring(0, route.Length - definition.Suffix.Length - 1);
-                    }
-                    else if (route.Equals(definition.Suffix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // e.g., "index.html" → ""
-                        stem = "";
-                    }
-                    else
-                    {
-                        stem = "";
-                    }
-                }
-                else
-                {
-                    stem = "";
-                }
+                // Use the CapturedStem from the match, which contains only the portion matched by **,
+                // without any trailing literal segments from the pattern.
+                // For **/index.html matching admin/index.html: CapturedStem="admin".
+                // For index.html (no **) matching index.html: CapturedStem="".
+                var capturedStem = match.CapturedStem;
 
                 // Build the new route from the captured stem and the replacement.
                 string newRoute;
                 if (string.IsNullOrEmpty(definition.Replacement))
                 {
-                    // When replacement is empty, the new route is just the stem (e.g., **/index.html -> the ** part)
-                    newRoute = stem;
+                    // When replacement is empty, the new route is just the captured stem (e.g., **/index.html -> the ** part)
+                    newRoute = capturedStem;
                 }
-                else if (string.IsNullOrEmpty(stem))
+                else if (string.IsNullOrEmpty(capturedStem))
                 {
-                    // When there's no stem, the replacement becomes the full route (e.g., index.html -> {**fallback:nonfile})
+                    // When there's no captured stem, the replacement becomes the full route (e.g., index.html -> {**fallback:nonfile})
                     newRoute = definition.Replacement;
                 }
                 else
                 {
-                    // Combine stem with replacement (e.g., stem=admin, replacement=something -> admin/something)
-                    newRoute = $"{stem}/{definition.Replacement}";
+                    // Combine captured stem with replacement (e.g., capturedStem=admin, replacement=something -> admin/something)
+                    newRoute = $"{capturedStem}/{definition.Replacement}";
                 }
 
                 // Normalize the route

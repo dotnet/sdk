@@ -661,8 +661,11 @@ public class DefineStaticWebAssetEndpointsTest
         });
     }
 
-    [Fact]
-    public void AdditionalEndpointDefinitions_DefaultDocument_CreatesEndpointWithoutSuffix()
+    [Theory]
+    [InlineData("index.html", "index.html", "/")]
+    [InlineData("admin/index.html", "admin/index.html", "admin")]
+    public void AdditionalEndpointDefinitions_DefaultDocument_CreatesEndpointWithCapturedStem(
+        string relativeSubPath, string expectedOriginalRoute, string expectedAdditionalRoute)
     {
         var errorMessages = new List<string>();
         var buildEngine = new Mock<IBuildEngine>();
@@ -670,15 +673,16 @@ public class DefineStaticWebAssetEndpointsTest
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
         var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+        var physicalPath = Path.Combine(new[] { "wwwroot" }.Concat(relativeSubPath.Split('/')).ToArray());
 
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
             CandidateAssets = [CreateCandidate(
-                Path.Combine("wwwroot", "index.html"),
+                physicalPath,
                 "MyPackage",
                 "Discovered",
-                "index.html",
+                relativeSubPath,
                 "All",
                 "All",
                 fileLength: 100,
@@ -697,58 +701,14 @@ public class DefineStaticWebAssetEndpointsTest
         // Should have original endpoint + additional endpoint
         endpoints.Length.Should().Be(2);
 
-        var original = endpoints.First(e => e.Route == "index.html");
+        var original = endpoints.First(e => e.Route == expectedOriginalRoute);
         original.Should().NotBeNull();
         original.Order.Should().BeNullOrEmpty();
 
-        // The additional endpoint should have the suffix stripped (index.html matches **/index.html, stem is empty -> route is empty -> normalized to "/")
-        var additional = endpoints.First(e => e.Route != "index.html");
+        var additional = endpoints.First(e => e.Route != expectedOriginalRoute);
+        additional.Route.Should().Be(expectedAdditionalRoute);
         additional.AssetFile.Should().Be(original.AssetFile);
         additional.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
-    }
-
-    [Fact]
-    public void AdditionalEndpointDefinitions_DefaultDocument_NestedPath_CapturesStem()
-    {
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
-
-        var task = new DefineStaticWebAssetEndpoints
-        {
-            BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(
-                Path.Combine("wwwroot", "admin", "index.html"),
-                "MyPackage",
-                "Discovered",
-                "admin/index.html",
-                "All",
-                "All",
-                fileLength: 100,
-                lastWriteTime: lastWrite)],
-            ExistingEndpoints = [],
-            ContentTypeMappings = [CreateContentMapping("**/*.html", "text/html")],
-            AdditionalEndpointDefinitions = [
-                CreateAdditionalEndpointDefinition("DefaultDocument", "**/index.html", "")
-            ],
-        };
-
-        var result = task.Execute();
-
-        result.Should().Be(true);
-        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
-        endpoints.Length.Should().Be(2);
-
-        var original = endpoints.First(e => e.Route == "admin/index.html");
-        original.Should().NotBeNull();
-
-        // The stem is "admin", replacement is empty -> new route is "admin"
-        var additional = endpoints.First(e => e.Route != "admin/index.html");
-        additional.Route.Should().Be("admin");
-        additional.AssetFile.Should().Be(original.AssetFile);
     }
 
     [Fact]
@@ -874,6 +834,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Length.Should().Be(3);
 
         endpoints.Should().Contain(e => e.Route == "index.html");
+        endpoints.Should().Contain(e => e.Route == "/");
         endpoints.Should().Contain(e => e.Route == "{**fallback:nonfile}" && e.Order == "2147483647");
     }
 
