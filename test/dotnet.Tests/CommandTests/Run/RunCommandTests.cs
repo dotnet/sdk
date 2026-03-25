@@ -23,11 +23,13 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             entryPointFileFullPath: null,
             launchProfile: null,
             noLaunchProfile: false,
-            noLaunchProfileArguments,
+            noLaunchProfileArguments: noLaunchProfileArguments,
+            device: null,
+            listDevices: false,
             noRestore: false,
             noCache: false,
             interactive: false,
-            MSBuildArgs.FromOtherArgs([]),
+            msbuildArgs: MSBuildArgs.FromOtherArgs([]),
             applicationArgs: applicationArgs ?? [],
             readCodeFromStdin: false,
             environmentVariables: new Dictionary<string, string>());
@@ -86,7 +88,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
         Assert.Equal("executable", command.StartInfo.FileName);
         Assert.Equal(dir, command.StartInfo.WorkingDirectory);
@@ -111,7 +113,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
         Assert.Equal("", command.StartInfo.Arguments);
     }
@@ -134,7 +136,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
         Assert.Equal("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
     }

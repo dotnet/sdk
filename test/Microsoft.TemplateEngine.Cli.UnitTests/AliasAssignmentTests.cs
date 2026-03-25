@@ -259,7 +259,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             TemplatePackageManager templatePackageManager = A.Fake<TemplatePackageManager>();
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($" new {command}");
             var args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             TemplateGroup templateGroup = TemplateGroup
@@ -290,7 +290,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             TemplatePackageManager templatePackageManager = A.Fake<TemplatePackageManager>();
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse(" new foo");
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             var templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, templatePackageManager, templateGroup);

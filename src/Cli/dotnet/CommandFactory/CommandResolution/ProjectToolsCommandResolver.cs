@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -327,7 +328,7 @@ public class ProjectToolsCommandResolver(
             CliStrings.GeneratingDepsJson,
             depsPath));
 
-        var tempDepsFile = Path.Combine(PathUtilities.CreateTempSubdirectory(), Path.GetRandomFileName());
+        var tempDepsFile = Path.Combine(TemporaryDirectory.CreateSubdirectory(), Path.GetRandomFileName());
 
         List<string> args =
         [
