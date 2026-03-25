@@ -173,20 +173,26 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
+            // UseFileName replaces the entire type+method+parameters naming.
+            // This prevents Verify.XunitV3 from auto-appending [Theory] parameters
+            // to snapshot file paths, which breaks matching since TemplateVerifier
+            // already manages naming uniqueness via ScenarioName.
             string scenarioPrefix = options.DoNotPrependTemplateNameToScenarioName ? string.Empty : options.TemplateName;
             if (!options.DoNotPrependCallerMethodNameToScenarioName && !string.IsNullOrEmpty(callerInfo.CallerMethod))
             {
                 scenarioPrefix = callerInfo.CallerMethod + (string.IsNullOrEmpty(scenarioPrefix) ? null : ".") + scenarioPrefix;
             }
             scenarioPrefix = string.IsNullOrEmpty(scenarioPrefix) ? "_" : scenarioPrefix;
-            verifySettings.UseTypeName(scenarioPrefix);
+            string scenarioName = GetScenarioName(options);
+            string fileName = string.IsNullOrEmpty(scenarioName) ? scenarioPrefix : $"{scenarioPrefix}.{scenarioName}";
+            verifySettings.UseFileName(fileName);
+
             string snapshotsDir = options.SnapshotsDirectory ?? "Snapshots";
             if (!string.IsNullOrEmpty(callerInfo.CallerDirectory) && !Path.IsPathRooted(snapshotsDir))
             {
                 snapshotsDir = Path.Combine(callerInfo.CallerDirectory, snapshotsDir);
             }
             verifySettings.UseDirectory(snapshotsDir);
-            verifySettings.UseMethodName(GetScenarioName(options));
             verifySettings.UseDiffPlex(OutputType.Compact);
             verifySettings.UseSplitModeForUniqueDirectory();
 
