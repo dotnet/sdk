@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 VerifyCommandOutput = true,
                 TemplateSpecificArgs = new[] { "--name", "TestItem1" },
                 VerificationExcludePatterns = new[]
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 VerifyCommandOutput = true,
                 TemplateSpecificArgs = new[] { "--name", string.IsNullOrWhiteSpace(fileName) ? "TestItem1" : fileName, "--language", "VB" },
                 VerificationExcludePatterns = new[]

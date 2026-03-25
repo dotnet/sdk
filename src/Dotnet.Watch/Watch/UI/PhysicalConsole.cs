@@ -70,9 +70,12 @@ internal sealed class PhysicalConsole : IConsole
             {
                 CtrlC => new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true),
                 CtrlR => new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true),
+                '\r' or '\n' => new ConsoleKeyInfo('\r', ConsoleKey.Enter, shift: false, alt: false, control: false),
                 >= 'a' and <= 'z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'a'), shift: false, alt: false, control: false),
                 >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: true, alt: false, control: false),
                 >= '0' and <= '9' => new ConsoleKeyInfo(c, ConsoleKey.NumPad0 + (c - '0'), shift: false, alt: false, control: false),
+                '.' => new ConsoleKeyInfo('.', ConsoleKey.OemPeriod, shift: false, alt: false, control: false),
+                '-' => new ConsoleKeyInfo('-', ConsoleKey.OemMinus, shift: false, alt: false, control: false),
                 _ => default
             };
 

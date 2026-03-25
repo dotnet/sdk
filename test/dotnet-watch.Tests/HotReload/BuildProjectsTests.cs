@@ -50,7 +50,7 @@ public class BuildProjects(ITestOutputHelper output)
             FileWatcher = new FileWatcher(NullLogger.Instance, environmentOptions);
 
             Console = new TestConsole(output);
-            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null);
+            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null, targetFrameworkSelectionPrompt: null);
         }
 
         public void LogBuildInvocation(ProcessSpec processSpec)
