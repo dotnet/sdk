@@ -423,7 +423,7 @@ public sealed class VirtualProjectBuilder
                 }
             }
 
-            if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
+            if (directive is not CSharpDirective.Shebang && directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
             {
                 CheckFlagEnabled(ref transitiveEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
             }

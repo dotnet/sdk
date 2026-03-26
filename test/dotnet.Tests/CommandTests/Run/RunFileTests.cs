@@ -3645,6 +3645,32 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello, String from Util");
     }
 
+    /// <summary>
+    /// Shebang in an included file should not require the transitive directives feature flag.
+    /// </summary>
+    [Fact]
+    public void IncludeDirective_ShebangInIncludedFile()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:include Util.cs
+            {s_programDependingOnUtil}
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), $"""
+            #!/usr/bin/env dotnet
+            {s_util}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, String from Util");
+    }
+
     [Fact]
     public void IncludeDirective_CustomMapping()
     {
