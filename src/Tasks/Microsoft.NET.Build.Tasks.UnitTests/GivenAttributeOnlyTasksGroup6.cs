@@ -413,7 +413,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = new MockBuildEngine(),
                 ContentFileDependencies = Array.Empty<ITaskItem>(),
-                ProjectLanguage = "C#"
+                ProjectLanguage = "C#",
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
             };
 
             var result = task.Execute();
@@ -497,6 +498,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                     startGate.Wait();
                     task.Execute();
+
+                    if (task.DefaultPlatformTarget != "AnyCPU")
+                    {
+                        errors.Add($"Thread {idx}: Expected 'AnyCPU' but got '{task.DefaultPlatformTarget}'");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -536,6 +542,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                     startGate.Wait();
                     task.Execute();
+
+                    if (task.EmbeddedApphostPaths == null || task.EmbeddedApphostPaths.Length != 1)
+                    {
+                        errors.Add($"Thread {idx}: Expected 1 path but got {task.EmbeddedApphostPaths?.Length}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -573,6 +584,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                     startGate.Wait();
                     task.Execute();
+
+                    if (task.NuGetShortFolderName != "net8.0")
+                    {
+                        errors.Add($"Thread {idx}: Expected 'net8.0' but got '{task.NuGetShortFolderName}'");
+                    }
                 }
                 catch (Exception ex)
                 {

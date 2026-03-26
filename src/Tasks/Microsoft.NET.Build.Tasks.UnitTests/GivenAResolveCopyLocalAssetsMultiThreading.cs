@@ -109,6 +109,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "task should return the same result regardless of CWD");
                 engine1.Errors.Count.Should().Be(engine2.Errors.Count,
                     "error count should be identical in both environments");
+                task1.ResolvedAssets.Length.Should().Be(task2.ResolvedAssets.Length,
+                    "ResolvedAssets count should be identical regardless of CWD");
             }
             finally
             {
