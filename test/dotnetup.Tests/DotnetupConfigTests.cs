@@ -51,25 +51,15 @@ public class DotnetupConfigTests : IDisposable
         loaded.SchemaVersion.Should().Be("1");
     }
 
-    [Fact]
-    public void ReadPathPreference_ReturnsStoredPreference_DotnetupDotnet()
+    [Theory]
+    [InlineData(1)] // PathPreference.DotnetupDotnet
+    [InlineData(2)] // PathPreference.ShellProfile
+    [InlineData(3)] // PathPreference.FullPathReplacement
+    public void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(int preferenceValue)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.DotnetupDotnet });
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.DotnetupDotnet);
-    }
-
-    [Fact]
-    public void ReadPathPreference_ReturnsStoredPreference_ShellProfile()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.ShellProfile });
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.ShellProfile);
-    }
-
-    [Fact]
-    public void ReadPathPreference_ReturnsStoredPreference_FullPathReplacement()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.FullPathReplacement });
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.FullPathReplacement);
+        var preference = (PathPreference)preferenceValue;
+        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
+        DotnetupConfig.ReadPathPreference().Should().Be(preference);
     }
 
     [Fact]
