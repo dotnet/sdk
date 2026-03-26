@@ -9,6 +9,13 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
+REM Collect a heap dump when a test process crashes (unhandled exception / abort).
+REM Files are written directly to the Helix upload root so they are automatically
+REM preserved as build artifacts.
+set DOTNET_DbgEnableMiniDump=1
+set DOTNET_DbgMiniDumpType=2
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\crash.%e.%p.dmp
+
 REM Ensure Visual Studio instances allow preview SDKs
 PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"
 

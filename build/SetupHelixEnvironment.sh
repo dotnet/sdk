@@ -9,6 +9,13 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
+# Collect a heap dump when a test process crashes (unhandled exception / abort).
+# Files are written directly to the Helix upload root so they are automatically
+# preserved as build artifacts.
+export DOTNET_DbgEnableMiniDump=1
+export DOTNET_DbgMiniDumpType=2
+export DOTNET_DbgMiniDumpName=$HELIX_WORKITEM_UPLOAD_ROOT/crash.%e.%p.dmp
+
 export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/

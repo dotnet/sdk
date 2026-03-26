@@ -16,7 +16,12 @@
     <!-- Publish test projects targeting the SDK's target framework. -->
     <XUnitPublishTargetFramework>$(SdkTargetFramework)</XUnitPublishTargetFramework>
     <XUnitRuntimeTargetFramework>$(SdkTargetFramework)</XUnitRuntimeTargetFramework>
+
+    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
+
+  <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
   <ItemGroup>
     <PackageReference Remove="AwesomeAssertions" />
@@ -178,41 +183,33 @@
     </ItemGroup>
   </Target>
 
+  <!-- Override Arcade's work item creation with our scheduler-based partitioning.
+       This target runs after Arcade's CreateXUnitWorkItems, clears the one-per-project
+       work items it produced, and replaces them with partitioned items from the SDK's
+       AssemblyScheduler so that large test assemblies are split across multiple Helix
+       work items. -->
+  <Target Name="CreateSDKCustomXUnitWorkItems"
+          AfterTargets="CreateXUnitWorkItems"
+          Condition="'@(XUnitProject)' != ''">
+    <ItemGroup>
+      <!-- Clear the per-project work items created by Arcade. -->
+      <HelixWorkItem Remove="@(HelixWorkItem)" />
+    </ItemGroup>
+    <SDKCustomCreateXUnitWorkItemsWithTestExclusion
+        XUnitProjects="@(XUnitProject)"
+        IsPosixShell="$(IsPosixShell)"
+        XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
+      <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
+    </SDKCustomCreateXUnitWorkItemsWithTestExclusion>
+  </Target>
+
   <!-- Creates a local copy of the Helix correlation payload layout for running tests locally
        without submitting to Helix. Run this target and then set HELIX_CORRELATION_PAYLOAD to
        the output directory before running tests. -->
   <Target Name="CreateLocalHelixTestLayout" DependsOnTargets="AppendHelixPreCommand">
-    <PropertyGroup>
-      <_LocalHelixLayout>$(RepoRoot)artifacts\bin\localHelixTestLayout</_LocalHelixLayout>
-    </PropertyGroup>
-
-    <RemoveDir Directories="$(_LocalHelixLayout)" />
-
-    <ItemGroup>
-      <_LocalHelixDirectoryPayload Include="$(HelixPayloadOnHost)\**\*">
-        <DestDir>$(_LocalHelixLayout)\t</DestDir>
-      </_LocalHelixDirectoryPayload>
-      <_LocalHelixDirectoryPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestHostDotNetRoot)\**\*">
-        <DestDir>$(_LocalHelixLayout)\d</DestDir>
-      </_LocalHelixDirectoryPayload>
-      <_LocalHelixDirectoryPayload Include="$(MicrosoftNETBuildExtensions)\**\*">
-        <DestDir>$(_LocalHelixLayout)\ex</DestDir>
-      </_LocalHelixDirectoryPayload>
-      <_LocalHelixDirectoryPayload Include="$(MSBuildSdkResolverDir)\**\*">
-        <DestDir>$(_LocalHelixLayout)\r</DestDir>
-      </_LocalHelixDirectoryPayload>
-      <_LocalHelixDirectoryPayload Include="$(ArtifactsShippingPackages)\**\*">
-        <DestDir>$(_LocalHelixLayout)\d\.nuget</DestDir>
-      </_LocalHelixDirectoryPayload>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_LocalHelixDirectoryPayload)"
-          DestinationFiles="@(_LocalHelixDirectoryPayload->'%(DestDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <!-- On non-Windows, copy the dotnet stage0 tar.gz instead of the directory. -->
-    <Copy Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' "
-          SourceFiles="$(HelixStage0Targz)"
-          DestinationFolder="$(_LocalHelixLayout)\d" />
+    <CreateLocalHelixTestLayout
+        HelixCorrelationPayload="@(HelixCorrelationPayload)"
+        TestOutputDirectory="$(RepoRoot)artifacts\bin\localHelixTestLayout" />
   </Target>
 
 </Project>
