@@ -97,9 +97,14 @@
         <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListHeader">
-        <source>Installations (managed by dotnetup):</source>
-        <target state="new">Installations (managed by dotnetup):</target>
+      <trans-unit id="ListHeaderSubtitle">
+        <source>(managed by dotnetup)</source>
+        <target state="new">(managed by dotnetup)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeaderTitle">
+        <source>Installations</source>
+        <target state="new">Installations</target>
         <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">

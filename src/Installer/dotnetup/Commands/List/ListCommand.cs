@@ -135,7 +135,7 @@ internal static class InstallationLister
         });
 
         writer.WriteLine();
-        console.MarkupLine(Strings.ListHeader);
+        console.MarkupLine($"{Strings.ListHeaderTitle} [{DotnetupTheme.Current.Dim}]{Strings.ListHeaderSubtitle}[/]:");
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)

@@ -141,8 +141,11 @@
   <data name="ListNoVerifyOptionDescription" xml:space="preserve">
     <value>Skip verifying that each installation is valid.</value>
   </data>
-  <data name="ListHeader" xml:space="preserve">
-    <value>Installations (managed by dotnetup):</value>
+  <data name="ListHeaderTitle" xml:space="preserve">
+    <value>Installations</value>
+  </data>
+  <data name="ListHeaderSubtitle" xml:space="preserve">
+    <value>(managed by dotnetup)</value>
   </data>
   <data name="ListNoInstallations" xml:space="preserve">
     <value>(none)</value>
