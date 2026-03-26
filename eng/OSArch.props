@@ -31,7 +31,9 @@
     <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
   </PropertyGroup>
 
-  <!-- Boolean targeting properties -->
+  <!-- Boolean targeting properties.
+       TargetOS may be set externally with either RID-style names (win, osx, linux)
+       or full names (windows, osx, linux) as used by the runtime repo and the VMR. -->
   <PropertyGroup Label="CalculateTargetOSFlags">
     <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
     <TargetsLinux Condition="'$(TargetOS)' == 'linux'">true</TargetsLinux>
