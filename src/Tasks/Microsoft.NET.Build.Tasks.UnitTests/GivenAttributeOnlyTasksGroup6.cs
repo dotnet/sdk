@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System.Collections.Concurrent;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,45 +19,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// </summary>
     public class GivenAttributeOnlyTasksGroup6
     {
-        #region Attribute Presence
-
-        [Fact]
-        public void GetDefaultPlatformTargetForNetFramework_HasMultiThreadableAttribute()
-        {
-            typeof(GetDefaultPlatformTargetForNetFramework).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void GetEmbeddedApphostPaths_HasMultiThreadableAttribute()
-        {
-            typeof(GetEmbeddedApphostPaths).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void GetNuGetShortFolderName_HasMultiThreadableAttribute()
-        {
-            typeof(GetNuGetShortFolderName).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void ProduceContentAssets_HasMultiThreadableAttribute()
-        {
-            typeof(ProduceContentAssets).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void ResolveCopyLocalAssets_HasMultiThreadableAttribute()
-        {
-            typeof(ResolveCopyLocalAssets).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        #endregion
-
         #region GetDefaultPlatformTargetForNetFramework
 
         [Fact]

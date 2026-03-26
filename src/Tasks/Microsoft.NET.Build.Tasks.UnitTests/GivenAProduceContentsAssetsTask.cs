@@ -46,6 +46,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
                 ProjectLanguage = null,
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -99,6 +101,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
                 ProjectLanguage = null,
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -159,6 +163,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
                 ProjectLanguage = null,
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -235,6 +241,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = ContentOutputDirectory,
                 ProjectLanguage = null,
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -318,6 +326,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ProduceOnlyPreprocessorFiles = true,
                 ProjectLanguage = null,
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -373,6 +383,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = null,
                 ProjectLanguage = "C#",
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -415,6 +427,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = null,
                 ProjectLanguage = "C#",
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -459,6 +473,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ContentPreprocessorOutputDirectory = null,
                 ProjectLanguage = "C#",
             };
+            task.BuildEngine = new MockBuildEngine();
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Directory.GetCurrentDirectory());
             task.Execute().Should().BeTrue();
 
             // Asserts
@@ -482,8 +498,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         #region Sample Test Data
 
-        private static readonly string ContentOutputDirectory = Path.Combine("bin", "obj");
-        private static readonly string PackageRootDirectory = Path.Combine("root", "packages");
+        private static readonly string ContentOutputDirectory = Path.GetFullPath(Path.Combine("bin", "obj"));
+        private static readonly string PackageRootDirectory = Path.GetFullPath(Path.Combine("root", "packages"));
 
         private static ITaskItem[] GetPreprocessorValueItems(Dictionary<string, string> values)
             => values.Select(kvp => new MockTaskItem(
