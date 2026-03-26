@@ -109,12 +109,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    For .NET 11+, blazor.webassembly.js is provided as a framework static web asset from the package
+    For .NET 11+, blazor.webassembly.js is usually provided as a framework static web asset from the package
     and is automatically materialized by UpdateExistingPackageStaticWebAssets. No custom detection needed.
-    For .NET 10 and earlier, we still resolve it from BlazorWebAssemblyJSPath set by the package .props file.
+    For projects (including some .NET 11+ projects) that still use pre-.NET11 packages, we resolve it from
+    BlazorWebAssemblyJSPath set by the package .props file.
   -->
   <Target Name="_ResolveBlazorWasmOutputs"
-    Condition="'$(_TargetingNET110OrLater)' != 'true'"
+    Condition="'$(BlazorWebAssemblyJSPath)' != '' Or '$(_TargetingNET110OrLater)' != 'true'"
     DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild"
     BeforeTargets="_RazorPrepareForRun">
     <ItemGroup>
