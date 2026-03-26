@@ -135,7 +135,7 @@ internal static class InstallationLister
         });
 
         writer.WriteLine();
-        console.MarkupLine($"Installations [{DotnetupTheme.Current.Dim}](managed by dotnetup)[/]:");
+        console.MarkupLine(Strings.ListHeader);
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
@@ -184,7 +184,7 @@ internal static class InstallationLister
 
                 specGrid.AddRow(
                     $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
-                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay})[/]"
+                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay.EscapeMarkup()})[/]"
                 );
             }
 
