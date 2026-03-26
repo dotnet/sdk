@@ -75,6 +75,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
   </PropertyGroup>
 
+  <!-- Blazor routing regex constraint support via runtimeconfig.json -->
+  <ItemGroup Condition="'$(BlazorRoutingEnableRegexConstraint)' != ''">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport"
+      Value="$(BlazorRoutingEnableRegexConstraint)"
+      Trim="true" />
+  </ItemGroup>
+
   <!-- Wire-up static web assets -->
   <PropertyGroup>
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
