@@ -86,7 +86,7 @@
     <Copy SourceFiles="$(_FrameworkTlbPath)"
           DestinationFolder="%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)"
           SkipUnchangedFiles="true"
-          Condition="$(SharedFrameworkRid.StartsWith('win'))" />
+          Condition="$(SharedFrameworkRid.StartsWith('win')) AND Exists('$(_FrameworkTlbPath)')" />
 
     <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
