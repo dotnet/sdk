@@ -5,18 +5,13 @@
 .DESCRIPTION
     This script queries GitHub for open pull requests from monitored authors across
     dotnet/sdk, dotnet/installer, dotnet/templating, and dotnet/dotnet repositories.
-    It classifies each PR into categories (Ready to Merge, Branch Lockdown, Changes Requested,
-    Failing/Blocked) and outputs both a human-readable summary and structured JSON.
+    It classifies each PR into categories (Ready to Merge, Waiting for CI, Branch Lockdown,
+    Changes Requested, Failing/Blocked) and outputs a human-readable triage report with
+    recommendations.
 
 .PARAMETER IncludeRepo
     Filter to specific repositories. Valid values: sdk, installer, templating, dotnet.
     Default: all four repositories.
-
-.PARAMETER DaysStale
-    Number of days after which a PR is flagged as stale. Default: 7.
-
-.PARAMETER OutputJson
-    Output only the JSON summary (no human-readable tables).
 
 .EXAMPLE
     .\Get-BuildDutyReport.ps1
@@ -25,22 +20,17 @@
 .EXAMPLE
     .\Get-BuildDutyReport.ps1 -IncludeRepo sdk,installer
     # Report for sdk and installer only
-
-.EXAMPLE
-    .\Get-BuildDutyReport.ps1 -OutputJson
-    # JSON-only output for programmatic consumption
 #>
 [CmdletBinding()]
 param(
     [ValidateSet('sdk', 'installer', 'templating', 'dotnet')]
-    [string[]]$IncludeRepo = @('sdk', 'installer', 'templating', 'dotnet'),
-
-    [int]$DaysStale = 7,
-
-    [switch]$OutputJson
+    [string[]]$IncludeRepo = @('sdk', 'installer', 'templating', 'dotnet')
 )
 
 $ErrorActionPreference = 'Stop'
+
+# PRs older than this are flagged as stale
+$StaleThresholdDays = 7
 
 # Repo full names
 $RepoMap = @{
@@ -232,19 +222,30 @@ function Get-PrCategory {
         }
     }
 
-    # Ready to merge: CLEAN merge state and SUCCESS checks
-    if ($mergeState -eq 'CLEAN' -and $checkState -eq 'SUCCESS') {
+    # Ready to merge: CLEAN or UNSTABLE merge state
+    if ($mergeState -eq 'CLEAN' -or $mergeState -eq 'UNSTABLE') {
         return 'ready'
     }
 
-    # Also ready if merge state is CLEAN (checks may not be required)
-    if ($mergeState -eq 'CLEAN') {
-        return 'ready'
-    }
-
-    # Unstable: non-required checks failing
-    if ($mergeState -eq 'UNSTABLE') {
-        return 'ready'  # Non-required checks failing is still mergeable
+    # Blocked but checks still running with no failures yet — waiting for CI
+    if ($checkState -eq 'PENDING') {
+        $hasFailures = $false
+        if ($Pr.commits -and $Pr.commits.nodes -and $Pr.commits.nodes.Count -gt 0) {
+            $rollup = $Pr.commits.nodes[0].commit.statusCheckRollup
+            if ($rollup -and $rollup.contexts -and $rollup.contexts.nodes) {
+                $failedChecks = @($rollup.contexts.nodes | Where-Object {
+                    $_.name -and
+                    $_.name -notmatch '^Maestro' -and
+                    $_.name -notmatch '^license/' -and
+                    $_.name -notmatch '^WIP$' -and
+                    $_.conclusion -eq 'FAILURE'
+                })
+                $hasFailures = $failedChecks.Count -gt 0
+            }
+        }
+        if (-not $hasFailures) {
+            return 'waiting'
+        }
     }
 
     # Everything else is blocked/failing
@@ -356,7 +357,8 @@ function Test-HasDarcConflictComment {
 function Get-PrRecommendation {
     <#
     .SYNOPSIS
-        Generates an actionable recommendation for a PR based on its status.
+        Generates a human-readable recommendation for a PR based on its status.
+        Returns a [code, text] pair: code for filtering, text for display.
     #>
     param(
         [PSCustomObject]$PrInfo,
@@ -368,93 +370,65 @@ function Get-PrRecommendation {
 
     # Merge PR with merge conflicts
     if ($isMergePr -and $PrInfo.mergeable -eq 'CONFLICTING') {
-        return 'FIX_MERGE_CONFLICTS'
+        return @('FIX_MERGE_CONFLICTS', 'Fix merge conflicts - manual resolution required')
     }
 
     # Empty PR (0 changed files, no conflicts) — author-specific guidance
     if ($PrInfo.changedFiles -eq 0 -and $PrInfo.mergeable -ne 'CONFLICTING') {
-        # dotnet-bot: inter-branch codeflow with merge commits — merge to reduce churn in the next PR
         if ($PrInfo.author -eq 'dotnet-bot') {
-            return 'MERGE_EMPTY_CODEFLOW'
+            return @('MERGE_EMPTY_CODEFLOW', 'Merge - empty codeflow PR, reduces churn in next PR')
         }
-
-        # dotnet-maestro[bot]: check for darc conflict comment indicating a merge error
         if ($PrInfo.author -eq 'dotnet-maestro[bot]') {
             if (Test-HasDarcConflictComment -Repo $PrInfo.repo -Number $PrInfo.number) {
-                return 'FIX_DARC_CONFLICT'
+                return @('FIX_DARC_CONFLICT', 'Fix darc conflict - see PR comments for instructions')
             }
         }
-
-        return 'CLOSE_EMPTY_PR'
+        return @('CLOSE_EMPTY_PR', 'Close - empty PR with 0 file changes')
     }
 
     # Templating single-leg failure — likely flaky, rerun
     if ($isTemplating -and $CheckDetails.failed -eq 1 -and $CheckDetails.passed -gt 0) {
-        return 'RETRY_SINGLE_LEG'
+        $failedLeg = $CheckDetails.failedNames -join ', '
+        return @('RETRY_SINGLE_LEG', "Retry - single leg failure ($failedLeg), likely flaky")
     }
 
     # Ready PRs
     if ($PrInfo.category -eq 'ready') {
-        return 'MERGE'
+        return @('MERGE', 'Merge - PR is ready')
+    }
+
+    # Waiting for CI
+    if ($PrInfo.category -eq 'waiting') {
+        $status = "$($CheckDetails.passed)/$($CheckDetails.total) passed"
+        if ($CheckDetails.pending -gt 0) { $status += ", $($CheckDetails.pending) pending" }
+        return @('WAIT_FOR_CI', "Wait for CI - $status")
     }
 
     # Lockdown
     if ($PrInfo.category -eq 'lockdown') {
-        return 'WAIT_FOR_LOCKDOWN'
+        return @('WAIT_FOR_LOCKDOWN', 'Wait - branch locked for servicing')
     }
 
     # Changes requested
     if ($PrInfo.category -eq 'changes_requested') {
-        return 'ADDRESS_REVIEW'
+        $reviewer = if ($PrInfo.changesRequestedBy) { $PrInfo.changesRequestedBy } else { 'unknown' }
+        return @('ADDRESS_REVIEW', "Address review - changes requested by $reviewer")
     }
 
     # Blocked with all checks passing — likely just needs review
     if ($PrInfo.category -eq 'blocked' -and $PrInfo.checkState -eq 'SUCCESS') {
-        return 'NEEDS_REVIEW'
+        return @('NEEDS_REVIEW', 'Needs review - CI passing, awaiting approval')
     }
 
     # Default blocked
-    return 'INVESTIGATE_FAILURE'
-}
-
-function ConvertTo-PrSummaryObject {
-    <#
-    .SYNOPSIS
-        Converts a PR info object into a summary hashtable for JSON output.
-    #>
-    param([PSCustomObject]$Pr)
-    return [ordered]@{
-        repo               = $Pr.repo
-        number             = $Pr.number
-        title              = $Pr.title
-        url                = $Pr.url
-        author             = $Pr.author
-        targetBranch       = $Pr.targetBranch
-        ageDays            = $Pr.ageDays
-        mergeable          = $Pr.mergeable
-        changedFiles       = $Pr.changedFiles
-        mergeStateStatus   = $Pr.mergeStateStatus
-        checkState         = $Pr.checkState
-        checkDetails       = [ordered]@{
-            total       = $Pr.checkDetails.total
-            passed      = $Pr.checkDetails.passed
-            failed      = $Pr.checkDetails.failed
-            pending     = $Pr.checkDetails.pending
-            failedNames = $Pr.checkDetails.failedNames
-        }
-        reviewDecision     = $Pr.reviewDecision
-        isStale            = $Pr.isStale
-        changesRequestedBy = $Pr.changesRequestedBy
-        labels             = $Pr.labels
-        recommendation     = $Pr.recommendation
-    }
+    return @('INVESTIGATE_FAILURE', 'Investigate - CI failures need analysis')
 }
 
 # ---- Main ----
 
 Write-Verbose "Build Duty PR Triage Report"
 Write-Verbose "Repos: $($IncludeRepo -join ', ')"
-Write-Verbose "Stale threshold: $DaysStale days"
+Write-Verbose "Stale threshold: $StaleThresholdDays days"
 Write-Verbose ""
 
 $allPrs = @()
@@ -533,12 +507,15 @@ foreach ($repoKey in $IncludeRepo) {
             checkDetails      = $checkDetails
             labels            = $labels
             category          = $category
-            isStale           = ($ageDays -ge $DaysStale -and $category -ne 'lockdown')
+            isStale           = ($ageDays -ge $StaleThresholdDays -and $category -ne 'lockdown')
             changesRequestedBy = $changesRequestedBy
+            recommendationCode = $null
             recommendation    = $null  # filled below
         }
 
-        $prInfo.recommendation = Get-PrRecommendation -PrInfo $prInfo -CheckDetails $checkDetails
+        $rec = Get-PrRecommendation -PrInfo $prInfo -CheckDetails $checkDetails
+        $prInfo.recommendationCode = $rec[0]
+        $prInfo.recommendation = $rec[1]
 
         $allPrs += $prInfo
     }
@@ -546,6 +523,7 @@ foreach ($repoKey in $IncludeRepo) {
 
 # Group by category
 $ready = @($allPrs | Where-Object { $_.category -eq 'ready' })
+$waiting = @($allPrs | Where-Object { $_.category -eq 'waiting' })
 $lockdown = @($allPrs | Where-Object { $_.category -eq 'lockdown' })
 $changesRequested = @($allPrs | Where-Object { $_.category -eq 'changes_requested' })
 $blocked = @($allPrs | Where-Object { $_.category -eq 'blocked' })
@@ -554,229 +532,200 @@ $stale = @($allPrs | Where-Object { $_.isStale })
 
 # ---- Output ----
 
-if (-not $OutputJson) {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host " Build Duty PR Triage Report" -ForegroundColor Cyan
-    Write-Host " Generated: $([DateTimeOffset]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host ""
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host " Build Duty PR Triage Report" -ForegroundColor Cyan
+Write-Host " Generated: $([DateTimeOffset]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
 
-    # Ready to Merge
-    Write-Host "✅ Ready to Merge ($($ready.Count))" -ForegroundColor Green
-    if ($ready.Count -gt 0) {
-        Write-Host ("-" * 120)
-        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-10}" -f "Repo", "#", "Title", "Target", "Age", "Checks")
-        Write-Host ("-" * 120)
-        foreach ($pr in ($ready | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
-            $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
-            $ageStr = Format-AgeString $pr.ageDays
-            $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
-            Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-10}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState)
-        }
+# Ready to Merge
+Write-Host "✅ Ready to Merge ($($ready.Count))" -ForegroundColor Green
+if ($ready.Count -gt 0) {
+    Write-Host ("-" * 140)
+    Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
+    Write-Host ("-" * 140)
+    foreach ($pr in ($ready | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
+        Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState, $pr.recommendation)
     }
-    else {
-        Write-Host "  (none)" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-
-    # Branch Lockdown
-    Write-Host "🔒 Branch Lockdown ($($lockdown.Count))" -ForegroundColor Yellow
-    if ($lockdown.Count -gt 0) {
-        Write-Host ("-" * 120)
-        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
-        Write-Host ("-" * 120)
-        foreach ($pr in ($lockdown | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
-            $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
-            $ageStr = Format-AgeString $pr.ageDays
-            Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr)
-        }
-    }
-    else {
-        Write-Host "  (none)" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-
-    # Changes Requested
-    Write-Host "⚠️  Changes Requested ($($changesRequested.Count))" -ForegroundColor DarkYellow
-    if ($changesRequested.Count -gt 0) {
-        Write-Host ("-" * 120)
-        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-15}" -f "Repo", "#", "Title", "Target", "Age", "Reviewer")
-        Write-Host ("-" * 120)
-        foreach ($pr in ($changesRequested | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
-            $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
-            $ageStr = Format-AgeString $pr.ageDays
-            $reviewer = if ($pr.changesRequestedBy) { "@$($pr.changesRequestedBy)" } else { "unknown" }
-            Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-15}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr, $reviewer)
-        }
-    }
-    else {
-        Write-Host "  (none)" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-
-    # Failing / Blocked
-    Write-Host "❌ Failing / Blocked ($($blocked.Count))" -ForegroundColor Red
-    if ($blocked.Count -gt 0) {
-        Write-Host ("-" * 140)
-        Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
-        Write-Host ("-" * 140)
-        foreach ($pr in ($blocked | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
-            $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
-            $ageStr = Format-AgeString $pr.ageDays
-            $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
-            $recStr = switch ($pr.recommendation) {
-                'CLOSE_EMPTY_PR'        { '🗑️  Close (empty PR)' }
-                'MERGE_EMPTY_CODEFLOW'  { '✅ Merge (empty codeflow)' }
-                'FIX_DARC_CONFLICT'     { '🔧 Fix darc conflict' }
-                'FIX_MERGE_CONFLICTS'   { '🔀 Fix merge conflicts' }
-                'RETRY_SINGLE_LEG'      { "🔄 Retry ($($pr.checkDetails.failedNames -join ', '))" }
-                'NEEDS_REVIEW'          { '👀 Needs review approval' }
-                'INVESTIGATE_FAILURE'   { '🔍 Investigate' }
-                default                 { $pr.recommendation }
-            }
-            Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState, $recStr)
-        }
-    }
-    else {
-        Write-Host "  (none)" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-
-    # Draft
-    if ($draft.Count -gt 0) {
-        Write-Host "📝 Draft ($($draft.Count))" -ForegroundColor DarkGray
-        Write-Host ("-" * 120)
-        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
-        Write-Host ("-" * 120)
-        foreach ($pr in ($draft | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
-            $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
-            $ageStr = Format-AgeString $pr.ageDays
-            Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr) -ForegroundColor DarkGray
-        }
-        Write-Host ""
-    }
-
-    # Stale flag
-    if ($stale.Count -gt 0) {
-        Write-Host "⏳ Stale PRs (>$DaysStale days, excluding Branch Lockdown): $($stale.Count)" -ForegroundColor DarkYellow
-        foreach ($pr in $stale) {
-            Write-Host "  ⚠️  $($pr.repo)#$($pr.number) - $(Format-AgeString $pr.ageDays) old - $($pr.title)" -ForegroundColor DarkYellow
-        }
-        Write-Host ""
-    }
-
-    # Actionable items
-    $emptyPrs = @($allPrs | Where-Object { $_.recommendation -eq 'CLOSE_EMPTY_PR' })
-    $emptyCodeflowPrs = @($allPrs | Where-Object { $_.recommendation -eq 'MERGE_EMPTY_CODEFLOW' })
-    $darcConflictPrs = @($allPrs | Where-Object { $_.recommendation -eq 'FIX_DARC_CONFLICT' })
-    $conflictPrs = @($allPrs | Where-Object { $_.recommendation -eq 'FIX_MERGE_CONFLICTS' })
-    $retryPrs = @($allPrs | Where-Object { $_.recommendation -eq 'RETRY_SINGLE_LEG' })
-    $reviewPrs = @($allPrs | Where-Object { $_.recommendation -eq 'NEEDS_REVIEW' })
-
-    if ($emptyPrs.Count -gt 0 -or $emptyCodeflowPrs.Count -gt 0 -or $darcConflictPrs.Count -gt 0 -or $conflictPrs.Count -gt 0 -or $retryPrs.Count -gt 0 -or $reviewPrs.Count -gt 0) {
-        Write-Host "========================================" -ForegroundColor Magenta
-        Write-Host " Quick Actions" -ForegroundColor Magenta
-        Write-Host "========================================" -ForegroundColor Magenta
-
-        if ($emptyCodeflowPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  ✅ Merge empty codeflow PRs (0 file changes, merge commits reduce churn in next PR):" -ForegroundColor Green
-            foreach ($pr in $emptyCodeflowPrs) {
-                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
-            }
-        }
-
-        if ($emptyPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  🗑️  Close empty PRs (0 file changes):" -ForegroundColor DarkGray
-            foreach ($pr in $emptyPrs) {
-                Write-Host "     gh pr close $($pr.number) --repo $($pr.repo) --comment 'Closing: no file changes after merge.'" -ForegroundColor DarkGray
-            }
-        }
-
-        if ($darcConflictPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  🔧 Fix darc merge conflicts (run 'darc vmr resolve-conflict'):" -ForegroundColor Yellow
-            foreach ($pr in $darcConflictPrs) {
-                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
-                Write-Host "     See PR comments for darc resolve-conflict instructions" -ForegroundColor DarkGray
-            }
-        }
-
-        if ($conflictPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  🔀 Fix merge conflicts:" -ForegroundColor Yellow
-            foreach ($pr in $conflictPrs) {
-                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
-            }
-        }
-
-        if ($retryPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  🔄 Retry single-leg failures (likely flaky):" -ForegroundColor Cyan
-            foreach ($pr in $retryPrs) {
-                $failedLeg = $pr.checkDetails.failedNames -join ', '
-                Write-Host "     $($pr.repo)#$($pr.number) - failed: $failedLeg" -ForegroundColor Cyan
-                Write-Host "     gh pr comment $($pr.number) --repo $($pr.repo) --body '/azp run'" -ForegroundColor DarkGray
-            }
-        }
-
-        if ($reviewPrs.Count -gt 0) {
-            Write-Host ""
-            Write-Host "  👀 Needs review approval (CI passing):" -ForegroundColor Green
-            foreach ($pr in $reviewPrs) {
-                Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
-            }
-        }
-        Write-Host ""
-    }
-
-    # Summary
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host " Summary" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "  Ready to Merge:     $($ready.Count)" -ForegroundColor Green
-    Write-Host "  Branch Lockdown:    $($lockdown.Count)" -ForegroundColor Yellow
-    Write-Host "  Changes Requested:  $($changesRequested.Count)" -ForegroundColor DarkYellow
-    Write-Host "  Failing/Blocked:    $($blocked.Count)" -ForegroundColor Red
-    Write-Host "  Draft:              $($draft.Count)" -ForegroundColor DarkGray
-    Write-Host "  Stale (>$($DaysStale)d):       $($stale.Count)" -ForegroundColor DarkYellow
-    Write-Host "  Total:              $($allPrs.Count)" -ForegroundColor Cyan
-    Write-Host ""
-}
-
-# Build and emit JSON summary
-$summaryJson = [ordered]@{
-    generatedAt        = [DateTimeOffset]::UtcNow.ToString('o')
-    repos              = @($IncludeRepo | ForEach-Object { $RepoMap[$_] })
-    staleThresholdDays = $DaysStale
-    totalPrs           = $allPrs.Count
-    counts             = [ordered]@{
-        ready            = $ready.Count
-        lockdown         = $lockdown.Count
-        changesRequested = $changesRequested.Count
-        blocked          = $blocked.Count
-        draft            = $draft.Count
-        stale            = $stale.Count
-    }
-    prs                = [ordered]@{
-        ready            = @($ready | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-        lockdown         = @($lockdown | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-        changesRequested = @($changesRequested | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-        blocked          = @($blocked | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-        draft            = @($draft | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-    }
-    stalePrs           = @($stale | ForEach-Object { ConvertTo-PrSummaryObject $_ })
-}
-
-$jsonOutput = $summaryJson | ConvertTo-Json -Depth 10
-
-if ($OutputJson) {
-    Write-Output $jsonOutput
 }
 else {
-    Write-Host "[BUILD_DUTY_SUMMARY]"
-    Write-Host $jsonOutput
-    Write-Host "[/BUILD_DUTY_SUMMARY]"
+    Write-Host "  (none)" -ForegroundColor DarkGray
 }
+Write-Host ""
+
+# Waiting for CI
+Write-Host "⏳ Waiting for CI ($($waiting.Count))" -ForegroundColor DarkYellow
+if ($waiting.Count -gt 0) {
+    Write-Host ("-" * 140)
+    Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
+    Write-Host ("-" * 140)
+    foreach ($pr in ($waiting | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr, $pr.checkState, $pr.recommendation)
+    }
+}
+else {
+    Write-Host "  (none)" -ForegroundColor DarkGray
+}
+Write-Host ""
+
+# Branch Lockdown
+Write-Host "🔒 Branch Lockdown ($($lockdown.Count))" -ForegroundColor Yellow
+if ($lockdown.Count -gt 0) {
+    Write-Host ("-" * 120)
+    Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
+    Write-Host ("-" * 120)
+    foreach ($pr in ($lockdown | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr)
+    }
+}
+else {
+    Write-Host "  (none)" -ForegroundColor DarkGray
+}
+Write-Host ""
+
+# Changes Requested
+Write-Host "⚠️  Changes Requested ($($changesRequested.Count))" -ForegroundColor DarkYellow
+if ($changesRequested.Count -gt 0) {
+    Write-Host ("-" * 120)
+    Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-15}" -f "Repo", "#", "Title", "Target", "Age", "Reviewer")
+    Write-Host ("-" * 120)
+    foreach ($pr in ($changesRequested | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        $reviewer = if ($pr.changesRequestedBy) { "@$($pr.changesRequestedBy)" } else { "unknown" }
+        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5} {5,-15}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr, $reviewer)
+    }
+}
+else {
+    Write-Host "  (none)" -ForegroundColor DarkGray
+}
+Write-Host ""
+
+# Failing / Blocked
+Write-Host "❌ Failing / Blocked ($($blocked.Count))" -ForegroundColor Red
+if ($blocked.Count -gt 0) {
+    Write-Host ("-" * 140)
+    Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f "Repo", "#", "Title", "Target", "Age", "Checks", "Recommendation")
+    Write-Host ("-" * 140)
+    foreach ($pr in ($blocked | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 47) { $pr.title.Substring(0, 47) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        $staleFlag = if ($pr.isStale) { " ⚠️" } else { "" }
+        Write-Host ("{0,-18} {1,-6} {2,-50} {3,-25} {4,-5} {5,-10} {6,-25}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, "$ageStr$staleFlag", $pr.checkState, $pr.recommendation)
+    }
+}
+else {
+    Write-Host "  (none)" -ForegroundColor DarkGray
+}
+Write-Host ""
+
+# Draft
+if ($draft.Count -gt 0) {
+    Write-Host "📝 Draft ($($draft.Count))" -ForegroundColor DarkGray
+    Write-Host ("-" * 120)
+    Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f "Repo", "#", "Title", "Target", "Age")
+    Write-Host ("-" * 120)
+    foreach ($pr in ($draft | Sort-Object @{Expression='repo'; Ascending=$true}, @{Expression='ageDays'; Descending=$true})) {
+        $title = if ($pr.title.Length -gt 57) { $pr.title.Substring(0, 57) + "..." } else { $pr.title }
+        $ageStr = Format-AgeString $pr.ageDays
+        Write-Host ("{0,-18} {1,-6} {2,-60} {3,-25} {4,-5}" -f $pr.repo, "#$($pr.number)", $title, $pr.targetBranch, $ageStr) -ForegroundColor DarkGray
+    }
+    Write-Host ""
+}
+
+# Stale flag
+if ($stale.Count -gt 0) {
+    Write-Host "⏳ Stale PRs (>$StaleThresholdDays days, excluding Branch Lockdown): $($stale.Count)" -ForegroundColor DarkYellow
+    foreach ($pr in $stale) {
+        Write-Host "  ⚠️  $($pr.repo)#$($pr.number) - $(Format-AgeString $pr.ageDays) old - $($pr.title)" -ForegroundColor DarkYellow
+    }
+    Write-Host ""
+}
+
+# Quick Actions
+$emptyPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'CLOSE_EMPTY_PR' })
+$emptyCodeflowPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'MERGE_EMPTY_CODEFLOW' })
+$darcConflictPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'FIX_DARC_CONFLICT' })
+$conflictPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'FIX_MERGE_CONFLICTS' })
+$retryPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'RETRY_SINGLE_LEG' })
+$reviewPrs = @($allPrs | Where-Object { $_.recommendationCode -eq 'NEEDS_REVIEW' })
+
+if ($emptyPrs.Count -gt 0 -or $emptyCodeflowPrs.Count -gt 0 -or $darcConflictPrs.Count -gt 0 -or $conflictPrs.Count -gt 0 -or $retryPrs.Count -gt 0 -or $reviewPrs.Count -gt 0) {
+    Write-Host "========================================" -ForegroundColor Magenta
+    Write-Host " Quick Actions" -ForegroundColor Magenta
+    Write-Host "========================================" -ForegroundColor Magenta
+
+    if ($emptyCodeflowPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  ✅ Merge empty codeflow PRs (0 file changes, merge commits reduce churn in next PR):" -ForegroundColor Green
+        foreach ($pr in $emptyCodeflowPrs) {
+            Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
+        }
+    }
+
+    if ($emptyPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  🗑️  Close empty PRs (0 file changes):" -ForegroundColor DarkGray
+        foreach ($pr in $emptyPrs) {
+            Write-Host "     gh pr close $($pr.number) --repo $($pr.repo) --comment 'Closing: no file changes after merge.'" -ForegroundColor DarkGray
+        }
+    }
+
+    if ($darcConflictPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  🔧 Fix darc merge conflicts (run 'darc vmr resolve-conflict'):" -ForegroundColor Yellow
+        foreach ($pr in $darcConflictPrs) {
+            Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
+            Write-Host "     See PR comments for darc resolve-conflict instructions" -ForegroundColor DarkGray
+        }
+    }
+
+    if ($conflictPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  🔀 Fix merge conflicts:" -ForegroundColor Yellow
+        foreach ($pr in $conflictPrs) {
+            Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Yellow
+        }
+    }
+
+    if ($retryPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  🔄 Retry single-leg failures (likely flaky):" -ForegroundColor Cyan
+        foreach ($pr in $retryPrs) {
+            $failedLeg = $pr.checkDetails.failedNames -join ', '
+            Write-Host "     $($pr.repo)#$($pr.number) - failed: $failedLeg" -ForegroundColor Cyan
+            Write-Host "     gh pr comment $($pr.number) --repo $($pr.repo) --body '/azp run'" -ForegroundColor DarkGray
+        }
+    }
+
+    if ($reviewPrs.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  👀 Needs review approval (CI passing):" -ForegroundColor Green
+        foreach ($pr in $reviewPrs) {
+            Write-Host "     $($pr.repo)#$($pr.number) - $($pr.title)" -ForegroundColor Green
+        }
+    }
+    Write-Host ""
+}
+
+# Summary
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host " Summary" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  Ready to Merge:     $($ready.Count)" -ForegroundColor Green
+Write-Host "  Waiting for CI:     $($waiting.Count)" -ForegroundColor DarkYellow
+Write-Host "  Branch Lockdown:    $($lockdown.Count)" -ForegroundColor Yellow
+Write-Host "  Changes Requested:  $($changesRequested.Count)" -ForegroundColor DarkYellow
+Write-Host "  Failing/Blocked:    $($blocked.Count)" -ForegroundColor Red
+Write-Host "  Draft:              $($draft.Count)" -ForegroundColor DarkGray
+Write-Host "  Stale (>$($StaleThresholdDays)d):       $($stale.Count)" -ForegroundColor DarkYellow
+Write-Host "  Total:              $($allPrs.Count)" -ForegroundColor Cyan
+Write-Host ""
