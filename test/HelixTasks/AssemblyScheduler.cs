@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     {
                         _builder.Append("|");
                     }
-                    _builder.Append($@"{typeInfo.FullName}");
+                    _builder.Append($@"{typeInfo.FullName}.");
 
                     CheckForPartitionLimit(done: false);
                 }
