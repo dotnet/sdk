@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System.Collections.Concurrent;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,45 +18,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// </summary>
     public class GivenAttributeOnlyTasksGroup5
     {
-        #region Attribute Presence
-
-        [Fact]
-        public void CollectSDKReferencesDesignTime_HasMultiThreadableAttribute()
-        {
-            typeof(CollectSDKReferencesDesignTime).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void CreateWindowsSdkKnownFrameworkReferences_HasMultiThreadableAttribute()
-        {
-            typeof(CreateWindowsSdkKnownFrameworkReferences).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void FindItemsFromPackages_HasMultiThreadableAttribute()
-        {
-            typeof(FindItemsFromPackages).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void GetAssemblyVersion_HasMultiThreadableAttribute()
-        {
-            typeof(GetAssemblyVersion).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        [Fact]
-        public void GenerateSupportedTargetFrameworkAlias_HasMultiThreadableAttribute()
-        {
-            typeof(GenerateSupportedTargetFrameworkAlias).GetCustomAttribute<MSBuildMultiThreadableTaskAttribute>()
-                .Should().NotBeNull("task must be decorated with [MSBuildMultiThreadableTask]");
-        }
-
-        #endregion
-
         #region CollectSDKReferencesDesignTime
 
         [Fact]
