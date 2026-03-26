@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -37,7 +38,11 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var dependencyPackageReferences = new List<TestPackageReference>();
+            // ConcurrentBag because Parallel.ForEach calls Add from multiple threads.
+            // Also fixes a pre-existing bug: the original List was never populated inside
+            // the parallel loop, so dependencyPackageReferences was always empty and the
+            // test passed vacuously without verifying any NuGet reference compatibility.
+            var dependencyPackageReferences = new ConcurrentBag<TestPackageReference>();
 
             // Process all dependencies in parallel
             Parallel.ForEach(
@@ -56,9 +61,7 @@ namespace Microsoft.NET.Build.Tests
                         "1.0.0",
                         ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
 
-                    // Create package if it doesn't exist
-                    if (!dependencyPackageReference.NuGetPackageExists() &&
-                        (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
                     {
                         if (!dependencyPackageReference.NuGetPackageExists())
                         {
@@ -77,6 +80,7 @@ namespace Microsoft.NET.Build.Tests
                                 .Execute().Should().Pass();
                         }
 
+                        dependencyPackageReferences.Add(dependencyPackageReference);
                     }
                 });
 
