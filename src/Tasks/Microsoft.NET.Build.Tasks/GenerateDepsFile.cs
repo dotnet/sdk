@@ -145,13 +145,13 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(string depsFilePath, string originalDepsFilePath)
+        private void WriteDepsFile(string depsFilePath, string absoluteProjectPath, string absoluteAssetsFilePath, string absoluteRuntimeGraphPath)
         {
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
-            if (AssetsFilePath != null)
+            if (absoluteAssetsFilePath != null)
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tasks
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
-                ProjectPath,
+                absoluteProjectPath,
                 AssemblyName,
                 AssemblyExtension,
                 AssemblyVersion,
@@ -231,7 +231,7 @@ namespace Microsoft.NET.Build.Tasks
                 // graph with respect to the target RuntimeIdentifier.
 
                 RuntimeGraph runtimeGraph =
-                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;
+                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath) : null;
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
@@ -281,7 +281,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 writer.Write(dependencyContext, fileStream);
             }
-            _filesWritten.Add(new TaskItem(originalDepsFilePath));
+            _filesWritten.Add(new TaskItem(DepsFilePath));
 
             if (ValidRuntimeIdentifierPlatformsForAssets != null)
             {
@@ -322,16 +322,11 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            AbsolutePath absDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
-            if (AssetsFilePath != null)
-            {
-                AssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
-            }
-            if (!string.IsNullOrEmpty(RuntimeGraphPath))
-            {
-                RuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
-            }
-            WriteDepsFile(absDepsFilePath, DepsFilePath);
+            string absoluteDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
+            string absoluteProjectPath = TaskEnvironment.GetAbsolutePath(ProjectPath);
+            string absoluteAssetsFilePath = AssetsFilePath != null ? (string)TaskEnvironment.GetAbsolutePath(AssetsFilePath) : null;
+            string absoluteRuntimeGraphPath = RuntimeGraphPath != null ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath) : null;
+            WriteDepsFile(absoluteDepsFilePath, absoluteProjectPath, absoluteAssetsFilePath, absoluteRuntimeGraphPath);
         }
     }
 }

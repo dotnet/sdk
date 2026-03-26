@@ -9,6 +9,17 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
 #if NET
@@ -38,17 +49,6 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public bool EnableCompressionInSingleFile { get; set; }
         public bool EnableMacOsCodeSign { get; set; } = true;
-
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
-            set => _taskEnvironment = value;
-        }
-#else
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
 
         [Output]
         public ITaskItem[] ExcludedFiles { get; set; } = null!;
@@ -90,8 +90,9 @@ namespace Microsoft.NET.Build.Tasks
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
             Version version = new(TargetFrameworkVersion);
-            AbsolutePath absoluteOutputDir = TaskEnvironment.GetAbsolutePath(OutputDir);
-
+            string absoluteOutputDir = string.IsNullOrEmpty(OutputDir)
+                ? TaskEnvironment.ProjectDirectory
+                : TaskEnvironment.GetAbsolutePath(OutputDir);
             var bundler = new Bundler(
                 AppHostName,
                 absoluteOutputDir,
@@ -106,8 +107,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                AbsolutePath sourcePath = TaskEnvironment.GetAbsolutePath(item.ItemSpec);
-                fileSpec.Add(new FileSpec(sourcePath: sourcePath,
+                fileSpec.Add(new FileSpec(sourcePath: TaskEnvironment.GetAbsolutePath(item.ItemSpec),
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 

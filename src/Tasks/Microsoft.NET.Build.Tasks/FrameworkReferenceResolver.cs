@@ -11,29 +11,15 @@ namespace Microsoft.NET.Build.Tasks
     {
         private readonly Func<string, string> _getEnvironmentVariable;
 
-        /// <summary>
-        /// Creates an instance that reads environment variables from the process environment.
-        /// </summary>
-        public FrameworkReferenceResolver()
-            : this(Environment.GetEnvironmentVariable)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance that reads environment variables via the supplied delegate.
-        /// Use this from MSBuild tasks to route reads through TaskEnvironment.
-        /// </summary>
         public FrameworkReferenceResolver(Func<string, string> getEnvironmentVariable)
         {
-            _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
+            _getEnvironmentVariable = getEnvironmentVariable;
         }
 
         public string GetDefaultReferenceAssembliesPath()
         {
-            // Allow setting the reference assemblies path via an environment variable.
-            // We read this directly instead of calling DotNetReferenceAssembliesPathResolver.Resolve()
-            // because that runtime method uses process-global Environment.GetEnvironmentVariable.
-            var referenceAssembliesPath = _getEnvironmentVariable(DotNetReferenceAssembliesPathResolver.DotNetReferenceAssembliesPathEnv);
+            // Allow setting the reference assemblies path via an environment variable
+            var referenceAssembliesPath = DotNetReferenceAssembliesPathResolver.Resolve();
 
             if (!string.IsNullOrEmpty(referenceAssembliesPath))
             {

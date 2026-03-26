@@ -12,6 +12,17 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class ResolveAppHosts : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public string TargetFrameworkIdentifier { get; set; }
 
         public string TargetFrameworkVersion { get; set; }
@@ -58,17 +69,6 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool EnableAppHostPackDownload { get; set; } = true;
 
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
-            set => _taskEnvironment = value;
-        }
-#else
-        public TaskEnvironment TaskEnvironment { get; set; }
-#endif
-
         [Output]
         public ITaskItem[] PackagesToDownload { get; set; }
 
@@ -90,8 +90,16 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] PackAsToolShimAppHostPacks { get; set; }
 
+        private string _absoluteRuntimeGraphPath;
+        private string _absoluteTargetingPackRoot;
+
         protected override void ExecuteCore()
         {
+            _absoluteRuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+            _absoluteTargetingPackRoot = !string.IsNullOrEmpty(TargetingPackRoot)
+                ? (string)TaskEnvironment.GetAbsolutePath(TargetingPackRoot)
+                : TargetingPackRoot;
+
             var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(TargetFrameworkVersion));
 
             var knownAppHostPacksForTargetFramework = KnownAppHostPacks
@@ -257,7 +265,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             string bestAppHostRuntimeIdentifier = NuGetUtils.GetBestMatchingRidWithExclusion(
-                new RuntimeGraphCache(this).GetRuntimeGraph(TaskEnvironment.GetAbsolutePath(RuntimeGraphPath)),
+                new RuntimeGraphCache(this).GetRuntimeGraph(_absoluteRuntimeGraphPath),
                 runtimeIdentifier,
                 runtimeIdentifiersToExclude.Split(';'),
                 appHostRuntimeIdentifiers.Split(';'),
@@ -300,10 +308,9 @@ namespace Microsoft.NET.Build.Tasks
 
                 TaskItem appHostItem = new(itemName);
                 string appHostPackPath = null;
-                if (!string.IsNullOrEmpty(TargetingPackRoot))
+                if (!string.IsNullOrEmpty(_absoluteTargetingPackRoot))
                 {
-                    string absoluteTargetingPackRoot = TaskEnvironment.GetAbsolutePath(TargetingPackRoot);
-                    appHostPackPath = Path.Combine(absoluteTargetingPackRoot, hostPackName, appHostPackVersion);
+                    appHostPackPath = Path.Combine(_absoluteTargetingPackRoot, hostPackName, appHostPackVersion);
                 }
                 if (appHostPackPath != null && Directory.Exists(appHostPackPath))
                 {

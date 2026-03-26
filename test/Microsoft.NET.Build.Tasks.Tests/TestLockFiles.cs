@@ -9,10 +9,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     internal static class TestLockFiles
     {
+        private static readonly string s_testAssemblyDirectory =
+            Path.GetDirectoryName(typeof(TestLockFiles).Assembly.Location)!;
+
         public static LockFile GetLockFile(string lockFilePrefix)
         {
-            string baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-            string filePath = Path.Combine(baseDir, "LockFiles", $"{lockFilePrefix}.project.lock.json");
+            string filePath = Path.Combine(s_testAssemblyDirectory, "LockFiles", $"{lockFilePrefix}.project.lock.json");
 
             return LockFileUtilities.GetLockFile(filePath, NullLogger.Instance);
         }

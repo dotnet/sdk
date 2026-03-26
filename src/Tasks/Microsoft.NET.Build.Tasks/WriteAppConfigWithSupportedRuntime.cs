@@ -46,8 +46,9 @@ namespace Microsoft.NET.Build.Tasks
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
+            string absoluteOutputPath = TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
             var fileStream = new FileStream(
-                TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec),
+                absoluteOutputPath,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.Read);
