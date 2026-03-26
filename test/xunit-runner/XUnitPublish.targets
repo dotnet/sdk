@@ -1,3 +1,0 @@
-<Project>
-  <Target Name="PublishWithOutput" DependsOnTargets="Publish" Returns="$([System.IO.Path]::GetFullPath('$(PublishDir)'))" />
-</Project>
