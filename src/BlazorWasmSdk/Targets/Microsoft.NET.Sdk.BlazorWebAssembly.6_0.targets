@@ -41,6 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
     <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
     <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
+    <_TargetingNET110OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))</_TargetingNET110OrLater>
 
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -107,7 +108,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild" BeforeTargets="_RazorPrepareForRun">
+  <!--
+    For .NET 11+, blazor.webassembly.js is provided as a framework static web asset from the package
+    and is automatically materialized by UpdateExistingPackageStaticWebAssets. No custom detection needed.
+    For .NET 10 and earlier, we still resolve it from BlazorWebAssemblyJSPath set by the package .props file.
+  -->
+  <Target Name="_ResolveBlazorWasmOutputs"
+    Condition="'$(_TargetingNET110OrLater)' != 'true'"
+    DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild"
+    BeforeTargets="_RazorPrepareForRun">
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
