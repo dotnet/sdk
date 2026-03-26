@@ -17,7 +17,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
     public ReferenceAddCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult);
+        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
     }
 
     public override int Execute()
