@@ -168,8 +168,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // so we need to restore it before running.
                 string exeName = Path.GetFileNameWithoutExtension(assemblyName);
                 string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
-                // On macOS, ad-hoc sign the test exe so createdump can attach via task_for_pid for crash dumps.
-                string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f {exeName} && " : "";
+                // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
+                string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
 
                 string command = $"{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";

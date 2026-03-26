@@ -114,6 +114,8 @@
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\SetupHelixEnvironment.sh" />
+      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-createdump-entitlements.plist" />
+      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -137,8 +139,8 @@
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <!-- Ad-hoc sign createdump on macOS so it can collect crash dumps before any dotnet commands run -->
-      <HelixPreCommands Condition="$(IsPosixShell) and $(TargetRid.StartsWith('osx'))">find $HELIX_CORRELATION_PAYLOAD -name createdump | xargs -n 1 codesign -s - -f --preserve-metadata=entitlements;$(HelixPreCommands)</HelixPreCommands>
+      <!-- Ad-hoc sign createdump and test exes on macOS with get-task-allow entitlement so createdump can collect crash dumps -->
+      <HelixPreCommands Condition="$(IsPosixShell) and $(TargetRid.StartsWith('osx'))">find $HELIX_CORRELATION_PAYLOAD -name createdump | xargs -n 1 codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-createdump-entitlements.plist;$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
