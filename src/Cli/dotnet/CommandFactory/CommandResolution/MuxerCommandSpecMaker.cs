@@ -7,24 +7,10 @@ namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 internal static class MuxerCommandSpecMaker
 {
-    internal static CommandSpec CreatePackageCommandSpecUsingMuxer(
-        string commandPath,
-        IEnumerable<string>? commandArguments,
-        IDictionary<string, string>? environment = null)
+    internal static CommandSpec CreatePackageCommandSpecUsingMuxer(string commandPath, IEnumerable<string> commandArguments, IDictionary<string, string>? environment = null)
     {
         var arguments = new List<string>();
-
-        var muxer = new Muxer();
-
-        var host = muxer.MuxerPath;
-
-        if (host == null)
-        {
-            throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
-        }
-
-        var rollForwardArgument = (commandArguments ?? []).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
-
+        var rollForwardArgument = commandArguments.Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
         if (rollForwardArgument.Any())
         {
             arguments.Add("--roll-forward");
@@ -32,27 +18,13 @@ internal static class MuxerCommandSpecMaker
         }
 
         arguments.Add(commandPath);
+        var filteredCommandArgs = rollForwardArgument.Any()
+            ? commandArguments.Except(rollForwardArgument)
+            : commandArguments;
+        arguments.AddRange(filteredCommandArgs);
 
-        if (commandArguments != null)
-        {
-            if (rollForwardArgument.Any())
-            {
-                arguments.AddRange(commandArguments.Except(rollForwardArgument));
-            }
-            else
-            {
-                arguments.AddRange(commandArguments);
-            }
-        }
-        return CreateCommandSpec(host, arguments, environment);
-    }
-
-    private static CommandSpec CreateCommandSpec(
-        string commandPath,
-        IEnumerable<string>? commandArguments,
-        IDictionary<string, string>? environment = null)
-    {
-        var escapedArgs = commandArguments is not null ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments) : null;
-        return new CommandSpec(commandPath, escapedArgs, environment);
+        var host = new Muxer().MuxerPath;
+        var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments);
+        return new CommandSpec(host, escapedArgs, environment);
     }
 }

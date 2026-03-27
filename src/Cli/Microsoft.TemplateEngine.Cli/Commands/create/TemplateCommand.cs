@@ -22,7 +22,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Command _instantiateCommand;
-        private readonly TemplateGroup _templateGroup;
         private readonly CliTemplateInfo _template;
         private Dictionary<string, TemplateOption> _templateSpecificOptions = new();
 
@@ -44,7 +43,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             _instantiateCommand = instantiateCommand;
             _environmentSettings = environmentSettings;
             _templatePackageManager = templatePackageManager;
-            _templateGroup = templateGroup;
             _template = template;
             foreach (var item in templateGroup.ShortNames.Skip(1))
             {
@@ -173,9 +171,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             CancellationTokenSource cancellationTokenSource = new();
             cancellationTokenSource.CancelAfter(ConstraintEvaluationTimeout);
 
-#pragma warning disable CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
             Task<IReadOnlyList<TemplateConstraintResult>> constraintsEvaluation = ValidateConstraintsAsync(constraintManager, args.Template, args.IsForceFlagSpecified ? cancellationTokenSource.Token : cancellationToken);
-#pragma warning restore CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
 
             if (!args.IsForceFlagSpecified)
             {

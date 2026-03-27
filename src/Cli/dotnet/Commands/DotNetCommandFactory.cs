@@ -18,11 +18,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
     private readonly bool _alwaysRunOutOfProc = alwaysRunOutOfProc;
     private readonly string? _currentWorkingDirectory = currentWorkingDirectory;
 
-    public ICommand Create(
-        string commandName,
-        IEnumerable<string> args,
-        NuGetFramework? framework = null,
-        string configuration = Constants.DefaultConfiguration)
+    public ICommand Create(string commandName, IEnumerable<string> args, NuGetFramework? framework = null, string configuration = Constants.DefaultConfiguration)
     {
         if (!_alwaysRunOutOfProc && TryGetBuiltInCommand(commandName, out var builtInCommand))
         {
@@ -43,7 +39,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             commandFunc = (args) => Parser.Invoke([commandName, .. args]);
             return true;
         }
-        // Dummy delegate for failure case.
+        // No-op delegate for failure case.
         commandFunc = (args) => 1;
         return false;
     }

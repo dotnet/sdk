@@ -5,10 +5,7 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Cli.CommandFactory;
 
-public class CommandSpec(
-    string path,
-    string? args,
-    IDictionary<string, string>? environmentVariables = null)
+public class CommandSpec(string path, string? args, IDictionary<string, string>? environmentVariables = null)
 {
     public string Path { get; } = path;
 

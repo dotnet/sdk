@@ -46,10 +46,11 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         var templateFoldersToInstall = new List<string>();
 
         var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
-        var sdkDirectory = sdksDirectory.Parent!;
-        var dotnetRootPath = sdkDirectory.Parent!.Parent!;
+        var sdkDirectory = sdksDirectory.Parent;
+        var sdkPath = sdkDirectory?.FullName ?? string.Empty;
+        var dotnetRootPath = sdkDirectory?.Parent?.Parent?.FullName ?? string.Empty;
         // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
-        string templatesRootFolder = Path.Combine(dotnetRootPath.FullName, "templates");
+        string templatesRootFolder = Path.Combine(dotnetRootPath, "templates");
         if (Directory.Exists(templatesRootFolder))
         {
             IReadOnlyDictionary<string, SemanticVersion> parsedNames = GetVersionDirectoriesInDirectory(templatesRootFolder);
@@ -60,7 +61,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         }
 
         // Now grab templates from our base folder, if present.
-        string templatesDir = Path.Combine(sdkDirectory.FullName, "Templates");
+        string templatesDir = Path.Combine(sdkPath, "Templates");
         if (Directory.Exists(templatesDir))
         {
             templateFoldersToInstall.Add(templatesDir);

@@ -30,18 +30,14 @@ public static class ActivityContextFactory
 
     private static void WriteTraceStateIntoEnvironment(Dictionary<string, string> environment, string key, string value)
     {
-        var environmentKey = key switch
+        switch (key)
         {
-            "traceparent" => Activities.TRACEPARENT,
-            "tracestate" => Activities.TRACESTATE,
-            _ => null
-        };
-
-        if (environmentKey == null)
-        {
-            return;
+            case "traceparent":
+                environment[Activities.TRACEPARENT] = value;
+                break;
+            case "tracestate":
+                environment[Activities.TRACESTATE] = value;
+                break;
         }
-
-        environment[environmentKey] = value;
     }
 }
