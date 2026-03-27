@@ -52,6 +52,8 @@ Additionally, the implicit project file has the following customizations:
     string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
     ```
 
+  - `EntryPointFilePath` property is set to the entry-point file path and is made visible to analyzers via `CompilerVisibleProperty`.
+
   - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
 
   - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
