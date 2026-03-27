@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var localPathMSBuildSdkRoot = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "1.2.4");
             var ambientDotnetBinary = environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             var localDotnetBinary = environment.CreateMuxer(localSdkRoot);
-            environment.CreateGlobalJson(environment.TestDirectory, "1.2.3", [localSdkDotnetRoot, ambientSdkDotnetRoot]);
+            environment.CreateGlobalJson(environment.TestDirectory, "1.2.3", paths: [localSdkDotnetRoot, ambientSdkDotnetRoot]);
 
             var resolver = environment.CreateResolver();
             var context = new MockContext(Log)
@@ -852,7 +852,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     minimumMSBuildVersion.ToString());
             }
 
-            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null, string? rollForward = null)
+            public void CreateGlobalJson(DirectoryInfo directory, string version, string? rollForward = null, string[]? paths = null)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine("{");
