@@ -73,44 +73,15 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         ConvertFile(file, entryPointOutputDir, outputType: "Exe", isEntryPointFile: true);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
-        var includeItems = FindIncludedItems().ToList();
+        var includeItems = FindIncludedItems(builder, projectInstance, file).ToList();
 
         // Convert referenced files (#:ref directives) into library projects.
         var convertedRefFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var refIncludeItems = new List<(string ItemType, string FullPath, string RelativePath)>();
         ConvertReferencedFiles(evaluatedDirectives, Path.GetDirectoryName(file)!);
 
         // Copy or move over included items.
-        foreach (var item in includeItems)
-        {
-            string targetItemFullPath = Path.Combine(entryPointOutputDir, item.RelativePath);
-
-            // Ignore already-copied files.
-            if (File.Exists(targetItemFullPath))
-            {
-                continue;
-            }
-
-            string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
-            CreateDirectory(targetItemDirectory);
-
-            if (item.ItemType == "Compile")
-            {
-                if (_dryRun)
-                {
-                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, item.FullPath, targetItemFullPath);
-                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetItemFullPath);
-                }
-                else
-                {
-                    var sourceFile = SourceFile.Load(item.FullPath);
-                    VirtualProjectBuildingCommand.RemoveDirectivesFromFile(sourceFile, targetItemFullPath);
-                }
-            }
-            else
-            {
-                CopyFile(item.FullPath, targetItemFullPath);
-            }
-        }
+        CopyIncludedItems(includeItems, entryPointOutputDir);
 
         // Handle deletion of source files if requested.
         bool shouldDelete = _deleteSource || TryAskForDeleteSource();
@@ -125,10 +96,15 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 DeleteFile(item.FullPath);
             }
 
-            // Delete converted referenced files
+            // Delete converted referenced files and their included items
             foreach (var refFile in convertedRefFiles)
             {
                 DeleteFile(refFile);
+            }
+
+            foreach (var item in refIncludeItems)
+            {
+                DeleteFile(item.FullPath);
             }
         }
 
@@ -236,6 +212,41 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
+        void CopyIncludedItems(List<(string ItemType, string FullPath, string RelativePath)> items, string outputDirectory)
+        {
+            foreach (var item in items)
+            {
+                string targetItemFullPath = Path.Combine(outputDirectory, item.RelativePath);
+
+                // Ignore already-copied files.
+                if (File.Exists(targetItemFullPath))
+                {
+                    continue;
+                }
+
+                string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
+                CreateDirectory(targetItemDirectory);
+
+                if (item.ItemType == "Compile")
+                {
+                    if (_dryRun)
+                    {
+                        Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, item.FullPath, targetItemFullPath);
+                        Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetItemFullPath);
+                    }
+                    else
+                    {
+                        var sourceFile = SourceFile.Load(item.FullPath);
+                        VirtualProjectBuildingCommand.RemoveDirectivesFromFile(sourceFile, targetItemFullPath);
+                    }
+                }
+                else
+                {
+                    CopyFile(item.FullPath, targetItemFullPath);
+                }
+            }
+        }
+
         void ConvertReferencedFiles(ImmutableArray<CSharpDirective> directives, string sourceDirectory)
         {
             foreach (var directive in directives)
@@ -256,7 +267,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 var refDir = Path.GetDirectoryName(refPath)!;
                 var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
-                var (_, _, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, outputType: "Library", isEntryPointFile: false);
+                var (refBuilder, refProjectInstance, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, outputType: "Library", isEntryPointFile: false);
+
+                // Copy included items (e.g., default Content items) for the referenced file.
+                var items = FindIncludedItems(refBuilder, refProjectInstance, refPath).ToList();
+                CopyIncludedItems(items, refTargetDirectory);
+                refIncludeItems.AddRange(items);
 
                 // Recursively convert referenced files in the referenced file.
                 ConvertReferencedFiles(refEvaluatedDirectives, refDir);
@@ -305,14 +321,15 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        IEnumerable<(string ItemType, string FullPath, string RelativePath)> FindIncludedItems()
+        IEnumerable<(string ItemType, string FullPath, string RelativePath)> FindIncludedItems(
+            VirtualProjectBuilder fileBuilder, ProjectInstance fileProjectInstance, string sourceFile)
         {
-            string entryPointFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
+            string sourceFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(sourceFile)!);
 
             // Include only items we know are files.
-            var mapping = builder.GetItemMapping(projectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
+            var mapping = fileBuilder.GetItemMapping(fileProjectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
 
-            var items = mapping.SelectMany(e => projectInstance.GetItems(e.ItemType));
+            var items = mapping.SelectMany(e => fileProjectInstance.GetItems(e.ItemType));
 
             var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -325,7 +342,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
-                string itemFullPath = Path.GetFullPath(path: item.GetMetadataValue("FullPath"), basePath: entryPointFileDirectory);
+                string itemFullPath = Path.GetFullPath(path: item.GetMetadataValue("FullPath"), basePath: sourceFileDirectory);
 
                 // Exclude items that do not exist.
                 if (!File.Exists(itemFullPath))
@@ -333,7 +350,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
-                string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
+                string itemRelativePath = Path.GetRelativePath(relativeTo: sourceFileDirectory, path: itemFullPath);
 
                 // Files outside the source directory should be copied into the target directory at the top level.
                 // Possibly with a number suffix to avoid conflicts.

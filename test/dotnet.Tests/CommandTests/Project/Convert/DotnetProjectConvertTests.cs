@@ -483,6 +483,109 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.Exists(outputDirFullPath).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that default items (e.g., <c>appsettings.json</c>) in a <c>#:ref</c>'d file's directory
+    /// are copied to the converted project output directory.
+    /// </summary>
+    [Fact]
+    public void RefDirective_IncludedItemsCopied()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property EnableDefaultNoneItems=true
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        // A non-code file next to the library that should be picked up as a default item.
+        File.WriteAllText(Path.Join(libDir, "data.json"), """{ "key": "value" }""");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib/mylib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // The library's included item (data.json) should be copied to the ref output directory.
+        var libOutputDir = Path.Join(outputDirFullPath, "mylib");
+        File.Exists(Path.Join(libOutputDir, "mylib.cs")).Should().BeTrue();
+        File.Exists(Path.Join(libOutputDir, "mylib.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(libOutputDir, "data.json")).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that <c>--delete-source</c> also deletes included items of <c>#:ref</c>'d files.
+    /// </summary>
+    [Fact]
+    public void RefDirective_IncludedItemsDeleted()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property EnableDefaultNoneItems=true
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "config.json"), """{ "setting": true }""");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib/mylib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath, "--delete-source")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Source files should be deleted.
+        File.Exists(Path.Join(testInstance.Path, "app.cs")).Should().BeFalse();
+        File.Exists(Path.Join(libDir, "mylib.cs")).Should().BeFalse();
+        File.Exists(Path.Join(libDir, "config.json")).Should().BeFalse();
+
+        // Converted files should exist.
+        var libOutputDir = Path.Join(outputDirFullPath, "mylib");
+        File.Exists(Path.Join(libOutputDir, "mylib.cs")).Should().BeTrue();
+        File.Exists(Path.Join(libOutputDir, "mylib.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(libOutputDir, "config.json")).Should().BeTrue();
+    }
+
     [Fact]
     public void ProjectReference_FullPath_WithVars()
     {
