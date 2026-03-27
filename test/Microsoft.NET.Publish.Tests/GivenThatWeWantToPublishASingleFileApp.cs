@@ -312,7 +312,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
-            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier };
+            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier, this.BinLogArgument([nameof(extractAll), extractAll.ToString()]) };
 
             if (extractAll)
             {
@@ -320,6 +320,7 @@ namespace Microsoft.NET.Publish.Tests
             }
 
             publishCommand
+                .WithWorkingDirectory(testAsset.TestRoot)
                 .Execute(extraArgs.ToArray())
                 .Should()
                 .Pass();
@@ -1211,12 +1212,13 @@ class C
             var testAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 identifier: $"{rid}_{enableMacOSCodeSign}");
-            var publishCommand = new PublishCommand(testAsset);
+            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.TestRoot) as PublishCommand;
 
             List<string> publishArgs = new List<string>(3)
             {
                 PublishSingleFile,
-                $"/p:RuntimeIdentifier={rid}"
+                $"/p:RuntimeIdentifier={rid}",
+                this.BinLogArgument([nameof(rid), rid, nameof(enableMacOSCodeSign), enableMacOSCodeSign?.ToString() ?? "null"])
             };
             if (enableMacOSCodeSign.HasValue)
             {

@@ -1014,11 +1014,7 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</value>
     <comment>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</comment>
   </data>
-<<<<<<< HEAD
-    <data name="SingleFileBundleUnexpectedExclusion" xml:space="preserve">
-=======
   <data name="SingleFileBundleUnexpectedExclusion" xml:space="preserve">
->>>>>>> 73b0aab1ce (udpate xlf)
     <value>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</value>
     <comment>{StrBegins="NETSDK1236: "}</comment>
   </data>
