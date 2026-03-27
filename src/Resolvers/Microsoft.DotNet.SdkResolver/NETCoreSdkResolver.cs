@@ -161,10 +161,24 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion, 5);
             }
             else if (result.ResolvedSdkDirectory != null
-                     && result.GlobalJsonPath == null
                      && msbuildVersion < GetMinimumMSBuildVersion(result.ResolvedSdkDirectory))
             {
-                mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion);
+                // Fall back to the most compatible SDK when the resolved SDK requires a higher MSBuild version
+                // than the one currently available. When global.json uses a rollforward policy (e.g. latestMajor),
+                // the native resolver may pick a newer SDK that is incompatible with the current MSBuild version.
+                // MSBuild compatibility should be part of what "compatible" means in a rollforward scenario.
+                //
+                // However, when the user has explicitly pinned an exact SDK version in global.json and that exact
+                // version was successfully resolved, respect the user's intent and let the final MSBuild version
+                // check produce a clear error message rather than silently falling back to a different SDK.
+                bool wasExactVersionPinned = result.GlobalJsonPath != null
+                    && result.RequestedVersion != null
+                    && string.Equals(new DirectoryInfo(result.ResolvedSdkDirectory).Name, result.RequestedVersion, StringComparison.OrdinalIgnoreCase);
+
+                if (!wasExactVersionPinned)
+                {
+                    mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion);
+                }
             }
 
             if (mostCompatible != null)

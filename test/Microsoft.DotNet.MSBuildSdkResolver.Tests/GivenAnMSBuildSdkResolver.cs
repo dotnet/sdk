@@ -219,6 +219,57 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenGlobalJsonRollForwardPicksIncompatibleSdk(bool disallowPreviews)
+        {
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
+            {
+                DisallowPrereleaseByDefault = disallowPreviews
+            };
+
+            var compatibleRtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "98.98.98", new Version(19, 0, 0, 0));
+            var compatiblePreview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99-preview", new Version(20, 0, 0, 0));
+            var incompatible = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "100.100.100", new Version(21, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+
+            // global.json with latestMajor rollforward: the native resolver will pick 100.100.100 as the
+            // highest available SDK, but 100.100.100 requires MSBuild 21.0 which is higher than 20.0.
+            // The resolver should fall back to the highest SDK compatible with the current MSBuild version.
+            environment.CreateGlobalJson(environment.TestDirectory, "98.98.98", rollForward: "latestMajor");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
+            result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
+            result.AdditionalPaths.Should().BeNull();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
+            }
+            else
+            {
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(1);
+            }
+            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
+            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
+            result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
         [Fact]
         public void WhenALocalSdkIsResolvedItReturnsHostFromThatSDKInsteadOfAmbientGlobalSdk()
         {
@@ -801,12 +852,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     minimumMSBuildVersion.ToString());
             }
 
-            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null)
+            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null, string? rollForward = null)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine("{");
                 builder.AppendLine("\t\"sdk\": {");
                 builder.Append($"\t\"version\":  \"{version}\"");
+                if (rollForward is not null)
+                {
+                    builder.AppendLine(",");
+                    builder.Append($"\t\"rollForward\": \"{rollForward}\"");
+                }
                 if (paths is not null)
                 {
                     builder.Append(',');
@@ -827,6 +883,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     }
                     builder.AppendLine("\t]");
                 }
+                builder.AppendLine();
                 builder.AppendLine("\t}");
                 builder.AppendLine("}");
                 var globalJsonContent = builder.ToString();
