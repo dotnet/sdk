@@ -19,7 +19,7 @@ Testing:
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To build and run tests in this repo:
   - **CRITICAL: Always use the repo-local dotnet instance (`./.dotnet/dotnet` on Linux/Mac, `.\.dotnet\dotnet` on Windows). NEVER fall back to the system-wide `dotnet` — it will cause build hangs, version mismatches, and test failures.**
-  - If `.dotnet/` does not exist, you must bootstrap it first by running `./build.sh --restore` (Linux/Mac) or `.\build.cmd -restore` (Windows) from the repo root. This downloads the correct SDK version specified in `global.json`.
+  - If `.dotnet/` does not exist, you must bootstrap it first, running `./build.sh --restore` or `.\build.cmd -restore` from the repo root. This downloads the correct SDK version specified in `global.json`.
   - Most tests outside of dotnetup require a full SDK build first. Run `./build.sh` (Linux/Mac) or `.\build.cmd` (Windows) from the repo root to produce the redist SDK at `artifacts/bin/redist/Debug/dotnet/dotnet.exe`. Without this, tests will fail with "Host not found. Is 'redist.csproj' built?"
   - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
   - For XUnit test assemblies: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
