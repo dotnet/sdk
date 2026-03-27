@@ -2225,4 +2225,7 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="MissingShebangInFileBasedProgramMessage" xml:space="preserve">
     <value>File-based program entry point should start with '#!'</value>
   </data>
+  <data name="MissingShebangInFileBasedProgramCodeFixTitle" xml:space="preserve">
+    <value>Add '#!' (shebang)</value>
+  </data>
 </root>

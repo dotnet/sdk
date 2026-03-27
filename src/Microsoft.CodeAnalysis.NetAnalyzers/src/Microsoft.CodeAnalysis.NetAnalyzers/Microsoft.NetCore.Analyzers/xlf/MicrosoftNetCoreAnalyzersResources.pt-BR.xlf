@@ -1833,6 +1833,11 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
         <target state="translated">O método de ação {0} precisa especificar explicitamente o tipo de solicitação HTTP</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="new">Add '#!' (shebang)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
         <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>

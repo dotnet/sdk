@@ -2751,7 +2751,7 @@ When a file-based program consists of multiple files, the entry point file shoul
 |Category|Usage|
 |Enabled|True|
 |Severity|Warning|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA2300](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter

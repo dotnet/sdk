@@ -1833,6 +1833,11 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">アクション メソッド {0} では、HTTP 要求の種類を明示的に指定する必要があります</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="new">Add '#!' (shebang)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
         <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>

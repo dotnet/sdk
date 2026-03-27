@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpMissingShebangInFileBasedProgram,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpMissingShebangInFileBasedProgramFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
@@ -81,6 +80,51 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
+                    },
+                },
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task EntryPointWithoutShebang_CodeFixAddsShebangAsync()
+        {
+            // Verify that the code fix prepends a shebang line.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """class Program { static void Main() { } }"""),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    ExpectedDiagnostics =
+                    {
+                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #!/usr/bin/env dotnet
+                            class Program { static void Main() { } }
+                            """),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                },
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        // Enable #! shebang support in the parser.
+                        var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
+                        return solution.WithProjectParseOptions(projectId,
+                            parseOptions.WithFeatures(parseOptions.Features.Concat(
+                                [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
                     },
                 },
             }.RunAsync();

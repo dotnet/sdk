@@ -1833,6 +1833,11 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">El método de acción {0} debe especificar la variante de solicitud HTTP de forma explícita.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="new">Add '#!' (shebang)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
         <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
