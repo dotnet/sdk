@@ -23,7 +23,10 @@ internal class NuGetCommand
     {
         ICommandRunner runner;
 
-        if (parseResult.GetArguments() is ["why", { } path, _, ..] && VirtualProjectBuilder.IsValidEntryPointPath(path))
+        if (parseResult.CommandResult.Command.Name == "why"
+            && parseResult.CommandResult.Command.Arguments.FirstOrDefault() is Argument<string> pathArg
+            && parseResult.GetValue(pathArg) is { } path
+            && VirtualProjectBuilder.IsValidEntryPointPath(path))
         {
             runner = new InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder.Instance);
         }

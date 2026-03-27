@@ -88,7 +88,7 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                     .CloneWithVerbosity(VerbosityOptions.quiet)
                     .CloneWithAdditionalTargets("GenerateRestoreGraphFile"))
                 {
-                    NoBuild = true,
+                    NoRestore = true,
                     NoCache = true,
                     NoWriteBuildMarkers = true,
                 }.Execute()

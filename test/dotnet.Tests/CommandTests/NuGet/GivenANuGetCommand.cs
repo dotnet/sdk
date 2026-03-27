@@ -161,6 +161,30 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         }
 
         [Fact]
+        public void ItHasAWhySubcommand_FileBasedApp_WithOptionsBeforePath()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(file, $"""
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                Console.WriteLine();
+                """);
+
+            new DotnetCommand(Log, "restore", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr();
+
+            new DotnetCommand(Log, "nuget", "why", "--framework", ToolsetInfo.CurrentTargetFramework, "Program.cs", "newtonsoft.json")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("has the following dependency");
+        }
+
+        [Fact]
         public void ItCanUpdatePackages()
         {
             // Arrange

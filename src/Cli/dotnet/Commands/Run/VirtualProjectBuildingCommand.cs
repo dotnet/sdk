@@ -303,7 +303,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var restoreRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
-                    targetsToBuild: Builder.RequestedTargets ?? ["Restore"],
+                    targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
