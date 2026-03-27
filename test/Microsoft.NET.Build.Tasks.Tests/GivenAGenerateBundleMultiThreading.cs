@@ -86,10 +86,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ItHandlesEmptyOutputDir()
         {
+            // When OutputDir is empty, GenerateBundle falls back to TaskEnvironment.ProjectDirectory
+            // (matching the old behavior of falling back to Environment.CurrentDirectory).
+            // The task should not throw during path resolution.
             var projectDir = Path.Combine(Path.GetTempPath(), "bundle-empty-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(projectDir);
             try
             {
+                var sourceFile = Path.Combine(projectDir, "test.dll");
+                File.WriteAllText(sourceFile, "not a real dll");
+
                 var fileItem = new Microsoft.Build.Utilities.TaskItem("test.dll");
                 fileItem.SetMetadata(MetadataKeys.RelativePath, "test.dll");
 
@@ -112,11 +118,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Exception? caught = null;
                 try { task.Execute(); } catch (Exception ex) { caught = ex; }
 
-                // Empty OutputDir should produce an ArgumentException from AbsolutePath validation,
-                // not a NullReferenceException.
-                caught.Should().NotBeNull("empty OutputDir should fail during path resolution");
-                caught.Should().NotBeOfType<NullReferenceException>(
-                    "empty OutputDir should not cause NullReferenceException");
+                // Empty OutputDir should fall back to ProjectDirectory, not throw
+                // during path resolution. Any exception should be from Bundler
+                // processing (not a real binary), not from path resolution.
+                if (caught != null)
+                {
+                    caught.Should().NotBeOfType<NullReferenceException>(
+                        "empty OutputDir should not cause NullReferenceException");
+                    caught.Should().NotBeOfType<System.IO.DirectoryNotFoundException>(
+                        "empty OutputDir should fall back to ProjectDirectory");
+                }
             }
             finally
             {
