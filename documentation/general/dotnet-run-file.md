@@ -270,6 +270,11 @@ Along with `#:`, the language also ignores `#!` which could be then used for [sh
 Console.WriteLine("Hello");
 ```
 
+When a file-based program uses [`#:include`](#multiple-files) directives to include additional files,
+the entry point file should start with `#!` to clearly distinguish it from included files.
+This helps IDEs to properly handle multi-file scenarios and discover entry points.
+The analyzer **CA2266** reports a warning if the entry point file is missing the shebang line in this scenario.
+
 ## Implementation
 
 The build is performed using MSBuild APIs on in-memory project files.

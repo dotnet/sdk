@@ -499,6 +499,7 @@ public sealed class VirtualProjectBuilder
                     <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                     <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
+                    <EntryPointFilePath>{EscapeValue(entryPointFilePath)}</EntryPointFilePath>
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
