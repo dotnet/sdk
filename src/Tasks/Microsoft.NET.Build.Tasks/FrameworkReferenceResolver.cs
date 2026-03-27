@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using Microsoft.Extensions.DependencyModel.Resolution;
-
 namespace Microsoft.NET.Build.Tasks
 {
     internal class FrameworkReferenceResolver
@@ -18,8 +16,10 @@ namespace Microsoft.NET.Build.Tasks
 
         public string GetDefaultReferenceAssembliesPath()
         {
-            // Allow setting the reference assemblies path via an environment variable
-            var referenceAssembliesPath = DotNetReferenceAssembliesPathResolver.Resolve();
+            // Read DOTNET_REFERENCE_ASSEMBLIES_PATH through the injected delegate
+            // instead of DotNetReferenceAssembliesPathResolver.Resolve(), which uses
+            // process-global Environment.GetEnvironmentVariable and bypasses TaskEnvironment.
+            var referenceAssembliesPath = _getEnvironmentVariable("DOTNET_REFERENCE_ASSEMBLIES_PATH");
 
             if (!string.IsNullOrEmpty(referenceAssembliesPath))
             {
