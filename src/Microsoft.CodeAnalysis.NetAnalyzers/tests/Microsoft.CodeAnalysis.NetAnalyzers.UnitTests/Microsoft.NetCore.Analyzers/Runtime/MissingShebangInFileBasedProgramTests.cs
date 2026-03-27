@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class MissingShebangInFileBasedProgramTests
     {
-        private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = /0/Test0.cs";
+        private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = Test0.cs";
 
         [Fact]
         public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync()

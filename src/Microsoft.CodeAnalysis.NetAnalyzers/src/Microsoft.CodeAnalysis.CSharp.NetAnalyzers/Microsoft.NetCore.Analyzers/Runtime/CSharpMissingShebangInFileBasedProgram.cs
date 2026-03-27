@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
-using System.Linq;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,7 +9,6 @@ using Microsoft.NetCore.Analyzers.Runtime;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
-    /// <summary>CA2026: <inheritdoc cref="MissingShebangInFileBasedProgram"/></summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMissingShebangInFileBasedProgram : MissingShebangInFileBasedProgram
     {
@@ -21,22 +19,23 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
             context.RegisterCompilationStartAction(context =>
             {
-                var globalOptions = context.Options.AnalyzerConfigOptionsProvider.GlobalOptions;
-                if (!globalOptions.TryGetValue("build_property.EntryPointFilePath", out var entryPointFilePath)
-                    || string.IsNullOrEmpty(entryPointFilePath))
+                var entryPointFilePath = context.Options.GetMSBuildPropertyValue(
+                    MSBuildPropertyOptionNames.EntryPointFilePath, context.Compilation);
+                if (string.IsNullOrEmpty(entryPointFilePath))
                 {
                     return;
                 }
 
-                // Only warn when there are multiple syntax trees (i.e., #:include directives are used).
-                // Single-file programs don't need a shebang to distinguish the entry point.
-                if (context.Compilation.SyntaxTrees.Count() <= 1)
-                {
-                    return;
-                }
+                // Track whether there are multiple non-generated source files.
+                // ConfigureGeneratedCodeAnalysis(None) ensures that the SyntaxTreeAction
+                // is only called for non-generated trees, so we count those.
+                int nonGeneratedTreeCount = 0;
+                Diagnostic? pendingDiagnostic = null;
 
                 context.RegisterSyntaxTreeAction(context =>
                 {
+                    Interlocked.Increment(ref nonGeneratedTreeCount);
+
                     if (!context.Tree.FilePath.Equals(entryPointFilePath, StringComparison.OrdinalIgnoreCase))
                     {
                         return;
@@ -49,7 +48,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
 
                     var location = root.GetFirstToken(includeZeroWidth: true).GetLocation();
-                    context.ReportDiagnostic(location.CreateDiagnostic(Rule));
+                    Interlocked.CompareExchange(ref pendingDiagnostic, location.CreateDiagnostic(Rule), null);
+                });
+
+                context.RegisterCompilationEndAction(context =>
+                {
+                    // Only report when there are multiple non-generated files
+                    // (i.e., #:include directives are used).
+                    // Single-file programs don't need a shebang to distinguish the entry point.
+                    if (Volatile.Read(ref nonGeneratedTreeCount) > 1 && pendingDiagnostic is { } diagnostic)
+                    {
+                        context.ReportDiagnostic(diagnostic);
+                    }
                 });
             });
         }

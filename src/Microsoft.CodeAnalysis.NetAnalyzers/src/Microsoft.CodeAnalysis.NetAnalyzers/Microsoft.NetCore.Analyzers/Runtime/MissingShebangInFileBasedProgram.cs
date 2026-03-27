@@ -9,9 +9,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
-    /// <summary>
-    /// CA2266: <inheritdoc cref="MissingShebangInFileBasedProgramTitle"/>
-    /// </summary>
     public abstract class MissingShebangInFileBasedProgram : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2266";
@@ -24,7 +21,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             RuleLevel.BuildWarning,
             CreateLocalizableResourceString(nameof(MissingShebangInFileBasedProgramDescription)),
             isPortedFxCopRule: false,
-            isDataflowRule: false);
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: true);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
     }
