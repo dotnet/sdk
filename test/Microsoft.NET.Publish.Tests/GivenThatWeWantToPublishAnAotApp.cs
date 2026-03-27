@@ -870,7 +870,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var staticLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".lib" : ".a";
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{staticLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{staticLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
@@ -923,7 +924,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = GetSharedLibSuffix();
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{sharedLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
