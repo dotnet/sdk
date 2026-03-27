@@ -5,9 +5,9 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.NetCore.Analyzers.Runtime;
+using Microsoft.NetCore.Analyzers.Usage;
 
-namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
+namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMissingShebangInFileBasedProgram : MissingShebangInFileBasedProgram

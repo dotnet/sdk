@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpMissingShebangInFileBasedProgram,
+    Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpMissingShebangInFileBasedProgram,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
-namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
+namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
     public class MissingShebangInFileBasedProgramTests
     {

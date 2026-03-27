@@ -5,7 +5,7 @@ using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.NetCore.Analyzers.Runtime
+namespace Microsoft.NetCore.Analyzers.Usage
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
