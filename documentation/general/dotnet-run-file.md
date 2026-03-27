@@ -223,8 +223,8 @@ The directives are processed as follows:
   MSBuild variables (like `$(MSBuildProjectDirectory)`) can be used in the path.
 
   During [conversion](#grow-up), each `#:ref` directive creates a separate library project in a sibling directory
-  and is replaced by a `#:project` directive pointing to that project.
-  The conversion is recursive: any `#:ref` directives in the referenced files are also converted.
+  and a corresponding `<ProjectReference>` entry is added to the converted project.
+  The conversion is recursive: any `#:ref` directives in the referenced files are also converted in the same way.
 
   This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableRefDirective=true`.
 
