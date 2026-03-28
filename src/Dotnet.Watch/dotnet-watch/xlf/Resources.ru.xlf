@@ -142,6 +142,21 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Прокрутите вверх и вниз, чтобы увидеть больше платформ</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Введите текст для поиска</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Выберите целевую платформу для запуска:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
         <target state="translated">Указанный путь "{0}" недопустим: {1}</target>

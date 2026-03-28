@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -99,7 +98,7 @@ public abstract partial class DotNetWatchTestBase : IAsyncLifetime
         });
 
         var context = program.CreateContext(processRunner);
-        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory);
+        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory, targetFrameworkSelectionPrompt: null);
         var shutdownSource = new CancellationTokenSource();
 
         return new InProcTestWatcher(Logger, watcher, context, eventObserver, reporter, console, serviceHolder, shutdownSource);

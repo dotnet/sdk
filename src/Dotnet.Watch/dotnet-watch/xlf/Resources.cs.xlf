@@ -142,6 +142,21 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Posunutím nahoru a dolů zobrazíte další architektury.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Zadejte hledaný text</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Vyberte cílovou architekturu, která se má spustit:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
         <target state="translated">Zadaná cesta {0} je neplatná: {1}</target>
