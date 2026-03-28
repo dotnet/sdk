@@ -1339,7 +1339,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">Une version plus récente de l’outil « {0} » est disponible (version « {1} »). Pensez à mettre à jour votre fichier manifeste.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
