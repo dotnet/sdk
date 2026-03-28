@@ -142,6 +142,21 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">上下に移動して、さらに多くのフレームワークを表示</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">入力して検索します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">実行するターゲット フレームワークを選択してください:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
         <target state="translated">指定されたパス '{0}' は無効です: {1}</target>

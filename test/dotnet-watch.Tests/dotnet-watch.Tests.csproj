@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="Spectre.Console.Testing" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
