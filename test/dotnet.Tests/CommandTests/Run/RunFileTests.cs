@@ -6113,7 +6113,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // correct target framework is used
             .And.Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
 
-        projectRootElement.FullPath.Should().Be(Path.ChangeExtension(appPath, ".csproj"));
+        projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
     }
 
     [Theory, CombinatorialData]

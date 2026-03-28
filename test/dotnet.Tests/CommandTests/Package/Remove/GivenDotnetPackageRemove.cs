@@ -46,7 +46,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .WithWorkingDirectory(projectDirectory)
             .Execute("package", "remove", packageName, "--project", "TestAppSimple.csproj")
             .Should().Pass()
-            .And.HaveStdOutContaining($"Removing PackageReference for package '{packageName}' from project 'TestAppSimple.csproj'.")
+            .And.HaveStdOutContaining($"Removing PackageReference for package '{packageName}' from project '{Path.Combine(projectDirectory, "TestAppSimple.csproj")}'.")
             .And.NotHaveStdErr();
     }
 

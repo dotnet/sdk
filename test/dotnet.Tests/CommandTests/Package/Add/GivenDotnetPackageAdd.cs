@@ -600,27 +600,42 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, args)
+            var directoryPackagesPropsOriginal = File.ReadAllText(directoryPackagesProps);
+
+            var result = new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass();
+                .Execute();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Newtonsoft.Json
+            if (wasInFile)
+            {
+                // When a version is already pinned in both the #:package directive and
+                // Directory.Packages.props, this is the same invalid state as a project-based CPM
+                // app with version on both <PackageReference> and <PackageVersion>. NuGet rejects it.
+                result.Should().Fail();
+                File.ReadAllText(file).Should().Be(source);
+                File.ReadAllText(directoryPackagesProps).Should().Be(directoryPackagesPropsOriginal);
+            }
+            else
+            {
+                result.Should().Pass();
 
-                Console.WriteLine();
-                """);
+                File.ReadAllText(file).Should().Be("""
+                    #:package Newtonsoft.Json
 
-            File.ReadAllText(directoryPackagesProps).Should().Be($"""
-                <Project>
-                  <PropertyGroup>
-                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                  </PropertyGroup>
-                  <ItemGroup>
-                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
-                  </ItemGroup>
-                </Project>
-                """);
+                    Console.WriteLine();
+                    """);
+
+                File.ReadAllText(directoryPackagesProps).Should().Be($"""
+                    <Project>
+                      <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                      </PropertyGroup>
+                      <ItemGroup>
+                        <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
+                      </ItemGroup>
+                    </Project>
+                    """);
+            }
         }
 
         [Theory, CombinatorialData]
