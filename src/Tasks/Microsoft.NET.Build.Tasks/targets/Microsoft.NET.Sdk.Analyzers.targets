@@ -145,7 +145,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <CompilerVisibleProperty Include="EnableComHosting" />
     <CompilerVisibleProperty Include="EnableGeneratedComInterfaceComImportInterop" />
-    <CompilerVisibleProperty Include="EntryPointFilePath" />
   </ItemGroup>
 
   <!-- C# Code Style Analyzers -->
