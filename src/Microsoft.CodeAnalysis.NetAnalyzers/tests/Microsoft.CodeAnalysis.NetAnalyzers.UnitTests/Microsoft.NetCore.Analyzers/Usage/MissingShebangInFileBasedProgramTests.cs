@@ -64,28 +64,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [Fact]
-        public async Task NonEntryPointFile_MultipleFiles_NoDiagnosticAsync()
-        {
-            // Only the entry point gets the diagnostic, not other files.
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        ("Test0.cs", """class Program { static void Main() { Util.Greet(); } }"""),
-                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
-                    },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
-                    ExpectedDiagnostics =
-                    {
-                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
-                    },
-                },
-            }.RunAsync();
-        }
-
-        [Fact]
         public async Task EntryPointWithoutShebang_CodeFixAddsShebangAsync()
         {
             // Verify that the code fix prepends a shebang line.
@@ -121,6 +99,37 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     (solution, projectId) =>
                     {
                         // Enable #! shebang support in the parser.
+                        var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
+                        return solution.WithProjectParseOptions(projectId,
+                            parseOptions.WithFeatures(parseOptions.Features.Concat(
+                                [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
+                    },
+                },
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task EntryPointWithShebang_MultipleFiles_NoDiagnosticAsync()
+        {
+            // Entry point already has shebang, multiple files - no diagnostic.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #!/usr/bin/env dotnet
+                            class Program { static void Main() { } }
+                            """),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                },
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
                         var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
                         return solution.WithProjectParseOptions(projectId,
                             parseOptions.WithFeatures(parseOptions.Features.Concat(
