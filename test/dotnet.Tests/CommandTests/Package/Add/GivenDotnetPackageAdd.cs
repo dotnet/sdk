@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                #:package {sourceFilePackageId}@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
                 Console.WriteLine();
                 """);
         }
@@ -472,7 +472,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdErrContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
+                .And.HaveStdOutContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
 
             File.ReadAllText(file).Should().Be(source);
         }
@@ -606,7 +606,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute();
 
-            if (wasInFile)
+            if (wasInFile && !noRestore)
             {
                 // When a version is already pinned in both the #:package directive and
                 // Directory.Packages.props, this is the same invalid state as a project-based CPM
@@ -619,11 +619,20 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             {
                 result.Should().Pass();
 
-                File.ReadAllText(file).Should().Be("""
-                    #:package Newtonsoft.Json
+                if (wasInFile)
+                {
+                    // With --no-restore, NuGet doesn't validate the conflicting state. The command
+                    // succeeds, the source file is unchanged but the CPM version is updated.
+                    File.ReadAllText(file).Should().Be(source);
+                }
+                else
+                {
+                    File.ReadAllText(file).Should().Be("""
+                        #:package Newtonsoft.Json
 
-                    Console.WriteLine();
-                    """);
+                        Console.WriteLine();
+                        """);
+                }
 
                 File.ReadAllText(directoryPackagesProps).Should().Be($"""
                     <Project>
