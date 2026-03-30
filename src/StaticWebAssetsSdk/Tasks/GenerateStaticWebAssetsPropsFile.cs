@@ -82,8 +82,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
-            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver, TokenResolveMode.Pack);
+            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver, TokenResolveMode.Pack);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
 
             var emittedSourceType = "Package";
