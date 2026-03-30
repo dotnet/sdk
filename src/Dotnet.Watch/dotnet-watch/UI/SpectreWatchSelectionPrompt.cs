@@ -6,9 +6,13 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class SpectreTargetFrameworkSelectionPrompt(IAnsiConsole console) : TargetFrameworkSelectionPrompt
+internal sealed class SpectreWatchSelectionPrompt(IAnsiConsole console) : WatchSelectionPrompt
 {
-    public SpectreTargetFrameworkSelectionPrompt(IConsole watchConsole)
+    private const string CyanMarkup = "[cyan]";
+    private const string GrayMarkup = "[gray]";
+    private const string EndMarkup = "[/]";
+
+    public SpectreWatchSelectionPrompt(IConsole watchConsole)
         : this(CreateConsole(watchConsole))
     {
     }
@@ -16,17 +20,56 @@ internal sealed class SpectreTargetFrameworkSelectionPrompt(IAnsiConsole console
     public override void Dispose()
         => (console as IDisposable)?.Dispose();
 
-    protected override Task<string> PromptAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken)
+    protected override Task<string> PromptForTargetFrameworkAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken)
     {
         var prompt = new SelectionPrompt<string>()
-            .Title($"[cyan]{Markup.Escape(Resources.SelectTargetFrameworkPrompt)}[/]")
+            .Title($"{CyanMarkup}{Markup.Escape(Resources.SelectTargetFrameworkPrompt)}{EndMarkup}")
             .PageSize(10)
-            .MoreChoicesText($"[gray]({Markup.Escape(Resources.MoreFrameworksText)})[/]")
+            .MoreChoicesText($"{GrayMarkup}({Markup.Escape(Resources.MoreFrameworksText)}){EndMarkup}")
             .AddChoices(targetFrameworks)
             .EnableSearch()
             .SearchPlaceholderText(Resources.SearchPlaceholderText);
 
         return prompt.ShowAsync(console, cancellationToken);
+    }
+
+    protected override Task<DeviceInfo> PromptForDeviceAsync(IReadOnlyList<DeviceInfo> devices, CancellationToken cancellationToken)
+    {
+        var prompt = new SelectionPrompt<DeviceInfo>()
+            .Title($"{CyanMarkup}{Markup.Escape(Resources.SelectDevicePrompt)}{EndMarkup}")
+            .PageSize(10)
+            .MoreChoicesText($"{GrayMarkup}({Markup.Escape(Resources.MoreDevicesText)}){EndMarkup}")
+            .AddChoices(devices)
+            .UseConverter(FormatDevice)
+            .EnableSearch()
+            .SearchPlaceholderText(Resources.SearchPlaceholderText);
+
+        return prompt.ShowAsync(console, cancellationToken);
+    }
+
+    internal static string FormatDevice(DeviceInfo device)
+    {
+        var display = device.Id;
+        if (!string.IsNullOrWhiteSpace(device.Description))
+        {
+            display += $" - {device.Description}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(device.Type))
+        {
+            display += $" ({device.Type}";
+            if (!string.IsNullOrWhiteSpace(device.Status))
+            {
+                display += $", {device.Status}";
+            }
+            display += ")";
+        }
+        else if (!string.IsNullOrWhiteSpace(device.Status))
+        {
+            display += $" ({device.Status})";
+        }
+
+        return display;
     }
 
     private static IAnsiConsole CreateConsole(IConsole watchConsole)

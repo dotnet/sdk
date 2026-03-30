@@ -88,6 +88,12 @@ internal class BuildEvaluator
             arguments.Add(MainProjectOptions.TargetFramework);
         }
 
+        if (MainProjectOptions.Device != null)
+        {
+            arguments.Add("--device");
+            arguments.Add(MainProjectOptions.Device);
+        }
+
         arguments.AddRange(MainProjectOptions.CommandArguments);
 
         return arguments;

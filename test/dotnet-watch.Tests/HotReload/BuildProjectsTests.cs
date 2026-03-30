@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -50,7 +50,7 @@ public class BuildProjects(ITestOutputHelper output)
             FileWatcher = new FileWatcher(NullLogger.Instance, environmentOptions);
 
             Console = new TestConsole(output);
-            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null, targetFrameworkSelectionPrompt: null);
+            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null, selectionPrompt: new NoOpWatchSelectionPrompt());
         }
 
         public void LogBuildInvocation(ProcessSpec processSpec)
@@ -87,6 +87,7 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -120,6 +121,7 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -149,6 +151,7 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -174,6 +177,7 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -199,6 +203,7 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -230,6 +235,7 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -264,6 +270,7 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -306,6 +313,7 @@ public class BuildProjects(ITestOutputHelper output)
                 AssertEx.SequenceEqual([currentTfm, "net9.0"], frameworks);
                 return ValueTask.FromResult(expectedTfm);
             },
+            deviceSelector: null,
             CancellationToken.None);
         
         Assert.True(result.Success);
@@ -347,6 +355,7 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -387,6 +396,7 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
         Assert.True(result.Success);
@@ -399,3 +409,4 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 }
+

@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -18,18 +19,23 @@ internal sealed class HotReloadDotNetWatcher
     private readonly IConsole _console;
     private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
     private readonly RestartPrompt? _rudeEditRestartPrompt;
-    private readonly TargetFrameworkSelectionPrompt? _targetFrameworkSelectionPrompt;
+    private readonly WatchSelectionPrompt _selectionPrompt;
 
     private readonly DotNetWatchContext _context;
     private readonly ProjectGraphFactory _designTimeBuildGraphFactory;
 
     internal Task? Test_FileChangesCompletedTask { get; set; }
 
-    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory, TargetFrameworkSelectionPrompt? targetFrameworkSelectionPrompt)
+    public HotReloadDotNetWatcher(
+        DotNetWatchContext context,
+        IConsole console,
+        IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory,
+        WatchSelectionPrompt selectionPrompt)
     {
         _context = context;
         _console = console;
         _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
+        _selectionPrompt = selectionPrompt;
         if (!context.Options.NonInteractive)
         {
             var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
@@ -41,7 +47,6 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             _rudeEditRestartPrompt = new RestartPrompt(context.Logger, consoleInput, noPrompt ? true : null);
-            _targetFrameworkSelectionPrompt = targetFrameworkSelectionPrompt;
         }
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(
@@ -95,7 +100,8 @@ internal sealed class HotReloadDotNetWatcher
                     _context.RootProjects,
                     fileWatcher,
                     _context.MainProjectOptions,
-                    frameworkSelector: _targetFrameworkSelectionPrompt != null ? _targetFrameworkSelectionPrompt.SelectAsync : null,
+                    frameworkSelector: _context.Options.NonInteractive ? null : _selectionPrompt.SelectTargetFrameworkAsync,
+                    deviceSelector: _context.Options.NonInteractive ? null : _selectionPrompt.SelectDeviceAsync,
                     iterationCancellationToken);
 
                 // Try load project graph and perform design-time build even if the build failed.
@@ -142,7 +148,12 @@ internal sealed class HotReloadDotNetWatcher
                 var mainProjectOptions = _context.MainProjectOptions;
                 if (mainProjectOptions != null)
                 {
-                    mainProjectOptions = mainProjectOptions with { TargetFramework = rootProjectsBuildResult.MainProjectTargetFramework };
+                    mainProjectOptions = mainProjectOptions with
+                    {
+                        TargetFramework = rootProjectsBuildResult.MainProjectTargetFramework,
+                        Device = rootProjectsBuildResult.SelectedDevice?.Id ?? mainProjectOptions.Device,
+                        DeviceRuntimeIdentifier = rootProjectsBuildResult.SelectedDevice?.RuntimeIdentifier ?? mainProjectOptions.DeviceRuntimeIdentifier,
+                    };
 
                     if (projectGraph.Graph.GraphRoots.Single()?.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability) == true)
                     {
@@ -272,6 +283,7 @@ internal sealed class HotReloadDotNetWatcher
                                 fileWatcher,
                                 mainProjectOptions,
                                 frameworkSelector: null,
+                                deviceSelector: null,
                                 iterationCancellationToken);
 
                             if (result.Success)
@@ -939,9 +951,10 @@ internal sealed class HotReloadDotNetWatcher
     }
 
     // internal for testing
-    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, LoadedProjectGraph? projectGraph, bool success)
+    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, DeviceInfo? selectedDevice, LoadedProjectGraph? projectGraph, bool success)
     {
         public string? MainProjectTargetFramework { get; } = mainProjectTargetFramework;
+        public DeviceInfo? SelectedDevice { get; } = selectedDevice;
         public LoadedProjectGraph? ProjectGraph { get; } = projectGraph;
         public bool Success { get; } = success;
     }
@@ -952,12 +965,14 @@ internal sealed class HotReloadDotNetWatcher
         FileWatcher fileWatcher,
         ProjectOptions? mainProjectOptions,
         Func<IReadOnlyList<string>, CancellationToken, ValueTask<string>>? frameworkSelector,
+        Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>>? deviceSelector,
         CancellationToken cancellationToken)
     {
         Debug.Assert(projects.Any());
 
         LoadedProjectGraph? projectGraph = null;
         var targetFramework = mainProjectOptions?.TargetFramework;
+        DeviceInfo? selectedDevice = null;
 
         _context.Logger.Log(MessageDescriptor.BuildStartedNotification, projects);
 
@@ -965,20 +980,22 @@ internal sealed class HotReloadDotNetWatcher
         fileWatcher.SuppressEvents = true;
         try
         {
-            var success = await BuildWithFrameworkSelectionAsync();
+            var success = await BuildWithFrameworkAndDeviceSelectionAsync();
             _context.Logger.Log(MessageDescriptor.BuildCompletedNotification, (projects, success));
-            return new BuildProjectsResult(targetFramework, projectGraph, success);
+            return new BuildProjectsResult(targetFramework, selectedDevice, projectGraph, success);
         }
         finally
         {
             fileWatcher.SuppressEvents = false;
         }
 
-        async ValueTask<bool> BuildWithFrameworkSelectionAsync()
+        async ValueTask<bool> BuildWithFrameworkAndDeviceSelectionAsync()
         {
+            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
+            var needsDeviceSelection = mainProjectOptions?.Device == null && deviceSelector != null;
+
             if (mainProjectOptions == null ||
-                frameworkSelector == null ||
-                targetFramework != null ||
+                (!needsFrameworkSelection && !needsDeviceSelection) ||
                 !mainProjectOptions.Representation.IsProjectFile)
             {
                 return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
@@ -997,28 +1014,53 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             var rootProject = projectGraph.Graph.GraphRoots.Single().ProjectInstance;
-            if (rootProject.GetTargetFramework() is var framework and not "")
+
+            // Select target framework if needed:
+            if (targetFramework == null && frameworkSelector != null)
             {
-                targetFramework = framework;
-            }
-            else if (rootProject.GetTargetFrameworks() is var frameworks and not [])
-            {
-                targetFramework = await frameworkSelector(frameworks, cancellationToken);
-            }
-            else
-            {
-                _context.BuildLogger.LogError("Project '{Path}' does not specify a target framework.", rootProject.FullPath);
-                return false;
+                if (rootProject.GetTargetFramework() is var framework and not "")
+                {
+                    targetFramework = framework;
+                }
+                else if (rootProject.GetTargetFrameworks() is var frameworks and not [])
+                {
+                    targetFramework = await frameworkSelector(frameworks, cancellationToken);
+                }
+                else
+                {
+                    _context.BuildLogger.LogError("Project '{Path}' does not specify a target framework.", rootProject.FullPath);
+                    return false;
+                }
             }
 
-            return await BuildAsync(BuildAction.BuildOnly, targetFramework);
+            // Select device if needed:
+            if (mainProjectOptions.Device == null && deviceSelector != null)
+            {
+                selectedDevice = await TrySelectDeviceAsync(rootProject, targetFramework, deviceSelector, cancellationToken);
+                if (selectedDevice != null)
+                {
+                    _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice.Id);
+
+                    // If the device provides a RuntimeIdentifier, re-restore so the assets file
+                    // includes the RID target. This mirrors the dotnet-run behavior.
+                    if (!string.IsNullOrEmpty(selectedDevice.RuntimeIdentifier))
+                    {
+                        if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, selectedDevice))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return await BuildAsync(BuildAction.BuildOnly, targetFramework, selectedDevice);
         }
 
-        async Task<bool> BuildAsync(BuildAction action, string? targetFramework)
+        async Task<bool> BuildAsync(BuildAction action, string? targetFramework, DeviceInfo? device = null)
         {
             if (projects is [var singleProject])
             {
-                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, targetFramework, action, cancellationToken);
+                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, targetFramework, device, action, cancellationToken);
             }
 
             // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
@@ -1027,7 +1069,7 @@ internal sealed class HotReloadDotNetWatcher
 
             if (projectPaths is [var singleProjectPath])
             {
-                if (!await BuildFileOrProjectOrSolutionAsync(singleProjectPath, targetFramework, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(singleProjectPath, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
@@ -1047,7 +1089,7 @@ internal sealed class HotReloadDotNetWatcher
 
                 try
                 {
-                    if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, targetFramework, action, cancellationToken))
+                    if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, targetFramework, device, action, cancellationToken))
                     {
                         return false;
                     }
@@ -1068,7 +1110,7 @@ internal sealed class HotReloadDotNetWatcher
             // To maximize parallelism of building dependencies, build file-based projects after all physical projects:
             foreach (var file in projects.Where(p => p.EntryPointFilePath != null).Select(p => p.EntryPointFilePath!))
             {
-                if (!await BuildFileOrProjectOrSolutionAsync(file, targetFramework, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(file, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
@@ -1078,7 +1120,73 @@ internal sealed class HotReloadDotNetWatcher
         }
     }
 
-    private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, string? targetFramework, BuildAction action, CancellationToken cancellationToken)
+    private const string ComputeAvailableDevicesTarget = "ComputeAvailableDevices";
+
+    /// <summary>
+    /// Attempts to compute available devices and select one.
+    /// Auto-selects a single device. For multiple devices, uses the device selector (interactive)
+    /// or logs an error listing available devices (non-interactive).
+    /// </summary>
+    private async Task<DeviceInfo?> TrySelectDeviceAsync(
+        ProjectInstance rootProject,
+        string? targetFramework,
+        Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>> deviceSelector,
+        CancellationToken cancellationToken)
+    {
+        // Check if the ComputeAvailableDevices target exists in the project.
+        if (!rootProject.Targets.ContainsKey(ComputeAvailableDevicesTarget))
+        {
+            return null;
+        }
+
+        // Create a new ProjectInstance with the selected TFM so device computation is correct.
+        var globalProps = new Dictionary<string, string>(rootProject.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+        if (targetFramework != null)
+        {
+            globalProps["TargetFramework"] = targetFramework;
+        }
+
+        var projectInstance = new ProjectInstance(rootProject.FullPath, globalProps, rootProject.ToolsVersion);
+
+        var buildResult = projectInstance.Build(
+            targets: [ComputeAvailableDevicesTarget],
+            loggers: null,
+            remoteLoggers: null,
+            out var targetOutputs);
+
+        if (!buildResult || !targetOutputs.TryGetValue(ComputeAvailableDevicesTarget, out var targetResult))
+        {
+            _context.Logger.LogDebug("ComputeAvailableDevices target failed or returned no output.");
+            return null;
+        }
+
+        var devices = new List<DeviceInfo>(targetResult.Items.Length);
+        foreach (var item in targetResult.Items)
+        {
+            devices.Add(new DeviceInfo(
+                item.ItemSpec,
+                item.GetMetadata("Description"),
+                item.GetMetadata("Type"),
+                item.GetMetadata("Status"),
+                item.GetMetadata("RuntimeIdentifier")));
+        }
+
+        if (devices.Count == 0)
+        {
+            _context.Logger.Log(MessageDescriptor.NoDevicesAvailable);
+            return null;
+        }
+
+        // Auto-select if only one device is available.
+        if (devices.Count == 1)
+        {
+            return devices[0];
+        }
+
+        return await deviceSelector(devices, cancellationToken);
+    }
+
+    private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, string? targetFramework, DeviceInfo? device, BuildAction action, CancellationToken cancellationToken)
     {
         var arguments = new List<string>
         {
@@ -1092,6 +1200,16 @@ internal sealed class HotReloadDotNetWatcher
         {
             arguments.Add("--framework");
             arguments.Add(targetFramework);
+        }
+
+        if (device != null)
+        {
+            arguments.Add($"-p:Device={device.Id}");
+
+            if (!string.IsNullOrEmpty(device.RuntimeIdentifier))
+            {
+                arguments.Add($"-p:RuntimeIdentifier={device.RuntimeIdentifier}");
+            }
         }
 
         if (action == BuildAction.BuildOnly)
