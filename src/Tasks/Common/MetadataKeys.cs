@@ -131,6 +131,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string PerfmapFormatVersion = "PerfmapFormatVersion";
         public const string RequiresNativeLink = "RequiresNativeLink";
         public const string NativeLinkerInputPath = "NativeLinkerInputPath";
+        public const string PartialCompile = "PartialCompile";
 
         // Debug symbols
         public const string RelatedProperty = "related";

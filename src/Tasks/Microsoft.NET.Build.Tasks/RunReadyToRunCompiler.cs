@@ -35,6 +35,7 @@ namespace Microsoft.NET.Build.Tasks
         private string _outputPDBImage;
         private string _createPDBCommand;
         private bool _createCompositeImage;
+        private bool _partialCompile;
 
         private bool IsPdbCompilation => !string.IsNullOrEmpty(_createPDBCommand);
         private bool ActuallyUseCrossgen2 => UseCrossgen2 && !IsPdbCompilation;
@@ -83,6 +84,8 @@ namespace Microsoft.NET.Build.Tasks
             _createPDBCommand = CompilationEntry.GetMetadata(MetadataKeys.CreatePDBCommand);
             string createCompositeImageMetadata = CompilationEntry.GetMetadata(MetadataKeys.CreateCompositeImage);
             _createCompositeImage = !string.IsNullOrEmpty(createCompositeImageMetadata) && bool.Parse(createCompositeImageMetadata);
+            string partialCompilationMetadata = CompilationEntry.GetMetadata(MetadataKeys.PartialCompile);
+            _partialCompile = !string.IsNullOrEmpty(partialCompilationMetadata) && bool.Parse(partialCompilationMetadata);
 
             if (IsPdbCompilation && CrossgenTool == null)
             {
@@ -346,14 +349,26 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(Crossgen2ContainerFormat))
             {
                 result.AppendLine($"--obj-format:{Crossgen2ContainerFormat}");
+
+                if (Crossgen2ContainerFormat != "pe" && !_createCompositeImage)
+                {
+                    // Force composite mode for non-PE formats,
+                    // as we only support PE as the envelope for metadata.
+                    result.AppendLine("--composite");
+                }
             }
 
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
-                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split([';'], StringSplitOptions.RemoveEmptyEntries))
                 {
                     result.AppendLine(extraArg);
                 }
+            }
+
+            if (_partialCompile)
+            {
+                result.AppendLine("--partial");
             }
 
             if (_createCompositeImage)
