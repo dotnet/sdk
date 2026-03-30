@@ -12,17 +12,26 @@ internal static class TestOptions
     public static int GetTestPort()
         => Interlocked.Increment(ref s_testPort);
 
-    public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
+    public static readonly ProjectOptions ProjectOptions = GetProjectOptions(GetCommandLineOptions([]));
 
-    public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-        => new(workingDirectory, muxerPath, TimeSpan.Zero, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
+    public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", TestAsset? asset = null)
+        => new(
+            WorkingDirectory: workingDirectory,
+            SdkDirectory: SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+            LogMessagePrefix: "dotnet watch",
+            ProcessCleanupTimeout: null,
+            IsPollingEnabled: true,
+            TestFlags: TestFlags.RunningAsTest,
+            TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();
 
-    public static ProjectOptions GetProjectOptions(string[]? args = null)
-    {
-        var options = GetCommandLineOptions(args ?? []);
-        return options.GetProjectOptions(options.ProjectPath ?? "test.csproj", workingDirectory: "");
-    }
+    public static ProjectOptions GetProjectOptions(string[] args)
+        => GetProjectOptions(GetCommandLineOptions(args));
+
+    public static ProjectOptions GetProjectOptions(CommandLineOptions options)
+        => options.GetMainProjectOptions(
+            new ProjectRepresentation(options.ProjectPath == null && options.FilePath == null ? "test.csproj" : options.ProjectPath, options.FilePath),
+            workingDirectory: "");
 }
