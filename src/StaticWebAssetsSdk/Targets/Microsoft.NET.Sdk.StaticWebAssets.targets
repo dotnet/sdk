@@ -498,6 +498,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BuildStaticWebAssetsCopyAlways Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'Always'" />
       <_BuildStaticWebAssetsPreserveNewest Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'PreserveNewest'" />
+      <_BuildStaticWebAssetsIfDifferent Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'IfDifferent'" />
     </ItemGroup>
 
   </Target>
@@ -537,8 +538,29 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
   </Target>
+  
+  <Target Name="_BuildCopyStaticWebAssetsIfDifferent"
+    AfterTargets="_SplitStaticWebAssetsByCopyOptions">
 
-  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways">
+    <!--
+        Using SkipUnchangedFiles="true" because we want only differing files.
+    -->
+    <Copy SourceFiles="@(_BuildStaticWebAssetsIfDifferent)"
+      DestinationFiles="@(_BuildStaticWebAssetsIfDifferent->'%(TargetPath)')"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways;_BuildCopyStaticWebAssetsIfDifferent">
 
     <ItemGroup>
       <_UpToDateCheckStaticWebAssetCandidate Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />

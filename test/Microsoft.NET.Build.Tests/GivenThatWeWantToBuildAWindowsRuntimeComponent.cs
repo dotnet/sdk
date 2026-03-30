@@ -95,15 +95,12 @@ namespace Microsoft.NET.Build.Tests
             var managedWinRTComponent = new TestProject()
             {
                 Name = "ManagedWinRTComponent",
-                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.26100.0",
             };
 
-            managedWinRTComponent.AdditionalProperties.Add("CsWinRTWindowsMetadata", "10.0.19041.0");
+            managedWinRTComponent.AdditionalProperties.Add("CsWinRTWindowsMetadata", "10.0.26100.0");
             managedWinRTComponent.AdditionalProperties.Add("CsWinRTComponent", "true");
             managedWinRTComponent.AdditionalProperties.Add("PlatformTarget", "x64");
-
-            // Temporary until new projections flow to tests
-            managedWinRTComponent.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.39";
 
             //  TODO: Update to latest (currently 2.1.1) once it shows up on dotnet-public feed
             managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "2.1.1"));

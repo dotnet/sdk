@@ -5,14 +5,13 @@ using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
-using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
-internal class WorkloadCleanCommand : WorkloadCommandBase
+internal sealed class WorkloadCleanCommand : WorkloadCommandBase<WorkloadCleanCommandDefinition>
 {
     private readonly bool _cleanAll;
 
@@ -21,19 +20,18 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
     private readonly ReleaseVersion _sdkVersion;
     private readonly IInstaller _workloadInstaller;
-    private readonly IWorkloadResolver _workloadResolver;
-    protected readonly IWorkloadResolverFactory _workloadResolverFactory;
+    private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
     public WorkloadCleanCommand(
         ParseResult parseResult,
         IReporter? reporter = null,
         IWorkloadResolverFactory? workloadResolverFactory = null) : base(parseResult, reporter: reporter)
     {
-        _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
+        _cleanAll = parseResult.GetValue(Definition.CleanAllOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(Definition.SdkVersionOption)))
         {
             throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
@@ -42,7 +40,6 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
         _dotnetPath = creationResult.DotnetPath;
         _userProfileDir = creationResult.UserProfileDir;
-        _workloadResolver = creationResult.WorkloadResolver;
         _sdkVersion = creationResult.SdkVersion;
 
         var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
