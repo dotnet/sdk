@@ -5,8 +5,8 @@
 trigger: none
 # Trigger periodically instead.
 schedules:
-- cron: 0 * * * *
-  displayName: Run every hour
+- cron: 0 0 * * *
+  displayName: Run once a day
   branches:
     include:
     - main
