@@ -52,14 +52,16 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [Theory]
-    [InlineData(1)] // PathPreference.DotnetupDotnet
-    [InlineData(2)] // PathPreference.ShellProfile
-    [InlineData(3)] // PathPreference.FullPathReplacement
-    public void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(int preferenceValue)
+    [InlineData(PathPreference.DotnetupDotnet)]
+    [InlineData(PathPreference.ShellProfile)]
+    [InlineData(PathPreference.FullPathReplacement)]
+    internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
     {
-        var preference = (PathPreference)preferenceValue;
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
-        DotnetupConfig.ReadPathPreference().Should().Be(preference);
+
+        var result = DotnetupConfig.ReadPathPreference();
+
+        result.Should().Be(preference);
     }
 
     [Fact]
