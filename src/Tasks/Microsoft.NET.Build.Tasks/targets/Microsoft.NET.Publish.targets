@@ -834,19 +834,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryAlways)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectoryAlways.TargetPath)</RelativePath>
         <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
 
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectory)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectory.TargetPath)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
 
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryIfDifferent)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectoryIfDifferent.TargetPath)</RelativePath>
         <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
-        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryIfDifferent.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryIfDifferent.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectoryIfDifferent.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
     </ItemGroup>
 
@@ -1224,6 +1224,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Exclude unknown file types (not assemblies, not deps.json, not runtimeconfig.json, not native, not symbols)
            unless IncludeAllContentForSelfExtract=true.
+           We also ensure that we always keep the 'key output' files (the main assembly and its primary dependencies), even if they have an unknown extension, because excluding them would break the app.
            We identify "unknown" files as those that don't match the known patterns. -->
       <_BundleExcludedFiles Include="@(_FilesToBundle)"
                             Condition="'$(IncludeAllContentForSelfExtract)' != 'true' and
@@ -1232,10 +1233,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        '%(_FilesToBundle.Extension)' != '.pdb' and
                                        '%(_FilesToBundle.AssetType)' != 'native' and
                                        '%(_FilesToBundle.AssetType)' != 'runtime' and
+                                       '%(_FilesToBundle.IsKeyOutput)' != 'true' and
                                        !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.deps.json')) and
                                        !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.json'))" />
 
-      <!-- Add excluded files back to ResolvedFileToPublish so they get copied to the publish directory -->
+                                       <!-- Add excluded files back to ResolvedFileToPublish so they get copied to the publish directory -->
       <ResolvedFileToPublish Include="@(_BundleExcludedFiles)"/>
     </ItemGroup>
   </Target>
