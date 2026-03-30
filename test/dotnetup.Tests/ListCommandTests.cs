@@ -31,12 +31,23 @@ public class ListCommandTests
     [Fact]
     public void InstallationLister_GetInstallations_ShouldReturnList()
     {
-        // Act
-        var listData = InstallationLister.GetListData(verify: false);
+        // Use an isolated temp manifest to avoid reading a stale/legacy manifest on CI
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
+        {
+            string manifestPath = Path.Combine(tempDir.FullName, "dotnetup", "manifest.json");
 
-        // Assert
-        listData.Installations.Should().NotBeNull();
-        listData.Installations.Should().BeOfType<List<InstallationInfo>>();
+            // Act
+            var listData = InstallationLister.GetListData(verify: false, manifestPath: manifestPath);
+
+            // Assert
+            listData.Installations.Should().NotBeNull();
+            listData.Installations.Should().BeOfType<List<InstallationInfo>>();
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
     }
 
     [Fact]
