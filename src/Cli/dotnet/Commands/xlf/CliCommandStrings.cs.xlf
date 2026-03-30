@@ -1339,7 +1339,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">K dispozici je novější verze nástroje {0} (verze{1}). Zvažte aktualizaci souboru manifestu.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

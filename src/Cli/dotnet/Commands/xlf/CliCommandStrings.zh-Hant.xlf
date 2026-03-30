@@ -1339,7 +1339,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">有較新版本的工具 '{0}' 可用 (版本 '{1}')。請考慮更新您的資訊清單檔。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
