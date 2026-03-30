@@ -98,7 +98,7 @@ public abstract partial class DotNetWatchTestBase : IAsyncLifetime
         });
 
         var context = program.CreateContext(processRunner);
-        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory, selectionPrompt: new NoOpWatchSelectionPrompt());
+        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory, selectionPrompt: null);
         var shutdownSource = new CancellationTokenSource();
 
         return new InProcTestWatcher(Logger, watcher, context, eventObserver, reporter, console, serviceHolder, shutdownSource);

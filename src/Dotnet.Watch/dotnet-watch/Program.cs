@@ -265,7 +265,7 @@ internal sealed class Program(
 
             if (IsHotReloadEnabled())
             {
-                using var selectionPrompt = new SpectreWatchSelectionPrompt(console);
+                using var selectionPrompt = context.Options.NonInteractive ? null : new SpectreWatchSelectionPrompt(console);
                 var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, selectionPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }

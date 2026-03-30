@@ -19,7 +19,7 @@ internal sealed class HotReloadDotNetWatcher
     private readonly IConsole _console;
     private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
     private readonly RestartPrompt? _rudeEditRestartPrompt;
-    private readonly WatchSelectionPrompt _selectionPrompt;
+    private readonly WatchSelectionPrompt? _selectionPrompt;
 
     private readonly DotNetWatchContext _context;
     private readonly ProjectGraphFactory _designTimeBuildGraphFactory;
@@ -30,7 +30,7 @@ internal sealed class HotReloadDotNetWatcher
         DotNetWatchContext context,
         IConsole console,
         IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory,
-        WatchSelectionPrompt selectionPrompt)
+        WatchSelectionPrompt? selectionPrompt)
     {
         _context = context;
         _console = console;
@@ -100,8 +100,8 @@ internal sealed class HotReloadDotNetWatcher
                     _context.RootProjects,
                     fileWatcher,
                     _context.MainProjectOptions,
-                    frameworkSelector: _context.Options.NonInteractive ? null : _selectionPrompt.SelectTargetFrameworkAsync,
-                    deviceSelector: _context.Options.NonInteractive ? null : _selectionPrompt.SelectDeviceAsync,
+                    frameworkSelector: _selectionPrompt != null ? _selectionPrompt.SelectTargetFrameworkAsync : null,
+                    deviceSelector: _selectionPrompt != null ? _selectionPrompt.SelectDeviceAsync : null,
                     iterationCancellationToken);
 
                 // Try load project graph and perform design-time build even if the build failed.
@@ -1034,21 +1034,24 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             // Select device if needed:
-            if (mainProjectOptions.Device == null && deviceSelector != null)
+            if (mainProjectOptions.Device == null && deviceSelector != null
+                && rootProject.Targets.ContainsKey(ComputeAvailableDevicesTarget))
             {
                 selectedDevice = await TrySelectDeviceAsync(rootProject, targetFramework, deviceSelector, cancellationToken);
-                if (selectedDevice != null)
+                if (selectedDevice == null)
                 {
-                    _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice.Id);
+                    return false;
+                }
 
-                    // If the device provides a RuntimeIdentifier, re-restore so the assets file
-                    // includes the RID target. This mirrors the dotnet-run behavior.
-                    if (!string.IsNullOrEmpty(selectedDevice.RuntimeIdentifier))
+                _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice.Id);
+
+                // If the device provides a RuntimeIdentifier, re-restore so the assets file
+                // includes the RID target. This mirrors the dotnet-run behavior.
+                if (!string.IsNullOrEmpty(selectedDevice.RuntimeIdentifier))
+                {
+                    if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, selectedDevice))
                     {
-                        if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, selectedDevice))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
@@ -1123,9 +1126,9 @@ internal sealed class HotReloadDotNetWatcher
     private const string ComputeAvailableDevicesTarget = "ComputeAvailableDevices";
 
     /// <summary>
-    /// Attempts to compute available devices and select one.
-    /// Auto-selects a single device. For multiple devices, uses the device selector (interactive)
-    /// or logs an error listing available devices (non-interactive).
+    /// Computes available devices and selects one.
+    /// Auto-selects a single device when only one is available; otherwise uses the provided device selector.
+    /// Returns null if no devices are available (error).
     /// </summary>
     private async Task<DeviceInfo?> TrySelectDeviceAsync(
         ProjectInstance rootProject,
@@ -1133,12 +1136,6 @@ internal sealed class HotReloadDotNetWatcher
         Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>> deviceSelector,
         CancellationToken cancellationToken)
     {
-        // Check if the ComputeAvailableDevices target exists in the project.
-        if (!rootProject.Targets.ContainsKey(ComputeAvailableDevicesTarget))
-        {
-            return null;
-        }
-
         // Create a new ProjectInstance with the selected TFM so device computation is correct.
         var globalProps = new Dictionary<string, string>(rootProject.GlobalProperties, StringComparer.OrdinalIgnoreCase);
         if (targetFramework != null)
