@@ -87,8 +87,6 @@ Test projects live in `test/` with naming conventions `<ProjectName>.Tests` (uni
 
 ## Key Conventions
 
-- Some tests use the Verify library for snapshot-based assertion (e.g., CLI completion tests in `test/dotnet.Tests/CompletionTests/`).
 - The repo builds with a specific preview SDK version pinned in `global.json`, which `build.sh`/`build.cmd` install automatically. Don't update this manually.
 - CI runs on Azure DevOps with distributed testing via Helix. Test orchestration is in `test/UnitTests.proj`.
-- Centralized package versioning via `Directory.Packages.props`.
 
