@@ -173,6 +173,42 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.MSBuildSmallerThanMinimumVersion, "99.99.99", "2.0", "1.0"));
         }
 
+        [Fact]
+        public void ItIncludesRollforwardInfoWhenTheSDKRequiresAHigherVersionOfMSBuildDueToGlobalJsonRollforward()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+            // Create a lower-version SDK as the base version for global.json
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "5.0.100");
+            // Create a higher-version SDK that requires a higher MSBuild (which gets picked by rollforward)
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200", new Version(2, 0));
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            // global.json specifies "5.0.100" but with latestMajor rollforward, which will pick "10.0.200"
+            environment.CreateGlobalJson(environment.TestDirectory, "5.0.100", rollForward: "latestMajor");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(1, 0),
+                    ProjectFileDirectory = environment.TestDirectory
+                },
+                new MockFactory());
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.AdditionalPaths.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            // The error should contain rollforward info with global.json path and requested version
+            result.Errors.Should().NotBeNullOrEmpty();
+            result.Errors!.Should().ContainSingle(e =>
+                e.Contains("10.0.200") &&
+                e.Contains("5.0.100") &&
+                e.Contains("rollforward") &&
+                e.Contains("global.json"));
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -385,6 +421,39 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Version.Should().BeNull();
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio, "1.0.1", "2.0.0"));
+        }
+
+        [Fact]
+        public void ItIncludesRollforwardInfoWhenSDKIsSmallerThanMinimumVSVersionDueToGlobalJsonRollforward()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+            // Create a lower-version SDK (base for global.json) and a higher-version SDK (picked by rollforward)
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "5.0.100");
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "9.0.200");
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            // VS requires SDK >= 10.0.100, but rollforward only finds 9.0.200
+            environment.CreateMinimumVSDefinedSDKVersionFile("10.0.100");
+            // global.json specifies "5.0.100" but with latestMajor rollforward, which will pick "9.0.200"
+            environment.CreateGlobalJson(environment.TestDirectory, "5.0.100", rollForward: "latestMajor");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext { ProjectFileDirectory = environment.TestDirectory },
+                new MockFactory());
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.AdditionalPaths.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            // The error should contain rollforward info with global.json path and requested version
+            result.Errors.Should().NotBeNullOrEmpty();
+            result.Errors!.Should().ContainSingle(e =>
+                e.Contains("9.0.200") &&
+                e.Contains("5.0.100") &&
+                e.Contains("rollforward") &&
+                e.Contains("global.json"));
         }
 
         [Fact]
@@ -801,12 +870,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     minimumMSBuildVersion.ToString());
             }
 
-            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null)
+            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null, string? rollForward = null)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine("{");
                 builder.AppendLine("\t\"sdk\": {");
                 builder.Append($"\t\"version\":  \"{version}\"");
+                if (rollForward is not null)
+                {
+                    builder.AppendLine(",");
+                    builder.Append($"\t\"rollForward\": \"{rollForward}\"");
+                }
                 if (paths is not null)
                 {
                     builder.Append(',');
