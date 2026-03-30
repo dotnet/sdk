@@ -46,7 +46,14 @@ internal sealed class TaskTestEnvironment : IDisposable
         TaskEnvironment = TaskEnvironmentHelper.CreateForTest(ProjectDirectory);
 
         // Switch CWD to the spawn directory so relative paths don't accidentally work.
-        _savedCwd = Directory.GetCurrentDirectory();
+        try
+        {
+            _savedCwd = Directory.GetCurrentDirectory();
+        }
+        catch
+        {
+            _savedCwd = Path.GetTempPath();
+        }
         Directory.SetCurrentDirectory(SpawnDirectory);
     }
 
@@ -95,7 +102,16 @@ internal sealed class TaskTestEnvironment : IDisposable
 
     public void Dispose()
     {
-        Directory.SetCurrentDirectory(_savedCwd);
+        // Restore CWD to a stable path. We can't rely on _savedCwd because
+        // a parallel test may have changed CWD to a temp dir that's since been deleted.
+        try
+        {
+            Directory.SetCurrentDirectory(_savedCwd);
+        }
+        catch (Exception) when (!Directory.Exists(_savedCwd))
+        {
+            Directory.SetCurrentDirectory(Path.GetTempPath());
+        }
 
         try
         {

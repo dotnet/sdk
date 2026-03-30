@@ -21,7 +21,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var otherDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"deps-decoy-{Guid.NewGuid():N}"));
             Directory.CreateDirectory(projectDir);
             Directory.CreateDirectory(otherDir);
-            var savedCwd = Directory.GetCurrentDirectory();
             try
             {
                 SetupOutputDir(projectDir);
@@ -74,7 +73,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var decoyDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"deps-rel-decoy-{Guid.NewGuid():N}"));
             Directory.CreateDirectory(projectDir);
             Directory.CreateDirectory(decoyDir);
-            var savedCwd = Directory.GetCurrentDirectory();
             try
             {
                 SetupOutputDir(projectDir);
@@ -122,7 +120,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var decoyDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"deps-assets-decoy-{Guid.NewGuid():N}"));
             Directory.CreateDirectory(projectDir);
             Directory.CreateDirectory(decoyDir);
-            var savedCwd = Directory.GetCurrentDirectory();
             try
             {
                 SetupOutputDir(projectDir);
@@ -156,7 +153,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var decoyDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"deps-conc-decoy-{Guid.NewGuid():N}"));
             Directory.CreateDirectory(decoyDir);
-            var savedCwd = Directory.GetCurrentDirectory();
             try
             {
                 Directory.SetCurrentDirectory(decoyDir);
