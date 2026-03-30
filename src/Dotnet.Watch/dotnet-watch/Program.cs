@@ -346,6 +346,7 @@ internal sealed class Program(
             options.BuildArguments,
             processRunner,
             buildLogger,
+            options.GlobalOptions,
             environmentOptions);
 
         if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)

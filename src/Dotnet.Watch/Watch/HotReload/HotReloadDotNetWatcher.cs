@@ -55,7 +55,9 @@ internal sealed class HotReloadDotNetWatcher
             buildProperties: EvaluationResult.GetGlobalBuildProperties(
                 context.BuildArguments,
                 context.EnvironmentOptions),
-            context.BuildLogger);
+            context.BuildLogger,
+            context.Options,
+            context.EnvironmentOptions);
     }
 
     public async Task WatchAsync(CancellationToken shutdownCancellationToken)

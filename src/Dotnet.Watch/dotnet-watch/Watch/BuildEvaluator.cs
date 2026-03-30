@@ -51,6 +51,7 @@ internal class BuildEvaluator
             _context.BuildArguments,
             _context.ProcessRunner,
             _context.BuildLogger,
+            _context.Options,
             _context.EnvironmentOptions);
     }
 
