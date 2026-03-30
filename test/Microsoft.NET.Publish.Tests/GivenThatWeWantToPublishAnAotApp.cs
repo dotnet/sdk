@@ -1033,13 +1033,13 @@ namespace Microsoft.NET.Publish.Tests
             if (target == null)
             {
                 target = new XElement(ns + "Target",
-                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("AfterTargets", "ComputeResolvedFilesToPublishList"),
                     new XAttribute("Name", targetName));
                 project.Root.Add(target);
             }
 
             target.Add(new XElement(ns + "ItemGroup",
-                new XElement("ManagedAssemblyToLink",
+                new XElement("ResolvedFileToPublish",
                     new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
                     new XAttribute(key, value))));
         }
