@@ -95,7 +95,9 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            _absoluteRuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+            _absoluteRuntimeGraphPath = !string.IsNullOrEmpty(RuntimeGraphPath)
+                ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath)
+                : RuntimeGraphPath;
             _absoluteTargetingPackRoot = !string.IsNullOrEmpty(TargetingPackRoot)
                 ? (string)TaskEnvironment.GetAbsolutePath(TargetingPackRoot)
                 : TargetingPackRoot;

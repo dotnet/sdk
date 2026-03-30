@@ -256,9 +256,11 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var task = new ResolveAppHosts
         {
             BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
             TargetFrameworkIdentifier = ".NETCoreApp",
             TargetFrameworkVersion = "8.0",
             TargetingPackRoot = "packs",
+            RuntimeGraphPath = "",
             AppHostRuntimeIdentifier = "win-x64",
             PackAsToolShimRuntimeIdentifiers = Array.Empty<ITaskItem>(),
             KnownAppHostPacks = Array.Empty<ITaskItem>()

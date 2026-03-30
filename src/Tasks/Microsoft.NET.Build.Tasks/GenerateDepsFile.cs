@@ -324,8 +324,8 @@ namespace Microsoft.NET.Build.Tasks
         {
             string absoluteDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
             string absoluteProjectPath = TaskEnvironment.GetAbsolutePath(ProjectPath);
-            string absoluteAssetsFilePath = AssetsFilePath != null ? (string)TaskEnvironment.GetAbsolutePath(AssetsFilePath) : null;
-            string absoluteRuntimeGraphPath = RuntimeGraphPath != null ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath) : null;
+            string absoluteAssetsFilePath = !string.IsNullOrEmpty(AssetsFilePath) ? (string)TaskEnvironment.GetAbsolutePath(AssetsFilePath) : null;
+            string absoluteRuntimeGraphPath = !string.IsNullOrEmpty(RuntimeGraphPath) ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath) : null;
             WriteDepsFile(absoluteDepsFilePath, absoluteProjectPath, absoluteAssetsFilePath, absoluteRuntimeGraphPath);
         }
     }
