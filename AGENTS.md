@@ -59,16 +59,31 @@ Test projects live in `test/` with naming conventions `<ProjectName>.Tests` (uni
 
 ## Project Layout
 
-- **`src/Cli/`** — The `dotnet` CLI entry point and command implementations
-- **`src/Tasks/`** — MSBuild tasks (`Microsoft.NET.Build.Tasks`, etc.)
-- **`src/StaticWebAssetsSdk/`** — Static web assets build pipeline
-- **`src/WebSdk/`**, **`src/RazorSdk/`**, **`src/BlazorWasmSdk/`** — Web project SDKs
-- **`src/Containers/`** — Container publishing support
-- **`src/Dotnet.Watch/`** — `dotnet watch` tool
-- **`src/Resolvers/`** — SDK resolver infrastructure
-- **`test/`** — All test projects, test assets (`test/TestAssets/TestProjects/`)
-- **`eng/`** — Build infrastructure (Arcade, pipelines, dogfood scripts)
-- **`documentation/`** — Developer guide, CLI UX guidelines, snapshot testing docs
+| Feature | Location |
+|---|---|
+| `dotnet` CLI (entry point & commands) | `src/Cli/` |
+| MSBuild tasks & targets | `src/Tasks/` |
+| `dotnet watch` tool | `src/Dotnet.Watch/` |
+| `dotnet format` tool | `src/Dotnet.Format/` |
+| SDK container builds | `src/Containers/` |
+| Static web assets pipeline | `src/StaticWebAssetsSdk/` |
+| Blazor WebAssembly SDK | `src/BlazorWasmSdk/` |
+| Razor SDK | `src/RazorSdk/` |
+| Web publish SDK | `src/WebSdk/` |
+| WebAssembly SDK (non-Blazor) | `src/WasmSdk/` |
+| API compatibility tools (ApiCompat, GenAPI, PackageValidation) | `src/Compatibility/` |
+| .NET code analyzers | `src/Microsoft.CodeAnalysis.NetAnalyzers/` |
+| Workload management | `src/Workloads/` |
+| SDK resolvers | `src/Resolvers/` |
+| Template locator | `src/Microsoft.DotNet.TemplateLocator/` |
+| CLI tab completions | `src/System.CommandLine.StaticCompletions/` |
+| Compilers toolset | `src/Microsoft.Net.Sdk.Compilers.Toolset/` |
+| MSI installer support | `src/Microsoft.Win32.Msi/` |
+| SDK layout & redistribution | `src/Layout/` |
+| Tests & test assets | `test/` |
+| Template content | `template_feed/` |
+| Build infrastructure (Arcade, pipelines, dogfood) | `eng/` |
+| Developer documentation | `documentation/` |
 
 ## Key Conventions
 
