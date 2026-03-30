@@ -1339,7 +1339,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">도구 '{0}'의 최신 버전을 사용할 수 있습니다(버전 '{1}'). 매니페스트 파일을 업데이트해 보세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
