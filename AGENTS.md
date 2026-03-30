@@ -39,18 +39,19 @@ This puts the built SDK on your PATH so `dotnet build`, `dotnet test`, etc. use 
 
 ### Running Tests
 
-```bash
-# All tests via build script
-./build.sh --test
+Do **not** run the full test suite locally — it takes hours and is handled by CI (Azure DevOps + Helix). Instead, run only the tests relevant to your changes.
 
-# Single test project (after full build + dogfood)
+After building, run individual test projects:
+
+```bash
+# Run all tests in a specific test project
 cd test/<ProjectName>.Tests
 dotnet test
 
-# Single test by name
+# Run a single test by name
 dotnet test --filter "FullyQualifiedName~TestMethodName"
 
-# Single test by class
+# Run a single test by class
 dotnet test --filter "ClassName=Microsoft.DotNet.Cli.SomeTests"
 ```
 
