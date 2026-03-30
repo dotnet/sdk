@@ -138,7 +138,7 @@ extends:
           displayName: Install latest daily .NET version
 
         - bash: >
-            $(Build.SourcesDirectory)/.dotnet/dotnet run --no-build
+            $(Build.SourcesDirectory)/.dotnet/dotnet run --framework net11.0 --no-build
             --project $(Build.SourcesDirectory)/tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
             -- --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
           displayName: Run Cache Updater
