@@ -92,6 +92,11 @@
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
+    <!-- TemplateEngine non-shipping packages -->
+    <ItemsToSign Remove="$(ArtifactsNonShippingPackagesDir)**\Microsoft.TemplateEngine.Mocks.*.nupkg" />
+    <ItemsToSign Remove="$(ArtifactsNonShippingPackagesDir)**\Microsoft.TemplateEngine.TestHelper.*.nupkg" />
+    <ItemsToSign Remove="$(ArtifactsNonShippingPackagesDir)**\Microsoft.TemplateEngine.TestTemplates.*.nupkg" />
+    <ItemsToSign Remove="$(ArtifactsNonShippingPackagesDir)**\Microsoft.TemplateSearch.TemplateDiscovery.*.nupkg" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">

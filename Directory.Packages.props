@@ -118,7 +118,7 @@
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="$(SystemCommandLineNamingConventionBinderVersion)" />
@@ -146,8 +146,20 @@
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
+    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.assert" Version="$(XUnitVersion)" Condition="'$(IsTestProject)' != 'true'" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
+    <PackageVersion Include="xunit.v3.assert" Version="$(XUnitV3Version)" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />
+    <!-- TemplateEngine test dependencies -->
+    <PackageVersion Include="FakeItEasy" Version="8.1.0" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.2" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />
+    <PackageVersion Include="NuGet.Credentials" Version="$(NuGetBuildTasksPackageVersion)" />
+    <PackageVersion Include="Verify.DiffPlex" Version="3.0.0" />
+    <PackageVersion Include="Verify.XUnit" Version="25.0.2" />
+    <PackageVersion Include="Verify.XunitV3" Version="28.12.0" />
   </ItemGroup>
 
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
