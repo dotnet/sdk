@@ -40,12 +40,13 @@ namespace Microsoft.NET.Publish.Tests
             var TelemetryTestLogger = new[]
                 {
                     "--property:SelfContained=true",
-                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
+                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}",
+                    this.BinLogArgument(["targetFramework", targetFramework])
                 };
 
             var testProject = CreateTestProject(targetFramework, "TrimmedR2RSingleFileProject", true, true, true);
             var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testProjectInstance);
+            var publishCommand = new PublishCommand(testProjectInstance).WithWorkingDirectory(testProjectInstance.TestRoot);
             string s = publishCommand.Execute(TelemetryTestLogger).StdOut;//.Should()
             s.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"True\",\"PublishSingleFile\":\"True\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
