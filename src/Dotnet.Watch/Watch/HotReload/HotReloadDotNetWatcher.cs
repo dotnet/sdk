@@ -253,6 +253,11 @@ internal sealed class HotReloadDotNetWatcher
                         autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                         iterationCancellationToken);
 
+                    if (updates.ProjectsToRestart is not [])
+                    {
+                        await compilationHandler.TerminatePeripheralProcessesAsync(updates.ProjectsToRestart, iterationCancellationToken);
+                    }
+
                     // Terminate root process if it had rude edits or is non-reloadable.
                     if (updates.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
                     {

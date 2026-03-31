@@ -78,7 +78,8 @@ internal sealed class CompilationHandler : IDisposable
     public async ValueTask TerminatePeripheralProcessesAndDispose(CancellationToken cancellationToken)
     {
         Logger.LogDebug("Terminating remaining child processes.");
-        await TerminatePeripheralProcessesAsync(projectPaths: null, cancellationToken);
+
+        await TerminatePeripheralProcessesAsync([.. _runningProjects.SelectMany(entry => entry.Value)], cancellationToken);
         Dispose();
     }
 
@@ -359,7 +360,7 @@ internal sealed class CompilationHandler : IDisposable
 
         var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectInfos, cancellationToken);
 
-        await DisplayResultsAsync(updates, currentSolution, runningProjectInfos, cancellationToken);
+        await DisplayResultsAsync(updates, currentSolution, runningProjects, runningProjectInfos, cancellationToken);
 
         if (updates.Status is HotReloadService.Status.NoChangesToApply or HotReloadService.Status.Blocked)
         {
@@ -392,15 +393,16 @@ internal sealed class CompilationHandler : IDisposable
         DiscardPreviousUpdates(updates.ProjectsToRebuild);
 
         builder.ManagedCodeUpdates.AddRange(updates.ProjectUpdates);
-        builder.ProjectsToRebuild.AddRange(updates.ProjectsToRebuild.Select(id => currentSolution.GetProject(id)!.FilePath!));
-        builder.ProjectsToRedeploy.AddRange(updates.ProjectsToRedeploy.Select(id => currentSolution.GetProject(id)!.FilePath!));
+        builder.ProjectsToRebuild.AddRange(updates.ProjectsToRebuild.Select(GetRequiredProjectFilePath));
+        builder.ProjectsToRedeploy.AddRange(updates.ProjectsToRedeploy.Select(GetRequiredProjectFilePath));
 
         // Terminate all tracked processes that need to be restarted,
         // except for the root process, which will terminate later on.
-        if (!updates.ProjectsToRestart.IsEmpty)
-        {
-            builder.ProjectsToRestart.AddRange(await TerminatePeripheralProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken));
-        }
+        builder.ProjectsToRestart.AddRange(
+            updates.ProjectsToRestart.SelectMany(e => runningProjects.TryGetValue(GetRequiredProjectFilePath(e.Key), out var array) ? array : []));
+
+        string GetRequiredProjectFilePath(ProjectId projectId)
+            => (currentSolution.GetProject(projectId) ?? throw new InvalidOperationException()).FilePath ?? throw new InvalidOperationException();
     }
 
     public async ValueTask ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(
@@ -528,7 +530,12 @@ internal sealed class CompilationHandler : IDisposable
         }
     }
 
-    private async ValueTask DisplayResultsAsync(HotReloadService.Updates updates, Solution solution, ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
+    private async ValueTask DisplayResultsAsync(
+        HotReloadService.Updates updates,
+        Solution solution,
+        ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
+        ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos,
+        CancellationToken cancellationToken)
     {
         switch (updates.Status)
         {
@@ -560,7 +567,7 @@ internal sealed class CompilationHandler : IDisposable
         ReportRudeEdits();
 
         // report or clear diagnostics in the browser UI
-        await _runningProjects.ForEachValueAsync(
+        await runningProjects.ForEachValueAsync(
             (project, cancellationToken) => project.Clients.ReportCompilationErrorsInApplicationAsync([.. errorsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
             cancellationToken);
 
@@ -850,24 +857,13 @@ internal sealed class CompilationHandler : IDisposable
     /// Does not terminate the main project.
     /// </summary>
     /// <returns>All processes (including main) to be restarted.</returns>
-    internal async ValueTask<ImmutableArray<RunningProject>> TerminatePeripheralProcessesAsync(
-        IEnumerable<string>? projectPaths, CancellationToken cancellationToken)
+    internal async ValueTask TerminatePeripheralProcessesAsync(
+        IEnumerable<RunningProject> projectsToRestart, CancellationToken cancellationToken)
     {
-        ImmutableArray<RunningProject> projectsToRestart = [];
-
-        lock (_runningProjectsAndUpdatesGuard)
-        {
-            projectsToRestart = projectPaths == null
-                ? [.. _runningProjects.SelectMany(entry => entry.Value)]
-                : [.. projectPaths.SelectMany(path => _runningProjects.TryGetValue(path, out var array) ? array : [])];
-        }
-
         // Do not terminate root process at this time - it would signal the cancellation token we are currently using.
         // The process will be restarted later on.
         // Wait for all processes to exit to release their resources, so we can rebuild.
         await Task.WhenAll(projectsToRestart.Where(p => !p.Options.IsMainProject).Select(p => p.TerminateForRestartAsync())).WaitAsync(cancellationToken);
-
-        return projectsToRestart;
     }
 
     /// <summary>
