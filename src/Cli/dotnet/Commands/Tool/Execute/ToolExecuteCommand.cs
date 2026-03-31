@@ -38,7 +38,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         : base(result)
     {
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
-        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? Enumerable.Empty<string>();
+        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
         _configFile = result.GetValue(Definition.ConfigOption);
         _sources = result.GetValue(Definition.SourceOption) ?? [];
