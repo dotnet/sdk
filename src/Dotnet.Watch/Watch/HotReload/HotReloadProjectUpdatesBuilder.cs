@@ -11,7 +11,7 @@ internal sealed class HotReloadProjectUpdatesBuilder
 {
     public List<ProjectId> PreviousProjectUpdatesToDiscard { get; } = [];
     public List<HotReloadService.Update> ManagedCodeUpdates { get; } = [];
-    public Dictionary<RunningProject, List<StaticWebAsset>> StaticAssetsToUpdate { get; } = [];
+    public Dictionary<RunningProject, List<StaticWebAsset>> StaticAssetUpdates { get; } = [];
     public List<string> ProjectsToRebuild { get; } = [];
     public List<string> ProjectsToRedeploy { get; } = [];
     public List<RunningProject> ProjectsToRestart { get; } = [];
