@@ -1020,8 +1020,10 @@ internal sealed class HotReloadDotNetWatcher
             var rootProject = projectGraph.Graph.GraphRoots.Single().ProjectInstance;
 
             // Select target framework if needed:
-            if (needsFrameworkSelection && frameworkSelector is not null)
+            if (needsFrameworkSelection)
             {
+                Debug.Assert(frameworkSelector is not null);
+
                 if (rootProject.GetTargetFramework() is var framework and not "")
                 {
                     targetFramework = framework;
@@ -1038,9 +1040,11 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             // Select device if needed:
-            if (needsDeviceSelection && deviceSelector is not null
+            if (needsDeviceSelection
                 && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
             {
+                Debug.Assert(deviceSelector is not null);
+
                 var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
                 if (deviceInfo == null)
                 {
