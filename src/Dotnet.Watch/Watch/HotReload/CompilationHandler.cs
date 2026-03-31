@@ -83,20 +83,6 @@ internal sealed class CompilationHandler : IDisposable
         Dispose();
     }
 
-    private void DiscardPreviousUpdates(ImmutableArray<ProjectId> projectsToBeRebuilt)
-    {
-        // Remove previous updates to all modules that were affected by rude edits.
-        // All running projects that statically reference these modules have been terminated.
-        // If we missed any project that dynamically references one of these modules its rebuild will fail.
-        // At this point there is thus no process that these modules loaded and any process created in future
-        // that will load their rebuilt versions.
-
-        lock (_runningProjectsAndUpdatesGuard)
-        {
-            _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.Contains(update.ProjectId));
-        }
-    }
-
     public async ValueTask StartSessionAsync(ProjectGraph graph, CancellationToken cancellationToken)
     {
         var solution = await UpdateProjectGraphAsync(graph, cancellationToken);
@@ -390,8 +376,7 @@ internal sealed class CompilationHandler : IDisposable
         // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
         _hotReloadService.CommitUpdate();
 
-        DiscardPreviousUpdates(updates.ProjectsToRebuild);
-
+        builder.PreviousProjectUpdatesToDiscard.AddRange(updates.ProjectsToRebuild);
         builder.ManagedCodeUpdates.AddRange(updates.ProjectUpdates);
         builder.ProjectsToRebuild.AddRange(updates.ProjectsToRebuild.Select(GetRequiredProjectFilePath));
         builder.ProjectsToRedeploy.AddRange(updates.ProjectsToRedeploy.Select(GetRequiredProjectFilePath));
@@ -406,8 +391,7 @@ internal sealed class CompilationHandler : IDisposable
     }
 
     public async ValueTask ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(
-        IReadOnlyList<HotReloadService.Update> managedCodeUpdates,
-        IReadOnlyDictionary<RunningProject, List<StaticWebAsset>> staticAssetUpdates,
+        HotReloadProjectUpdatesBuilder builder,
         ImmutableArray<ChangedFile> changedFiles,
         LoadedProjectGraph projectGraph,
         Stopwatch stopwatch,
@@ -419,8 +403,15 @@ internal sealed class CompilationHandler : IDisposable
         IReadOnlyList<RestartOperation> relaunchOperations;
         lock (_runningProjectsAndUpdatesGuard)
         {
+            // Remove previous updates to all modules that were affected by rude edits.
+            // All running projects that statically reference these modules have been terminated.
+            // If we missed any project that dynamically references one of these modules its rebuild will fail.
+            // At this point there is thus no process that these modules loaded and any process created in future
+            // that will load their rebuilt versions.
+            _previousUpdates = _previousUpdates.RemoveAll(update => builder.PreviousProjectUpdatesToDiscard.Contains(update.ProjectId));
+
             // Adding the updates makes sure that all new processes receive them before they are added to running processes.
-            _previousUpdates = _previousUpdates.AddRange(managedCodeUpdates);
+            _previousUpdates = _previousUpdates.AddRange(builder.ManagedCodeUpdates);
 
             // Capture the set of processes that do not have the currently calculated deltas yet.
             projectsToUpdate = _runningProjects;

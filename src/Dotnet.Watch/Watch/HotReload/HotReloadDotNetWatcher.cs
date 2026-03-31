@@ -306,7 +306,7 @@ internal sealed class HotReloadDotNetWatcher
 
                     // Apply updates only after dependencies have been deployed,
                     // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
+                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
                     if (updates.ProjectsToRestart is not [])
                     {
                         await compilationHandler.RestartPeripheralProjectsAsync(updates.ProjectsToRestart, shutdownCancellationToken);
