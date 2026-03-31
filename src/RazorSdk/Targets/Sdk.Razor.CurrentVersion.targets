@@ -54,7 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_TargetingNET90OrLater>true</_TargetingNET90OrLater>
         <_TargetingNET100OrLater>true</_TargetingNET100OrLater>
         <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
-        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">9.0</RazorLangVersion>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">10.0</RazorLangVersion>
         <_RazorUseRoslynTokenizer Condition="'$(_RazorUseRoslynTokenizer)'==''">true</_RazorUseRoslynTokenizer>
         <Features Condition="'$(_RazorUseRoslynTokenizer)'=='true'">use-roslyn-tokenizer=true;$(Features)</Features>
       </PropertyGroup>

@@ -53,6 +53,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\VSHostObject.cs" LinkBase="Common" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
 
@@ -61,8 +65,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
-  <!-- net472 builds manually import files to compile -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <!-- .NET Framework builds manually import files to compile -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Compile Remove="**/*.*" />
     <Compile Include="ReferenceParser.cs" />
     <Compile Include="KnownStrings.cs" />
@@ -73,19 +77,17 @@
     <Compile Include="Tasks/CreateNewImageToolTask.cs" />
     <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
     <Compile Include="ContainerHelpers.cs" />
-    <Compile Include="net472Definitions.cs" />
-    <Compile Include="VSHostObject.cs" />
+    <Compile Include="netframeworkDefinitions.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\Strings.Designer.cs" />
     <Compile Include="Globals.cs" />
   </ItemGroup>
 
-  <!-- core remove files specific to net472 workarounds -->
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+  <!-- Non-.NET Framework builds remove files specific to .NET Framework workarounds -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
-    <Compile Remove="net472Definitions.cs" />
-    <Compile Remove="VSHostObject.cs" />
+    <Compile Remove="netframeworkDefinitions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Strings.Designer.cs">

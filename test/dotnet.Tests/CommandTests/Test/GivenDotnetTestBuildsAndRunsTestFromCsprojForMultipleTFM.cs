@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithVersionVariables()
                 .Path;
 
-            NuGetConfigWriter.Write(testProjectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testProjectDirectory, SdkTestContext.Current.TestPackages);
 
             var runtime = EnvironmentInfo.GetCompatibleRid();
 
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(ConsoleLoggerOutputNormal);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 3")
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // for target framework net46
                 result.StdOut.Should().Contain("Total tests: 3");

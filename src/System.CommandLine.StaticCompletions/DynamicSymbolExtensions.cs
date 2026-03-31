@@ -6,6 +6,8 @@ namespace System.CommandLine.StaticCompletions;
 /// </summary>
 public static class DynamicSymbolExtensions
 {
+    private static readonly Lock s_guard = new();
+
     /// <summary>
     /// The state that is used to track which symbols are dynamic.
     /// </summary>
@@ -18,38 +20,44 @@ public static class DynamicSymbolExtensions
         /// </summary>
         public bool IsDynamic
         {
-            get => s_dynamicSymbols.GetValueOrDefault(option, false);
-            set => s_dynamicSymbols[option] = value;
-        }
-
-        /// <summary>
-        /// Mark this option as requiring dynamic completions.
-        /// </summary>
-        /// <returns></returns>
-        public Option RequiresDynamicCompletion()
-        {
-            option.IsDynamic = true;
-            return option;
+            get
+            {
+                lock (s_guard)
+                {
+                    return s_dynamicSymbols.GetValueOrDefault(option, false);
+                }
+            }
+            set
+            {
+                lock (s_guard)
+                {
+                    s_dynamicSymbols[option] = value;
+                }
+            }
         }
     }
 
     extension(Argument argument)
     {
+        /// <summary>
         /// Indicates whether this argument requires a dynamic call into the dotnet process to compute completions.
+        /// </summary>
         public bool IsDynamic
         {
-            get => s_dynamicSymbols.GetValueOrDefault(argument, false);
-            set => s_dynamicSymbols[argument] = value;
-        }
-
-        /// <summary>
-        /// Mark this argument as requiring dynamic completions.
-        /// </summary>
-        /// <returns></returns>
-        public Argument RequiresDynamicCompletion()
-        {
-            argument.IsDynamic = true;
-            return argument;
+            get
+            {
+                lock (s_guard)
+                {
+                    return s_dynamicSymbols.GetValueOrDefault(argument, false);
+                }
+            }
+            set
+            {
+                lock (s_guard)
+                {
+                    s_dynamicSymbols[argument] = value;
+                }
+            }
         }
     }
 }
