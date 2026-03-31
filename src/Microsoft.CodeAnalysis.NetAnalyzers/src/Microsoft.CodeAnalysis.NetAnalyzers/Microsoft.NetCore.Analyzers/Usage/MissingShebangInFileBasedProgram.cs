@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             CreateLocalizableResourceString(nameof(MissingShebangInFileBasedProgramDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false,
-            isReportedAtCompilationEnd: true);
+            isReportedAtCompilationEnd: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
     }

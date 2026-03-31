@@ -26,17 +26,32 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                     return;
                 }
 
-                // Track whether there are multiple non-generated source files.
-                // ConfigureGeneratedCodeAnalysis(None) ensures that the SyntaxTreeAction
-                // is only called for non-generated trees, so we count those.
+                // Count non-generated trees in the compilation upfront.
+                // We avoid CompilationEnd so diagnostics appear as live IDE diagnostics.
                 int nonGeneratedTreeCount = 0;
-                Diagnostic? pendingDiagnostic = null;
+                foreach (var tree in context.Compilation.SyntaxTrees)
+                {
+                    if (context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree)
+                            .TryGetValue("generated_code", out var generatedValue) &&
+                        generatedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    nonGeneratedTreeCount++;
+                }
+
+                // Only report when there are multiple non-generated files
+                // (i.e., #:include directives are used).
+                // Single-file programs don't need a shebang to distinguish the entry point.
+                if (nonGeneratedTreeCount <= 1)
+                {
+                    return;
+                }
 
                 context.RegisterSyntaxTreeAction(context =>
                 {
-                    Interlocked.Increment(ref nonGeneratedTreeCount);
-
-                    if (!context.Tree.FilePath.Equals(entryPointFilePath, StringComparison.OrdinalIgnoreCase))
+                    if (!context.Tree.FilePath.Equals(entryPointFilePath, StringComparison.Ordinal))
                     {
                         return;
                     }
@@ -48,18 +63,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                     }
 
                     var location = root.GetFirstToken(includeZeroWidth: true).GetLocation();
-                    Interlocked.CompareExchange(ref pendingDiagnostic, location.CreateDiagnostic(Rule), null);
-                });
-
-                context.RegisterCompilationEndAction(context =>
-                {
-                    // Only report when there are multiple non-generated files
-                    // (i.e., #:include directives are used).
-                    // Single-file programs don't need a shebang to distinguish the entry point.
-                    if (Volatile.Read(ref nonGeneratedTreeCount) > 1 && pendingDiagnostic is { } diagnostic)
-                    {
-                        context.ReportDiagnostic(diagnostic);
-                    }
+                    context.ReportDiagnostic(location.CreateDiagnostic(Rule));
                 });
             });
         }

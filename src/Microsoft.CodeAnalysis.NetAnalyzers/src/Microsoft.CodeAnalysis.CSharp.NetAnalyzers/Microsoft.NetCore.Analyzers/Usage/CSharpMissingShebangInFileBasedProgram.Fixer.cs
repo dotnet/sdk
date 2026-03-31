@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Usage;
 
@@ -24,30 +24,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
             var codeAction = CodeAction.Create(
                 MicrosoftNetCoreAnalyzersResources.MissingShebangInFileBasedProgramCodeFixTitle,
-                _ =>
+                async ct =>
                 {
-                    var eol = GetEndOfLine(root.SyntaxTree.GetText());
+                    var options = await context.Document.GetOptionsAsync(ct).ConfigureAwait(false);
+                    var eol = options.GetOption(FormattingOptions.NewLine, LanguageNames.CSharp);
                     var shebangTrivia = SyntaxFactory.ParseLeadingTrivia("#!/usr/bin/env dotnet" + eol);
                     var firstToken = root.GetFirstToken(includeZeroWidth: true);
                     var newFirstToken = firstToken.WithLeadingTrivia(shebangTrivia.AddRange(firstToken.LeadingTrivia));
-                    var newRoot = root.ReplaceToken(firstToken, newFirstToken);
-                    return Task.FromResult(context.Document.WithSyntaxRoot(newRoot));
+                    var newRoot = root.ReplaceToken(firstToken, newFirstToken)
+                        .WithAdditionalAnnotations(Formatter.Annotation);
+                    return context.Document.WithSyntaxRoot(newRoot);
                 },
                 MicrosoftNetCoreAnalyzersResources.MissingShebangInFileBasedProgramCodeFixTitle);
             context.RegisterCodeFix(codeAction, context.Diagnostics);
-        }
-
-        private static string GetEndOfLine(SourceText sourceText)
-        {
-            foreach (var line in sourceText.Lines)
-            {
-                if (line.End < line.EndIncludingLineBreak)
-                {
-                    return sourceText.ToString(TextSpan.FromBounds(line.End, line.EndIncludingLineBreak));
-                }
-            }
-
-            return Environment.NewLine;
         }
     }
 }
