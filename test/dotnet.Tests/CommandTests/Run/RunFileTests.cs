@@ -3520,6 +3520,69 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello!");
     }
 
+    /// <summary>
+    /// Combining <c>#:ref</c> and <c>#:include</c> in the same file-based app.
+    /// </summary>
+    [Fact]
+    public void RefDirective_WithInclude()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:include LibHelper.cs
+            #:include LibFormatter.cs
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => LibFormatter.Format(LibHelper.Prefix, name);
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "LibHelper.cs"), """
+            namespace MyLib;
+            public static class LibHelper
+            {
+                public static string Prefix => "Hello";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "LibFormatter.cs"), """
+            namespace MyLib;
+            public static class LibFormatter
+            {
+                public static string Format(string prefix, string name) => $"{prefix}, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetName() => "World";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            #:include Util.cs
+            Console.WriteLine(MyLib.Greeter.Greet(Util.GetName()));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
     [Theory, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,

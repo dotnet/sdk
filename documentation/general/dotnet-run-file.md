@@ -217,7 +217,7 @@ The directives are processed as follows:
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
   Because the referenced file is compiled as a separate assembly, internal members of the referenced file are not accessible from the referencing file.
-  The `#:ref` directive is transitive: a referenced file can itself contain `#:ref` directives.
+  The `#:ref` directive is transitive: a referenced file can itself contain `#:ref` directives (or any other directives).
 
   Relative paths are resolved relative to the file containing the directive.
   MSBuild variables (like `$(MSBuildProjectDirectory)`) can be used in the path.
