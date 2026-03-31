@@ -39,7 +39,7 @@
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="Commands\Workload\list\VisualStudioWorkloads.cs" />
     <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" />
     <Compile Remove="Windows\**" />
@@ -54,7 +54,7 @@
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <Compile Remove="Commands\Workload\SignCheck_Unix.cs" />
   </ItemGroup>
 
@@ -96,7 +96,7 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->

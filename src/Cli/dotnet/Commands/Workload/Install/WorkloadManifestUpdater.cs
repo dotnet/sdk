@@ -216,7 +216,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     {
         try
         {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
             if (OperatingSystem.IsWindows())
             {
                 //  Also advertise updates for workloads installed by Visual Studio

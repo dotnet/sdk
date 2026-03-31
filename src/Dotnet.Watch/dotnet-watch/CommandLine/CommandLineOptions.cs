@@ -5,9 +5,12 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
+using Microsoft.Build.Logging;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
@@ -65,7 +68,10 @@ internal sealed class CommandLineOptions
 
         // determine subcommand:
         var command = GetSubcommand(parseResult, out bool isExplicitCommand);
-        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
+
+        // Options that the subcommand forwards to build command.
+        // Exclude --framework option as it is passed to `dotnet build` and `dotnet run` explicitly by the watcher.
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null && o.Name != CommonOptions.FrameworkOptionName);
 
         foreach (var buildOption in buildOptions)
         {
@@ -111,15 +117,20 @@ internal sealed class CommandLineOptions
             out var binLogToken,
             out var binLogPath);
 
-        // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
+        // We assume that forwarded options, if any, are intended for `dotnet build`.
+        // Exclude --target option since we need to control the targets being built.
+        var msbuildCommandDefinition = new MSBuildCommandDefinition();
+
+        var buildArguments = buildOptions
+            .Select(option => option.ForwardingFunction!(parseResult))
+            .SelectMany(args => args)
+            .Where(arg => !msbuildCommandDefinition.Parse(arg).HasOption(msbuildCommandDefinition.TargetOption))
+            .ToList();
 
         if (binLogToken != null)
         {
             buildArguments.Add(binLogToken);
         }
-
-        var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
         var logLevel = parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
@@ -139,7 +150,7 @@ internal sealed class CommandLineOptions
                 LogLevel = logLevel,
                 NoHotReload = parseResult.GetValue(definition.NoHotReloadOption),
                 NonInteractive = parseResult.GetValue(definition.NonInteractiveOption),
-                BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
+                BinaryLogPath = ParseBinaryLogFilePath(binLogPath, logger),
             },
 
             CommandArguments = commandArguments,
@@ -150,29 +161,26 @@ internal sealed class CommandLineOptions
             FilePath = parseResult.GetValue(definition.FileOption),
             LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
-            TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
+            TargetFramework = parseResult.GetValue(definition.FrameworkOption),
         };
     }
 
     /// <summary>
-    /// Parses the value of msbuild option `-binaryLogger[:[LogFile=]output.binlog[;ProjectImports={None,Embed,ZipFile}]]`.
-    /// Emulates https://github.com/dotnet/msbuild/blob/7f69ea906c29f2478cc05423484ad185de66e124/src/Build/Logging/BinaryLogger/BinaryLogger.cs#L481.
-    /// See https://github.com/dotnet/msbuild/issues/12256
+    /// Parses the value of msbuild option `-binaryLogger`.
     /// </summary>
-    internal static string? ParseBinaryLogFilePath(string? value)
-        => value switch
+    internal static string? ParseBinaryLogFilePath(string? value, ILogger logger)
+    {
+        try
         {
-            null => null,
-            _ => (from parameter in value.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                  where !string.Equals(parameter, "ProjectImports=None", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=Embed", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=ZipFile", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "OmitInitialInfo", StringComparison.OrdinalIgnoreCase)
-                  let path = (parameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase) ? parameter["LogFile=".Length..] : parameter).Trim('"')
-                  let pathWithExtension = path.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ? path : $"{path}.binlog"
-                  select pathWithExtension)
-                 .LastOrDefault("msbuild.binlog")
-        };
+            return value != null ? BinaryLogger.ParseParameters(value).LogFilePath ?? "msbuild.binlog" : null;
+        }
+        catch (Build.Framework.LoggerException e)
+        {
+            // MSB4234: Invalid binary logger parameter(s): "{0}". Expected: ProjectImports={{None,Embed,ZipFile}} and/or [LogFile=]filePath.binlog (the log file name or path, must have the ".binlog" extension)
+            logger.LogError(e.Message);
+            return null;
+        }
+    }
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
@@ -196,7 +204,7 @@ internal sealed class CommandLineOptions
             {
                 continue;
             }
-            
+
             // forward forwardable option if the subcommand supports it:
             if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
             {
@@ -351,6 +359,7 @@ internal sealed class CommandLineOptions
             IsMainProject = true,
             Representation = project,
             WorkingDirectory = workingDirectory,
+            TargetFramework = TargetFramework,
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],

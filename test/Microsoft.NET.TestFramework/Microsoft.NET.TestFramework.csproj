@@ -35,6 +35,22 @@
       <_Parameter1>AspirePackageVersion</_Parameter1>
       <_Parameter2>$(AspirePackageVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftExtensionsServiceDiscoveryPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftExtensionsServiceDiscoveryPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftNETTestSdkPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETTestSdkPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitRunnerVisualStudioPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitRunnerVisualStudioPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

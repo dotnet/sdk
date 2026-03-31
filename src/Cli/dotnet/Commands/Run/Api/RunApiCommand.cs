@@ -75,7 +75,7 @@ internal abstract class RunApiInput
             builder.CreateProjectInstance(
                 new ProjectCollection(),
                 errorReporter,
-                out _,
+                out var project,
                 out var evaluatedDirectives,
                 validateAllDirectives: true);
 
@@ -91,6 +91,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
+                ProjectPath = project.FullPath,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
@@ -163,6 +164,7 @@ internal abstract class RunApiOutput
     public sealed class Project : RunApiOutput
     {
         public required string Content { get; init; }
+        public required string ProjectPath { get; init; }
         public required ImmutableArray<SimpleDiagnostic> Diagnostics { get; init; }
     }
 

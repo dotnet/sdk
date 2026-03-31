@@ -209,8 +209,8 @@ extends:
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
+              # Use HostOS when running on alpine.
+              osProperties: /p:HostOS=linux-musl
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
