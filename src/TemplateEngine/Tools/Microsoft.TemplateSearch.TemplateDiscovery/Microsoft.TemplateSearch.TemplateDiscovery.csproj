@@ -21,7 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngineRoot)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
     <ProjectReference Include="$(TemplateEngineRoot)Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj" />
-    <ProjectReference Include="$(RepoRoot)test/TemplateEngine/Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
 
   <ItemGroup>

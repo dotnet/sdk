@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
-    <ProjectReference Include="$(RepoRoot)test/TemplateEngine/Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj" />
   </ItemGroup>
 
