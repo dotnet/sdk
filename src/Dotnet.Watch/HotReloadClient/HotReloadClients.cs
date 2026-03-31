@@ -15,10 +15,11 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// Facilitates Hot Reload updates across multiple clients/processes.
+/// Facilitates Hot Reload updates across multiple clients/processes and browsers.
 /// </summary>
 /// <param name="clients">
-/// Clients that handle managed updates and static asset updates if <paramref name="useRefreshServerToApplyStaticAssets"/> is false.
+/// Clients that handle managed updates and static asset updates (if <paramref name="useRefreshServerToApplyStaticAssets"/> is false).
+/// It can be empty if managed agents are not supported, otherwise it comprises of one primary client and optional secondary client.
 /// </param>
 /// <param name="browserRefreshServer">
 /// Browser refresh server used to communicate managed code update status and errors to the browser,
