@@ -2,7 +2,6 @@
 
   <Import Project="..\Directory.Build.targets" />
 
-  <!-- Remove global usings from the parent that TemplateEngine test projects don't reference. -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <Using Remove="FluentAssertions" />
     <Using Remove="Microsoft.NET.TestFramework" />
@@ -10,10 +9,6 @@
     <Using Remove="Microsoft.NET.TestFramework.Commands" />
     <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Remove="Microsoft.NET.TestFramework.Utilities" />
-  </ItemGroup>
-
-  <!-- Don't include the SDK's Common/Program.cs entry point in TemplateEngine tests -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\Common\Program.cs" />
   </ItemGroup>
 
