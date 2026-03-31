@@ -10,7 +10,7 @@
     <!-- TODO: Update PublicAPI.Shipped/Unshipped.txt files to fix RS0016/RS0041 violations, then remove the suppression. -->
     <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649;RS0016;RS0041</NoWarn>
 
-    <!-- TemplateEngine targets net472, not Arcade's default of net462 -->
+    <!-- TODO: Replace NetFrameworkMinimum override with $(NetFrameworkToolCurrent) in TE csproj TargetFrameworks -->
     <NetFrameworkMinimum>net472</NetFrameworkMinimum>
 
     <!-- TemplateEngine assembly signing -->
