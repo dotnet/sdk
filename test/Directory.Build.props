@@ -24,4 +24,25 @@
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
+  <!--
+    Detect TemplateEngine test projects by assembly name prefix.
+    Microsoft.TemplateEngine.Cli.UnitTests is an SDK test project that existed before the merge.
+  -->
+  <PropertyGroup>
+    <_IsTemplateEngineTestProject Condition="$(MSBuildProjectName.StartsWith('Microsoft.TemplateEngine')) OR $(MSBuildProjectName.StartsWith('Microsoft.TemplateSearch'))">true</_IsTemplateEngineTestProject>
+    <_IsTemplateEngineTestProject Condition="$(MSBuildProjectName) == 'Microsoft.TemplateEngine.Cli.UnitTests'">false</_IsTemplateEngineTestProject>
+  </PropertyGroup>
+
+  <!--
+    TemplateEngine test projects need the same signing key as TE source projects
+    for InternalsVisibleTo to work correctly. They also use a different test runner
+    setup than the SDK's xunit.console-based infrastructure.
+  -->
+  <PropertyGroup Condition="'$(_IsTemplateEngineTestProject)' == 'true'">
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <GenerateProgramFile>true</GenerateProgramFile>
+    <!-- Suppress warnings pre-existing in TE test code -->
+    <NoWarn>$(NoWarn);IDE0005;0649;CA2016;CA5394;CA1802</NoWarn>
+  </PropertyGroup>
+
 </Project>

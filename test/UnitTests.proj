@@ -93,6 +93,11 @@
 
       <AssetFiles Include="TestAssets\**\*.*" />
 
+      <!-- Include TemplateEngine test templates so TE tests can find them via DOTNET_SDK_TEST_ASSETS_DIRECTORY on Helix -->
+      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\test_templates\**\*.*" />
+      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\nupkg_templates\**\*.*" />
+      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
+
       <!-- Include the template_feed directory from the repo root so tests that reference RepoTemplatePackages work in Helix. -->
       <TemplateFeedFiles Include="$(RepoRoot)template_feed\**\*.*" />
 
@@ -132,6 +137,7 @@
     <Copy SourceFiles="@(ContainerFiles)" DestinationFiles="@(ContainerFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Container\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(LockFiles)" DestinationFiles="@(LockFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\LockFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(TemplateEngineTestAssets)" DestinationFiles="@(TemplateEngineTestAssets->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\TestPackages\dotnet-new\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(TemplateFeedFiles)" DestinationFiles="@(TemplateFeedFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\template_feed\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
