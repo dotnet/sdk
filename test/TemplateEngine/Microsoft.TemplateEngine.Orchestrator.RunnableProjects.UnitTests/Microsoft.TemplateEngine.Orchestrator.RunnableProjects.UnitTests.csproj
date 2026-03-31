@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Schemas\JSON\template.json"
+    <None Include="$(TemplateEngineRoot)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Schemas\JSON\template.json"
           CopyToOutputDirectory="PreserveNewest"
           Link="SchemaTests\%(Filename)%(Extension)" />
 
