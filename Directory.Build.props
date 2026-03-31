@@ -47,6 +47,14 @@
 
   <PropertyGroup>
     <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
+
+    <!-- Root of the TemplateEngine source tree (previously the dotnet/templating repo root) -->
+    <TemplateEngineRoot>$(MSBuildThisFileDirectory)src\TemplateEngine\</TemplateEngineRoot>
+    <TemplatesDir>$(MSBuildThisFileDirectory)template_feed\</TemplatesDir>
+
+    <!-- The minimum .NET Framework version supported by TemplateEngine packages (overrides Arcade default of net462). -->
+    <NetFrameworkMinimum>net472</NetFrameworkMinimum>
+
     <TestHostFolder>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'redist', '$(Configuration)'))</TestHostFolder>
     <TestHostDotNetRoot>$([MSBuild]::NormalizeDirectory('$(TestHostFolder)', 'dotnet'))</TestHostDotNetRoot>
     <TestHostDotNetTool>$(TestHostDotNetRoot)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNetTool>

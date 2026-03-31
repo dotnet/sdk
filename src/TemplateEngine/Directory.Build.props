@@ -1,0 +1,30 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+
+  <!--
+    TemplateEngine-specific build properties, migrated from the dotnet/templating
+    repo root Directory.Build.props. These apply only to projects under src/TemplateEngine/.
+  -->
+  <PropertyGroup>
+    <!-- Suppress warnings that were suppressed in the dotnet/templating repo -->
+    <!-- RS0016/RS0041: Public API analyzer differences due to newer analyzer version in SDK -->
+    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649;RS0016;RS0041</NoWarn>
+
+    <!-- TemplateEngine assembly signing -->
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <!-- Generate XML documentation for TemplateEngine packages -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Disable analyzers in sourcebuild -->
+    <EnableAnalyzers>true</EnableAnalyzers>
+    <EnableAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</EnableAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableAnalyzers)' == 'true'">
+    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" Condition="'$(EnablePublicApiAnalyzer)' == 'true'" />
+  </ItemGroup>
+
+</Project>

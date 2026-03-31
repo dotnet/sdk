@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
-    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
+    <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
+    <ProjectReference Include="$(RepoRoot)test/TemplateEngine/Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
   </ItemGroup>
 
   <ItemGroup>
