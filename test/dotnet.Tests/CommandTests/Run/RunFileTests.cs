@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -619,6 +619,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(libDir);
 
         File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3194,6 +3195,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3223,6 +3225,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(libDir);
 
         File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3291,6 +3294,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class PublicClass
             {
@@ -3338,6 +3342,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            #:property OutputType=Library
             namespace Lib2;
             public static class Base
             {
@@ -3346,6 +3351,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
             public static class Middle
@@ -3384,6 +3390,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(libDir);
 
         File.WriteAllText(Path.Join(libDir, "lib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3432,6 +3439,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
         File.WriteAllText(Path.Join(testInstance.Path, subdir, "lib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3489,6 +3497,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         File.WriteAllText(libPath, """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -3538,6 +3547,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
             #:include LibHelper.cs
             #:include LibFormatter.cs
             namespace MyLib;
@@ -5227,6 +5237,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -5978,6 +5989,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {

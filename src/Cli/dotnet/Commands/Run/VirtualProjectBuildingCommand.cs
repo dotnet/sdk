@@ -1211,8 +1211,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             var refBuilder = new VirtualProjectBuilder(
                 resolvedPath,
-                TargetFramework,
-                outputType: "Library");
+                TargetFramework);
 
             refBuilder.CreateProjectInstance(
                 projectCollection,

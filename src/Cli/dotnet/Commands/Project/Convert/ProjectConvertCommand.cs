@@ -48,7 +48,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
 
-        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework, outputType: "Exe");
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -70,7 +70,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase), usedFolderNames);
         }
 
-        ConvertFile(file, entryPointOutputDir, outputType: "Exe", isEntryPointFile: true);
+        ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems(builder, projectInstance, file).ToList();
@@ -111,7 +111,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return 0;
 
         (VirtualProjectBuilder builder, ProjectInstance projectInstance, ImmutableArray<CSharpDirective> evaluatedDirectives)
-            ConvertFile(string sourceFile, string outputDirectory, string outputType, bool isEntryPointFile)
+            ConvertFile(string sourceFile, string outputDirectory, bool isEntryPointFile)
         {
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
 
@@ -127,7 +127,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
-                fileBuilder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework, outputType: outputType);
+                fileBuilder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework);
 
                 fileBuilder.CreateProjectInstance(
                     projectCollection,
@@ -166,7 +166,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     UpdateDirectives(fileDirectives, sourceDirectory, outputDirectory),
                     isVirtualProject: false,
                     userSecretsId: isEntryPointFile ? DetermineUserSecretsId(fileProjectInstance) : null,
-                    defaultProperties: GetDefaultProperties(fileProjectInstance, outputType));
+                    defaultProperties: GetDefaultProperties(fileProjectInstance));
             }
 
             return (fileBuilder, fileProjectInstance, fileDirectives);
@@ -267,7 +267,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 var refDir = Path.GetDirectoryName(refPath)!;
                 var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
-                var (refBuilder, refProjectInstance, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, outputType: "Library", isEntryPointFile: false);
+                var (refBuilder, refProjectInstance, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
 
                 // Copy included items (e.g., default Content items) for the referenced file.
                 var items = FindIncludedItems(refBuilder, refProjectInstance, refPath).ToList();
@@ -310,7 +310,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 // Recursively validate transitive refs.
-                var refBuilder = new VirtualProjectBuilder(refPath, VirtualProjectBuildingCommand.TargetFramework, outputType: "Library");
+                var refBuilder = new VirtualProjectBuilder(refPath, VirtualProjectBuildingCommand.TargetFramework);
                 refBuilder.CreateProjectInstance(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
@@ -465,9 +465,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             return result.DrainToImmutable();
         }
 
-        IEnumerable<(string name, string value)> GetDefaultProperties(ProjectInstance projectInstance, string outputType)
+        IEnumerable<(string name, string value)> GetDefaultProperties(ProjectInstance projectInstance)
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework, outputType))
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
                 if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))

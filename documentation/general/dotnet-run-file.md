@@ -210,12 +210,14 @@ The directives are processed as follows:
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
-- Each `#:ref` references another `.cs` file as a compiled library.
-  A virtual project with `OutputType=Library` is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
+- Each `#:ref` references another `.cs` file as a separate project reference.
+  A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
   and a `<ProjectReference Include="lib.cs.csproj" SkipGetTargetFrameworkProperties="true" />` is injected in an `<ItemGroup>`.
   It is an error if the name is empty or if the referenced file does not exist.
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
+  The referenced file is itself a file-based program with its own virtual project (defaulting to `OutputType=Exe`).
+  Library files without an entry point should use `#:property OutputType=Library` to avoid compilation errors.
   Because the referenced file is compiled as a separate assembly, internal members of the referenced file are not accessible from the referencing file.
   The `#:ref` directive is transitive: a referenced file can itself contain `#:ref` directives (or any other directives).
 

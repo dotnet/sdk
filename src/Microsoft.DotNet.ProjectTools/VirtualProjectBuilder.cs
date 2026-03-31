@@ -47,15 +47,14 @@ public sealed class VirtualProjectBuilder
         string targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null,
-        SourceText? sourceText = null,
-        string outputType = "Exe")
+        SourceText? sourceText = null)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFramework, outputType);
+        _defaultProperties = GetDefaultProperties(targetFramework);
 
         if (sourceText != null)
         {
@@ -66,9 +65,9 @@ public sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework, string outputType = "Exe") =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
-        ("OutputType", outputType),
+        ("OutputType", "Exe"),
         ("TargetFramework", targetFramework),
         ("ImplicitUsings", "enable"),
         ("Nullable", "enable"),

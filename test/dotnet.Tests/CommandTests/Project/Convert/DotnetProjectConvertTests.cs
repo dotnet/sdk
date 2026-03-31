@@ -217,6 +217,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
             namespace MyLib;
             public static class Greeter
             {
@@ -278,6 +279,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            #:property OutputType=Library
             namespace Lib2;
             public static class Helper
             {
@@ -286,6 +288,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
             public static class Facade
@@ -347,12 +350,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
         File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            #:property OutputType=Library
             namespace A;
             public static class Lib { public static string Get() => "a"; }
             """);
 
         Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
         File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            #:property OutputType=Library
             namespace B;
             public static class Lib { public static string Get() => "b"; }
             """);
@@ -395,12 +400,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         // a/lib.cs is referenced by mid.cs
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
         File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            #:property OutputType=Library
             namespace A;
             public static class Lib { public static string Get() => "a"; }
             """);
 
         // mid.cs references a/lib.cs
         File.WriteAllText(Path.Join(testInstance.Path, "mid.cs"), """
+            #:property OutputType=Library
             #:ref a/lib.cs
             namespace Mid;
             public static class Mid { public static string Get() => A.Lib.Get(); }
@@ -409,6 +416,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         // b/lib.cs would conflict with a/lib.cs (both "lib")
         Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
         File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            #:property OutputType=Library
             namespace B;
             public static class Lib { public static string Get() => "b"; }
             """);
@@ -449,6 +457,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         // a/lib.cs is referenced by the app directly
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
         File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
+            #:property OutputType=Library
             namespace A;
             public static class Lib { public static string Get() => "a"; }
             """);
@@ -456,6 +465,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         // b/lib.cs would conflict (same name "lib") - referenced via #:include-d file
         Directory.CreateDirectory(Path.Join(testInstance.Path, "b"));
         File.WriteAllText(Path.Join(testInstance.Path, "b", "lib.cs"), """
+            #:property OutputType=Library
             namespace B;
             public static class Lib { public static string Get() => "b"; }
             """);
@@ -504,6 +514,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(libDir);
 
         File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property OutputType=Library
             #:property EnableDefaultNoneItems=true
             namespace MyLib;
             public static class Greeter
@@ -553,6 +564,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(libDir);
 
         File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property OutputType=Library
             #:property EnableDefaultNoneItems=true
             namespace MyLib;
             public static class Greeter
