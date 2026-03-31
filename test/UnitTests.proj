@@ -94,9 +94,9 @@
       <AssetFiles Include="TestAssets\**\*.*" />
 
       <!-- Include TemplateEngine test templates so TE tests can find them via DOTNET_SDK_TEST_ASSETS_DIRECTORY on Helix -->
-      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\test_templates\**\*.*" />
-      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\nupkg_templates\**\*.*" />
-      <TemplateEngineTestAssets Include="Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
+      <TemplateEngineTestAssets Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestTemplates\test_templates\**\*.*" />
+      <TemplateEngineTestAssets Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestTemplates\nupkg_templates\**\*.*" />
+      <TemplateEngineTestAssets Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
 
       <!-- Include the template_feed directory from the repo root so tests that reference RepoTemplatePackages work in Helix. -->
       <TemplateFeedFiles Include="$(RepoRoot)template_feed\**\*.*" />
