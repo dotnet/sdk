@@ -47,8 +47,7 @@ public class Program
         TelemetryEventEntry.Subscribe(TelemetryInstance.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
-        s_mainActivity = Activities.Source.CreateActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
-        s_mainActivity
+        s_mainActivity = Activities.Source.CreateActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext)
             ?.Start()
             ?.SetStartTime(Process.GetCurrentProcess().StartTime)
             ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
@@ -60,17 +59,17 @@ public class Program
         }
 
         // Creates a host-startup activity which includes the global.json state.
-        var hostStartupActivity = Activities.Source.StartActivity("host-startup")
-                ?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        if (TelemetryInstance.Enabled && hostStartupActivity is not null)
+        using (var hostStartupActivity = Activities.Source.StartActivity("host-startup"))
         {
-            // Get the global.json state to report in telemetry along with this command invocation.
-            s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
-            hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
+            hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
+            if (TelemetryInstance.Enabled && hostStartupActivity is not null)
+            {
+                // Get the global.json state to report in telemetry along with this command invocation.
+                s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+                hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
+            }
+            hostStartupActivity?.SetEndTime(mainTimeStamp)?.SetStatus(ActivityStatusCode.Ok);
         }
-        hostStartupActivity?.SetEndTime(mainTimeStamp)
-            ?.SetStatus(ActivityStatusCode.Ok)
-            ?.Dispose();
 
         // We have some behaviors in MSBuild that we want to enforce (either when using MSBuild API or by shelling out to it),
         // so we set those ASAP as globally as possible.
@@ -104,7 +103,7 @@ public class Program
         var exitCode = 1;
         try
         {
-            exitCode = ProcessArgs(args);
+            exitCode = ProcessArgsAndExecute(args);
             s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
         }
@@ -136,20 +135,11 @@ public class Program
         }
     }
 
-    public static void Shutdown(PosixSignalContext context)
-    {
-        s_sigIntRegistration.Dispose();
-        s_sigQuitRegistration.Dispose();
-        s_sigTermRegistration.Dispose();
-        s_mainActivity?.Stop();
-        TelemetryClient.FlushProviders();
-        Activities.Source.Dispose();
-    }
-
-    internal static int ProcessArgs(string[] args)
+    internal static int ProcessArgsAndExecute(string[] args)
     {
         ParseResult parseResult = ParseArgs(args);
-        // Options that perform terminating actions are considered to essentially be subcommands. These are special as they should not run the first-run setup.
+        // Options that perform terminating actions are considered to essentially be subcommands.
+        // These are special as they should not run the first-run setup.
         // Example: dotnet --version
         if (!(parseResult.Action is InvocableOptionAction { Terminating: true }))
         {
@@ -159,12 +149,12 @@ public class Program
         TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
         if (parseResult.CanBeInvoked())
         {
-            return InvokeBuiltInCommand(parseResult);
+            return ExecuteInternalCommand(parseResult);
         }
 
         try
         {
-            return LookupAndExecuteCommand(args, parseResult);
+            return ExecuteExternalCommand(args, parseResult);
         }
         catch (CommandUnknownException e)
         {
@@ -190,87 +180,6 @@ public class Program
         }
     }
 
-    private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
-    {
-        string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
-        CommandSpec? resolvedCommandSpec = null;
-        using (var lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command"))
-        {
-            resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
-                new DefaultCommandResolverPolicy(),
-                commandName,
-                args.GetSubArguments(),
-                FrameworkConstants.CommonFrameworks.NetStandardApp15);
-        }
-
-        if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
-        {
-            return fileBasedAppExitCode;
-        }
-
-        var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
-        using var executionActivity = Activities.Source.StartActivity("execute-extensible-command");
-        return resolvedCommand.Execute().ExitCode;
-    }
-
-    private static int InvokeBuiltInCommand(ParseResult parseResult)
-    {
-        Debug.Assert(parseResult.CanBeInvoked());
-        int exitCode;
-        using var _invocationActivity = Activities.Source.StartActivity("invocation");
-        try
-        {
-            exitCode = Parser.Invoke(parseResult);
-            if (parseResult.Errors.Any())
-            {
-                exitCode = AdjustExitCodeForNew();
-            }
-        }
-        catch (Exception exception)
-        {
-            exitCode = Parser.ExceptionHandler(exception, parseResult);
-        }
-        return exitCode;
-
-        int AdjustExitCodeForNew()
-        {
-            var commandResult = parseResult.CommandResult;
-            while (commandResult is not null)
-            {
-                if (commandResult.Command.Name == "new")
-                {
-                    // Default parse error exit code is 1.
-                    // For the "new" command and its subcommands, it needs to be 127.
-                    return 127;
-                }
-                commandResult = commandResult.Parent as CommandResult;
-            }
-            return exitCode;
-        }
-    }
-
-    private static int? TryRunFileBasedApp(ParseResult parseResult)
-    {
-        // If we didn't match any built-in commands, and a C# file path is the first argument,
-        // parse as `dotnet run file.cs ..rest_of_args` instead.
-        if (parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
-        {
-            List<string> otherTokens = new(parseResult.Tokens.Count - 1);
-            foreach (var token in parseResult.Tokens)
-            {
-                if (token.Type != TokenType.Argument || token != unmatchedCommandOrFile)
-                {
-                    otherTokens.Add(token.Value);
-                }
-            }
-            parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
-            return InvokeBuiltInCommand(parseResult);
-        }
-
-        return null;
-    }
-
     private static void SetupFirstRun(ParseResult parseResult)
     {
         using var _ = Activities.Source.StartActivity("first-time-use");
@@ -289,7 +198,7 @@ public class Program
             defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
 
         var isDotnetBeingInvokedFromNativeInstaller = false;
-        // TODO: This should not be special cased like this. Determine if we can skip first run setup entirely for this command.
+        // Note: This should not be special cased like this. Determine if we can skip first run setup entirely for this command.
         if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
         {
             aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
@@ -313,8 +222,8 @@ public class Program
 
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
-        // TODO: Not sure why this instance type is created but unused.
-        var unusedFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
+        // Note: Not sure why this unused instance type is created.
+        var __ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
         var reporter = Reporter.Error;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
@@ -348,5 +257,96 @@ public class Program
                 reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());
             }
         }
+    }
+
+    private static int ExecuteInternalCommand(ParseResult parseResult)
+    {
+        Debug.Assert(parseResult.CanBeInvoked());
+        int exitCode;
+        using var _ = Activities.Source.StartActivity("invocation");
+        try
+        {
+            exitCode = Parser.Invoke(parseResult);
+            if (parseResult.Errors.Any())
+            {
+                exitCode = AdjustExitCodeForNew();
+            }
+        }
+        catch (Exception exception)
+        {
+            exitCode = Parser.ExceptionHandler(exception, parseResult);
+        }
+        return exitCode;
+
+        int AdjustExitCodeForNew()
+        {
+            var commandResult = parseResult.CommandResult;
+            while (commandResult is not null)
+            {
+                if (commandResult.Command.Name == "new")
+                {
+                    // Default parse error exit code is 1.
+                    // For the "new" command and its subcommands, it needs to be 127.
+                    return 127;
+                }
+                commandResult = commandResult.Parent as CommandResult;
+            }
+            return exitCode;
+        }
+    }
+
+    private static int ExecuteExternalCommand(string[] args, ParseResult parseResult)
+    {
+        string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
+        CommandSpec? resolvedCommandSpec = null;
+        using (var _ = Activities.Source.StartActivity("lookup-external-command"))
+        {
+            resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
+                new DefaultCommandResolverPolicy(),
+                commandName,
+                args.GetSubArguments(),
+                FrameworkConstants.CommonFrameworks.NetStandardApp15);
+        }
+
+        if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
+        {
+            return fileBasedAppExitCode;
+        }
+
+        var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
+        using var __ = Activities.Source.StartActivity("execute-extensible-command");
+        return resolvedCommand.Execute().ExitCode;
+    }
+
+    private static int? TryRunFileBasedApp(ParseResult parseResult)
+    {
+        // If we didn't match any built-in commands, and a C# file path is the first argument,
+        // parse as `dotnet run file.cs ..rest_of_args` instead.
+        if (parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
+        {
+            List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+            foreach (var token in parseResult.Tokens)
+            {
+                if (token.Type != TokenType.Argument || token != unmatchedCommandOrFile)
+                {
+                    otherTokens.Add(token.Value);
+                }
+            }
+            parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
+            return ExecuteInternalCommand(parseResult);
+        }
+
+        return null;
+    }
+
+    public static void Shutdown(PosixSignalContext context)
+    {
+        s_sigIntRegistration.Dispose();
+        s_sigQuitRegistration.Dispose();
+        s_sigTermRegistration.Dispose();
+        s_mainActivity?.Stop();
+        TelemetryClient.FlushProviders();
+        Activities.Source.Dispose();
     }
 }

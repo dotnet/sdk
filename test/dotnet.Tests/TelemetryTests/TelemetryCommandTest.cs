@@ -28,7 +28,7 @@ public class TelemetryCommandTests : SdkTest
     public void NoTelemetryIfCommandIsInvalid()
     {
         string[] args = { "publish", "-r" };
-        Action a = () => { Cli.Program.ProcessArgs(args); };
+        Action a = () => { Cli.Program.ProcessArgsAndExecute(args); };
         a.Should().NotThrow<ArgumentOutOfRangeException>();
     }
 
@@ -36,7 +36,7 @@ public class TelemetryCommandTests : SdkTest
     public void NoTelemetryIfCommandIsInvalid2()
     {
         string[] args = { "restore", "-v" };
-        Action a = () => { Cli.Program.ProcessArgs(args); };
+        Action a = () => { Cli.Program.ProcessArgsAndExecute(args); };
         a.Should().NotThrow<ArgumentOutOfRangeException>();
     }
 
@@ -44,7 +44,7 @@ public class TelemetryCommandTests : SdkTest
     public void TopLevelCommandNameShouldBeSentToTelemetry()
     {
         string[] args = { "help" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
 
         _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
                             e.Properties.ContainsKey("verb") &&
@@ -56,7 +56,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "console";
         string[] args = { "new", argumentToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -71,7 +71,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "something";
         string[] args = { "help", argumentToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -86,7 +86,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "package";
         string[] args = { "add", argumentToSend, "aPackageName" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -101,7 +101,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "reference";
         string[] args = { "add", argumentToSend, "aPackageName" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -116,7 +116,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "package";
         string[] args = { "remove", argumentToSend, "aPackageName" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -131,7 +131,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "reference";
         string[] args = { "list", argumentToSend, "aPackageName" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey("argument") &&
@@ -145,7 +145,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string argumentToSend = "list";
         string[] args = { "sln", "aSolution", argumentToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -162,7 +162,7 @@ public class TelemetryCommandTests : SdkTest
 
         string[] args = { "nuget", argumentToSend, "path" };
 
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -178,7 +178,7 @@ public class TelemetryCommandTests : SdkTest
         const string optionKey = "language";
         const string optionValueToSend = "c#";
         string[] args = { "new", "console", "--" + optionKey, optionValueToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey(optionKey) &&
@@ -193,7 +193,7 @@ public class TelemetryCommandTests : SdkTest
         const string optionKey = "verbosity";
         const string optionValueToSend = "minimal";
         string[] args = { "restore", "--" + optionKey, optionValueToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -209,7 +209,7 @@ public class TelemetryCommandTests : SdkTest
         const string optionKey = "configuration";
         const string optionValueToSend = "Debug";
         string[] args = { "build", "--" + optionKey, optionValueToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -225,7 +225,7 @@ public class TelemetryCommandTests : SdkTest
         const string optionKey = "runtime";
         const string optionValueToSend = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
         string[] args = { "publish", "--" + optionKey, optionValueToSend };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -239,7 +239,7 @@ public class TelemetryCommandTests : SdkTest
     public void DotnetBuildAndPublishCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
     {
         string[] args = { "build", "--configuration", "Debug", "--runtime", $"{ToolsetInfo.LatestMacRuntimeIdentifier}-x64" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey("configuration") &&
@@ -259,7 +259,7 @@ public class TelemetryCommandTests : SdkTest
     public void DotnetRunCleanTestCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
     {
         string[] args = { "clean", "--configuration", "Debug", "--framework", ToolsetInfo.CurrentTargetFramework };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey("configuration") &&
@@ -280,7 +280,7 @@ public class TelemetryCommandTests : SdkTest
     {
         const string optionKey = "vulnerable";
         string[] args = { "package", "update", "--vulnerable" };
-        Cli.Program.ProcessArgs(args);
+        Cli.Program.ProcessArgsAndExecute(args);
         _fakeTelemetry
             .LogEntries.Should()
             .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -310,7 +310,7 @@ public class TelemetryCommandTests : SdkTest
         try
         {
             string[] args = { "build" };
-            Cli.Program.ProcessArgs(args);
+            Cli.Program.ProcessArgsAndExecute(args);
             throw new ArgumentException("test exception");
         }
         catch (Exception ex)
