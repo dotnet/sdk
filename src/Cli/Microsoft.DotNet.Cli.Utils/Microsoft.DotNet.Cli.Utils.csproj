@@ -31,7 +31,7 @@
     <None Include="**/Framework/**/*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="Windows\**" />
     <Compile Remove="WindowsRegistryEnvironmentPathEditor.cs" />
     <Compile Remove="Extensions\ProcessExtensions.cs" />
@@ -73,7 +73,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Hashing" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(TargetsWindows)' == 'true'">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(TargetOS)' == 'windows'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
