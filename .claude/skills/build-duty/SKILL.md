@@ -45,6 +45,18 @@ The dotnet/sdk repo has a merge flow: `release/9.0.3xx -> 10.0.1xx -> 10.0.2xx -
 ### Branch Lockdown
 During servicing windows, release branches are locked. PRs targeting locked branches get the `Branch Lockdown` label automatically.
 
+### PRs with Zero CI Checks
+When a PR shows 0/0 checks, there are three distinct scenarios:
+1. **No file changes** — The PR has 0 changed files (e.g., a merge that resolved to a no-op). Merge it (to advance the merge commit) or close it.
+2. **Merge conflicts** — GitHub won't trigger CI until conflicts are resolved. Fix conflicts first.
+3. **Checks not triggered** — The PR has changes and no conflicts, but CI was never kicked off. Comment `/azp run` to trigger a fresh build. This is common for codeflow PRs.
+
+## Retrying Failed CI
+
+When failures are known/flaky issues, **rerun only the failed jobs in Azure DevOps** rather than using `/azp run`, which triggers a full pipeline rerun. To rerun failed jobs, navigate to the build in AzDO and use the "Rerun failed jobs" button. This is faster and avoids wasting CI resources.
+
+Only use `/azp run` when you need a completely fresh build (e.g., after pushing new commits to the PR).
+
 ## Tips
 
 1. Start with "Ready to Merge" -- those are quick wins.

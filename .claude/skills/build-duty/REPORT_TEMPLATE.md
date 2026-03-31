@@ -86,7 +86,7 @@ PRs with unresolved merge conflicts that need manual resolution.
 
 1. **Merge:** {count} PRs are ready — review and merge
 2. **Wait:** {count} PRs have CI still running — check back later
-3. **Retry:** {count} PRs have likely-flaky failures — retry with `/azp run`
+3. **Retry:** {count} PRs have likely-flaky failures — rerun failed jobs in AzDO (not `/azp run`, which does a full rerun)
 4. **Investigate:** {count} PRs have unclassified failures — run CI analysis
 5. **Stale:** {count} PRs are >7 days old — escalate if stuck
 ```

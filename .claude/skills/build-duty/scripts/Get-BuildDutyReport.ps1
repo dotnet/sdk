@@ -399,6 +399,17 @@ function Get-PrRecommendation {
 
     # Waiting for CI
     if ($PrInfo.category -eq 'waiting') {
+        # Detect PRs with zero checks — these need different recommendations
+        if ($CheckDetails.total -eq 0) {
+            if ($PrInfo.changedFiles -eq 0) {
+                return @('NO_CHANGES', 'No file changes — consider merging (merge commit) or closing')
+            }
+            if ($PrInfo.mergeable -eq 'CONFLICTING') {
+                return @('MERGE_CONFLICT', 'Merge conflicts — resolve conflicts before CI can run')
+            }
+            # Checks never triggered
+            return @('TRIGGER_CI', 'CI not triggered — comment /azp run to start checks')
+        }
         $status = "$($CheckDetails.passed)/$($CheckDetails.total) passed"
         if ($CheckDetails.pending -gt 0) { $status += ", $($CheckDetails.pending) pending" }
         return @('WAIT_FOR_CI', "Wait for CI - $status")
