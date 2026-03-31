@@ -153,8 +153,8 @@ internal sealed class HotReloadDotNetWatcher
                     mainProjectOptions = mainProjectOptions with
                     {
                         TargetFramework = rootProjectsBuildResult.MainProjectTargetFramework,
-                        Device = rootProjectsBuildResult.SelectedDevice?.Id ?? mainProjectOptions.Device,
-                        DeviceRuntimeIdentifier = rootProjectsBuildResult.SelectedDevice?.RuntimeIdentifier ?? mainProjectOptions.DeviceRuntimeIdentifier,
+                        Device = rootProjectsBuildResult.SelectedDevice,
+                        DeviceRuntimeIdentifier = rootProjectsBuildResult.SelectedDeviceRuntimeIdentifier,
                     };
 
                     if (projectGraph.Graph.GraphRoots.Single()?.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability) == true)
@@ -953,10 +953,11 @@ internal sealed class HotReloadDotNetWatcher
     }
 
     // internal for testing
-    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, DeviceInfo? selectedDevice, LoadedProjectGraph? projectGraph, bool success)
+    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, string? selectedDevice, string? selectedDeviceRuntimeIdentifier, LoadedProjectGraph? projectGraph, bool success)
     {
         public string? MainProjectTargetFramework { get; } = mainProjectTargetFramework;
-        public DeviceInfo? SelectedDevice { get; } = selectedDevice;
+        public string? SelectedDevice { get; } = selectedDevice;
+        public string? SelectedDeviceRuntimeIdentifier { get; } = selectedDeviceRuntimeIdentifier;
         public LoadedProjectGraph? ProjectGraph { get; } = projectGraph;
         public bool Success { get; } = success;
     }
@@ -974,7 +975,8 @@ internal sealed class HotReloadDotNetWatcher
 
         LoadedProjectGraph? projectGraph = null;
         var targetFramework = mainProjectOptions?.TargetFramework;
-        DeviceInfo? selectedDevice = null;
+        var selectedDevice = mainProjectOptions?.Device;
+        string? selectedDeviceRuntimeIdentifier = mainProjectOptions?.DeviceRuntimeIdentifier;
 
         _context.Logger.Log(MessageDescriptor.BuildStartedNotification, projects);
 
@@ -984,7 +986,7 @@ internal sealed class HotReloadDotNetWatcher
         {
             var success = await BuildWithFrameworkAndDeviceSelectionAsync();
             _context.Logger.Log(MessageDescriptor.BuildCompletedNotification, (projects, success));
-            return new BuildProjectsResult(targetFramework, selectedDevice, projectGraph, success);
+            return new BuildProjectsResult(targetFramework, selectedDevice, selectedDeviceRuntimeIdentifier, projectGraph, success);
         }
         finally
         {
@@ -994,7 +996,7 @@ internal sealed class HotReloadDotNetWatcher
         async ValueTask<bool> BuildWithFrameworkAndDeviceSelectionAsync()
         {
             var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
-            var needsDeviceSelection = mainProjectOptions?.Device == null && deviceSelector != null;
+            var needsDeviceSelection = selectedDevice == null && deviceSelector != null;
 
             if (mainProjectOptions == null ||
                 (!needsFrameworkSelection && !needsDeviceSelection) ||
@@ -1039,26 +1041,28 @@ internal sealed class HotReloadDotNetWatcher
             if (needsDeviceSelection && deviceSelector is not null
                 && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
             {
-                selectedDevice = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
-                if (selectedDevice == null)
+                var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
+                if (deviceInfo == null)
                 {
                     return false;
                 }
 
-                _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice.Id);
+                selectedDevice = deviceInfo.Id;
+                selectedDeviceRuntimeIdentifier = deviceInfo.RuntimeIdentifier;
+                _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice);
 
                 // If the device provides a RuntimeIdentifier, re-restore so the assets file
                 // includes the RID target. This mirrors the dotnet-run behavior.
-                if (!string.IsNullOrEmpty(selectedDevice.RuntimeIdentifier))
+                if (!string.IsNullOrEmpty(selectedDeviceRuntimeIdentifier))
                 {
-                    if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, selectedDevice))
+                    if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, deviceInfo))
                     {
                         return false;
                     }
                 }
             }
 
-            return await BuildAsync(BuildAction.BuildOnly, targetFramework, selectedDevice);
+            return await BuildAsync(BuildAction.BuildOnly, targetFramework, selectedDevice != null ? new DeviceInfo(selectedDevice, null, null, null, selectedDeviceRuntimeIdentifier) : null);
         }
 
         async Task<bool> BuildAsync(BuildAction action, string? targetFramework, DeviceInfo? device = null)
