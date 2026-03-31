@@ -3,7 +3,16 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <!-- TemplateEngine targets net472, not Arcade's default of net462 -->
+    <NetFrameworkMinimum>net472</NetFrameworkMinimum>
+
+    <!-- TemplateEngine assembly signing for InternalsVisibleTo -->
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <!-- TemplateEngine test projects use a different test runner setup than the SDK -->
+    <GenerateProgramFile>true</GenerateProgramFile>
+
+    <NoWarn>$(NoWarn);IDE0005;0649;CA2016;CA5394;CA1802</NoWarn>
   </PropertyGroup>
 
 </Project>

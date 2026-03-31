@@ -13,6 +13,7 @@
     <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
     <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsPackageVersion)" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.2" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
@@ -64,6 +65,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
@@ -106,6 +108,7 @@
     <PackageVersion Include="NuGet.Commands" Version="$(NuGetCommandsPackageVersion)" />
     <PackageVersion Include="NuGet.Common" Version="$(NuGetCommonPackageVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
+    <PackageVersion Include="NuGet.Credentials" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.LibraryModel" Version="$(NuGetProjectModelPackageVersion)" />
     <PackageVersion Include="NuGet.Localization" Version="$(NuGetLocalizationPackageVersion)" />
@@ -144,6 +147,7 @@
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
+    <PackageVersion Include="Verify.XunitV3" Version="28.12.0" />
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
@@ -152,11 +156,6 @@
     <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
     <PackageVersion Include="xunit.v3.assert" Version="$(XUnitV3Version)" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />
-    <!-- TemplateEngine test dependencies -->
-    <PackageVersion Include="JsonSchema.Net" Version="7.3.2" />
-    <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
-    <PackageVersion Include="NuGet.Credentials" Version="$(NuGetBuildTasksPackageVersion)" />
-    <PackageVersion Include="Verify.XunitV3" Version="28.12.0" />
   </ItemGroup>
 
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in

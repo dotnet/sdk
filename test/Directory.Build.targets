@@ -9,9 +9,7 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
-  <!-- SDK test projects use FluentAssertions and Microsoft.NET.TestFramework.
-       TemplateEngine test projects don't use these - they use xunit + FakeItEasy + Verify. -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(_IsTemplateEngineTestProject)' != 'true'">
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <Using Include="FluentAssertions" />
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
@@ -22,12 +20,7 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
-  <!-- TE test projects only need basic Xunit global using -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(_IsTemplateEngineTestProject)' == 'true'">
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(_IsTemplateEngineTestProject)' != 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
   </ItemGroup>
 
