@@ -95,7 +95,10 @@ internal sealed class WatchControlReader : IAsyncDisposable
 
     private async ValueTask RestartProjectsAsync(IEnumerable<ProjectRepresentation> projects, CancellationToken cancellationToken)
     {
-        var projectsToRestart = await _compilationHandler.TerminatePeripheralProcessesAsync(projects.Select(p => p.ProjectGraphPath), cancellationToken);
+        var runningProjects = _compilationHandler.CurrentRunningProjects;
+        var projectsToRestart = projects.SelectMany(project => runningProjects.TryGetValue(project.ProjectGraphPath, out var array) ? array : []).ToArray();
+
+        await _compilationHandler.TerminatePeripheralProcessesAsync(projectsToRestart, cancellationToken);
 
         foreach (var project in projects)
         {
