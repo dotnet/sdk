@@ -235,13 +235,12 @@ internal sealed class HotReloadDotNetWatcher
                     }
                     while (changedFiles is []);
 
-                    var updates = new HotReloadProjectUpdatesBuilder();
+                    var updatesBuilder = compilationHandler.CreateUpdatesBuilder();
                     var stopwatch = Stopwatch.StartNew();
 
-                    await compilationHandler.GetStaticAssetUpdatesAsync(updates, changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
+                    await updatesBuilder.GetStaticAssetUpdatesAsync(changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
 
-                    await compilationHandler.GetManagedCodeUpdatesAsync(
-                        updates,
+                    await updatesBuilder.GetManagedCodeUpdatesAsync(
                         restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             // stop before waiting for user input:
@@ -253,27 +252,27 @@ internal sealed class HotReloadDotNetWatcher
                         autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                         iterationCancellationToken);
 
-                    if (updates.ProjectsToRestart is not [])
+                    if (updatesBuilder.ProjectsToRestart is not [])
                     {
-                        await compilationHandler.TerminatePeripheralProcessesAsync(updates.ProjectsToRestart, iterationCancellationToken);
+                        await compilationHandler.TerminatePeripheralProcessesAsync(updatesBuilder.ProjectsToRestart, iterationCancellationToken);
                     }
 
                     // Terminate root process if it had rude edits or is non-reloadable.
-                    if (updates.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
+                    if (updatesBuilder.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
                     {
                         Debug.Assert(mainRunningProject != null);
                         mainRunningProject.InitiateRestart();
                         break;
                     }
 
-                    if (updates.ProjectsToRebuild is not [])
+                    if (updatesBuilder.ProjectsToRebuild is not [])
                     {
                         while (true)
                         {
                             iterationCancellationToken.ThrowIfCancellationRequested();
 
                             var result = await BuildProjectsAsync(
-                                [.. updates.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)],
+                                [.. updatesBuilder.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)],
                                 fileWatcher,
                                 mainProjectOptions,
                                 frameworkSelector: null,
@@ -292,24 +291,24 @@ internal sealed class HotReloadDotNetWatcher
 
                         // Changes made since last snapshot of the accumulator shouldn't be included in next Hot Reload update.
                         // Apply them to the workspace.
-                        _ = await CaptureChangedFilesSnapshot(updates.ProjectsToRebuild);
+                        _ = await CaptureChangedFilesSnapshot(updatesBuilder.ProjectsToRebuild);
 
-                        _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, updates.ProjectsToRebuild.Count);
+                        _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, updatesBuilder.ProjectsToRebuild.Count);
                     }
 
                     // Deploy dependencies after rebuilding and before restarting.
-                    if (updates.ProjectsToRedeploy is not [])
+                    if (updatesBuilder.ProjectsToRedeploy is not [])
                     {
-                        await DeployProjectDependenciesAsync(evaluationResult, updates.ProjectsToRedeploy, iterationCancellationToken);
-                        _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, updates.ProjectsToRedeploy.Count);
+                        await DeployProjectDependenciesAsync(evaluationResult, updatesBuilder.ProjectsToRedeploy, iterationCancellationToken);
+                        _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, updatesBuilder.ProjectsToRedeploy.Count);
                     }
 
                     // Apply updates only after dependencies have been deployed,
                     // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
-                    if (updates.ProjectsToRestart is not [])
+                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updatesBuilder, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
+                    if (updatesBuilder.ProjectsToRestart is not [])
                     {
-                        await compilationHandler.RestartPeripheralProjectsAsync(updates.ProjectsToRestart, shutdownCancellationToken);
+                        await compilationHandler.RestartPeripheralProjectsAsync(updatesBuilder.ProjectsToRestart, shutdownCancellationToken);
                     }
 
                     async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(IReadOnlyList<string> rebuiltProjects)
