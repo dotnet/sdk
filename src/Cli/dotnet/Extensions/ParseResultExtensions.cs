@@ -34,7 +34,7 @@ public static class ParseResultExtensions
                 || token.Type == TokenType.Command
                 || token.Type == TokenType.Directive)
             .Select(t => t.Value);
-        Parser.Parse([..filteredTokenValues, "-h"]).Invoke();
+        Parser.Parse([.. filteredTokenValues, "-h"]).Invoke();
     }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -128,7 +128,7 @@ public static class ParseResultExtensions
                 || arg.Equals("dotnet"))
             .Skip(1);
 
-        return [..subargsFiltered, ..runArgs];
+        return [.. subargsFiltered, .. runArgs];
     }
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch

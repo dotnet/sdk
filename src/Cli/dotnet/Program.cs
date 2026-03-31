@@ -131,9 +131,7 @@ public class Program
         finally
         {
             TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
-
             Shutdown(default!);
-
             TelemetryClient.WriteLogIfNecessary();
         }
     }
@@ -155,70 +153,99 @@ public class Program
         // Example: dotnet --version
         if (!(parseResult.Action is InvocableOptionAction { Terminating: true }))
         {
-            SetupDotnetFirstRun(parseResult);
+            SetupFirstRun(parseResult);
         }
 
         TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
-
         if (parseResult.CanBeInvoked())
         {
-            InvokeBuiltInCommand(parseResult, out var exitCode);
-            return exitCode;
+            return InvokeBuiltInCommand(parseResult);
         }
-        else
+
+        try
         {
-            try
+            return LookupAndExecuteCommand(args, parseResult);
+        }
+        catch (CommandUnknownException e)
+        {
+            Reporter.Error.WriteLine(e.Message.Red());
+            Reporter.Output.WriteLine(e.InstructionMessage);
+            return 1;
+        }
+
+        static ParseResult ParseArgs(string[] args)
+        {
+            ParseResult parseResult;
+            using (var parseActivity = Activities.Source.StartActivity("parse"))
             {
-                return LookupAndExecuteCommand(args, parseResult);
+                parseResult = Parser.Parse(args);
+
+                // Avoid create temp directory with root permission and later prevent access in non sudo
+                // This method need to be run very early before temp folder get created
+                // https://github.com/dotnet/sdk/issues/20195
+                SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
             }
-            catch (CommandUnknownException e)
-            {
-                Reporter.Error.WriteLine(e.Message.Red());
-                Reporter.Output.WriteLine(e.InstructionMessage);
-                return 1;
-            }
+            s_mainActivity.SetDisplayName(parseResult);
+            return parseResult;
         }
     }
 
     private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
     {
-        var lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command");
         string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
-        var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
-            new DefaultCommandResolverPolicy(),
-            commandName,
-            args.GetSubArguments(),
-            FrameworkConstants.CommonFrameworks.NetStandardApp15);
-        lookupExternalCommandActivity?.Dispose();
+        CommandSpec? resolvedCommandSpec = null;
+        using (var lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command"))
+        {
+            resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
+                new DefaultCommandResolverPolicy(),
+                commandName,
+                args.GetSubArguments(),
+                FrameworkConstants.CommonFrameworks.NetStandardApp15);
+        }
 
         if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
         {
-            lookupExternalCommandActivity?.Dispose();
             return fileBasedAppExitCode;
         }
-        else
-        {
-            var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
-            lookupExternalCommandActivity?.Dispose();
 
-            using var _executionActivity = Activities.Source.StartActivity("execute-extensible-command");
-            var result = resolvedCommand.Execute();
-            return result.ExitCode;
-        }
+        var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
+        using var executionActivity = Activities.Source.StartActivity("execute-extensible-command");
+        return resolvedCommand.Execute().ExitCode;
     }
 
-    private static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
+    private static int InvokeBuiltInCommand(ParseResult parseResult)
     {
         Debug.Assert(parseResult.CanBeInvoked());
+        int exitCode;
         using var _invocationActivity = Activities.Source.StartActivity("invocation");
         try
         {
             exitCode = Parser.Invoke(parseResult);
-            exitCode = AdjustExitCode(parseResult, exitCode);
+            if (parseResult.Errors.Any())
+            {
+                exitCode = AdjustExitCodeForNew();
+            }
         }
         catch (Exception exception)
         {
             exitCode = Parser.ExceptionHandler(exception, parseResult);
+        }
+        return exitCode;
+
+        int AdjustExitCodeForNew()
+        {
+            var commandResult = parseResult.CommandResult;
+            while (commandResult is not null)
+            {
+                if (commandResult.Command.Name == "new")
+                {
+                    // Default parse error exit code is 1.
+                    // For the "new" command and its subcommands, it needs to be 127.
+                    return 127;
+                }
+                commandResult = commandResult.Parent as CommandResult;
+            }
+            return exitCode;
         }
     }
 
@@ -237,35 +264,14 @@ public class Program
                     otherTokens.Add(token.Value);
                 }
             }
-
             parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
-
-            InvokeBuiltInCommand(parseResult, out var exitCode);
-            return exitCode;
+            return InvokeBuiltInCommand(parseResult);
         }
 
         return null;
     }
 
-    private static ParseResult ParseArgs(string[] args)
-    {
-        ParseResult parseResult;
-        using (var _parseActivity = Activities.Source.StartActivity("parse"))
-        {
-            parseResult = Parser.Parse(args);
-
-            // Avoid create temp directory with root permission and later prevent access in non sudo
-            // This method need to be run very early before temp folder get created
-            // https://github.com/dotnet/sdk/issues/20195
-            SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
-        }
-
-        s_mainActivity.SetDisplayName(parseResult);
-
-        return parseResult;
-    }
-
-    private static void SetupDotnetFirstRun(ParseResult parseResult)
+    private static void SetupFirstRun(ParseResult parseResult)
     {
         using var _ = Activities.Source.StartActivity("first-time-use");
         IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
@@ -293,62 +299,22 @@ public class Program
         }
 
         var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
-            generateAspNetCertificate: generateAspNetCertificate,
-            telemetryOptout: telemetryOptout,
-            addGlobalToolsToPath: addGlobalToolsToPath,
-            nologo: nologo,
-            skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
+            generateAspNetCertificate,
+            telemetryOptout,
+            addGlobalToolsToPath,
+            nologo,
+            skipWorkloadIntegrityCheck);
 
         string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
         char[] switchIndicators = ['-', '/'];
-        var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
+        var skipFirstTimeUseCheck = parseResult.CommandResult.Tokens.Any(t =>
             getStarOperators.Any(o =>
-            switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
+                switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
 
-        ConfigureDotNetForFirstTimeUse(
-            firstTimeUseNoticeSentinel,
-            aspNetCertificateSentinel,
-            toolPathSentinel,
-            isDotnetBeingInvokedFromNativeInstaller,
-            dotnetFirstRunConfiguration,
-            environmentProvider,
-            skipFirstTimeUseCheck: getStarOptionPassed);
-    }
-
-    private static int AdjustExitCode(ParseResult parseResult, int exitCode)
-    {
-        if (parseResult.Errors.Count > 0)
-        {
-            var commandResult = parseResult.CommandResult;
-
-            while (commandResult is not null)
-            {
-                if (commandResult.Command.Name == "new")
-                {
-                    // default parse error exit code is 1
-                    // for the "new" command and its subcommands it needs to be 127
-                    return 127;
-                }
-
-                commandResult = commandResult.Parent as CommandResult;
-            }
-        }
-
-        return exitCode;
-    }
-
-    private static void ConfigureDotNetForFirstTimeUse(
-       IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
-       IAspNetCertificateSentinel aspNetCertificateSentinel,
-       IFileSentinel toolPathSentinel,
-       bool isDotnetBeingInvokedFromNativeInstaller,
-       DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
-       IEnvironmentProvider environmentProvider,
-       bool skipFirstTimeUseCheck)
-    {
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
-        _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
+        // TODO: Not sure why this instance type is created but unused.
+        var unusedFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
         var reporter = Reporter.Error;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
@@ -359,7 +325,7 @@ public class Program
             dotnetFirstRunConfiguration,
             reporter,
             environmentPath,
-            skipFirstTimeUseCheck: skipFirstTimeUseCheck);
+            skipFirstTimeUseCheck);
 
         dotnetConfigurer.Configure();
 
@@ -370,7 +336,7 @@ public class Program
         }
 #endif
 
-        if (isFirstTimeUse && !dotnetFirstRunConfiguration.SkipWorkloadIntegrityCheck)
+        if (isFirstTimeUse && !skipWorkloadIntegrityCheck)
         {
             try
             {
