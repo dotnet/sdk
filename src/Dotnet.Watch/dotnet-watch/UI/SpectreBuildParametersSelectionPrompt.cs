@@ -6,13 +6,13 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class SpectreWatchSelectionPrompt(IAnsiConsole console) : WatchSelectionPrompt
+internal sealed class SpectreBuildParametersSelectionPrompt(IAnsiConsole console) : BuildParametersSelectionPrompt
 {
     private const string CyanMarkup = "[cyan]";
     private const string GrayMarkup = "[gray]";
     private const string EndMarkup = "[/]";
 
-    public SpectreWatchSelectionPrompt(IConsole watchConsole)
+    public SpectreBuildParametersSelectionPrompt(IConsole watchConsole)
         : this(CreateConsole(watchConsole))
     {
     }

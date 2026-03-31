@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch;
 /// Abstract base for interactive selection prompts in dotnet-watch.
 /// Provides target framework and device selection with caching across watch restarts.
 /// </summary>
-internal abstract class WatchSelectionPrompt : IDisposable
+internal abstract class BuildParametersSelectionPrompt : IDisposable
 {
     public IReadOnlyList<string>? PreviousTargetFrameworks { get; set; }
     public string? PreviousFrameworkSelection { get; set; }

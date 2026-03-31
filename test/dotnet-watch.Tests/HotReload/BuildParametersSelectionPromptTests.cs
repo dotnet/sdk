@@ -5,7 +5,7 @@ using SpectreTestConsole = Spectre.Console.Testing.TestConsole;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class WatchSelectionPromptTests
+public class BuildParametersSelectionPromptTests
 {
     private static DeviceInfo[] CreateTestDevices() =>
     [
@@ -28,7 +28,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0" };
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
         Assert.Equal(frameworks[index], result);
@@ -49,7 +49,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0" };
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
         Assert.Equal(frameworks[index], first);
@@ -69,7 +69,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.DownArrow);
         console.Input.PushKey(ConsoleKey.Enter);
 
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectTargetFrameworkAsync(["net7.0", "net8.0", "net9.0"], CancellationToken.None);
         Assert.Equal("net7.0", first);
@@ -88,7 +88,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var frameworks = new[] { "net7.0", "net8.0", "net9.0", "net10.0" };
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
         Assert.Equal("net9.0", result);
@@ -103,7 +103,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var devices = CreateTestDevices();
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
         Assert.Equal(devices[0], result);
@@ -120,7 +120,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var devices = CreateTestDevices();
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
         Assert.Equal("0A041FDD400327", result.Id);
@@ -136,7 +136,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var devices = CreateTestDevices();
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
         Assert.Equal(devices[0], first);
@@ -156,7 +156,7 @@ public class WatchSelectionPromptTests
         console.Input.PushText("iPhone 15");
         console.Input.PushKey(ConsoleKey.Enter);
 
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectDeviceAsync(CreateTestDevices(), CancellationToken.None);
         Assert.Equal("emulator-5554", first.Id);
@@ -180,7 +180,7 @@ public class WatchSelectionPromptTests
         console.Input.PushKey(ConsoleKey.Enter);
 
         var devices = CreateTestDevices();
-        var prompt = new SpectreWatchSelectionPrompt(console);
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
         Assert.Equal("emulator-5555", result.Id);
@@ -191,7 +191,7 @@ public class WatchSelectionPromptTests
     public void FormatDevice_WithAllMetadata()
     {
         var device = new DeviceInfo("emulator-5554", "Pixel 7 - API 35", "Emulator", "Online", "android-x64");
-        var formatted = SpectreWatchSelectionPrompt.FormatDevice(device);
+        var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
         Assert.Equal("emulator-5554 - Pixel 7 - API 35 (Emulator, Online)", formatted);
     }
 
@@ -199,7 +199,7 @@ public class WatchSelectionPromptTests
     public void FormatDevice_WithoutType()
     {
         var device = new DeviceInfo("device-1", "My Phone", null, "Connected", null);
-        var formatted = SpectreWatchSelectionPrompt.FormatDevice(device);
+        var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
         Assert.Equal("device-1 - My Phone (Connected)", formatted);
     }
 
@@ -207,7 +207,7 @@ public class WatchSelectionPromptTests
     public void FormatDevice_WithoutStatus()
     {
         var device = new DeviceInfo("device-1", "My Phone", "Device", null, null);
-        var formatted = SpectreWatchSelectionPrompt.FormatDevice(device);
+        var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
         Assert.Equal("device-1 - My Phone (Device)", formatted);
     }
 
@@ -215,7 +215,7 @@ public class WatchSelectionPromptTests
     public void FormatDevice_IdOnly()
     {
         var device = new DeviceInfo("device-1", null, null, null, null);
-        var formatted = SpectreWatchSelectionPrompt.FormatDevice(device);
+        var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
         Assert.Equal("device-1", formatted);
     }
 }

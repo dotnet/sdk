@@ -19,7 +19,7 @@ internal sealed class HotReloadDotNetWatcher
     private readonly IConsole _console;
     private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
     private readonly RestartPrompt? _rudeEditRestartPrompt;
-    private readonly WatchSelectionPrompt? _selectionPrompt;
+    private readonly BuildParametersSelectionPrompt? _selectionPrompt;
 
     private readonly DotNetWatchContext _context;
     private readonly ProjectGraphFactory _designTimeBuildGraphFactory;
@@ -30,7 +30,7 @@ internal sealed class HotReloadDotNetWatcher
         DotNetWatchContext context,
         IConsole console,
         IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory,
-        WatchSelectionPrompt? selectionPrompt)
+        BuildParametersSelectionPrompt? selectionPrompt)
     {
         _context = context;
         _console = console;
@@ -1018,7 +1018,7 @@ internal sealed class HotReloadDotNetWatcher
             var rootProject = projectGraph.Graph.GraphRoots.Single().ProjectInstance;
 
             // Select target framework if needed:
-            if (targetFramework == null && frameworkSelector != null)
+            if (needsFrameworkSelection && frameworkSelector is not null)
             {
                 if (rootProject.GetTargetFramework() is var framework and not "")
                 {
@@ -1036,10 +1036,10 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             // Select device if needed:
-            if (mainProjectOptions.Device == null && deviceSelector != null
-                && rootProject.Targets.ContainsKey(ComputeAvailableDevicesTarget))
+            if (needsDeviceSelection && deviceSelector is not null
+                && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
             {
-                selectedDevice = await TrySelectDeviceAsync(rootProject, targetFramework, deviceSelector, cancellationToken);
+                selectedDevice = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
                 if (selectedDevice == null)
                 {
                     return false;
@@ -1125,35 +1125,35 @@ internal sealed class HotReloadDotNetWatcher
         }
     }
 
-    private const string ComputeAvailableDevicesTarget = "ComputeAvailableDevices";
-
     /// <summary>
     /// Computes available devices and selects one.
     /// Auto-selects a single device when only one is available; otherwise uses the provided device selector.
     /// Returns null if no devices are available (error).
     /// </summary>
     private async Task<DeviceInfo?> TrySelectDeviceAsync(
+        LoadedProjectGraph projectGraph,
         ProjectInstance rootProject,
         string? targetFramework,
         Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>> deviceSelector,
         CancellationToken cancellationToken)
     {
-        // Create a new ProjectInstance with the selected TFM so device computation is correct.
-        var globalProps = new Dictionary<string, string>(rootProject.GlobalProperties, StringComparer.OrdinalIgnoreCase);
-        if (targetFramework != null)
+        // Get the project node for the selected TFM so device computation is correct.
+        var projectNode = projectGraph.TryGetProjectNode(rootProject.FullPath, targetFramework);
+        if (projectNode == null)
         {
-            globalProps["TargetFramework"] = targetFramework;
+            return null;
         }
 
-        var projectInstance = new ProjectInstance(rootProject.FullPath, globalProps, rootProject.ToolsVersion);
+        var projectInstance = projectNode.ProjectInstance.DeepCopy();
 
-        var buildResult = projectInstance.Build(
-            targets: [ComputeAvailableDevicesTarget],
-            loggers: null,
-            remoteLoggers: null,
-            out var targetOutputs);
+        var results = await projectGraph.BuildManager.BuildAsync(
+            [BuildRequest.Create(projectInstance, [TargetNames.ComputeAvailableDevices])],
+            onFailure: _ => true,
+            operationName: TargetNames.ComputeAvailableDevices,
+            cancellationToken);
 
-        if (!buildResult || !targetOutputs.TryGetValue(ComputeAvailableDevicesTarget, out var targetResult))
+        if (results is not [var result] || !result.IsSuccess
+            || !result.TargetResults.TryGetValue(TargetNames.ComputeAvailableDevices, out var targetResult))
         {
             _context.Logger.LogDebug("ComputeAvailableDevices target failed or returned no output.");
             return null;
