@@ -1211,7 +1211,8 @@ internal sealed class HotReloadDotNetWatcher
 
             if (!string.IsNullOrEmpty(device.RuntimeIdentifier))
             {
-                arguments.Add($"-p:RuntimeIdentifier={device.RuntimeIdentifier}");
+                arguments.Add("--runtime");
+                arguments.Add(device.RuntimeIdentifier);
             }
         }
 

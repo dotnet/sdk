@@ -118,7 +118,8 @@ internal sealed class ProjectLauncher(
 
             if (projectOptions.DeviceRuntimeIdentifier != null)
             {
-                arguments.Add($"-p:RuntimeIdentifier={projectOptions.DeviceRuntimeIdentifier}");
+                arguments.Add("--runtime");
+                arguments.Add(projectOptions.DeviceRuntimeIdentifier);
             }
         }
 
