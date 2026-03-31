@@ -976,7 +976,7 @@ internal sealed class HotReloadDotNetWatcher
         LoadedProjectGraph? projectGraph = null;
         var targetFramework = mainProjectOptions?.TargetFramework;
         var selectedDevice = mainProjectOptions?.Device;
-        string? selectedDeviceRuntimeIdentifier = mainProjectOptions?.DeviceRuntimeIdentifier;
+        var selectedDeviceRuntimeIdentifier = mainProjectOptions?.DeviceRuntimeIdentifier;
 
         _context.Logger.Log(MessageDescriptor.BuildStartedNotification, projects);
 
