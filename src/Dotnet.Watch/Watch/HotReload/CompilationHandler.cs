@@ -86,20 +86,6 @@ internal sealed class CompilationHandler : IDisposable
         Dispose();
     }
 
-    private void DiscardPreviousUpdates(ImmutableArray<ProjectId> projectsToBeRebuilt)
-    {
-        // Remove previous updates to all modules that were affected by rude edits.
-        // All running projects that statically reference these modules have been terminated.
-        // If we missed any project that dynamically references one of these modules its rebuild will fail.
-        // At this point there is thus no process that these modules loaded and any process created in future
-        // that will load their rebuilt versions.
-
-        lock (_runningProjectsAndUpdatesGuard)
-        {
-            _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.Contains(update.ProjectId));
-        }
-    }
-
     public async ValueTask StartSessionAsync(ProjectGraph graph, CancellationToken cancellationToken)
     {
         var solution = await UpdateProjectGraphAsync(graph, cancellationToken);
@@ -393,8 +379,7 @@ internal sealed class CompilationHandler : IDisposable
         // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
         _hotReloadService.CommitUpdate();
 
-        DiscardPreviousUpdates(updates.ProjectsToRebuild);
-
+        builder.PreviousProjectUpdatesToDiscard.AddRange(updates.ProjectsToRebuild);
         builder.ManagedCodeUpdates.AddRange(updates.ProjectUpdates);
         builder.ProjectsToRebuild.AddRange(updates.ProjectsToRebuild.Select(GetRequiredProjectFilePath));
         builder.ProjectsToRedeploy.AddRange(updates.ProjectsToRedeploy.Select(GetRequiredProjectFilePath));
@@ -409,8 +394,7 @@ internal sealed class CompilationHandler : IDisposable
     }
 
     public async ValueTask ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(
-        IReadOnlyList<HotReloadService.Update> managedCodeUpdates,
-        IReadOnlyDictionary<RunningProject, List<StaticWebAsset>> staticAssetUpdates,
+        HotReloadProjectUpdatesBuilder builder,
         ImmutableArray<ChangedFile> changedFiles,
         LoadedProjectGraph projectGraph,
         Stopwatch stopwatch,
@@ -422,8 +406,15 @@ internal sealed class CompilationHandler : IDisposable
         IReadOnlyList<RestartOperation> relaunchOperations;
         lock (_runningProjectsAndUpdatesGuard)
         {
+            // Remove previous updates to all modules that were affected by rude edits.
+            // All running projects that statically reference these modules have been terminated.
+            // If we missed any project that dynamically references one of these modules its rebuild will fail.
+            // At this point there is thus no process that these modules loaded and any process created in future
+            // that will load their rebuilt versions.
+            _previousUpdates = _previousUpdates.RemoveAll(update => builder.PreviousProjectUpdatesToDiscard.Contains(update.ProjectId));
+
             // Adding the updates makes sure that all new processes receive them before they are added to running processes.
-            _previousUpdates = _previousUpdates.AddRange(managedCodeUpdates);
+            _previousUpdates = _previousUpdates.AddRange(builder.ManagedCodeUpdates);
 
             // Capture the set of processes that do not have the currently calculated deltas yet.
             projectsToUpdate = _runningProjects;
@@ -459,7 +450,7 @@ internal sealed class CompilationHandler : IDisposable
             }, cancellationToken);
         }
 
-        if (managedCodeUpdates is not [])
+        if (builder.ManagedCodeUpdates is not [])
         {
             // Apply changes to all running projects, even if they do not have a static project dependency on any project that changed.
             // The process may load any of the binaries using MEF or some other runtime dependency loader.
@@ -472,7 +463,7 @@ internal sealed class CompilationHandler : IDisposable
 
                     // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
                     var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(managedCodeUpdates),
+                        ToManagedCodeUpdates(builder.ManagedCodeUpdates),
                         applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                         cancellationToken);
 
@@ -484,7 +475,7 @@ internal sealed class CompilationHandler : IDisposable
         // Creating apply tasks involves reading static assets from disk. Parallelize this IO.
         var staticAssetApplyTaskProducers = new List<Task<Task>>();
 
-        foreach (var (runningProject, assets) in staticAssetUpdates)
+        foreach (var (runningProject, assets) in builder.StaticAssetUpdates)
         {
             // Only cancel applying updates when the process exits. Canceling in-progress static asset update might be ok,
             // but for consistency with managed code updates we only cancel when the process exits.
@@ -507,19 +498,19 @@ internal sealed class CompilationHandler : IDisposable
 
                 var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-                if (managedCodeUpdates.Count > 0)
+                if (builder.ManagedCodeUpdates.Count > 0)
                 {
                     _context.Logger.Log(MessageDescriptor.ManagedCodeChangesApplied, elapsedMilliseconds);
                 }
 
-                if (staticAssetUpdates.Count > 0)
+                if (builder.StaticAssetUpdates.Count > 0)
                 {
                     _context.Logger.Log(MessageDescriptor.StaticAssetsChangesApplied, elapsedMilliseconds);
                 }
 
                 _context.Logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification,
                     projectsToUpdate.Select(e => e.Value.First().Options.Representation).Concat(
-                        staticAssetUpdates.Select(e => e.Key.Options.Representation)));
+                        builder.StaticAssetUpdates.Select(e => e.Key.Options.Representation)));
             }
             catch (OperationCanceledException)
             {
@@ -832,9 +823,9 @@ internal sealed class CompilationHandler : IDisposable
 
             foreach (var runningProject in GetCorrespondingRunningProjects(runningProjects, applicationProjectInstance))
             {
-                if (!builder.StaticAssetsToUpdate.TryGetValue(runningProject, out var updatesPerRunningProject))
+                if (!builder.StaticAssetUpdates.TryGetValue(runningProject, out var updatesPerRunningProject))
                 {
-                    builder.StaticAssetsToUpdate.Add(runningProject, updatesPerRunningProject = []);
+                    builder.StaticAssetUpdates.Add(runningProject, updatesPerRunningProject = []);
                 }
 
                 if (!runningProject.Clients.UseRefreshServerToApplyStaticAssets && !runningProject.Clients.IsManagedAgentSupported)
