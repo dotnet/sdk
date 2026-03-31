@@ -312,6 +312,26 @@
   <Folder Name="/src/Workloads/VSInsertion/">
     <Project Path="src/Workloads/VSInsertion/workloads.csproj" />
   </Folder>
+  <Folder Name="/src/TemplateEngine/">
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Microsoft.TemplateEngine.Abstractions.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Core/Microsoft.TemplateEngine.Core.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Core.Contracts/Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Edge/Microsoft.TemplateEngine.Edge.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.IDE/Microsoft.TemplateEngine.IDE.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateEngine.Utils/Microsoft.TemplateEngine.Utils.csproj" />
+    <Project Path="src/TemplateEngine/Microsoft.TemplateSearch.Common/Microsoft.TemplateSearch.Common.csproj" />
+  </Folder>
+  <Folder Name="/src/TemplateEngine/Tools/">
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.CLI/Microsoft.TemplateEngine.Authoring.CLI.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.Tasks/Microsoft.TemplateEngine.Authoring.Tasks.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.TemplateApiVerifier/Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.XunitV3/Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.XunitV3.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier/Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3/Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateEngine.TemplateLocalizer.Core/Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" />
+    <Project Path="src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj" />
+  </Folder>
   <Folder Name="/template_feed/">
     <Project Path="template_feed/Microsoft.DotNet.Common.ItemTemplates/Microsoft.DotNet.Common.ItemTemplates.csproj" />
     <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.11.0/Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj" />
@@ -362,6 +382,24 @@
     <Project Path="test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj" />
     <Project Path="test/Microsoft.NET.ToolPack.Tests/Microsoft.NET.ToolPack.Tests.csproj" />
     <Project Path="test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests/Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.CLI.UnitTests/Microsoft.TemplateEngine.Authoring.CLI.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests/Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.Templates.IntegrationTests/Microsoft.TemplateEngine.Authoring.Templates.IntegrationTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests/Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.XunitV3/Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.XunitV3.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests/Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.XunitV3/Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.XunitV3.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Core.UnitTests/Microsoft.TemplateEngine.Core.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Edge.UnitTests/Microsoft.TemplateEngine.Edge.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.IDE.IntegrationTests/Microsoft.TemplateEngine.IDE.IntegrationTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Mocks/Microsoft.TemplateEngine.Mocks.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests/Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.TestHelper/Microsoft.TemplateEngine.TestHelper.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Utils.UnitTests/Microsoft.TemplateEngine.Utils.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateSearch.Common.UnitTests/Microsoft.TemplateSearch.Common.UnitTests.csproj" />
+    <Project Path="test/TemplateEngine/Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests/Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.WebTools.AspireService.Tests/Microsoft.WebTools.AspireService.Tests.csproj" />
     <Project Path="test/Microsoft.Win32.Msi.Manual.Tests/Microsoft.Win32.Msi.Manual.Tests.csproj" />
     <Project Path="test/Microsoft.Win32.Msi.Tests/Microsoft.Win32.Msi.Tests.csproj" />
