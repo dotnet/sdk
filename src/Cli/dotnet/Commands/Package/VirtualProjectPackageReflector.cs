@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -27,6 +28,7 @@ internal static class VirtualProjectPackageReflector
             {
                 if (string.Equals(item.ItemType, "PackageReference", StringComparison.OrdinalIgnoreCase))
                 {
+                    Debug.Assert(!string.IsNullOrEmpty(item.Include), "Expected only PackageReference Include items in virtual project.");
                     var version = item.Metadata.FirstOrDefault(
                         m => string.Equals(m.Name, "Version", StringComparison.OrdinalIgnoreCase))?.Value;
                     packageReferences[item.Include] = version;

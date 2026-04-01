@@ -109,7 +109,7 @@ Commands:
                 .Execute("remove", relativeProjectPath, "package", packageName);
 
             remove.Should().Pass();
-            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{projectFilePath}'.");
+            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{relativeProjectPath}'.");
             remove.StdErr.Should().BeEmpty();
         }
 

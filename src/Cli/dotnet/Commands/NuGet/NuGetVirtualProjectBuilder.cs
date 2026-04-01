@@ -23,9 +23,12 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 
     public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
     {
-        var fullPath = Path.GetFullPath(entryPointFilePath);
+        if (!Path.IsPathFullyQualified(entryPointFilePath) == false)
+        {
+            throw new ArgumentException($"'{entryPointFilePath}' is not a fully qualified path.", paramName: nameof(entryPointFilePath));
+        }
 
-        var builder = new VirtualProjectBuilder(fullPath, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,

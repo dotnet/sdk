@@ -41,7 +41,10 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             projectFilePath = fileOrDirectory;
         }
 
-        projectFilePath = Path.GetFullPath(projectFilePath);
+        if (isFileBasedApp)
+        {
+            projectFilePath = Path.GetFullPath(projectFilePath);
+        }
 
         var tempDgFilePath = string.Empty;
 
@@ -75,8 +78,10 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
 
     private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath, bool isFileBasedApp)
     {
-        var result = isFileBasedApp
-            ? new VirtualProjectBuildingCommand(
+        int result;
+        if (isFileBasedApp)
+        {
+            result = new VirtualProjectBuildingCommand(
                 projectFilePath,
                 MSBuildArgs
                     .FromProperties(new Dictionary<string, string>
@@ -87,12 +92,15 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                     }.AsReadOnly())
                     .CloneWithVerbosity(VerbosityOptions.quiet)
                     .CloneWithAdditionalTargets("GenerateRestoreGraphFile"))
-                {
-                    NoRestore = true,
-                    NoCache = true,
-                    NoWriteBuildMarkers = true,
-                }.Execute()
-            : new MSBuildForwardingApp(
+            {
+                NoRestore = true,
+                NoCache = true,
+                NoWriteBuildMarkers = true,
+            }.Execute();
+        }
+        else
+        {
+            result = new MSBuildForwardingApp(
                 [
                     // Pass the project file path
                     projectFilePath,
@@ -115,6 +123,7 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                     // Set verbosity to quiet to avoid cluttering the output for this 'inner' build
                     "-v:quiet"
                 ]).Execute();
+        }
 
         if (result != 0)
         {

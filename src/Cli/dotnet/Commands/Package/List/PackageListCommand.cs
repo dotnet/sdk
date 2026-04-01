@@ -21,7 +21,7 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
-        fileOrDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, fileOrDirectory));
+        fileOrDirectory = Path.GetFullPath(fileOrDirectory);
 
         bool isFileBasedApp = allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory);
 

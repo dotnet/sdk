@@ -272,6 +272,11 @@ namespace Microsoft.DotNet.Tools.Run.Tests
             var updatedVersion = NuGetVersion.Parse(updatedPackageVersionString);
 
             updatedVersion.Should().BeGreaterThan(v1);
+
+            File.ReadAllText(file).Should().Be($"""
+                #:package dotnet-hello@{updatedPackageVersionString}
+                Console.WriteLine();
+                """);
         }
     }
 }
