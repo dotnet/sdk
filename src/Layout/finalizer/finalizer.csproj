@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" />
+    <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs"/>
   </ItemGroup>
 
   <ItemGroup>
