@@ -108,7 +108,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
-        // Note that NoAnsi also implies also no progress.
+        // Note that NoAnsi also implies no progress.
         if (noAnsi || new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
         {
             // User explicitly specified --no-ansi.
