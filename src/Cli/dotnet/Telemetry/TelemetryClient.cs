@@ -21,14 +21,13 @@ public class TelemetryClient : ITelemetryClient
 {
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
-    private static readonly List<Activity> s_activities = [];
 
 #if TARGET_WINDOWS
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
     private static MeterProvider? s_metricsProvider;
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
-#endif
+    private static readonly List<Activity> s_activities = [];
 
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
@@ -37,6 +36,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     private static readonly int s_flushTimeoutMs = 200;
+#endif
 
     public static string? CurrentSessionId { get; private set; } = null;
     public static bool DisabledForTests
@@ -153,8 +153,10 @@ public class TelemetryClient : ITelemetryClient
 #endif
         return parentContext;
 
+#if TARGET_WINDOWS
         static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key) =>
             carrier.TryGetValue(key, out var value) ? value : null;
+#endif
     }
 
     private static ActivityKind GetActivityKind(ActivityContext? parentActivityContext) =>
@@ -162,16 +164,20 @@ public class TelemetryClient : ITelemetryClient
 
     public static void FlushProviders()
     {
+#if TARGET_WINDOWS
         s_tracerProvider?.ForceFlush(s_flushTimeoutMs);
         s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
+#endif
     }
 
     public static void WriteLogIfNecessary()
     {
+#if TARGET_WINDOWS
         if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
         {
             TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
         }
+#endif
     }
 
     public void TrackEvent(string? eventName, IDictionary<string, string?>? properties)
