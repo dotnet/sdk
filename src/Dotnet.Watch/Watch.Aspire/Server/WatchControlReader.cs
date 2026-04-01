@@ -9,14 +9,13 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class WatchControlReader : IAsyncDisposable
 {
-    private readonly CompilationHandler _compilationHandler;
+    private readonly ProjectLauncher _launcher;
     private readonly string _pipeName;
     private readonly NamedPipeClientStream _pipe;
-    private readonly ILogger _logger;
     private readonly CancellationTokenSource _disposalCancellationSource = new();
     private readonly Task _listener;
 
-    public WatchControlReader(string pipeName, CompilationHandler compilationHandler, ILogger logger)
+    public WatchControlReader(string pipeName, ProjectLauncher launcher)
     {
         _pipe = new NamedPipeClientStream(
             serverName: ".",
@@ -25,14 +24,16 @@ internal sealed class WatchControlReader : IAsyncDisposable
             PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
         _pipeName = pipeName;
-        _compilationHandler = compilationHandler;
-        _logger = logger;
+        _launcher = launcher;
         _listener = ListenAsync(_disposalCancellationSource.Token);
     }
 
+    private ILogger Logger
+        => _launcher.Logger;
+
     public async ValueTask DisposeAsync()
     {
-        _logger.LogDebug("Disposing control pipe.");
+        Logger.LogDebug("Disposing control pipe.");
 
         _disposalCancellationSource.Cancel();
         await _listener;
@@ -53,7 +54,7 @@ internal sealed class WatchControlReader : IAsyncDisposable
     {
         try
         {
-            _logger.LogDebug("Connecting to control pipe '{PipeName}'.", _pipeName);
+            Logger.LogDebug("Connecting to control pipe '{PipeName}'.", _pipeName);
             await _pipe.ConnectAsync(cancellationToken);
 
             using var reader = new StreamReader(_pipe);
@@ -74,12 +75,12 @@ internal sealed class WatchControlReader : IAsyncDisposable
 
                 if (command.Type == WatchControlCommand.Types.Rebuild)
                 {
-                    _logger.LogDebug("Received request to restart projects");
+                    Logger.LogDebug("Received request to restart projects");
                     await RestartProjectsAsync(command.Projects.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath), cancellationToken);
                 }
                 else
                 {
-                    _logger.LogError("Unknown control command: '{Type}'", command.Type);
+                    Logger.LogError("Unknown control command: '{Type}'", command.Type);
                 }
             }
         }
@@ -89,23 +90,23 @@ internal sealed class WatchControlReader : IAsyncDisposable
         }
         catch (Exception e)
         {
-            _logger.LogDebug("Control pipe listener failed: {Message}", e.Message);
+            Logger.LogDebug("Control pipe listener failed: {Message}", e.Message);
         }
     }
 
     private async ValueTask RestartProjectsAsync(IEnumerable<ProjectRepresentation> projects, CancellationToken cancellationToken)
     {
-        var projectsToRestart = _compilationHandler.GetRunningProjects(projects).ToArray();
-        await _compilationHandler.TerminatePeripheralProcessesAsync(projectsToRestart, cancellationToken);
+        var projectsToRestart = _launcher.RunningProjectsManager.GetRunningProjects(projects).ToArray();
+        await _launcher.RunningProjectsManager.TerminatePeripheralProcessesAsync(projectsToRestart, cancellationToken);
 
         foreach (var project in projects)
         {
             if (!projectsToRestart.Any(p => p.Options.Representation == project))
             {
-                _compilationHandler.Logger.LogDebug("Restart of '{Project}' requested but the project is not running.", project);
+                Logger.LogDebug("Restart of '{Project}' requested but the project is not running.", project);
             }
         }
 
-        await _compilationHandler.RestartPeripheralProjectsAsync(projectsToRestart, cancellationToken);
+        await _launcher.RunningProjectsManager.RestartPeripheralProjectsAsync(projectsToRestart, cancellationToken);
     }
 }

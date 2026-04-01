@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class HotReloadProjectUpdatesBuilder
+internal sealed class ProjectUpdatesBuilder
 {
     public required ILogger Logger { get; init; }
     public required HotReloadService HotReloadService { get; init; }
@@ -37,7 +37,7 @@ internal sealed class HotReloadProjectUpdatesBuilder
     public IReadOnlyList<string> ProjectsToRedeploy => _projectsToRedeploy;
     public IReadOnlyList<RunningProject> ProjectsToRestart => _projectsToRestart;
 
-    public async ValueTask GetManagedCodeUpdatesAsync(
+    public async ValueTask AddManagedCodeUpdatesAsync(
         Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
         bool autoRestart,
         CancellationToken cancellationToken)
@@ -245,7 +245,7 @@ internal sealed class HotReloadProjectUpdatesBuilder
     private static bool HasScopedCssTargets(ProjectInstance projectInstance)
         => s_targets.All(projectInstance.Targets.ContainsKey);
 
-    public async ValueTask GetStaticAssetUpdatesAsync(
+    public async ValueTask AddStaticAssetUpdatesAsync(
         IReadOnlyList<ChangedFile> files,
         EvaluationResult evaluationResult,
         Stopwatch stopwatch,
