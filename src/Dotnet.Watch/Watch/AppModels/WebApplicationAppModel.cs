@@ -95,7 +95,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return false;
         }
 
-        logger.Log(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        logger.Log(MessageDescriptor.UsingBrowserRefreshMiddleware);
         return true;
     }
 }
