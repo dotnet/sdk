@@ -23,7 +23,7 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 
     public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
     {
-        if (!Path.IsPathFullyQualified(entryPointFilePath) == false)
+        if (!Path.IsPathFullyQualified(entryPointFilePath))
         {
             throw new ArgumentException($"'{entryPointFilePath}' is not a fully qualified path.", paramName: nameof(entryPointFilePath));
         }
