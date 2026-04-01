@@ -102,7 +102,8 @@ public sealed class MSBuildArgs
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
     public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, params Option[] options)
     {
-        var fakeCommand = new System.CommandLine.Command("dotnet");
+        // Avoid a command name that is likely to appear in MSBuild property values.
+        var fakeCommand = new System.CommandLine.Command("__msbuild-args-analysis__");
         foreach (var option in options)
         {
             fakeCommand.Options.Add(option);

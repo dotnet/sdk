@@ -23,5 +23,20 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 command.GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, ..expectedAdditionalArgs]);
             });
         }
+
+        [Theory]
+        [InlineData("/p:DockerImage=registry.example.com/myproject/dotnet")]
+        [InlineData("-p:DockerImage=registry.example.com/myproject/dotnet")]
+        public void PropertyValuesContainingSlashDotnetArePreserved(string propertyArg)
+        {
+            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            {
+                var command = MSBuildCommand.FromArgs([propertyArg], "<msbuildpath>");
+
+                command.GetArgumentTokensToMSBuild()
+                    .Should()
+                    .Contain("--property:DockerImage=registry.example.com/myproject/dotnet");
+            });
+        }
     }
 }
