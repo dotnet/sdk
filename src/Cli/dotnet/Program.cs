@@ -418,7 +418,7 @@ public class Program
 
         dotnetConfigurer.Configure();
 
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
         {
             DotDefaultPathCorrector.Correct();

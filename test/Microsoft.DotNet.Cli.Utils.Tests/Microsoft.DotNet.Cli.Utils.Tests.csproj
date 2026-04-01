@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -8,6 +9,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+  <!-- Windows-only test files that reference types excluded on non-Windows -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="DotDefaultPathCorrectorTests.cs" />
+    <Compile Remove="ProcessExtensionsTests.cs" />
   </ItemGroup>
 
 </Project>

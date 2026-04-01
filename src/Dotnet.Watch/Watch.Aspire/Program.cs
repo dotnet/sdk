@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Build.Locator;
 using Microsoft.DotNet.Watch;
 

@@ -8,8 +8,31 @@ namespace Microsoft.NET.TestFramework
 {
     public class SdkTestContext
     {
+        private string? _repoTemplatePackages;
+        private string? _testAssetsDirectory;
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
+        private string? _testPackages;
+
+        /// <summary>
+        /// Gets the path to the template_feed directory maintained in the repository root.
+        /// In Helix environments, this is set via the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.
+        /// </summary>
+        public string RepoTemplatePackages
+        {
+            get
+            {
+                if (_repoTemplatePackages == null)
+                {
+                    throw new InvalidOperationException("RepoTemplatePackages is not set. Ensure the 'template_feed' directory exists in the repo root or set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.");
+                }
+                return _repoTemplatePackages;
+            }
+            set
+            {
+                _repoTemplatePackages = value;
+            }
+        }
 
         public string TestExecutionDirectory
         {
@@ -27,7 +50,6 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private string? _testAssetsDirectory;
 
         public string TestAssetsDirectory
         {
@@ -45,7 +67,21 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public string? TestPackages { get; set; }
+        public string TestPackages
+        {
+            get
+            {
+                if (_testPackages == null)
+                {
+                    throw new InvalidOperationException("TestPackages should never be null.");
+                }
+                return _testPackages;
+            }
+            set
+            {
+                _testPackages = value;
+            }
+        }
 
         //  For tests which want the global packages folder isolated in the repo, but
         //  can share it with other tests
@@ -262,6 +298,20 @@ namespace Microsoft.NET.TestFramework
                 if (!string.IsNullOrEmpty(dotnetRoot))
                 {
                     testContext.ShippingPackagesDirectory = Path.Combine(dotnetRoot, ".nuget");
+                }
+            }
+
+            string? envRepoTemplatePackages = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES");
+            if (!string.IsNullOrEmpty(envRepoTemplatePackages) && Directory.Exists(envRepoTemplatePackages))
+            {
+                testContext.RepoTemplatePackages = envRepoTemplatePackages;
+            }
+            else if (repoRoot != null)
+            {
+                string repoTemplatePackagesFallback = Path.Combine(repoRoot, "template_feed");
+                if (Directory.Exists(repoTemplatePackagesFallback))
+                {
+                    testContext.RepoTemplatePackages = repoTemplatePackagesFallback;
                 }
             }
 

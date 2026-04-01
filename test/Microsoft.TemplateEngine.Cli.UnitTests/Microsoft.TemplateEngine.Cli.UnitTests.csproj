@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="Always" />
+    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ParserTests/Approvals/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

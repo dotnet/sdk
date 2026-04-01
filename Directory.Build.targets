@@ -103,4 +103,16 @@
     </ItemGroup>
   </Target>
 
+  <!-- Diagnostic target for verifying platform property resolution -->
+  <Target Name="ShowPlatformProperties"
+          BeforeTargets="Build"
+          Condition="'$(ShowPlatformProperties)' == 'true'">
+    <Message Importance="high" Text="HostOS             = $(HostOS)" />
+    <Message Importance="high" Text="TargetOS           = $(TargetOS)" />
+    <Message Importance="high" Text="OSName             = $(OSName)" />
+    <Message Importance="high" Text="BuildArchitecture  = $(BuildArchitecture)" />
+    <Message Importance="high" Text="TargetArchitecture = $(TargetArchitecture)" />
+    <Message Importance="high" Text="TargetRid          = $(TargetRid)" />
+  </Target>
+
 </Project>
