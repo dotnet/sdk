@@ -275,6 +275,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
 
             File.ReadAllText(file).Should().Be($"""
                 #:package dotnet-hello@{updatedPackageVersionString}
+
                 Console.WriteLine();
                 """);
         }
