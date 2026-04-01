@@ -52,6 +52,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_WasmHotReloadModule>
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
+      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll" />
     </ItemGroup>
 
     <DefineStaticWebAssets
