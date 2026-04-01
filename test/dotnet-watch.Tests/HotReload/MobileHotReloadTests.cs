@@ -52,6 +52,7 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
         await App.WaitUntilOutputContains("WebSocket client connected");
 
+        App.Process.ClearOutput();
         App.SendControlC();
 
         await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
@@ -75,6 +76,7 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
         await App.WaitUntilOutputContains("WebSocket client connected");
 
+        App.Process.ClearOutput();
         App.SendControlR();
 
         await App.WaitUntilOutputContains(MessageDescriptor.RestartRequested);
