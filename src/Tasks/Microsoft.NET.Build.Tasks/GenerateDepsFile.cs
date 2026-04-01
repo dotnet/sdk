@@ -145,13 +145,17 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(string depsFilePath, string absoluteProjectPath, string absoluteAssetsFilePath, string absoluteRuntimeGraphPath)
+        private void WriteDepsFile(string depsFilePath, string projectPath, string assetsFilePath, string runtimeGraphPath)
         {
+            AbsolutePath absDepsFilePath = TaskEnvironment.GetAbsolutePath(depsFilePath);
+            AbsolutePath absProjectPath = TaskEnvironment.GetAbsolutePath(projectPath);
+
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
-            if (absoluteAssetsFilePath != null)
+            if (!string.IsNullOrEmpty(assetsFilePath))
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
+                AbsolutePath absAssetsFilePath = TaskEnvironment.GetAbsolutePath(assetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(absAssetsFilePath.Value);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -165,7 +169,7 @@ namespace Microsoft.NET.Build.Tasks
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
-                absoluteProjectPath,
+                absProjectPath.Value,
                 AssemblyName,
                 AssemblyExtension,
                 AssemblyVersion,
@@ -231,7 +235,9 @@ namespace Microsoft.NET.Build.Tasks
                 // graph with respect to the target RuntimeIdentifier.
 
                 RuntimeGraph runtimeGraph =
-                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath) : null;
+                    IsSelfContained && !string.IsNullOrEmpty(runtimeGraphPath)
+                        ? new RuntimeGraphCache(this).GetRuntimeGraph(TaskEnvironment.GetAbsolutePath(runtimeGraphPath).Value)
+                        : null;
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
@@ -277,7 +283,7 @@ namespace Microsoft.NET.Build.Tasks
             DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
-            using (var fileStream = File.Create(depsFilePath))
+            using (var fileStream = File.Create(absDepsFilePath.Value))
             {
                 writer.Write(dependencyContext, fileStream);
             }
@@ -322,11 +328,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            string absoluteDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
-            string absoluteProjectPath = TaskEnvironment.GetAbsolutePath(ProjectPath);
-            string absoluteAssetsFilePath = !string.IsNullOrEmpty(AssetsFilePath) ? (string)TaskEnvironment.GetAbsolutePath(AssetsFilePath) : null;
-            string absoluteRuntimeGraphPath = !string.IsNullOrEmpty(RuntimeGraphPath) ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath) : null;
-            WriteDepsFile(absoluteDepsFilePath, absoluteProjectPath, absoluteAssetsFilePath, absoluteRuntimeGraphPath);
+            WriteDepsFile(DepsFilePath, ProjectPath, AssetsFilePath, RuntimeGraphPath);
         }
     }
 }

@@ -73,8 +73,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 // found the pack directory and set the Path metadata on the AppHost item.
                 task.AppHost.Should().NotBeNull().And.HaveCount(1);
                 var appHostPath = task.AppHost[0].GetMetadata(MetadataKeys.Path);
-                appHostPath.Should().Contain(packPath,
-                    "the AppHost path should be resolved relative to the project dir via TaskEnvironment");
+                // Output preserves the original relative TargetingPackRoot form
+                appHostPath.Should().StartWith(targetingPackRelative,
+                    "the AppHost path should preserve the original relative TargetingPackRoot");
             }
             finally
             {
@@ -195,12 +196,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "PathInPackage should remain a relative path, not be affected by absolutization of TargetingPackRoot");
                 pathInPackage.Should().Be(Path.Combine("runtimes", "win-x64", "native", "apphost.exe"));
 
-                // Path should be the fully resolved absolute path
+                // Path should preserve the original relative form (using original TargetingPackRoot)
                 var resolvedPath = task.AppHost[0].GetMetadata(MetadataKeys.Path);
-                Path.IsPathRooted(resolvedPath).Should().BeTrue(
-                    "Path metadata should be an absolute path after TargetingPackRoot is absolutized");
-                resolvedPath.Should().StartWith(projectDir,
-                    "Path should be resolved relative to projectDir via TaskEnvironment");
+                resolvedPath.Should().StartWith(targetingPackRelative,
+                    "Path metadata should preserve the original relative TargetingPackRoot");
             }
             finally
             {
@@ -268,7 +267,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void ItPreservesRelativePathInAllHostOutputs()
         {
             // Verify path format preservation across all host output types (AppHost, SingleFileHost,
-            // ComHost, IjwHost) — PathInPackage should remain relative, Path should be absolute.
+            // ComHost, IjwHost) — PathInPackage and PackageDirectory/Path should preserve original relative form.
             var projectDir = Path.Combine(Path.GetTempPath(), "apphost-alloutputs-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(projectDir);
             try
@@ -338,15 +337,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                     var resolvedPath = item.GetMetadata(MetadataKeys.Path);
                     resolvedPath.Should().NotBeNullOrEmpty($"{name} should have Path metadata");
-                    Path.IsPathRooted(resolvedPath).Should().BeTrue(
-                        $"{name}.Path should be an absolute path after TargetingPackRoot is absolutized");
-                    resolvedPath.Should().StartWith(projectDir,
-                        $"{name}.Path should be resolved relative to projectDir via TaskEnvironment");
+                    resolvedPath.Should().StartWith(targetingPackRelative,
+                        $"{name}.Path should preserve original relative TargetingPackRoot");
 
                     var packageDir = item.GetMetadata(MetadataKeys.PackageDirectory);
                     packageDir.Should().NotBeNullOrEmpty($"{name} should have PackageDirectory metadata");
-                    Path.IsPathRooted(packageDir).Should().BeTrue(
-                        $"{name}.PackageDirectory should be an absolute path");
+                    packageDir.Should().StartWith(targetingPackRelative,
+                        $"{name}.PackageDirectory should preserve original relative TargetingPackRoot");
                 }
             }
             finally

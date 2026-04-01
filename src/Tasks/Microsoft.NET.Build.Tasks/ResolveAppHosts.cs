@@ -90,17 +90,17 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] PackAsToolShimAppHostPacks { get; set; }
 
-        private string _absoluteRuntimeGraphPath;
-        private string _absoluteTargetingPackRoot;
+        private AbsolutePath? _absoluteRuntimeGraphPath;
+        private AbsolutePath? _absoluteTargetingPackRoot;
 
         protected override void ExecuteCore()
         {
             _absoluteRuntimeGraphPath = !string.IsNullOrEmpty(RuntimeGraphPath)
-                ? (string)TaskEnvironment.GetAbsolutePath(RuntimeGraphPath)
-                : RuntimeGraphPath;
+                ? TaskEnvironment.GetAbsolutePath(RuntimeGraphPath)
+                : null;
             _absoluteTargetingPackRoot = !string.IsNullOrEmpty(TargetingPackRoot)
-                ? (string)TaskEnvironment.GetAbsolutePath(TargetingPackRoot)
-                : TargetingPackRoot;
+                ? TaskEnvironment.GetAbsolutePath(TargetingPackRoot)
+                : null;
 
             var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(TargetFrameworkVersion));
 
@@ -267,7 +267,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             string bestAppHostRuntimeIdentifier = NuGetUtils.GetBestMatchingRidWithExclusion(
-                new RuntimeGraphCache(this).GetRuntimeGraph(_absoluteRuntimeGraphPath),
+                new RuntimeGraphCache(this).GetRuntimeGraph(_absoluteRuntimeGraphPath.Value.Value),
                 runtimeIdentifier,
                 runtimeIdentifiersToExclude.Split(';'),
                 appHostRuntimeIdentifiers.Split(';'),
@@ -310,15 +310,16 @@ namespace Microsoft.NET.Build.Tasks
 
                 TaskItem appHostItem = new(itemName);
                 string appHostPackPath = null;
-                if (!string.IsNullOrEmpty(_absoluteTargetingPackRoot))
+                if (_absoluteTargetingPackRoot.HasValue)
                 {
-                    appHostPackPath = Path.Combine(_absoluteTargetingPackRoot, hostPackName, appHostPackVersion);
+                    appHostPackPath = Path.Combine(_absoluteTargetingPackRoot.Value.Value, hostPackName, appHostPackVersion);
                 }
                 if (appHostPackPath != null && Directory.Exists(appHostPackPath))
                 {
                     //  Use AppHost from packs folder
-                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, appHostPackPath);
-                    appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(appHostPackPath, hostRelativePathInPackage));
+                    string originalAppHostPackPath = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
+                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, originalAppHostPackPath);
+                    appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(originalAppHostPackPath, hostRelativePathInPackage));
                 }
                 else if (EnableAppHostPackDownload)
                 {
