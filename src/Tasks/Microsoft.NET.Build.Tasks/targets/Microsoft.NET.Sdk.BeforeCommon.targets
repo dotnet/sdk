@@ -87,6 +87,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for deprecated Aspire workload usage -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.AspireWorkloadDeprecation.targets" />
 
+  <!-- Checks for SDK vulnerabilities and EOL status (opt-in) -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.SdkVulnerabilityCheck.targets" />
+
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
