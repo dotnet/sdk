@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <PublicSign Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'false'">true</PublicSign>
     <AssetTargetFallback>dotnet5.4</AssetTargetFallback>
     <RootNamespace>Microsoft.DotNet.Cli</RootNamespace>
     <DefineConstants Condition="'$(IncludeAspNetCoreRuntime)' == 'false'">$(DefineConstants);EXCLUDE_ASPNETCORE</DefineConstants>
@@ -80,7 +80,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="Newtonsoft.Json" />
@@ -88,10 +87,6 @@
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
-    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
@@ -104,7 +99,15 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
   </ItemGroup>
 

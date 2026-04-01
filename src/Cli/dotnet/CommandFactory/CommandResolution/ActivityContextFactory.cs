@@ -3,8 +3,10 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+#if TARGET_WINDOWS
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
+#endif
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
@@ -22,9 +24,12 @@ public static class ActivityContextFactory
         {
             return null;
         }
-        var propagationContext = new PropagationContext(activityContext, Baggage.Current);
+
         var environment = new Dictionary<string, string>(capacity: 2);
+#if TARGET_WINDOWS
+        var propagationContext = new PropagationContext(activityContext, Baggage.Current);
         Propagators.DefaultTextMapPropagator.Inject(propagationContext, environment, WriteTraceStateIntoEnvironment);
+#endif
         return environment;
     }
 

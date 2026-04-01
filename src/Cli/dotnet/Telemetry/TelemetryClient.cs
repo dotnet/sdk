@@ -3,14 +3,17 @@
 
 using System.Collections.Frozen;
 using System.Diagnostics;
-using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+
+#if TARGET_WINDOWS
+using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+#endif
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
@@ -18,12 +21,14 @@ public class TelemetryClient : ITelemetryClient
 {
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
+    private static readonly List<Activity> s_activities = [];
 
+#if TARGET_WINDOWS
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
     private static MeterProvider? s_metricsProvider;
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
-    private static readonly List<Activity> s_activities = [];
+#endif
 
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
@@ -54,6 +59,7 @@ public class TelemetryClient : ITelemetryClient
 
     static TelemetryClient()
     {
+#if TARGET_WINDOWS
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
@@ -79,6 +85,7 @@ public class TelemetryClient : ITelemetryClient
                 o.StorageDirectory = storageDirectory;
             });
         }
+#endif
 
         var parentActivityContext = GetParentActivityContext();
         ActivityKind = GetActivityKind(parentActivityContext);
@@ -105,6 +112,7 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
+#if TARGET_WINDOWS
         if (s_metricsProvider is null || s_tracerProvider is null)
         {
             // Create a new OTel meter and tracer provider.
@@ -112,6 +120,7 @@ public class TelemetryClient : ITelemetryClient
             s_metricsProvider ??= s_metricsProviderBuilder.Build();
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
+#endif
 
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
@@ -135,10 +144,14 @@ public class TelemetryClient : ITelemetryClient
             carrierMap.Add("tracestate", [traceState]);
         }
 
+        ActivityContext? parentContext = null;
+#if TARGET_WINDOWS
         // Use the propegator to extract the parent activity context and kind.
         // For some reason, this isn't set by the OTel SDK like docs say it should be.
         Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([new TraceContextPropagator(), new BaggagePropagator()]));
-        return Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
+        parentContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
+#endif
+        return parentContext;
 
         static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key) =>
             carrier.TryGetValue(key, out var value) ? value : null;
@@ -155,7 +168,7 @@ public class TelemetryClient : ITelemetryClient
 
     public static void WriteLogIfNecessary()
     {
-        if (!string.IsNullOrWhiteSpace(s_diskLogPath))
+        if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
         {
             TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
         }

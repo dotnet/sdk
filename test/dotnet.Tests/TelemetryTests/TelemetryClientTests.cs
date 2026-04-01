@@ -19,7 +19,9 @@ public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
         { new[] { "run" }, "1" }
     };
 
-    [Theory]
+    // Only runs on Windows because OTel libraries are only referenced on Windows builds.
+    // Thus, this test that writes telemetry logs will not work on other platforms.
+    [PlatformSpecificTheory(TestPlatforms.Windows)]
     [MemberData(nameof(CommandsWithExitCode))]
     public void ItProcessesTelemetryData(string[] commandArgs, string exitCodeExpected)
     {
