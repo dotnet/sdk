@@ -18,8 +18,7 @@ internal sealed class ProjectUpdatesBuilder
     public required HotReloadService HotReloadService { get; init; }
 
     // inputs:
-    public required Solution Solution { get; init; }
-    public required ImmutableDictionary<string, ImmutableArray<ProjectInstance>> ProjectInstances { get; init; }
+    public required ManagedCodeSnapshot ManagedCodeSnapshot { get; init; }
     public required ImmutableDictionary<string, ImmutableArray<RunningProject>> RunningProjects { get; init; }
 
     // outputs:
@@ -36,6 +35,9 @@ internal sealed class ProjectUpdatesBuilder
     public IReadOnlyList<string> ProjectsToRebuild => _projectsToRebuild;
     public IReadOnlyList<string> ProjectsToRedeploy => _projectsToRedeploy;
     public IReadOnlyList<RunningProject> ProjectsToRestart => _projectsToRestart;
+
+    private Solution Solution
+        => ManagedCodeSnapshot.Solution;
 
     public async ValueTask AddManagedCodeUpdatesAsync(
         Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
@@ -441,7 +443,7 @@ internal sealed class ProjectUpdatesBuilder
     {
         Debug.Assert(project.FilePath != null);
 
-        if (!ProjectInstances.TryGetValue(project.FilePath, out var instances))
+        if (!ManagedCodeSnapshot.ProjectInstances.TryGetValue(project.FilePath, out var instances))
         {
             throw new InvalidOperationException($"Project '{project.FilePath}' (id = '{project.Id}') not found in project graph");
         }

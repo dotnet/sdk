@@ -15,7 +15,7 @@ internal sealed class ManagedCodeWorkspace : IDisposable
     private readonly ILogger _logger;
     private readonly RunningProjectsManager _runningProjectsManager;
     private readonly HotReloadMSBuildWorkspace _workspace;
-    private readonly HotReloadService _hotReloadService;
+    public readonly HotReloadService HotReloadService;
 
     private int _solutionUpdateId;
 
@@ -31,7 +31,7 @@ internal sealed class ManagedCodeWorkspace : IDisposable
         _logger = logger;
         _runningProjectsManager = runningProjectsManager;
         _workspace = new HotReloadMSBuildWorkspace(logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
-        _hotReloadService = new HotReloadService(_workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
+        HotReloadService = new HotReloadService(_workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
     }
 
     public void Dispose()
@@ -39,9 +39,12 @@ internal sealed class ManagedCodeWorkspace : IDisposable
         _workspace.Dispose();
     }
 
-    // for testing
-    internal Solution CurrentSolution
-        => _workspace.CurrentSolution;
+    public ManagedCodeSnapshot CurrentSnapshot
+        => new()
+        {
+            Solution = _workspace.CurrentSolution,
+            ProjectInstances = _projectInstances
+        };
 
     private ImmutableArray<string> GetAggregateCapabilities()
     {
@@ -74,22 +77,10 @@ internal sealed class ManagedCodeWorkspace : IDisposable
     {
         var solution = await UpdateProjectGraphAsync(graph, cancellationToken);
 
-        await _hotReloadService.StartSessionAsync(solution, cancellationToken);
+        await HotReloadService.StartSessionAsync(solution, cancellationToken);
 
         _logger.Log(MessageDescriptor.HotReloadSessionStarted);
     }
-
-    public ProjectUpdatesBuilder CreateUpdatesBuilder()
-        => new()
-        {
-            Logger = _logger,
-            HotReloadService = _hotReloadService,
-
-            // capture snapshots:
-            Solution = _workspace.CurrentSolution,
-            ProjectInstances = _projectInstances,
-            RunningProjects = _runningProjectsManager.CurrentRunningProjects
-        };
 
     public async Task<Solution> UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
     {

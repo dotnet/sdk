@@ -81,11 +81,12 @@ internal sealed class HotReloadDotNetWatcher
             using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
             var iterationCancellationToken = iterationCancellationSource.Token;
 
+            var runningProjectsManager = new RunningProjectsManager(_context.ProcessRunner, _context.Logger);
+
             var suppressWaitForFileChange = false;
             EvaluationResult? evaluationResult = null;
             RunningProject? mainRunningProject = null;
             IRuntimeProcessLauncher? runtimeProcessLauncher = null;
-            RunningProjectsManager? runningProjectsManager = null;
             ManagedCodeWorkspace? workspace = null;
             Action<ChangedPath>? fileChangedCallback = null;
             LoadedProjectGraph? projectGraph = null;
@@ -126,7 +127,6 @@ internal sealed class HotReloadDotNetWatcher
                     continue;
                 }
 
-                runningProjectsManager = new RunningProjectsManager(_context.ProcessRunner, _context.Logger);
                 workspace = new ManagedCodeWorkspace(_context.Logger, runningProjectsManager);
 
                 // The session must start after the project is built and design time build completes,
@@ -238,7 +238,14 @@ internal sealed class HotReloadDotNetWatcher
                     }
                     while (changedFiles is []);
 
-                    var updatesBuilder = workspace.CreateUpdatesBuilder();
+                    var updatesBuilder = new ProjectUpdatesBuilder()
+                    {
+                        Logger = _context.Logger,
+                        HotReloadService = workspace.HotReloadService,
+                        ManagedCodeSnapshot = workspace.CurrentSnapshot,
+                        RunningProjects = runningProjectsManager.CurrentRunningProjects
+                    };
+
                     var stopwatch = Stopwatch.StartNew();
 
                     await updatesBuilder.AddStaticAssetUpdatesAsync(changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
@@ -464,11 +471,8 @@ internal sealed class HotReloadDotNetWatcher
                     await runtimeProcessLauncher.DisposeAsync();
                 }
 
-                if (runningProjectsManager != null)
-                {
-                    // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
-                    await runningProjectsManager.TerminatePeripheralProcesses(CancellationToken.None);
-                }
+                // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                await runningProjectsManager.TerminatePeripheralProcesses(CancellationToken.None);
 
                 workspace?.Dispose();
 
