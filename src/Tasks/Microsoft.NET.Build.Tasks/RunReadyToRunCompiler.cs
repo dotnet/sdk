@@ -349,13 +349,6 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(Crossgen2ContainerFormat))
             {
                 result.AppendLine($"--obj-format:{Crossgen2ContainerFormat}");
-
-                if (Crossgen2ContainerFormat != "pe" && !_createCompositeImage)
-                {
-                    // Force composite mode for non-PE formats,
-                    // as we only support PE as the envelope for metadata.
-                    result.AppendLine("--composite");
-                }
             }
 
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
@@ -371,10 +364,15 @@ namespace Microsoft.NET.Build.Tasks
                 result.AppendLine("--partial");
             }
 
-            if (_createCompositeImage)
+            // Emit --composite for composite images, or for non-PE container formats
+            // (we only support PE as the envelope for metadata).
+            if (_createCompositeImage || (!string.IsNullOrEmpty(Crossgen2ContainerFormat) && Crossgen2ContainerFormat != "pe"))
             {
                 result.AppendLine("--composite");
+            }
 
+            if (_createCompositeImage)
+            {
                 // Crossgen2 v5 only supported compilation with --inputbubble specified
                 if (Crossgen2IsVersion5)
                     result.AppendLine("--inputbubble");

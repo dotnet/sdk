@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: не удалось оптимизировать сборки для производительности: не найден допустимый пакет среды выполнения. Задайте для свойства PublishReadyToRun значение false либо используйте поддерживаемый идентификатор среды выполнения при публикации. При выборе .NET 6 или более поздней версии в качестве цели восстановите пакеты со свойством PublishReadyToRun со значением true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: оптимизация сборок для повышения производительности не поддерживается для выбранной целевой платформы или архитектуры. Убедитесь, что используется поддерживаемый идентификатор среды выполнения, или установите значение false для свойства PublishReadyToRun.</target>

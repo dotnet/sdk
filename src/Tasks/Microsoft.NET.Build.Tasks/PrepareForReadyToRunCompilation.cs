@@ -231,7 +231,7 @@ namespace Microsoft.NET.Build.Tasks
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
                     }
 
-                    if (eligibility.CompileSeparately && eligibility.PartialCompile)
+                    if (eligibility.PartialCompile)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.PartialCompile, "true");
                     }
@@ -242,10 +242,18 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else if (eligibility.CompileUnrootedIntoCompositeImage)
                 {
+                    if (eligibility.PartialCompile)
+                    {
+                        Log.LogWarning(Strings.ReadyToRunPartialCompileIgnoredInCompositeMode, Path.GetFileName(file.ItemSpec));
+                    }
                     r2rCompositeUnrootedInput.Add(file);
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
+                    if (eligibility.PartialCompile)
+                    {
+                        Log.LogWarning(Strings.ReadyToRunPartialCompileIgnoredInCompositeMode, Path.GetFileName(file.ItemSpec));
+                    }
                     r2rCompositeInputList.Add(file);
                 }
 
