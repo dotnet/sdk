@@ -175,11 +175,12 @@ internal sealed class DockerCli
 
             // Load per-arch images and add them to the manifest list.
             // We intentionally don't remove these because that makes the manifest unusable.
-            foreach (var image in multiArchImage.Images!)
+            Debug.Assert(multiArchImage.Images is not null);
+            foreach (var image in multiArchImage.Images)
             {
                 string repo = $"{destinationReference.Repository}-{image.Architecture}";
                 string tag = $"{repo}:{firstTag}";
-                var destRef = new DestinationImageReference(this, repo, new[] { firstTag });
+                var destRef = new DestinationImageReference(this, repo, [firstTag]);
 
                 await LoadAsync(image, sourceReference, destRef, WriteDockerImageToStreamAsync, cancellationToken);
                 createdImages.Add(tag);
@@ -604,7 +605,8 @@ internal sealed class DockerCli
 
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        foreach (var image in multiArchImage.Images!)
+        Debug.Assert(multiArchImage.Images is not null);
+        foreach (var image in multiArchImage.Images)
         {
             await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
             .ConfigureAwait(false);
