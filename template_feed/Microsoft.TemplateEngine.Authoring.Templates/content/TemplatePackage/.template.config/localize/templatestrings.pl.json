@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Pakiet szablonów",
+  "description": "Projekt dla pakietu szablonu zawierającego szablony platformy .NET.",
+  "postActions/instructions/description": "Wymagane akcje ręczne",
+  "postActions/instructions/manualInstructions/default/text": "Otwórz plik *.csproj w edytorze i ukończ konfigurację metadanych pakietu. Skopiuj szablony do folderu „content”. Wypełnij plik README.md."
+}
