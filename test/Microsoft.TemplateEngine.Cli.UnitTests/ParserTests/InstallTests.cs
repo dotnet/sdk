@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new install");
 
             Assert.True(parseResult.Errors.Any());
-            Assert.Contains(parseResult.Errors, error => error.Message.Contains("Required argument missing"));
+            Assert.Contains(parseResult.Errors, error => error.Message.Contains("Required argument") && error.Message.Contains("missing"));
 
             Assert.Throws<ArgumentException>(() => new InstallCommandArgs((InstallCommand)parseResult.CommandResult.Command, parseResult));
         }
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new --install --interactive");
 
             Assert.True(parseResult.Errors.Any());
-            Assert.Contains(parseResult.Errors, error => error.Message.Contains("Required argument missing"));
+            Assert.Contains(parseResult.Errors, error => error.Message.Contains("Required argument") && error.Message.Contains("missing"));
 
             Assert.Throws<ArgumentException>(() => new InstallCommandArgs((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult));
         }
