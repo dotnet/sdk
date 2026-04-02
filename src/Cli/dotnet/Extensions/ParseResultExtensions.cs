@@ -17,7 +17,7 @@ public static class ParseResultExtensions
     /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
-    /// <summary>
+    /// </summary>
     /// <remarks>
     /// This is accomplished by finding a set of tokens that should be valid and appending a help token
     /// to that list, then re-parsing the list of tokens. This is not ideal - either we should have a direct way

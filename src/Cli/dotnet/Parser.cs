@@ -347,13 +347,15 @@ public static class Parser
                 if (command.Name.Equals(ListReferenceCommandDefinition.Name))
                 {
                     Command? listCommand = command.Parents.Single() as Command;
-
-                    for (int i = 0; i < listCommand?.Arguments.Count; i++)
+                    if (listCommand is not null)
                     {
-                        if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                        for (int i = 0; i < listCommand.Arguments.Count; i++)
                         {
-                            // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                            {
+                                // Name is immutable now, so we create a new Argument with the right name..
+                                listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            }
                         }
                     }
                 }

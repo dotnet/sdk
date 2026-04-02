@@ -180,9 +180,9 @@ public class TelemetryClient : ITelemetryClient
 #endif
     }
 
-    public void TrackEvent(string? eventName, IDictionary<string, string?>? properties)
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
-        if (!Enabled || eventName is null)
+        if (!Enabled)
         {
             return;
         }
@@ -193,9 +193,9 @@ public class TelemetryClient : ITelemetryClient
             : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
     }
 
-    public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties)
+    public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
-        if (!Enabled || eventName is null)
+        if (!Enabled)
         {
             return;
         }
