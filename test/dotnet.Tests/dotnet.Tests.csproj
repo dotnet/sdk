@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
-  <ItemGroup Condition="'$(TargetsWindows)' != 'true'">
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
