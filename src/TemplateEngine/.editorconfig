@@ -1,6 +1,4 @@
 # EditorConfig for TemplateEngine projects
-# Migrated from dotnet/templating repo root .editorconfig
-# These StyleCop rules were disabled in the original repo
 
 [*.cs]
 # IDE0005: Unnecessary using - TE projects multi-target including net472 which

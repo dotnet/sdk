@@ -49,7 +49,6 @@
     <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
     <TemplateEngineRoot>$(MSBuildThisFileDirectory)src\TemplateEngine\</TemplateEngineRoot>
     <TemplateEngineTestRoot>$(MSBuildThisFileDirectory)test\TemplateEngine\</TemplateEngineTestRoot>
-    <TemplatesDir>$(MSBuildThisFileDirectory)template_feed\</TemplatesDir>
     <TestHostFolder>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'redist', '$(Configuration)'))</TestHostFolder>
     <TestHostDotNetRoot>$([MSBuild]::NormalizeDirectory('$(TestHostFolder)', 'dotnet'))</TestHostDotNetRoot>
     <TestHostDotNetTool>$(TestHostDotNetRoot)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNetTool>

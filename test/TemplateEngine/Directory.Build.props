@@ -3,7 +3,10 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- TODO: Replace NetFrameworkMinimum override with $(NetFrameworkToolCurrent) in TE csproj TargetFrameworks -->
+    <!--
+      TODO: Replace NetFrameworkMinimum override with $(NetFrameworkToolCurrent) in TE csproj TargetFrameworks
+      https://github.com/dotnet/templating/issues/10085
+    -->
     <NetFrameworkMinimum>net472</NetFrameworkMinimum>
 
     <!-- TemplateEngine assembly signing for InternalsVisibleTo -->
