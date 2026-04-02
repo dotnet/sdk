@@ -214,6 +214,10 @@ namespace Microsoft.NET.TestFramework
             //  Prevent test MSBuild nodes from persisting
             environment["MSBUILDDISABLENODEREUSE"] = "1";
 
+            //  Prevent local test runs from modifying the developer's user PATH.
+            //  Tests that validate first-time PATH setup can opt back in explicitly.
+            environment["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "0";
+
             ToolsetUnderTest.AddTestEnvironmentVariables(environment);
         }
 
