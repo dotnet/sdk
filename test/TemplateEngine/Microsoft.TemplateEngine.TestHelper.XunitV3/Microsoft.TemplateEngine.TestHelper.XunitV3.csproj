@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.Shared.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);XUNIT_V3</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.TemplateEngine.TestHelper\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+</Project>

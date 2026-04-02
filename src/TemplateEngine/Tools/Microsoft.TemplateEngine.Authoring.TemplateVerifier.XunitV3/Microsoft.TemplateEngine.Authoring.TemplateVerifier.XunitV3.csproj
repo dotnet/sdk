@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.Shared.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);XUNIT_V3</DefineConstants>
+    <RootNamespace>Microsoft.TemplateEngine.Authoring.TemplateVerifier</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\LocalizableStrings.resx" Link="LocalizableStrings.resx"
+                      GenerateSource="true" />
+    <EmbeddedResource Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\xlf\*.xlf" Link="xlf\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+</Project>

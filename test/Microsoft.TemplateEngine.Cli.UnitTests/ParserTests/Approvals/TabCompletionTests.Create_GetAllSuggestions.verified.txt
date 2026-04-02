@@ -126,6 +126,20 @@
     Documentation: Create a solution filter file that references a parent solution
   },
   {
+    Label: template.json,
+    Kind: Value,
+    SortText: template.json,
+    InsertText: template.json,
+    Documentation: A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.
+  },
+  {
+    Label: templatepack,
+    Kind: Value,
+    SortText: templatepack,
+    InsertText: templatepack,
+    Documentation: A project for a template package containing .NET templates.
+  },
+  {
     Label: tool-manifest,
     Kind: Value,
     SortText: tool-manifest,
