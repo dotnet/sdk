@@ -44,12 +44,10 @@ internal static class VirtualProjectPackageReflector
         // Process in reverse order to avoid invalidating spans.
         for (int i = directives.Length - 1; i >= 0; i--)
         {
-            if (directives[i] is CSharpDirective.Package p)
+            if (directives[i] is CSharpDirective.Package p &&
+                !packageReferences.ContainsKey(p.Name))
             {
-                if (!packageReferences.ContainsKey(p.Name))
-                {
-                    editor.Remove(directives[i]);
-                }
+                editor.Remove(directives[i]);
             }
         }
 
