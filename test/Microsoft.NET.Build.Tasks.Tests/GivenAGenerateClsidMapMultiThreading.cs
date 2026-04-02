@@ -54,7 +54,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             finally
             {
-                Directory.SetCurrentDirectory(savedCwd);
+                try { Directory.SetCurrentDirectory(savedCwd); }
+                catch { Directory.SetCurrentDirectory(Path.GetTempPath()); }
                 Directory.Delete(projectDir, true);
                 if (Directory.Exists(otherDir))
                     Directory.Delete(otherDir, true);
@@ -112,8 +113,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             finally
             {
-                Directory.SetCurrentDirectory(savedCwd);
-                Directory.Delete(projectDir, true);
+                try { Directory.SetCurrentDirectory(savedCwd); }
+                catch { Directory.SetCurrentDirectory(Path.GetTempPath()); }
+                if (Directory.Exists(projectDir))
+                    Directory.Delete(projectDir, true);
                 if (Directory.Exists(otherDir))
                     Directory.Delete(otherDir, true);
             }
