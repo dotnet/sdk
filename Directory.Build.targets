@@ -49,6 +49,10 @@
         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler"
         ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks"
+        ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack"
+        WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2"
         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
   </ItemGroup>
@@ -103,10 +107,6 @@
     <Message Importance="high" Text="BuildArchitecture  = $(BuildArchitecture)" />
     <Message Importance="high" Text="TargetArchitecture = $(TargetArchitecture)" />
     <Message Importance="high" Text="TargetRid          = $(TargetRid)" />
-    <Message Importance="high" Text="TargetsWindows     = $(TargetsWindows)" />
-    <Message Importance="high" Text="TargetsLinux       = $(TargetsLinux)" />
-    <Message Importance="high" Text="TargetsOSX         = $(TargetsOSX)" />
-    <Message Importance="high" Text="TargetsUnix        = $(TargetsUnix)" />
   </Target>
 
 </Project>
