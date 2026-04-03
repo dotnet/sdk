@@ -1551,7 +1551,7 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
       </trans-unit>
       <trans-unit id="ProjectConvertDeleteSource">
         <source>Delete all source files after conversion</source>
-        <target state="new">Delete all source files after conversion</target>
+        <target state="translated">Alle Quelldateien nach der Konvertierung löschen.</target>
         <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">

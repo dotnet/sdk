@@ -87,7 +87,7 @@ class Class1
             {
                 FileName = exePath
             };
-            TestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 

@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.IO.Pipes;
-using System.Reflection.Metadata;
 using System.Text.Json;
-using Elfie.Serialization;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -17,14 +13,14 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "host",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest]);
 
     private WatchableApp CreateServerApp(string serverPipe)
         => new(
             Logger,
             executablePath: Path.ChangeExtension(typeof(AspireLauncher).Assembly.Location, PathUtilities.ExecutableExtension).TrimEnd('.'),
             commandName: "server",
-            commandArguments: ["--sdk", TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
+            commandArguments: ["--sdk", SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "--server", serverPipe]);
 
     private WatchableApp CreateResourceApp(string serverPipe)
         => new(

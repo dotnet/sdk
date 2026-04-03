@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -32,8 +33,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
-        ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
-        ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
+        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+        ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         var testOptions = new TestOptions(
@@ -41,17 +42,14 @@ internal partial class MicrosoftTestingPlatformTestCommand
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
-        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
-
-        bool filterModeEnabled = parseResult.HasOption(definition.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;
-        if (filterModeEnabled)
+        if (buildOptions.PathOptions.TestModules is not null)
         {
             InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
             actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
             var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
-            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions.PathOptions.TestModules))
             {
                 return ExitCode.GenericFailure;
             }
@@ -109,7 +107,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
-        if (noAnsi)
+        // In LLM environments, prefer simple text output so that LLM can parse it easily.
+        // Note that NoAnsi also implies no progress.
+        if (noAnsi || new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
         {
             // User explicitly specified --no-ansi.
             // We should respect that.
