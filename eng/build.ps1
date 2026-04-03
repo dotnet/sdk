@@ -47,6 +47,7 @@ if ($pack) {
 if ($properties) { $arguments += " " + ($properties -join " ") }
 
 $arguments += " /tlp:summary"
+$arguments += " /graph"
 
 $env:DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT = "true"
 

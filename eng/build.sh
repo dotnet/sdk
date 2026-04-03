@@ -39,6 +39,7 @@ fi
 arguments+=("/p:SkipUsingCrossgen=$skip_crossgen")
 arguments+=("/p:SkipBuildingInstallers=$skip_installers")
 arguments+=(/tlp:summary)
+arguments+=(/graph)
 
 export DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true"
 . "$ScriptRoot/common/build.sh" "${arguments[@]}"
