@@ -12,6 +12,8 @@ internal sealed class AspireRootCommand : RootCommand
     public readonly AspireHostCommandDefinition HostCommand = new();
 
     public AspireRootCommand()
+        : base("A supporting tool used by Aspire AppHost to launch and hot reload .NET applications. " +
+               "Invoked automatically by the Aspire tooling; not intended for direct human use.")
     {
         Directives.Add(new EnvironmentVariablesDirective());
 

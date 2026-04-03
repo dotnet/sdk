@@ -39,12 +39,19 @@ internal abstract class AspireLauncher
             return null;
         }
 
+        // Handle --help, --version and other special actions.
+        if (parseResult.Action is not null)
+        {
+            parseResult.Invoke();
+            return null;
+        }
+
         return parseResult.CommandResult.Command switch
         {
             AspireServerCommandDefinition serverCommand => AspireServerLauncher.TryCreate(parseResult, serverCommand),
             AspireResourceCommandDefinition resourceCommand => AspireResourceLauncher.TryCreate(parseResult, resourceCommand),
             AspireHostCommandDefinition hostCommand => AspireHostLauncher.TryCreate(parseResult, hostCommand),
-            _ => throw new InvalidOperationException(),
+            _ => null,
         };
     }
 

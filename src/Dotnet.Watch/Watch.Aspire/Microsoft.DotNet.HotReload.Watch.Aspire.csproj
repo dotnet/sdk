@@ -12,6 +12,7 @@
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
     <PackAsTool>true</PackAsTool>
+    <ToolCommandName>Watch.Aspire</ToolCommandName>
     <PackageId>Microsoft.DotNet.HotReload.Watch.Aspire</PackageId>
     <PackageDescription>
       A supporting package for Aspire CLI:
