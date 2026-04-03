@@ -2,7 +2,7 @@
 Param(
   [switch][Alias('h')]$help,
   [ValidateSet("Debug","Release")][string[]][Alias('c')]$configuration = @("Debug"),
-  [ValidateSet("win","linux","osx","freebsd")][string]$os,
+  [ValidateSet("windows","linux","osx","freebsd")][string]$os,
   [ValidateSet("x86","x64","arm","arm64")][string][Alias('a')]$arch,
   [switch][Alias('t')]$test,
   [switch]$pack,
@@ -15,7 +15,7 @@ if ($help) {
   Write-Host "Common settings:"
   Write-Host "  -arch (-a)           Target architecture: x86, x64, arm, arm64 [default: x64]"
   Write-Host "  -configuration (-c)  Build configuration: Debug or Release [default: Debug]"
-  Write-Host "  -os                  Target OS: win, linux, osx, freebsd [default: host OS]"
+  Write-Host "  -os                  Target OS: windows, linux, osx, freebsd [default: host OS]"
   Write-Host "  -test (-t)           Run tests after building"
   Write-Host "  -pack                Build installers and packages"
   Write-Host ""

@@ -1,6 +1,10 @@
 # Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
 
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
 
 pr:
   branches:

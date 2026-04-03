@@ -215,7 +215,8 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager)
+                .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true");
 
             var profiled = Path.Combine(dotnetFirstTime.TestDirectory, "profile.d");
 
@@ -231,7 +232,8 @@ namespace Microsoft.DotNet.Tests
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, TestAssetsManager)
+                .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true");
 
             var pathsd = Path.Combine(dotnetFirstTime.TestDirectory, "paths.d");
 

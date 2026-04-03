@@ -1,0 +1,114 @@
+{
+  "TemplatePackages": [
+    {
+      "Name": "Microsoft.Azure.WebJobs.ProjectTemplates",
+      "Version": "3.1.1812",
+      "TotalDownloads": 4429007,
+      "Templates": [
+        {
+          "Identity": "Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x",
+          "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
+          "Precedence": 100,
+          "Name": "Azure Functions",
+          "ShortNameList": [
+            "func"
+          ],
+          "Author": "Microsoft",
+          "Classifications": [
+            "Azure Functions",
+            "Solution"
+          ],
+          "TagsCollection": {
+            "language": "C#",
+            "type": "project"
+          },
+          "Parameters": [
+            {
+              "Name": "StorageConnectionStringValue",
+              "DataType": "AzureStorage",
+              "Description": "The connection string for your Azure WebJobs Storage.",
+              "Priority": 2
+            },
+            {
+              "Name": "AzureFunctionsVersion",
+              "DataType": "string",
+              "Description": "The setting that determines the target release",
+              "Priority": 2
+            }
+          ]
+        },
+        {
+          "Identity": "Microsoft.AzureFunctions.ProjectTemplate.FSharp.3.x",
+          "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
+          "Precedence": 100,
+          "Name": "Azure Functions",
+          "ShortNameList": [
+            "func"
+          ],
+          "Author": "Microsoft",
+          "Classifications": [
+            "Azure Functions",
+            "Solution"
+          ],
+          "TagsCollection": {
+            "language": "F#",
+            "type": "project"
+          },
+          "Parameters": [
+            {
+              "Name": "StorageConnectionStringValue",
+              "DataType": "AzureStorage",
+              "Description": "The connection string for your Azure WebJobs Storage.",
+              "Priority": 2
+            }
+          ]
+        },
+        {
+          "Identity": "Azure.Function.CSharp.HttpTrigger.2.x",
+          "GroupIdentity": "Azure.Function.HttpTrigger",
+          "Name": "HttpTrigger",
+          "ShortNameList": [
+            "http"
+          ],
+          "Author": "Microsoft",
+          "Classifications": [
+            "Azure Function",
+            "Trigger",
+            "Http"
+          ],
+          "TagsCollection": {
+            "language": "C#",
+            "type": "item",
+            "AccessRights": "Function"
+          },
+          "Parameters": [
+            {
+              "Name": "AccessRights",
+              "DataType": "choice",
+              "Choices": {
+                "Function": {
+                  "Description": "Function"
+                },
+                "Anonymous": {
+                  "Description": "Anonymous"
+                },
+                "Admin": {
+                  "Description": "Admin"
+                }
+              }
+            },
+            {
+              "Name": "name",
+              "DataType": "string"
+            },
+            {
+              "Name": "namespace",
+              "DataType": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "version": "2.0"
+}
