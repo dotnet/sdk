@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 
@@ -105,7 +106,7 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
             ? tempDirPath
             : Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption))
                 ? parseResult.GetValue(Definition.TempDirOption)!
-                : PathUtilities.CreateTempSubdirectory();
+                : TemporaryDirectory.CreateSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
