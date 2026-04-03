@@ -975,10 +975,10 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_with_startuphooksupport_true_when_publishaot_true_and_debug(string targetFramework)
         {
-            var projectName = "StartupHookSupportTrueApp";
+            var projectName = "AotDebugStartupHookApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            // Configuration defaults to Debug
+            testProject.AdditionalProperties["Configuration"] = "Debug";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -987,7 +987,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            string outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework).FullName;
+            string outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: "Debug").FullName;
             string runtimeConfigFile = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
             string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
 
