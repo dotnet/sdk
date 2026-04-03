@@ -137,7 +137,7 @@
     <Copy SourceFiles="@(ContainerFiles)" DestinationFiles="@(ContainerFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Container\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(LockFiles)" DestinationFiles="@(LockFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\LockFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(TemplateEngineTestAssets)" DestinationFiles="@(TemplateEngineTestAssets->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\TestPackages\dotnet-new\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(TemplateEngineTestAssets)" DestinationFiles="@(TemplateEngineTestAssets->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\TestPackages\TemplateEngine\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(TemplateFeedFiles)" DestinationFiles="@(TemplateFeedFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\template_feed\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
