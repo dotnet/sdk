@@ -210,6 +210,7 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(int, string)> UpdateBatchExceptionStackTrace = Create(LogEvents.UpdateBatchExceptionStackTrace, Emoji.HotReload);
     public static readonly MessageDescriptor<string> Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
     public static readonly MessageDescriptor<string> ProjectSpecifiesCapabilities = Create(LogEvents.ProjectSpecifiesCapabilities, Emoji.HotReload);
+    public static readonly MessageDescriptor<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, Emoji.HotReload);
     public static readonly MessageDescriptor<None> WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, LogLevel.Warning);
     public static readonly MessageDescriptor<None> WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> RestartInProgress = Create("Restart in progress.", Emoji.Restart, LogLevel.Information);

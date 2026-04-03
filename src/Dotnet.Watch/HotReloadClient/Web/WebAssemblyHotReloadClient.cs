@@ -11,7 +11,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Watch;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
@@ -63,7 +62,7 @@ internal sealed class WebAssemblyHotReloadClient(
         {
             // Note that this is not possible with SDK 10+ since the WASM SDK always defines the capabilities in the project,
             // but the code is shared with VS and CDK which might not use the latest SDK.
-            logger.Log(LogEvents.UsingCapabilitiesBasedOnTargetFrmameworkVersion, projectTargetFrameworkVersion, capabilitiesStr);
+            logger.Log(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, projectTargetFrameworkVersion, capabilitiesStr);
         }
         else
         {
