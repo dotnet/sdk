@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -13,55 +9,33 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-internal class ToolInstallLocalInstaller
+internal sealed class ToolInstallLocalInstaller(
+    string? configFilePath,
+    string[]? sources,
+    VerbosityOptions verbosity,
+    IToolPackageDownloader? toolPackageDownloader = null,
+    string? runtimeJsonPathForTests = null,
+    RestoreActionConfig? restoreActionConfig = null)
 {
-    private readonly ParseResult _parseResult;
-    public string TargetFrameworkToInstall { get; private set; }
+    public readonly string TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
 
-    private readonly IToolPackageDownloader _toolPackageDownloader;
-    private readonly string _configFilePath;
-    private readonly string[] _sources;
-    private readonly VerbosityOptions _verbosity;
-    private readonly RestoreActionConfig _restoreActionConfig;
+    private readonly IToolPackageDownloader _toolPackageDownloader = toolPackageDownloader
+        ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader(runtimeJsonPathForTests: runtimeJsonPathForTests).downloader;
 
-    public ToolInstallLocalInstaller(
-        ParseResult parseResult,
-        IToolPackageDownloader toolPackageDownloader = null,
-        string runtimeJsonPathForTests = null,
-        RestoreActionConfig restoreActionConfig = null)
+    public IToolPackage Install(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
     {
-        _parseResult = parseResult;
-        _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
-        _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
-        _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
-
-        (IToolPackageStore store,
-            IToolPackageStoreQuery,
-            IToolPackageDownloader downloader) toolPackageStoresAndDownloader
-                = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                    runtimeJsonPathForTests: runtimeJsonPathForTests);
-        _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
-        _restoreActionConfig = restoreActionConfig;
-
-        TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
-    }
-
-    public IToolPackage Install(FilePath manifestFile, PackageId packageId)
-    {
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
+        if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
         {
             throw new GracefulException(
                 string.Format(
                     CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(_configFilePath)));
+                    Path.GetFullPath(configFilePath)));
         }
 
-        VersionRange versionRange = _parseResult.GetVersionRange();
-
         FilePath? configFile = null;
-        if (!string.IsNullOrEmpty(_configFilePath))
+        if (!string.IsNullOrEmpty(configFilePath))
         {
-            configFile = new FilePath(_configFilePath);
+            configFile = new FilePath(configFilePath);
         }
 
         try
@@ -75,13 +49,13 @@ internal class ToolInstallLocalInstaller
             IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackage(
                     new PackageLocation(
                         nugetConfig: configFile,
-                        additionalFeeds: _sources,
+                        additionalFeeds: sources,
                         rootConfigDirectory: rootConfigDirectory),
                     packageId,
-                    verbosity: _verbosity,
+                    verbosity: verbosity,
                     versionRange,
                     TargetFrameworkToInstall,
-                    restoreActionConfig: _restoreActionConfig
+                    restoreActionConfig: restoreActionConfig
                     );
 
             return toolDownloadedPackage;
