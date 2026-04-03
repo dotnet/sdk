@@ -1123,7 +1123,7 @@ namespace Microsoft.NET.Publish.Tests
                                    new XElement("Condition", "true"),
                                    new XElement("IsTrimmable", "true")));
             items.Add(new XElement(ns + "TrimmerRootAssembly",
-                                   new XAttribute("Include", "@(IntermediateAssembly->'%(FullPath)')")));
+                                   new XAttribute("Include", "$(AssemblyName)")));
         }
 
         public static void AddFeatureDefinition(TestProject testProject, string assemblyName)
