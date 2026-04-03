@@ -9,9 +9,7 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
-REM Enable crash dump collection for .NET processes. The dotnet test --blame-hang option's
-REM test host controller IPC fails on POSIX (NamedPipeServer.WaitConnectionAsync times out),
-REM so we use the runtime's built-in crash dump support instead.
+REM Enable crash dump collection for .NET processes.
 set DOTNET_DbgEnableMiniDump=1
 set DOTNET_DbgMiniDumpType=4
 set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
