@@ -2,47 +2,7 @@
 <Dependencies>
   <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="0824e1b0e0c71f88afe0973df2cb3a05806b624f" BarId="308107" />
   <ProductDependencies>
-<<<<<<< merge-templating-phase2
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="11.0.0-preview.3.26153.117">
-=======
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="11.0.100-preview.4.26202.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="11.0.0-preview.4.26202.104">
->>>>>>> main
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
     </Dependency>
