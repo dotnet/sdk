@@ -7,22 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 internal static class RuntimeInstallCommandParser
 {
-    /// <summary>
-    /// The version/channel or component@version specification.
-    /// Examples:
-    ///   - "10.0.1" - installs core runtime version 10.0.1
-    ///   - "latest" - installs latest core runtime
-    ///   - "aspnetcore@10.0.1" - installs ASP.NET Core runtime 10.0.1
-    ///   - "windowsdesktop@9.0" - installs Windows Desktop runtime for 9.0 channel
-    /// </summary>
-    public static readonly Argument<string?> ComponentSpecArgument = new("component-spec")
-    {
-        HelpName = "COMPONENT_SPEC",
-        Description = "The version/channel (e.g., 10.0.1, latest) or component@version (e.g., aspnetcore@10.0.1, windowsdesktop@9.0). "
-            + "When only a version is provided, the core .NET runtime is installed. "
-            + "Component types: " + string.Join(", ", RuntimeInstallCommand.GetValidRuntimeTypes()),
-        Arity = ArgumentArity.ZeroOrOne,
-    };
+    public static readonly Argument<string?> ComponentSpecArgument =
+        CommonOptions.CreateRuntimeComponentSpecArgument(required: false, actionVerb: "install");
 
     private static readonly Command s_command = ConstructCommand();
 
@@ -42,6 +28,7 @@ internal static class RuntimeInstallCommandParser
         command.Options.Add(CommonOptions.InteractiveOption);
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
+        command.Options.Add(CommonOptions.UntrackedOption);
 
         command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
 

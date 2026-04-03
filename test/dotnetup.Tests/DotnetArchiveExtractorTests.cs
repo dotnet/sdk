@@ -317,5 +317,108 @@ public class DotnetArchiveExtractorTests
         File.Exists(nestedPath).Should().BeTrue();
         File.ReadAllText(nestedPath).Should().Be("content-of-sub/nested.txt");
     }
+
+    [Fact]
+    public void ExtractTarContents_SkipsExistingSubcomponents()
+    {
+        // Arrange — create a tar with files in two subcomponents
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+
+        CreateTarWithPermissions(tarPath,
+            ("shared/Microsoft.NETCore.App/10.0.1/System.dll", defaultMode, isDirectory: false),
+            ("shared/Microsoft.NETCore.App/10.0.1/coreclr.dll", defaultMode, isDirectory: false),
+            ("sdk/10.0.103/dotnet.dll", defaultMode, isDirectory: false));
+
+        // Pre-create the shared runtime directory to simulate existing installation
+        var existingDir = Path.Combine(extractDir, "shared", "Microsoft.NETCore.App", "10.0.1");
+        Directory.CreateDirectory(existingDir);
+        File.WriteAllText(Path.Combine(existingDir, "System.dll"), "original content");
+
+        var extractedEntries = new List<string>();
+
+        // Skip entries whose subcomponent directory already exists on disk
+        Func<string, bool> shouldSkip = entryName =>
+        {
+            var subcomponent = SubcomponentResolver.Resolve(entryName);
+            if (subcomponent is null)
+            {
+                return false;
+            }
+
+            var subPath = Path.Combine(extractDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
+            return Directory.Exists(subPath);
+        };
+
+        // Act
+        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+            muxerHandler: null, onEntryExtracted: entry => extractedEntries.Add(entry), shouldSkipEntry: shouldSkip);
+
+        // Assert — existing subcomponent content should be preserved (not overwritten)
+        File.ReadAllText(Path.Combine(existingDir, "System.dll")).Should().Be("original content",
+            "files in existing subcomponents should not be overwritten");
+
+        // The second file in the existing subcomponent should NOT have been created
+        File.Exists(Path.Combine(existingDir, "coreclr.dll")).Should().BeFalse(
+            "new files in existing subcomponents should not be extracted");
+
+        // New subcomponent should be extracted
+        var sdkFile = Path.Combine(extractDir, "sdk", "10.0.103", "dotnet.dll");
+        File.Exists(sdkFile).Should().BeTrue("new subcomponent files should be extracted");
+
+        // All entries should still be reported to the callback for manifest tracking
+        extractedEntries.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void ExtractTarContents_RootLevelFilesAlwaysExtracted()
+    {
+        // Arrange — root-level files (not part of any subcomponent) should always be extracted
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+
+        CreateTarWithPermissions(tarPath,
+            ("LICENSE.txt", defaultMode, isDirectory: false),
+            ("shared/Microsoft.NETCore.App/10.0.1/System.dll", defaultMode, isDirectory: false));
+
+        // Pre-create the shared runtime directory
+        var existingDir = Path.Combine(extractDir, "shared", "Microsoft.NETCore.App", "10.0.1");
+        Directory.CreateDirectory(existingDir);
+
+        // Skip predicate that skips existing subcomponents
+        Func<string, bool> shouldSkip = entryName =>
+        {
+            var subcomponent = SubcomponentResolver.Resolve(entryName);
+            if (subcomponent is null)
+            {
+                return false;
+            }
+
+            var subPath = Path.Combine(extractDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
+            return Directory.Exists(subPath);
+        };
+
+        // Act
+        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+            muxerHandler: null, onEntryExtracted: null, shouldSkipEntry: shouldSkip);
+
+        // Assert — root-level file should be extracted even though skip predicate is active
+        File.Exists(Path.Combine(extractDir, "LICENSE.txt")).Should().BeTrue(
+            "root-level files should always be extracted");
+
+        // Subcomponent file should be skipped
+        File.Exists(Path.Combine(existingDir, "System.dll")).Should().BeFalse(
+            "files in existing subcomponents should be skipped");
+    }
 }
 

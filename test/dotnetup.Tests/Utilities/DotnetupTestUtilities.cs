@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -20,21 +21,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 internal static class DotnetupTestUtilities
 {
     /// <summary>
-    /// Creates a test environment with proper temporary directories
+    /// Creates a test environment with proper temporary directories and environment configuration.
     /// </summary>
     public static TestEnvironment CreateTestEnvironment()
-    {
-        string tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-e2e", Guid.NewGuid().ToString("N"));
-        string installPath = Path.Combine(tempRoot, "dotnet-root");
-        string manifestPath = Path.Combine(tempRoot, "dotnetup_manifest.json");
-
-        // Create necessary directories
-        Directory.CreateDirectory(tempRoot);
-        Directory.CreateDirectory(installPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
-
-        return new TestEnvironment(tempRoot, installPath, manifestPath);
-    }
+        => new(configureEnvironment: true);
 
     /// <summary>
     /// Builds command line arguments for SDK install
@@ -54,6 +44,111 @@ internal static class DotnetupTestUtilities
     /// </summary>
     public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
         => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
+
+    /// <summary>
+    /// Builds command line arguments for SDK uninstall
+    /// </summary>
+    public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for runtime uninstall using component@version syntax
+    /// </summary>
+    public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null, string? source = null)
+    {
+        var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(source))
+        {
+            commandArgs.AddRange(["--source", source]);
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup update (root-level, updates all components).
+    /// </summary>
+    public static string[] BuildUpdateArguments(string installPath, string? manifestPath = null, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup sdk update.
+    /// </summary>
+    public static string[] BuildSdkUpdateArguments(string installPath, string? manifestPath = null, bool updateAll = false, bool updateGlobalJson = false)
+    {
+        var commandArgs = new List<string>(["sdk", "update", "--install-path", installPath, "--interactive", "false", "--no-progress"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (updateAll)
+        {
+            commandArgs.Add("--all");
+        }
+
+        if (updateGlobalJson)
+        {
+            commandArgs.Add("--update-global-json");
+        }
+
+        return [.. commandArgs];
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup list
+    /// </summary>
+    public static string[] BuildListArguments(string installPath, string? manifestPath = null, string? format = null)
+    {
+        var commandArgs = new List<string>(["list", "--install-path", installPath]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            commandArgs.AddRange(["--format", format]);
+        }
+
+        return [.. commandArgs];
+    }
 
     /// <summary>
     /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
@@ -107,32 +202,100 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Gets the path to the dotnetup executable for the current build configuration
+    /// Gets the path to the dotnetup executable for the current build configuration.
+    /// Prefers the AOT-published native binary if available, otherwise falls back to the managed build output.
     /// </summary>
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
     {
 #if DEBUG
         string configuration = "Debug";
+        string fallbackConfiguration = "Release";
 #else
         string configuration = "Release";
+        string fallbackConfiguration = "Debug";
 #endif
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        string tfm = Path.GetFileName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
-        string dotnetupPath = Path.Combine(
-            repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, tfm, executableName);
 
-        // Ensure path is normalized and exists
-        dotnetupPath = Path.GetFullPath(dotnetupPath);
-        if (!File.Exists(dotnetupPath))
+        // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
+        // the runtime was built with (e.g. "win-x64", "linux-musl-arm64"), which matches
+        // the RID used by `dotnet publish -r` output directories.
+        string rid = RuntimeInformation.RuntimeIdentifier;
+
+        // Try matching configuration first, then fall back to the other.
+        // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
+        string[] configurationsToSearch = [configuration, fallbackConfiguration];
+
+        foreach (string config in configurationsToSearch)
         {
-            throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
+            // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
+            string[] tfmDirs = Directory.GetDirectories(configDir);
+            if (tfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild.");
+            }
+
+            foreach (string tfmDir in tfmDirs)
+            {
+                string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
+                if (File.Exists(publishedPath))
+                {
+                    if (config != configuration)
+                    {
+                        Console.WriteLine($"Note: Using AOT binary from '{config}' configuration (no '{configuration}' AOT binary found).");
+                    }
+
+                    return Path.GetFullPath(publishedPath);
+                }
+            }
         }
 
-        return dotnetupPath;
+        // Fall back to managed build output (same search order)
+        foreach (string config in configurationsToSearch)
+        {
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            string[] fallbackTfmDirs = Directory.GetDirectories(configDir);
+            if (fallbackTfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild.");
+            }
+
+            foreach (string tfmDir in fallbackTfmDirs)
+            {
+                string managedPath = Path.Combine(tfmDir, executableName);
+                if (File.Exists(managedPath))
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
+                    return Path.GetFullPath(managedPath);
+                }
+            }
+        }
+
+        string primaryDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
+        throw new FileNotFoundException(
+            $"dotnetup executable not found under '{primaryDir}'. " +
+            $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
+            $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
     /// <summary>
@@ -162,6 +325,10 @@ internal static class DotnetupTestUtilities
 
         // Suppress the .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        process.StartInfo.Environment["NO_COLOR"] = "1";
 
         // Apply any additional environment variables
         if (environmentVariables != null)

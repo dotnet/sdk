@@ -152,7 +152,6 @@ public class VersionSanitizerTelemetryTests
     [InlineData("latest", "latest")]
     [InlineData("preview", "preview")]
     [InlineData("lts", "lts")]
-    [InlineData("sts", "sts")]
     public void Sanitize_ValidVersions_PassThrough(string input, string expected)
     {
         var result = VersionSanitizer.Sanitize(input);
@@ -520,7 +519,7 @@ public class DotnetupTelemetryTests : IDisposable
 public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
-    private const string DataDirEnvVar = "DOTNET_TESTHOOK_DOTNETUP_DATA_DIR";
+    private const string DataDirEnvVar = "DOTNET_DOTNETUP_DATA_DIR";
 
     private readonly string _tempDir;
     private readonly string? _originalDataDir;

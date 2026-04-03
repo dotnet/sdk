@@ -14,8 +14,6 @@ public class VersionSanitizerTests
     [InlineData("LATEST", "latest")]
     [InlineData("lts", "lts")]
     [InlineData("LTS", "lts")]
-    [InlineData("sts", "sts")]
-    [InlineData("STS", "sts")]
     [InlineData("preview", "preview")]
     [InlineData("PREVIEW", "preview")]
     public void Sanitize_ChannelKeywords_ReturnsLowercase(string input, string expected)

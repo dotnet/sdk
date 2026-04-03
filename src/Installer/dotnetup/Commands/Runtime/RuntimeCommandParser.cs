@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Uninstall;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Update;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime;
 
@@ -19,6 +21,8 @@ internal class RuntimeCommandParser
     {
         Command command = new("runtime", "Manage runtime installations");
         command.Subcommands.Add(RuntimeInstallCommandParser.GetRuntimeInstallCommand());
+        command.Subcommands.Add(RuntimeUpdateCommandParser.GetRuntimeUpdateCommand());
+        command.Subcommands.Add(RuntimeUninstallCommandParser.GetRuntimeUninstallCommand());
 
         return command;
     }

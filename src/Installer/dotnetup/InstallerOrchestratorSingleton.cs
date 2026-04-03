@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Result of an installation operation.
 /// </summary>
-/// <param name="Install">The installed DotnetInstall.</param>
+/// <param name="Install">The DotnetInstall for the completed installation.</param>
 /// <param name="WasAlreadyInstalled">True if the SDK was already installed and no work was done.</param>
 internal sealed record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled);
 
@@ -25,7 +23,7 @@ internal class InstallerOrchestratorSingleton
 
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
-    // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
+    // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
@@ -42,7 +40,8 @@ internal class InstallerOrchestratorSingleton
 
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
-        ReleaseVersion? versionToInstall = new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
+        ReleaseVersion? versionToInstall = installRequest.ResolvedVersion
+            ?? new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
 
         if (versionToInstall == null)
         {
@@ -60,33 +59,37 @@ internal class InstallerOrchestratorSingleton
             installRequest.Component);
 
         string? customManifestPath = installRequest.Options.ManifestPath;
-        string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (!finalizeLock.HasHandle)
+            // Untracked installs don't interact with the manifest, so skip reading it
+            // entirely. This avoids errors when the manifest uses a legacy format.
+            var manifestData = installRequest.Options.Untracked
+                ? new DotnetupManifestData()
+                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
+
+            if (InstallAlreadyExists(manifestData, install))
             {
-                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
-                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "pre_check");
-                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
-            }
-            if (InstallAlreadyExists(install, customManifestPath))
-            {
-                Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
+                // Still record the install spec so the user's requested channel is tracked,
+                // even though the version is already installed (possibly via a different channel).
+                RecordInstallSpec(installRequest, customManifestPath);
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
-            // Also check if the component files already exist on disk (e.g., runtime files from SDK install)
-            // If so, just add to manifest without downloading
-            if (ArchiveInstallationValidator.ComponentFilesExist(install))
+            // Guard: error if the target directory contains .NET artifacts but isn't tracked in the manifest.
+            // This prevents silently mixing managed and unmanaged installations.
+            // Skip this guard for untracked installs.
+            if (!installRequest.Options.Untracked
+                && !IsRootInManifest(manifestData, installRequest.InstallRoot)
+                && HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
-                Console.WriteLine($"\n{componentDescription} {versionToInstall} files already exist, adding to manifest.");
-                DotnetupSharedManifest manifestManager = new(customManifestPath);
-                manifestManager.AddInstalledVersion(install);
-                return new InstallResult(install, WasAlreadyInstalled: true);
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.Unknown,
+                    $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                    "To avoid conflicts, use a different install path or remove the existing installation first.",
+                    version: versionToInstall.ToString(),
+                    component: installRequest.Component.ToString());
             }
 
             // Fail fast: if the muxer must be updated and it is currently locked,
@@ -106,15 +109,12 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (!finalizeLock.HasHandle)
-            {
-                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
-                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockFailed, true);
-                Activity.Current?.SetTag(TelemetryTagNames.InstallMutexLockPhase, "commit");
-                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
-            }
-            if (InstallAlreadyExists(install, customManifestPath))
+            // Untracked installs skip manifest entirely to avoid legacy format errors.
+            var manifestData = installRequest.Options.Untracked
+                ? new DotnetupManifestData()
+                : new DotnetupSharedManifest(customManifestPath).ReadManifest();
+
+            if (InstallAlreadyExists(manifestData, install))
             {
                 return new InstallResult(install, WasAlreadyInstalled: true);
             }
@@ -124,8 +124,19 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install, out string? validationFailure))
             {
-                DotnetupSharedManifest manifestManager = new(customManifestPath);
-                manifestManager.AddInstalledVersion(install);
+                RecordInstallSpec(installRequest, customManifestPath);
+
+                // Record the installation with its resolved version
+                if (!installRequest.Options.Untracked)
+                {
+                    var manifestManager = new DotnetupSharedManifest(customManifestPath);
+                    manifestManager.AddInstallation(installRequest.InstallRoot, new Installation
+                    {
+                        Component = installRequest.Component,
+                        Version = versionToInstall.ToString(),
+                        Subcomponents = [.. installer.ExtractedSubcomponents]
+                    });
+                }
             }
             else
             {
@@ -142,25 +153,54 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
+    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
     /// </summary>
-    private static IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
+    private static void RecordInstallSpec(DotnetInstallRequest installRequest, string? customManifestPath)
     {
+        if (installRequest.Options.Untracked || installRequest.Options.SkipInstallSpecRecording)
+        {
+            return;
+        }
+
         var manifestManager = new DotnetupSharedManifest(customManifestPath);
-        // Use the overload that filters by muxer directory
-        return manifestManager.GetInstalledVersions(installRoot);
+        manifestManager.AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+        {
+            Component = installRequest.Component,
+            VersionOrChannel = installRequest.Channel.Name,
+            InstallSource = installRequest.Options.InstallSource switch
+            {
+                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                _ => InstallSource.Explicit,
+            },
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+        });
     }
 
-    /// <summary>
-    /// Checks if the installation already exists. Must hold a mutex over the directory.
-    /// </summary>
-    private static bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
+    internal static bool InstallAlreadyExists(DotnetupManifestData manifestData, DotnetInstall install)
     {
-        var existingInstalls = GetExistingInstalls(install.InstallRoot, customManifestPath);
+        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        return root?.Installations.Any(existing =>
+            existing.Version == install.Version.ToString() &&
+            existing.Component == install.Component) ?? false;
+    }
 
-        // Check if there's any existing installation that matches the version we're trying to install
-        return existingInstalls.Any(existing =>
-            existing.Version.Equals(install.Version) &&
-            existing.Component == install.Component);
+    internal static bool IsRootInManifest(DotnetupManifestData manifestData, DotnetInstallRoot installRoot)
+    {
+        return manifestData.DotnetRoots.Any(root =>
+            DotnetupUtilities.PathsEqual(root.Path, installRoot.Path));
+    }
+
+    internal static bool HasDotnetArtifacts(string? path)
+    {
+        if (path is null || !Directory.Exists(path))
+        {
+            return false;
+        }
+
+        // Check for common .NET installation markers
+        return File.Exists(Path.Combine(path, DotnetupUtilities.GetDotnetExeName()))
+            || Directory.Exists(Path.Combine(path, "sdk"))
+            || Directory.Exists(Path.Combine(path, "shared"));
     }
 }
