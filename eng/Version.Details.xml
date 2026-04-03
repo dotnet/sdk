@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="0824e1b0e0c71f88afe0973df2cb3a05806b624f" BarId="308107" />
+  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="0d6cc667e66d7bec23439335118137f78c70306c" BarId="309010" />
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="11.0.100-preview.4.26202.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>

@@ -80,7 +80,7 @@
       LogFile="$(SignCheckLog)"
       ErrorLogFile="$(SignCheckErrorLog)"
       Recursive="true"
-      Format="UnsignedFiles" />
+      FileStatus="UnsignedFiles" />
 
     <Error
       Text="Signing validation failed for workload manifest MSI. Check $(SignCheckErrorLog) for more information."
