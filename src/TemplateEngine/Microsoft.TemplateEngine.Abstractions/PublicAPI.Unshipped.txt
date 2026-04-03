@@ -1,0 +1,76 @@
+﻿Microsoft.TemplateEngine.Abstractions.IExtendedTemplateLocator
+Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.VulnerablePackage = 9 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.AdvisoryUris.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.AdvisoryUris.init -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.Severity.get -> int
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.Severity.init -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.VulnerabilityInfo() -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.VulnerabilityInfo(int Severity, System.Collections.Generic.IReadOnlyList<string!>! AdvisoryUris) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplate.Localization.get -> Microsoft.TemplateEngine.Abstractions.ILocalizationLocator?
+Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.PreferDefaultName.get -> bool
+Microsoft.TemplateEngine.Abstractions.IValidationInfo.IsValid.get -> bool
+Microsoft.TemplateEngine.Abstractions.IVariableCollection
+Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection?
+Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.set -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions
+static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest! request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
+static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Empty.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData!
+static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions.GetValue(this Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! data, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!
+static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions.TryGetValue(this Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! data, string! parameterName, out Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData? parameterData) -> bool
+Microsoft.TemplateEngine.Abstractions.IGenerator.GetTemplatesFromMountPointAsync(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo!>!>!
+Microsoft.TemplateEngine.Abstractions.IGenerator.LoadTemplateAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings, Microsoft.TemplateEngine.Abstractions.ITemplateLocator! config, string? baselineName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ITemplate?>!
+Microsoft.TemplateEngine.Abstractions.IExtendedTemplateLocator.HostConfigPlace.get -> string?
+Microsoft.TemplateEngine.Abstractions.IExtendedTemplateLocator.LocaleConfigPlace.get -> string?
+Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo
+Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo.HostConfigFiles.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo.Localizations.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>!
+Microsoft.TemplateEngine.Abstractions.ITemplate.HostSpecificConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo?
+Microsoft.TemplateEngine.Abstractions.ITemplateLocator
+Microsoft.TemplateEngine.Abstractions.ITemplateLocator.ConfigPlace.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateLocator.GeneratorId.get -> System.Guid
+Microsoft.TemplateEngine.Abstractions.ITemplateLocator.MountPointUri.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Author.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Classifications.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintInfo!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.DefaultName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.GroupIdentity.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Identity.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Name.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.ParameterDefinitions.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.Precedence.get -> int
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.ThirdPartyNotices.get -> string?
+Microsoft.TemplateEngine.Abstractions.IValidationEntry
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.Code.get -> string!
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.ErrorLocation() -> void
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.Filename.get -> string!
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.Filename.init -> void
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.LineNumber.get -> int
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.LineNumber.init -> void
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.Position.get -> int
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation.Position.init -> void
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorMessage.get -> string!
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.Location.get -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.ErrorLocation?
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.Severity.get -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel.Error = 3 -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel.Info = 1 -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel.None = 0 -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel.Warning = 2 -> Microsoft.TemplateEngine.Abstractions.IValidationEntry.SeverityLevel
+Microsoft.TemplateEngine.Abstractions.IValidationInfo
+Microsoft.TemplateEngine.Abstractions.IValidationInfo.ValidationErrors.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IValidationEntry!>!
