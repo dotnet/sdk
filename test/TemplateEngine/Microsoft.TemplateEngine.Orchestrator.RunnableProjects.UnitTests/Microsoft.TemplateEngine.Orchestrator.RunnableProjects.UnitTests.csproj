@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="FakeItEasy" />
+    <PackageReference Include="Verify.XUnit" />
+    <PackageReference Include="Verify.DiffPlex" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ConditionalTests.*.cs" DependentUpon="ConditionalTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj" />
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Approvals\**\*" />
+    <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Schemas\JSON\template.json"
+          CopyToOutputDirectory="PreserveNewest"
+          Link="SchemaTests\%(Filename)%(Extension)" />
+
+    <None Update="SchemaTests\ConditionalParametersTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\ConstraintsTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\BasicTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\GeneratorTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\MultiValueChoiceTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\PostActionTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\StarterWebTest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SchemaTests\SymbolsTest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

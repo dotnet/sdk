@@ -77,6 +77,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
+               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                .AddScrubber((path, content) =>
                {
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
@@ -157,6 +158,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
+               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                .AddScrubber((path, content) =>
                {
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Microsoft.TemplateEngine.TestHelper.Shared.props" />
+
+  <ItemGroup>
+    <PackageReference Include="xunit.extensibility.execution" />
+    <PackageReference Include="xunit.abstractions" />
+  </ItemGroup>
+
+</Project>
