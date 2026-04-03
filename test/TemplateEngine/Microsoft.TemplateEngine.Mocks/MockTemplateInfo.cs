@@ -92,10 +92,12 @@ namespace Microsoft.TemplateEngine.Mocks
         public bool PreferDefaultName => _preferDefaultName;
 
         [Obsolete("Use ParameterDefinitionSet instead.")]
-        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => throw new NotImplementedException();
+        [System.Text.Json.Serialization.JsonIgnore]
+        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => new Dictionary<string, ICacheTag>();
 
         [Obsolete("Use ParameterDefinitionSet instead.")]
-        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => throw new NotImplementedException();
+        [System.Text.Json.Serialization.JsonIgnore]
+        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => new Dictionary<string, ICacheParameter>();
 
         public IParameterDefinitionSet ParameterDefinitions
         {
