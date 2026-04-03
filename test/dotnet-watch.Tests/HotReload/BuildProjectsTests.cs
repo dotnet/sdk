@@ -161,10 +161,13 @@ public class BuildProjects(ITestOutputHelper output)
 
     [Theory]
     [CombinatorialData]
-    public async Task SingleFile(bool isMain)
+    public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
         var dir = Path.GetTempPath();
         var file1 = Path.Combine(dir, "File1.cs");
+        File.WriteAllText(file1, """
+            Console.WriteLine(1);
+            """);
 
         using var context = CreateContext([file1]);
 
@@ -183,6 +186,92 @@ public class BuildProjects(ITestOutputHelper output)
         Assert.True(result.Success);
 
         AssertEx.SequenceEqual([$"build {file1} -p A=1"], context.BuildInvocations);
+    }
+
+    [Fact]
+    public async Task FileBasedApp_TargetFrameworkProperty()
+    {
+        var dir = Path.GetTempPath();
+        var file1 = Path.Combine(dir, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFramework=net9.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+    }
+
+    [Fact]
+    public async Task FileBasedApp_TargetFrameworksProperty()
+    {
+        var dir = Path.GetTempPath();
+        var file1 = Path.Combine(dir, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: (_, _) =>
+            {
+                return ValueTask.FromResult("net9.0");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+    }
+
+    [Fact]
+    public async Task FileBasedApp_TargetFrameworkOption()
+    {
+        var dir = Path.GetTempPath();
+        var file1 = Path.Combine(dir, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1, "-f", "net8.0"]),
+            frameworkSelector: (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net8.0"], context.BuildInvocations);
     }
 
     [Fact]
