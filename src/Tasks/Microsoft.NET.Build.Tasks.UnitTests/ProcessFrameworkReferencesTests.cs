@@ -212,6 +212,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.EnableSingleFileAnalyzer.HasValue) task.EnableSingleFileAnalyzer = config.EnableSingleFileAnalyzer.Value;
             if (config.ReadyToRunEnabled.HasValue) task.ReadyToRunEnabled = config.ReadyToRunEnabled.Value;
             if (config.ReadyToRunUseCrossgen2.HasValue) task.ReadyToRunUseCrossgen2 = config.ReadyToRunUseCrossgen2.Value;
+            task.EnableWindowsTargeting = config.EnableWindowsTargeting;
+            task.DisableTransitiveFrameworkReferenceDownloads = config.DisableTransitiveFrameworkReferenceDownloads;
 
             if (!string.IsNullOrEmpty(config.NetCoreRoot)) task.NetCoreRoot = config.NetCoreRoot;
             if (!string.IsNullOrEmpty(config.NETCoreSdkVersion)) task.NETCoreSdkVersion = config.NETCoreSdkVersion;
@@ -252,6 +254,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public bool? EnableSingleFileAnalyzer { get; set; }
             public bool? ReadyToRunEnabled { get; set; }
             public bool? ReadyToRunUseCrossgen2 { get; set; }
+            public bool EnableWindowsTargeting { get; set; }
+            public bool DisableTransitiveFrameworkReferenceDownloads { get; set; }
             public string? NetCoreRoot { get; set; }
             public string? NETCoreSdkVersion { get; set; }
             public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
@@ -1050,6 +1054,173 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // AspNetCore runtime packs must not appear — it is not in FrameworkReferences
             task.PackagesToDownload.Should().NotContain(p => p.ItemSpec.StartsWith("Microsoft.AspNetCore.App.Runtime."),
                 "AspNetCore runtime pack must not be downloaded — it is not in FrameworkReferences");
+        }
+
+        [Fact]
+        public void It_only_downloads_runtime_packs_for_referenced_frameworks_in_self_contained_console_app()
+        {
+            // A self-contained console app references only Microsoft.NETCore.App.  The SDK always
+            // populates KnownFrameworkReferences with NETCore, AspNetCore, and WindowsDesktop entries.
+            // Only the NETCore runtime pack should be downloaded — not AspNetCore or WindowsDesktop.
+
+            var netCoreAppRef = CreateNetCoreAppFrameworkReference(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0", "linux-x64;win-x64;osx-x64;osx-arm64");
+
+            var aspNetCoreRef = CreateAspNetCoreFrameworkReference(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0", "linux-x64;win-x64;osx-x64;osx-arm64");
+
+            var windowsDesktopRef = CreateKnownFrameworkReference(
+                "Microsoft.WindowsDesktop.App",
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                runtimePackPattern: "Microsoft.WindowsDesktop.App.Runtime.**RID**",
+                runtimeIdentifiers: "win-x64;win-x86;win-arm64",
+                additionalMetadata: new Dictionary<string, string>
+                {
+                    ["IsWindowsOnly"] = "true"
+                });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                EnableWindowsTargeting = true,
+                SelfContained = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                RuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                // Project only references the base .NET runtime
+                FrameworkReferences = [NetCoreAppFrameworkReference],
+                // SDK supplies knowledge of all three frameworks
+                KnownFrameworkReferences = [netCoreAppRef, aspNetCoreRef, windowsDesktopRef]
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+
+            // NETCore runtime pack for the target RID should be queued
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64",
+                "NETCore runtime pack for win-x64 must be downloaded");
+
+            // AspNetCore runtime packs must not appear — it is not in FrameworkReferences
+            task.PackagesToDownload.Should().NotContain(p => p.ItemSpec.StartsWith("Microsoft.AspNetCore.App.Runtime."),
+                "AspNetCore runtime pack must not be downloaded — it is not in FrameworkReferences");
+
+            // WindowsDesktop runtime packs must not appear — it is not in FrameworkReferences
+            task.PackagesToDownload.Should().NotContain(p => p.ItemSpec.StartsWith("Microsoft.WindowsDesktop.App.Runtime."),
+                "WindowsDesktop runtime pack must not be downloaded — it is not in FrameworkReferences");
+        }
+
+        [Fact]
+        public void It_can_build_WindowsDesktop_on_non_Windows_with_EnableWindowsTargeting()
+        {
+            // Scenario: a Linux user has a project (or transitive dependency) that references
+            // Microsoft.WindowsDesktop.App.  With EnableWindowsTargeting=true the project should
+            // still *build* (compile against the targeting pack).  Runtime packs for Windows Desktop
+            // are only available for Windows RIDs, so a self-contained publish for linux-x64 would
+            // produce an UnavailableRuntimePack — but a plain build should succeed.
+
+            var netCoreAppRef = CreateNetCoreAppFrameworkReference(
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                "linux-x64;win-x64;osx-x64;osx-arm64");
+
+            var windowsDesktopRef = CreateKnownFrameworkReference(
+                "Microsoft.WindowsDesktop.App",
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                runtimePackPattern: "Microsoft.WindowsDesktop.App.Runtime.**RID**",
+                runtimeIdentifiers: "win-x64;win-x86;win-arm64",
+                additionalMetadata: new Dictionary<string, string>
+                {
+                    ["IsWindowsOnly"] = "true"
+                });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                EnableWindowsTargeting = true,
+                SelfContained = false,
+                NETCoreSdkRuntimeIdentifier = "linux-x64",
+                RuntimeIdentifier = null,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = [
+                    NetCoreAppFrameworkReference,
+                    new MockTaskItem("Microsoft.WindowsDesktop.App", null)
+                ],
+                KnownFrameworkReferences = [netCoreAppRef, windowsDesktopRef]
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("a non-self-contained build should succeed even on non-Windows with EnableWindowsTargeting");
+
+            // Targeting packs for both frameworks should be queued for download
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.WindowsDesktop.App.Ref",
+                "WindowsDesktop targeting pack should be downloaded for compilation");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref",
+                "NETCore targeting pack should be downloaded for compilation");
+
+            // No WindowsDesktop runtime packs should be queued (non-self-contained, no RID)
+            task.PackagesToDownload.Should().NotContain(p => p.ItemSpec.StartsWith("Microsoft.WindowsDesktop.App.Runtime."),
+                "WindowsDesktop runtime packs are not needed for a non-self-contained build");
+
+            // No unavailable runtime packs should be reported
+            task.UnavailableRuntimePacks.Should().BeNullOrEmpty(
+                "a plain build (no RID) should not produce unavailable runtime pack errors");
+        }
+
+        [Fact]
+        public void It_reports_unavailable_runtime_pack_for_WindowsDesktop_on_linux_self_contained()
+        {
+            // Scenario: a Linux user tries to publish self-contained for linux-x64 with a WindowsDesktop
+            // framework reference.  The WindowsDesktop runtime pack only supports Windows RIDs, so it
+            // must appear in UnavailableRuntimePacks.
+
+            var netCoreAppRef = CreateNetCoreAppFrameworkReference(
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                "linux-x64;win-x64;osx-x64;osx-arm64");
+
+            var windowsDesktopRef = CreateKnownFrameworkReference(
+                "Microsoft.WindowsDesktop.App",
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                runtimePackPattern: "Microsoft.WindowsDesktop.App.Runtime.**RID**",
+                runtimeIdentifiers: "win-x64;win-x86;win-arm64",
+                additionalMetadata: new Dictionary<string, string>
+                {
+                    ["IsWindowsOnly"] = "true"
+                });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                EnableWindowsTargeting = true,
+                SelfContained = true,
+                NETCoreSdkRuntimeIdentifier = "linux-x64",
+                RuntimeIdentifier = "linux-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = [
+                    NetCoreAppFrameworkReference,
+                    new MockTaskItem("Microsoft.WindowsDesktop.App", null)
+                ],
+                KnownFrameworkReferences = [netCoreAppRef, windowsDesktopRef]
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("the task should succeed — unavailable packs are reported as items, not errors");
+
+            // NETCore runtime packs should still be resolved and queued
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
+                "NETCore runtime pack for linux-x64 must be downloaded");
+
+            // WindowsDesktop runtime pack is not available for linux-x64
+            task.UnavailableRuntimePacks.Should().NotBeNullOrEmpty()
+                .And.Contain(p => p.ItemSpec == "Microsoft.WindowsDesktop.App",
+                    "WindowsDesktop runtime pack is unavailable for linux-x64");
         }
 
         [Theory]
