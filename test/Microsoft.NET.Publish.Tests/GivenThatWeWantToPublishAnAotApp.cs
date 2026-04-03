@@ -973,6 +973,32 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_builds_with_startuphooksupport_true_when_publishaot_true_and_debug(string targetFramework)
+        {
+            var projectName = "StartupHookSupportTrueApp";
+            var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            // Configuration defaults to Debug
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework).FullName;
+            string runtimeConfigFile = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
+            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+
+            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            JToken configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
+            configProperties["System.StartupHookProvider.IsSupported"].Value<bool>()
+                .Should().BeTrue();
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_accepts_option_to_show_all_warnings(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);

@@ -8,7 +8,6 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
     [Theory]
-    [InlineData("PublishAot", "True")]
     [InlineData("PublishTrimmed", "True")]
     [InlineData("StartupHookSupport", "False")]
     public async Task ChangeFileInAotProject(string propertyName, string propertyValue)

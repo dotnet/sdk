@@ -22,6 +22,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
+    <!-- Enable startup hook support in Debug AOT builds to allow Hot Reload. See https://github.com/dotnet/runtime/issues/123778. -->
+    <StartupHookSupport Condition="'$(StartupHookSupport)' == '' And '$(PublishAot)' == 'true' And '$(Configuration)' == 'Debug'">true</StartupHookSupport>
 
     <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
     <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>

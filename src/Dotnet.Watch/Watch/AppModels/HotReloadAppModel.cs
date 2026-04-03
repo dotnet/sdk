@@ -67,8 +67,6 @@ internal abstract partial class HotReloadAppModel()
         // If property is not specified startup hook is enabled:
         // https://github.com/dotnet/runtime/blob/4b0b7238ba021b610d3963313b4471517108d2bc/src/libraries/System.Private.CoreLib/src/System/StartupHookProvider.cs#L22
         // Startup hooks are not used for WASM projects.
-        //
-        // TODO: Remove once implemented: https://github.com/dotnet/runtime/issues/123778
         if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.StartupHookSupport, defaultValue: true) &&
             !project.GetCapabilities().Contains(ProjectCapability.WebAssembly))
         {
