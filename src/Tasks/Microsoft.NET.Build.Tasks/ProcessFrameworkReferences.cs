@@ -774,6 +774,7 @@ namespace Microsoft.NET.Build.Tasks
             var knownFrameworkReferenceRuntimePackRuntimeIdentifiers = selectedRuntimePack.RuntimePackRuntimeIdentifiers.Split(';');
             var knownFrameworkReferenceRuntimePackExcludedRuntimeIdentifiers = selectedRuntimePack.RuntimePackExcludedRuntimeIdentifiers.Split(';');
             Log.LogMessage(MessageImportance.Low, $"Finding best RID match for pack {selectedRuntimePack.Name}@{runtimePackVersion} for target RID '{runtimeIdentifier}' from '{selectedRuntimePack.RuntimePackRuntimeIdentifiers}' excluding '{selectedRuntimePack.RuntimePackExcludedRuntimeIdentifiers}'");
+            // this acts as a compat check so we know that we are choosing one of the packs that does exist for the framework reference
             string? runtimePackRuntimeIdentifier = NuGetUtils.GetBestMatchingRidWithExclusion(
                     runtimeGraph,
                     runtimeIdentifier,
