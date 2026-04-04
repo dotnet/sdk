@@ -59,6 +59,8 @@
         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler"
         ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks"
+        ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2"
         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
   </ItemGroup>
