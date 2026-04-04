@@ -1,59 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.NET.TestFramework
 {
     /// <summary>
     /// Controls which platforms and architectures a test should run on or be skipped on.
-    /// The constructor <paramref name="platforms"/> parameter specifies platforms to include (run on).
-    /// Named properties <see cref="SkipPlatforms"/>, <see cref="Architecture"/>, and
-    /// <see cref="SkipArchitecture"/> provide additional filtering.
+    /// <paramref name="platforms"/> specifies platforms to include (run on).
+    /// Optional parameters provide additional skip-based filtering.
     /// </summary>
     public class PlatformSpecificFact : FactAttribute
     {
         internal const Architecture NoArchitectureFilter = (Architecture)(-1);
 
-        private readonly TestPlatforms _platforms;
-        private string? _skip;
-
-        public PlatformSpecificFact() : this(TestPlatforms.Any)
+        public PlatformSpecificFact(
+            TestPlatforms platforms = TestPlatforms.Any,
+            TestPlatforms skipPlatforms = 0,
+            Architecture architecture = NoArchitectureFilter,
+            Architecture skipArchitecture = NoArchitectureFilter,
+            string? skipReason = null,
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
-        }
-
-        public PlatformSpecificFact(TestPlatforms platforms)
-        {
-            _platforms = platforms;
-        }
-
-        /// <summary>
-        /// Platforms to skip on, even if included by the constructor parameter.
-        /// When <see cref="SkipArchitecture"/> is also set, both must match for the test to be skipped.
-        /// </summary>
-        public TestPlatforms SkipPlatforms { get; set; }
-
-        /// <summary>
-        /// Restrict the test to run only on this process architecture.
-        /// Tests on other architectures are skipped.
-        /// </summary>
-        public Architecture Architecture { get; set; } = NoArchitectureFilter;
-
-        /// <summary>
-        /// Architecture to skip on. When <see cref="SkipPlatforms"/> is also set,
-        /// both must match for the test to be skipped. When used alone, skips on the
-        /// specified architecture regardless of platform.
-        /// </summary>
-        public Architecture SkipArchitecture { get; set; } = NoArchitectureFilter;
-
-        /// <summary>
-        /// Reason or tracking issue URL for why the test is skipped.
-        /// Used as the Skip message when a skip condition matches.
-        /// </summary>
-        public string? SkipReason { get; set; }
-
-        public override string? Skip
-        {
-            get => _skip ?? EvaluateSkip(_platforms, SkipPlatforms, Architecture, SkipArchitecture, SkipReason);
-            set => _skip = value;
+            Skip = EvaluateSkip(platforms, skipPlatforms, architecture, skipArchitecture, skipReason);
         }
 
         internal static string? EvaluateSkip(
