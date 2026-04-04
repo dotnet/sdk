@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "Basic FSharp",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.DifferentLanguagesGroup",
+  "precedence": "100",
+  "identity": "TestAssets.DifferentLanguagesGroup.BasicFSharp",
+  "shortName": "basic",
+  "sourceName": "bar",
+  "tags": {
+    "language": "F#",
+    "type": "item"
+  }
+}
