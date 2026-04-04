@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -226,6 +226,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,
                 "Package should download higher package version");
+        }
+
+        [Fact]
+        public void GivenPackageOverrideSourceWithCredentialsNugetFeedReturnsSelectedSource()
+        {
+            PackageSource source = new PackageSource("NuGet")
+            {
+                Credentials = new PackageSourceCredential("NuGet", "user", "pass", true, "basic")
+            };
+
+            IEnumerable<PackageSource> selectedSources = _toolInstaller.LoadNuGetSources(
+                TestPackageId,
+                packageSourceLocation: new PackageSourceLocation(packageSourceOverrides: new[] { source }));
+
+            selectedSources.Should().HaveCount(1).And.Contain(x => x.Credentials != null);
         }
 
         [WindowsOnlyFact]
