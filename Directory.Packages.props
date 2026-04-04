@@ -53,7 +53,8 @@
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
-    <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.SignCheckTask" Version="$(ArcadeSdkVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.XUnitV3Extensions" Version="$(MicrosoftDotNetXUnitV3ExtensionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
@@ -74,11 +75,11 @@
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <!-- The MicrosoftSignedWixVersion property comes from the Arcade SDK DefaultVersions.props -->
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="$(MicrosoftTemplateEngineAuthoringTemplateVerifierVersion)" />
+    <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="$(MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion)" />
     <PackageVersion Include="Microsoft.TemplateEngine.Edge" Version="$(MicrosoftTemplateEngineEdgePackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Mocks" Version="$(MicrosoftTemplateEngineMocksPackageVersion)" />
+    <PackageVersion Include="Microsoft.TemplateEngine.Mocks.XunitV3" Version="$(MicrosoftTemplateEngineMocksXunitV3PackageVersion)" />
     <PackageVersion Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.TestHelper" Version="$(MicrosoftTemplateEngineTestHelperPackageVersion)" />
+    <PackageVersion Include="Microsoft.TemplateEngine.TestHelper.XunitV3" Version="$(MicrosoftTemplateEngineTestHelperXunitV3PackageVersion)" />
     <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
@@ -143,10 +144,9 @@
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
-    <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
-    <PackageVersion Include="xunit.assert" Version="$(XUnitVersion)" Condition="'$(IsTestProject)' != 'true'" />
-    <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
+    <PackageVersion Include="xunit.v3.assert" Version="$(XUnitV3Version)" Condition="'$(IsTestProject)' != 'true'" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />
   </ItemGroup>
 
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in

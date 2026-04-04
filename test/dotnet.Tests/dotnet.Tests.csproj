@@ -89,9 +89,9 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks.XunitV3" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper.XunitV3" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
