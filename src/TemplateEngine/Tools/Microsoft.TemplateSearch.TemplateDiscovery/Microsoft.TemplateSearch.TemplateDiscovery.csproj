@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xunit" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Protocol" />
@@ -21,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngineRoot)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
     <ProjectReference Include="$(TemplateEngineRoot)Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj" />
-    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
   </ItemGroup>
 
   <ItemGroup>

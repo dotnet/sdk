@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 #if !XUNIT_V3
-using Xunit.Abstractions;
+using Xunit;
 #endif
 
 namespace Microsoft.TemplateEngine.CommandUtils

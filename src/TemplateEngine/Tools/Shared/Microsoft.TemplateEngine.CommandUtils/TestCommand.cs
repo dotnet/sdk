@@ -5,7 +5,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Utils;
 #if !XUNIT_V3
-using Xunit.Abstractions;
+using Xunit;
 #endif
 
 namespace Microsoft.TemplateEngine.CommandUtils
