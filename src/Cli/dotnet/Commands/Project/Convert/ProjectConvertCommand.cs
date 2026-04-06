@@ -300,6 +300,14 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
+                if (directive is CSharpDirective.Item item &&
+                    Path.IsPathFullyQualified(item.Include))
+                {
+                    item = item.WithInclude(Path.GetRelativePath(relativeTo: targetDirectory, path: item.Include));
+                    result.Add(item);
+                    continue;
+                }
+
                 result.Add(directive);
             }
 

@@ -21,6 +21,13 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind.Exclude = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind.Include = 0 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Info.get -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.Include.get -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.Include.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.Item(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.ItemType.get -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.ItemType.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.WithInclude(string! include) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named.Name.get -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named.Name.init -> void
@@ -120,6 +127,7 @@ Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.WhiteSpaceInfo() -> void
 Microsoft.DotNet.ProjectTools.ProjectLocator
 override abstract Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ToString() -> string!
+override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.ToString() -> string!
@@ -129,6 +137,7 @@ override Microsoft.DotNet.FileBasedPrograms.SourceFile.GetHashCode() -> int
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.DefaultMapping.get -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.DefaultMappingString.get -> string!
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude?
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Item?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ParseMapping(string! value, Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named?

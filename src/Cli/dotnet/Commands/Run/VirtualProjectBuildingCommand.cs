@@ -521,6 +521,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return false;
             }
 
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Item))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is an item directive.");
+                return false;
+            }
+
             if (EvaluatedDirectives.Any(static d =>
                     d is CSharpDirective.IncludeOrExclude { Kind: CSharpDirective.IncludeOrExcludeKind.Include } includeDirective &&
                     includeDirective.Name.AsSpan().ContainsAny('*', '?')))
@@ -754,6 +760,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (Directives.Any(static d => d is CSharpDirective.Project))
         {
             Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
+            return null;
+        }
+
+        if (Directives.Any(static d => d is CSharpDirective.Item))
+        {
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are item directives.");
             return null;
         }
 

@@ -178,11 +178,12 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
 #:project ../MyLibrary
+#:item EmbeddedResource data.txt
 #:include ./**/*.cs
 ```
 
 Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
-The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:include`.  
+The value is required for `#:property` and `#:item`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:include`.  
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
@@ -208,6 +209,12 @@ The directives are processed as follows:
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
+
+- Each `#:item` is injected as `<{0} Include="{1}" />` in an `<ItemGroup>`,
+  where `{0}` is the item type and `{1}` is the include path.
+  It is an error if the item type or include path is empty.
+  The include path can optionally be wrapped in double quotes.
+  Relative paths are resolved relative to the file containing the directive.
 
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
   where `{0}` is the directive's value and `{1}` is determined by its extension.

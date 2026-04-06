@@ -149,7 +149,8 @@ internal static class FileLevelDirectiveHelpers
                 };
 
                 // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
-                if (value.Contains('"'))
+                // #:item is the first directive that allows quoted values.
+                if (!string.Equals(name, "item", StringComparison.Ordinal) && value.Contains('"'))
                 {
                     context.ReportError(FileBasedProgramsResources.QuoteInDirective);
                 }
@@ -323,6 +324,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "property": return Property.Parse(context);
             case "package": return Package.Parse(context);
             case "project": return Project.Parse(context);
+            case "item": return Item.Parse(context);
             case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
                 context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
@@ -585,6 +587,87 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         public override string ToString() => $"#:project {Name}";
+    }
+
+    /// <summary>
+    /// <c>#:item</c> directive.
+    /// </summary>
+    public sealed class Item(in ParseInfo info) : Named(info)
+    {
+        public required string ItemType { get; init; }
+
+        public required string Include { get; init; }
+
+        public static new Item? Parse(in ParseContext context)
+        {
+            var directiveText = context.DirectiveText.Trim();
+            if (directiveText.Length == 0)
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+                return null;
+            }
+
+            int separatorIndex = directiveText.IndexOfAny([' ', '\t']);
+            if (separatorIndex < 0)
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveName, context.DirectiveKind, " "));
+                return null;
+            }
+
+            string itemType;
+            string includeText;
+
+            itemType = directiveText[..separatorIndex];
+            includeText = directiveText[(separatorIndex + 1)..].TrimStart();
+
+            if (includeText.Length == 0)
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveName, context.DirectiveKind, " "));
+                return null;
+            }
+
+            try
+            {
+                itemType = XmlConvert.VerifyName(itemType);
+            }
+            catch (XmlException)
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveName, context.DirectiveKind, " "));
+                return null;
+            }
+
+            var include = includeText;
+            if (includeText.Length >= 2 && includeText[0] == '"' && includeText[^1] == '"')
+            {
+                include = includeText[1..^1];
+            }
+
+            return new Item(context.Info)
+            {
+                ItemType = itemType,
+                Include = include,
+                Name = GetName(itemType, include),
+            };
+        }
+
+        public Item WithInclude(string include)
+        {
+            if (Include == include)
+            {
+                return this;
+            }
+
+            return new Item(Info)
+            {
+                ItemType = ItemType,
+                Include = include,
+                Name = GetName(ItemType, include),
+            };
+        }
+
+        public override string ToString() => $"#:item {ItemType} {Include}";
+
+        private static string GetName(string itemType, string include) => $"{itemType} {include}";
     }
 
     public enum IncludeOrExcludeKind

@@ -175,7 +175,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude or CSharpDirective.Item))
         {
             return directives;
         }
@@ -208,6 +208,14 @@ public sealed class VirtualProjectBuilder
                     includeOrExcludeDirective = includeOrExcludeDirective.WithDeterminedItemType(reportError, mapping);
 
                     builder.Add(includeOrExcludeDirective);
+                    break;
+
+                case CSharpDirective.Item itemDirective:
+                    var expandedItemPath = project.ExpandString(itemDirective.Include);
+                    var fullItemPath = Path.GetFullPath(path: expandedItemPath, basePath: Path.GetDirectoryName(itemDirective.Info.SourceFile.Path)!);
+                    itemDirective = itemDirective.WithInclude(fullItemPath);
+
+                    builder.Add(itemDirective);
                     break;
 
                 default:
@@ -462,6 +470,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var itemDirectives = directives.OfType<CSharpDirective.Item>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -698,6 +707,27 @@ public sealed class VirtualProjectBuilder
                             <PackageReference Include="{EscapeValue(package.Name)}" Version="{EscapeValue(package.Version)}" />
                         """);
                 }
+
+                processedDirectives++;
+            }
+
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
+        }
+
+        if (itemDirectives.Any())
+        {
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
+
+            foreach (var item in itemDirectives)
+            {
+                writer.WriteLine($"""
+                        <{item.ItemType} Include="{EscapeValue(item.Include)}" />
+                    """);
 
                 processedDirectives++;
             }
