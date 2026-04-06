@@ -68,7 +68,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Thanks for your PR, @${issueAuthor}.
+            Thanks for your PR, ${issueAuthor}.
 
             To learn about the PR process and branching schedule of this repo, please take a look at the [SDK PR Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/SDK-PR-guide.md).
       description: Remind ASP.NET Core PR authors the process to follow
