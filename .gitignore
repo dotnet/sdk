@@ -54,4 +54,3 @@ cmake/
 
 # Claude code config files
 .claude/settings.local.json
-temp-*.sarif
