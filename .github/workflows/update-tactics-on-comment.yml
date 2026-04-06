@@ -16,7 +16,7 @@ env:
 jobs:
   authorize:
     name: Authorize Request
-    if: github.event.issue.pull_request
+    if: (!github.event.repository.fork) && (github.event.issue.pull_request)
     runs-on: ubuntu-latest
     permissions:
       contents: read
