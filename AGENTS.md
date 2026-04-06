@@ -1,61 +1,47 @@
-# .NET SDK Repo Instructions
+# dotnet/sdk Repo Overview
 
-## Overview
-
-This is the .NET SDK repository (dotnet/sdk). It contains the `dotnet` CLI, MSBuild tasks/targets, project system SDKs (Web, Razor, Blazor, Containers, StaticWebAssets, Wasm), template engine, workload management, and related tooling. Uses the Arcade build infrastructure.
+This is the .NET SDK repo.
+It contains the `dotnet` CLI, MSBuild tasks/targets, project system SDKs, template engine, workload management, and related tooling.
+This repo uses https://github.com/dotnet/arcade for build, test, and pipeline infrastructure.
 
 ## Local Development Workflow
 
-### Building
+Use the `.dotnet/dotnet` executable for `dotnet` CLI commands.
+It is automatically acquired during the build process.
+Do not modify the SDK version specified in `global.json`.
 
-```bash
-./build.sh                    # Linux/macOS (must use bash, not zsh)
-build.cmd                     # Windows
-```
+### Build
 
-By default (without `-pack`), the build skips crossgen and installers (`SkipUsingCrossgen=true`, `SkipBuildingInstallers=true`) to speed up inner-loop iteration. Build output goes to `artifacts/bin/redist/<Configuration>/dotnet/`.
+- Linux/macOS: `./build.sh`
+- Windows: `build.cmd`
 
 Key flags:
-- `-c Release` — Release configuration (default: Debug)
-- `-pack` — Full build including crossgen and NuGet packages
-- `-bl` — Generate MSBuild binary log (useful for diagnosing build issues)
-- `-v <level>` — MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], diag[nostic]
-- Extra MSBuild properties can be passed directly, e.g. `./build.sh /p:SomeProperty=value`
+- `-bl` - Generate MSBuild binary log (useful for diagnosing build issues)
+- `-v <level>` - MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], diag[nostic]
+- Extra MSBuild properties can be passed directly with `/p:SomeProperty=value`
 
-### Using the Built SDK (Dogfooding)
+The newly built .NET CLI is output to `artifacts/bin/redist/Debug/dotnet/dotnet`.
+It can be used to sanity check local changes in a temp directory.
 
-After building, set up your shell to use the locally-built SDK:
+### Test
 
-```bash
-# macOS/Linux (bash only)
-source ./eng/dogfood.sh
-
-# Windows
-eng\dogfood.cmd
-# or: artifacts\sdk-build-env.bat
-```
-
-This puts the built SDK on your PATH so `dotnet build`, `dotnet test`, etc. use your local changes.
-
-### Running Tests
-
-Do **not** run the full test suite locally — it takes hours and is handled by CI (Azure DevOps + Helix). Instead, run only the tests relevant to your changes.
+Do not run the full test suite locally, it takes hours.
+Instead, run only the tests relevant to your changes.
 
 After building, run individual test projects:
 
 ```bash
 # Run all tests in a specific test project
-cd test/<ProjectName>.Tests
-dotnet test
+./.dotnet/dotnet test test/<ProjectName>.Tests
 
 # Run a single test by name
-dotnet test --filter "FullyQualifiedName~TestMethodName"
+./.dotnet/dotnet test test/<ProjectName>.Tests --filter "FullyQualifiedName~TestMethodName"
 
 # Run a single test by class
-dotnet test --filter "ClassName=Microsoft.DotNet.Cli.SomeTests"
+./.dotnet/dotnet test test/<ProjectName>.Tests --filter "ClassName=Microsoft.DotNet.Cli.SomeTests"
 ```
 
-Test projects live in `test/` with naming conventions `<ProjectName>.Tests` (unit) and `<ProjectName>.IntegrationTests` (integration).
+Test projects live in `test/<ProjectName>.Tests` and `<ProjectName>.IntegrationTests` (with one exception: `NetAnalyzers` tests live in `src/Microsoft.CodeAnalysis.NetAnalyzers/tests`).
 
 ## Project Layout
 
@@ -80,13 +66,11 @@ Test projects live in `test/` with naming conventions `<ProjectName>.Tests` (uni
 | Compilers toolset | `src/Microsoft.Net.Sdk.Compilers.Toolset/` |
 | MSI installer support | `src/Microsoft.Win32.Msi/` |
 | SDK layout & redistribution | `src/Layout/` |
-| Tests & test assets | `test/` |
 | Template content | `template_feed/` |
+
+### Meta
+
 | Build infrastructure (Arcade, pipelines, dogfood) | `eng/` |
 | Developer documentation | `documentation/` |
-
-## Key Conventions
-
-- The repo builds with a specific preview SDK version pinned in `global.json`, which `build.sh`/`build.cmd` install automatically. Don't update this manually.
-- CI runs on Azure DevOps with distributed testing via Helix. Test orchestration is in `test/UnitTests.proj`.
-
+| Tests & test assets | `test/` |
+| Distributed test orchestration via Helix | `test/UnitTests.proj` |
