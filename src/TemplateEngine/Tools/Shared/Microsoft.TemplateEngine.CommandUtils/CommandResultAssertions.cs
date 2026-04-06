@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// TODO: Update Assert.NotNull patterns to use the return value for xunit v3 null analysis.
+// See https://github.com/dotnet/templating/issues/10085
+#pragma warning disable CS8602, CS8604
 using System.Text.RegularExpressions;
 
 namespace Microsoft.TemplateEngine.CommandUtils

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Protocol" />
