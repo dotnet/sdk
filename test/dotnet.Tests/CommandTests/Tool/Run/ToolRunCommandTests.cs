@@ -44,6 +44,24 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithRollForwardOptionItShouldPreserveDuplicateArgumentsForwardedToTool()
+        {
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
+            IEnumerable<string> testForwardArgument = ["--var", "a", "--var", "b"];
+
+            var result = localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-a",
+                CommandArguments = testForwardArgument
+            }, allowRollForward: true);
+
+            result.Should().NotBeNull();
+            result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value, "--var", "a", "--var", "b");
+            // Verify both occurrences of --var are present (not deduplicated)
+            result.Args!.Split(' ').Count(arg => arg == "--var").Should().Be(2);
+        }
+
+        [Fact]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a");
