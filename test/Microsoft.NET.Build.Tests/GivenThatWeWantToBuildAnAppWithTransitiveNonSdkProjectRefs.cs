@@ -172,6 +172,7 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
+                "TestApp.runtimeconfig.dev.json",
                 prefix + "MainLibrary.dll",
                 prefix + "MainLibrary.pdb",
                 prefix + "AuxLibrary.dll",
