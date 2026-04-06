@@ -74,11 +74,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectConfigurationDescription Include="TargetFramework=$(TargetFramework)" />
   </ItemGroup>
 
+  <!-- Compatibility: if GenerateRuntimeConfigDevFile was set to true prior to adding GenerateProbingPathsToRuntimeConfigDevFile switch, the additional probing paths were generated -->
+  <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == 'true'">
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == ''">true</GenerateProbingPathsToRuntimeConfigDevFile>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == ''">
-    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
     <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
-    <GenerateRuntimeConfigDevFile Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">false</GenerateRuntimeConfigDevFile>
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '6.0')))">true</GenerateProbingPathsToRuntimeConfigDevFile>
+    <GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile Condition="'$(GenerateHotReloadSettingsToRuntimeConfigDevFile)' == '' and '$(Configuration)' == 'Debug'">true</GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile>
+
+    <GenerateRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == 'true' or '$(GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)' == 'true'">true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -415,7 +422,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        AdditionalProbingPaths="@(AdditionalProbingPath)"
                                        IsSelfContained="$(SelfContained)"
                                        WriteIncludedFrameworks="$(_WriteIncludedFrameworks)"
-                                       GenerateRuntimeConfigDevFile="$(GenerateRuntimeConfigDevFile)"
+                                       GenerateProbingPathsToRuntimeConfigDevFile="$(GenerateProbingPathsToRuntimeConfigDevFile)"
+                                       GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile="$(GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)"
                                        AlwaysIncludeCoreFramework="$(AlwaysIncludeCoreFrameworkInRuntimeConfig)">
 
     </GenerateRuntimeConfigurationFiles>
