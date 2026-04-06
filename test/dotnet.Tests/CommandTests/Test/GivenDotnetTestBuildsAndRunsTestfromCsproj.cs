@@ -716,7 +716,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([flag]);
 
-            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
+            // Use a unique subdirectory per flag to avoid conflicts between theory data rows.
+            // --diag creates a file, while --output and --results-directory create directories.
+            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b", flag.TrimStart('-'));
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)

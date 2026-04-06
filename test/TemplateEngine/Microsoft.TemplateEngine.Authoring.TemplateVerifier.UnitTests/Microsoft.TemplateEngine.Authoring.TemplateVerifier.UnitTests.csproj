@@ -3,8 +3,8 @@
   <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.Shared.props" />
 
   <ItemGroup>
-    <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
-    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
   </ItemGroup>
 
   <ItemGroup>

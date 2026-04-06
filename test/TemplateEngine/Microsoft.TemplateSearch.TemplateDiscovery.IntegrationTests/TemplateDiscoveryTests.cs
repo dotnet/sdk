@@ -5,7 +5,6 @@ using System.Text.Json.Nodes;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 {

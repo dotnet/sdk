@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {

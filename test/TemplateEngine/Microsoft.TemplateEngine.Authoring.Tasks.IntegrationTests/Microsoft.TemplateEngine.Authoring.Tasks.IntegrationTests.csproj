@@ -10,14 +10,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngineRoot)Tools/Microsoft.TemplateEngine.Authoring.Tasks\Microsoft.TemplateEngine.Authoring.Tasks.csproj" />
-    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
   </ItemGroup>
 
   <ItemGroup>

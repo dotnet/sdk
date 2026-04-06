@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 #if !XUNIT_V3
-using Xunit.Abstractions;
 #endif
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests

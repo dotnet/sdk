@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {

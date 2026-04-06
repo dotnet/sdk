@@ -13,10 +13,10 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
-    <ProjectReference Include="$(TemplateEngineRoot)Tools\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+    <ProjectReference Include="$(TemplateEngineTestRoot)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
+    <ProjectReference Include="$(TemplateEngineRoot)Tools\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
   </ItemGroup>
 
   <ItemGroup>
