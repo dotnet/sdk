@@ -393,7 +393,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);
                 dispatcher.Run();
-}, TestContext.Current.CancellationToken);
+            }, TestContext.Current.CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
             // Wait for all connections to be created.
             await readySource.Task;
