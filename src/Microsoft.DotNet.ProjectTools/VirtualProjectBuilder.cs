@@ -211,9 +211,17 @@ public sealed class VirtualProjectBuilder
                     break;
 
                 case CSharpDirective.Item itemDirective:
+                    var sourceDirectory = Path.GetDirectoryName(itemDirective.Info.SourceFile.Path)!;
                     var expandedItemPath = project.ExpandString(itemDirective.Include);
-                    var fullItemPath = Path.GetFullPath(path: expandedItemPath, basePath: Path.GetDirectoryName(itemDirective.Info.SourceFile.Path)!);
-                    itemDirective = itemDirective.WithInclude(fullItemPath);
+                    if (Path.IsPathFullyQualified(expandedItemPath))
+                    {
+                        itemDirective = itemDirective.WithInclude(Path.GetFullPath(expandedItemPath));
+                    }
+                    else
+                    {
+                        var fullItemPath = Path.GetFullPath(path: expandedItemPath, basePath: sourceDirectory);
+                        itemDirective = itemDirective.WithInclude(Path.GetRelativePath(sourceDirectory, fullItemPath));
+                    }
 
                     builder.Add(itemDirective);
                     break;

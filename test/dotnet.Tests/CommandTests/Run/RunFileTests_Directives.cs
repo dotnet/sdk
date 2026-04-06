@@ -362,10 +362,68 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var item = directives.OfType<CSharpDirective.Item>().Should().ContainSingle().Which;
         item.ItemType.Should().Be("EmbeddedResource");
-        item.Include.Should().Be(Path.Join(testInstance.Path, "Data.txt"));
-        item.Name.Should().Be($"EmbeddedResource {Path.Join(testInstance.Path, "Data.txt")}");
+        item.Include.Should().Be("Data.txt");
+        item.Name.Should().Be("EmbeddedResource Data.txt");
 
-        project.GetItems("EmbeddedResource").Select(static i => i.EvaluatedInclude).Should().Contain(Path.Join(testInstance.Path, "Data.txt"));
+        project.GetItems("EmbeddedResource").Select(static i => i.EvaluatedInclude).Should().Contain("Data.txt");
+    }
+
+    [Fact]
+    public void ItemDirective_GrpcProto_NoDirectoryBuildProps()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "grpc.cs"), """
+            #:sdk Microsoft.NET.Sdk.Web
+            #:property PublishAot=false
+            #:package Grpc.AspNetCore@2.76.0
+            #:package Google.Protobuf@3.33.2
+            #:package Grpc.Tools@2.76.0
+            #:item Protobuf "greet.proto"
+            using Grpc.Core;
+
+            var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpc();
+
+            var app = builder.Build();
+            app.MapGrpcService<GreeterService>();
+
+            public class GreeterService(ILogger<GreeterService> logger) : Greeter.GreeterBase
+            {
+                public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
+                {
+                    logger.LogInformation("Saying hello to {Name}", request.Name);
+
+                    return Task.FromResult(new HelloReply
+                    {
+                        Message = "Hello " + request.Name
+                    });
+                }
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "greet.proto"), """
+            syntax = "proto3";
+
+            service Greeter {
+              rpc SayHello (HelloRequest) returns (HelloReply);
+            }
+
+            message HelloRequest {
+              string name = 1;
+            }
+
+            message HelloReply {
+              string message = 1;
+            }
+            """);
+
+        File.Exists(Path.Join(testInstance.Path, "Directory.Build.props")).Should().BeFalse();
+
+        new DotnetCommand(Log, "build", "grpc.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
     }
 
     [Theory, CombinatorialData]
