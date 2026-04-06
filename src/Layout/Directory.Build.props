@@ -85,4 +85,8 @@
     <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
+  </ItemGroup>
+
 </Project>
