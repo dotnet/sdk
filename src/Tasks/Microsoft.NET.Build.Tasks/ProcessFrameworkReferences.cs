@@ -248,6 +248,21 @@ namespace Microsoft.NET.Build.Tasks
 
             HashSet<string> unrecognizedRuntimeIdentifiers = new(StringComparer.OrdinalIgnoreCase);
 
+            //  Build a set of RuntimeFrameworkNames that are referenced via a profile framework reference.
+            //  Profile KFRs (e.g. Microsoft.WindowsDesktop.App.WindowsForms) share a runtime pack with their
+            //  parent framework (Microsoft.WindowsDesktop.App). When a profile is referenced, the parent's
+            //  runtime pack must still be resolved and downloaded even though the parent itself is not directly
+            //  listed in the project's FrameworkReferences.
+            var runtimeFrameworkNamesReferencedViaProfile = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kfr in knownFrameworkReferencesForTargetFramework)
+            {
+                if (!kfr.Name.Equals(kfr.RuntimeFrameworkName, StringComparison.OrdinalIgnoreCase) &&
+                    frameworkReferencesForThisProject.ContainsKey(kfr.Name))
+                {
+                    runtimeFrameworkNamesReferencedViaProfile.Add(kfr.RuntimeFrameworkName);
+                }
+            }
+
             bool windowsOnlyErrorLogged = false;
             foreach (var knownFrameworkReference in knownFrameworkReferencesForTargetFramework)
             {
@@ -396,8 +411,10 @@ namespace Microsoft.NET.Build.Tasks
                 //  Only resolve and download runtime packs for framework references that are part of this
                 //  task's input. Iterating all KnownFrameworkReferences for the TFM is required to build
                 //  targeting packs and RuntimeFramework items, but runtime pack resolution must be scoped
-                //  to frameworks the project actually references.
-                if (frameworkReferenceForThisProject != null)
+                //  to frameworks the project actually references — either directly or via a profile.
+                bool isReferencedByProject = frameworkReferenceForThisProject != null
+                    || runtimeFrameworkNamesReferencedViaProfile.Contains(knownFrameworkReference.Name);
+                if (isReferencedByProject)
                 {
                     var hasRuntimePackAlwaysCopyLocal =
                         selectedRuntimePack != null && selectedRuntimePack.Value.RuntimePackAlwaysCopyLocal;

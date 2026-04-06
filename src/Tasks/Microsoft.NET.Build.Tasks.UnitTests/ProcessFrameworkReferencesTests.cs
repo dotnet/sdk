@@ -1223,6 +1223,77 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "WindowsDesktop runtime pack is unavailable for linux-x64");
         }
 
+        [Fact]
+        public void It_resolves_WindowsDesktop_runtime_pack_when_only_WinForms_profile_is_referenced()
+        {
+            // Scenario: a WinForms project on macOS (with EnableWindowsTargeting) publishes self-contained
+            // for win-arm64.  The project's FrameworkReference is the profile
+            // "Microsoft.WindowsDesktop.App.WindowsForms", not the parent "Microsoft.WindowsDesktop.App".
+            // The parent's runtime pack must still be resolved and queued for download because profile
+            // KFRs share their runtime pack with the parent.
+
+            var netCoreAppRef = CreateNetCoreAppFrameworkReference(
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                "linux-x64;win-x64;win-x86;win-arm64;osx-x64;osx-arm64");
+
+            var windowsDesktopRef = CreateKnownFrameworkReference(
+                "Microsoft.WindowsDesktop.App",
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                runtimePackPattern: "Microsoft.WindowsDesktop.App.Runtime.**RID**",
+                runtimeIdentifiers: "win-x64;win-x86;win-arm64",
+                additionalMetadata: new Dictionary<string, string>
+                {
+                    ["IsWindowsOnly"] = "true"
+                });
+
+            // WindowsForms profile: Name != RuntimeFrameworkName, shares runtime pack with parent
+            var winFormsProfileRef = CreateKnownFrameworkReference(
+                "Microsoft.WindowsDesktop.App.WindowsForms",
+                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0",
+                runtimePackPattern: "Microsoft.WindowsDesktop.App.Runtime.**RID**",
+                runtimeIdentifiers: "win-x64;win-x86;win-arm64",
+                additionalMetadata: new Dictionary<string, string>
+                {
+                    ["IsWindowsOnly"] = "true",
+                    ["RuntimeFrameworkName"] = "Microsoft.WindowsDesktop.App",
+                    ["Profile"] = "WindowsForms"
+                });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                EnableWindowsTargeting = true,
+                SelfContained = true,
+                NETCoreSdkRuntimeIdentifier = "osx-arm64",
+                RuntimeIdentifier = "win-arm64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = [
+                    NetCoreAppFrameworkReference,
+                    // Only the profile is referenced — NOT the parent
+                    new MockTaskItem("Microsoft.WindowsDesktop.App.WindowsForms", null)
+                ],
+                KnownFrameworkReferences = [netCoreAppRef, windowsDesktopRef, winFormsProfileRef]
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("self-contained publish with WinForms profile + EnableWindowsTargeting should succeed");
+
+            // The WindowsDesktop runtime pack for win-arm64 must be downloaded even though only the profile was referenced
+            task.PackagesToDownload.Should().Contain(
+                p => p.ItemSpec == "Microsoft.WindowsDesktop.App.Runtime.win-arm64",
+                "WindowsDesktop runtime pack should be downloaded when a profile (WindowsForms) is referenced");
+
+            // NETCore runtime pack should also be resolved
+            task.PackagesToDownload.Should().Contain(
+                p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-arm64",
+                "NETCore runtime pack for win-arm64 must be downloaded");
+        }
+
         [Theory]
         [InlineData(null, "linux-x64")]
         [InlineData("linux-x64", "linux-x64")]
