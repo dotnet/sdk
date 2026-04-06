@@ -11,6 +11,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [ModuleInitializer]
         public static void Init()
         {
+            // Clear TERM to ensure AnsiExtensions.Url() returns raw URLs rather than
+            // ANSI hyperlink escape sequences. Without this, test assertions on URL
+            // strings fail when the test runner inherits an xterm-like TERM setting.
+            Environment.SetEnvironmentVariable("TERM", null);
+
             DerivePathInfo(
                    (_, _, type, method) => new(
                        directory: BaseIntegrationTest.ApprovalsDirectory,

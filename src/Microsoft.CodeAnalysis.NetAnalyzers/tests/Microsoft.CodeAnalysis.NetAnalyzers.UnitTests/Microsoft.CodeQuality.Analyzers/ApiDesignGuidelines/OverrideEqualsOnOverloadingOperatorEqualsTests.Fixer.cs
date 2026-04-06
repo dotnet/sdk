@@ -70,7 +70,7 @@ class {|CS0659:{|CS0661:C|}|}
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ class {|CS0659:{|CS0661:C|}|}
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

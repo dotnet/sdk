@@ -9,7 +9,10 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
-# REM Enable crash dump collection for .NET processes.
+# Enable crash dump collection for .NET processes. The MTP CrashDump extension's test host
+# controller IPC fails on POSIX (NamedPipeServer.WaitConnectionAsync times out), so we use
+# the runtime's built-in crash dump support instead. These env vars are inherited by the
+# child test process where crashes actually occur.
 export DOTNET_DbgEnableMiniDump=1
 export DOTNET_DbgMiniDumpType=4
 export DOTNET_DbgMiniDumpName=$HELIX_WORKITEM_UPLOAD_ROOT/coredump.%p

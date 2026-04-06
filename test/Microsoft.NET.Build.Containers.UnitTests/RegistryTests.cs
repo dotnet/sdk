@@ -457,7 +457,7 @@ public class RegistryTests : IDisposable
                 catch
                 { }
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         RegistrySettings settings = new()
         {

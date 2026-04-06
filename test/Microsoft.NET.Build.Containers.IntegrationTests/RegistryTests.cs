@@ -48,7 +48,7 @@ public class RegistryTests : IDisposable
             containerTag,
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: default);
+            cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.NotNull(downloadedImage);
     }

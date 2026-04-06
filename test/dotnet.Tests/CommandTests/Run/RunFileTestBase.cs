@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
@@ -126,12 +127,51 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
+        WarmUpNuGetCache(outOfTreeBaseDirectory);
+
         // Check there are no implicit build files that would prevent testing optimizations.
         VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
         exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
             "so we can test optimizations that would be disabled with implicit build files present");
 
         return outOfTreeBaseDirectory;
+    }
+
+    /// <summary>
+    /// Runs a full MSBuild build of a trivial file-based app to pull CSC dependencies
+    /// (e.g., ILLink analyzer DLLs from microsoft.net.illink.tasks) into the NuGet cache.
+    /// Without this, <see cref="VirtualProjectBuildingCommand.GetBuildLevel"/> falls back to
+    /// <see cref="BuildLevel.All"/> because the NuGet-provided DLLs checked by
+    /// <see cref="CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache"/> are missing,
+    /// causing tests that assert CSC-only behavior to fail depending on the order they run in.
+    /// </summary>
+    private static void WarmUpNuGetCache(string outOfTreeBaseDirectory)
+    {
+        var warmUpDir = Path.Join(outOfTreeBaseDirectory, ".warmup");
+        Directory.CreateDirectory(warmUpDir);
+        var warmUpFile = Path.Join(warmUpDir, "WarmUp.cs");
+
+        try
+        {
+            File.WriteAllText(warmUpFile, """System.Console.Write("ok");""");
+
+            var result = new DotnetCommand(NullOutputHelper.Instance, "build", "WarmUp.cs")
+                .WithWorkingDirectory(warmUpDir)
+                .Execute();
+
+            if (result.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"NuGet cache warm-up failed with exit code {result.ExitCode}.{Environment.NewLine}" +
+                    $"stdout: {result.StdOut}{Environment.NewLine}" +
+                    $"stderr: {result.StdErr}");
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(warmUpDir, true); } catch { }
+            try { Directory.Delete(VirtualProjectBuilder.GetArtifactsPath(warmUpFile), true); } catch { }
+        }
     }
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)

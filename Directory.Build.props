@@ -84,6 +84,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 
+    <!-- Temp workaround: add checked-in TemplateEngine binaries as a NuGet restore source.
+         Using RestoreAdditionalProjectSources instead of NuGet.config so the path is resolved
+         at build time and doesn't leak into NuGet.config copies used by test execution. -->
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(MSBuildThisFileDirectory)binaries</RestoreAdditionalProjectSources>
+
     <!-- https://github.com/dotnet/source-build/issues/4115. -->
     <PublishWindowsPdb>false</PublishWindowsPdb>
   </PropertyGroup>

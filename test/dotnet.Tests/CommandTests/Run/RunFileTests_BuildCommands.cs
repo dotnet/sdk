@@ -641,7 +641,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
     public void Pack()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
+        var programFile = Path.Join(testInstance.Path, "PackTool.cs");
         File.WriteAllText(programFile, """
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             #if !DEBUG
@@ -650,7 +650,7 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             """);
 
         // Run unpacked.
-        new DotnetCommand(Log, "run", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "run", "PackTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -663,17 +663,17 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
         if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
 
         // Pack.
-        new DotnetCommand(Log, "pack", "MyFileBasedTool.cs")
+        new DotnetCommand(Log, "pack", "PackTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        var packageDir = new DirectoryInfo(outputDir).Sub("MyFileBasedTool");
-        packageDir.File("MyFileBasedTool.1.0.0.nupkg").Should().Exist();
+        var packageDir = new DirectoryInfo(outputDir).Sub("PackTool");
+        packageDir.File("PackTool.1.0.0.nupkg").Should().Exist();
         new DirectoryInfo(artifactsDir).Sub("package").Should().NotExist();
 
         // Run the packed tool.
-        new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", packageDir.FullName)
+        new DotnetCommand(Log, "tool", "exec", "PackTool", "--yes", "--add-source", packageDir.FullName)
             .WithEnvironmentVariable("NUGET_PACKAGES", Path.Join(testInstance.Path, "packages"))
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
