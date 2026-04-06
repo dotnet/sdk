@@ -27,7 +27,6 @@ internal sealed class CommandLineOptions
         EnablePosixBundling = false,
     };
 
-
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
 
