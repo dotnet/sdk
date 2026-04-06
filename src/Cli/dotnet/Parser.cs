@@ -313,7 +313,7 @@ public static class Parser
                 option.EnsureHelpName();
             }
 
-            if (command.GetRootCommand() is NuGetCommandDefinition)
+            if (IsInNuGetCommandTree(command))
             {
                 NuGetCommand.Run(context.ParseResult);
             }
@@ -378,6 +378,14 @@ public static class Parser
 
                 base.Write(context);
             }
+        }
+
+        private static bool IsInNuGetCommandTree(Command command)
+        {
+            if (command is NuGetCommandDefinition) return true;
+            if (command.Parents.FirstOrDefault(p => p is Command) is Command parent)
+                return IsInNuGetCommandTree(parent);
+            return false;
         }
     }
 
