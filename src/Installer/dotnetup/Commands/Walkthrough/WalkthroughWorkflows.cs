@@ -361,7 +361,7 @@ internal class WalkthroughWorkflows
         var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
             visibleCount: 3,
-            "Do you want to copy the following installs into the dotnetup managed directory?",
+            "Do you want to copy these installs into the dotnetup managed directory?",
             allowNeverAsk: true);
 
         HandleMigrationConfirmResult(confirmResult, askEvenIfConfigured);
@@ -387,7 +387,7 @@ internal class WalkthroughWorkflows
                 }
             }
 
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes. You can change this later with \"dotnetup defaultinstall\".[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes.[/]");
         }
         else if (confirmResult == ConfirmResult.NeverAskAgain)
         {
@@ -397,7 +397,7 @@ internal class WalkthroughWorkflows
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can change this later with \"dotnetup defaultinstall\".[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can run the walkthrough again to reconfigure.[/]");
         }
     }
 
