@@ -20,7 +20,6 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
         ["runtime"] = InstallComponent.Runtime,
         ["aspnetcore"] = InstallComponent.ASPNETCore,
         ["aspnet"] = InstallComponent.ASPNETCore,
-        ["core"] = InstallComponent.ASPNETCore,
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
         ["desktop"] = InstallComponent.WindowsDesktop,
     };
