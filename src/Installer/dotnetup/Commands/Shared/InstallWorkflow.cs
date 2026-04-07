@@ -192,10 +192,9 @@ internal class InstallWorkflow
     {
         var batchResult = InstallExecutor.ExecuteInstalls(requests, _command.NoProgress);
 
-        foreach (var result in batchResult.Successes)
-        {
-            Activity.Current?.SetTag(TelemetryTagNames.InstallResult, result.WasAlreadyInstalled ? "already_installed" : "installed");
-        }
+        int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
+        int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
+        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
 
         if (batchResult.Failures.Count > 0)
         {
