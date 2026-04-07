@@ -105,7 +105,6 @@ internal class TestEnvironment : IDisposable
     /// Creates the on-disk component directories that <c>PruneStaleInstallations</c>
     /// checks, so manifest entries are not discarded during tests.
     /// Call this before adding installations via the manifest API.
-    /// TODO: Replace with a file-system mock so tests don't depend on real directories.
     /// </summary>
     /// <param name="rootPath">Install root (defaults to <see cref="InstallPath"/>).</param>
     /// <param name="installations">One or more (component, version) pairs to stub.</param>

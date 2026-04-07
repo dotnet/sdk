@@ -119,7 +119,7 @@ internal class CommonOptions
         {
             HelpName = "CHANNEL",
             Description = $"One or more channels or versions of the .NET SDK to {actionVerb} (e.g., latest, 10, 9.0.3xx, or 9.0.304). "
-                + "Multiple channels can be provided to install concurrently.",
+                + $"Multiple channels can be provided to {actionVerb} concurrently.",
             Arity = ArgumentArity.ZeroOrMore,
         };
     }
@@ -158,7 +158,7 @@ internal class CommonOptions
             HelpName = "COMPONENT_SPEC",
             Description = $"One or more version/channel (e.g., 10.0) or component@version (e.g., aspnetcore@10.0) to {actionVerb}. "
                 + "When only a version is provided, the core .NET runtime is targeted. "
-                + "Multiple specs can be provided to install concurrently. "
+                + $"Multiple specs can be provided to {actionVerb} concurrently. "
                 + "Valid component types: " + string.Join(", ", RuntimeInstallCommand.GetValidRuntimeTypes()),
             Arity = ArgumentArity.ZeroOrMore,
         };

@@ -63,7 +63,6 @@ internal class Parser
         rootCommand.Subcommands.Add(PrintEnvScriptCommandParser.GetCommand());
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
-        rootCommand.Subcommands.Add(DotnetCommandParser.GetAliasCommand());
         rootCommand.Subcommands.Add(WalkthroughCommandParser.GetCommand());
 
         ConfigureHelp(rootCommand);

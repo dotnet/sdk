@@ -32,14 +32,4 @@ internal static class Constants
         public const string DownTriangle = "\u25BC"; // ▼
         public const string Bullet = "\u2022"; // •
     }
-
-    /// <summary>
-    /// ANSI escape sequences for terminal control.
-    /// </summary>
-    public static class Ansi
-    {
-        public const string HideCursor = "\x1b[?25l";
-        public const string ShowCursor = "\x1b[?25h";
-        public const string ClearToEnd = "\x1b[J";
-    }
 }

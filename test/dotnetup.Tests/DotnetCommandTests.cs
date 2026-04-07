@@ -76,10 +76,8 @@ public class DotnetCommandTests
     {
         var parseResult = Parser.Parse(["dotnet", "build", "--configuration", "Release"]);
 
-        // Unmatched tokens should contain the forwarded args
-        parseResult.UnmatchedTokens.Should().Contain("build");
-        parseResult.UnmatchedTokens.Should().Contain("--configuration");
-        parseResult.UnmatchedTokens.Should().Contain("Release");
+        // Unmatched tokens should contain the forwarded args in order
+        parseResult.UnmatchedTokens.Should().Equal("build", "--configuration", "Release");
     }
 
     [Fact]
@@ -87,9 +85,7 @@ public class DotnetCommandTests
     {
         var parseResult = Parser.Parse(["do", "test", "--filter", "Name~Foo"]);
 
-        parseResult.UnmatchedTokens.Should().Contain("test");
-        parseResult.UnmatchedTokens.Should().Contain("--filter");
-        parseResult.UnmatchedTokens.Should().Contain("Name~Foo");
+        parseResult.UnmatchedTokens.Should().Equal("test", "--filter", "Name~Foo");
     }
 
     // ── Command execution: dotnet not found ──────────────────────────────
@@ -433,14 +429,7 @@ public class DotnetCommandTests
         if (OperatingSystem.IsWindows())
         {
             var batPath = Path.Combine(directory, "dotnet.exe");
-            // Create a minimal valid PE that just exits, or use a .cmd workaround.
-            // Since ProcessStartInfo uses FileName, we create a .cmd and use a wrapper.
-            // Actually, Windows can't easily "fake" a .exe without a real PE.
-            // Instead, create a dotnet.cmd alongside and then create dotnet.exe as a copy
-            // of a known no-op. Simpler: write a dotnet.cmd and adjust test expectations.
-            //
-            // Best approach for testability: create a dotnet.cmd since the code appends "dotnet.exe".
-            // We need to make the code find dotnet.exe. So let's copy cmd.exe as dotnet.exe.
+            // Copy cmd.exe as a stand-in for dotnet.exe so the process can be launched.
             File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), batPath, overwrite: true);
         }
         else
