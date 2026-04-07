@@ -144,7 +144,6 @@
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
-    <PackageVersion Include="Verify.XunitV3" Version="28.12.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.v3.assert" Version="$(XUnitV3Version)" Condition="'$(IsTestProject)' != 'true'" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />

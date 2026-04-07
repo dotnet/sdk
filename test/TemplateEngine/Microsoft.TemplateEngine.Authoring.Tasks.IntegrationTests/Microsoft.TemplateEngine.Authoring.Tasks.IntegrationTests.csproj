@@ -10,9 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {

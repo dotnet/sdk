@@ -3,7 +3,7 @@
   <Import Project="Microsoft.TemplateEngine.Mocks.Shared.props" />
 
   <ItemGroup>
-    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
 </Project>
