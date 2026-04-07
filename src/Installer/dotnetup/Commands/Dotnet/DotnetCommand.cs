@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 
@@ -63,7 +64,7 @@ internal class DotnetCommand : CommandBase
     /// </summary>
     private static string GetDotnetExecutable(string dotnetPath)
     {
-        string exeName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
+        string exeName = $"dotnet{DotnetupUtilities.ExeSuffix}";
         return Path.Combine(dotnetPath, exeName);
     }
 
