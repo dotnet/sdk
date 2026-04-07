@@ -30,8 +30,8 @@ internal class InstallPathResolver
 
     /// <summary>
     /// Resolves the install path using the following precedence:
-    /// 1. Path from global.json (if available)
-    /// 2. Explicitly provided install path
+    /// 1. Explicitly provided install path
+    /// 2. Path from global.json (if available)
     /// 3. Current user installation path (if exists)
     /// 4. Default install path
     /// </summary>
