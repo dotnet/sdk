@@ -359,7 +359,7 @@ internal class WalkthroughWorkflows
         return [.. systemInstalls
             .Where(sysInstall =>
             {
-                string sysChannel = VersionToChannel(sysInstall.Version, sysInstall.Component);
+                string sysChannel = DotnetupUtilities.VersionToPatchBasedChannel(sysInstall.Version, sysInstall.Component);
                 return !trackedInstalls.Exists(tracked =>
                 {
                     if (tracked.Component != sysInstall.Component)
@@ -369,7 +369,7 @@ internal class WalkthroughWorkflows
 
                     if (ReleaseVersion.TryParse(tracked.Version, out var trackedVersion))
                     {
-                        return VersionToChannel(trackedVersion, tracked.Component) == sysChannel;
+                        return DotnetupUtilities.VersionToPatchBasedChannel(trackedVersion, tracked.Component) == sysChannel;
                     }
 
                     return tracked.Version == sysInstall.Version.ToString();
@@ -456,7 +456,7 @@ internal class WalkthroughWorkflows
             var sdkRequests = sdks.Select(i => new ResolvedInstallRequest(
                 new DotnetInstallRequest(
                     installRoot,
-                    new UpdateChannel(VersionToChannel(i.Version, i.Component)),
+                    new UpdateChannel(DotnetupUtilities.VersionToPatchBasedChannel(i.Version, i.Component)),
                     i.Component,
                     new InstallRequestOptions()),
                 i.Version)).ToList();
@@ -475,7 +475,7 @@ internal class WalkthroughWorkflows
             var runtimeRequests = remainingRuntimes.Select(i => new ResolvedInstallRequest(
                 new DotnetInstallRequest(
                     installRoot,
-                    new UpdateChannel(VersionToChannel(i.Version, i.Component)),
+                    new UpdateChannel(DotnetupUtilities.VersionToPatchBasedChannel(i.Version, i.Component)),
                     i.Component,
                     new InstallRequestOptions()),
                 i.Version)).ToList();
@@ -508,22 +508,6 @@ internal class WalkthroughWorkflows
             runtime.Component.GetFrameworkName(),
             runtime.Version.ToString());
         return Directory.Exists(frameworkDir);
-    }
-
-    /// <summary>
-    /// Converts a fully specified version to a channel string that allows patch roll-forward.
-    /// SDK versions (patch >= 100) map to feature bands (e.g. 10.0.203 → 10.0.2xx).
-    /// Runtime versions (patch &lt; 100) map to major.minor channels (e.g. 10.0.4 → 10.0).
-    /// </summary>
-    private static string VersionToChannel(ReleaseVersion version, InstallComponent component)
-    {
-        if (component == InstallComponent.SDK && version.Patch >= 100)
-        {
-            int band = version.Patch / 100;
-            return $"{version.Major}.{version.Minor}.{band}xx";
-        }
-
-        return $"{version.Major}.{version.Minor}";
     }
 
     // ── Display Functions ──
