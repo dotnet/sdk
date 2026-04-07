@@ -411,6 +411,9 @@
   <Folder Name="/test/Assets/dotnet-new/">
     <Project Path="test/TestAssets/TestPackages/dotnet-new/Microsoft.TemplateEngine.TestTemplates.csproj" />
   </Folder>
+  <Folder Name="/test/Assets/TemplateEngine/">
+    <Project Path="test/TestAssets/TestPackages/TemplateEngine/Microsoft.TemplateEngine.TestTemplates.csproj" />
+  </Folder>
   <Folder Name="/test/Common/">
     <File Path="test/Common/Program.cs" />
   </Folder>

@@ -36,13 +36,13 @@ namespace Microsoft.TemplateEngine.Tests
 
         internal static string TemplateFeedLocation { get; } = Path.Combine(CodeBaseRoot, "template_feed");
 
-        internal static string TestTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates");
+        internal static string TestTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "TestAssets", "TestPackages", "TemplateEngine", "test_templates");
 
         internal static string SampleTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "dotnet-template-samples");
 
-        internal static string TestTemplatePackagesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
+        internal static string TestTemplatePackagesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "TestAssets", "TestPackages", "TemplateEngine", "nupkg_templates");
 
-        internal static string TestPackageProjectPath { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "Microsoft.TemplateEngine.TestTemplates.csproj");
+        internal static string TestPackageProjectPath { get; } = Path.Combine(CodeBaseRoot, "test", "TestAssets", "TestPackages", "TemplateEngine", "Microsoft.TemplateEngine.TestTemplates.csproj");
 
         internal static string PackTestTemplatesNuGetPackage(PackageManager packageManager)
         {
@@ -73,9 +73,9 @@ namespace Microsoft.TemplateEngine.Tests
             {
                 throw new InvalidOperationException("Microsoft.TemplateEngine.sln was not found in codebase root");
             }
-            if (!Directory.Exists(Path.Combine(codeBaseRoot!, "test", "Microsoft.TemplateEngine.TestTemplates")))
+            if (!Directory.Exists(Path.Combine(codeBaseRoot!, "test", "TestAssets", "TestPackages", "TemplateEngine")))
             {
-                throw new InvalidOperationException("Microsoft.TemplateEngine.TestTemplates was not found in test/");
+                throw new InvalidOperationException("TestAssets/TestPackages/TemplateEngine was not found in test/");
             }
             return codeBaseRoot!;
         }

@@ -49,6 +49,7 @@
       "test\\TemplateEngine\\Microsoft.TemplateSearch.Common.UnitTests\\Microsoft.TemplateSearch.Common.UnitTests.csproj",
       "test\\TemplateEngine\\Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests\\Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests.csproj",
       "test\\TestAssets\\TestPackages\\dotnet-new\\Microsoft.TemplateEngine.TestTemplates.csproj",
+      "test\\TestAssets\\TestPackages\\TemplateEngine\\Microsoft.TemplateEngine.TestTemplates.csproj",
       "test\\dotnet-new.IntegrationTests\\dotnet-new.IntegrationTests.csproj",
       "test\\dotnet.Tests\\dotnet.Tests.csproj"
     ]
