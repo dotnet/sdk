@@ -505,7 +505,7 @@ internal class WalkthroughWorkflows
         {
             SpectreAnsiConsole.MarkupLine(string.Format(
                 CultureInfo.InvariantCulture,
-                "[{0}]Installing to [{1}]{2}[/] as controlled by global.json file [{1}]{3}[/].[/]",
+                "[{0}]Installing to [{1}]{2}[/] as specified by [{1}]{3}[/].[/]",
                 DotnetupTheme.Current.Dim,
                 DotnetupTheme.Current.Accent,
                 installPath.EscapeMarkup(),
