@@ -8,10 +8,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 internal static class DotnetCommandParser
 {
     private static readonly Command s_dotnetCommand = ConstructCommand();
-    private static readonly Command s_doCommand = ConstructAliasCommand();
 
     public static Command GetCommand() => s_dotnetCommand;
-    public static Command GetAliasCommand() => s_doCommand;
 
     private static Command ConstructCommand()
     {
@@ -20,19 +18,8 @@ internal static class DotnetCommandParser
             // No arguments or options defined — all tokens after the subcommand name
             // are captured via TreatUnmatchedTokensAsErrors = false and read from
             // ParseResult.UnmatchedTokens in DotnetCommand.
-            TreatUnmatchedTokensAsErrors = false
-        };
-
-        command.SetAction(parseResult => new DotnetCommand(parseResult).Execute());
-
-        return command;
-    }
-
-    private static Command ConstructAliasCommand()
-    {
-        var command = new Command("do", Strings.DotnetCommandDescription)
-        {
-            TreatUnmatchedTokensAsErrors = false
+            TreatUnmatchedTokensAsErrors = false,
+            Aliases = { "do" }
         };
 
         command.SetAction(parseResult => new DotnetCommand(parseResult).Execute());
