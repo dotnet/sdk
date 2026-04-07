@@ -13,7 +13,7 @@ if (args.Length == 0)
 }
 
 string skillDir = Path.GetFullPath(args[0]);
-string skillName = Path.GetFileName(skillDir);
+string skillName = Path.GetFileName(Path.TrimEndingDirectorySeparator(skillDir));
 string skillFile = Path.Combine(skillDir, "SKILL.md");
 
 // SKILL.md must exist in the skill directory
@@ -32,14 +32,17 @@ if (!text.StartsWith("---"))
     return 1;
 }
 
-int endIndex = text.IndexOf("---", 3);
-if (endIndex < 0)
+Match frontmatterMatch = Regex.Match(
+    text,
+    @"\A---\r?\n(?<yaml>.*?)(?:\r?\n)---(?:\r?\n|$)",
+    RegexOptions.Singleline);
+if (!frontmatterMatch.Success)
 {
     Console.Error.WriteLine("Unterminated YAML frontmatter.");
     return 1;
 }
 
-string yaml = text.Substring(3, endIndex - 3).Trim();
+string yaml = frontmatterMatch.Groups["yaml"].Value.Trim();
 
 IDeserializer deserializer = new DeserializerBuilder().Build();
 Dictionary<string, object> frontmatter = deserializer.Deserialize<Dictionary<string, object>>(yaml);
@@ -81,9 +84,9 @@ if (!frontmatter.TryGetValue("description", out object? descValue) || descValue 
 }
 
 // description must be 1-1024 characters
-if (description.Length > 1024)
+if (description.Length == 0 || description.Length > 1024)
 {
-    Console.Error.WriteLine($"Description is {description.Length} chars (max 1024).");
+    Console.Error.WriteLine($"Description is {description.Length} chars (must be 1-1024).");
     return 1;
 }
 
