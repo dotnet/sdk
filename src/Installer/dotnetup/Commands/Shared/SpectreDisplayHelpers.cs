@@ -92,6 +92,8 @@ internal static class SpectreDisplayHelpers
 
                 while (!done)
                 {
+                    // Poll for input rather than blocking on ReadKey, so the
+                    // LiveDisplay can continue refreshing between keypresses.
                     if (!Console.KeyAvailable)
                     {
                         Thread.Sleep(50);
