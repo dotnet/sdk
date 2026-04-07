@@ -66,13 +66,6 @@ internal class WalkthroughWorkflows
         return true;
     }
 
-    /// <summary>
-    /// Returns true when the user chose full PATH replacement (Windows-only),
-    /// meaning the system PATH entry for dotnet is replaced with the dotnetup path.
-    /// </summary>
-    public static bool ShouldReplaceSystemPath(PathPreference preference) =>
-        preference == PathPreference.FullPathReplacement;
-
     // ── Walkthrough Orchestrators ──
 
     /// <summary>
