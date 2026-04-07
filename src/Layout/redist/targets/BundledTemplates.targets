@@ -8,6 +8,7 @@
   <ItemGroup>
     <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates110PackageVersion)" />
     <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates110PackageVersion)" UseVersionForTemplateInstallPath="true" />
+    <BundledTemplate Include="Microsoft.McpServer.ProjectTemplates" PackageVersion="$(MicrosoftMcpServerProjectTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
   </ItemGroup>

@@ -58,6 +58,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26203.108</MicrosoftDotNetSignToolPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-preview.4.26203.108</MicrosoftDotNetWebItemTemplates110PackageVersion>
     <MicrosoftDotNetWebProjectTemplates110PackageVersion>11.0.0-preview.4.26203.108</MicrosoftDotNetWebProjectTemplates110PackageVersion>
+    <MicrosoftMcpServerProjectTemplatesPackageVersion>11.0.0-preview.4.26203.108</MicrosoftMcpServerProjectTemplatesPackageVersion>
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>11.0.0-preview.4.26203.108</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
     <MicrosoftDotNetWpfProjectTemplatesPackageVersion>11.0.0-preview.4.26203.108</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
     <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26203.108</MicrosoftDotNetXliffTasksPackageVersion>
@@ -202,6 +203,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetSignToolVersion>$(MicrosoftDotNetSignToolPackageVersion)</MicrosoftDotNetSignToolVersion>
     <MicrosoftDotNetWebItemTemplates110Version>$(MicrosoftDotNetWebItemTemplates110PackageVersion)</MicrosoftDotNetWebItemTemplates110Version>
     <MicrosoftDotNetWebProjectTemplates110Version>$(MicrosoftDotNetWebProjectTemplates110PackageVersion)</MicrosoftDotNetWebProjectTemplates110Version>
+    <MicrosoftMcpServerProjectTemplatesVersion>$(MicrosoftMcpServerProjectTemplatesPackageVersion)</MicrosoftMcpServerProjectTemplatesVersion>
     <MicrosoftDotnetWinFormsProjectTemplatesVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplatesVersion>
     <MicrosoftDotNetWpfProjectTemplatesVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplatesVersion>
     <MicrosoftDotNetXliffTasksVersion>$(MicrosoftDotNetXliffTasksPackageVersion)</MicrosoftDotNetXliffTasksVersion>
