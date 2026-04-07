@@ -75,11 +75,11 @@ internal static class InstallPathClassifier
             var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-            if (!string.IsNullOrEmpty(programFiles) && fullPath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(programFiles) && IsOrIsUnder(fullPath, programFiles, StringComparison.OrdinalIgnoreCase))
             {
                 return "system_programfiles";
             }
-            if (!string.IsNullOrEmpty(programFilesX86) && fullPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(programFilesX86) && IsOrIsUnder(fullPath, programFilesX86, StringComparison.OrdinalIgnoreCase))
             {
                 return "system_programfiles_x86";
             }
@@ -87,27 +87,27 @@ internal static class InstallPathClassifier
             // Check more-specific paths before less-specific ones:
             // LocalApplicationData (e.g., C:\Users\x\AppData\Local) is under UserProfile (C:\Users\x)
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (!string.IsNullOrEmpty(localAppData) && fullPath.StartsWith(localAppData, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(localAppData) && IsOrIsUnder(fullPath, localAppData, StringComparison.OrdinalIgnoreCase))
             {
                 return "local_appdata";
             }
 
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(userProfile) && IsOrIsUnder(fullPath, userProfile, StringComparison.OrdinalIgnoreCase))
             {
                 return "user_profile";
             }
         }
         else
         {
-            if (fullPath.StartsWith("/usr/", StringComparison.Ordinal) ||
-                fullPath.StartsWith("/opt/", StringComparison.Ordinal))
+            if (IsOrIsUnder(fullPath, "/usr/", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/opt/", StringComparison.Ordinal))
             {
                 return "system_path";
             }
 
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(home) && fullPath.StartsWith(home, StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(home) && IsOrIsUnder(fullPath, home, StringComparison.Ordinal))
             {
                 return "user_home";
             }
