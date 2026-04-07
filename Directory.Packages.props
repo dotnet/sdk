@@ -77,9 +77,6 @@
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <!-- The MicrosoftSignedWixVersion property comes from the Arcade SDK DefaultVersions.props -->
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Edge" Version="$(MicrosoftTemplateEngineEdgePackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
