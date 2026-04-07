@@ -1178,7 +1178,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EvaluatedDirectives = evaluatedDirectives;
 
         // Create virtual ProjectRootElements for all #:ref directives so MSBuild can resolve them.
-        CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives, processedFiles: null);
+        CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives);
 
         return project;
     }
@@ -1191,36 +1191,45 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private void CreateReferencedVirtualProjects(
         ProjectCollection projectCollection,
-        ImmutableArray<CSharpDirective> directives,
-        HashSet<string>? processedFiles)
+        ImmutableArray<CSharpDirective> directives)
     {
-        foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
+        var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
+        CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles);
+
+        static void CreateReferencedVirtualProjectsCore(
+            ProjectCollection projectCollection,
+            ImmutableArray<CSharpDirective> directives,
+            HashSet<string> processedFiles)
         {
-            if (refDirective.ResolvedPath is not { } resolvedPath)
+            foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
             {
-                continue;
+                // ResolvedPath is always set when using ThrowingReporter (EnsureResolvedPath throws on error).
+                Debug.Assert(refDirective.ResolvedPath is not null);
+
+                if (refDirective.ResolvedPath is not { } resolvedPath)
+                {
+                    continue;
+                }
+
+                if (!processedFiles.Add(resolvedPath))
+                {
+                    // Already processed or cycle detected.
+                    continue;
+                }
+
+                var refBuilder = new VirtualProjectBuilder(
+                    resolvedPath,
+                    TargetFramework);
+
+                refBuilder.CreateProjectInstance(
+                    projectCollection,
+                    ThrowingReporter,
+                    out _,
+                    out var refEvaluatedDirectives);
+
+                // Recursively create virtual projects for any #:ref in the referenced file.
+                CreateReferencedVirtualProjectsCore(projectCollection, refEvaluatedDirectives, processedFiles);
             }
-
-            processedFiles ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
-
-            if (!processedFiles.Add(resolvedPath))
-            {
-                // Already processed or cycle detected.
-                continue;
-            }
-
-            var refBuilder = new VirtualProjectBuilder(
-                resolvedPath,
-                TargetFramework);
-
-            refBuilder.CreateProjectInstance(
-                projectCollection,
-                ThrowingReporter,
-                out _,
-                out var refEvaluatedDirectives);
-
-            // Recursively create virtual projects for any #:ref in the referenced file.
-            CreateReferencedVirtualProjects(projectCollection, refEvaluatedDirectives, processedFiles);
         }
     }
 

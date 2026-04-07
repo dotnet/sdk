@@ -598,6 +598,63 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(libOutputDir, "config.json")).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Converting one app that <c>#:ref</c>s a library does not affect other apps that also reference the same library.
+    /// </summary>
+    [Fact]
+    public void RefDirective_ConvertScope()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app1.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app2.cs"), """
+            #:ref lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        var unrelatedDir = Path.Join(testInstance.Path, "unrelated");
+        Directory.CreateDirectory(unrelatedDir);
+        File.WriteAllText(Path.Join(unrelatedDir, "app3.cs"), """
+            #:ref ../lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app1.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // app1 should be converted.
+        File.Exists(Path.Join(outputDirFullPath, "app1", "app1.csproj")).Should().BeTrue();
+        File.Exists(Path.Join(outputDirFullPath, "lib", "lib.csproj")).Should().BeTrue();
+
+        // app2 and app3 should be unaffected (still exist as .cs files with their directives intact).
+        File.ReadAllText(Path.Join(testInstance.Path, "app2.cs")).Should().Contain("#:ref lib.cs");
+        File.ReadAllText(Path.Join(unrelatedDir, "app3.cs")).Should().Contain("#:ref ../lib.cs");
+    }
+
     [Fact]
     public void ProjectReference_FullPath_WithVars()
     {

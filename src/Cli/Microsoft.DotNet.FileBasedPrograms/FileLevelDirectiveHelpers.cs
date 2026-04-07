@@ -676,12 +676,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                         string.Format(FileBasedProgramsResources.CouldNotFindRefFile, resolvedFilePath)));
             }
 
-            return new Ref(Info, Name)
-            {
-                OriginalName = OriginalName,
-                ExpandedName = ExpandedName,
-                ResolvedPath = resolvedFilePath,
-            };
+            return WithName(resolvedFilePath, NameKind.Resolved);
         }
 
         public override string ToString() => $"#:ref {Name}";

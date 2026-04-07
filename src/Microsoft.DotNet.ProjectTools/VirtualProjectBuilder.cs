@@ -743,7 +743,7 @@ public sealed class VirtualProjectBuilder
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
                     writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" SkipGetTargetFrameworkProperties="true" />
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
                         """);
                 }
 

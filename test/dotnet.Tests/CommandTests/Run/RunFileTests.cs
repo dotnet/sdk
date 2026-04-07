@@ -3541,7 +3541,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
               </PropertyGroup>
             </Project>
             """);
@@ -3591,6 +3591,220 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello, World!");
+    }
+
+    /// <summary>
+    /// A <c>#:ref</c> library can target a different framework (e.g., <c>netstandard2.0</c>)
+    /// than the referencing app (<c>net10.0</c>).
+    /// </summary>
+    [Fact]
+    public void RefDirective_DifferentTargetFramework()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            #:property TargetFramework=netstandard2.0
+            #:property LangVersion=latest
+            #:property ImplicitUsings=disable
+            #:property PublishAot=false
+            namespace MyLib;
+            public static class Greeter
+            {
+            #if NETSTANDARD2_0
+                public static string Greet() => "Hello from netstandard2.0!";
+            #else
+                public static string Greet() => "Hello from other!";
+            #endif
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            #if NET10_0_OR_GREATER
+            Console.WriteLine("App is net10.0+: " + MyLib.Greeter.Greet());
+            #else
+            Console.WriteLine("App is older: " + MyLib.Greeter.Greet());
+            #endif
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("App is net10.0+: Hello from netstandard2.0!");
+    }
+
+    /// <summary>
+    /// <c>#:ref *.cs</c> does not expand globs — it looks for a literal file named <c>*.cs</c>.
+    /// </summary>
+    [Fact]
+    public void RefDirective_Glob()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        var filePath = Path.Join(testInstance.Path, "app.cs");
+        File.WriteAllText(filePath, """
+            #:ref *.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidRefDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindRefFile, Path.Join(testInstance.Path, "*.cs"))));
+    }
+
+    /// <summary>
+    /// Verifies that cyclic <c>#:ref</c> references (lib1 → lib2 → lib1) do not cause an infinite loop.
+    /// </summary>
+    [Fact]
+    public void RefDirective_Cycle()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #:property OutputType=Library
+            #:ref lib2.cs
+            namespace Lib1;
+            public static class C1 { public static string Get() => "lib1"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
+            #:property OutputType=Library
+            #:ref lib1.cs
+            namespace Lib2;
+            public static class C2 { public static string Get() => "lib2"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib1.cs
+            Console.WriteLine(Lib1.C1.Get());
+            """);
+
+        // Should not hang. The cycle is broken by processedFiles deduplication.
+        // error NU1108: Cycle detected.
+        // error NU1108:   lib1 -> lib2 -> lib1.
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error NU1108");
+    }
+
+    /// <summary>
+    /// Two <c>#:include</c>'d files each have <c>#:ref</c> to the same library.
+    /// The deduplication via <c>processedFiles</c> should ensure the library is only processed once.
+    /// </summary>
+    [Fact]
+    public void RefDirective_DuplicateRefFromIncludedFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "helper1.cs"), """
+            #:ref lib.cs
+            static class Helper1
+            {
+                public static string Get() => MyLib.Greeter.Greet();
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "helper2.cs"), """
+            #:ref lib.cs
+            static class Helper2
+            {
+                public static string Get() => MyLib.Greeter.Greet();
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:include helper1.cs
+            #:include helper2.cs
+            Console.WriteLine(Helper1.Get() + " " + Helper2.Get());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello! Hello!");
+    }
+
+    /// <summary>
+    /// Both <c>#:include</c> and <c>#:ref</c> pointing at the same file.
+    /// The file ends up both compiled into the current assembly and referenced as a separate assembly.
+    /// This is expected to produce a compilation error (duplicate type definitions).
+    /// </summary>
+    [Fact]
+    public void RefDirective_IncludeAndRefSameFile()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:ref lib.cs
+            #:include lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        // The #:include brings in lib.cs's #:property OutputType=Library, making the app a library.
+        // error CS8805: Program using top-level statements must be an executable.
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS8805");
     }
 
     [Theory, CombinatorialData]

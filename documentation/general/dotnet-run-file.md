@@ -212,7 +212,7 @@ The directives are processed as follows:
 
 - Each `#:ref` references another `.cs` file as a separate project reference.
   A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
-  and a `<ProjectReference Include="lib.cs.csproj" SkipGetTargetFrameworkProperties="true" />` is injected in an `<ItemGroup>`.
+  and a `<ProjectReference Include="lib.cs.csproj" />` is injected in an `<ItemGroup>`.
   It is an error if the name is empty or if the referenced file does not exist.
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
