@@ -247,7 +247,8 @@ internal class InstallWorkflow
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.Unknown,
                 $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
-                "To avoid conflicts, use a different install path or remove the existing installation first.");
+                "To avoid conflicts, use a different install path, remove the existing installation first, " +
+                "or use the --untracked option to install without tracking.");
         }
     }
 
