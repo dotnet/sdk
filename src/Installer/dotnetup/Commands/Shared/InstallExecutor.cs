@@ -32,18 +32,12 @@ internal class InstallExecutor
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
         string escapedPath = installRoot.Path.EscapeMarkup();
-        string accent = DotnetupTheme.Current.Accent;
 
         // Print "Installing X, Y, Z to <path>..."
         var descriptions = requests.Select(r =>
-            string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]",
-                r.Request.Component.GetDisplayName(), accent, r.ResolvedVersion)).ToList();
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "Installing {0} to [{1}]{2}[/]...",
-            string.Join(", ", descriptions),
-            accent,
-            escapedPath));
+            $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
+        SpectreAnsiConsole.MarkupLine(
+            $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
 
         InstallBatchResult batchResult;
         {
@@ -68,8 +62,7 @@ internal class InstallExecutor
         foreach (var result in batchResult.Successes)
         {
             sharedPath ??= result.Install.InstallRoot.Path;
-            string successAccent = DotnetupTheme.Current.SuccessAccent;
-            string installDetailLine = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", result.Install.Component.GetDisplayName(), successAccent, result.Install.Version.ToString().EscapeMarkup());
+            string installDetailLine = $"{result.Install.Component.GetDisplayName()} {DotnetupTheme.SuccessAccent(result.Install.Version.ToString().EscapeMarkup())}";
             if (result.WasAlreadyInstalled)
             {
                 alreadyInstalled.Add(installDetailLine);
@@ -84,44 +77,34 @@ internal class InstallExecutor
 
         if (batchResult.Failures.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "[{0}]The following installs failed:[/]", DotnetupTheme.Current.Error));
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Error("The following installs failed:"));
             foreach (var failure in batchResult.Failures)
             {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                    "  [{0}]{1} {2}: {3}[/]",
-                    DotnetupTheme.Current.Error,
-                    failure.Request.Request.Component.GetDisplayName(),
-                    failure.Request.ResolvedVersion.ToString().EscapeMarkup(),
-                    failure.Exception.Message.EscapeMarkup()));
+                SpectreAnsiConsole.MarkupLine(
+                    $"  {DotnetupTheme.Error($"{failure.Request.Request.Component.GetDisplayName()} {failure.Request.ResolvedVersion.ToString().EscapeMarkup()}: {failure.Exception.Message.EscapeMarkup()}")}");
             }
         }
     }
 
     private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
     {
-        string successAccent = DotnetupTheme.Current.SuccessAccent;
         string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
 
         if (installed.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "Installed at [{0}]{1}[/]:", successAccent, escapedPath));
+            SpectreAnsiConsole.MarkupLine($"Installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
             foreach (var item in installed)
             {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                    "  {0}", item));
+                SpectreAnsiConsole.MarkupLine($"  {item}");
             }
         }
 
         if (alreadyInstalled.Count > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                "Already installed at [{0}]{1}[/]:", successAccent, escapedPath));
+            SpectreAnsiConsole.MarkupLine($"Already installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
             foreach (var item in alreadyInstalled)
             {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
-                    "  {0}", item));
+                SpectreAnsiConsole.MarkupLine($"  {item}");
             }
         }
     }
