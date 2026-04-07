@@ -1825,7 +1825,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
               <PropertyGroup>
                 <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
                 <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
-                <AnalysisLevel>preview</AnalysisLevel>
               </PropertyGroup>
             </Project>
             """);
