@@ -91,11 +91,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkGitHubPackageVersion>11.0.100-preview.4.26203.108</MicrosoftSourceLinkGitHubPackageVersion>
     <MicrosoftSourceLinkGitLabPackageVersion>11.0.100-preview.4.26203.108</MicrosoftSourceLinkGitLabPackageVersion>
     <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineAbstractionsPackageVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineMocksXunitV3PackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineMocksXunitV3PackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateSearchCommonPackageVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.4.26203.108</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
@@ -235,11 +232,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkGitHubVersion>$(MicrosoftSourceLinkGitHubPackageVersion)</MicrosoftSourceLinkGitHubVersion>
     <MicrosoftSourceLinkGitLabVersion>$(MicrosoftSourceLinkGitLabPackageVersion)</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftTemplateEngineAbstractionsVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAbstractionsVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3Version>$(MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3Version>
     <MicrosoftTemplateEngineEdgeVersion>$(MicrosoftTemplateEngineEdgePackageVersion)</MicrosoftTemplateEngineEdgeVersion>
-    <MicrosoftTemplateEngineMocksXunitV3Version>$(MicrosoftTemplateEngineMocksXunitV3PackageVersion)</MicrosoftTemplateEngineMocksXunitV3Version>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>
-    <MicrosoftTemplateEngineTestHelperXunitV3Version>$(MicrosoftTemplateEngineTestHelperXunitV3PackageVersion)</MicrosoftTemplateEngineTestHelperXunitV3Version>
     <MicrosoftTemplateEngineUtilsVersion>$(MicrosoftTemplateEngineUtilsPackageVersion)</MicrosoftTemplateEngineUtilsVersion>
     <MicrosoftTemplateSearchCommonVersion>$(MicrosoftTemplateSearchCommonPackageVersion)</MicrosoftTemplateSearchCommonVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryVersion>$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryVersion>
