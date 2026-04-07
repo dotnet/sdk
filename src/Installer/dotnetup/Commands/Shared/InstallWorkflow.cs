@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -198,7 +199,7 @@ internal class InstallWorkflow
 
         if (batchResult.Failures.Count > 0)
         {
-            throw batchResult.Failures[0].Exception;
+            ExceptionDispatchInfo.Capture(batchResult.Failures[0].Exception).Throw();
         }
     }
 
