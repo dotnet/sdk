@@ -997,31 +997,41 @@ internal sealed class HotReloadDotNetWatcher
 
         async ValueTask<bool> BuildWithFrameworkAndDeviceSelectionAsync()
         {
-            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
-
             // Framework selection for file-based programs:
             // If framework is specified on command line use it to create the virtual project.
             // Otherwise, use TargetFramework/TargetFrameworks property specified in the source file, if any.
             //
             // Device selection not applicable to file based apps.
-            if (needsFrameworkSelection && mainProjectOptions?.Representation.IsProjectFile == false)
+            if (mainProjectOptions?.Representation.EntryPointFilePath is { } sourcePath)
             {
-                Debug.Assert(frameworkSelector != null);
-                var sourcePath = mainProjectOptions.Representation.EntryPointFilePath;
+                if (targetFramework == null)
+                {
+                    if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
+                    {
+                        targetFramework = framework;
+                    }
+                    else if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
+                    {
+                        var frameworkList = frameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-                if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
-                {
-                    targetFramework = framework;
-                }
-                else if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
-                {
-                    targetFramework = await frameworkSelector(frameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), cancellationToken);
+                        if (frameworkSelector != null)
+                        {
+                            targetFramework = await frameworkSelector(frameworkList, cancellationToken);
+                        }
+                        else
+                        {
+                            _context.BuildLogger.Log(MessageDescriptor.FileSpecifiesMultipleTargetFrameworks, sourcePath, string.Join("', '", frameworkList));
+
+                            return false;
+                        }
+                    }
                 }
 
                 return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
             }
 
             var needsDeviceSelection = selectedDevice == null && deviceSelector != null;
+            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
 
             if (mainProjectOptions == null ||
                 (!needsFrameworkSelection && !needsDeviceSelection))
