@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -52,7 +53,7 @@ internal class UpdateWorkflow
         }
 
         bool anyUpdated = false;
-        bool anyFailed = false;
+        List<DotnetInstallException> failures = [];
 
         foreach (var root in rootsList)
         {
@@ -66,9 +67,16 @@ internal class UpdateWorkflow
                     continue;
                 }
 
-                var (updated, failed) = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
-                if (updated) { anyUpdated = true; rootUpdated = true; }
-                if (failed) { anyFailed = true; }
+                try
+                {
+                    bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
+                    if (updated) { anyUpdated = true; rootUpdated = true; }
+                }
+                catch (DotnetInstallException ex)
+                {
+                    AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel}."));
+                    failures.Add(ex);
+                }
             }
 
             // Run garbage collection
@@ -83,15 +91,16 @@ internal class UpdateWorkflow
             AnsiConsole.MarkupLine("Everything is up to date.");
         }
 
-        return anyFailed ? 1 : 0;
+        return failures.Count > 0 ? 1 : 0;
     }
 
     /// <summary>
     /// Processes a single install spec: checks for updates, installs if newer version available,
     /// and optionally updates the corresponding global.json.
     /// </summary>
-    /// <returns>A tuple of (wasUpdated, hadFailure).</returns>
-    private (bool Updated, bool Failed) UpdateSpec(
+    /// <returns>True if the spec was updated to a newer version.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the installation fails.</exception>
+    private bool UpdateSpec(
         InstallSpec spec,
         DotnetRootEntry root,
         DotnetInstallRoot installRoot,
@@ -105,7 +114,7 @@ internal class UpdateWorkflow
         // Skip fully-specified versions — they can't be updated
         if (channel.IsFullySpecifiedVersion())
         {
-            return (false, false);
+            return false;
         }
 
         var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
@@ -113,7 +122,7 @@ internal class UpdateWorkflow
         if (latestVersion is null)
         {
             AnsiConsole.MarkupLine(DotnetupTheme.Warning($"Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'."));
-            return (false, false);
+            return false;
         }
 
         // Check if this version is already installed (in the manifest)
@@ -139,11 +148,7 @@ internal class UpdateWorkflow
             }
         }
 
-        var (updated, failed) = TryInstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath, verbosity);
-        if (failed)
-        {
-            return (false, true);
-        }
+        bool updated = InstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath, verbosity);
 
         // Update global.json if requested and this spec came from a global.json,
         // but only if the latest version is newer than what's already specified.
@@ -155,7 +160,7 @@ internal class UpdateWorkflow
             UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
         }
 
-        return (updated, false);
+        return updated;
     }
 
     /// <summary>
@@ -172,8 +177,9 @@ internal class UpdateWorkflow
     /// <summary>
     /// Installs the given version or logs a message if it is already installed.
     /// </summary>
-    /// <returns>A tuple of (wasUpdated, hadFailure).</returns>
-    private static (bool Updated, bool Failed) TryInstallVersion(
+    /// <returns>True if a new version was installed.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the installation fails.</exception>
+    private static bool InstallVersion(
         UpdateChannel channel,
         InstallSpec spec,
         DotnetInstallRoot installRoot,
@@ -184,37 +190,25 @@ internal class UpdateWorkflow
         Verbosity verbosity)
     {
         string displayName = spec.Component.GetDisplayName();
-        bool updated = false;
 
         if (alreadyInstalled)
         {
             AnsiConsole.MarkupLine(DotnetupTheme.Warning($"{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion})."));
-        }
-        else
-        {
-            AnsiConsole.MarkupLine($"Updating {displayName} {spec.VersionOrChannel} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
-
-            var installRequest = new DotnetInstallRequest(
-                installRoot,
-                channel,
-                spec.Component,
-                new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity });
-
-            var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
-
-            try
-            {
-                InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
-                AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
-                updated = true;
-            }
-            catch (DotnetInstallException)
-            {
-                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {displayName} {spec.VersionOrChannel} to {latestVersion}."));
-                return (false, true);
-            }
+            return false;
         }
 
-        return (updated, false);
+        AnsiConsole.MarkupLine($"Updating {displayName} {spec.VersionOrChannel} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
+
+        var installRequest = new DotnetInstallRequest(
+            installRoot,
+            channel,
+            spec.Component,
+            new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity });
+
+        var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
+
+        InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
+        AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
+        return true;
     }
 }
