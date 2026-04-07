@@ -39,36 +39,6 @@ internal enum ScrollAction
 internal static class SpectreDisplayHelpers
 {
     /// <summary>
-    /// Renders a list of items with only <paramref name="visibleCount"/> shown initially.
-    /// When running interactively, the user can scroll with arrow keys to see more.
-    /// Falls back to a static truncated list when input is redirected.
-    /// </summary>
-    internal static void RenderScrollableList(List<string> items, int visibleCount)
-    {
-        if (items.Count == 0)
-        {
-            return;
-        }
-
-        string dim = DotnetupTheme.Current.Dim;
-        string accent = DotnetupTheme.Current.Accent;
-
-        if (items.Count <= visibleCount || Console.IsInputRedirected)
-        {
-            // All items fit or non-interactive — just print them all
-            foreach (var item in items)
-            {
-                SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
-            }
-
-            return;
-        }
-
-        // Interactive scrollable list
-        RunInteractiveScrollLoop(items, visibleCount, confirmPrompt: null);
-    }
-
-    /// <summary>
     /// Renders a scrollable list with an inline confirmation prompt.
     /// The prompt is shown below the list and Enter accepts the default (yes).
     /// </summary>
@@ -91,7 +61,7 @@ internal static class SpectreDisplayHelpers
             }
 
             string promptSuffix = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/] ", confirmPrompt, brand)
+                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/([bold]p[/])lease never ask again)[/] ", confirmPrompt, brand)
                 : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand);
             SpectreAnsiConsole.Markup(promptSuffix);
             var result = ReadConfirm(defaultValue: ConfirmResult.Yes, allowNeverAsk: allowNeverAsk);
@@ -246,7 +216,7 @@ internal static class SpectreDisplayHelpers
         if (confirmPrompt is not null)
         {
             string promptHint = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/[bold]p[/] = never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
+                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/([bold]p[/])lease never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
                 : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
             rows.Add(new Markup(promptHint));
         }
