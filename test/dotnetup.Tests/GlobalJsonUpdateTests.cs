@@ -4,7 +4,6 @@
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -41,7 +40,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");
@@ -54,7 +53,7 @@ public class GlobalJsonUpdateTests : IDisposable
         // Intentionally irregular whitespace
         var json = "{\n  \"sdk\" :  { \"version\" : \"8.0.100\" ,  \"rollForward\": \"latestFeature\" }\n}";
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         // Everything except the version value should remain unchanged
@@ -78,7 +77,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");
@@ -99,7 +98,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -115,7 +114,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -133,7 +132,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -149,7 +148,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100-preview.1");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100-preview.1");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100-preview.1\"");
@@ -166,7 +165,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = DotnetEnvironmentManager.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");

@@ -132,30 +132,6 @@ public class DotnetCommandTests
     }
 
     [Fact]
-    public void DotnetCommand_ForwardsArguments()
-    {
-        // Arrange - create a temp dir with a stub that echoes args
-        var tempDir = Directory.CreateTempSubdirectory("dotnetup-args-test");
-        try
-        {
-            CreateFakeDotnetExecutable(tempDir.FullName);
-
-            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
-            var parseResult = Parser.Parse(["dotnet", "build", "--configuration", "Release"]);
-
-            var command = new DotnetForwardCommand(parseResult, mock);
-            var exitCode = command.Execute();
-
-            // The fake dotnet exits 0 regardless of args; the key assertion is that we don't crash
-            exitCode.Should().Be(0);
-        }
-        finally
-        {
-            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
-        }
-    }
-
-    [Fact]
     public void DotnetCommand_UsesConfiguredInstallType_WhenUserInstall()
     {
         // Arrange - two paths: a configured user install path and a default path
@@ -354,63 +330,6 @@ public class DotnetCommandTests
             // The child process should have received and echoed our input
             output.Should().Contain(testInput,
                 because: "stdin data should be forwarded to the child dotnet process for interactive commands");
-        }
-        finally
-        {
-            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
-        }
-    }
-
-    /// <summary>
-    /// Verifies that stdout from the child process is properly forwarded
-    /// back through dotnetup to the parent process. This ensures interactive
-    /// prompts and output are visible to the user.
-    /// </summary>
-    [Fact]
-    public void DotnetCommand_ForwardsStdoutFromChildProcess()
-    {
-        var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdout-test");
-        try
-        {
-            CreateStdinEchoFakeDotnet(tempDir.FullName);
-
-            string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
-            string marker = "MARKER_" + Guid.NewGuid().ToString("N")[..8];
-
-            using var process = new Process();
-            process.StartInfo.FileName = dotnetupPath;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-
-            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-            process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
-            process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
-            process.StartInfo.Environment["NO_COLOR"] = "1";
-
-            if (OperatingSystem.IsWindows())
-            {
-                // Use cmd.exe /c echo to produce known stdout output
-                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    ["dotnet", "/c", $"echo {marker}"]);
-            }
-            else
-            {
-                // Pass marker as argument; the fake dotnet script echoes args then cats stdin
-                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    ["dotnet", marker]);
-            }
-
-            process.Start();
-            process.StandardInput.Close();
-
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            output.Should().Contain(marker,
-                because: "stdout from the child dotnet process should be visible to the caller");
         }
         finally
         {

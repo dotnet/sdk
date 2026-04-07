@@ -79,6 +79,11 @@ public class SpectreProgressTarget : IProgressTarget
             }
         }
 
+        /// <summary>
+        /// Timer callback that creates a "shimmer" wave effect on the status word (e.g. "Installing").
+        /// A bright highlight sweeps left-to-right across the characters, fading from bold white at
+        /// the center to grey at the edges, then briefly exits before re-entering.
+        /// </summary>
         private void OnShimmerTick(object? state)
         {
             if (_shimmerStopped)

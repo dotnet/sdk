@@ -229,11 +229,6 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             paths.Add(path);
         }
     }
-    internal static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
-    {
-        return GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(jsonText, newVersion);
-    }
-
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         if (OperatingSystem.IsWindows())
