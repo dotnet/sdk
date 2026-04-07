@@ -16,7 +16,8 @@ public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
         { new[] { "build-server", "shutdown" }, "0" },
         { new[] { "solution", "list" }, "1" },
         { new[] { "clean" }, "1" },
-        { new[] { "run" }, "1" }
+        { new[] { "run" }, "1" },
+        { new[] { "new", "details" }, "127" }
     };
 
     // Only runs on Windows because OTel libraries are only referenced on Windows builds.

@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -76,14 +77,14 @@ internal static class CliSchema
         Dictionary<string, CommandDetails>? subcommands
     ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
 
-    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
+    public static void PrintCliSchema(ParseResult parseResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
     {
-        var command = commandResult.Command;
+        var command = parseResult.CommandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
         var result = JsonSerializer.Serialize(transportStructure, s_jsonContext.RootCommandDetails);
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
-        var commandString = CommandHierarchyAsString(commandResult);
+        var commandString = parseResult.GetCommandName();
         var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
         telemetryClient?.TrackEvent("schema", telemetryProperties);
     }
@@ -216,21 +217,6 @@ internal static class CliSchema
                 argument.HasDefaultValue ? HumanizeValue(argument.GetDefaultValue()) : null,
                 CreateArityDetails(argument.Arity)
             );
-
-    // Produces a string that represents the command call.
-    // For example, calling the workload install command produces `dotnet workload install`.
-    private static string CommandHierarchyAsString(CommandResult commandResult)
-    {
-        var commands = new List<string>();
-        var currentResult = commandResult;
-        while (currentResult is not null)
-        {
-            commands.Add(currentResult.Command.Name);
-            currentResult = currentResult.Parent as CommandResult;
-        }
-
-        return string.Join(" ", commands.AsEnumerable().Reverse());
-    }
 }
 
 [JsonSerializable(typeof(CliSchema.RootCommandDetails))]
