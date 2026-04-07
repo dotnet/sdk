@@ -169,8 +169,11 @@ internal class WalkthroughWorkflows
             _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
 
-        // Step 4: Prompt (or use old prompt) migrating admin installs now that the environment is configured.
-        toMigrate ??= PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
+        // Step 4: Prompt migrating admin installs now that the environment is configured (if deferred).
+        if (deferAdminMigrationUntilEnd)
+        {
+            toMigrate = PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
+        }
         if (toMigrate.Count > 0)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
