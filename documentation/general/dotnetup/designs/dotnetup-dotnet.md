@@ -18,10 +18,10 @@ This also enables the `PATH` to have the admin install and for the two install t
 
 # Commands
 
-`dotnetup dotnet <>`
-`dotnetup do <>` (alias for the same thing)
+`dotnetup dotnet build` (where `build` is an example — any dotnet subcommand is supported)
+`dotnetup do build` (alias for the same thing)
 
-Arguments in `<>` are forwarded transparently to `dotnet.exe` in the determined location which limits our ability to configure the command itself.
+All arguments are forwarded transparently to `dotnet.exe` in the determined location, which limits our ability to configure the command itself.
 The `dotnet.exe` hive used will follow the logic `dotnetup` uses for installation location. (e.g. `global.json` vs `dotnetup hive` priority.)
 
 # Technical Details
@@ -44,6 +44,6 @@ The spawned process should modify the `PATH` and set `DOTNET_ROOT` to the value 
 
 When cross-architecture support is added, we should consider setting variables such as `DOTNET_ROOT_x64`.
 
-### Future: Native AOT In-Process Invocation
+### Future: In-Process Invocation
 
-If `dotnetup` is published as native AOT, we could potentially invoke the dotnet hive's `hostfxr` directly in-process instead of spawning a subprocess. This would eliminate the process overhead entirely. This is a future work item — for now, we use the subprocess approach.
+Since `dotnetup` is published as native AOT, we could potentially invoke the dotnet hive's `hostfxr` directly in-process instead of spawning a subprocess. This would eliminate the process overhead entirely. This is a future work item — for now, we use the subprocess approach.
