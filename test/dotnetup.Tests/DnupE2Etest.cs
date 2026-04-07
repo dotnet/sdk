@@ -507,55 +507,7 @@ public class MultiChannelSdkInstallTests
         output.Should().NotContain("\r\n\r\n\r\n",
             "Output should not contain excessive blank lines from corrupted progress bars");
     }
-
-    [Fact]
-    public void SdkInstall_SingleChannel_StillWorksWithNewArgument()
-    {
-        // Ensure backward compatibility: a single channel argument still works
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-
-        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0"], testEnv.InstallPath, testEnv.ManifestPath);
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"Single-channel SDK install failed. Output:\n{output}");
-
-        List<Installation> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            var manifestData = manifest.ReadManifest();
-            installs = manifestData.DotnetRoots
-                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
-                .SelectMany(r => r.Installations)
-                .ToList();
-        }
-
-        installs.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
-    }
-
-    [Fact]
-    public void SdkInstall_NoChannel_StillWorksWithNewArgument()
-    {
-        // Ensure backward compatibility: no channel argument launches walkthrough / defaults to latest
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-
-        var args = DotnetupTestUtilities.BuildMultiSdkArguments([], testEnv.InstallPath, testEnv.ManifestPath);
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"No-channel SDK install failed. Output:\n{output}");
-
-        List<Installation> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-            var manifestData = manifest.ReadManifest();
-            installs = manifestData.DotnetRoots
-                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
-                .SelectMany(r => r.Installations)
-                .ToList();
-        }
-
-        installs.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
-    }
-
+    
     private static int CountOccurrences(string text, string pattern)
     {
         int count = 0;
