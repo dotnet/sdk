@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -60,8 +61,10 @@ internal static class DotnetupConfig
             using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path);
             return JsonSerializer.Deserialize(stream, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         }
-        catch
+        catch (Exception ex)
         {
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Warning}]Warning:[/] The dotnetup config file at {path.EscapeMarkup()} appears to be corrupted and could not be read: {ex.Message.EscapeMarkup()}");
             return null;
         }
     }
