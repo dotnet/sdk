@@ -529,6 +529,9 @@ namespace GenerateDocumentationAndConfigFiles
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
                     Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+
+                    // Clean up the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
+                    File.Delete(fileWithPath);
                 }
 
                 return;
