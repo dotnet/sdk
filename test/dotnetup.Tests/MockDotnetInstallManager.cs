@@ -17,11 +17,19 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 {
     private readonly string _defaultInstallPath;
     private readonly DotnetInstallRootConfiguration? _configuredRoot;
+    private readonly List<DotnetInstall>? _existingSystemInstalls;
 
-    public MockDotnetInstallManager(string defaultInstallPath, DotnetInstallRootConfiguration? configuredRoot = null)
+    public int GetExistingSystemInstallsCallCount { get; private set; }
+    public int ApplyEnvironmentModificationsCallCount { get; private set; }
+
+    public MockDotnetInstallManager(
+        string defaultInstallPath,
+        DotnetInstallRootConfiguration? configuredRoot = null,
+        List<DotnetInstall>? existingSystemInstalls = null)
     {
         _defaultInstallPath = defaultInstallPath;
         _configuredRoot = configuredRoot;
+        _existingSystemInstalls = existingSystemInstalls;
     }
 
     public string GetDefaultDotnetInstallPath() => _defaultInstallPath;
@@ -29,8 +37,19 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public string? GetLatestInstalledSystemVersion() => throw new NotImplementedException();
     public List<string> GetInstalledSystemSdkVersions() => throw new NotImplementedException();
-    public List<DotnetInstall> GetExistingSystemInstalls() => throw new NotImplementedException();
+
+    public List<DotnetInstall> GetExistingSystemInstalls()
+    {
+        GetExistingSystemInstallsCallCount++;
+        return _existingSystemInstalls ?? throw new NotImplementedException();
+    }
+
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
-    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
+
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
+    {
+        ApplyEnvironmentModificationsCallCount++;
+    }
+
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
 }

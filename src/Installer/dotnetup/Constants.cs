@@ -30,6 +30,5 @@ internal static class Constants
         public const string DownArrow = "\u2193"; // ↓
         public const string UpTriangle = "\u25B2"; // ▲
         public const string DownTriangle = "\u25BC"; // ▼
-        public const string Bullet = "\u2022"; // •
     }
 }

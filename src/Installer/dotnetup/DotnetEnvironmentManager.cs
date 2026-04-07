@@ -51,7 +51,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             var adminChanges = installRootManager.GetAdminInstallRootChanges();
             if (!adminChanges.NeedsChange())
             {
-                return new(currentInstallRoot, InstallType.Admin, IsFullyConfigured: true);
+                return new(currentInstallRoot, InstallType.System, IsFullyConfigured: true);
             }
 
             // Not fully configured, but PATH resolves to dotnet
@@ -60,7 +60,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             bool isAdminPath = programFilesDotnetPaths.Any(path =>
                 currentInstallRoot.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase));
 
-            return new(currentInstallRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
+            return new(currentInstallRoot, isAdminPath ? InstallType.System : InstallType.User, IsFullyConfigured: false);
         }
         else
         {
@@ -68,13 +68,13 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
 
             // For now, we consider it fully configured if it's on PATH
-            return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
+            return new(currentInstallRoot, isAdminInstall ? InstallType.System : InstallType.User, IsFullyConfigured: true);
         }
     }
 
     public string GetDefaultDotnetInstallPath()
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
+        return DotnetupPaths.DefaultDotnetInstallPath;
     }
 
     public string? GetLatestInstalledSystemVersion()
@@ -94,17 +94,24 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     public List<DotnetInstall> GetExistingSystemInstalls()
     {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installs = new List<DotnetInstall>();
 
         foreach (var systemPath in GetSystemDotnetPaths())
         {
             try
             {
-                installs.AddRange(HostFxrWrapper.getInstalls(systemPath));
+                // Filter to only the native architecture to avoid cross-arch installs
+                // (e.g., x86 on x64 Windows). Cross-arch support is tracked separately.
+                installs.AddRange(HostFxrWrapper.getInstalls(systemPath)
+                    .Where(i => i.InstallRoot.Architecture == nativeArch));
             }
-            catch
+            catch (Exception ex)
             {
-                // If we can't enumerate installs (e.g., hostfxr not found), skip this path
+                // Log the failure rather than silently swallowing — aids debugging
+                // when hostfxr is missing or the path is inaccessible.
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                    $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }
         }
 
@@ -256,7 +263,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                     }
                     break;
 
-                case InstallType.Admin:
+                case InstallType.System:
                     var adminChanges = installRootManager.GetAdminInstallRootChanges();
                     bool adminSucceeded = InstallRootManager.ApplyAdminInstallRoot(
                         adminChanges,
@@ -265,7 +272,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
                     if (!adminSucceeded)
                     {
-                        throw new InvalidOperationException("Failed to configure admin install root.");
+                        throw new InvalidOperationException("Failed to configure system install root.");
                     }
                     break;
 
@@ -301,7 +308,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 // Set DOTNET_ROOT
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
                 break;
-            case InstallType.Admin:
+            case InstallType.System:
                 if (string.IsNullOrEmpty(dotnetRoot))
                 {
                     throw new ArgumentNullException(nameof(dotnetRoot));

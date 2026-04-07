@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 internal static class DefaultInstallCommandParser
 {
     public const string UserInstallType = "user";
-    public const string AdminInstallType = "admin";
+    public const string SystemInstallType = "system";
 
     public static readonly Argument<string> InstallTypeArgument = CreateInstallTypeArgument();
 
@@ -17,10 +17,10 @@ internal static class DefaultInstallCommandParser
         var argument = new Argument<string>("installtype")
         {
             HelpName = "INSTALL_TYPE",
-            Description = $"The type of installation root to set: '{UserInstallType}' or '{AdminInstallType}'",
+            Description = $"The type of installation root to set: '{UserInstallType}' or '{SystemInstallType}'",
             Arity = ArgumentArity.ExactlyOne,
         };
-        argument.AcceptOnlyFromAmong(UserInstallType, AdminInstallType);
+        argument.AcceptOnlyFromAmong(UserInstallType, SystemInstallType);
         return argument;
     }
 

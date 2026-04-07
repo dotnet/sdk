@@ -92,6 +92,24 @@ internal static class DotnetupPaths
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
 
     /// <summary>
+    /// Gets the default dotnet install path managed by dotnetup.
+    /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
+    /// </summary>
+    public static string DefaultDotnetInstallPath
+    {
+        get
+        {
+            var baseDir = GetBaseDirectory();
+            if (string.IsNullOrEmpty(baseDir))
+            {
+                throw new InvalidOperationException("Could not determine the local application data directory.");
+            }
+
+            return Path.Combine(baseDir, "dotnet");
+        }
+    }
+
+    /// <summary>
     /// Ensures the data directory exists, creating it if necessary.
     /// </summary>
     /// <returns>True if the directory exists or was created; false otherwise.</returns>

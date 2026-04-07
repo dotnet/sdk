@@ -67,7 +67,7 @@ internal static class InstallPathClassifier
         // Check for admin/system .NET paths first — these are the most important to distinguish
         if (IsAdminInstallPath(path))
         {
-            return "admin";
+            return "system";
         }
 
         if (OperatingSystem.IsWindows())

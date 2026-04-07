@@ -343,7 +343,7 @@ internal class WalkthroughWorkflows
 
         // Find the system install path for display purposes
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
-        string systemPath = currentInstall?.InstallType == InstallType.Admin
+        string systemPath = currentInstall?.InstallType == InstallType.System
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 

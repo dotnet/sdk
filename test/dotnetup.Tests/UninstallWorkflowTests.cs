@@ -29,11 +29,11 @@ public class UninstallWorkflowTests
     {
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: DefaultUserPath,
-            configuredRoot: CreateConfig(AdminPath, InstallType.Admin));
+            configuredRoot: CreateConfig(AdminPath, InstallType.System));
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
 
-        result.Should().Be(DefaultUserPath, "admin installs on PATH should not be used; default user path should be used instead");
+        result.Should().Be(DefaultUserPath, "system installs on PATH should not be used; default user path should be used instead");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class UninstallWorkflowTests
     {
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: DefaultUserPath,
-            configuredRoot: CreateConfig(AdminPath, InstallType.Admin));
+            configuredRoot: CreateConfig(AdminPath, InstallType.System));
 
         var result = UninstallWorkflow.ResolveInstallPath(ExplicitPath, mock);
 

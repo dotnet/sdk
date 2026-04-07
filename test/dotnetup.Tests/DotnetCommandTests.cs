@@ -203,7 +203,7 @@ public class DotnetCommandTests
                 defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(adminDir.FullName, InstallArchitecture.x64),
-                    InstallType.Admin,
+                    InstallType.System,
                     IsFullyConfigured: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);

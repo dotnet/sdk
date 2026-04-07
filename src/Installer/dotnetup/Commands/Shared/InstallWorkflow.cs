@@ -213,10 +213,10 @@ internal class InstallWorkflow
                 "Please specify a directory path for the installation.");
         }
 
-        // Block admin/system-managed install paths — dotnetup should not install there
+        // Block system-managed install paths — dotnetup should not install there
         if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "admin");
+            Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "system");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,

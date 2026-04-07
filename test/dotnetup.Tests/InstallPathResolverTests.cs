@@ -195,7 +195,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     public void Resolve_AdminInstall_FallsToDefault_NotExistingInstall()
     {
         var installRoot = new DotnetInstallRoot("/admin/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.Admin, IsFullyConfigured: true);
+        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.System, IsFullyConfigured: true);
 
         var result = _resolver.Resolve(
             explicitInstallPath: null,
