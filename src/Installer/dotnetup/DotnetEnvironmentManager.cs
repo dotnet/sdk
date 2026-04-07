@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -110,6 +112,9 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             {
                 // Log the failure rather than silently swallowing — aids debugging
                 // when hostfxr is missing or the path is inaccessible.
+                Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationFailed, true);
+                Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationError, ex.GetType().Name);
+                Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationPath, systemPath);
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim(
                     $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }

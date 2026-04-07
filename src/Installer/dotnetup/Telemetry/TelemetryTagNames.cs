@@ -42,6 +42,13 @@ internal static class TelemetryTagNames
     public const string InstallMigratingFromAdmin = "install.migrating_from_admin";
     public const string InstallAdminVersionCopied = "install.admin_version_copied";
 
+    // Environment / config tags
+    public const string ConfigCorrupted = "config.corrupted";
+    public const string ConfigCorruptedError = "config.corrupted_error";
+    public const string HostfxrEnumerationFailed = "hostfxr.enumeration_failed";
+    public const string HostfxrEnumerationError = "hostfxr.enumeration_error";
+    public const string HostfxrEnumerationPath = "hostfxr.enumeration_path";
+
     // Dotnet request tags
     public const string DotnetRequestSource = "dotnet.request_source";
     public const string DotnetRequested = "dotnet.requested";
