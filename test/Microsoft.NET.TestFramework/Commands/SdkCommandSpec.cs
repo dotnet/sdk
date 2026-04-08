@@ -44,7 +44,14 @@ namespace Microsoft.NET.TestFramework.Commands
             };
             foreach (var kvp in Environment)
             {
-                ret.Environment[kvp.Key] = kvp.Value;
+                if (kvp.Value is null)
+                {
+                    ret.Environment.Remove(kvp.Key);
+                }
+                else
+                {
+                    ret.Environment[kvp.Key] = kvp.Value;
+                }
             }
             foreach (var envToRemove in EnvironmentToRemove)
             {
