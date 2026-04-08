@@ -78,10 +78,15 @@ public class FishShellProvider : IShellProvider
         writer.WriteLine("set -l current (commandline -ct)");
     }
 
+    // Options with MaximumNumberOfValues at or above this threshold are treated as unbounded
+    // (i.e. consume tokens until an option-like token is encountered).
+    // System.CommandLine uses 100_000 as its internal sentinel for ZeroOrMore/OneOrMore.
+    private const int UnboundedArityThreshold = 100;
+
     /// <summary>
     /// Generate the state machine that walks completed tokens to determine which subcommand context we're in.
     /// For each state, we check if the current word matches a known subcommand (transitioning to that subcommand's state)
-    /// or a value-taking option (skipping the next token which is the option's value).
+    /// or a value-taking option (skipping tokens for the option's value(s), respecting the option's arity).
     /// </summary>
     private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states)
     {
@@ -97,13 +102,12 @@ public class FishShellProvider : IShellProvider
         foreach (var (stateId, cmd) in states)
         {
             var visibleSubs = cmd.Subcommands.Where(c => !c.Hidden).ToArray();
-            var valueOptionNames = cmd.HierarchicalOptions()
+            var valueOptions = cmd.HierarchicalOptions()
                 .Where(o => !o.Hidden && !o.IsFlag())
-                .SelectMany(o => o.Names())
                 .ToArray();
 
             // Skip states that have no transitions to emit
-            if (visibleSubs.Length == 0 && valueOptionNames.Length == 0)
+            if (visibleSubs.Length == 0 && valueOptions.Length == 0)
                 continue;
 
             writer.WriteLine($"case {stateId}");
@@ -122,12 +126,30 @@ public class FishShellProvider : IShellProvider
                 writer.Indent--;
             }
 
-            // Value-taking option transitions: skip the next token (the option's value)
-            if (valueOptionNames.Length > 0)
+            // Single-value options (arity exactly 1): skip the next token
+            var singleValueNames = valueOptions
+                .Where(o => o.Arity.MaximumNumberOfValues == 1)
+                .SelectMany(o => o.Names())
+                .ToArray();
+            if (singleValueNames.Length > 0)
             {
-                writer.WriteLine($"case {string.Join(" ", valueOptionNames)}");
+                writer.WriteLine($"case {string.Join(" ", singleValueNames)}");
                 writer.Indent++;
                 writer.WriteLine("set i (math $i + 1)");
+                writer.Indent--;
+            }
+
+            // Multi-value options (arity > 1): skip up to N tokens, stopping at option-like tokens.
+            // Group by arity so options with the same max can share a case branch.
+            var multiValueByArity = valueOptions
+                .Where(o => o.Arity.MaximumNumberOfValues > 1)
+                .GroupBy(o => o.Arity.MaximumNumberOfValues);
+            foreach (var group in multiValueByArity)
+            {
+                var names = string.Join(" ", group.SelectMany(o => o.Names()));
+                writer.WriteLine($"case {names}");
+                writer.Indent++;
+                WriteMultiValueSkipLoop(writer, group.Key);
                 writer.Indent--;
             }
 
@@ -145,9 +167,47 @@ public class FishShellProvider : IShellProvider
     }
 
     /// <summary>
+    /// Emit a fish loop that skips value tokens after a multi-value option.
+    /// Stops when it has consumed maxValues tokens, or encounters a token starting with '-',
+    /// whichever comes first. For unbounded arities, only the '-' check applies.
+    /// </summary>
+    private static void WriteMultiValueSkipLoop(IndentedTextWriter writer, int maxValues)
+    {
+        bool isBounded = maxValues < UnboundedArityThreshold;
+
+        if (isBounded)
+        {
+            writer.WriteLine($"set -l skip_max {maxValues}");
+            writer.WriteLine("set -l skipped 0");
+            writer.WriteLine("while test $skipped -lt $skip_max -a (math $i + 1) -le (count $tokens)");
+        }
+        else
+        {
+            writer.WriteLine("while test (math $i + 1) -le (count $tokens)");
+        }
+
+        writer.Indent++;
+        writer.WriteLine("set -l next $tokens[(math $i + 1)]");
+        writer.WriteLine("if string match -q -- '-*' $next");
+        writer.Indent++;
+        writer.WriteLine("break");
+        writer.Indent--;
+        writer.WriteLine("end");
+        writer.WriteLine("set i (math $i + 1)");
+        if (isBounded)
+        {
+            writer.WriteLine("set skipped (math $skipped + 1)");
+        }
+        writer.Indent--;
+        writer.WriteLine("end");
+    }
+
+    /// <summary>
     /// Generate option value completions.
-    /// When the previous completed token is a value-taking option, we emit completions for that option's values
-    /// instead of the general completions for the current state.
+    /// Scans backward through completed tokens to find the nearest option, then checks whether
+    /// we're still within that option's arity. This correctly handles both single-value and
+    /// multi-value options (e.g. <c>--sources foo bar</c> with arity 3 still offers completions
+    /// for the third value).
     /// </summary>
     private static void WriteOptionValueCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states)
     {
@@ -156,9 +216,29 @@ public class FishShellProvider : IShellProvider
 
         if (!hasAnyValueOptions) return;
 
-        writer.WriteLine("if set -q tokens[2]");
+        // Scan backward through tokens to find the nearest option (token starting with -)
+        writer.WriteLine("set -l opt_index 0");
+        writer.WriteLine("if test (count $tokens) -ge 2");
         writer.Indent++;
-        writer.WriteLine("set -l prev $tokens[-1]");
+        writer.WriteLine("for j in (seq (count $tokens) -1 2)");
+        writer.Indent++;
+        writer.WriteLine("if string match -q -- '-*' $tokens[$j]");
+        writer.Indent++;
+        writer.WriteLine("set opt_index $j");
+        writer.WriteLine("break");
+        writer.Indent--;
+        writer.WriteLine("end");
+        writer.Indent--;
+        writer.WriteLine("end");
+        writer.Indent--;
+        writer.WriteLine("end");
+        writer.WriteLine();
+
+        writer.WriteLine("if test $opt_index -gt 0");
+        writer.Indent++;
+        writer.WriteLine("set -l opt $tokens[$opt_index]");
+        // values_after = number of non-option tokens between the option and the cursor
+        writer.WriteLine("set -l values_after (math (count $tokens) - $opt_index)");
         writer.WriteLine("switch $state");
         writer.Indent++;
 
@@ -173,14 +253,25 @@ public class FishShellProvider : IShellProvider
 
             writer.WriteLine($"case {stateId}");
             writer.Indent++;
-            writer.WriteLine("switch $prev");
+            writer.WriteLine("switch $opt");
             writer.Indent++;
 
             foreach (var option in valueOptions)
             {
                 var names = string.Join(" ", option.Names());
+                var maxValues = option.Arity.MaximumNumberOfValues;
+                bool isBounded = maxValues < UnboundedArityThreshold;
+
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
+
+                // For bounded options, check that we haven't exceeded the arity.
+                // For unbounded options, always offer completions (any number of values is valid).
+                if (isBounded)
+                {
+                    writer.WriteLine($"if test $values_after -lt {maxValues}");
+                    writer.Indent++;
+                }
 
                 if (option.IsDynamic)
                 {
@@ -195,6 +286,13 @@ public class FishShellProvider : IShellProvider
                     }
                 }
                 writer.WriteLine("return");
+
+                if (isBounded)
+                {
+                    writer.Indent--;
+                    writer.WriteLine("end");
+                }
+
                 writer.Indent--;
             }
 

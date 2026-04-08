@@ -18,18 +18,31 @@ function _mycommand
         set i (math $i + 1)
     end
     
-    if set -q tokens[2]
-        set -l prev $tokens[-1]
+    set -l opt_index 0
+    if test (count $tokens) -ge 2
+        for j in (seq (count $tokens) -1 2)
+            if string match -q -- '-*' $tokens[$j]
+                set opt_index $j
+                break
+            end
+        end
+    end
+    
+    if test $opt_index -gt 0
+        set -l opt $tokens[$opt_index]
+        set -l values_after (math (count $tokens) - $opt_index)
         switch $state
             case 0
-                switch $prev
+                switch $opt
                     case --verbosity
-                        printf '%s\n' 'detailed'
-                        printf '%s\n' 'diagnostic'
-                        printf '%s\n' 'minimal'
-                        printf '%s\n' 'normal'
-                        printf '%s\n' 'quiet'
-                        return
+                        if test $values_after -lt 1
+                            printf '%s\n' 'detailed'
+                            printf '%s\n' 'diagnostic'
+                            printf '%s\n' 'minimal'
+                            printf '%s\n' 'normal'
+                            printf '%s\n' 'quiet'
+                            return
+                        end
                 end
         end
     end

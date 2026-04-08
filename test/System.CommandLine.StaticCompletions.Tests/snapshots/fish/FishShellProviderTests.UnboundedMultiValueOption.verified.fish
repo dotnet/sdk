@@ -15,6 +15,14 @@ function _mycommand
                         set state 1
                     case --name
                         set i (math $i + 1)
+                    case --items
+                        while test (math $i + 1) -le (count $tokens)
+                            set -l next $tokens[(math $i + 1)]
+                            if string match -q -- '-*' $next
+                                break
+                            end
+                            set i (math $i + 1)
+                        end
                 end
         end
         set i (math $i + 1)
@@ -36,6 +44,11 @@ function _mycommand
         switch $state
             case 0
                 switch $opt
+                    case --items
+                        printf '%s\n' 'a'
+                        printf '%s\n' 'b'
+                        printf '%s\n' 'c'
+                        return
                     case --name
                         if test $values_after -lt 1
                             return
@@ -47,6 +60,7 @@ function _mycommand
     switch $state
         case 0
             printf '%s\n' 'subcommand'
+            printf '%s\n' '--items'
             printf '%s\n' '--name'
         case 1
     end
