@@ -33,11 +33,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.Dotnet.Installation" />
+    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
+    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.Dotnet.Installation" />
   </ItemGroup>
 
   <ItemGroup>
