@@ -860,6 +860,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // This can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:property EnableDefaultCompileItems=true
             {s_programDependingOnUtil}
             """);
@@ -879,7 +880,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
+            {s_programDependingOnUtil}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -904,6 +908,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "A.cs"), """
+            #!/usr/bin/env dotnet
             Console.WriteLine(B.M());
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -1658,6 +1663,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -3251,6 +3257,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include {includePattern}
             {additionalDirectives}
             #:property MyProp1=cs
@@ -3287,6 +3294,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """;
 
         File.WriteAllText(Path.Join(srcDir, "A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include B.cs
             {a}
             """);
@@ -3371,6 +3379,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """;
 
         File.WriteAllText(Path.Join(testInstance.Path, "dir1/A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include dir2/B.cs
             {a}
             """);
@@ -3517,6 +3526,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include {glob}.cs
             #:property _Star=*
             {s_programDependingOnUtil}
@@ -3583,6 +3593,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include Util.cs
             {s_programDependingOnUtil}
             """);
@@ -3682,6 +3693,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(appDir, "Program.cs");
         var programCode = """
+            #!/usr/bin/env dotnet
             #:include Util.cs
             Console.WriteLine("Program(v1) " + UtilClass.GetMessage());
             """;
@@ -3711,6 +3723,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -3726,7 +3739,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
+                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -3780,6 +3793,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.json=Content
             #:include *.cs
             {s_programDependingOnUtil}
@@ -3793,12 +3807,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 2, FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", ".json")}
+                {DirectiveError(programPath, 3, FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", ".json")}
 
                 {CliCommandStrings.RunCommandException}
                 """);
 
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.cs=Content
             #:include *.cs
             {s_programDependingOnUtil}
@@ -3812,6 +3827,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("error CS0103");
 
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.cs=Compile
             #:include *.cs
             {s_programDependingOnUtil}
