@@ -144,17 +144,17 @@ Examples:
       </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上下移動以顯示更多的架構</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">要搜尋的類型</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">選取要執行的目標架構:</target>
         <note />
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">

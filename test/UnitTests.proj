@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;TemplateEngine\**\*" />
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
     <!-- Projects suffixed with UnitTests or IntegrationTests are not matched by *.Tests.csproj above, so include them with a separate glob. -->
-    <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
+    <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*;TemplateEngine\**\*" />
 
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
@@ -114,6 +114,7 @@
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\SetupHelixEnvironment.sh" />
+      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -141,7 +142,7 @@
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -exec cp {} "$HELIX_WORKITEM_UPLOAD_ROOT" \;;$(HelixPostCommands)</HelixPostCommands>
+      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>

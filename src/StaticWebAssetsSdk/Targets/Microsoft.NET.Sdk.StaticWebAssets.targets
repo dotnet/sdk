@@ -414,6 +414,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Static web assets endpoint metadata -->
     <_StaticWebAssetEndpointCanonicalMetadata Include="AssetFile" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="Order" />
     <_StaticWebAssetEndpointCanonicalMetadata Include="Selectors" />
     <_StaticWebAssetEndpointCanonicalMetadata Include="EndpointProperties" />
     <_StaticWebAssetEndpointCanonicalMetadata Include="ResponseHeaders" />
@@ -452,6 +453,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
       <StaticWebAssetsCacheDefineStaticWebAssetsEnabled Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == ''">true</StaticWebAssetsCacheDefineStaticWebAssetsEnabled>
+      <StaticWebAssetDefaultDocumentEnabled Condition="'$(StaticWebAssetDefaultDocumentEnabled)' == ''">false</StaticWebAssetDefaultDocumentEnabled>
+      <StaticWebAssetSpaFallbackEnabled Condition="'$(StaticWebAssetSpaFallbackEnabled)' == ''">false</StaticWebAssetSpaFallbackEnabled>
 
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
@@ -510,6 +513,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MakeDir
       Directories="$(_StaticWebAssetsIntermediateOutputPath)"
       Condition="!Exists('$(_StaticWebAssetsIntermediateOutputPath)')" />
+
+    <ItemGroup Condition="'$(StaticWebAssetDefaultDocumentEnabled)' == 'true'">
+      <StaticWebAssetAdditionalEndpointDefinition Include="DefaultDocument">
+        <Pattern>**/index.html</Pattern>
+        <Replacement></Replacement>
+        <Order></Order>
+      </StaticWebAssetAdditionalEndpointDefinition>
+    </ItemGroup>
+    <ItemGroup Condition="'$(StaticWebAssetSpaFallbackEnabled)' == 'true'">
+      <StaticWebAssetAdditionalEndpointDefinition Include="SpaFallback">
+        <Pattern>index.html</Pattern>
+        <Replacement>{**fallback:nonfile}</Replacement>
+        <Order>2147483647</Order>
+      </StaticWebAssetAdditionalEndpointDefinition>
+    </ItemGroup>
   </Target>
 
   <!-- Build -->
@@ -775,6 +793,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CurrentProjectStaticWebAsset)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      AdditionalEndpointDefinitions="@(StaticWebAssetAdditionalEndpointDefinition)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>

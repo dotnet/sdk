@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetMinimum);$(NetCurrent)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <PackAsTool>true</PackAsTool>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Xunit" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="NuGet.Configuration" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="**\*.list" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests" Key="$(TemplateEnginePublicKey)" />
+  </ItemGroup>
+
+</Project>
