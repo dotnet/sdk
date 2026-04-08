@@ -31,6 +31,7 @@ public class FishShellProvider : IShellProvider
         // Collect all commands in a flat list and assign numeric state IDs
         var states = new List<(int id, Command cmd)>();
         CollectStates(command, states);
+        var stateIdByCommand = states.ToDictionary(s => s.cmd, s => s.id);
 
         // Write the main completion function
         writer.WriteLine($"function _{safeName}");
@@ -38,7 +39,7 @@ public class FishShellProvider : IShellProvider
 
         WriteTokenization(writer);
         writer.WriteLine();
-        WriteStateWalker(writer, states);
+        WriteStateWalker(writer, states, stateIdByCommand);
         writer.WriteLine();
         WriteOptionValueCompletions(writer, states);
         WriteStateCompletions(writer, states);
@@ -68,14 +69,12 @@ public class FishShellProvider : IShellProvider
 
     /// <summary>
     /// Write the command line tokenization logic.
-    /// Uses fish's commandline builtin to get completed tokens and the current partial word.
+    /// Uses fish's commandline builtin to get completed tokens up to the cursor.
     /// </summary>
     private static void WriteTokenization(IndentedTextWriter writer)
     {
         // -opc: tokenize, cut at cursor, only completed tokens (excludes current partial word)
         writer.WriteLine("set -l tokens (commandline -opc)");
-        // -ct: the current token being completed (may be empty or partial)
-        writer.WriteLine("set -l current (commandline -ct)");
     }
 
     // Options with MaximumNumberOfValues at or above this threshold are treated as unbounded
@@ -88,7 +87,7 @@ public class FishShellProvider : IShellProvider
     /// For each state, we check if the current word matches a known subcommand (transitioning to that subcommand's state)
     /// or a value-taking option (skipping tokens for the option's value(s), respecting the option's arity).
     /// </summary>
-    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states)
+    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states, Dictionary<Command, int> stateIdByCommand)
     {
         writer.WriteLine("set -l state 0");
         writer.WriteLine("set -l i 2"); // start after the command name (fish arrays are 1-based)
@@ -118,7 +117,7 @@ public class FishShellProvider : IShellProvider
             // Subcommand transitions
             foreach (var sub in visibleSubs)
             {
-                var subStateId = states.First(s => s.cmd == sub).id;
+                var subStateId = stateIdByCommand[sub];
                 var names = string.Join(" ", sub.Names());
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
