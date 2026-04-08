@@ -74,4 +74,64 @@ public class FishShellProviderTests(ITestOutputHelper log)
         };
         await provider.Verify(command, log);
     }
+
+    [Fact]
+    public async Task BoundedMultiValueOption()
+    {
+        var multiOption = new Option<string[]>("--sources")
+        {
+            Arity = new ArgumentArity(1, 3)
+        };
+        multiOption.AcceptOnlyFromAmong("src1", "src2", "src3", "src4");
+        Command command = new Command("mycommand")
+        {
+            multiOption,
+            new Command("subcommand")
+        };
+        await provider.Verify(command, log);
+    }
+
+    [Fact]
+    public async Task UnboundedMultiValueOption()
+    {
+        var unboundedOption = new Option<string[]>("--items")
+        {
+            Arity = ArgumentArity.ZeroOrMore
+        };
+        unboundedOption.AcceptOnlyFromAmong("a", "b", "c");
+        Command command = new Command("mycommand")
+        {
+            unboundedOption,
+            new Option<string>("--name"),
+            new Command("subcommand")
+        };
+        await provider.Verify(command, log);
+    }
+
+    [Fact]
+    public async Task MixedArityOptions()
+    {
+        var singleOption = new Option<string>("--config");
+        singleOption.AcceptOnlyFromAmong("debug", "release");
+
+        var multiOption = new Option<string[]>("--framework", "-f")
+        {
+            Arity = new ArgumentArity(1, 3)
+        };
+        multiOption.AcceptOnlyFromAmong("net8.0", "net9.0", "net10.0");
+
+        var unboundedOption = new Option<string[]>("--sources")
+        {
+            Arity = ArgumentArity.OneOrMore
+        };
+
+        Command command = new Command("mycommand")
+        {
+            singleOption,
+            multiOption,
+            unboundedOption,
+            new Command("build")
+        };
+        await provider.Verify(command, log);
+    }
 }

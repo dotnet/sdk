@@ -13,8 +13,17 @@ function _mycommand
                 switch $word
                     case subcommand
                         set state 1
-                    case --name
-                        set i (math $i + 1)
+                    case --sources
+                        set -l skip_max 3
+                        set -l skipped 0
+                        while test $skipped -lt $skip_max -a (math $i + 1) -le (count $tokens)
+                            set -l next $tokens[(math $i + 1)]
+                            if string match -q -- '-*' $next
+                                break
+                            end
+                            set i (math $i + 1)
+                            set skipped (math $skipped + 1)
+                        end
                 end
         end
         set i (math $i + 1)
@@ -36,8 +45,12 @@ function _mycommand
         switch $state
             case 0
                 switch $opt
-                    case --name
-                        if test $values_after -lt 1
+                    case --sources
+                        if test $values_after -lt 3
+                            printf '%s\n' 'src1'
+                            printf '%s\n' 'src2'
+                            printf '%s\n' 'src3'
+                            printf '%s\n' 'src4'
                             return
                         end
                 end
@@ -47,7 +60,7 @@ function _mycommand
     switch $state
         case 0
             printf '%s\n' 'subcommand'
-            printf '%s\n' '--name'
+            printf '%s\n' '--sources'
         case 1
     end
 end
