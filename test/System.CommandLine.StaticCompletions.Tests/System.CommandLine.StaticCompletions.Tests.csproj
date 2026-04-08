@@ -10,7 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 

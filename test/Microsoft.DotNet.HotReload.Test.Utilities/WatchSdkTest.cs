@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
-using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
