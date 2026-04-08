@@ -225,7 +225,7 @@ internal class InstallWorkflow
                 "Use your system package manager or the official installer for system-wide installations, or choose a different path.");
         }
 
-        if(!_command.Untracked)
+        if (!_command.Untracked)
         {
             ValidateNoUntrackedArtifacts(installPath, manifestPath);
         }
