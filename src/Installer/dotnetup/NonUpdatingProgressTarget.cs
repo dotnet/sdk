@@ -11,10 +11,15 @@ public class NonUpdatingProgressTarget : IProgressTarget
 
     private sealed class Reporter : IProgressReporter
     {
+        private readonly object _consoleLock = new();
+
         public IProgressTask AddTask(string description, double maxValue)
         {
-            var task = new ProgressTaskImpl(description) { MaxValue = maxValue };
-            AnsiConsole.WriteLine(description + "...");
+            var task = new ProgressTaskImpl(description, _consoleLock) { MaxValue = maxValue };
+            lock (_consoleLock)
+            {
+                AnsiConsole.WriteLine(description + "...");
+            }
             return task;
         }
 
@@ -28,11 +33,13 @@ public class NonUpdatingProgressTarget : IProgressTarget
 #pragma warning disable IDE0032 // Setter has side-effect logic; not convertible to auto-property
         private double _value;
 #pragma warning restore IDE0032
-        private bool _completed;
+        private int _completed;
+        private readonly object _consoleLock;
 
-        public ProgressTaskImpl(string description)
+        public ProgressTaskImpl(string description, object consoleLock)
         {
             Description = description;
+            _consoleLock = consoleLock;
         }
 
         public double Value
@@ -41,10 +48,12 @@ public class NonUpdatingProgressTarget : IProgressTarget
             set
             {
                 _value = value;
-                if (_value >= MaxValue && !_completed)
+                if (_value >= MaxValue && Interlocked.CompareExchange(ref _completed, 1, 0) == 0)
                 {
-                    _completed = true;
-                    AnsiConsole.MarkupLine($"{DotnetupTheme.Brand("Completed:")} {Description}");
+                    lock (_consoleLock)
+                    {
+                        AnsiConsole.MarkupLine($"{DotnetupTheme.Brand("Completed:")} {Description}");
+                    }
                 }
             }
         }

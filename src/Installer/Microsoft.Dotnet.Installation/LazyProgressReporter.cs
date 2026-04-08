@@ -24,13 +24,15 @@ public sealed class LazyProgressReporter : IProgressReporter
         lock (_lock)
         {
             _inner ??= _target.CreateProgressReporter();
+            return _inner.AddTask(description, maxValue);
         }
-
-        return _inner.AddTask(description, maxValue);
     }
 
     public void Dispose()
     {
-        _inner?.Dispose();
+        lock (_lock)
+        {
+            _inner?.Dispose();
+        }
     }
 }
