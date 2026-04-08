@@ -74,6 +74,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
         /// Replicates Roslyn's generated code detection which checks:
         /// the <c>generated_code</c> analyzer config option,
         /// common file name patterns, and <c>&lt;auto-generated&gt;</c> comment headers.
+        /// Based on <see href="https://github.com/dotnet/roslyn/blob/0504782ef845507260874f2efc253b36d1775685/src/Compilers/Core/Portable/SourceGeneration/GeneratedCodeUtilities.cs">GeneratedCodeUtilities</see>.
         /// </summary>
         private static bool IsGeneratedCode(SyntaxTree tree, AnalyzerConfigOptionsProvider optionsProvider)
         {
