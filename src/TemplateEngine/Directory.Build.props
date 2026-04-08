@@ -3,8 +3,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
 
   <!--
-    TemplateEngine-specific build properties, migrated from the dotnet/templating
-    repo root Directory.Build.props. These apply only to projects under src/TemplateEngine/.
+    TemplateEngine-specific build properties.
   -->
   <PropertyGroup>
     <!--
