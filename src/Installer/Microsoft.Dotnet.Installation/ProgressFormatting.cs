@@ -17,10 +17,32 @@ public static class ProgressFormatting
     public const int DownloadSuffixWidth = 22;
 
     /// <summary>
-    /// Fixed width for action verbs in progress descriptions ("Downloading", "Downloaded",
-    /// "Installing", "Installed"). Matches the longest verb so shorter ones are right-padded.
+    /// Localized action verb for the "downloading" state.
     /// </summary>
-    private const int ActionWidth = 11; // "Downloading".Length
+    public static string ActionDownloading => Strings.ProgressActionDownloading;
+
+    /// <summary>
+    /// Localized action verb for the "downloaded" state.
+    /// </summary>
+    public static string ActionDownloaded => Strings.ProgressActionDownloaded;
+
+    /// <summary>
+    /// Localized action verb for the "installing" state.
+    /// </summary>
+    public static string ActionInstalling => Strings.ProgressActionInstalling;
+
+    /// <summary>
+    /// Localized action verb for the "installed" state.
+    /// </summary>
+    public static string ActionInstalled => Strings.ProgressActionInstalled;
+
+    /// <summary>
+    /// Fixed width for action verbs in progress descriptions. Computed from the localized
+    /// verb lengths so all progress rows stay aligned regardless of locale.
+    /// </summary>
+    private static readonly int ActionWidth = Math.Max(
+        Math.Max(ActionDownloading.Length, ActionDownloaded.Length),
+        Math.Max(ActionInstalling.Length, ActionInstalled.Length));
 
     /// <summary>
     /// Builds a progress-bar description such as "Downloading aspnet (runtime)         9.0.312".

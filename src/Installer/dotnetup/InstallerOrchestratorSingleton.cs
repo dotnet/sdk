@@ -34,21 +34,11 @@ internal class InstallerOrchestratorSingleton
         {
             await Task.Run(() =>
             {
-                // Suppress the "another process is waiting" message — the real install
-                // may hold the mutex concurrently and that contention is expected.
-                ScopedMutex.SuppressWaitingCallback = true;
-                try
-                {
-                    // Reuse PrepareInstall which checks if already installed and populates the download cache.
-                    // The PreparedInstall is disposed immediately — only the cache side effect matters.
-                    // Use NullProgressTarget to avoid any console output from the background predownload.
-                    using var reporter = new LazyProgressReporter(new NullProgressTarget());
-                    using var prepared = Instance.PrepareInstall(resolvedRequest, reporter, out _);
-                }
-                finally
-                {
-                    ScopedMutex.SuppressWaitingCallback = false;
-                }
+                // Reuse PrepareInstall which checks if already installed and populates the download cache.
+                // The PreparedInstall is disposed immediately — only the cache side effect matters.
+                // Use NullProgressTarget to avoid any console output from the background predownload.
+                using var reporter = new LazyProgressReporter(new NullProgressTarget());
+                using var prepared = Instance.PrepareInstall(resolvedRequest, reporter, out _);
             }).ConfigureAwait(false);
         }
         catch
@@ -94,20 +84,9 @@ internal class InstallerOrchestratorSingleton
         // overlapping extraction/commit with still-running downloads.
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
-        // Suppress the "another process is waiting" message during multi-install
-        // because in-process mutex contention between download and commit threads
-        // is expected and the message would be misleading.
-        ScopedMutex.SuppressWaitingCallback = true;
-        try
-        {
-            var downloadTask = Task.Run(() => PrepareConcurrent(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
-            ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
-            downloadTask.Wait();
-        }
-        finally
-        {
-            ScopedMutex.SuppressWaitingCallback = false;
-        }
+        var downloadTask = Task.Run(() => PrepareConcurrent(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
+        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
+        downloadTask.Wait();
 
         // Fatal (non-DotnetInstallException) errors still abort the batch entirely.
         if (fatalExceptions.Count > 0)

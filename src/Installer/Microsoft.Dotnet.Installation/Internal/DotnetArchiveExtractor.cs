@@ -369,6 +369,8 @@ internal class DotnetArchiveExtractor : IDisposable
         var tarReader = new TarReader(tarStream);
         TarEntry? entry;
 
+        // Defer hard link creation until after all regular files are extracted,
+        // since the target file may not exist yet when the hard link entry is encountered.
         var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
 
         while ((entry = tarReader.GetNextEntry()) is not null)

@@ -27,7 +27,7 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public (IProgress<DownloadProgress> Reporter, IProgressTask Task) BeginDownload()
     {
-        string description = ProgressFormatting.FormatProgressDescription("Downloading", _component, _version);
+        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloading, _component, _version);
         var task = _reporter.AddTask(description, 100);
         var reporter = new DownloadProgressReporter(task, description);
         return (reporter, task);
@@ -40,7 +40,7 @@ internal sealed class ExtractorProgressTracker
     {
         downloadTask.Value = 100;
         long archiveBytes = new FileInfo(archivePath).Length;
-        string downloadedDesc = ProgressFormatting.FormatProgressDescription("Downloaded", _component, _version);
+        string downloadedDesc = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloaded, _component, _version);
         downloadTask.Description = $"{downloadedDesc} ({ProgressFormatting.FormatMB(archiveBytes)} / {ProgressFormatting.FormatMB(archiveBytes)})";
     }
 
@@ -50,7 +50,7 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public IProgressTask BeginExtraction()
     {
-        string description = ProgressFormatting.FormatProgressDescription("Installing", _component, _version);
+        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalling, _component, _version);
         // Pad to match the width of "Downloading" rows (which have an MB suffix)
         // so all progress rows stay aligned within the shared Spectre column.
         string paddedDescription = description + new string(' ', ProgressFormatting.DownloadSuffixWidth);
@@ -62,6 +62,6 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public void CompleteExtraction(IProgressTask extractionTask)
     {
-        extractionTask.Description = ProgressFormatting.FormatProgressDescription("Installed", _component, _version);
+        extractionTask.Description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalled, _component, _version);
     }
 }
