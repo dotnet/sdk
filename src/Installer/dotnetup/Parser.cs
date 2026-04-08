@@ -86,18 +86,20 @@ internal class Parser
             }
         }
 
-        // Replace the help option's action with our grouped help writer
+        // Replace the help option's action with our grouped help writer,
+        // but capture the default action so subcommands can delegate to it.
         foreach (Option option in rootCommand.Options)
         {
             if (option is HelpOption helpOption)
             {
-                helpOption.Action = new GroupedHelpAction(rootCommand);
+                CommandLineAction? defaultHelpAction = helpOption.Action;
+                helpOption.Action = new GroupedHelpAction(rootCommand, defaultHelpAction);
                 break;
             }
         }
     }
 
-    private sealed class GroupedHelpAction(RootCommand rootCommand) : SynchronousCommandLineAction
+    private sealed class GroupedHelpAction(RootCommand rootCommand, CommandLineAction? defaultHelpAction) : SynchronousCommandLineAction
     {
         private static readonly (string Heading, string[] CommandNames)[] s_commandGroups =
         [
@@ -111,6 +113,13 @@ internal class Parser
         {
             TextWriter output = parseResult.InvocationConfiguration.Output;
             Command command = parseResult.CommandResult.Command;
+
+            // For subcommands, delegate to System.CommandLine's built-in help
+            // so users see only the relevant command's arguments, options, and subcommands.
+            if (command != rootCommand && defaultHelpAction is SynchronousCommandLineAction syncAction)
+            {
+                return syncAction.Invoke(parseResult);
+            }
 
             // Description
             if (!string.IsNullOrWhiteSpace(command.Description))
