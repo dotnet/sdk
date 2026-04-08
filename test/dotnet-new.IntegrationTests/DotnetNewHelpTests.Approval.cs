@@ -208,16 +208,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public Task CannotShowHelpForTemplate_WhenAmbiguousLanguageChoice()
         {
-            // Use a dedicated home directory to avoid conflicts with other tests that install
-            // templates with the same 'basic' short name. Tests are not guaranteed to execute
-            // in declared order.
             string workingDirectory = CreateTemporaryFolder();
-            string homeDirectory = CreateTemporaryFolder("Home");
-            InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicFSharp", _log, homeDirectory, workingDirectory);
-            InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicVB", _log, homeDirectory, workingDirectory);
+            InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicFSharp", _log, _fixture.HomeDirectory, workingDirectory);
+            InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicVB", _log, _fixture.HomeDirectory, workingDirectory);
 
             CommandResult commandResult = new DotnetNewCommand(_log, "basic", "--help")
-                .WithCustomHive(homeDirectory)
+                .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();
 
@@ -397,15 +393,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public Task CanShowHelpForTemplateWhenRequiredParamIsMissed()
         {
-            // Use a dedicated home directory to avoid conflicts with other tests that install
-            // templates with the same 'basic' short name. Tests are not guaranteed to execute
-            // in declared order.
             string workingDirectory = CreateTemporaryFolder();
-            string homeDirectory = CreateTemporaryFolder("Home");
-            InstallTestTemplate($"TemplateResolution/MissedRequiredParameter/BasicTemplate1", _log, homeDirectory, workingDirectory);
+            InstallTestTemplate($"TemplateResolution/MissedRequiredParameter/BasicTemplate1", _log, _fixture.HomeDirectory, workingDirectory);
 
             CommandResult commandResult = new DotnetNewCommand(_log, "basic", "--help")
-                .WithCustomHive(homeDirectory)
+                .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();
 

@@ -1,33 +1,17 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using Microsoft.CodeAnalysis.Tools.Workspaces;
-using Xunit.v3;
+using Xunit.Sdk;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class MSBuildTheoryAttribute : ConditionalTheoryAttribute, IBeforeAfterTestAttribute
+    [XunitTestCaseDiscoverer("Microsoft.CodeAnalysis.Tools.Tests.XUnit.MSBuildTheoryDiscoverer", "dotnet-format.UnitTests")]
+    public sealed class MSBuildTheoryAttribute : ConditionalTheoryAttribute
     {
-        public MSBuildTheoryAttribute(params Type[] skipConditions) : base(skipConditions)
+        public MSBuildTheoryAttribute(params Type[] skipConditions)
+            : base(skipConditions)
         {
-        }
-
-        public MSBuildTheoryAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
-            : base(Array.Empty<Type>(), sourceFilePath, sourceLineNumber)
-        {
-        }
-
-        public void Before(MethodInfo methodUnderTest, IXunitTest test)
-        {
-            MSBuildWorkspaceLoader.Guard.Wait();
-        }
-
-        public void After(MethodInfo methodUnderTest, IXunitTest test)
-        {
-            MSBuildWorkspaceLoader.Guard.Release();
         }
     }
 }

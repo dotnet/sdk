@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
