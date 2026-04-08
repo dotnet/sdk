@@ -3764,6 +3764,71 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Two <c>#:include</c>'d files in different directories each have <c>#:ref</c> to the same library
+    /// using different relative paths. Deduplication via <c>processedFiles</c> uses the resolved (absolute) path,
+    /// so the library is only processed once.
+    /// </summary>
+    [Fact]
+    public void RefDirective_DuplicateRefFromIncludedFiles_Subdirectories()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // lib.cs is in the root directory.
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello!";
+            }
+            """);
+
+        // helper1.cs is in sub1/, refers to lib.cs via ../lib.cs.
+        var sub1 = Path.Join(testInstance.Path, "sub1");
+        Directory.CreateDirectory(sub1);
+        File.WriteAllText(Path.Join(sub1, "helper1.cs"), """
+            #:ref ../lib.cs
+            static class Helper1
+            {
+                public static string Get() => MyLib.Greeter.Greet();
+            }
+            """);
+
+        // helper2.cs is in sub2/nested/, refers to lib.cs via ../../lib.cs (different relative path, same resolved path).
+        var sub2 = Path.Join(testInstance.Path, "sub2", "nested");
+        Directory.CreateDirectory(sub2);
+        File.WriteAllText(Path.Join(sub2, "helper2.cs"), """
+            #:ref ../../lib.cs
+            static class Helper2
+            {
+                public static string Get() => MyLib.Greeter.Greet();
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #:include sub1/helper1.cs
+            #:include sub2/nested/helper2.cs
+            Console.WriteLine(Helper1.Get() + " " + Helper2.Get());
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello! Hello!");
+    }
+
+    /// <summary>
     /// Both <c>#:include</c> and <c>#:ref</c> pointing at the same file.
     /// The file ends up both compiled into the current assembly and referenced as a separate assembly.
     /// This is expected to produce a compilation error (duplicate type definitions).
