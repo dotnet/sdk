@@ -80,7 +80,7 @@ public class FishShellProvider : IShellProvider
     // Options with MaximumNumberOfValues at or above this threshold are treated as unbounded
     // (i.e. consume tokens until an option-like token is encountered).
     // System.CommandLine uses 100_000 as its internal sentinel for ZeroOrMore/OneOrMore.
-    private const int UnboundedArityThreshold = 100;
+    private const int UnboundedArityThreshold = 100_000;
 
     /// <summary>
     /// Generate the state machine that walks completed tokens to determine which subcommand context we're in.
