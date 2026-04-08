@@ -2,7 +2,6 @@
 
 function _mycommand
     set -l tokens (commandline -opc)
-    set -l current (commandline -ct)
     
     set -l state 0
     set -l i 2
