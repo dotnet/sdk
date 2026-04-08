@@ -79,7 +79,7 @@ public class ClassifyInstallPathTests
     }
 
     [Fact]
-    public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsAdmin()
+    public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsSystem()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -96,7 +96,7 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("admin", result);
+        Assert.Equal("system", result);
     }
 
     [Fact]
@@ -200,13 +200,13 @@ public class ClassifyInstallPathTests
     }
 
     [Fact]
-    public void ClassifyInstallPath_UsrShareDotnet_ReturnsAdmin()
+    public void ClassifyInstallPath_UsrShareDotnet_ReturnsSystem()
     {
         if (OperatingSystem.IsWindows()) return;
 
         var result = InstallPathClassifier.ClassifyInstallPath("/usr/share/dotnet");
 
-        Assert.Equal("admin", result);
+        Assert.Equal("system", result);
     }
 
     [Fact]

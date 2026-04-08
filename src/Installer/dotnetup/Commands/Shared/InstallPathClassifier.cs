@@ -50,8 +50,9 @@ internal static class InstallPathClassifier
     // (e.g. "C:\Program Files\dotnet is cool" matching "C:\Program Files\dotnet").
     private static bool IsOrIsUnder(string fullPath, string adminPath, StringComparison comparison)
     {
-        return string.Equals(fullPath, adminPath, comparison) ||
-               fullPath.StartsWith(adminPath + Path.DirectorySeparatorChar, comparison);
+        var normalizedBase = adminPath.TrimEnd(Path.DirectorySeparatorChar);
+        return string.Equals(fullPath, normalizedBase, comparison) ||
+               fullPath.StartsWith(normalizedBase + Path.DirectorySeparatorChar, comparison);
     }
 
     /// <summary>
@@ -100,8 +101,8 @@ internal static class InstallPathClassifier
         }
         else
         {
-            if (IsOrIsUnder(fullPath, "/usr/", StringComparison.Ordinal) ||
-                IsOrIsUnder(fullPath, "/opt/", StringComparison.Ordinal))
+            if (IsOrIsUnder(fullPath, "/usr", StringComparison.Ordinal) ||
+                IsOrIsUnder(fullPath, "/opt", StringComparison.Ordinal))
             {
                 return "system_path";
             }
