@@ -307,10 +307,8 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             long totalEntries = CountTarEntries(decompressedPath);
-            if (installTask is not null)
-            {
-                installTask.MaxValue = totalEntries > 0 ? totalEntries : 1;
-            }
+            installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
+
             ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
         }
         finally
@@ -450,10 +448,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
-        if (installTask is not null)
-        {
-            installTask.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
-        }
+        installTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
 
         foreach (var entry in zip.Entries)
         {
