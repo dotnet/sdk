@@ -124,6 +124,8 @@ internal class MuxerHandler
             return;
         }
 
+        // Update the muxer if no runtime existed before (new install) or a higher version was installed.
+        // Keep the existing muxer if the installed runtime is the same version or older.
         bool shouldUpdateMuxer = _preExtractionHighestRuntimeVersion == null ||
                                   postExtractionHighestRuntimeVersion > _preExtractionHighestRuntimeVersion;
 

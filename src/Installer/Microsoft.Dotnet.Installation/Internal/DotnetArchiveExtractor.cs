@@ -425,6 +425,10 @@ internal class DotnetArchiveExtractor : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
             deferredHardLinks.Add((destPath, linkTargetPath));
         }
+        else
+        {
+            Console.Error.WriteLine($"Warning: Skipping unsupported tar entry type '{entry.EntryType}' for '{entry.Name}'.");
+        }
     }
 
     private static void CreateDeferredHardLinks(List<(string DestPath, string TargetPath)> deferredHardLinks)
