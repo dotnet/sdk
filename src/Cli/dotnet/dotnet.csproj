@@ -54,10 +54,6 @@
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-    <Compile Remove="Commands\Workload\SignCheck_Unix.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="CliStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Update="Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />

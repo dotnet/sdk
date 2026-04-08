@@ -2,21 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-
-#if TARGET_WINDOWS
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
-#endif
-
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class SignCheck
 {
-    internal static readonly string OnlineRevocationCheckPolicyKeyName = "AllowOnlineRevocationChecks";
-    internal static readonly string VerifySignaturesPolicyKeyName = "VerifySignatures";
-
-    private static readonly string s_WorkloadPolicyKey = @"SOFTWARE\Policies\Microsoft\dotnet\Workloads";
+    private const string OnlineRevocationCheckPolicyKeyName = "AllowOnlineRevocationChecks";
+    private const string VerifySignaturesPolicyKeyName = "VerifySignatures";
+    private const string WorkloadPolicyKey = @"SOFTWARE\Policies\Microsoft\dotnet\Workloads";
 
     private static readonly string? s_dotnet = Environment.ProcessPath;
 
@@ -26,26 +21,19 @@ internal static class SignCheck
     /// <returns><see langword="true"/> if dotnet is signed; otherwise, <see langword="false"/>.</returns>
     public static bool IsDotNetSigned()
     {
-        if (OperatingSystem.IsWindows())
+        Debug.Assert(s_dotnet is not null, "Environment.ProcessPath should not be null when running in the dotnet host.");
+
+        if (s_dotnet is null)
         {
-#if TARGET_WINDOWS
-            Debug.Assert(s_dotnet is not null, "Environment.ProcessPath should not be null when running in the dotnet host.");
-
-            if (s_dotnet is null)
-            {
-                return false;
-            }
-
-            // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
-#pragma warning disable CA1416
-            // We don't care about trust in this case, only whether or not the file has a signature as that determines
-            // whether we'll trigger sign verification for workload operations.
-            return Signature.IsAuthenticodeSigned(s_dotnet, AllowOnlineRevocationChecks()) == 0;
-#pragma warning restore CA1416
-#endif
+            return false;
         }
 
-        return false;
+        // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
+#pragma warning disable CA1416
+        // We don't care about trust in this case, only whether or not the file has a signature as that determines
+        // whether we'll trigger sign verification for workload operations.
+        return Signature.IsAuthenticodeSigned(s_dotnet, AllowOnlineRevocationChecks()) == 0;
+#pragma warning restore CA1416
     }
 
     /// <summary>
@@ -54,14 +42,8 @@ internal static class SignCheck
     /// <returns><see langword="true"/> if the policy key is absent or set to a non-zero value; <see langword="false"/> if the policy key is set to 0.</returns>
     public static bool AllowOnlineRevocationChecks()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
-
-            return ((int?)policyKey?.GetValue(OnlineRevocationCheckPolicyKeyName) ?? 1) != 0;
-        }
-
-        return true;
+        using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(WorkloadPolicyKey);
+        return ((int?)policyKey?.GetValue(OnlineRevocationCheckPolicyKeyName) ?? 1) != 0;
     }
 
     /// <summary>
@@ -70,13 +52,7 @@ internal static class SignCheck
     /// <returns><see langword="true"/> if the policy is set; <see langword="false"/> otherwise.</returns>
     public static bool IsWorkloadSignVerificationPolicySet()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
-
-            return ((int?)policyKey?.GetValue(VerifySignaturesPolicyKeyName) ?? 0) != 0;
-        }
-
-        return false;
+        using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(WorkloadPolicyKey);
+        return ((int?)policyKey?.GetValue(VerifySignaturesPolicyKeyName) ?? 0) != 0;
     }
 }
