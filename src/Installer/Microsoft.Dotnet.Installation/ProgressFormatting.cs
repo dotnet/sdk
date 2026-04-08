@@ -40,7 +40,7 @@ public static class ProgressFormatting
     /// Fixed width for action verbs in progress descriptions. Computed from the localized
     /// verb lengths so all progress rows stay aligned regardless of locale.
     /// </summary>
-    private static readonly int ActionWidth = Math.Max(
+    private static readonly int s_actionWidth = Math.Max(
         Math.Max(ActionDownloading.Length, ActionDownloaded.Length),
         Math.Max(ActionInstalling.Length, ActionInstalled.Length));
 
@@ -49,7 +49,7 @@ public static class ProgressFormatting
     /// Component names and versions are padded so all rows align vertically.
     /// </summary>
     public static string FormatProgressDescription(string action, InstallComponent component, string version) =>
-        $"{action.PadRight(ActionWidth)} {component.GetPaddedDisplayName()} {InstallComponentExtensions.FormatVersionForDisplay(version)}";
+        $"{action.PadRight(s_actionWidth)} {component.GetPaddedDisplayName()} {InstallComponentExtensions.FormatVersionForDisplay(version)}";
 
     /// <summary>
     /// Formats bytes as MB, right-aligned to 8 characters (e.g. "  0.7 MB", "290.4 MB").

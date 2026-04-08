@@ -92,17 +92,17 @@ internal class UninstallWorkflow
             if (sourceFilter != InstallSource.All)
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
             }
             else
             {
                 AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}', but matching specs exist with other sources:[/]");
+                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
             }
 
             foreach (var spec in otherSourceSpecs)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel} (source: {spec.InstallSource})[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()} (source: {spec.InstallSource})[/]");
             }
 
             if (sourceFilter != InstallSource.All)
@@ -112,7 +112,7 @@ internal class UninstallWorkflow
         }
         else
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel}' at {resolvedInstallPath}.[/]");
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}' at {resolvedInstallPath.EscapeMarkup()}.[/]");
         }
     }
 

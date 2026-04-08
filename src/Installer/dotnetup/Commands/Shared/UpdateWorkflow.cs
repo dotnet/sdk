@@ -74,7 +74,7 @@ internal class UpdateWorkflow
                 }
                 catch (DotnetInstallException ex)
                 {
-                    AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel}."));
+                    AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
                     failures.Add(ex);
                 }
             }
@@ -121,7 +121,7 @@ internal class UpdateWorkflow
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"Could not resolve latest version for {displayName} '{spec.VersionOrChannel}'."));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"Could not resolve latest version for {displayName} '{spec.VersionOrChannel.EscapeMarkup()}'."));
             return false;
         }
 

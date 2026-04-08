@@ -13,6 +13,7 @@ public class SpectreProgressTarget : IProgressTarget
     {
         private readonly TaskCompletionSource _overallTask = new();
         private readonly ProgressContext _progressContext;
+        private readonly List<ProgressTaskImpl> _tasks = [];
 
         public Reporter()
         {
@@ -44,18 +45,23 @@ public class SpectreProgressTarget : IProgressTarget
 
         public IProgressTask AddTask(string description, double maxValue)
         {
-            return new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
+            var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
+            _tasks.Add(task);
+            return task;
         }
 
         public void Dispose()
         {
+            foreach (var task in _tasks)
+            {
+                task.StopShimmer();
+            }
+
             _overallTask.TrySetResult();
         }
     }
 
-#pragma warning disable CA1001 // Timer is disposed in StopShimmer when the task completes
     private sealed class ProgressTaskImpl : IProgressTask
-#pragma warning restore CA1001
     {
         private readonly Spectre.Console.ProgressTask _task;
         private readonly string _baseDescription;
@@ -124,7 +130,7 @@ public class SpectreProgressTarget : IProgressTarget
             }
         }
 
-        private void StopShimmer()
+        public void StopShimmer()
         {
             _shimmerStopped = true;
             _shimmerTimer?.Change(Timeout.Infinite, Timeout.Infinite);

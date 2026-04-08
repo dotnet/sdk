@@ -116,6 +116,7 @@ internal class Parser
 
             // For subcommands, delegate to System.CommandLine's built-in help
             // so users see only the relevant command's arguments, options, and subcommands.
+
             if (command != rootCommand && defaultHelpAction is SynchronousCommandLineAction syncAction)
             {
                 return syncAction.Invoke(parseResult);

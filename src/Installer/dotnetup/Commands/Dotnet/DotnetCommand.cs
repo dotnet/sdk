@@ -70,8 +70,8 @@ internal class DotnetCommand : CommandBase
 
     /// <summary>
     /// Spawns dotnet with the forwarded arguments, setting DOTNET_ROOT and prepending
-    /// the install path to PATH. Uses shell execution so that shell features
-    /// (redirection, piping, interactive mode) work transparently.
+    /// the install path to PATH. Inherits the parent console handles (stdin/stdout/stderr)
+    /// so that redirection, piping, and interactive mode work transparently.
     /// </summary>
     private static int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
     {
