@@ -140,39 +140,65 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 throw new NotImplementedException("does not support non support the runtime specified");
             }
 
+            // Environment variables that tests need, set as shell env vars for dotnet exec.
             // On mac due to https://github.com/dotnet/sdk/issues/3923, we run against workitem directory
-            // but on Windows, if we running against working item diretory, we would hit long path.
-            string testExecutionDirectory = IsPosixShell ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory" : "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
-
-            string msbuildAdditionalSdkResolverFolder = IsPosixShell ? "" : "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
-
+            // but on Windows, if we running against working item directory, we would hit long path.
+            string setEnvVars;
             if (ExcludeAdditionalParameters.Equals("true"))
             {
-                testExecutionDirectory = "";
-                msbuildAdditionalSdkResolverFolder = "";
+                setEnvVars = "";
+            }
+            else if (IsPosixShell)
+            {
+                setEnvVars = "export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory && ";
+            }
+            else
+            {
+                setEnvVars = "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory% && " +
+                             "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r && ";
             }
 
             var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
+            string assemblyBaseName = Path.GetFileNameWithoutExtension(assemblyName);
+
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
+                // xUnit v3 tests are self-hosting executables. Use 'dotnet exec' to run them
+                // directly, matching the approach used by the Arcade Helix SDK's CreateXUnitV3WorkItems.
+                // The old 'dotnet test' approach fails because VSTest cannot discover tests without
+                // the xUnit v3 VSTest adapter deployed alongside the assembly on Helix.
 
-                var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
-
-                // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
                 // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
                 // so we need to restore it before running.
-                string exeName = Path.GetFileNameWithoutExtension(assemblyName);
-                string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
+                string chmodPrefix = IsPosixShell ? $"chmod +x {assemblyBaseName} && " : "";
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
-                string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
+                string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {assemblyBaseName} && " : "";
 
-                string command = $"{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
+                // Set HELIX_WORK_ITEM_TIMEOUT as an env var for the test process
+                string setTimeoutEnv = IsPosixShell
+                    ? $"export HELIX_WORK_ITEM_TIMEOUT={timeout} && "
+                    : $"set HELIX_WORK_ITEM_TIMEOUT={timeout} && ";
+
+                // Build xUnit v3 native class filter arguments: -class Namespace.Class1 -class Namespace.Class2
+                var classFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString)
+                    ? ""
+                    : string.Join(" ", assemblyPartitionInfo.ClassListArgumentString.Split('|').Select(c => $"-class {c}"));
+
+                // xUnit v3 native runner arguments (legacy mode, MTP is disabled in SDK tests):
+                //   -xml testResults.xml  : produce xUnit XML results (auto-discovered by Helix reporter)
+                //   -noAutoReporters      : suppress xUnit's built-in CI reporter (Helix handles reporting)
+                //   -nocolor              : no ANSI color codes in log output
+                string xunitArgs = "-xml testResults.xml -noAutoReporters -nocolor";
+
+                string command = $"{chmodPrefix}{codesignPrefix}{setTimeoutEnv}{setEnvVars}" +
+                    $"{driver} exec --roll-forward Major " +
+                    $"--runtimeconfig {assemblyBaseName}.runtimeconfig.json " +
+                    $"--depsfile {assemblyBaseName}.deps.json " +
+                    $"{assemblyName} {xunitArgs} {classFilter}" +
+                    (string.IsNullOrEmpty(arguments) ? "" : " " + arguments);
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
