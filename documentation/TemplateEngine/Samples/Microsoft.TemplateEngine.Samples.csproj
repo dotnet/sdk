@@ -16,7 +16,7 @@
     <Authors>Microsoft</Authors>
     <Description>Common Project File for Dotnet Template Samples</Description>
     <language>en-US</language>
-    <PackageProjectUrl>https://github.com/dotnet/templating</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageType>Template</PackageType>
     <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
   </PropertyGroup>
