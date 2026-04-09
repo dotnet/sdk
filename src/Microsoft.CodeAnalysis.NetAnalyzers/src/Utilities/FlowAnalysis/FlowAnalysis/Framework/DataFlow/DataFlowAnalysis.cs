@@ -111,9 +111,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 // Add the block to the worklist.
                 worklist.Add(entry.Ordinal);
 
-                RunCore(cfg, worklist, pendingBlocksNeedingAtLeastOnePass, initialAnalysisData, resultBuilder,
+                if (!RunCore(cfg, worklist, pendingBlocksNeedingAtLeastOnePass, initialAnalysisData, resultBuilder,
                     uniqueSuccessors, finallyBlockSuccessorsMap, catchBlockInputDataMap, inputDataFromInfeasibleBranchesMap,
-                    blockToUniqueInputFlowMap, loopRangeMap, exceptionPathsAnalysisPostPass: false);
+                    blockToUniqueInputFlowMap, loopRangeMap, exceptionPathsAnalysisPostPass: false))
+                {
+                    // Analysis failed to converge within the iteration limit.
+                    return default;
+                }
+
                 normalPathsExitBlockData = resultBuilder.ExitBlockOutputData;
 
                 // If we are executing exception paths analysis OR have at least one try/catch/finally block
@@ -150,9 +155,15 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                         }
                     }
 
-                    RunCore(cfg, worklist, pendingBlocksNeedingAtLeastOnePass, initialAnalysisData, resultBuilder, uniqueSuccessors,
+                    if (!RunCore(cfg, worklist, pendingBlocksNeedingAtLeastOnePass, initialAnalysisData, resultBuilder, uniqueSuccessors,
                         finallyBlockSuccessorsMap, catchBlockInputDataMap, inputDataFromInfeasibleBranchesMap,
-                        blockToUniqueInputFlowMap, loopRangeMap, exceptionPathsAnalysisPostPass: true);
+                        blockToUniqueInputFlowMap, loopRangeMap, exceptionPathsAnalysisPostPass: true))
+                    {
+                        // Exception paths analysis failed to converge within the iteration limit.
+                        OperationVisitor.ExecutingExceptionPathsAnalysisPostPass = false;
+                        return default;
+                    }
+
                     exceptionPathsExitBlockData = resultBuilder.ExitBlockOutputData;
                     OperationVisitor.ExecutingExceptionPathsAnalysisPostPass = false;
                 }
@@ -177,7 +188,15 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             }
         }
 
-        private void RunCore(
+        // Maximum number of worklist iterations per basic block before the analysis is aborted.
+        // This prevents infinite loops when the analysis fails to converge (e.g., due to predicate data
+        // oscillation with nullable tuple swaps inside loops).
+        private const int MaxIterationsPerBlock = 10;
+
+        /// <returns>
+        /// <see langword="true"/> if analysis converged; <see langword="false"/> if the iteration limit was reached.
+        /// </returns>
+        private bool RunCore(
             ControlFlowGraph cfg,
             PooledSortedSet<int> worklist,
             PooledSortedSet<int> pendingBlocksNeedingAtLeastOnePass,
@@ -191,6 +210,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             PooledDictionary<int, int> loopRangeMap,
             bool exceptionPathsAnalysisPostPass)
         {
+            int maxIterations = Math.Max(cfg.Blocks.Length * MaxIterationsPerBlock, cfg.Blocks.Length);
+            int iterations = 0;
+
             using var unreachableBlocks = PooledHashSet<int>.GetInstance();
             // Add each basic block to the result.
             foreach (var block in cfg.Blocks)
@@ -203,6 +225,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
             while (worklist.Count > 0 || pendingBlocksNeedingAtLeastOnePass.Count > 0)
             {
+                if (++iterations > maxIterations)
+                {
+                    return false;
+                }
+
                 UpdateUnreachableBlocks();
 
                 // Get the next block to process from the worklist.
@@ -472,6 +499,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     output.Dispose();
                 }
             }
+
+            return true;
 
             // Local functions.
             void UpdateUnreachableBlocks()
