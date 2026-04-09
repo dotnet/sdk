@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
@@ -15,6 +16,7 @@ using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Command = System.CommandLine.Command;
 

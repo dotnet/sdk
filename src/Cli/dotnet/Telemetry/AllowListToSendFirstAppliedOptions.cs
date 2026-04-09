@@ -14,10 +14,10 @@ internal class AllowListToSendFirstAppliedOptions(
 {
     private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<TelemetryEntryFormat> AllowList(ParseResult parseResult)
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {
         var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
-        var result = new List<TelemetryEntryFormat>();
+        var result = new List<ApplicationInsightsEntryFormat>();
         if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
         {
             var firstOption = parseResult.RootCommandResult.Children
@@ -25,13 +25,14 @@ internal class AllowListToSendFirstAppliedOptions(
                 .Children.OfType<System.CommandLine.Parsing.CommandResult>().FirstOrDefault()?.Command.Name ?? null;
             if (firstOption != null)
             {
-                result.Add(new TelemetryEntryFormat(
+                result.Add(new ApplicationInsightsEntryFormat(
                     "sublevelparser/command",
                     new Dictionary<string, string>
                     {
-                        {"verb", topLevelCommandNameFromParse},
+                        { "verb", topLevelCommandNameFromParse},
                         {"argument", firstOption}
-                    }));
+                    },
+                    measurements));
             }
         }
         return result;

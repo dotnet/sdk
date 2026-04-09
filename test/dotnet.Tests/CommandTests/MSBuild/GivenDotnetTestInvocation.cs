@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Telemetry;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                TelemetryClient.DisabledForTests = true;
+                Telemetry.Telemetry.DisableForTests();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
                     .Select(arg => arg.Replace("<cwd>", WorkingDirectory))

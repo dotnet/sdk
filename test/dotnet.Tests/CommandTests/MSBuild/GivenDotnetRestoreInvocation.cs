@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.MSBuild;
-using Microsoft.DotNet.Cli.Telemetry;
 using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -42,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                TelemetryClient.DisabledForTests = true;
+                Telemetry.Telemetry.DisableForTests();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
                     .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
