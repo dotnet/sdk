@@ -22,15 +22,15 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks.XunitV3" Version="11.0.100-preview.4.26208.106">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="11.0.100-preview.4.26208.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper.XunitV3" Version="11.0.100-preview.4.26208.106">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="11.0.100-preview.4.26208.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="11.0.100-preview.4.26208.106">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="11.0.100-preview.4.26208.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
@@ -557,7 +557,7 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitV3Extensions" Version="11.0.0-beta.26208.106">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.26208.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
@@ -569,11 +569,11 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>e52493553982a80cd4c7d372c104e3a9dbff0e0d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26203.3">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.2.1-preview.26201.3">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>1ddd2f1a558e9c79b5327c5ccc0e9e89df39d4da</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.3.0-preview.26203.3">
+    <Dependency Name="MSTest" Version="4.2.1-preview.26201.3">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>1ddd2f1a558e9c79b5327c5ccc0e9e89df39d4da</Sha>
     </Dependency>
