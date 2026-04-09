@@ -103,7 +103,7 @@ extends:
             name: $(DncEngInternalBuildPool)
             image: 1es-windows-2022
             os: windows
-          helixTargetQueue: windows.amd64.vs2022.pre
+          helixTargetQueue: windows.amd64.vs2022
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.

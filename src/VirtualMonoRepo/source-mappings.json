@@ -104,7 +104,11 @@
         },
         {
             "name": "roslyn",
-            "defaultRemote": "https://github.com/dotnet/roslyn"
+            "defaultRemote": "https://github.com/dotnet/roslyn",
+            "exclude": [
+                // Obfuscated files are blocking the source tarball signing
+                "src/Compilers/Test/Resources/Core/MetadataTests/Invalid/Obfuscated*.dll"
+            ]
         },
         {
             "name": "roslyn-analyzers",
