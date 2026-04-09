@@ -210,7 +210,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             PooledDictionary<int, int> loopRangeMap,
             bool exceptionPathsAnalysisPostPass)
         {
-            int maxIterations = Math.Max(cfg.Blocks.Length * MaxIterationsPerBlock, cfg.Blocks.Length);
+            int maxIterations = cfg.Blocks.Length * MaxIterationsPerBlock;
             int iterations = 0;
 
             using var unreachableBlocks = PooledHashSet<int>.GetInstance();
