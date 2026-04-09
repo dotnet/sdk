@@ -37,7 +37,7 @@
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="source-build-assets" />
     <RepositoryReference Include="symreader" />
   </ItemGroup>
 
