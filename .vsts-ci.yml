@@ -100,9 +100,9 @@ extends:
               image: 1es-windows-2022
               os: windows
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+            helixTargetQueue: Windows.Amd64.VS2022.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            helixTargetQueue: Windows.Amd64.VS2022.Pre
+            helixTargetQueue: Windows.Amd64.VS2022
           variables:
           - name: _BuildConfig
             value: Release
@@ -138,9 +138,9 @@ extends:
                 image: 1es-windows-2022
                 os: windows
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+              helixTargetQueue: Windows.Amd64.VS2022.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre
+              helixTargetQueue: Windows.Amd64.VS2022
             variables:
             - name: _BuildConfig
               value: Debug
@@ -232,9 +232,9 @@ extends:
                 image: 1es-windows-2022
                 os: windows
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+              helixTargetQueue: Windows.Amd64.VS2022.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre
+              helixTargetQueue: Windows.Amd64.VS2022
             variables:
               - name: _BuildConfig
                 value: Release
