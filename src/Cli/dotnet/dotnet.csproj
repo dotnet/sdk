@@ -46,6 +46,7 @@
     <Compile Remove="Microsoft\VisualStudio\**" />
     <Compile Remove="Installer\Windows\**" />
     <Compile Remove="Commands\Workload\Install\MsiInstallerBase.cs" />
+    <Compile Remove="Commands\Workload\Install\MsiPackageCache.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.InstallRecords.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.PackGroup.cs" />
