@@ -22,7 +22,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
         var definition = (CleanCommandDefinition)result.CommandResult.Command;
 
         result.ShowHelpOrErrorIfAppropriate();
-        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
+        return CommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             createVirtualCommand: static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(

@@ -5,13 +5,16 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Cli.CommandFactory;
 
-public class CommandSpec(string path, string? args, IDictionary<string, string>? environmentVariables = null)
+public class CommandSpec(
+    string path,
+    string? args,
+    Dictionary<string, string>? environmentVariables = null)
 {
     public string Path { get; } = path;
 
     public string? Args { get; } = args;
 
-    public IDictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? new Dictionary<string, string>();
+    public Dictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? [];
 
     internal void AddEnvironmentVariablesFromProject(IProject project)
     {

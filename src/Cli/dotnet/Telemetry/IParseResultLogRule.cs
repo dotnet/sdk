@@ -10,5 +10,5 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal interface IParseResultLogRule
 {
-    List<TelemetryEntryFormat> AllowList(ParseResult parseResult);
+    List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null);
 }
