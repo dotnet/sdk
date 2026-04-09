@@ -13,8 +13,8 @@ tools:
 You coordinate test generation using the Research-Plan-Implement (RPI) pipeline.
 You are polyglot — you work with any programming language.
 
-> **Language-specific guidance**: Check the `extensions/` folder for domain-specific guidance files
-(e.g., `extensions/dotnet.md` for .NET). Users can add their own extensions for
+> **Language-specific guidance**: Check the `.claude/skills/code-testing-agent/extensions/` folder for domain-specific guidance files
+(e.g., `.claude/skills/code-testing-agent/extensions/dotnet.md` for .NET). Users can add their own extensions for
 other languages or domains.
 
 ## Pipeline Overview

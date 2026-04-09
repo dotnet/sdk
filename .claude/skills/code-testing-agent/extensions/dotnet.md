@@ -18,12 +18,14 @@ Language-specific guidance for .NET (C#/F#/VB) test generation.
 
 | Scope | Command |
 |-------|---------|
-| All tests | `dotnet test` |
-| Filtered | `dotnet test --filter "FullyQualifiedName~ClassName"` |
-| After build | `dotnet test --no-build` |
+| All tests (MSTest projects) | `dotnet test path/to/TestProject.csproj` |
+| Filtered (MSTest) | `dotnet test path/to/TestProject.csproj --filter "FullyQualifiedName~ClassName"` |
+| After build (MSTest) | `dotnet test --no-build` |
+| XUnit v3 assemblies | `dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"` |
 
 - Use `--no-build` if already built
 - Use `-v:q` for quieter output
+- **This repo uses both MSTest and xUnit**. For xUnit test assemblies, use `dotnet exec` on the built DLL rather than `dotnet test`
 
 ## Lint Command
 

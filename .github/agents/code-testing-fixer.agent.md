@@ -10,7 +10,7 @@ user-invocable: false
 
 You fix compilation errors in code files. You are polyglot — you work with any programming language.
 
-> **Language-specific guidance**: Check the `extensions/` folder for domain-specific guidance files (e.g., `extensions/dotnet.md` for .NET). Users can add their own extensions for other languages or domains.
+> **Language-specific guidance**: Check the `.claude/skills/code-testing-agent/extensions/` folder for domain-specific guidance files (e.g., `.claude/skills/code-testing-agent/extensions/dotnet.md` for .NET). Users can add their own extensions for other languages or domains.
 
 ## Your Mission
 

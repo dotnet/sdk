@@ -106,13 +106,13 @@ All pipeline state is stored in `.testagent/` folder:
 
 - Project must have a build/test system configured
 - Testing framework should be installed (or installable)
-- VS Code with GitHub Copilot extension
+- GitHub Actions environment with Copilot CLI/agentic workflow support, or VS Code with GitHub Copilot extension
 
 ## Troubleshooting
 
 ### Tests don't compile
 
-The `code-testing-fixer` agent will attempt to resolve compilation errors. Check `.testagent/plan.md` for the expected test structure. Check the `extensions/` folder for language-specific error code references (e.g., `extensions/dotnet.md` for .NET).
+The `code-testing-fixer` agent will attempt to resolve compilation errors. Check `.testagent/plan.md` for the expected test structure. Check the `.claude/skills/code-testing-agent/extensions/` folder for language-specific error code references (e.g., `.claude/skills/code-testing-agent/extensions/dotnet.md` for .NET).
 
 ### Tests fail
 
