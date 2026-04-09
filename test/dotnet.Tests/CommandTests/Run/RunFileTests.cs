@@ -3284,7 +3284,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(testInstance.Path)
             .Should().HaveSubtree("""
-                Directory.Build.props
                 src/
                 src/A.cs
                 src/A/
