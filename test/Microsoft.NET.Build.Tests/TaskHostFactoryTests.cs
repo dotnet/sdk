@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public TaskHostFactoryTests(ITestOutputHelper log) : base(log) { }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/53787")]
         [InlineData("NET")]
         // dotnet.exe doesn't support launching .Net Framework nodes
 #if NETFRAMEWORK
