@@ -1833,6 +1833,26 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
         <target state="translated">O método de ação {0} precisa especificar explicitamente o tipo de solicitação HTTP</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="new">Add '#!' (shebang)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="new">File-based program entry point should start with '#!'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="new">File-based program entry point should start with '#!'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
         <target state="translated">Os inicializadores de módulo devem ser usados pelo código do aplicativo para garantir que os componentes de um aplicativo sejam inicializados antes que o código do aplicativo comece a ser executado. Se o código da biblioteca declara um método com o 'ModuleInitializerAttribute', ele pode interferir na inicialização do aplicativo e também levar a limitações nas habilidades de corte do aplicativo. Ao invés de usar métodos marcados com 'ModuleInitializerAttribute', a biblioteca deve expor os métodos que podem ser usados para inicializar quaisquer componentes dentro da biblioteca e permitir que o aplicativo invoque o método durante a inicialização do aplicativo.</target>
