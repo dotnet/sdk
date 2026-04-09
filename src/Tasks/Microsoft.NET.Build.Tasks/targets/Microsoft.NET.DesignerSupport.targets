@@ -59,6 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetsFilePath="$(ProjectAssetsFile)"
       DepsFilePath="$(_DesignerDepsFilePath)"
       IncludeMainProject="false"
+      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
       IsSelfContained="false"
       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"

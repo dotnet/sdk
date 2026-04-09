@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
     public class KnownRuntimePackTests : SdkTest
@@ -9,7 +11,9 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void BuildSucceedsWithRuntimePackWithDifferentLabel()
         {
             var testProject = new TestProject()
@@ -60,7 +64,9 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1133");
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RuntimePackWithLabelIsSelected()
         {
             var testProject = new TestProject()

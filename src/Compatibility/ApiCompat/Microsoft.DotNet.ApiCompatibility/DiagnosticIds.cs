@@ -29,8 +29,5 @@ namespace Microsoft.DotNet.ApiCompatibility
         public const string CannotReduceVisibility = "CP0019";
         public const string CannotExpandVisibility = "CP0020";
         public const string CannotChangeGenericConstraint = "CP0021";
-
-        // Assembly loading ids
-        public const string AssemblyReferenceNotFound = "CP1002";
     }
 }

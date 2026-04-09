@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+#nullable disable
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
@@ -66,7 +66,7 @@ namespace NamespaceMapper
             IEnumerable<ITypeMapper> typeMappers = namespaceMappers.Single().GetTypes();
             Assert.Equal(2, typeMappers.Count());
 
-            Assert.Equal(new string?[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { "A", "B" }, typeMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }

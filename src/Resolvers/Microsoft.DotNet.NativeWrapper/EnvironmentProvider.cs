@@ -3,9 +3,6 @@
 
 using System.Diagnostics;
 
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable enable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
 namespace Microsoft.DotNet.NativeWrapper
 {
     public class EnvironmentProvider
