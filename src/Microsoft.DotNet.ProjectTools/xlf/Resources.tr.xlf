@@ -26,11 +26,6 @@ Profil adlarının birbirinden farklı olmasını sağlayın.</target>
         <target state="translated">Geçici dizin yolu saptanamıyor. Windows'da TEMP ortam değişkenini veya Unix'te yerel uygulama verileri klasörünü yapılandırmayı göz önünde bulundurun.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ExperimentalFeatureDisabled">
-        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
-        <target state="translated">Bu deneysel bir özelliktir, etkinleştirmek için '{0}' MSBuild özelliğini 'true' değerine ayarlayın.</target>
-        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
-      </trans-unit>
       <trans-unit id="IncludedFileNotFound">
         <source>File included via #:include directive (or Compile item) not found: {0}</source>
         <target state="translated">#:include yönergesiyle (veya Compile öğesi) eklenen dosya bulunamadı: {0}</target>
