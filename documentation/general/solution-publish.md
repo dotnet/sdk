@@ -2,7 +2,7 @@
 
 ## Overview
 
-`dotnet publish` accepts a solution (`.sln`) file as input, but doing so is generally **not recommended**. This document explains why publishing a solution is problematic and what to do instead.
+`dotnet publish` accepts a solution (`.sln`) file as input, but doing so is generally **not recommended**.
 
 ## Why publishing a solution is problematic
 
@@ -10,8 +10,8 @@
 
 When you run `dotnet publish` with CLI arguments on a solution, those arguments are not correctly forwarded to the individual projects inside the solution. Common examples include:
 
-- **`-r` / `--runtime` (RuntimeIdentifier)** – specifying a runtime identifier on the command line targets the solution entry point but may not propagate to each project's build in the way you expect.
-- **`-f` / `--framework` (TargetFramework)** – similarly, a specific framework cannot be meaningfully applied across all projects in a solution because different projects may target different frameworks.
+- **`-r` / `--runtime` (RuntimeIdentifier)** – most library projects don't declare any RIDs, so when a RID flows down to them it changes their build behavior. Those projects will look for restore assets that were produced for that specific RID, but restore was most likely run without a RID, so the assets aren't there. Running `dotnet publish --no-restore` with a RID makes the situation worse: it disables the implicit restore that could otherwise recover from the missing assets.
+- **`-f` / `--framework` (TargetFramework)** – when a solution passes a target framework to its projects it bypasses the normal project-to-project target framework negotiation. As a result, library projects that are referenced by multiple app projects may be scheduled for build multiple times with the same TF, potentially running concurrently and writing to the same intermediate output directory at the same time.
 
 As a result, the published output may be built with the wrong runtime or framework settings, leading to subtle or hard-to-diagnose issues at runtime.
 
@@ -56,6 +56,8 @@ Use the following approach to achieve a reliable, repeatable publish:
 
 3. **Repeat for each combination** you need to ship (e.g. `win-x64`, `linux-x64`, `osx-arm64`).
 
+   Note that publishing each project separately for multiple RIDs will rebuild shared library projects once per RID. For advanced scenarios where you want to publish many projects for many RIDs in a single invocation you can author a [traversal project](https://github.com/microsoft/MSBuildSdks/blob/main/src/Traversal/README.md) that sets the appropriate properties per `ProjectReference`, though that approach requires more MSBuild expertise.
+
 This approach avoids the argument-forwarding and output-path problems described above and gives you a clear mapping from source project to published artifact.
 
 ## Summary
@@ -66,4 +68,4 @@ This approach avoids the argument-forwarding and output-path problems described 
 | Publish a specific project for a specific runtime | `dotnet publish src/MyApp/MyApp.csproj -r <rid> -f <tfm>` |
 | Publish with custom output directory | `dotnet publish src/MyApp/MyApp.csproj -o out/myapp` |
 
-Avoid `dotnet publish MySolution.sln -r <rid>` or `dotnet publish MySolution.sln -o <dir>`.
+Avoid `dotnet publish MySolution.sln -r <rid>`, `dotnet publish MySolution.sln -f <tf>`, and `dotnet publish MySolution.sln -o <dir>`.
