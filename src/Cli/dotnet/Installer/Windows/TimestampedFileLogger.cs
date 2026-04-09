@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Installer.Windows
     /// queue messages.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISetupLogger
+    internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchronizingLogger
     {
         /// <summary>
         /// Thread safe queue use to store incoming log request messages.
@@ -81,10 +81,6 @@ namespace Microsoft.DotNet.Installer.Windows
             LogMessage($"=== Logging started ===");
         }
 
-        /// <summary>
-        /// Starts a new thread to listen for log requests messages from external processes.
-        /// </summary>
-        /// <param name="pipeName">The name of the pipe.</param>
         public void AddNamedPipe(string pipeName)
         {
             Thread logRequestThread = new Thread(ProcessLogRequests) { IsBackground = true };

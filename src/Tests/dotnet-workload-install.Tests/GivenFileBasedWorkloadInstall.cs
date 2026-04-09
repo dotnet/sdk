@@ -12,6 +12,7 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
 using Microsoft.TemplateEngine.Edge.Constraints;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -24,6 +25,42 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample2.json");
+        }
+
+        [Fact]
+        public void InstallStateUpdatesWorkProperly()
+        {
+            (string dotnetRoot, FileBasedInstaller installer, _, _) = GetTestInstaller();
+            var stringFeatureBand = "6.0.300"; // This is hard-coded in the test installer, so if that changes, update this, too.
+            var sdkFeatureBand = new SdkFeatureBand(stringFeatureBand);
+            var path = Path.Combine(dotnetRoot, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), stringFeatureBand, "InstallState", "default.json");
+
+            installer.UpdateInstallMode(sdkFeatureBand, true);
+            var installState = InstallStateContents.FromString(File.ReadAllText(path));
+            installState.Manifests.Should().BeNull();
+            installState.UseWorkloadSets.Should().BeTrue();
+
+            installer.SaveInstallStateManifestVersions(sdkFeatureBand, new Dictionary<string, string>()
+            {
+                { "first", "second" },
+                { "third", "fourth" },
+            });
+
+            installState = InstallStateContents.FromString(File.ReadAllText(path));
+            installState.Manifests.Count.Should().Be(2);
+            installState.Manifests["first"].Should().Be("second");
+            installState.Manifests["third"].Should().Be("fourth");
+            installState.UseWorkloadSets.Should().BeTrue();
+
+            installer.UpdateInstallMode(sdkFeatureBand, false);
+            installState = InstallStateContents.FromString(File.ReadAllText(path));
+            installState.UseWorkloadSets.Should().BeFalse();
+            installState.Manifests.Count.Should().Be(2);
+
+            installer.RemoveManifestsFromInstallState(sdkFeatureBand);
+            installState = InstallStateContents.FromString(File.ReadAllText(path));
+            installState.Manifests.Should().BeNull();
+            installState.UseWorkloadSets.Should().BeFalse();
         }
 
         [Fact]
@@ -287,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestId = new ManifestId("test-manifest-1");
             var manifestVersion = new ManifestVersion("5.0.0");
 
-            var manifestUpdate = new ManifestVersionUpdate(manifestId, null, null, manifestVersion, featureBand.ToString());
+            var manifestUpdate = new ManifestVersionUpdate(manifestId, manifestVersion, featureBand.ToString());
 
             CliTransaction.RunNew(context => installer.InstallWorkloadManifest(manifestUpdate, context));
 

@@ -32,6 +32,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// Valid characters for this clientID are in the unicode range <see href="https://wintelguy.com/unicode_character_lookup.pl/?str=20-7E">20-7E</see>
     /// </remarks>
     private const string ClientID = "netsdkcontainers";
+    private const string BasicAuthScheme = "Basic";
+    private const string BearerAuthScheme = "Bearer";
 
     private sealed record AuthInfo(string Realm, string? Service, string? Scope);
 
@@ -65,22 +67,33 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         AuthenticationHeaderValue header = authenticateHeader.First();
-        if (header is { Scheme: "Bearer" or "Basic", Parameter: string bearerArgs })
+
+        if (header.Scheme is not null)
         {
             scheme = header.Scheme;
-            var keyValues = ParseBearerArgs(bearerArgs);
-
-            var result = scheme switch
+            var keyValues = ParseBearerArgs(header.Parameter);
+            if (keyValues is null)
             {
-                "Bearer" => TryParseBearerAuthInfo(keyValues, out bearerAuthInfo),
-                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo),
-                _ => false
-            };
-            return result;
+                return false;
+            }
+
+            if (header.Scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo);
+            }
+            else if (header.Scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBearerAuthInfo(keyValues, out bearerAuthInfo);
+            }
+            else
+            {
+                return false;
+            }
         }
         return false;
 
-        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo) {
+        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo)
+        {
             if (authValues.TryGetValue("realm", out string? realm))
             {
                 string? service = null;
@@ -90,19 +103,25 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 authInfo = new AuthInfo(realm, service, scope);
                 return true;
             }
-            else {
+            else
+            {
                 authInfo = null;
                 return false;
             }
         }
 
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo) {
+        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo)
+        {
             authInfo = null;
             return true;
         }
 
-        static Dictionary<string, string> ParseBearerArgs(string bearerHeaderArgs)
+        static Dictionary<string, string>? ParseBearerArgs(string? bearerHeaderArgs)
         {
+            if (bearerHeaderArgs is null)
+            {
+                return null;
+            }
             Dictionary<string, string> keyValues = new();
             foreach (Match match in BearerParameterSplitter().Matches(bearerHeaderArgs))
             {
@@ -121,8 +140,10 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private sealed record TokenResponse(string? token, string? access_token, int? expires_in, DateTimeOffset? issued_at)
     {
         public string ResolvedToken => token ?? access_token ?? throw new ArgumentException(Resource.GetString(nameof(Strings.InvalidTokenResponse)));
-        public DateTimeOffset ResolvedExpiration {
-            get {
+        public DateTimeOffset ResolvedExpiration
+        {
+            get
+            {
                 var issueTime = this.issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
                 var validityDuration = this.expires_in ?? 60; // per spec, if no expires_in use 60 seconds
                 var expirationTime = issueTime.AddSeconds(validityDuration);
@@ -138,13 +159,10 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
-        // Allow overrides for auth via environment variables
-        (string? credU, string? credP) = GetDockerCredentialsFromEnvironment(_registryMode);
-
-        // fetch creds for the host
+        
         DockerCredentials? privateRepoCreds;
-
-        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        // Allow overrides for auth via environment variables
+        if (GetDockerCredentialsFromEnvironment(_registryMode) is (string credU, string credP))
         {
             privateRepoCreds = new DockerCredentials(credU, credP);
         }
@@ -153,12 +171,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             privateRepoCreds = await GetLoginCredentials(registry).ConfigureAwait(false);
         }
 
-        if (scheme is "Basic")
+        if (scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
-            var authValue = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
-            return new (authValue, DateTimeOffset.MaxValue);
+            var authValue = new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+            return new(authValue, DateTimeOffset.MaxValue);
         }
-        else if (scheme is "Bearer")
+        else if (scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
             Debug.Assert(bearerAuthInfo is not null);
 
@@ -177,39 +195,56 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
     }
 
+    internal static (string credU, string credP)? TryGetCredentialsFromEnvVars(string unameVar, string passwordVar)
+    {
+        var credU = Environment.GetEnvironmentVariable(unameVar);
+        var credP = Environment.GetEnvironmentVariable(passwordVar);
+        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        {
+            return (credU, credP);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// Gets docker credentials from the environment variables based on registry mode.
     /// </summary>
-    internal static (string? credU, string? credP) GetDockerCredentialsFromEnvironment(RegistryMode mode)
+    internal static (string credU, string credP)? GetDockerCredentialsFromEnvironment(RegistryMode mode)
     {
         if (mode == RegistryMode.Push)
         {
-            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectUser);
-            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectPass);
-            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PushHostObjectUser, ContainerHelpers.PushHostObjectPass) is (string, string) pushCreds)
             {
-                // Fallback to the old environment variables
-                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
-                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
+                return pushCreds;
             }
-            return (credU, credP);
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
         }
         else if (mode == RegistryMode.Pull)
         {
-            return (Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser),
-                    Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass));
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass);
         }
         else if (mode == RegistryMode.PullFromOutput)
         {
-            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser);
-            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass);
-            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass) is (string, string) pullCreds)
             {
-                // Fallback to the old environment variables
-                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
-                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
+                return pullCreds;
             }
-            return (credU, credP);
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
         }
         else
         {
@@ -265,7 +300,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
         if (tokenResponse is { } tokenEnvelope)
         {
-            var authValue = new AuthenticationHeaderValue("Bearer", tokenResponse.ResolvedToken);
+            var authValue = new AuthenticationHeaderValue(BearerAuthScheme, tokenResponse.ResolvedToken);
             return (authValue, tokenResponse.ResolvedExpiration);
         }
         else
@@ -281,39 +316,39 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, CancellationToken cancellationToken)
     {
-            // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
-            // even though the overall Scheme we're authenticating for is Bearer
-            var header = privateRepoCreds.Username == "<token>"
-                            ? new AuthenticationHeaderValue("Bearer", privateRepoCreds.Password)
-                            : new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
-            var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
+        // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
+        // even though the overall Scheme we're authenticating for is Bearer
+        var header = privateRepoCreds.Username == "<token>"
+                        ? new AuthenticationHeaderValue(BearerAuthScheme, privateRepoCreds.Password)
+                        : new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+        var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
 
-            _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
-            var queryDict = System.Web.HttpUtility.ParseQueryString("");
-            if (bearerAuthInfo.Service is string svc)
-            {
-                queryDict["service"] = svc;
-            }
-            if (bearerAuthInfo.Scope is string s)
-            {
-                queryDict["scope"] = s;
-            }
-            builder.Query = queryDict.ToString();
-            var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
-            message.Headers.Authorization = header;
+        _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
+        var queryDict = System.Web.HttpUtility.ParseQueryString("");
+        if (bearerAuthInfo.Service is string svc)
+        {
+            queryDict["service"] = svc;
+        }
+        if (bearerAuthInfo.Scope is string s)
+        {
+            queryDict["scope"] = s;
+        }
+        builder.Query = queryDict.ToString();
+        var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
+        message.Headers.Authorization = header;
 
-            using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
-            if (!tokenResponse.IsSuccessStatusCode)
-            {
-                throw new UnableToAccessRepositoryException(_registryName);
-            }
+        using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        if (!tokenResponse.IsSuccessStatusCode)
+        {
+            throw new UnableToAccessRepositoryException(_registryName);
+        }
 
-            TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
-            if (token is null)
-            {
-                throw new ArgumentException(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
-            }
-            return (new AuthenticationHeaderValue("Bearer", token.ResolvedToken), token.ResolvedExpiration);
+        TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
+        if (token is null)
+        {
+            throw new ArgumentException(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
+        }
+        return (new AuthenticationHeaderValue(BearerAuthScheme, token.ResolvedToken), token.ResolvedExpiration);
     }
 
     private static async Task<DockerCredentials> GetLoginCredentials(string registry)
@@ -354,6 +389,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         int retryCount = 0;
+        List<Exception>? requestExceptions = null;
 
         while (retryCount < MaxRequestRetries)
         {
@@ -385,8 +421,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
+                requestExceptions ??= new();
+                requestExceptions.Add(e);
+
                 retryCount += 1;
-                _logger.LogInformation("Encountered a SocketException with message \"{message}\". Pausing before retry.", se.Message);
+                _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
                 await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
@@ -395,7 +434,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
         }
 
-        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)));
+        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)), new AggregateException(requestExceptions!));
     }
 
     [GeneratedRegex("(?<key>\\w+)=\"(?<value>[^\"]*)\"(?:,|$)")]

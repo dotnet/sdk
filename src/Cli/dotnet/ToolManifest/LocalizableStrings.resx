@@ -169,4 +169,7 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   <data name="MultipleSamePackageId" xml:space="preserve">
     <value>More than one entry exists for package(s): {0}.</value>
   </data>
+  <data name="ToolMissingRollForward" xml:space="preserve">
+    <value>Missing 'rollForward' entry.</value>
+  </data>
 </root>

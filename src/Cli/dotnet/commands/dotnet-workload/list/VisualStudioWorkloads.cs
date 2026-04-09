@@ -3,6 +3,9 @@
 
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
@@ -119,6 +122,42 @@ namespace Microsoft.DotNet.Workloads.Workload
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Writes install records for VS Workloads so we later install the packs via the CLI for workloads managed by VS.
+        /// This is to fix a bug where updating the manifests in the CLI will cause VS to also be told to use these newer workloads via the workload resolver.
+        /// ...  but these workloads don't have their corresponding packs installed as VS doesn't update its workloads as the CLI does.
+        /// </summary>
+        /// <returns>Updated list of workloads including any that may have had new install records written</returns>
+        internal static IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
+            IEnumerable<WorkloadId> workloadsWithExistingInstallRecords, IReporter reporter)
+        {
+            // Do this check to avoid adding an unused & unnecessary method to FileBasedInstallers
+            if (OperatingSystem.IsWindows() && workloadInstaller is NetSdkMsiInstallerClient)
+            {
+                InstalledWorkloadsCollection vsWorkloads = new();
+                GetInstalledWorkloads(workloadResolver, vsWorkloads);
+
+                // Remove VS workloads with an SDK installation record, as we've already created the records for them, and don't need to again.
+                var vsWorkloadsAsWorkloadIds = vsWorkloads.AsEnumerable().Select(w => new WorkloadId(w.Key));
+                var workloadsToWriteRecordsFor = vsWorkloadsAsWorkloadIds.Except(workloadsWithExistingInstallRecords);
+
+                if (workloadsToWriteRecordsFor.Any())
+                {
+                    reporter.WriteLine(
+                        string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
+                        string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
+                    );
+
+                    ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
+
+                    return workloadsWithExistingInstallRecords.Concat(workloadsToWriteRecordsFor).ToList();
+                }
+            }
+
+            return workloadsWithExistingInstallRecords;
+
         }
 
         /// <summary>

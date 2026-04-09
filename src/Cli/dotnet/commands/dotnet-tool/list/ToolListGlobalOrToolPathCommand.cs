@@ -54,6 +54,19 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 toolPath = new DirectoryPath(toolPathOption);
             }
 
+            var packageEnumerable = GetPackages(toolPath, packageId);
+            PrintTable(packageEnumerable);
+
+            if (packageId.HasValue && !packageEnumerable.Any())
+            {
+                // return 1 if target package was not found
+                return 1;
+            }
+            return 0;
+        }
+
+        private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+        {
             var table = new PrintableTable<IToolPackage>();
 
             table.AddColumn(
@@ -66,17 +79,10 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 LocalizableStrings.CommandsColumn,
                 p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
 
-            var packageEnumerable = GetPackages(toolPath, packageId);
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
-            if (packageId.HasValue && !packageEnumerable.Any())
-            {
-                // return 1 if target package was not found
-                return 1;
-            }
-            return 0;
         }
 
-        private IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
+        public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
         {
             return _createToolPackageStore(toolPath).EnumeratePackages()
                 .Where((p) => PackageHasCommands(p) && PackageIdMatches(p, packageId))

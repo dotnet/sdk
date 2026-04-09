@@ -1003,6 +1003,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: .NET의 미리 보기 버전을 사용하고 있습니다. 참조: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
+      <trans-unit id="UsingUnsupportedUseUwpFeature">
+        <source>NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</source>
+        <target state="new">NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="translated">NETSDK1131: {0}을(를) 대상으로 지정하는 경우 WinMDExp로 관리형 Windows 메타데이터 구성 요소를 생성하는 것은 지원되지 않습니다.</target>

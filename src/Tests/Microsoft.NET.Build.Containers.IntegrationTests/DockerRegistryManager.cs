@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -13,11 +14,11 @@ public class DockerRegistryManager
     public const string BaseImageSource = "mcr.microsoft.com";
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
-    public const string Net8PreviewImageTag = "8.0-preview";
-    public const string Net8PreviewWindowsSpecificImageTag = $"{Net8PreviewImageTag}-nanoserver-ltsc2022";
+    public const string Net8ImageTag = "8.0";
+    public const string Net8PreviewWindowsSpecificImageTag = $"{Net8ImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
-    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net8PreviewImageTag}";
-    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8PreviewImageTag}";
+    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net8ImageTag}";
+    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8ImageTag}";
     private static string? s_registryContainerId;
 
     private static string SDK_AzureContainerRegistryImage => "dotnetdhmirror-f8bzbjakh8cga6ab.azurecr.io/registry:2";
@@ -26,8 +27,20 @@ public class DockerRegistryManager
     // TODO: some logic to pivot between this and Docker Hub
     private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
 
+    internal class SameArchManifestPicker : IManifestPicker
+    {
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
 
-    public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
+        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+    }
+
+    public static async Task StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
@@ -41,6 +54,9 @@ public class DockerRegistryManager
         const int spawnRegistryMaxRetry = 5;
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
+
+        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
+        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {
@@ -58,25 +74,22 @@ public class DockerRegistryManager
                 using var reader = new StringReader(processResult.StdOut!);
                 s_registryContainerId = reader.ReadLine();
 
-                EnsureRegistryLoaded(LocalRegistry, s_registryContainerId, logger, testOutput);
+                EnsureRegistryLoaded(new Uri($"http://{LocalRegistry}"), s_registryContainerId, logger, testOutput);
 
-                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8PreviewImageTag })
+                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag })
                 {
                     logger.LogInformation("Pulling image '{repo}/{image}:{tag}'.", BaseImageSource, RuntimeBaseImage, tag);
-                    ContainerCli.PullCommand(testOutput, $"{BaseImageSource}/{RuntimeBaseImage}:{tag}")
-                        .Execute()
-                        .Should().Pass();
+                    string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                    var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
-                    logger.LogInformation("Tagging image '{sourceRepo}/{sourceImage}:{sourceTag}' as '{targetRepo}/{targetImage}:{targetTag}'.", BaseImageSource, RuntimeBaseImage, tag, LocalRegistry, RuntimeBaseImage, tag);
-                    ContainerCli.TagCommand(testOutput, $"{BaseImageSource}/{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
-                        .Execute()
-                        .Should().Pass();
-
-                    logger.LogInformation("Pushing image '{repo}/{image}:{tag}'.", LocalRegistry, RuntimeBaseImage, tag);
-                    ContainerCli.PushCommand(testOutput, $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
-                        .Execute()
-                        .Should().Pass();
+                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
+                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
+                    var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
+                    logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
+                    await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
+                    logger.LogInformation($"Pushed image  for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                 }
+
                 return;
             }
             catch (Exception ex)
@@ -116,13 +129,13 @@ public class DockerRegistryManager
         }
     }
 
-    private static void EnsureRegistryLoaded(string registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
+    private static void EnsureRegistryLoaded(Uri registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
     {
         const int registryLoadMaxRetry = 10;
         const int registryLoadTimeout = 1000; //ms
 
         using HttpClient client = new();
-        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(ContainerHelpers.TryExpandRegistryToUri(registryBaseUri), "/v2/"));
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(registryBaseUri, "/v2/"));
 
         logger.LogInformation("Checking if the registry '{registry}' is available.", registryBaseUri);
 
