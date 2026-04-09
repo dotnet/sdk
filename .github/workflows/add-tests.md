@@ -7,6 +7,11 @@ on:
     events: [pull_request_comment]
   roles: [admin, maintainer, write]
 
+engine:
+  id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
+
 permissions:
   contents: read
   pull-requests: read
