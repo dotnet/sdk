@@ -204,12 +204,9 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
             }
 
-            //  We set these environment variables for in-process tests, but we don't want them to flow to out of process tests.
-            //  MSBUILD_EXE_PATH is set for in-process MSBuild; clearing it lets the subprocess dotnet find MSBuild on its own.
-            //  MSBuildSDKsPath is set by SdkTestContext.Initialize for in-process MSBuild SDK resolution; if it leaks to
-            //  subprocess dotnet invocations it can point to a non-existent path and cause MSB4236 "SDK not found" errors.
+            //  We set this environment variable for in-process tests, but we don't want it to flow to out of process tests
+            //  (especially if we're trying to run on full Framework MSBuild)
             environment[Constants.MSBUILD_EXE_PATH] = "";
-            environment["MSBuildSDKsPath"] = null;
 
         }
 
