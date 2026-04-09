@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -32,20 +31,8 @@ internal static class CliSchema
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     });
 
-    public record ArgumentDetails(
-        string? description,
-        int order,
-        bool hidden,
-        string? helpName,
-        string valueType,
-        bool hasDefaultValue,
-        object? defaultValue,
-        ArityDetails arity);
-
-    public record ArityDetails(
-        int minimum,
-        int? maximum);
-
+    public record ArgumentDetails(string? description, int order, bool hidden, string? helpName, string valueType, bool hasDefaultValue, object? defaultValue, ArityDetails arity);
+    public record ArityDetails(int minimum, int? maximum);
     public record OptionDetails(
         string? description,
         bool hidden,
@@ -56,8 +43,8 @@ internal static class CliSchema
         object? defaultValue,
         ArityDetails arity,
         bool required,
-        bool recursive);
-
+        bool recursive
+    );
     public record CommandDetails(
         string? description,
         bool hidden,
@@ -65,7 +52,6 @@ internal static class CliSchema
         Dictionary<string, ArgumentDetails>? arguments,
         Dictionary<string, OptionDetails>? options,
         Dictionary<string, CommandDetails>? subcommands);
-
     public record RootCommandDetails(
         string name,
         string version,
@@ -77,16 +63,17 @@ internal static class CliSchema
         Dictionary<string, CommandDetails>? subcommands
     ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
 
-    public static void PrintCliSchema(ParseResult parseResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
+
+    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetry? telemetryClient)
     {
-        var command = parseResult.CommandResult.Command;
+        var command = commandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
         var result = JsonSerializer.Serialize(transportStructure, s_jsonContext.RootCommandDetails);
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
-        var commandString = parseResult.GetCommandName();
-        var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
-        telemetryClient?.TrackEvent("schema", telemetryProperties);
+        var commandString = CommandHierarchyAsString(commandResult);
+        var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
+        telemetryClient?.TrackEvent("schema", telemetryProperties, null);
     }
 
     public static object GetJsonSchema()
@@ -217,6 +204,21 @@ internal static class CliSchema
                 argument.HasDefaultValue ? HumanizeValue(argument.GetDefaultValue()) : null,
                 CreateArityDetails(argument.Arity)
             );
+
+    // Produces a string that represents the command call.
+    // For example, calling the workload install command produces `dotnet workload install`.
+    private static string CommandHierarchyAsString(CommandResult commandResult)
+    {
+        var commands = new List<string>();
+        var currentResult = commandResult;
+        while (currentResult is not null)
+        {
+            commands.Add(currentResult.Command.Name);
+            currentResult = currentResult.Parent as CommandResult;
+        }
+
+        return string.Join(" ", commands.AsEnumerable().Reverse());
+    }
 }
 
 [JsonSerializable(typeof(CliSchema.RootCommandDetails))]

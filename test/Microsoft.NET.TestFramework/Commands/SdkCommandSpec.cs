@@ -9,11 +9,16 @@ namespace Microsoft.NET.TestFramework.Commands
     public class SdkCommandSpec
     {
         public string? FileName { get; set; }
-        public List<string> Arguments { get; set; } = [];
-        public Dictionary<string, string?> Environment { get; set; } = [];
-        public List<string> EnvironmentToRemove { get; } = [];
+        public List<string> Arguments { get; set; } = new List<string>();
+
+        public Dictionary<string, string?> Environment { get; set; } = new();
+
+        public List<string> EnvironmentToRemove { get; } = new List<string>();
+
         public string? WorkingDirectory { get; set; }
+
         public bool RedirectStandardInput { get; set; }
+
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         private string EscapeArgs()
