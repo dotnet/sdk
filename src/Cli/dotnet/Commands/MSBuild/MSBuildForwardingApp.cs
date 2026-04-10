@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -12,6 +11,8 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public class MSBuildForwardingApp : CommandBase
 {
+    internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
+
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
     /// <summary>
@@ -19,7 +20,7 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
-        if (TelemetryClient.CurrentSessionId != null)
+        if (Telemetry.Telemetry.CurrentSessionId != null)
         {
             try
             {
@@ -54,6 +55,12 @@ public class MSBuildForwardingApp : CommandBase
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
             modifiedMSBuildArgs,
             msbuildPath: msbuildPath);
+
+        // Add the performance log location to the environment of the target process.
+        if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))
+        {
+            EnvironmentVariable(PerformanceLogManager.PerfLogDirEnvVar, PerformanceLogManager.Instance.CurrentLogDirectory);
+        }
     }
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
@@ -72,7 +79,7 @@ public class MSBuildForwardingApp : CommandBase
 
     private void InitializeRequiredEnvironmentVariables()
     {
-        EnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID, TelemetryClient.CurrentSessionId);
+        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.Telemetry.CurrentSessionId);
     }
 
     /// <summary>
@@ -92,13 +99,23 @@ public class MSBuildForwardingApp : CommandBase
         if (_forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {
             ProcessStartInfo startInfo = GetProcessStartInfo();
+
+            PerformanceLogEventSource.Log.LogMSBuildStart(startInfo.FileName, startInfo.Arguments);
             exitCode = startInfo.Execute();
+            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
         }
         else
         {
             InitializeRequiredEnvironmentVariables();
             string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
+            if (PerformanceLogEventSource.Log.IsEnabled())
+            {
+                PerformanceLogEventSource.Log.LogMSBuildStart(
+                    _forwardingAppWithoutLogging.MSBuildPath,
+                    ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments));
+            }
             exitCode = _forwardingAppWithoutLogging.ExecuteInProc(arguments);
+            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
         }
 
         return exitCode;

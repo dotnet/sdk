@@ -9,20 +9,20 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public abstract class TestCommand
     {
-        private readonly Dictionary<string, string> _environment = [];
+        private Dictionary<string, string> _environment = new();
         private bool _doNotEscapeArguments;
-        public ITestOutputHelper Log { get; }
-        public string? WorkingDirectory { get; set; }
-        public List<string> Arguments { get; set; } = [];
-        public List<string> EnvironmentToRemove { get; } = [];
-        public bool RedirectStandardInput { get; set; }
-        public bool DisableOutputAndErrorRedirection { get; set; }
 
-        /// <summary>
-        /// When true, the child process is launched in a new process group so that
-        /// console signals (e.g. Ctrl+C) sent to it do not propagate to the test host.
-        /// </summary>
-        public bool CreateNewProcessGroup { get; set; }
+        public ITestOutputHelper Log { get; }
+
+        public string? WorkingDirectory { get; set; }
+
+        public List<string> Arguments { get; set; } = new List<string>();
+
+        public List<string> EnvironmentToRemove { get; } = new List<string>();
+
+        public bool RedirectStandardInput { get; set; }
+
+        public bool DisableOutputAndErrorRedirection { get; set; }
 
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
@@ -116,7 +116,6 @@ namespace Microsoft.NET.TestFramework.Commands
 
             commandSpec.RedirectStandardInput = RedirectStandardInput;
             commandSpec.DisableOutputAndErrorRedirection = DisableOutputAndErrorRedirection;
-            commandSpec.CreateNewProcessGroup = CreateNewProcessGroup;
 
             return commandSpec;
         }
@@ -204,7 +203,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public static void LogCommandResult(ITestOutputHelper log, CommandResult result)
         {
             log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            log.WriteLine(result.StdOut ?? string.Empty);
+            log.WriteLine(result.StdOut);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {

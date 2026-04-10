@@ -144,9 +144,9 @@ public class RunTelemetryTests : SdkTest
     public void TrackRunEvent_FileBasedApp_SendsCorrectTelemetry()
     {
         // Arrange
-        var events = new List<(string? eventName, IDictionary<string, string?>? properties)>();
+        var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
 
-        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties));
+        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
 
         TelemetryEventEntry.EntryPosted += handler;
 
@@ -171,6 +171,7 @@ public class RunTelemetryTests : SdkTest
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
             eventData.properties.Should().NotBeNull();
+            eventData.measurements.Should().NotBeNull();
 
             var props = eventData.properties!;
             props["app_type"].Should().Be("file_based");
@@ -179,6 +180,12 @@ public class RunTelemetryTests : SdkTest
             props["used_roslyn_compiler"].Should().Be("false");
             props["launch_profile_requested"].Should().Be("explicit");
             props["launch_profile_is_default"].Should().Be("true");
+
+            var measurements = eventData.measurements!;
+            measurements["sdk_count"].Should().Be(2);
+            measurements["package_reference_count"].Should().Be(3);
+            measurements["project_reference_count"].Should().Be(1);
+            measurements["additional_properties_count"].Should().Be(2);
         }
         finally
         {
@@ -191,9 +198,9 @@ public class RunTelemetryTests : SdkTest
     public void TrackRunEvent_ProjectBasedApp_SendsCorrectTelemetry()
     {
         // Arrange
-        var events = new List<(string? eventName, IDictionary<string, string?>? properties)>();
+        var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
 
-        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties));
+        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
 
         TelemetryEventEntry.EntryPosted += handler;
 
@@ -215,6 +222,7 @@ public class RunTelemetryTests : SdkTest
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
             eventData.properties.Should().NotBeNull();
+            eventData.measurements.Should().NotBeNull();
 
             var props = eventData.properties!;
             props["app_type"].Should().Be("project_based");
@@ -222,6 +230,12 @@ public class RunTelemetryTests : SdkTest
             props["launch_profile_requested"].Should().Be("none");
             props.Should().NotContainKey("used_msbuild");
             props.Should().NotContainKey("used_roslyn_compiler");
+
+            var measurements = eventData.measurements!;
+            measurements["sdk_count"].Should().Be(1);
+            measurements["package_reference_count"].Should().Be(5);
+            measurements["project_reference_count"].Should().Be(2);
+            measurements.Should().NotContainKey("additional_properties_count");
         }
         finally
         {
@@ -234,9 +248,9 @@ public class RunTelemetryTests : SdkTest
     public void TrackRunEvent_WithDefaultLaunchProfile_MarksTelemetryCorrectly()
     {
         // Arrange
-        var events = new List<(string? eventName, IDictionary<string, string?>? properties)>();
+        var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
 
-        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties));
+        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
 
         TelemetryEventEntry.EntryPosted += handler;
 

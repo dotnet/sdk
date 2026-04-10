@@ -1,16 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly ITelemetryClient? _telemetry;
+    private readonly IFirstTimeUseNoticeSentinel _sentinel =
+        new FirstTimeUseNoticeSentinel();
+    private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -62,11 +66,19 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+            string? sessionId =
+                Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
             {
-                _telemetry = new TelemetryClient(sessionId);
+                // senderCount: 0 to disable sender.
+                // When senders in different process running at the same
+                // time they will read from the same global queue and cause
+                // sending duplicated events. Disable sender to reduce it.
+                _telemetry = new Telemetry.Telemetry(
+                    _sentinel,
+                    sessionId,
+                    senderCount: 0);
             }
         }
         catch (Exception)
@@ -78,7 +90,7 @@ public sealed class MSBuildLogger : INodeLogger
     /// <summary>
     /// Constructor for testing purposes.
     /// </summary>
-    internal MSBuildLogger(ITelemetryClient telemetry)
+    internal MSBuildLogger(ITelemetry telemetry)
     {
         _telemetry = telemetry;
     }
@@ -105,6 +117,8 @@ public sealed class MSBuildLogger : INodeLogger
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
+
+                eventSource.BuildFinished += OnBuildFinished;
             }
 
             eventSource.BuildFinished += OnBuildFinished;
@@ -120,14 +134,14 @@ public sealed class MSBuildLogger : INodeLogger
         SendAggregatedEventsOnBuildFinished(_telemetry);
     }
 
-    internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
+    internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
     {
         if (telemetry is null) return;
         if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
         {
             Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
 
-            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: []);
+            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
         }
 
@@ -135,7 +149,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
 
-            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: []);
+            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
         }
     }
@@ -176,7 +190,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    internal static void FormatAndSend(ITelemetryClient? telemetry, TelemetryEventArgs args)
+    internal static void FormatAndSend(ITelemetry? telemetry, TelemetryEventArgs args)
     {
         switch (args.EventName)
         {
@@ -185,13 +199,14 @@ public sealed class MSBuildLogger : INodeLogger
                 break;
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
-                    toBeHashed: ["ProjectPath", "BuildTarget"]
+                    toBeHashed: ["ProjectPath", "BuildTarget"],
+                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]
                 );
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: []
-                );
+                    toBeHashed: [],
+                    toBeMeasured: []);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
@@ -199,11 +214,14 @@ public sealed class MSBuildLogger : INodeLogger
                 );
                 break;
             case BuildcheckRunEventName:
-                TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties);
+                TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
+                );
                 break;
             case BuildcheckRuleStatsEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
-                    toBeHashed: ["RuleId", "CheckFriendlyName"]
+                    toBeHashed: ["RuleId", "CheckFriendlyName"],
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
                 );
                 break;
             // Pass through events that don't need special handling
@@ -222,7 +240,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetryClient? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null)
+    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null, string[]? toBeMeasured = null)
     {
         if (telemetry == null || !telemetry.Enabled)
         {
@@ -230,6 +248,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
 
         Dictionary<string, string?>? properties = null;
+        Dictionary<string, double>? measurements = null;
 
         if (toBeHashed is not null)
         {
@@ -244,7 +263,26 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        telemetry?.TrackEvent(eventName, properties ?? eventProperties);
+        if (toBeMeasured is not null)
+        {
+            foreach (var propertyToBeMeasured in toBeMeasured)
+            {
+                if (eventProperties.TryGetValue(propertyToBeMeasured, out var value))
+                {
+                    // Lets lazy allocate in case there is tons of telemetry
+                    properties ??= new(eventProperties);
+                    properties.Remove(propertyToBeMeasured);
+                    if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
+                    {
+                        // Lets lazy allocate in case there is tons of telemetry
+                        measurements ??= [];
+                        measurements[propertyToBeMeasured] = realValue;
+                    }
+                }
+            }
+        }
+
+        telemetry.TrackEvent(eventName, properties ?? eventProperties, measurements);
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
@@ -261,6 +299,14 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Shutdown()
     {
+        try
+        {
+            _sentinel?.Dispose();
+        }
+        catch (Exception)
+        {
+            // Exceptions during telemetry shouldn't cause anything else to fail
+        }
     }
 
     public LoggerVerbosity Verbosity { get; set; }
