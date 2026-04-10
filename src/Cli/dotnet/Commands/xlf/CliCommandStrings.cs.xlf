@@ -378,12 +378,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Vytvoří a spravuje certifikáty pro vývoj.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">Odebrány direktivy {0} ({1}) pro {2} z umístění: {3}</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">Cílový adresář již existuje: {0}.</target>
