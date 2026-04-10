@@ -3641,14 +3641,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
             #!/usr/bin/env dotnet
@@ -3698,71 +3690,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello, String from Util");
     }
 
-    /// <summary>
-    /// When <see cref="CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping"/> is not enabled,
-    /// <c>FileBasedProgramsItemMapping</c> property is ignored and the default mapping is used.
-    /// </summary>
-    [Theory, PairwiseData]
-    public void IncludeDirective_CustomMapping_FeatureFlag(
-        [CombinatorialValues(null, "", "false", "off")] string? disabledFlagValue,
-        [CombinatorialValues("true", "on")] string enabledFlagValue)
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        if (disabledFlagValue is not null)
-        {
-            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-                <Project>
-                  <PropertyGroup>
-                    <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>{disabledFlagValue}</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>
-                  </PropertyGroup>
-                </Project>
-                """);
-        }
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #!/usr/bin/env dotnet
-            #:property FileBasedProgramsItemMapping=.cs=Content
-            #:include *.cs
-            {s_programDependingOnUtil}
-            """);
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello, String from Util");
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>{enabledFlagValue}</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>
-              </PropertyGroup>
-            </Project>
-            """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            // Program.cs(8,31): error CS0103: The name 'Util' does not exist in the current context
-            .And.HaveStdOutContaining("Program.cs(8,31): error CS0103");
-    }
-
     [Fact]
     public void IncludeDirective_CustomMapping_ParseErrors()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """

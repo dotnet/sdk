@@ -221,12 +221,10 @@ public sealed class VirtualProjectBuilder
 
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
-        return MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping))
-            ? CSharpDirective.IncludeOrExclude.ParseMapping(
-                project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                EntryPointSourceFile,
-                reportError)
-            : CSharpDirective.IncludeOrExclude.DefaultMapping;
+        return CSharpDirective.IncludeOrExclude.ParseMapping(
+            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+            EntryPointSourceFile,
+            reportError);
     }
 
     public static ProjectInstance CreateProjectInstance(

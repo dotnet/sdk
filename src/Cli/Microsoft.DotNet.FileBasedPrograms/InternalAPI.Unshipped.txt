@@ -1,4 +1,3 @@
-const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping = "ExperimentalFileBasedProgramEnableItemMapping" -> string!
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.CSharpDirective(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
