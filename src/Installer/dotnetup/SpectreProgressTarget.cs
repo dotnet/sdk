@@ -61,7 +61,7 @@ public class SpectreProgressTarget : IProgressTarget
         }
     }
 
-    private sealed class ProgressTaskImpl : IProgressTask
+    private sealed class ProgressTaskImpl : IProgressTask, IDisposable
     {
         private readonly Spectre.Console.ProgressTask _task;
         private readonly string _baseDescription;
@@ -137,6 +137,8 @@ public class SpectreProgressTarget : IProgressTarget
             _shimmerTimer?.Dispose();
             _task.Description = _baseDescription;
         }
+
+        public void Dispose() => StopShimmer();
 
         public double Value
         {

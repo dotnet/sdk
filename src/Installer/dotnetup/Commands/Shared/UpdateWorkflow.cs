@@ -34,18 +34,7 @@ internal class UpdateWorkflow
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-        var manifest = new DotnetupSharedManifest(manifestPath);
-        var manifestData = manifest.ReadManifest();
-
-        // Determine which dotnet root(s) to update
-        var rootsToUpdate = manifestData.DotnetRoots.AsEnumerable();
-        if (!string.IsNullOrEmpty(installPath))
-        {
-            rootsToUpdate = rootsToUpdate.Where(r =>
-                DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installPath)));
-        }
-
-        var rootsList = rootsToUpdate.ToList();
+        var rootsList = GetRootsToUpdate(manifestPath, installPath);
         if (rootsList.Count == 0)
         {
             AnsiConsole.MarkupLine(DotnetupTheme.Warning("No tracked dotnet installations found to update."));
@@ -92,6 +81,25 @@ internal class UpdateWorkflow
         }
 
         return failures.Count > 0 ? 1 : 0;
+    }
+
+    /// <summary>
+    /// Reads the manifest and returns the list of dotnet roots to update,
+    /// optionally filtered by <paramref name="installPath"/>.
+    /// </summary>
+    private static List<DotnetRootEntry> GetRootsToUpdate(string? manifestPath, string? installPath)
+    {
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        var manifestData = manifest.ReadManifest();
+
+        var rootsToUpdate = manifestData.DotnetRoots.AsEnumerable();
+        if (!string.IsNullOrEmpty(installPath))
+        {
+            rootsToUpdate = rootsToUpdate.Where(r =>
+                DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installPath)));
+        }
+
+        return [.. rootsToUpdate];
     }
 
     /// <summary>
