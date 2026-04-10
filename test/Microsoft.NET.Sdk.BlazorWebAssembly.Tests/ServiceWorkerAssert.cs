@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
@@ -24,9 +25,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Check the service worker contains the expected content (which comes from the PublishedContent file)
             new FileInfo(serviceWorkerResolvedPath).Should().Contain(serviceWorkerContent);
 
-            // Check the assets manifest version was added to the published service worker
+            var assetsManifestContents = File.ReadAllText(assetsManifestResolvedPath);
+            assetsManifestContents.Should().Contain("export const assetsManifest = ");
+            assetsManifestContents.Should().Contain("export const router = ");
+
             var assetsManifest = ReadServiceWorkerAssetsManifest(assetsManifestResolvedPath);
-            new FileInfo(serviceWorkerResolvedPath).Should().Contain($"/* Manifest version: {assetsManifest.version} */");
+            File.ReadAllText(serviceWorkerResolvedPath).Should().NotContain("/* Manifest version:");
 
             // Check the assets manifest contains correct entries for all static content we're publishing
             var resolvedPublishDirectory = Path.Combine(testAsset.TestRoot, outputDirectory);
@@ -72,13 +76,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        private static AssetsManifestFile ReadServiceWorkerAssetsManifest(string assetsManifestResolvedPath)
+        internal static AssetsManifestFile ReadServiceWorkerAssetsManifest(string assetsManifestResolvedPath)
         {
             var jsContents = File.ReadAllText(assetsManifestResolvedPath);
-            var jsonStart = jsContents.IndexOf('{');
-            var jsonLength = jsContents.LastIndexOf('}') - jsonStart + 1;
-            var json = jsContents.Substring(jsonStart, jsonLength);
-            return JsonSerializer.Deserialize<AssetsManifestFile>(json);
+            var match = Regex.Match(jsContents, @"export const assetsManifest = (\{.*?\});", RegexOptions.Singleline);
+            match.Success.Should().BeTrue($"Expected '{assetsManifestResolvedPath}' to contain an exported assets manifest.");
+            return JsonSerializer.Deserialize<AssetsManifestFile>(match.Groups[1].Value);
         }
     }
 }
