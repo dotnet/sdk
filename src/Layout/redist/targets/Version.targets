@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
-    <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>
-  </PropertyGroup>
-</Project>

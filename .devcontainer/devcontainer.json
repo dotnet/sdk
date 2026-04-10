@@ -11,6 +11,11 @@
       ]
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+        "version": "latest"
+    }
+  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/post-creation.sh",
   // Add the locally installed dotnet to the path to ensure that it is activated
@@ -22,5 +27,10 @@
     "DOTNET_ROOT": "${containerWorkspaceFolder}/.dotnet",
     "DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR": "${containerWorkspaceFolder}/.dotnet",
     "NUGET_PACKAGES": "/home/vscode/.nuget/packages"
+  },
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 16,
+    "memory": "32gb"
   }
 }

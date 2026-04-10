@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.ObjectModel;
 
 // After the server pipe is connected, it forks off a thread to handle the connection, and creates
