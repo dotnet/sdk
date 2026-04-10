@@ -87,6 +87,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public List<string> PropertiesToRecord { get; } = new List<string>();
 
+        /// <summary>
+        /// The target before which to record properties specified in <see cref="PropertiesToRecord"/>.
+        /// Defaults to "AfterBuild".
+        /// </summary>
+        public string TargetToRecordPropertiesBefore { get; private set; } = "AfterBuild";
+
         public IEnumerable<string> TargetFrameworkIdentifiers
         {
             get
@@ -252,7 +258,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     if(importGroup?.Attribute("Project") is not null)
                     {
                         importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
-                    }  
+                    }
                 }
 
                 if(TargetFrameworkVersion is not null)
@@ -375,12 +381,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
                 propertyGroup?.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
                 propertyGroup?.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
-                
+
                 var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
 
                 var target = new XElement(ns + "Target",
                     new XAttribute("Name", "WritePropertyValues"),
-                    new XAttribute("BeforeTargets", "AfterBuild"));
+                    new XAttribute("BeforeTargets", TargetToRecordPropertiesBefore));
 
                 customAfterDirectoryBuildTargets.Root?.Add(target);
 
@@ -489,6 +495,15 @@ namespace {safeThisName}
         public void RecordProperties(params string[] propertyNames)
         {
             PropertiesToRecord.AddRange(propertyNames);
+        }
+
+        /// <summary>
+        /// Tells this TestProject to record properties specified in <see cref="PropertiesToRecord"/> before the specified target.
+        /// By default properties are recorded before the "AfterBuild" target (so after the actual compile+copy targets have run).
+        /// </summary>
+        public void RecordPropertiesBeforeTarget(string targetName)
+        {
+            TargetToRecordPropertiesBefore = targetName;
         }
 
         /// <returns>

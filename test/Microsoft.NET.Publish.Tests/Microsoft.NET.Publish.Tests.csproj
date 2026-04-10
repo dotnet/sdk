@@ -19,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
+    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <ItemGroup>

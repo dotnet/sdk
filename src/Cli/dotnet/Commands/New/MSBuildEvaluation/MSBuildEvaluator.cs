@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
