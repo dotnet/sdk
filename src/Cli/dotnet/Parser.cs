@@ -402,16 +402,13 @@ public static class Parser
     {
         foreach (var option in command.Options)
         {
-            if (option.Name == "--verbosity")
+            if (option is Option<VerbosityOptions> verbosityOpt)
             {
-                if (option is Option<VerbosityOptions> verbosityOpt)
-                {
-                    verbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions>(verbosityOpt);
-                }
-                else if (option is Option<VerbosityOptions?> nullableVerbosityOpt)
-                {
-                    nullableVerbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions?>(nullableVerbosityOpt);
-                }
+                verbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions>(verbosityOpt);
+            }
+            else if (option is Option<VerbosityOptions?> nullableVerbosityOpt)
+            {
+                nullableVerbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions?>(nullableVerbosityOpt);
             }
         }
 
