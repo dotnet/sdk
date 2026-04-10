@@ -9,18 +9,15 @@ network:
     - defaults
 
 safe-outputs:
-  add-comment:
-    max: 3
-  add-labels:
-  update-issue:
-    target: "*"
   update-pull-request:
     target: "*"
   noop:
+    report-as-issue: false
 
 on:
-  issue_comment:
-    types: [created]
+  slash_command:
+    name: tactics
+    events: [pull_request_comment]
 
 # ###############################################################
 # Override the COPILOT_GITHUB_TOKEN secret usage for the workflow
@@ -79,36 +76,19 @@ You are an expert .NET SDK engineer who helps fill in "tactics" for servicing pu
 
 ### Trigger Context
 
-- **Comment ID**: `${{ github.event.comment.id }}`
 - **Issue/PR number**: `${{ github.event.issue.number }}`
 - **Repository**: `${{ github.repository }}`
 - **Triggering actor**: `${{ github.actor }}`
 - **Run URL**: `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+- **Sanitized trigger context**: "${{ steps.sanitized.outputs.text }}"
 
 ### Your Task
 
 Follow these steps precisely:
 
-#### Step 1: Validate the command
+#### Step 1: Gather PR context
 
-Use the GitHub API to fetch the comment with ID `${{ github.event.comment.id }}` on issue/PR #`${{ github.event.issue.number }}` in this repository. Read its body text.
-
-The comment body **must** start with `/tactics` (case-insensitive). The comment may optionally include an issue number after the command (e.g. `/tactics 12345`).
-
-- If the comment does **not** start with `/tactics`, call the `noop` tool with a message indicating the comment was not a `/tactics` command and stop. Do nothing else.
-- Use the GitHub API to check if issue #`${{ github.event.issue.number }}` is a pull request. If it is **not** a pull request, call the `noop` tool noting this command only works on PRs and stop.
-
-#### Step 2: Verify authorization
-
-Use the GitHub API to check the repository collaborator permission level for `${{ github.actor }}`.
-
-- If the actor does **not** have write or admin access, use the `add-comment` tool to post a comment on PR #`${{ github.event.issue.number }}` explaining that only collaborators with write access may trigger this workflow, then stop.
-
-#### Step 3: React to the request
-
-Add an 👀 (eyes) reaction to the triggering comment (comment ID: `${{ github.event.comment.id }}`) to signal that the workflow has started.
-
-#### Step 4: Gather PR context
+The `/tactics` command may optionally include an issue number (e.g. `/tactics 12345`). Parse the sanitized trigger context above to extract any issue number provided after the command.
 
 For PR #`${{ github.event.issue.number }}`, gather the following information:
 
@@ -118,7 +98,7 @@ For PR #`${{ github.event.issue.number }}`, gather the following information:
 4. **Review comments**: all non-bot code-level review comments, including which file they reference
 5. **Linked issue**: If the `/tactics` command included an issue number, use that. Otherwise, parse the PR body for keywords like `fixes #N`, `closes #N`, or `resolves #N` to find a linked issue. If found, fetch the issue title and body.
 
-#### Step 5: Generate tactics
+#### Step 2: Generate tactics
 
 Based on all the gathered context, produce a tactics analysis following this exact template. Be specific and detailed—avoid vague statements. Do not speculate or invent details not present in the context. If information for a section is genuinely unavailable, say so clearly.
 
@@ -154,44 +134,22 @@ The output format must be exactly:
 [your text]
 ```
 
-#### Step 6: Apply tactics and report status
+#### Step 3: Apply tactics and report status
 
-**If a linked issue was found:**
-
-1. Update the issue body by adding (or replacing) a tactics section delimited by `<!-- tactics-begin -->` and `<!-- tactics-end -->` markers. The section should contain:
+1. Use the `update_pull_request` tool to update the **PR description** by adding (or replacing) a tactics section delimited by `<!-- tactics-begin -->` and `<!-- tactics-end -->` markers. The section should contain:
    ```
    <!-- tactics-begin -->
    ## Tactics
-
-   *Generated from PR #[PR number]*
 
    [generated tactics content]
    <!-- tactics-end -->
    ```
    If the markers already exist in the body, replace the content between them. Otherwise, append the block at the end.
 
-2. Add the `Servicing-consider` label to the issue.
+2. If a linked issue was found and used as input, call the `noop` tool with a markdown summary: "✅ Tactics have been added to the PR description using context from issue #[issue number]." Include the PR number and a brief snippet of the generated tactics summary.
 
-3. Post a comment on the PR: "✅ Tactics have been added to issue #[issue number] and the `Servicing-consider` label has been applied. See [workflow details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})."
-
-4. Add a 👍 (+1) reaction to the triggering comment.
-
-**If no linked issue was found:**
-
-1. Update the **PR description** instead, using the same `<!-- tactics-begin -->` / `<!-- tactics-end -->` markers, with a note that no linked issue was found.
-
-2. Post a comment on the PR: "⚠️ No linked issue found for this PR. Tactics have been added to the PR description instead. To apply tactics to a specific issue, use `/tactics <issue-number>`. See [workflow details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})."
-
-3. Add a 👍 (+1) reaction to the triggering comment.
-
-#### Step 7: Report completion
-
-Call the `noop` tool with a well-formatted markdown summary of what was done, including the PR number, issue number (if applicable), and a brief snippet of the generated tactics.
+3. If no linked issue was found, call the `noop` tool with a markdown summary: "✅ Tactics have been added to the PR description." Include the PR number and a brief snippet of the generated tactics summary.
 
 ### Error Handling
 
-If any step fails unexpectedly:
-
-1. Post a comment on PR #`${{ github.event.issue.number }}`: "❌ Failed to generate or apply tactics. Please check [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
-2. Add a 😕 (confused) reaction to the triggering comment (ID: `${{ github.event.comment.id }}`).
-3. Call the `noop` tool with the error details.
+If any step fails unexpectedly, call the `noop` tool with a markdown summary including "❌ Failed to generate or apply tactics" and the error details. The framework will post the failure status automatically.
