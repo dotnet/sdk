@@ -266,7 +266,7 @@ For project-based programs, `#:` directives are an error (reported by Roslyn whe
 Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
-#!/usr/bin/dotnet run
+#!/usr/bin/env dotnet
 Console.WriteLine("Hello");
 ```
 
@@ -333,13 +333,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
-#!/usr/bin/env dotnet run
-// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
-```
-```cs
 #!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
+
+```cs
+#!/usr/bin/env dotnet run
+// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
+```
+
 ```cs
 #!/usr/bin/env -S dotnet run
 // ^ Works in some shells.
