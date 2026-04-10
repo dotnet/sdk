@@ -87,6 +87,33 @@ Commands:
         }
 
         [Fact]
+        public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
+        {
+            const string testAsset = "TestAppSimple";
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource().Path;
+
+            var packageName = "Newtonsoft.Json";
+            var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
+            var parentDirectory = Directory.GetParent(projectDirectory)!.FullName;
+            var relativeProjectPath = Path.GetRelativePath(parentDirectory, projectFilePath);
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("add", "package", packageName)
+                .Should().Pass();
+
+            var remove = new DotnetCommand(Log)
+                .WithWorkingDirectory(parentDirectory)
+                .Execute("remove", relativeProjectPath, "package", packageName);
+
+            remove.Should().Pass();
+            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{relativeProjectPath}'.");
+            remove.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
         public void FileBasedApp()
         {
             var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -101,7 +128,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 1, "Humanizer", file));
+                .And.HaveStdOutContaining("Removing PackageReference for package 'Humanizer'");
 
             File.ReadAllText(file).Should().Be("""
                 Console.WriteLine();
@@ -126,7 +153,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 2, "Humanizer", file));
+                .And.HaveStdOutContaining("Removing PackageReference for package 'Humanizer'");
 
             File.ReadAllText(file).Should().Be("""
                 #:package Another@1.0.0
@@ -149,7 +176,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 0, "Humanizer", file));
+                .And.HaveStdOutContaining("does not contain any PackageReference 'Humanizer' to Remove");
 
             File.ReadAllText(file).Should().Be("""
                 Console.WriteLine();

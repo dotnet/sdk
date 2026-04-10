@@ -26,11 +26,17 @@ internal sealed class ProjectConvertCommandDefinition : Command
         Arity = ArgumentArity.Zero,
     };
 
-    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption(acceptArgument: true);
 
     public readonly Option<bool> DryRunOption = new("--dry-run")
     {
         Description = CommandDefinitionStrings.ProjectConvertDryRun,
+        Arity = ArgumentArity.Zero,
+    };
+
+    public readonly Option<bool> DeleteSourceOption = new("--delete-source")
+    {
+        Description = CommandDefinitionStrings.ProjectConvertDeleteSource,
         Arity = ArgumentArity.Zero,
     };
 
@@ -42,5 +48,6 @@ internal sealed class ProjectConvertCommandDefinition : Command
         Options.Add(ForceOption);
         Options.Add(InteractiveOption);
         Options.Add(DryRunOption);
+        Options.Add(DeleteSourceOption);
     }
 }
