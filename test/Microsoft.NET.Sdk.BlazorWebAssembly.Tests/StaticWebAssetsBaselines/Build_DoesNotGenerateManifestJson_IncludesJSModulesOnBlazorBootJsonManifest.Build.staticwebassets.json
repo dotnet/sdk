@@ -31,6 +31,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "boot",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -54,6 +55,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -77,6 +79,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Authorization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -100,6 +103,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Components.Forms.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -123,6 +127,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Components.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -146,6 +151,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -169,6 +175,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Components.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -192,6 +199,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.AspNetCore.Metadata.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -215,6 +223,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.CSharp.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -238,6 +247,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\hotreload\\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -261,34 +271,12 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -307,6 +295,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Binder.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -330,6 +319,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -353,6 +343,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -376,34 +367,12 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Configuration.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -422,34 +391,12 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -468,6 +415,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileProviders.Physical.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -491,34 +439,12 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileSystemGlobbing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.Abstractions.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -537,57 +463,12 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Options.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Options.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Options.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Options.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Primitives.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Primitives.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -606,6 +487,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.JSInterop.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -629,6 +511,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.JSInterop.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -652,6 +535,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.VisualBasic.Core.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -675,6 +559,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.VisualBasic.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -698,6 +583,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Win32.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -721,6 +607,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Win32.Registry.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -744,6 +631,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.AppContext.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -767,6 +655,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Buffers.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -790,6 +679,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Collections.Concurrent.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -813,6 +703,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Collections.Immutable.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -836,6 +727,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Collections.NonGeneric.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -859,6 +751,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Collections.Specialized.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -882,6 +775,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Collections.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -905,6 +799,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.Annotations.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -928,6 +823,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.DataAnnotations.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -951,6 +847,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.EventBasedAsync.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -974,6 +871,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -997,6 +895,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.TypeConverter.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1020,6 +919,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ComponentModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1043,6 +943,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Configuration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1066,6 +967,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Console.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1089,6 +991,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Core.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1112,6 +1015,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Data.Common.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1135,6 +1039,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Data.DataSetExtensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1158,6 +1063,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Data.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1181,6 +1087,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.Contracts.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1204,6 +1111,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.Debug.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1227,6 +1135,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.DiagnosticSource.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1250,6 +1159,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.FileVersionInfo.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1273,6 +1183,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.Process.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1296,6 +1207,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.StackTrace.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1319,6 +1231,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.TextWriterTraceListener.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1342,6 +1255,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.Tools.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1365,6 +1279,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.TraceSource.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1388,6 +1303,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Diagnostics.Tracing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1411,6 +1327,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Drawing.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1434,6 +1351,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Drawing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1457,6 +1375,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Dynamic.Runtime.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1480,6 +1399,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Formats.Asn1.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1503,6 +1423,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Formats.Tar.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1526,6 +1447,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Globalization.Calendars.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1549,6 +1471,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Globalization.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1572,6 +1495,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Globalization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1595,6 +1519,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Compression.Brotli.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1618,6 +1543,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Compression.FileSystem.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1641,6 +1567,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Compression.ZipFile.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1664,6 +1591,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Compression.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1687,6 +1615,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.FileSystem.AccessControl.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1710,6 +1639,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.FileSystem.DriveInfo.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1733,6 +1663,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.FileSystem.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1756,6 +1687,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.FileSystem.Watcher.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1779,6 +1711,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.FileSystem.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1802,6 +1735,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.IsolatedStorage.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1825,6 +1759,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.MemoryMappedFiles.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1848,6 +1783,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Pipelines.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1871,6 +1807,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Pipes.AccessControl.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1894,6 +1831,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.Pipes.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1917,6 +1855,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.UnmanagedMemoryStream.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1940,6 +1879,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.IO.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1963,6 +1903,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Linq.AsyncEnumerable.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -1986,6 +1927,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Linq.Expressions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2009,6 +1951,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Linq.Parallel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2032,6 +1975,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Linq.Queryable.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2055,6 +1999,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Linq.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2078,6 +2023,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Memory.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2101,6 +2047,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Http.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2124,6 +2071,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Http.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2147,6 +2095,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.HttpListener.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2170,6 +2119,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Mail.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2193,6 +2143,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.NameResolution.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2216,6 +2167,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.NetworkInformation.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2239,6 +2191,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Ping.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2262,6 +2215,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2285,6 +2239,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Quic.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2308,6 +2263,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Requests.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2331,6 +2287,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Security.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2354,6 +2311,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.ServerSentEvents.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2377,6 +2335,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.ServicePoint.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2400,6 +2359,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.Sockets.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2423,6 +2383,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.WebClient.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2446,6 +2407,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.WebHeaderCollection.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2469,6 +2431,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.WebProxy.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2492,6 +2455,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.WebSockets.Client.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2515,6 +2479,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.WebSockets.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2538,6 +2503,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Net.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2561,6 +2527,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Numerics.Vectors.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2584,6 +2551,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Numerics.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2607,6 +2575,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ObjectModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2630,6 +2599,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Private.CoreLib.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2653,6 +2623,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Private.DataContractSerialization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2676,6 +2647,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Private.Uri.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2699,6 +2671,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Private.Xml.Linq.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2722,6 +2695,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Private.Xml.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2745,6 +2719,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.DispatchProxy.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2768,6 +2743,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Emit.ILGeneration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2791,6 +2767,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Emit.Lightweight.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2814,6 +2791,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Emit.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2837,6 +2815,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2860,6 +2839,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Metadata.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2883,6 +2863,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2906,6 +2887,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.TypeExtensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2929,6 +2911,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Reflection.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2952,6 +2935,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Resources.Reader.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2975,6 +2959,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Resources.ResourceManager.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -2998,6 +2983,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Resources.Writer.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3021,6 +3007,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.CompilerServices.Unsafe.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3044,6 +3031,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.CompilerServices.VisualC.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3067,6 +3055,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3090,6 +3079,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Handles.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3113,6 +3103,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.InteropServices.JavaScript.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3136,6 +3127,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.InteropServices.RuntimeInformation.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3159,6 +3151,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.InteropServices.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3182,6 +3175,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Intrinsics.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3205,6 +3199,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Loader.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3228,6 +3223,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Numerics.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3251,6 +3247,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Serialization.Formatters.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3274,6 +3271,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Serialization.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3297,6 +3295,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Serialization.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3320,6 +3319,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Serialization.Xml.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3343,6 +3343,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.Serialization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3366,6 +3367,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Runtime.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3389,6 +3391,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.AccessControl.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3412,6 +3415,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Claims.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3435,6 +3439,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.Algorithms.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3458,6 +3463,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.Cng.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3481,6 +3487,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.Csp.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3504,6 +3511,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.Encoding.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3527,6 +3535,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.OpenSsl.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3550,6 +3559,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3573,6 +3583,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.X509Certificates.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3596,6 +3607,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Cryptography.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3619,6 +3631,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Principal.Windows.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3642,6 +3655,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.Principal.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3665,6 +3679,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.SecureString.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3688,6 +3703,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Security.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3711,6 +3727,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ServiceModel.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3734,6 +3751,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ServiceProcess.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3757,6 +3775,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.Encoding.CodePages.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3780,6 +3799,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.Encoding.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3803,6 +3823,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.Encoding.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3826,6 +3847,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.Encodings.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3849,6 +3871,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3872,6 +3895,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Text.RegularExpressions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3895,6 +3919,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.AccessControl.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3918,6 +3943,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Channels.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3941,6 +3967,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Overlapped.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3964,6 +3991,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Tasks.Dataflow.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -3987,6 +4015,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Tasks.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4010,6 +4039,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Tasks.Parallel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4033,6 +4063,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Tasks.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4056,6 +4087,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Thread.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4079,6 +4111,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.ThreadPool.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4102,6 +4135,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.Timer.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4125,6 +4159,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4148,6 +4183,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Transactions.Local.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4171,6 +4207,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Transactions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4194,6 +4231,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.ValueTuple.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4217,6 +4255,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Web.HttpUtility.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4240,6 +4279,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4263,6 +4303,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Windows.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4286,6 +4327,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.Linq.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4309,6 +4351,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.ReaderWriter.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4332,6 +4375,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.Serialization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4355,6 +4399,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.XDocument.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4378,6 +4423,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.XPath.XDocument.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4401,6 +4447,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.XPath.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4424,6 +4471,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.XmlDocument.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4447,6 +4495,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.XmlSerializer.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4470,6 +4519,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.Xml.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4493,6 +4543,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\System.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4516,6 +4567,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\WindowsBase.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4539,6 +4591,7 @@
       "RelatedAsset": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4562,6 +4615,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazorwasm-minimal.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4585,6 +4639,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\blazorwasm-minimal.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4608,6 +4663,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4631,6 +4687,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js.map",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4654,6 +4711,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4677,6 +4735,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4700,6 +4759,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.runtime.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4723,6 +4783,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.runtime.js.map",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4746,6 +4807,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4769,6 +4831,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_EFIGS.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4792,6 +4855,7 @@
       "RelatedAsset": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4815,6 +4879,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\mscorlib.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4838,6 +4903,7 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\netstandard.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4861,6 +4927,7 @@
       "RelatedAsset": "${ProjectPath}\\wwwroot\\blazorwasm-minimal.lib.module.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -4884,6 +4951,7 @@
       "RelatedAsset": "${ProjectPath}\\wwwroot\\css\\app.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -4907,6 +4975,7 @@
       "RelatedAsset": "${ProjectPath}\\wwwroot\\index.html",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -4930,6 +4999,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "manifest",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4953,6 +5023,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "JSModule",
       "AssetTraitValue": "JSLibraryModule",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -4976,6 +5047,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -4999,6 +5071,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5022,6 +5095,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5045,6 +5119,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5068,6 +5143,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5091,6 +5167,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5114,6 +5191,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5137,34 +5215,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Abstractions.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5183,6 +5239,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5206,6 +5263,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5229,6 +5287,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5252,34 +5311,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5298,34 +5335,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5344,6 +5359,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5367,34 +5383,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileSystemGlobbing.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.Abstractions.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.Abstractions.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5413,57 +5407,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Options.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Options.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Options.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Primitives.wasm",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.Extensions.Primitives.wasm",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "runtime",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Primitives.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5482,6 +5431,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5505,6 +5455,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5528,6 +5479,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5551,6 +5503,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5574,6 +5527,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5597,6 +5551,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5620,6 +5575,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5643,6 +5599,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5666,6 +5623,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5689,6 +5647,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5712,6 +5671,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5735,6 +5695,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5758,6 +5719,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5781,6 +5743,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5804,6 +5767,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5827,6 +5791,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5850,6 +5815,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5873,6 +5839,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5896,6 +5863,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5919,6 +5887,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5942,6 +5911,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5965,6 +5935,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -5988,6 +5959,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6011,6 +5983,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6034,6 +6007,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6057,6 +6031,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6080,6 +6055,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6103,6 +6079,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6126,6 +6103,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6149,6 +6127,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6172,6 +6151,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6195,6 +6175,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6218,6 +6199,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6241,6 +6223,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6264,6 +6247,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6287,6 +6271,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6310,6 +6295,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6333,6 +6319,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6356,6 +6343,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6379,6 +6367,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6402,6 +6391,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6425,6 +6415,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6448,6 +6439,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6471,6 +6463,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6494,6 +6487,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6517,6 +6511,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6540,6 +6535,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6563,6 +6559,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6586,6 +6583,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6609,6 +6607,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6632,6 +6631,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6655,6 +6655,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6678,6 +6679,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6701,6 +6703,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6724,6 +6727,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6747,6 +6751,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6770,6 +6775,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6793,6 +6799,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6816,6 +6823,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6839,6 +6847,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6862,6 +6871,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6885,6 +6895,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6908,6 +6919,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6931,6 +6943,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6954,6 +6967,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -6977,6 +6991,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7000,6 +7015,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7023,6 +7039,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7046,6 +7063,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7069,6 +7087,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7092,6 +7111,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7115,6 +7135,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7138,6 +7159,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7161,6 +7183,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7184,6 +7207,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7207,6 +7231,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7230,6 +7255,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7253,6 +7279,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7276,6 +7303,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7299,6 +7327,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7322,6 +7351,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7345,6 +7375,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7368,6 +7399,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7391,6 +7423,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7414,6 +7447,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7437,6 +7471,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7460,6 +7495,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7483,6 +7519,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7506,6 +7543,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7529,6 +7567,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7552,6 +7591,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7575,6 +7615,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7598,6 +7639,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7621,6 +7663,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7644,6 +7687,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7667,6 +7711,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7690,6 +7735,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7713,6 +7759,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7736,6 +7783,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7759,6 +7807,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7782,6 +7831,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7805,6 +7855,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7828,6 +7879,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7851,6 +7903,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7874,6 +7927,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7897,6 +7951,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7920,6 +7975,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7943,6 +7999,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7966,6 +8023,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -7989,6 +8047,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8012,6 +8071,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8035,6 +8095,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8058,6 +8119,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8081,6 +8143,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8104,6 +8167,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8127,6 +8191,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8150,6 +8215,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8173,6 +8239,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8196,6 +8263,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8219,6 +8287,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8242,6 +8311,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8265,6 +8335,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8288,6 +8359,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8311,6 +8383,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8334,6 +8407,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8357,6 +8431,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8380,6 +8455,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8403,6 +8479,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8426,6 +8503,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8449,6 +8527,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8472,6 +8551,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8495,6 +8575,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8518,6 +8599,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8541,6 +8623,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8564,6 +8647,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8587,6 +8671,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8610,6 +8695,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8633,6 +8719,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8656,6 +8743,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8679,6 +8767,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8702,6 +8791,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8725,6 +8815,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8748,6 +8839,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8771,6 +8863,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8794,6 +8887,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8817,6 +8911,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8840,6 +8935,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8863,6 +8959,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8886,6 +8983,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8909,6 +9007,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8932,6 +9031,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8955,6 +9055,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -8978,6 +9079,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9001,6 +9103,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9024,6 +9127,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9047,6 +9151,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9070,6 +9175,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9093,6 +9199,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9116,6 +9223,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9139,6 +9247,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9162,6 +9271,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9185,6 +9295,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9208,6 +9319,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9231,6 +9343,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9254,6 +9367,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9277,6 +9391,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9300,6 +9415,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9323,6 +9439,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9346,6 +9463,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9369,6 +9487,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9392,6 +9511,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9415,6 +9535,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9438,6 +9559,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9461,6 +9583,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9484,6 +9607,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "JSModule",
       "AssetTraitValue": "JSLibraryModule",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -9507,6 +9631,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -9530,6 +9655,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -9553,6 +9679,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9576,6 +9703,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9599,6 +9727,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9622,6 +9751,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9645,6 +9775,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9668,6 +9799,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9691,6 +9823,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -9714,6 +9847,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
@@ -10627,98 +10761,6 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.Configuration.Binder.wasm.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz",
       "Selectors": [],
@@ -11087,98 +11129,6 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.wasm.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
       "Selectors": [],
@@ -11222,98 +11172,6 @@
     {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.wasm",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -11547,98 +11405,6 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.Logging.wasm.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
       "Selectors": [],
@@ -11682,190 +11448,6 @@
     {
       "Route": "_framework/Microsoft.Extensions.Logging.wasm",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Options.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Options.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Options.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Options.wasm.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Primitives.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Primitives.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -29637,43 +29219,6 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.Configuration.Binder.wasm",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Configuration.Binder.wasm",
       "Selectors": [],
@@ -29822,82 +29367,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.wasm",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.DependencyInjection.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -30007,119 +29478,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.Abstractions.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/Microsoft.Extensions.Logging.wasm",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Logging.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Options.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Options.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Microsoft.Extensions.Primitives.wasm",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.Extensions.Primitives.wasm",
       "Selectors": [],
       "ResponseHeaders": [
         {
