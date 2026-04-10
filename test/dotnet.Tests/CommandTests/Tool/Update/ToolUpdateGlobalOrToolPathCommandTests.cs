@@ -476,8 +476,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
                     fileSystem: _fileSystem,
-                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
-                    filePermissionSetter: new ToolInstallGlobalOrToolPathCommandTests.NoOpFilePermissionSetter());
+                    appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem));
         }
 
         private string _nugetConfigWithInvalidSources = @"{

@@ -1128,7 +1128,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? TemporaryDirectory.CreateSubdirectory() : tempDirPath);
 
             nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
-                filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
+                new FirstPartyNuGetPackageSigningVerifier(),
                 new NullLogger(), restoreActionConfig: restoreActionConfig);
         }
 

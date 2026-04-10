@@ -13,13 +13,11 @@ internal class ShellShimRepository(
     DirectoryPath shimsDirectory,
     string appHostSourceDirectory,
     IFileSystem fileSystem = null,
-    IAppHostShellShimMaker appHostShellShimMaker = null,
-    IFilePermissionSetter filePermissionSetter = null) : IShellShimRepository
+    IAppHostShellShimMaker appHostShellShimMaker = null) : IShellShimRepository
 {
     private readonly DirectoryPath _shimsDirectory = shimsDirectory;
     private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
     private readonly IAppHostShellShimMaker _appHostShellShimMaker = appHostShellShimMaker ?? new AppHostShellShimMaker(appHostSourceDirectory: appHostSourceDirectory);
-    private readonly IFilePermissionSetter _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
 
     public void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null)
     {
@@ -51,7 +49,22 @@ internal class ShellShimRepository(
                         if (TryGetPackagedShim(packagedShims, toolCommand, out FilePath? packagedShim))
                         {
                             _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand).Value);
-                            _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand).Value);
+                            if (!OperatingSystem.IsWindows())
+                            {
+                                try
+                                {
+                                    string shimPath = GetShimPath(toolCommand).Value;
+                                    if (File.Exists(shimPath))
+                                    {
+                                        UnixFileMode existingMode = File.GetUnixFileMode(shimPath);
+                                        File.SetUnixFileMode(shimPath, existingMode | UnixFileMode.UserExecute);
+                                    }
+                                }
+                                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or PlatformNotSupportedException)
+                                {
+                                    throw new FilePermissionSettingException(ex.Message, ex);
+                                }
+                            }
                         }
                         else
                         {
@@ -76,7 +89,15 @@ internal class ShellShimRepository(
                         else
                         {
                             File.CreateSymbolicLink(shimPath, relativePathToExe);
-                            _filePermissionSetter.SetUserExecutionPermission(shimPath);
+                            try
+                            {
+                                UnixFileMode existingMode = File.GetUnixFileMode(shimPath);
+                                File.SetUnixFileMode(shimPath, existingMode | UnixFileMode.UserExecute);
+                            }
+                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or PlatformNotSupportedException)
+                            {
+                                throw new FilePermissionSettingException(ex.Message, ex);
+                            }
                         }
                     }
                     else
@@ -108,7 +129,7 @@ internal class ShellShimRepository(
             {
                 foreach (var file in GetShimFiles(toolCommand).Where(f => _fileSystem.File.Exists(f.Value)))
                 {
-                    File.Delete(file.Value);
+                    _fileSystem.File.Delete(file.Value);
                 }
             });
     }

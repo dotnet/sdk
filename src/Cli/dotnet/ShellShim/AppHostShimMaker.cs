@@ -5,16 +5,14 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.HostModel.AppHost;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class AppHostShellShimMaker(string appHostSourceDirectory, IFilePermissionSetter filePermissionSetter = null) : IAppHostShellShimMaker
+internal class AppHostShellShimMaker(string appHostSourceDirectory) : IAppHostShellShimMaker
 {
     private const string ApphostNameWithoutExtension = "apphost";
     private readonly string _appHostSourceDirectory = appHostSourceDirectory;
-    private readonly IFilePermissionSetter _filePermissionSetter =
-            filePermissionSetter
-            ?? new FilePermissionSetter();
     private const ushort WindowsGUISubsystem = 0x2;
 
     public void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath)
@@ -43,6 +41,17 @@ internal class AppHostShellShimMaker(string appHostSourceDirectory, IFilePermiss
                                  assemblyToCopyResourcesFrom: entryPointFullPath,
                                  enableMacOSCodeSign: OperatingSystem.IsMacOS());
 
-        _filePermissionSetter.SetUserExecutionPermission(appHostDestinationFilePath);
+        if (!OperatingSystem.IsWindows())
+        {
+            try
+            {
+                UnixFileMode existingMode = File.GetUnixFileMode(appHostDestinationFilePath);
+                File.SetUnixFileMode(appHostDestinationFilePath, existingMode | UnixFileMode.UserExecute);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or PlatformNotSupportedException)
+            {
+                throw new FilePermissionSettingException(ex.Message, ex);
+            }
+        }
     }
 }

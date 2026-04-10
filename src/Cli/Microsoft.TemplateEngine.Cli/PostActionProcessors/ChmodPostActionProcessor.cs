@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
@@ -16,6 +15,12 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
         {
+            if (OperatingSystem.IsWindows())
+            {
+                // Chmod is Unix-specific
+                return true;
+            }
+
             bool allSucceeded = true;
             foreach (KeyValuePair<string, string> entry in actionConfig.Args)
             {
@@ -39,31 +44,9 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 {
                     try
                     {
-                        Process? commandResult = System.Diagnostics.Process.Start(new ProcessStartInfo
+                        foreach (string filePath in ResolveFiles(outputBasePath, file))
                         {
-                            RedirectStandardError = false,
-                            RedirectStandardOutput = false,
-                            UseShellExecute = false,
-                            CreateNoWindow = false,
-                            WorkingDirectory = outputBasePath,
-                            FileName = "/bin/sh",
-                            Arguments = $"-c \"chmod {entry.Key} {file}\""
-                        });
-
-                        if (commandResult == null)
-                        {
-                            Reporter.Error.WriteLine(LocalizableStrings.UnableToSetPermissions, entry.Key, file);
-                            Reporter.Verbose.WriteLine("Unable to start sub-process.");
-                            allSucceeded = false;
-                            continue;
-                        }
-
-                        commandResult.WaitForExit();
-
-                        if (commandResult.ExitCode != 0)
-                        {
-                            Reporter.Error.WriteLine(LocalizableStrings.UnableToSetPermissions, entry.Key, file);
-                            allSucceeded = false;
+                            File.SetUnixFileMode(filePath, ChmodHelper.GetArguments(entry.Key.AsSpan(), filePath));
                         }
                     }
                     catch (Exception ex)
@@ -77,5 +60,30 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
             return allSucceeded;
         }
+
+        private static IEnumerable<string> ResolveFiles(string outputBasePath, string file)
+        {
+            string candidatePath = Path.IsPathRooted(file)
+                ? file
+                : Path.Combine(outputBasePath, file);
+
+            if (!ContainsWildcard(file))
+            {
+                return [candidatePath];
+            }
+
+            string? directory = Path.GetDirectoryName(candidatePath);
+            string searchPattern = Path.GetFileName(candidatePath);
+
+            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(searchPattern) || !Directory.Exists(directory))
+            {
+                return [candidatePath];
+            }
+
+            string[] resolved = Directory.EnumerateFiles(directory, searchPattern, SearchOption.TopDirectoryOnly).ToArray();
+            return resolved.Length == 0 ? [candidatePath] : resolved;
+        }
+
+        private static bool ContainsWildcard(string value) => value.IndexOfAny(['*', '?']) >= 0;
     }
 }
