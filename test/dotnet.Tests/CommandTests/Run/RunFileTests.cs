@@ -6432,4 +6432,52 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             return result;
         }
     }
+
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/52714.
+    /// The virtual project's <see cref="ProjectRootElement"/> must survive GC
+    /// even after being evicted from MSBuild's strong cache (LRU of size N).
+    /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
+    /// and trigger GC via an inline task during NuGet restore.
+    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// this fails with MSB4025 "The project file could not be loaded".
+    /// </summary>
+    [Fact]
+    public void VirtualProject_SurvivesGCDuringRestore()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hello from virtual project");
+            """);
+
+        // Directory.Build.targets that forces GC during restore,
+        // after SDK imports have already evicted the virtual PRE from the strong cache.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <UsingTask TaskName="_ForceGCTask"
+                         TaskFactory="RoslynCodeTaskFactory"
+                         AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                <Task>
+                  <Code Type="Fragment" Language="cs"><![CDATA[
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                    System.GC.WaitForPendingFinalizers();
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                  ]]></Code>
+                </Task>
+              </UsingTask>
+              <Target Name="_ForceGC" BeforeTargets="_FilterRestoreGraphProjectInputItems">
+                <_ForceGCTask />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs")
+            // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
+            // as soon as any SDK .targets/.props file is loaded during evaluation.
+            .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from virtual project");
+    }
 }
