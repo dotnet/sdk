@@ -6,5 +6,5 @@ namespace Microsoft.Dotnet.Installation;
 public enum InstallType
 {
     User,
-    Admin,
+    System,
 }

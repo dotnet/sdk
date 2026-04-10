@@ -39,10 +39,11 @@ internal partial class HostFxrWrapper
 
         foreach (var runtime in environmentInfo.RuntimeInfo.ToList())
         {
+            var component = InstallComponentExtensions.FromFrameworkName(runtime.Name) ?? InstallComponent.Runtime;
             installs.Add(new DotnetInstall(
                 new DotnetInstallRoot(installRoot, InstallerUtilities.GetDefaultInstallArchitecture()),
                 runtime.Version,
-                InstallComponent.Runtime)); // TODO: Determine the correct InstallComponent based on runtime.Name like release manifest does
+                component));
         }
 
         return installs;

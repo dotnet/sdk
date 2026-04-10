@@ -73,7 +73,9 @@ internal static class FirstRunNotice
 
     private static void ShowNotice()
     {
-        // Write to stderr, consistent with .NET SDK behavior
+        // Write the telemetry notice to stderr using plain Console.Error to avoid
+        // Spectre.Console rendering issues when stderr is not a terminal.
+        // The dotnetup banner is shown separately by WalkthroughCommand.
         // See: https://learn.microsoft.com/dotnet/core/compatibility/sdk/10.0/dotnet-cli-stderr-output
         Console.Error.WriteLine();
         Console.Error.WriteLine(Strings.TelemetryNotice);

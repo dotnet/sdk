@@ -31,11 +31,7 @@ function InitializeCustomSDKToolset {
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
     # Build dotnetup if not already present (needs SDK to be installed first)
     EnsureDotnetupBuilt
-    InstallDotNetSharedFramework "6.0.0"
-    InstallDotNetSharedFramework "7.0.0"
-    InstallDotNetSharedFramework "8.0.0"
-    InstallDotNetSharedFramework "9.0.0"
-    InstallDotNetSharedFramework "10.0.0"
+    InstallDotNetSharedFrameworks "6.0.0" "7.0.0" "8.0.0" "9.0.0" "10.0.0"
   fi
 
   CreateBuildEnvScript
@@ -78,23 +74,31 @@ function EnsureDotnetupBuilt {
   fi
 }
 
-# Installs additional shared frameworks for testing purposes
-function InstallDotNetSharedFramework {
-  local version=$1
+# Installs additional shared frameworks for testing purposes (batched, concurrent)
+function InstallDotNetSharedFrameworks {
   local dotnet_root=$DOTNET_INSTALL_DIR
-  local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
+  local versions_to_install=()
 
-  if [[ ! -d "$fx_dir" ]]; then
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local dotnetup_exe="$script_dir/dotnetup/dotnetup"
-
-    "$dotnetup_exe" runtime install "$version" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked
-    local lastexitcode=$?
-
-    if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install Shared Framework $version to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
-      ExitWithExitCode $lastexitcode
+  for version in "$@"; do
+    local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
+    if [[ ! -d "$fx_dir" ]]; then
+      versions_to_install+=("$version")
     fi
+  done
+
+  if [[ ${#versions_to_install[@]} -eq 0 ]]; then
+    return
+  fi
+
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local dotnetup_exe="$script_dir/dotnetup/dotnetup"
+
+  "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
+  local lastexitcode=$?
+
+  if [[ $lastexitcode != 0 ]]; then
+    echo "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+    ExitWithExitCode $lastexitcode
   fi
 }
 

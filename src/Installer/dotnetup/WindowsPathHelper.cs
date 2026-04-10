@@ -133,14 +133,19 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
     /// <summary>
     /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
-    /// Reads from HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\ to find actual installations.
+    /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
+    ///   1. First checks {arch}\sharedhost → Path value (preferred, set by the .NET host installer)
+    ///   2. Falls back to {arch} → InstallLocation value
+    /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+    /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
         var paths = new List<string>();
 
-        // Read from registry to find actual dotnet installations
-        // Use 32-bit registry hive to ensure we get the correct view
+        // Read from registry to find actual dotnet installations.
+        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
         using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
         using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
         if (key != null)
@@ -148,13 +153,42 @@ internal sealed partial class WindowsPathHelper : IDisposable
             foreach (var archName in key.GetSubKeyNames())
             {
                 using var archKey = key.OpenSubKey(archName);
-                if (archKey != null)
+                if (archKey == null)
                 {
-                    var installLocation = archKey.GetValue("InstallLocation") as string;
-                    if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
+                    continue;
+                }
+
+                // Prefer sharedhost\Path — this is the canonical location set by the host installer.
+                string? installPath = null;
+                using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
+                {
+                    installPath = sharedHostKey?.GetValue("Path") as string;
+                }
+
+                // Fallback to the InstallLocation value on the architecture key.
+                installPath ??= archKey.GetValue("InstallLocation") as string;
+
+                if (!string.IsNullOrEmpty(installPath))
+                {
+                    var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
+                    if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
                     {
-                        paths.Add(installLocation.TrimEnd(Path.DirectorySeparatorChar));
+                        paths.Add(normalized);
                     }
+                }
+            }
+        }
+
+        // Fallback: if registry yielded nothing, check the default Program Files location.
+        if (paths.Count == 0)
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                var defaultPath = Path.Combine(programFiles, "dotnet");
+                if (Directory.Exists(defaultPath))
+                {
+                    paths.Add(defaultPath);
                 }
             }
         }
@@ -526,54 +560,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
                 WindowStyle = ProcessWindowStyle.Hidden
             };
 
-            try
-            {
-                using var process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    throw new InvalidOperationException("Failed to start elevated process.");
-                }
-
-                process.WaitForExit();
-
-                if (process.ExitCode == -2147450730)
-                {
-                    //  NOTE: Process exit code -2147450730 means that the right .NET runtime could not be found
-                    //  This should not happen when using NativeAOT dotnetup, but when testing using IL it can happen and
-                    //  can be caused if DOTNET_ROOT has been set to a path that doesn't have the right runtime to run dotnetup.
-                    throw new InvalidOperationException("Elevated process failed: Unable to find matching .NET Runtime." + Environment.NewLine +
-                        "This is probably because dotnetup is not being run as self-contained and DOTNET_ROOT is set to a path that doesn't have a matching runtime.");
-                }
-                else if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Elevated process returned exit code {process.ExitCode}");
-                }
-
-                return true;
-            }
-            catch (System.ComponentModel.Win32Exception ex)
-            {
-                // User cancelled UAC prompt or elevation failed
-                // ERROR_CANCELLED = 1223
-                if (ex.NativeErrorCode == 1223)
-                {
-                    return false;
-                }
-                throw;
-            }
+            return RunElevatedProcessCore(startInfo);
         }
         finally
         {
-            //  Show any output from elevated process
-            if (File.Exists(outputFilePath))
-            {
-                string outputContent = File.ReadAllText(outputFilePath);
-                if (!string.IsNullOrEmpty(outputContent))
-                {
-                    Console.WriteLine(outputContent);
-                }
-            }
+            DisplayElevatedProcessOutput(outputFilePath);
 
             // Clean up temporary directory
             try
@@ -583,6 +574,66 @@ internal sealed partial class WindowsPathHelper : IDisposable
             catch
             {
                 // Ignore cleanup errors
+            }
+        }
+    }
+
+    /// <summary>
+    /// Starts the elevated process described by <paramref name="startInfo"/>, waits for it to exit,
+    /// and validates the exit code.
+    /// </summary>
+    /// <returns>True on success; false if the user cancelled the UAC prompt.</returns>
+    private static bool RunElevatedProcessCore(ProcessStartInfo startInfo)
+    {
+        try
+        {
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                throw new InvalidOperationException("Failed to start elevated process.");
+            }
+
+            process.WaitForExit();
+
+            if (process.ExitCode == -2147450730)
+            {
+                //  NOTE: Process exit code -2147450730 means that the right .NET runtime could not be found
+                //  This should not happen when using NativeAOT dotnetup, but when testing using IL it can happen and
+                //  can be caused if DOTNET_ROOT has been set to a path that doesn't have the right runtime to run dotnetup.
+                throw new InvalidOperationException("Elevated process failed: Unable to find matching .NET Runtime." + Environment.NewLine +
+                    "This is probably because dotnetup is not being run as self-contained and DOTNET_ROOT is set to a path that doesn't have a matching runtime.");
+            }
+            else if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"Elevated process returned exit code {process.ExitCode}");
+            }
+
+            return true;
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            // User cancelled UAC prompt or elevation failed
+            // ERROR_CANCELLED = 1223
+            if (ex.NativeErrorCode == 1223)
+            {
+                return false;
+            }
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Reads and displays any output written by the elevated process to <paramref name="outputFilePath"/>.
+    /// </summary>
+    private static void DisplayElevatedProcessOutput(string outputFilePath)
+    {
+        if (File.Exists(outputFilePath))
+        {
+            string outputContent = File.ReadAllText(outputFilePath);
+            if (!string.IsNullOrEmpty(outputContent))
+            {
+                Console.WriteLine(outputContent);
             }
         }
     }

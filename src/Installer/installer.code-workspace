@@ -26,8 +26,8 @@
                 "name": "Launch dotnetup",
                 "type": "coreclr",
                 "request": "launch",
-                "preLaunchTask": "build",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/${input:targetFramework}/dotnetup.dll",
+                "preLaunchTask": "build-and-link",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/current/dotnetup.dll",
                 "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -44,7 +44,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "publish-aot",
-                "program": "dotnet",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
@@ -62,11 +62,10 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "publish-aot",
-                "program": "dotnet",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
-                    "--no-build",
                     "--filter",
                     "FullyQualifiedName~${input:testName}",
                     "/p:ContinuousIntegrationBuild=false",
@@ -98,12 +97,6 @@
                 "id": "testName",
                 "type": "promptString",
                 "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
-            },
-            {
-                "id": "targetFramework",
-                "type": "promptString",
-                "description": "Target framework moniker (e.g., net10.0, net11.0)",
-                "default": "net11.0"
             }
         ]
     },
@@ -112,8 +105,8 @@
         "tasks": [
             {
                 "label": "build",
-                "type": "process",
-                "command": "dotnet",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "build",
                     "dotnetup/dotnetup.csproj",
@@ -141,6 +134,54 @@
                 }
             },
             {
+                "label": "link-current-tfm",
+                "type": "shell",
+                "command": "pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-File",
+                    "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
+                    "-BinDir",
+                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                ],
+                "windows": {
+                    "command": "pwsh",
+                    "args": [
+                        "-NoProfile",
+                        "-File",
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
+                        "-BinDir",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "linux": {
+                    "command": "bash",
+                    "args": [
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "osx": {
+                    "command": "bash",
+                    "args": [
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "presentation": {
+                    "reveal": "silent",
+                    "panel": "shared",
+                    "showReuseMessage": false
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "build-and-link",
+                "dependsOn": ["build", "link-current-tfm"],
+                "dependsOrder": "sequence",
+                "problemMatcher": []
+            },
+            {
                 "label": "publish-aot",
                 "type": "process",
                 "command": "dotnet",
@@ -164,8 +205,8 @@
             },
             {
                 "label": "test",
-                "type": "process",
-                "command": "dotnet",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "test",
                     "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",

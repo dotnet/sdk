@@ -10,9 +10,9 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 {
     private static readonly Dictionary<InstallComponent, string> s_runtimeMonikerByComponent = new()
     {
-        [InstallComponent.Runtime] = "Microsoft.NETCore.App",
-        [InstallComponent.ASPNETCore] = "Microsoft.AspNetCore.App",
-        [InstallComponent.WindowsDesktop] = "Microsoft.WindowsDesktop.App"
+        [InstallComponent.Runtime] = InstallComponentExtensions.RuntimeFrameworkName,
+        [InstallComponent.ASPNETCore] = InstallComponentExtensions.AspNetCoreFrameworkName,
+        [InstallComponent.WindowsDesktop] = InstallComponentExtensions.WindowsDesktopFrameworkName
     };
 
 #pragma warning disable CA1822 // Validate methods implement IInstallationValidator and cannot be made static

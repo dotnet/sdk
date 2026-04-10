@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -85,18 +86,56 @@ internal class TestEnvironment : IDisposable
             Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", null);
         }
 
-        // Clean up
+        // Clean up with retry logic — on Windows, files like hostfxr.dll may still
+        // be locked briefly after the dotnetup process exits (e.g. due to native DLL
+        // load during install validation).
         if (Directory.Exists(TempRoot))
         {
-            try
+            const int maxRetries = 5;
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
-                Directory.Delete(TempRoot, recursive: true);
+                try
+                {
+                    Directory.Delete(TempRoot, recursive: true);
+                    break;
+                }
+                catch (Exception ex) when ((ex is IOException || ex is UnauthorizedAccessException) && attempt < maxRetries)
+                {
+                    // Wait with exponential backoff: 200ms, 400ms, 800ms, 1600ms, 3200ms
+                    Thread.Sleep(200 * (1 << attempt));
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    // Final attempt failed — log but don't fail the test
+                    Console.WriteLine($"Warning: Could not clean up temp directory after {maxRetries + 1} attempts: {TempRoot}");
+                }
             }
-            catch (IOException)
+        }
+    }
+
+    /// <summary>
+    /// Creates the on-disk component directories that <c>PruneStaleInstallations</c>
+    /// checks, so manifest entries are not discarded during tests.
+    /// Call this before adding installations via the manifest API.
+    /// </summary>
+    /// <param name="rootPath">Install root (defaults to <see cref="InstallPath"/>).</param>
+    /// <param name="installations">One or more (component, version) pairs to stub.</param>
+    public void StubComponentDirectories(string? rootPath, params (InstallComponent Component, string Version)[] installations)
+    {
+        rootPath ??= InstallPath;
+        Directory.CreateDirectory(rootPath);
+
+        foreach (var (component, version) in installations)
+        {
+            string subPath = component switch
             {
-                // Files might be locked, but we tried our best to clean up
-                Console.WriteLine($"Warning: Could not clean up temp directory: {TempRoot}");
-            }
+                InstallComponent.SDK => Path.Combine("sdk", version),
+                InstallComponent.Runtime => Path.Combine("shared", InstallComponentExtensions.RuntimeFrameworkName, version),
+                InstallComponent.ASPNETCore => Path.Combine("shared", InstallComponentExtensions.AspNetCoreFrameworkName, version),
+                InstallComponent.WindowsDesktop => Path.Combine("shared", InstallComponentExtensions.WindowsDesktopFrameworkName, version),
+                _ => throw new ArgumentException($"Unknown component: {component}"),
+            };
+            Directory.CreateDirectory(Path.Combine(rootPath, subPath));
         }
     }
 

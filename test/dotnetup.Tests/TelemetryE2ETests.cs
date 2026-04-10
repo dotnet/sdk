@@ -122,7 +122,7 @@ public class TelemetryE2ETests
             var envVars = GetTelemetryEnvVars(tempDir);
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-                ["--help"], captureOutput: true, environmentVariables: envVars);
+                ["--help"], captureOutput: true, workingDirectory: tempDir, environmentVariables: envVars);
 
             exitCode.Should().Be(0, "dotnetup --help should succeed");
 
@@ -205,7 +205,7 @@ public class TelemetryE2ETests
             envVars["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath;
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-                ["list"], captureOutput: true, environmentVariables: envVars);
+                ["list"], captureOutput: true, workingDirectory: tempDir, environmentVariables: envVars);
 
             exitCode.Should().NotBe(0, "corrupt manifest should cause list to fail");
 
@@ -247,7 +247,7 @@ public class TelemetryE2ETests
             envVars["DOTNET_TESTHOOK_MANIFEST_PATH"] = manifestPath;
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-                ["list"], captureOutput: true, environmentVariables: envVars);
+                ["list"], captureOutput: true, workingDirectory: tempDir, environmentVariables: envVars);
 
             exitCode.Should().NotBe(0, "corrupt manifest should cause list to fail");
 
@@ -282,7 +282,7 @@ public class TelemetryE2ETests
             };
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-                ["--help"], captureOutput: true, environmentVariables: envVars);
+                ["--help"], captureOutput: true, workingDirectory: tempDir, environmentVariables: envVars);
 
             exitCode.Should().Be(0);
 

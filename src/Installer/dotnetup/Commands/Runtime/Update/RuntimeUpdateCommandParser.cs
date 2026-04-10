@@ -28,6 +28,7 @@ internal static class RuntimeUpdateCommandParser
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.VerbosityOption);
 
         command.SetAction(parseResult => new RuntimeUpdateCommand(parseResult).Execute());
 
