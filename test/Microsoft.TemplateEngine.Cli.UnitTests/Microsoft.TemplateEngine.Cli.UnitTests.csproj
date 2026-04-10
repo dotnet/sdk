@@ -16,10 +16,10 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.XUnit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks.XunitV3" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper.XunitV3" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
   </ItemGroup>
 
