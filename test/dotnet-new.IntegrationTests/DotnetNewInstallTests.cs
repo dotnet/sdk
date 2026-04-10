@@ -5,8 +5,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Sdk;
-using DiagnosticMessage = Xunit.v3.DiagnosticMessage;
+using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {

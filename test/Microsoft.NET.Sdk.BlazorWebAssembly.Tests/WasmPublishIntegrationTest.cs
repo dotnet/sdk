@@ -451,7 +451,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             uncompressedText.Should().Be(originalText);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
         public void Publish_WithTrimmingdDisabled_Works()
         {
             // Arrange
@@ -1612,7 +1612,7 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
-        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
         [InlineData("")]
         [InlineData("/p:BlazorFingerprintBlazorJs=false")]
         public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
