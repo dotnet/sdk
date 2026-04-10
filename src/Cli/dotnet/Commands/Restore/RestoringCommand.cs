@@ -76,11 +76,7 @@ public class RestoringCommand : MSBuildForwardingApp
         // we're running two separate build operations
         if (HasPropertyToExcludeFromRestore(msbuildArgs))
         {
-            if (!msbuildArgs.OtherMSBuildArgs.Contains("-nologo"))
-            {
-                msbuildArgs.OtherMSBuildArgs.Add("-nologo");
-            }
-            return msbuildArgs;
+            return msbuildArgs.CloneWithNoLogo(true);
         }
 
         // otherwise we're going to run an inline restore. In this case, we need to make sure that the restore properties
@@ -187,26 +183,21 @@ public class RestoringCommand : MSBuildForwardingApp
         // Separate restore should be silent in terminal logger - regardless of actual scenario
         HashSet<string> newArgumentsToAdd = ["-tlp:verbosity=quiet"];
         List<string> existingArgumentsToForward = [];
-        bool hasSetNologo = false;
+        bool hasSetNologo = msbuildArgs.NoLogo;
+        if (hasSetNologo)
+        {
+            newArgumentsToAdd.Add("--nologo");
+        }
 
         foreach (var argument in msbuildArgs.OtherMSBuildArgs ?? [])
         {
             if (!IsExcludedFromSeparateRestore(argument))
             {
-                if (argument.Equals("-nologo", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasSetNologo = true;
-                }
                 existingArgumentsToForward.Add(argument);
             }
 
             if (TriggersSilentSeparateRestore(argument))
             {
-                if (!hasSetNologo)
-                {
-                    newArgumentsToAdd.Add("-nologo");
-                    hasSetNologo = true;
-                }
                 newArgumentsToAdd.Add("--verbosity:quiet");
             }
         }

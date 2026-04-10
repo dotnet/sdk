@@ -57,7 +57,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
         await using var test = new Test(output, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
+        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: moduleId,
@@ -86,7 +86,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
         await using var test = new Test(output, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
+        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: moduleId,
@@ -125,7 +125,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
         await using var test = new Test(output, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
+        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: Guid.NewGuid(),
