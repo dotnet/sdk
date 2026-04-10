@@ -891,11 +891,13 @@ public class ManifestTests
             manifest.ReadManifest();
         }
 
-        // Read again with a fresh manifest instance — should still be pruned (persisted)
+        // Read again with a fresh manifest instance — should still be pruned (persisted).
+        // Use ReadManifestWithoutPruning so we verify the prune was actually written to disk
+        // and not just re-pruned on the second read.
         var manifest2 = new DotnetupSharedManifest(testEnv.ManifestPath);
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            var data = manifest2.ReadManifest();
+            var data = manifest2.ReadManifestWithoutPruning();
             var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
             rootEntry.Should().NotBeNull();
             rootEntry!.Installations.Should().BeEmpty("prune should have been persisted to disk");

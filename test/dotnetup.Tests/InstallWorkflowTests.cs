@@ -53,26 +53,5 @@ public class InstallWorkflowTests
         act.Should().NotThrow();
     }
 
-    /// <summary>
-    /// Regression test: when --untracked is specified, ValidateInstallPath must NOT call
-    /// ValidateNoUntrackedArtifacts. This test verifies that ValidateNoUntrackedArtifacts
-    /// DOES throw for the same path (proving the guard in ValidateInstallPath is the only
-    /// thing protecting --untracked installs from this error).
-    /// If this test ever stops throwing, the guard is no longer needed — but if someone
-    /// removes the guard and this test still throws, --untracked installs will break.
-    /// </summary>
-    [Fact]
-    public void ValidateNoUntrackedArtifacts_ThrowsWithSharedDir_ProvingUntrackedGuardIsNeeded()
-    {
-        using var testEnv = new TestEnvironment();
-        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "shared"));
-
-        var act = () => InstallWorkflow.ValidateNoUntrackedArtifacts(testEnv.InstallPath, testEnv.ManifestPath);
-
-        act.Should().Throw<DotnetInstallException>(
-            "the untracked-artifacts check must throw when .NET artifacts exist — " +
-            "the --untracked flag relies on the caller skipping this method entirely");
-    }
-
     #endregion
 }

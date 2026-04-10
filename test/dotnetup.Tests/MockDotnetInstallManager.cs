@@ -41,7 +41,14 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public List<DotnetInstall> GetExistingSystemInstalls()
     {
         GetExistingSystemInstallsCallCount++;
-        return _existingSystemInstalls ?? throw new NotImplementedException();
+        if (_existingSystemInstalls is null)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Delegate to the real filtering logic in DotnetEnvironmentManager
+        // so tests exercise the same native-arch filter and sort as production.
+        return DotnetEnvironmentManager.FilterToNativeArchAndSort(_existingSystemInstalls);
     }
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();

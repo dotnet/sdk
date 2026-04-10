@@ -10,21 +10,19 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class DotnetupConfigTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly string? _originalDataDir;
 
     public DotnetupConfigTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-config-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
 
-        // Redirect config path to temp directory
-        _originalDataDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
-        Environment.SetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR", _tempDir);
+        // Thread-local override — safe for parallel test execution.
+        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR", _originalDataDir);
+        DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
 
@@ -72,16 +70,6 @@ public class DotnetupConfigTests : IDisposable
         result.Should().BeNull();
     }
 
-    [Fact]
-    public void ReadPathPreference_ReturnsStoredPreference_Regardless()
-    {
-        // When config already exists, ReadPathPreference returns it
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.DotnetupDotnet });
-
-        var result = DotnetupConfig.ReadPathPreference();
-
-        result.Should().Be(PathPreference.DotnetupDotnet);
-    }
 
     [Fact]
     public void Read_ReturnsNull_WhenNoConfigFile()

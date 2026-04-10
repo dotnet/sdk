@@ -15,20 +15,19 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class WalkthroughWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly string? _originalDataDir;
 
     public WalkthroughWorkflowTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-walkthrough-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
 
-        _originalDataDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
-        Environment.SetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR", _tempDir);
+        // Thread-local override — safe for parallel test execution.
+        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR", _originalDataDir);
+        DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
 
@@ -110,31 +109,31 @@ public class WalkthroughWorkflowTests : IDisposable
     // ── GetExistingSystemInstalls — architecture filtering ──
 
     [Fact]
-    public void GetExistingSystemInstalls_MockReturnsOnlyNativeArch()
+    public void GetExistingSystemInstalls_FiltersToNativeArchOnly()
     {
-        // Verify the mock contract: when GetExistingSystemInstalls is called,
-        // it should return only installs matching the native architecture.
-        // The real implementation filters via .Where(i => i.InstallRoot.Architecture == nativeArch).
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var foreignArch = nativeArch == InstallArchitecture.x64 ? InstallArchitecture.arm64 : InstallArchitecture.x64;
 
-        var nativeRoot = new DotnetInstallRoot("/dotnet", nativeArch);
-        var foreignRoot = new DotnetInstallRoot("/dotnet", foreignArch);
+        var nativeRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var foreignRoot = new DotnetInstallRoot(_tempDir, foreignArch);
 
-        // Simulate what the real implementation does: filter to native arch only
-        var allInstalls = new List<DotnetInstall>
-        {
-            new(nativeRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            new(foreignRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            new(nativeRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
-            new(foreignRoot, new ReleaseVersion("9.0.0"), InstallComponent.Runtime),
-        };
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls:
+            [
+                new DotnetInstall(nativeRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(foreignRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(nativeRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
+                new DotnetInstall(foreignRoot, new ReleaseVersion("9.0.0"), InstallComponent.Runtime),
+            ]);
 
-        // Apply the same filter that GetExistingSystemInstalls uses
-        var filtered = allInstalls.Where(i => i.InstallRoot.Architecture == nativeArch).ToList();
+        var result = mock.GetExistingSystemInstalls();
 
-        filtered.Should().HaveCount(2);
-        filtered.Should().OnlyContain(i => i.InstallRoot.Architecture == nativeArch);
+        result.Should().HaveCount(2);
+        result.Should().OnlyContain(i => i.InstallRoot.Architecture == nativeArch);
+        // Verify descending sort order from the real filter
+        result[0].Version.ToString().Should().BeOneOf("10.0.100", "10.0.0");
+        result[0].Version.CompareTo(result[1].Version).Should().BeGreaterThanOrEqualTo(0);
     }
 
     [Fact]

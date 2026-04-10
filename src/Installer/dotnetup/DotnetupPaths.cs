@@ -19,19 +19,45 @@ internal static class DotnetupPaths
 #pragma warning restore IDE0032
 
     /// <summary>
+    /// Thread-local override for the data directory, used by tests to avoid
+    /// mutating process-wide environment variables. Takes precedence over
+    /// the DOTNET_DOTNETUP_DATA_DIR environment variable.
+    /// </summary>
+    [ThreadStatic]
+    private static string? s_testDataDirectoryOverride;
+
+    /// <summary>
+    /// Sets a thread-local data directory override for testing.
+    /// Call <see cref="ClearTestDataDirectoryOverride"/> when done.
+    /// </summary>
+    public static void SetTestDataDirectoryOverride(string path) => s_testDataDirectoryOverride = path;
+
+    /// <summary>
+    /// Clears the thread-local data directory override.
+    /// </summary>
+    public static void ClearTestDataDirectoryOverride() => s_testDataDirectoryOverride = null;
+
+    /// <summary>
     /// Gets the base data directory for dotnetup.
     /// On Windows: %LOCALAPPDATA%\dotnetup
     /// On macOS: ~/Library/Application Support/dotnetup
     /// On Linux: $XDG_DATA_HOME/dotnetup or ~/.local/share/dotnetup
     /// </summary>
     /// <remarks>
-    /// Can be overridden via DOTNET_DOTNETUP_DATA_DIR environment variable.
+    /// Can be overridden via <see cref="SetTestDataDirectoryOverride"/> (thread-local, preferred for tests)
+    /// or via DOTNET_DOTNETUP_DATA_DIR environment variable.
     /// Throws if the base directory cannot be determined.
     /// </remarks>
     public static string DataDirectory
     {
         get
         {
+            // Thread-local test override takes highest precedence — parallel-safe.
+            if (s_testDataDirectoryOverride is not null)
+            {
+                return s_testDataDirectoryOverride;
+            }
+
             // Allow override for testing — avoids touching the real user profile.
             var overrideDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
             if (!string.IsNullOrEmpty(overrideDir))

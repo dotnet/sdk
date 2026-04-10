@@ -96,17 +96,13 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     public List<DotnetInstall> GetExistingSystemInstalls()
     {
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installs = new List<DotnetInstall>();
 
         foreach (var systemPath in GetSystemDotnetPaths())
         {
             try
             {
-                // Filter to only the native architecture to avoid cross-arch installs
-                // (e.g., x86 on x64 Windows). Cross-arch support is tracked separately.
-                installs.AddRange(HostFxrWrapper.getInstalls(systemPath)
-                    .Where(i => i.InstallRoot.Architecture == nativeArch));
+                installs.AddRange(HostFxrWrapper.getInstalls(systemPath));
             }
             catch (Exception ex)
             {
@@ -120,9 +116,23 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             }
         }
 
+        return FilterToNativeArchAndSort(installs);
+    }
+
+    /// <summary>
+    /// Filters a list of installs to only the native architecture and sorts descending by version.
+    /// Shared between production code and test mocks to ensure consistent behavior.
+    /// </summary>
+    public static List<DotnetInstall> FilterToNativeArchAndSort(List<DotnetInstall> installs)
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var filtered = installs
+            .Where(i => i.InstallRoot.Architecture == nativeArch)
+            .ToList();
+
         // Sort descending so newest versions appear first
-        installs.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
-        return installs;
+        filtered.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
+        return filtered;
     }
 
     /// <summary>
