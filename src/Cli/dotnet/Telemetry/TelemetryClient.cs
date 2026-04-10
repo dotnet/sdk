@@ -146,7 +146,7 @@ public class TelemetryClient : ITelemetryClient
 
         ActivityContext? parentContext = null;
 #if TARGET_WINDOWS
-        // Use the propegator to extract the parent activity context and kind.
+        // Use the propagator to extract the parent activity context and kind.
         // For some reason, this isn't set by the OTel SDK like docs say it should be.
         Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([new TraceContextPropagator(), new BaggagePropagator()]));
         parentContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier).ActivityContext;
