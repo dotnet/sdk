@@ -5,7 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
