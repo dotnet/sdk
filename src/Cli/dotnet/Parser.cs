@@ -382,9 +382,15 @@ public static class Parser
 
         private static bool IsInNuGetCommandTree(Command command)
         {
-            if (command is NuGetCommandDefinition) return true;
+            if (command is NuGetCommandDefinition)
+            {
+                return true;
+            }
+
             if (command.Parents.FirstOrDefault(p => p is Command) is Command parent)
+            {
                 return IsInNuGetCommandTree(parent);
+            }
             return false;
         }
     }
