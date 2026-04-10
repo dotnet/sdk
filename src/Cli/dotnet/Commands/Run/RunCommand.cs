@@ -469,7 +469,7 @@ public class RunCommand
 
         if (!RunCommandVerbosity.IsQuiet())
         {
-            Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
