@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             result.Should().NotBeNull();
             result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
-            // Verify both occurrences of --var are present (not deduplicated by Except)
+            // Verify duplicate forwarded arguments are preserved in order.
             result.Args.Should().Contain("--var a --var b");
         }
 
