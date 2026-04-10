@@ -48,7 +48,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
     <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
@@ -105,7 +104,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateBuildWasmBootJsonDependsOn>
       $(GenerateBuildWasmBootJsonDependsOn);
-      GenerateBuildBlazorBootExtensionJson;
     </GenerateBuildWasmBootJsonDependsOn>
 
     <ResolvePublishRelatedStaticWebAssetsDependsOn>
@@ -117,7 +115,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GeneratePublishWasmBootJsonDependsOn>
       $(GeneratePublishWasmBootJsonDependsOn);
-      GeneratePublishBlazorBootExtensionJson;
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
@@ -208,32 +205,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateBuildBlazorBootExtensionJson">
-    <PropertyGroup>
-      <_BlazorBuildBootExtensionJsonPath>$(IntermediateOutputPath)blazor.build.boot-extension.json</_BlazorBuildBootExtensionJsonPath>
-    </PropertyGroup>
-
-    <GenerateBlazorBootExtensionJson OutputPath="$(_BlazorBuildBootExtensionJsonPath)" />
-
-    <ItemGroup>
-      <FileWrites Include="$(_BlazorBuildBootExtensionJsonPath)" />
-      <WasmBootConfigExtension Include="$(_BlazorBuildBootExtensionJsonPath)" Key="blazor" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="GeneratePublishBlazorBootExtensionJson">
-    <PropertyGroup>
-      <_BlazorPublishBootExtensionJsonPath>$(IntermediateOutputPath)blazor.publish.boot-extension.json</_BlazorPublishBootExtensionJsonPath>
-    </PropertyGroup>
-
-    <GenerateBlazorBootExtensionJson OutputPath="$(_BlazorPublishBootExtensionJsonPath)" />
-
-    <ItemGroup>
-      <FileWrites Include="$(_BlazorPublishBootExtensionJsonPath)" />
-      <WasmBootConfigExtension Remove="@(WasmBootConfigExtension)" Condition="'%(Key)' == 'blazor'" />
-      <WasmBootConfigExtension Include="$(_BlazorPublishBootExtensionJsonPath)" Key="blazor" />
-    </ItemGroup>
-  </Target>
 
   <Import Project="$(CustomAfterBlazorWebAssemblySdkTargets)" Condition="'$(CustomAfterBlazorWebAssemblySdkTargets)' != '' and Exists('$(CustomAfterBlazorWebAssemblySdkTargets)')"/>
 
