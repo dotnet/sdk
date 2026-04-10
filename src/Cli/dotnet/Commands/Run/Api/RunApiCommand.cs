@@ -75,8 +75,8 @@ internal abstract class RunApiInput
             builder.CreateProjectInstance(
                 new ProjectCollection(),
                 errorReporter,
-                out _,
-                out var project,
+                project: out _,
+                out var projectRootElement,
                 out var evaluatedDirectives,
                 validateAllDirectives: true);
 
@@ -92,7 +92,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                ProjectPath = project.FullPath,
+                ProjectPath = projectRootElement.FullPath,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }

@@ -241,8 +241,8 @@ public sealed class VirtualProjectBuilder
             projectCollection,
             (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
             out var projectInstance,
-            out _,
-            out _);
+            projectRootElement: out _,
+            evaluatedDirectives: out _);
 
         return projectInstance;
     }

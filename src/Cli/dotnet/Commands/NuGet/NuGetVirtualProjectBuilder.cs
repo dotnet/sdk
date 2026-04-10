@@ -33,9 +33,9 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
         builder.CreateProjectInstance(
             projectCollection,
             ErrorReporters.IgnoringReporter,
-            out _,
+            project: out _,
             out var projectRootElement,
-            out _);
+            evaluatedDirectives: out _);
 
         return projectRootElement;
     }

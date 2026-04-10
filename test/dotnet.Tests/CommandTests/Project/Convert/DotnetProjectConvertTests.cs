@@ -1947,8 +1947,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             builder.CreateProjectInstance(
                 new ProjectCollection(),
                 errorReporter,
-                out _,
-                out _,
+                project: out _,
+                projectRootElement: out _,
                 out directives);
         }
         else
