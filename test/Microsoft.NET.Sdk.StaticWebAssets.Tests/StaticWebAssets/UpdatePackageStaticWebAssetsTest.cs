@@ -218,7 +218,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         var sourceFile = CreateTempFile("source", "framework.js", "content");
         var asset = CreateFrameworkAsset(sourceFile, "FxLib", "_content/fxlib", "framework.js");
 
-        // Get the fingerprint/integrity that were computed by FromV1TaskItem in CreateFrameworkAsset
+        // Get the fingerprint/integrity that were computed by FromTaskItemWithDefaults in CreateFrameworkAsset
         var originalFingerprint = asset.GetMetadata("Fingerprint");
         var originalIntegrity = asset.GetMetadata("Integrity");
 

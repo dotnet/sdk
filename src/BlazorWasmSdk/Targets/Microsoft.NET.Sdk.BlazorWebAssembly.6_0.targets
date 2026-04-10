@@ -121,9 +121,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     For projects (including some .NET 11+ projects) that still use pre-.NET11 packages, we resolve it from
     BlazorWebAssemblyJSPath set by the package .props file.
   -->
+  <PropertyGroup>
+    <_ResolveBlazorWasmOutputsDependsOn>ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild</_ResolveBlazorWasmOutputsDependsOn>
+    <_ResolveBlazorWasmOutputsDependsOn Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'">ResolveWasmOutputs;$(_ResolveBlazorWasmOutputsDependsOn)</_ResolveBlazorWasmOutputsDependsOn>
+  </PropertyGroup>
   <Target Name="_ResolveBlazorWasmOutputs"
     Condition="'$(BlazorWebAssemblyJSPath)' != '' Or '$(_TargetingNET110OrLater)' != 'true'"
-    DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild"
+    DependsOnTargets="$(_ResolveBlazorWasmOutputsDependsOn)"
     BeforeTargets="_RazorPrepareForRun">
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />

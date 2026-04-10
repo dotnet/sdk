@@ -1,1 +1,8 @@
-[]
+[
+  "${OutputPath}\\wwwroot\\_framework\\blazor.webassembly.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.webassembly.js.gz",
+  "${OutputPath}\\wwwroot\\custom-service-worker-assets.js",
+  "${OutputPath}\\wwwroot\\custom-service-worker-assets.js.gz",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js.gz"
+]

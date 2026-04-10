@@ -12,8 +12,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project ToolsVersion="14.0">
 
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.5_0.targets" Condition="'$(UseStaticWebAssetsV2)' != 'true'" />
-
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.targets" Condition="'$(UseStaticWebAssetsV2)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.targets" />
 
 </Project>

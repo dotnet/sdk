@@ -8,23 +8,23 @@
   "ReferencedProjectsConfiguration": [
     {
       "Identity": "${ProjectPath}\\blazorwasm\\blazorwasm.csproj",
-      "Version": 1,
+      "Version": 2,
       "Source": "blazorwasm",
-      "GetPublishAssetsTargets": "",
-      "AdditionalPublishProperties": "",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "_PublishingBlazorWasmProject=true",
       "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",
-      "GetBuildAssetsTargets": "GetCurrentProjectStaticWebAssetsV2",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\RazorClassLibrary.csproj",
-      "Version": 1,
+      "Version": 2,
       "Source": "RazorClassLibrary",
-      "GetPublishAssetsTargets": "",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "",
       "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
-      "GetBuildAssetsTargets": "GetCurrentProjectStaticWebAssetsV2",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     }
@@ -41,34 +41,11 @@
       "Name": "blazorwasm\\wwwroot",
       "Source": "blazorwasm",
       "ContentRoot": "${ProjectPath}\\blazorwasm\\wwwroot\\",
-      "BasePath": "/",
+      "BasePath": "_content/blazorwasm",
       "Pattern": "**"
     }
   ],
   "Assets": [
-    {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "Fake-License.txt.gz",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\styles.css.gz",
       "SourceId": "RazorClassLibrary",
@@ -84,6 +61,7 @@
       "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -107,6 +85,7 @@
       "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -116,12 +95,60 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm.styles.css.gz",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\Fake-License.txt.gz",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "blazorwasm.styles.css.gz",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "Fake-License.txt.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\_content\\blazorwasm\\Fake-License.txt.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "_framework/blazor.webassembly.js.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
       "AssetRole": "Alternative",
@@ -130,20 +157,21 @@
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.gz",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\index.html.gz",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
+      "BasePath": "_content/blazorwasm",
       "RelativePath": "index.html.gz",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -153,34 +181,12 @@
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "/",
-      "RelativePath": "Fake-License.txt.br",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "br",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.br",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\_content\\blazorwasm\\index.html.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -199,6 +205,7 @@
       "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -222,6 +229,7 @@
       "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -231,12 +239,60 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\Fake-License.txt.br",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "/",
-      "RelativePath": "blazorwasm.styles.css.br",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "Fake-License.txt.br",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\_content\\blazorwasm\\Fake-License.txt.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "_framework/blazor.webassembly.js.br",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
       "AssetRole": "Alternative",
@@ -245,20 +301,117 @@
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.br",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.br",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "/",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "css/app.css.br",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\_content\\blazorwasm\\css\\app.css.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "css/app.css.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\_content\\blazorwasm\\css\\app.css.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "custom-service-worker-assets.js.br",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\_content\\blazorwasm\\custom-service-worker-assets.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "custom-service-worker-assets.js.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\_content\\blazorwasm\\custom-service-worker-assets.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\index.html.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
       "RelativePath": "index.html.br",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -268,11 +421,108 @@
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.br",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\_content\\blazorwasm\\index.html.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "serviceworkers/my-service-worker.js.br",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "serviceworkers/my-service-worker.js.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "css/app.css",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "_framework/blazor.webassembly.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "boot",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${Tfm}\\blazor.webassembly.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -281,8 +531,8 @@
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\",
-      "BasePath": "/",
-      "RelativePath": "blazorwasm.styles.css",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "blazorwasm#[.{fingerprint}]?.styles.css",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
       "AssetRole": "Primary",
@@ -291,6 +541,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ApplicationBundle",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -300,11 +551,59 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "custom-service-worker-assets.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "BlazorServiceWorker",
+      "AssetTraitValue": "ServiceWorkerManifest",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "serviceworkers/my-service-worker.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "BlazorServiceWorker",
+      "AssetTraitValue": "ServiceWorkerJs",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\serviceworkers\\my-prod-service-worker.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorwasm\\wwwroot\\",
-      "BasePath": "/",
+      "BasePath": "_content/blazorwasm",
       "RelativePath": "Fake-License.txt",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -314,6 +613,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -327,7 +627,7 @@
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorwasm\\wwwroot\\",
-      "BasePath": "/",
+      "BasePath": "_content/blazorwasm",
       "RelativePath": "index.html",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -337,6 +637,7 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
@@ -360,11 +661,12 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
+      "OriginalItemSpec": "wwwroot\\styles.css",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -383,108 +685,17 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
+      "AssetGroups": "",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "OriginalItemSpec": "wwwroot\\wwwroot\\exampleJsInterop.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [
-    {
-      "Route": "Fake-License.txt.gz",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/plain"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "Fake-License.txt",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/plain"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
     {
       "Route": "_content/RazorClassLibrary/styles.css.gz",
       "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\styles.css.gz",
@@ -670,8 +881,192 @@
       ]
     },
     {
-      "Route": "blazorwasm.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm.styles.css.gz",
+      "Route": "_content/blazorwasm/Fake-License.txt.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\Fake-License.txt.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/Fake-License.txt",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\Fake-License.txt.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/_framework/blazor.webassembly.js.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/_framework/blazor.webassembly.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/blazorwasm.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -711,8 +1106,57 @@
       ]
     },
     {
-      "Route": "blazorwasm.styles.css",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm.styles.css.gz",
+      "Route": "_content/blazorwasm/blazorwasm.__fingerprint__.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "blazorwasm.styles.css.gz"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/blazorwasm.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -762,8 +1206,67 @@
       ]
     },
     {
-      "Route": "index.html.gz",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
+      "Route": "_content/blazorwasm/blazorwasm.__fingerprint__.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/blazorwasm/blazorwasm.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/index.html.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\index.html.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -803,8 +1306,8 @@
       ]
     },
     {
-      "Route": "index.html",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
+      "Route": "_content/blazorwasm/index.html",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\blazorwasm\\index.html.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -828,98 +1331,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/html"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
-      "Route": "Fake-License.txt.br",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/plain"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "Fake-License.txt",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/plain"
         },
         {
           "Name": "ETag",
@@ -1130,8 +1541,192 @@
       ]
     },
     {
-      "Route": "blazorwasm.styles.css.br",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
+      "Route": "_content/blazorwasm/Fake-License.txt.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\Fake-License.txt.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/Fake-License.txt",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\Fake-License.txt.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/_framework/blazor.webassembly.js.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/_framework/blazor.webassembly.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\_framework\\blazor.webassembly.js.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/blazorwasm.styles.css.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1171,8 +1766,57 @@
       ]
     },
     {
-      "Route": "blazorwasm.styles.css",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
+      "Route": "_content/blazorwasm/blazorwasm.__fingerprint__.styles.css.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "blazorwasm.styles.css.br"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/blazorwasm.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1222,8 +1866,435 @@
       ]
     },
     {
-      "Route": "index.html.br",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
+      "Route": "_content/blazorwasm/blazorwasm.__fingerprint__.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/blazorwasm/blazorwasm.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/css/app.css.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/css/app.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/css/app.css.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/css/app.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\css\\app.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/custom-service-worker-assets.js.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/custom-service-worker-assets.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/custom-service-worker-assets.js.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/custom-service-worker-assets.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\custom-service-worker-assets.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/index.html.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\index.html.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1263,8 +2334,8 @@
       ]
     },
     {
-      "Route": "index.html",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
+      "Route": "_content/blazorwasm/index.html",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\index.html.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1314,7 +2385,265 @@
       ]
     },
     {
-      "Route": "blazorwasm.styles.css",
+      "Route": "_content/blazorwasm/serviceworkers/my-service-worker.js.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/serviceworkers/my-service-worker.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/serviceworkers/my-service-worker.js.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/serviceworkers/my-service-worker.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorwasm\\serviceworkers\\my-service-worker.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/css/app.css",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/_framework/blazor.webassembly.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/blazorwasm.styles.css",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1351,7 +2680,126 @@
       ]
     },
     {
-      "Route": "Fake-License.txt",
+      "Route": "_content/blazorwasm/blazorwasm.__fingerprint__.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/blazorwasm/blazorwasm.styles.css"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/custom-service-worker-assets.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/serviceworkers/my-service-worker.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/blazorwasm/Fake-License.txt",
       "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1388,7 +2836,7 @@
       ]
     },
     {
-      "Route": "index.html",
+      "Route": "_content/blazorwasm/index.html",
       "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [

@@ -360,7 +360,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -426,13 +426,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -498,13 +498,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -565,13 +565,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -637,13 +637,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -709,13 +709,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),

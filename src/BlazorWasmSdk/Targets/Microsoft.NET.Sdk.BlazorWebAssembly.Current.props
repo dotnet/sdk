@@ -27,6 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
 
     <!-- Static web assets defaults -->
+    <StaticWebAssetsEnabled>true</StaticWebAssetsEnabled>
     <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalEmbeddedPublishProperties>$(StaticWebAssetsAdditionalEmbeddedPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalEmbeddedPublishProperties>
