@@ -122,7 +122,7 @@ This file should be imported by eng/Versions.props
     <NuGetProtocolPackageVersion>7.6.0-rc.20910</NuGetProtocolPackageVersion>
     <NuGetVersioningPackageVersion>7.6.0-rc.20910</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>11.0.0-preview.4.26208.110</SystemCodeDomPackageVersion>
-    <SystemCommandLinePackageVersion>3.0.0-preview.4.26208.110</SystemCommandLinePackageVersion>
+    <SystemCommandLinePackageVersion>3.0.0-preview.4.26202.104</SystemCommandLinePackageVersion>
     <SystemComponentModelCompositionPackageVersion>11.0.0-preview.4.26208.110</SystemComponentModelCompositionPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>11.0.0-preview.4.26208.110</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>11.0.0-preview.4.26208.110</SystemCompositionConventionPackageVersion>

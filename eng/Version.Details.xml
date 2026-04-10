@@ -387,9 +387,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine" Version="3.0.0-preview.4.26208.110">
+    <Dependency Name="System.CommandLine" Version="3.0.0-preview.4.26202.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
+      <Sha>0d6cc667e66d7bec23439335118137f78c70306c</Sha>
     </Dependency>
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
