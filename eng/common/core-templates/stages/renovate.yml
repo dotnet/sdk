@@ -68,7 +68,7 @@ parameters:
   type: object
   default:
     name: NetCore1ESPool-Internal
-    image: windows.vs2026.amd64
+    image: 1es-windows-2022
     os: windows
 
 resources:
