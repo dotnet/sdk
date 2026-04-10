@@ -830,7 +830,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
         if (string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) || FileLength == -1 || LastWriteTime == DateTimeOffset.MinValue)
         {
-            var file = ResolveFile(Identity, OriginalItemSpec);
+            var file = ResolveFile();
             (Fingerprint, Integrity) = string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) ?
                 ComputeFingerprintAndIntegrityIfNeeded(file) : (Fingerprint, Integrity);
             FileLength = FileLength == -1 ? file.Length : FileLength;
@@ -859,9 +859,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return (FileHasher.ToBase36(hash), Convert.ToBase64String(hash));
     }
 
-    internal static string ComputeIntegrity(string identity, string originalItemSpec)
+    internal static string ComputeIntegrity(string identity)
     {
-        var fileInfo = ResolveFile(identity, originalItemSpec);
+        var fileInfo = ResolveFile(identity);
         return ComputeIntegrity(fileInfo);
     }
 
@@ -1540,22 +1540,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pattern.RawPattern.ToString();
     }
 
-    internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
+    internal FileInfo ResolveFile() => new FileInfo(Identity);
 
-    internal static FileInfo ResolveFile(string identity, string originalItemSpec)
+    internal static FileInfo ResolveFile(string identity)
     {
-        var fileInfo = new FileInfo(identity);
-        if (fileInfo.Exists)
-        {
-            return fileInfo;
-        }
-        fileInfo = new FileInfo(originalItemSpec);
-        if (fileInfo.Exists)
-        {
-            return fileInfo;
-        }
-
-        throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
+        return new FileInfo(identity);
     }
 
     internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)

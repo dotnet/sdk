@@ -70,7 +70,6 @@ public partial class DefineStaticWebAssets : Task
     internal class DefineStaticWebAssetsCache
     {
         private readonly List<ITaskItem> _assets = [];
-        private readonly List<ITaskItem> _copyCandidates = [];
         private string? _manifestPath;
         private IDictionary<string, ITaskItem>? _inputByHash;
         private ITaskItem[]? _noCacheCandidates;
@@ -90,7 +89,6 @@ public partial class DefineStaticWebAssets : Task
 
         // Outputs for the cache
         public Dictionary<string, StaticWebAsset> CachedAssets { get; set; } = [];
-        public Dictionary<string, CopyCandidate> CachedCopyCandidates { get; set; } = [];
 
         internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string manifestPath)
         {
@@ -131,16 +129,6 @@ public partial class DefineStaticWebAssets : Task
             }
         }
 
-        internal void AppendCopyCandidate(string hash, string identity, string targetPath)
-        {
-            var copyCandidate = new CopyCandidate(identity, targetPath);
-            _copyCandidates.Add(copyCandidate.ToTaskItem());
-            if (!string.IsNullOrEmpty(hash))
-            {
-                CachedCopyCandidates[hash] = copyCandidate;
-            }
-        }
-
         internal void Update(
             byte[] propertiesHash,
             byte[] fingerprintPatternsHash,
@@ -166,7 +154,6 @@ public partial class DefineStaticWebAssets : Task
             FingerprintPatternsHash = fingerprintPatternsHash;
             PropertyOverridesHash = propertyOverridesHash;
             CachedAssets.Clear();
-            CachedCopyCandidates.Clear();
             InputHashes = [.. inputsByHash.Keys];
             _inputByHash = inputsByHash;
         }
@@ -189,10 +176,6 @@ public partial class DefineStaticWebAssets : Task
                 {
                     _assets.Add(cachedAsset.Value.ToTaskItem());
                 }
-                foreach (var cachedCopyCandidate in CachedCopyCandidates)
-                {
-                    _copyCandidates.Add(cachedCopyCandidate.Value.ToTaskItem());
-                }
 
                 _cacheUpToDate = true;
                 _log?.LogMessage(MessageImportance.Low, "Cache is fully up to date.");
@@ -212,10 +195,6 @@ public partial class DefineStaticWebAssets : Task
                 {
                     _log?.LogMessage(MessageImportance.Low, "Asset {0} is up to date", candidate.ItemSpec);
                     _assets.Add(asset.ToTaskItem());
-                    if (CachedCopyCandidates.TryGetValue(hash, out var copyCandidate))
-                    {
-                        _copyCandidates.Add(copyCandidate.ToTaskItem());
-                    }
                 }
             }
 
@@ -225,7 +204,6 @@ public partial class DefineStaticWebAssets : Task
             foreach (var hash in assetsToRemove)
             {
                 CachedAssets.Remove(hash);
-                CachedCopyCandidates.Remove(hash);
             }
 
             _inputByHash = remainingCandidates;
@@ -233,7 +211,7 @@ public partial class DefineStaticWebAssets : Task
 
         internal void SetPathAndLogger(string? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
 
-        public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) GetComputedOutputs() => (_copyCandidates, _assets);
+        public IList<ITaskItem> GetComputedOutputs() => _assets;
 
         internal void NoCache(ITaskItem[] candidateAssets)
         {
@@ -262,14 +240,6 @@ public partial class DefineStaticWebAssets : Task
         }
 
         internal bool IsUpToDate() => _cacheUpToDate;
-    }
-
-    internal class CopyCandidate(string identity, string targetPath)
-    {
-        public string Identity { get; set; } = identity;
-        public string TargetPath { get; set; } = targetPath;
-
-        internal ITaskItem ToTaskItem() => new TaskItem(Identity, new Dictionary<string, string> { ["TargetPath"] = TargetPath });
     }
 
     [JsonSerializable(typeof(DefineStaticWebAssetsCache))]

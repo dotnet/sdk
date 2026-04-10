@@ -72,9 +72,6 @@ public partial class DefineStaticWebAssets : Task
     [Output]
     public ITaskItem[] Assets { get; set; }
 
-    [Output]
-    public ITaskItem[] CopyCandidates { get; set; }
-
     public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
 
     private HashSet<string> _overrides;
@@ -99,9 +96,7 @@ public partial class DefineStaticWebAssets : Task
 
         if (assetsCache.IsUpToDate())
         {
-            var outputs = assetsCache.GetComputedOutputs();
-            Assets = [.. outputs.Assets];
-            CopyCandidates = [.. outputs.CopyCandidates];
+            Assets = [.. assetsCache.GetComputedOutputs()];
         }
         else
         {
@@ -266,23 +261,7 @@ public partial class DefineStaticWebAssets : Task
                 {
                     // We ignore the content root for publish only assets since it doesn't matter.
                     var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
-                    (identity, var computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher, matchContext);
-
-                    if (computed)
-                    {
-                        // If we synthesized identity and there is a fingerprint placeholder pattern in the file name
-                        // expand it to the concrete fingerprinted file name while keeping RelativePath pattern form.
-                        if (FingerprintCandidates && !string.IsNullOrEmpty(fingerprint))
-                        {
-                            var fileNamePattern = Path.GetFileName(identity);
-                            if (fileNamePattern.Contains("#["))
-                            {
-                                var expanded = StaticWebAssetPathPattern.ExpandIdentityFileNameForFingerprint(fileNamePattern, fingerprint);
-                                identity = Path.Combine(Path.GetDirectoryName(identity) ?? string.Empty, expanded);
-                            }
-                        }
-                        assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
-                    }
+                    identity = ComputeCandidateIdentity(candidate, contentRootPrefix);
                 }
 
                 var asset = StaticWebAsset.FromProperties(
@@ -340,13 +319,9 @@ public partial class DefineStaticWebAssets : Task
                 assetsCache.AppendAsset(hash, asset, item);
             }
 
-            var outputs = assetsCache.GetComputedOutputs();
-            var results = outputs.Assets;
-
             assetsCache.WriteCacheManifest();
 
-            Assets = [.. outputs.Assets];
-            CopyCandidates = [.. outputs.CopyCandidates];
+            Assets = [.. assetsCache.GetComputedOutputs()];
             }
             catch (Exception ex)
             {
@@ -365,75 +340,39 @@ public partial class DefineStaticWebAssets : Task
         {
             return TestResolveFileDetails(identity, originalItemSpec);
         }
-        var file = StaticWebAsset.ResolveFile(identity, originalItemSpec);
+        var file = new FileInfo(identity);
+        if (!file.Exists)
+        {
+            throw new InvalidOperationException($"No file exists for the asset at location '{identity}'.");
+        }
         var fileLength = file.Length;
         var lastWriteTimeUtc = file.LastWriteTimeUtc;
         return (file, fileLength, lastWriteTimeUtc);
     }
 
-    private (string identity, bool computed) ComputeCandidateIdentity(
+    private string ComputeCandidateIdentity(
         ITaskItem candidate,
-        string contentRoot,
-        string relativePath,
-        StaticWebAssetGlobMatcher matcher,
-        StaticWebAssetGlobMatcher.MatchContext matchContext)
+        string contentRoot)
     {
         var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
         if (contentRoot == null)
         {
             Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because content root is not defined.", candidate.ItemSpec, candidateFullPath);
-            return (candidateFullPath, false);
+            return candidateFullPath;
         }
 
         var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
         if (candidateFullPath.StartsWith(normalizedContentRoot))
         {
             Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it starts with content root '{2}'.", candidate.ItemSpec, candidateFullPath, normalizedContentRoot);
-            return (candidateFullPath, false);
         }
         else
         {
-            // We want to support assets that are part of the source codebase but that might get transformed during the build or
-            // publish processes, so we want to allow defining these assets by setting up a different content root path from their
-            // original location in the project. For example the asset can be wwwroot\my-prod-asset.js, the content root can be
-            // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
-            GlobMatch matchResult = default;
-            if (matcher != null)
-            {
-                matchContext.SetPathAndReinitialize(StaticWebAssetPathPattern.PathWithoutTokens(candidate.ItemSpec));
-                matchResult = matcher.Match(matchContext);
-            }
-            if (matcher == null)
-            {
-                // If no relative path pattern was specified, we are going to suggest that the identity is `%(ContentRoot)\RelativePath\OriginalFileName`
-                // We don't want to use the relative path file name since multiple assets might map to that and conflicts might arise.
-                // Alternatively, we could be explicit here and support ContentRootSubPath to indicate where it needs to go.
-                var identitySubPath = Path.GetDirectoryName(relativePath);
-                var itemSpecFileName = Path.GetFileName(candidateFullPath);
-                var relativeFileName = Path.GetFileName(relativePath);
-                // If the relative path filename has been modified (e.g. fingerprint pattern appended) use it when synthesizing identity.
-                if (!string.IsNullOrEmpty(relativeFileName) && !string.Equals(relativeFileName, itemSpecFileName, StringComparison.OrdinalIgnoreCase))
-                {
-                    itemSpecFileName = relativeFileName;
-                }
-                var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath ?? string.Empty, itemSpecFileName);
-                Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
-                return (finalIdentity, true);
-            }
-            else if (!matchResult.IsMatch)
-            {
-                Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it didn't match the relative path pattern", candidate.ItemSpec, candidateFullPath);
-                return (candidateFullPath, false);
-            }
-            else
-            {
-                var stem = matchResult.Stem;
-                var assetIdentity = Path.GetFullPath(Path.Combine(normalizedContentRoot, stem));
-                Log.LogMessage(MessageImportance.Low, "Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
-
-                return (assetIdentity, true);
-            }
+            // The asset is not under the content root. Use the candidate's real file path as the identity.
+            Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, candidateFullPath, normalizedContentRoot);
         }
+
+        return candidateFullPath;
     }
 
     private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
