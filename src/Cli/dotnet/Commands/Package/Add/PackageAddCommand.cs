@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -199,8 +200,32 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             NoBuild = true,
         };
 
-        var projectCollection = new ProjectCollection();
-        var projectInstance = command.CreateProjectInstance(projectCollection);
+        // MSBuild environment variables (MSBuildSDKsPath, MSBuildExtensionsPath, DOTNET_HOST_PATH)
+        // must be set before evaluating the virtual project in-process, so that MSBuild can
+        // resolve the 'Microsoft.NET.Sdk' SDK.  VirtualProjectBuildingCommand.Execute() sets them
+        // automatically, but we need the project instance *before* running Execute(), so we set
+        // them up here and restore them afterward.
+        Dictionary<string, string?> savedMSBuildEnvironmentVariables = [];
+        foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
+        {
+            savedMSBuildEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, value);
+        }
+
+        ProjectCollection projectCollection;
+        ProjectInstance projectInstance;
+        try
+        {
+            projectCollection = new ProjectCollection();
+            projectInstance = command.CreateProjectInstance(projectCollection);
+        }
+        finally
+        {
+            foreach (var (key, value) in savedMSBuildEnvironmentVariables)
+            {
+                Environment.SetEnvironmentVariable(key, value);
+            }
+        }
 
         // Set initial version to Directory.Packages.props and/or C# file
         // (we always need to add the package reference to the C# file but when CPM is enabled, it's added without a version).
