@@ -147,7 +147,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompressionEnabled Condition="'$(CompressionEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET60OrLater)</CompressionEnabled>
   </PropertyGroup>
 
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.SingleTargeting.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true' And '$(IsCrossTargetingBuild)' != 'true'" />
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true' And '$(IsCrossTargetingBuild)' != 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.CrossTargeting.targets" Condition="'$(IsCrossTargetingBuild)' == 'true'" />
 

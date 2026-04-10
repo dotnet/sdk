@@ -8,23 +8,23 @@
   "ReferencedProjectsConfiguration": [
     {
       "Identity": "${ProjectPath}\\AnotherClassLib\\AnotherClassLib.csproj",
-      "Version": 1,
+      "Version": 2,
       "Source": "AnotherClassLib",
-      "GetPublishAssetsTargets": "",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "",
       "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
-      "GetBuildAssetsTargets": "GetCurrentProjectStaticWebAssetsV2",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\ClassLibrary.csproj",
-      "Version": 1,
+      "Version": 2,
       "Source": "ClassLibrary",
-      "GetPublishAssetsTargets": "",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "",
       "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
-      "GetBuildAssetsTargets": "GetCurrentProjectStaticWebAssetsV2",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     }
@@ -66,7 +66,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "OriginalItemSpec": "wwwroot\\css\\site.css",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -90,7 +90,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "OriginalItemSpec": "wwwroot\\js\\project-direct-dep.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -167,12 +167,12 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "SourceId": "ClassLibrary",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "_content/ClassLibrary",
-      "RelativePath": "ClassLibrary.bundle.scp.css.gz",
+      "RelativePath": "ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
@@ -186,7 +186,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -364,7 +364,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\",
       "BasePath": "_content/ClassLibrary",
-      "RelativePath": "ClassLibrary.bundle.scp.css",
+      "RelativePath": "ClassLibrary#[.{fingerprint}]!.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Primary",
@@ -402,7 +402,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -426,7 +426,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.v4.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -729,7 +729,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -784,7 +784,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -996,7 +996,7 @@
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1036,8 +1036,57 @@
       ]
     },
     {
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ClassLibrary.bundle.scp.css.gz"
+        }
+      ]
+    },
+    {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1079,6 +1128,65 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
         },
         {
           "Name": "original-resource",
@@ -1773,7 +1881,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1814,7 +1922,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1870,6 +1978,51 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
         }
       ]
     },

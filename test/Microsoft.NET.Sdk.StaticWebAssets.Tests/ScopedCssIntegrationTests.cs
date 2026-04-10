@@ -583,7 +583,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var appBundle = new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css"));
             appBundle.Should().Exist();
 
-            appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
+            appBundle.Should().Match(""".*_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
             appBundle.Should().Match(""".*_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
@@ -630,7 +630,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var appBundle = new FileInfo(Path.Combine(outputPath, "wwwroot", "AppWithPackageAndP2PReference.styles.css"));
             appBundle.Should().Exist();
 
-            appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
+            appBundle.Should().Match(""".*_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
             appBundle.Should().Match("""_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css""");
         }
     }
