@@ -30,8 +30,12 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
 
     public override int Invoke(ParseResult parseResult)
     {
-        // Only set verbose output on built-in commands.
-        if (!parseResult.IsDotnetBuiltInCommand())
+        // Required because of: https://github.com/dotnet/command-line-api/pull/2708
+        // S.CL now always invokes non-terminating option actions for implicit (default-valued) options.
+        // Meaning, this action always runs independent of the option being provided or not.
+        if (parseResult.GetResult(Option) is not { } result || result.Implicit
+            // Only set verbose output on built-in commands.
+            || !parseResult.IsDotnetBuiltInCommand())
         {
             return 0;
         }
