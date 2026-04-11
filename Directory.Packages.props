@@ -120,7 +120,7 @@
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
-    <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+    <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" ExcludeAssets="buildTransitive" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="$(SystemCommandLineNamingConventionBinderVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Composition.AttributedModel" Version="$(SystemCompositionAttributedModelPackageVersion)" />
