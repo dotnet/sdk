@@ -214,5 +214,76 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty2");
         }
+
+        [Fact]
+        public void ItSendsProjectEvaluationTelemetryOnBuildFinish()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            fakeTelemetry.Enabled = true;
+            var logger = new MSBuildLogger(fakeTelemetry);
+
+            // Simulate multiple project evaluations
+            var evaluation1 = new ProjectEvaluationFinishedEventArgs("Project1.csproj")
+            {
+                ProfilerResult = new Microsoft.Build.Framework.Profiler.ProfilerResult(
+                    new Dictionary<Microsoft.Build.Framework.Profiler.EvaluationLocation, Microsoft.Build.Framework.Profiler.ProfiledLocation>()
+                )
+            };
+            var evaluation2 = new ProjectEvaluationFinishedEventArgs("Project2.csproj")
+            {
+                ProfilerResult = new Microsoft.Build.Framework.Profiler.ProfilerResult(
+                    new Dictionary<Microsoft.Build.Framework.Profiler.EvaluationLocation, Microsoft.Build.Framework.Profiler.ProfiledLocation>()
+                )
+            };
+            var evaluation3 = new ProjectEvaluationFinishedEventArgs("Project3.csproj")
+            {
+                ProfilerResult = new Microsoft.Build.Framework.Profiler.ProfilerResult(
+                    new Dictionary<Microsoft.Build.Framework.Profiler.EvaluationLocation, Microsoft.Build.Framework.Profiler.ProfiledLocation>()
+                )
+            };
+
+            // Simulate the status event handler being called
+            var statusEventArgs1 = (BuildStatusEventArgs)evaluation1;
+            var statusEventArgs2 = (BuildStatusEventArgs)evaluation2;
+            var statusEventArgs3 = (BuildStatusEventArgs)evaluation3;
+
+            // Call the internal handler method through reflection
+            var onStatusMethod = typeof(MSBuildLogger).GetMethod("OnStatusEventRaised", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            onStatusMethod.Invoke(logger, new object[] { null, statusEventArgs1 });
+            onStatusMethod.Invoke(logger, new object[] { null, statusEventArgs2 });
+            onStatusMethod.Invoke(logger, new object[] { null, statusEventArgs3 });
+
+            logger.SendAggregatedEventsOnBuildFinished(fakeTelemetry);
+
+            // Should have the evaluation telemetry event
+            var evaluationEntry = fakeTelemetry.LogEntries.FirstOrDefault(e => e.EventName == "msbuild/projectevaluations");
+            evaluationEntry.Should().NotBeNull();
+            evaluationEntry.Properties["TotalCount"].Should().Be("3");
+            
+            // Should have measurements
+            evaluationEntry.Measurement.Should().NotBeNull();
+            evaluationEntry.Measurement.Should().ContainKey("TotalDurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("AverageDurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("MinDurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("MaxDurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("P50DurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("P90DurationInMilliseconds");
+            evaluationEntry.Measurement.Should().ContainKey("P95DurationInMilliseconds");
+        }
+
+        [Fact]
+        public void ItDoesNotSendEvaluationTelemetryWhenNoEvaluationsOccur()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            fakeTelemetry.Enabled = true;
+            var logger = new MSBuildLogger(fakeTelemetry);
+
+            logger.SendAggregatedEventsOnBuildFinished(fakeTelemetry);
+
+            // Should not have any evaluation telemetry event
+            var evaluationEntry = fakeTelemetry.LogEntries.FirstOrDefault(e => e.EventName == "msbuild/projectevaluations");
+            evaluationEntry.Should().BeNull();
+        }
     }
 }
