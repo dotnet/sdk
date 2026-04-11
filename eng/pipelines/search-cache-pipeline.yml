@@ -5,8 +5,8 @@
 trigger: none
 # Trigger periodically instead.
 schedules:
-- cron: 0 * * * *
-  displayName: Run every hour
+- cron: 0 0 * * *
+  displayName: Run once a day
   branches:
     include:
     - main
@@ -137,10 +137,14 @@ extends:
             -SkipNonVersionedFiles
           displayName: Install latest daily .NET version
 
-        - bash: >
-            $(Build.SourcesDirectory)/.dotnet/dotnet run --no-build
-            --project $(Build.SourcesDirectory)/tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
-            -- --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
+        - bash: |
+            projectPath=$(Build.SourcesDirectory)/tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
+            netCurrent=$($(Build.SourcesDirectory)/.dotnet/dotnet msbuild $projectPath -getProperty:NetCurrent)
+            echo "Resolved NetCurrent: $netCurrent"
+            $(Build.SourcesDirectory)/.dotnet/dotnet run --no-build \
+              --framework $netCurrent \
+              --project $projectPath \
+              -- --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
           displayName: Run Cache Updater
 
         - task: CopyFiles@2

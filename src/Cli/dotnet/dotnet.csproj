@@ -46,16 +46,13 @@
     <Compile Remove="Microsoft\VisualStudio\**" />
     <Compile Remove="Installer\Windows\**" />
     <Compile Remove="Commands\Workload\Install\MsiInstallerBase.cs" />
+    <Compile Remove="Commands\Workload\Install\MsiPackageCache.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.InstallRecords.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.PackGroup.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerServer.cs" />
     <Compile Remove="Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-    <Compile Remove="Commands\Workload\SignCheck_Unix.cs" />
   </ItemGroup>
 
   <ItemGroup>
