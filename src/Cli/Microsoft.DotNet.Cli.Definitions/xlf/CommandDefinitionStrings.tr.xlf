@@ -837,7 +837,7 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
 To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
         <target state="needs-review-translation">Yüklenecek NuGet paket kimliği veya klasör yolu ya da NuGet paketi. 
-Belirli bir sürümün NuGet paketini yüklemek için &lt;package ID&gt;::&lt;version&gt; kullanın.
+Belirli bir sürümün NuGet paketini yüklemek için &lt;package ID&gt;@&lt;version&gt; kullanın.
 </target>
         <note />
       </trans-unit>

@@ -837,7 +837,7 @@ Příklady:
 To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
         <target state="needs-review-translation">ID balíčku NuGet nebo cesta ke složce nebo balíčku NuGet, který se má nainstalovat. 
-Pokud chcete nainstalovat balíček NuGet určité verze, použijte &lt;package ID&gt;::&lt;version&gt;.
+Pokud chcete nainstalovat balíček NuGet určité verze, použijte &lt;package ID&gt;@&lt;version&gt;.
 </target>
         <note />
       </trans-unit>
