@@ -837,7 +837,7 @@ Examples:
 To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
         <target state="needs-review-translation">要安装的 NuGet 包的 NuGet 包 ID 或文件夹路径。
-若要安装特定版本的 NuGet 包，请使用 &lt;package ID&gt;::&lt;version&gt;。
+若要安装特定版本的 NuGet 包，请使用 &lt;package ID&gt;@&lt;version&gt;。
 </target>
         <note />
       </trans-unit>

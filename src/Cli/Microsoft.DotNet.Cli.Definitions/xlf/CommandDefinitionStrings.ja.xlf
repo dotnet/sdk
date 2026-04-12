@@ -837,7 +837,7 @@ Examples:
 To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
         <target state="needs-review-translation">NuGet パッケージ ID、フォルダーのパス、またはインストールする NuGet パッケージ。
-特定のバージョンの NuGet パッケージをインストールするには、&lt;package ID&gt;::&lt;version&gt; を使用します。
+特定のバージョンの NuGet パッケージをインストールするには、&lt;package ID&gt;@&lt;version&gt; を使用します。
 </target>
         <note />
       </trans-unit>
