@@ -834,9 +834,9 @@ Examples:
       </trans-unit>
       <trans-unit id="Command_Install_Argument_Package">
         <source>NuGet package ID or path to folder or NuGet package to install. 
-To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
-        <target state="translated">NuGet パッケージ ID、フォルダーのパス、またはインストールする NuGet パッケージ。
+        <target state="needs-review-translation">NuGet パッケージ ID、フォルダーのパス、またはインストールする NuGet パッケージ。
 特定のバージョンの NuGet パッケージをインストールするには、&lt;package ID&gt;::&lt;version&gt; を使用します。
 </target>
         <note />
