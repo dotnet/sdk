@@ -69,9 +69,9 @@ namespace Microsoft.TemplateEngine.Tests
             {
                 throw new InvalidOperationException("The codebase root was not found");
             }
-            if (!File.Exists(Path.Combine(codeBaseRoot!, "Microsoft.TemplateEngine.sln")))
+            if (!File.Exists(Path.Combine(codeBaseRoot!, "TemplateEngine.slnf")))
             {
-                throw new InvalidOperationException("Microsoft.TemplateEngine.sln was not found in codebase root");
+                throw new InvalidOperationException("TemplateEngine.slnf was not found in codebase root");
             }
             if (!Directory.Exists(Path.Combine(codeBaseRoot!, "test", "TestAssets", "TestPackages", "TemplateEngine")))
             {
