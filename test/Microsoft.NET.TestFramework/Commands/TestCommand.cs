@@ -9,19 +9,13 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public abstract class TestCommand
     {
-        private Dictionary<string, string> _environment = new();
+        private readonly Dictionary<string, string> _environment = [];
         private bool _doNotEscapeArguments;
-
         public ITestOutputHelper Log { get; }
-
         public string? WorkingDirectory { get; set; }
-
-        public List<string> Arguments { get; set; } = new List<string>();
-
-        public List<string> EnvironmentToRemove { get; } = new List<string>();
-
+        public List<string> Arguments { get; set; } = [];
+        public List<string> EnvironmentToRemove { get; } = [];
         public bool RedirectStandardInput { get; set; }
-
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         /// <summary>
