@@ -256,6 +256,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
                     contentEncoding,
                     pathTemplate,
                     relativePath,
+                    dictCandidate?.ItemSpec,
                     ref previousAsset,
                     out var compressedAsset))
                 {
@@ -372,6 +373,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         string assetTraitValue,
         string pathTemplate,
         string relativePath,
+        string dictionaryId,
         ref StaticWebAsset previousAsset,
         out StaticWebAsset result)
     {
@@ -383,7 +385,10 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         // assets.
         // pathTemplate is already rooted at the absolute output path (see CreatePathTemplate), so itemSpec is a full
         // path without recombining with the relative OutputPath or resolving against the process working directory.
-        var itemSpec = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
+        // When a dictionary is involved, include its identity in the path so that
+        // different dictionaries for the same asset produce distinct output files.
+        var dictSuffix = dictionaryId != null ? $"-{FileHasher.HashString(dictionaryId)}" : "";
+        var itemSpec = $"{pathTemplate}-{asset.Fingerprint}{dictSuffix}{fileExtension}";
 
         if (previousAsset != null)
         {

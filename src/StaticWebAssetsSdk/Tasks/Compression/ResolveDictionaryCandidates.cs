@@ -266,6 +266,19 @@ public class ResolveDictionaryCandidates : Task
             return null;
         }
 
+        // Skip when old and new asset have the same content — using the old version as a
+        // dictionary for an identical file is pointless.
+        if (!string.IsNullOrEmpty(newAsset.Integrity) &&
+            string.Equals(integrity, newAsset.Integrity, StringComparison.Ordinal))
+        {
+            Log.LogMessage(
+                MessageImportance.Low,
+                "Previous asset '{0}' has the same integrity as current asset '{1}'. Skipping dictionary candidate.",
+                oldAsset.Identity,
+                newAsset.Identity);
+            return null;
+        }
+
         // Find the file in the pack using RelativePath
         var relativePath = oldAsset.ComputePathWithoutTokens(oldAsset.RelativePath);
         if (string.IsNullOrEmpty(relativePath))
