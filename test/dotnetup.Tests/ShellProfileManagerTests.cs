@@ -165,6 +165,48 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_DotnetupOnly_IncludesFlag()
+    {
+        var provider = new TestShellProvider(_tempDir, "admin.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        var content = File.ReadAllText(Path.Combine(_tempDir, "admin.sh"));
+        content.Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void ReplaceProfileEntries_ReplacesExistingEntry()
+    {
+        var profilePath = Path.Combine(_tempDir, "replace.sh");
+        var provider = new TestShellProvider(_tempDir, "replace.sh");
+
+        // Add user entry
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+        File.ReadAllText(profilePath).Should().NotContain("--dotnetup-only");
+
+        // Replace with admin entry
+        var modified = ShellProfileManager.ReplaceProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("--dotnetup-only");
+        // Should only have one marker
+        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.MarkerComment).Should().Be(1);
+    }
+
+    [Fact]
+    public void ReplaceProfileEntries_WorksWithNoExistingEntry()
+    {
+        var provider = new TestShellProvider(_tempDir, "fresh.sh");
+
+        var modified = ShellProfileManager.ReplaceProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        modified.Should().HaveCount(1);
+        File.ReadAllText(Path.Combine(_tempDir, "fresh.sh")).Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
     public void BashProvider_GenerateProfileEntry_ContainsEval()
     {
         var provider = new BashEnvShellProvider();
@@ -173,6 +215,16 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().Contain(ShellProfileManager.MarkerComment);
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell bash");
+        entry.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateProfileEntry_DotnetupOnly()
+    {
+        var provider = new BashEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetupOnly: true);
+
+        entry.Should().Contain("--dotnetup-only");
     }
 
     [Fact]
@@ -184,6 +236,7 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().Contain(ShellProfileManager.MarkerComment);
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell zsh");
+        entry.Should().NotContain("--dotnetup-only");
     }
 
     [Fact]
@@ -195,6 +248,7 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().Contain(ShellProfileManager.MarkerComment);
         entry.Should().Contain("Invoke-Expression");
         entry.Should().Contain("--shell pwsh");
+        entry.Should().NotContain("--dotnetup-only");
     }
 
     [Fact]
@@ -274,15 +328,23 @@ public class ShellProfileManagerTests : IDisposable
         public string Extension => "sh";
         public string? HelpDescription => null;
 
-        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null) =>
-            $"export DOTNET_ROOT='{dotnetInstallPath}'";
+        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
+            includeDotnet
+                ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
+                : dotnetupDir is not null ? $"export PATH='{dotnetupDir}':$PATH" : "";
 
         public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
-        public string GenerateProfileEntry(string dotnetupPath) =>
-            $"# dotnetup\neval \"$('{dotnetupPath}' print-env-script --shell test)\"";
+        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
+        {
+            var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            return $"# dotnetup\neval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        }
 
-        public string GenerateActivationCommand(string dotnetupPath) =>
-            $"eval \"$('{dotnetupPath}' print-env-script --shell test)\"";
+        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
+        {
+            var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        }
     }
 }

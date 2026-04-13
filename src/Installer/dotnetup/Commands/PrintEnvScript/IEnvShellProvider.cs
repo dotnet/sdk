@@ -24,12 +24,13 @@ public interface IEnvShellProvider
     string? HelpDescription { get; }
 
     /// <summary>
-    /// Generates a shell-specific script that configures PATH and DOTNET_ROOT.
+    /// Generates a shell-specific script that configures the environment.
     /// </summary>
     /// <param name="dotnetInstallPath">The path to the .NET installation directory</param>
     /// <param name="dotnetupDir">The directory containing the dotnetup binary, or null to omit</param>
+    /// <param name="includeDotnet">When true, sets DOTNET_ROOT and adds dotnet to PATH. When false, only adds dotnetup to PATH.</param>
     /// <returns>A shell script that can be sourced to configure the environment</returns>
-    string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null);
+    string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true);
 
     /// <summary>
     /// Returns the profile file paths that should be modified for this shell.
@@ -42,11 +43,13 @@ public interface IEnvShellProvider
     /// Includes a marker comment for identification and removal.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    string GenerateProfileEntry(string dotnetupPath);
+    /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
+    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false);
 
     /// <summary>
     /// Generates a command that the user can paste into the current terminal to activate .NET.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    string GenerateActivationCommand(string dotnetupPath);
+    /// <param name="dotnetupOnly">When true, the command only adds dotnetup to PATH.</param>
+    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false);
 }

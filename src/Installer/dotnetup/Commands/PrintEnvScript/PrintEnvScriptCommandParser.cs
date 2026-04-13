@@ -43,6 +43,12 @@ internal static class PrintEnvScriptCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> DotnetupOnlyOption = new("--dotnetup-only")
+    {
+        Description = "Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.",
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
     static PrintEnvScriptCommandParser()
     {
         // Add validator to only accept supported shells
@@ -67,6 +73,7 @@ internal static class PrintEnvScriptCommandParser
 
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);
+        command.Options.Add(DotnetupOnlyOption);
 
         command.SetAction(parseResult => new PrintEnvScriptCommand(parseResult).Execute());
 

@@ -17,11 +17,14 @@ public class ShellProfileManager
     /// Adds profile entries to all profile files for the given shell provider.
     /// Creates backups before modifying existing files. Skips files that already contain the entry.
     /// </summary>
+    /// <param name="provider">The shell provider to use.</param>
+    /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
+    /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
     /// <returns>The list of profile file paths that were modified.</returns>
-    public static IReadOnlyList<string> AddProfileEntries(IEnvShellProvider provider, string dotnetupPath)
+    public static IReadOnlyList<string> AddProfileEntries(IEnvShellProvider provider, string dotnetupPath, bool dotnetupOnly = false)
     {
         var profilePaths = provider.GetProfilePaths();
-        var entry = provider.GenerateProfileEntry(dotnetupPath);
+        var entry = provider.GenerateProfileEntry(dotnetupPath, dotnetupOnly);
         var modifiedFiles = new List<string>();
 
         foreach (var profilePath in profilePaths)
@@ -33,6 +36,17 @@ public class ShellProfileManager
         }
 
         return modifiedFiles;
+    }
+
+    /// <summary>
+    /// Replaces existing dotnetup profile entries with new ones.
+    /// Removes the old entries first, then adds the new entries.
+    /// </summary>
+    /// <returns>The list of profile file paths that were modified.</returns>
+    public static IReadOnlyList<string> ReplaceProfileEntries(IEnvShellProvider provider, string dotnetupPath, bool dotnetupOnly = false)
+    {
+        RemoveProfileEntries(provider);
+        return AddProfileEntries(provider, dotnetupPath, dotnetupOnly);
     }
 
     /// <summary>
