@@ -273,66 +273,216 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var v2ManifestPath = Path.Combine(intermediateOutputPath2, "staticwebassets.publish.json");
             var v2Manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(v2ManifestPath));
 
-            // Find dcz endpoints — should exist only for the modified file
-            var dczEndpoints = v2Manifest.Endpoints
-                .Where(e => e.Selectors != null && e.Selectors.Any(s => s.Name == "Content-Encoding" && s.Value == "dcz"))
-                .ToArray();
+            // === Collect all endpoints for the modified file across both manifests ===
+            var modifiedRoute = "_content/ClassLibrary/js/project-transitive-dep.js";
+            var modifiedFileRouteFilter = new Func<StaticWebAssetEndpoint, bool>(e =>
+                e.Route.Contains("project-transitive-dep") && !e.Route.Contains(".v4"));
 
-            // The modified file should have dcz endpoints (2: one for the original route, one for the .dcz route)
-            dczEndpoints.Should().NotBeEmpty("because the modified file should have delta-compressed variants");
+            var v1EndpointsForFile = v1Manifest.Endpoints.Where(modifiedFileRouteFilter).ToArray();
+            var v2EndpointsForFile = v2Manifest.Endpoints.Where(modifiedFileRouteFilter).ToArray();
 
-            // All dcz endpoints should reference the modified file's route
-            var dczEndpointsForModifiedFile = dczEndpoints
-                .Where(e => e.Route.Contains("project-transitive-dep"))
-                .ToArray();
-            dczEndpointsForModifiedFile.Should().HaveCountGreaterThanOrEqualTo(1,
-                "because the modified file should have dcz endpoints");
+            // Helper to get the encoding for an endpoint (null means identity/uncompressed)
+            static string? GetEncoding(StaticWebAssetEndpoint ep) =>
+                ep.Selectors?.FirstOrDefault(s => s.Name == "Content-Encoding").Value;
 
-            // dcz endpoints should have Available-Dictionary selector
-            foreach (var dczEndpoint in dczEndpointsForModifiedFile)
+            // Helper to check a header exists with a given name and value
+            static bool HasHeader(StaticWebAssetEndpoint ep, string name, string? value = null) =>
+                ep.ResponseHeaders.Any(h =>
+                    string.Equals(h.Name, name, StringComparison.Ordinal) &&
+                    (value == null || string.Equals(h.Value, value, StringComparison.Ordinal)));
+
+            // Helper to get header value
+            static string? GetHeaderValue(StaticWebAssetEndpoint ep, string name) =>
+                ep.ResponseHeaders.FirstOrDefault(h => string.Equals(h.Name, name, StringComparison.Ordinal)).Value;
+
+            // Helper to check a property exists
+            static bool HasProperty(StaticWebAssetEndpoint ep, string name) =>
+                ep.EndpointProperties != null && ep.EndpointProperties.Any(p => string.Equals(p.Name, name, StringComparison.Ordinal));
+
+            // === Verify endpoint counts ===
+            // v1: 7 endpoints (gzip/br/zstd content-negotiated + identity + .br/.gz/.zst direct)
+            // v2: 9 endpoints (above + dcz content-negotiated + .dcz direct)
+            v1EndpointsForFile.Should().HaveCount(7, "because v1 should have identity + 3 compressed (gzip/br/zstd) + 3 direct (.br/.gz/.zst)");
+            v2EndpointsForFile.Should().HaveCount(9, "because v2 adds dcz content-negotiated + .dcz direct = 7 + 2");
+
+            // === Identify each endpoint in v2 by route + encoding ===
+            // Content-negotiated endpoints (all share the same route, distinguished by Content-Encoding selector)
+            var cnEndpoints = v2EndpointsForFile.Where(e => e.Route == modifiedRoute).ToArray();
+            cnEndpoints.Should().HaveCount(5, "because there should be 5 content-negotiated endpoints: identity, gzip, br, zstd, dcz");
+
+            var cnByEncoding = cnEndpoints.ToDictionary(
+                e => GetEncoding(e) ?? "identity",
+                e => e);
+            cnByEncoding.Keys.Should().BeEquivalentTo(["identity", "gzip", "br", "zstd", "dcz"]);
+
+            // Direct-access endpoints (route ends with the compression extension)
+            var directEndpoints = v2EndpointsForFile.Where(e => e.Route != modifiedRoute).ToArray();
+            directEndpoints.Should().HaveCount(4, "because there should be 4 direct endpoints: .br, .dcz, .gz, .zst");
+            var directRoutes = directEndpoints.Select(e => e.Route).Order().ToArray();
+            directRoutes.Should().BeEquivalentTo([
+                $"{modifiedRoute}.br",
+                $"{modifiedRoute}.dcz",
+                $"{modifiedRoute}.gz",
+                $"{modifiedRoute}.zst"
+            ]);
+            var directByRoute = directEndpoints.ToDictionary(e => e.Route, e => e);
+
+            // === Get v1 integrity for cross-validation of Available-Dictionary ===
+            var v1IdentityEndpoint = v1EndpointsForFile
+                .First(e => e.Route == modifiedRoute && GetEncoding(e) == null);
+            var v1IntegrityValue = v1IdentityEndpoint.EndpointProperties
+                .First(p => p.Name == "integrity").Value;
+            // v1 integrity looks like "sha256-G0av3NPyLxQq2kXU9Rwosav2qz6ghu5aTHJ63tsI4I0="
+            // Available-Dictionary uses the structured field byte sequence form: ":G0av3NPyLxQq2kXU9Rwosav2qz6ghu5aTHJ63tsI4I0=:"
+            var v1HashBase64 = v1IntegrityValue.Substring("sha256-".Length);
+            var expectedDictValue = $":{v1HashBase64}:";
+
+            // =====================================================================
+            // Verify each content-negotiated endpoint
+            // =====================================================================
+
+            // --- identity (uncompressed) endpoint ---
+            var identityEp = cnByEncoding["identity"];
+            identityEp.Selectors.Should().BeNullOrEmpty("because the identity endpoint has no Content-Encoding selector");
+            HasHeader(identityEp, "Cache-Control", "no-cache").Should().BeTrue();
+            HasHeader(identityEp, "Content-Length").Should().BeTrue();
+            HasHeader(identityEp, "Content-Type", "text/javascript").Should().BeTrue();
+            HasHeader(identityEp, "ETag").Should().BeTrue();
+            HasHeader(identityEp, "Last-Modified").Should().BeTrue();
+            HasHeader(identityEp, "Vary", "Accept-Encoding").Should().BeTrue();
+            // CDT-specific: identity endpoint gets Use-As-Dictionary and Vary: Available-Dictionary
+            HasHeader(identityEp, "Use-As-Dictionary").Should().BeTrue(
+                "because the identity endpoint should advertise dictionary availability");
+            GetHeaderValue(identityEp, "Use-As-Dictionary").Should().Contain("match=",
+                "because Use-As-Dictionary must specify a match pattern");
+            HasHeader(identityEp, "Vary", "Available-Dictionary").Should().BeTrue(
+                "because the identity endpoint must vary on Available-Dictionary when dcz variants exist");
+            HasProperty(identityEp, "integrity").Should().BeTrue();
+            // identity endpoint should NOT have Content-Encoding header
+            HasHeader(identityEp, "Content-Encoding").Should().BeFalse();
+
+            // --- gzip content-negotiated endpoint ---
+            var gzipEp = cnByEncoding["gzip"];
+            gzipEp.Selectors.Should().ContainSingle(s => s.Name == "Content-Encoding" && s.Value == "gzip");
+            HasHeader(gzipEp, "Cache-Control", "no-cache").Should().BeTrue();
+            HasHeader(gzipEp, "Content-Encoding", "gzip").Should().BeTrue();
+            HasHeader(gzipEp, "Content-Length").Should().BeTrue();
+            HasHeader(gzipEp, "Content-Type", "text/javascript").Should().BeTrue();
+            HasHeader(gzipEp, "ETag").Should().BeTrue();
+            HasHeader(gzipEp, "Last-Modified").Should().BeTrue();
+            HasHeader(gzipEp, "Vary", "Accept-Encoding").Should().BeTrue();
+            HasProperty(gzipEp, "integrity").Should().BeTrue();
+            HasProperty(gzipEp, "original-resource").Should().BeTrue();
+            // gzip should NOT have dictionary-related headers
+            HasHeader(gzipEp, "Use-As-Dictionary").Should().BeFalse();
+            HasHeader(gzipEp, "Vary", "Available-Dictionary").Should().BeFalse();
+
+            // --- brotli content-negotiated endpoint ---
+            var brEp = cnByEncoding["br"];
+            brEp.Selectors.Should().ContainSingle(s => s.Name == "Content-Encoding" && s.Value == "br");
+            HasHeader(brEp, "Cache-Control", "no-cache").Should().BeTrue();
+            HasHeader(brEp, "Content-Encoding", "br").Should().BeTrue();
+            HasHeader(brEp, "Content-Length").Should().BeTrue();
+            HasHeader(brEp, "Content-Type", "text/javascript").Should().BeTrue();
+            HasHeader(brEp, "ETag").Should().BeTrue();
+            HasHeader(brEp, "Last-Modified").Should().BeTrue();
+            HasHeader(brEp, "Vary", "Accept-Encoding").Should().BeTrue();
+            HasProperty(brEp, "integrity").Should().BeTrue();
+            HasProperty(brEp, "original-resource").Should().BeTrue();
+            HasHeader(brEp, "Use-As-Dictionary").Should().BeFalse();
+            HasHeader(brEp, "Vary", "Available-Dictionary").Should().BeFalse();
+
+            // --- zstd content-negotiated endpoint ---
+            var zstdEp = cnByEncoding["zstd"];
+            zstdEp.Selectors.Should().ContainSingle(s => s.Name == "Content-Encoding" && s.Value == "zstd");
+            HasHeader(zstdEp, "Cache-Control", "no-cache").Should().BeTrue();
+            HasHeader(zstdEp, "Content-Encoding", "zstd").Should().BeTrue();
+            HasHeader(zstdEp, "Content-Length").Should().BeTrue();
+            HasHeader(zstdEp, "Content-Type", "text/javascript").Should().BeTrue();
+            HasHeader(zstdEp, "ETag").Should().BeTrue();
+            HasHeader(zstdEp, "Last-Modified").Should().BeTrue();
+            HasHeader(zstdEp, "Vary", "Accept-Encoding").Should().BeTrue();
+            HasProperty(zstdEp, "integrity").Should().BeTrue();
+            HasProperty(zstdEp, "original-resource").Should().BeTrue();
+            HasHeader(zstdEp, "Use-As-Dictionary").Should().BeFalse();
+            HasHeader(zstdEp, "Vary", "Available-Dictionary").Should().BeFalse();
+
+            // --- dcz content-negotiated endpoint (CDT-specific) ---
+            var dczEp = cnByEncoding["dcz"];
+            // Selectors: Content-Encoding=dcz AND Available-Dictionary=<v1-hash>
+            dczEp.Selectors.Should().HaveCount(2);
+            dczEp.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "dcz");
+            var availDictSelector = dczEp.Selectors.First(s => s.Name == "Available-Dictionary");
+            availDictSelector.Value.Should().Be(expectedDictValue,
+                $"because Available-Dictionary should reference the v1 asset hash ({v1HashBase64})");
+            // Headers
+            HasHeader(dczEp, "Cache-Control", "no-cache").Should().BeTrue();
+            HasHeader(dczEp, "Content-Encoding", "dcz").Should().BeTrue();
+            HasHeader(dczEp, "Content-Length").Should().BeTrue();
+            HasHeader(dczEp, "Content-Type", "text/javascript").Should().BeTrue();
+            HasHeader(dczEp, "ETag").Should().BeTrue();
+            HasHeader(dczEp, "Last-Modified").Should().BeTrue();
+            HasHeader(dczEp, "Vary", "Accept-Encoding").Should().BeTrue();
+            HasHeader(dczEp, "Vary", "Available-Dictionary").Should().BeTrue(
+                "because dcz endpoints must vary on Available-Dictionary");
+            HasProperty(dczEp, "integrity").Should().BeTrue();
+            HasProperty(dczEp, "original-resource").Should().BeTrue();
+            // dcz should NOT have Use-As-Dictionary (that goes on identity)
+            HasHeader(dczEp, "Use-As-Dictionary").Should().BeFalse();
+
+            // =====================================================================
+            // Verify each direct-access endpoint
+            // =====================================================================
+
+            // All direct-access endpoints share a common pattern: no Content-Encoding selector,
+            // but they DO have a Content-Encoding response header matching their format.
+            foreach (var (route, expectedEncoding) in new[]
             {
-                var dczSelector = dczEndpoint.Selectors
-                    .Where(s => s.Name == "Content-Encoding" && s.Value == "dcz")
-                    .ToArray();
-                dczSelector.Should().NotBeEmpty("because dcz endpoints need a Content-Encoding=dcz selector");
-
-                var dictSelector = dczEndpoint.Selectors
-                    .Where(s => s.Name == "Available-Dictionary")
-                    .ToArray();
-                dictSelector.Should().NotBeEmpty("because dcz endpoints need an Available-Dictionary selector");
+                ($"{modifiedRoute}.gz", "gzip"),
+                ($"{modifiedRoute}.br", "br"),
+                ($"{modifiedRoute}.zst", "zstd"),
+                ($"{modifiedRoute}.dcz", "dcz"),
+            })
+            {
+                var directEp = directByRoute[route];
+                // No Content-Encoding selector (these are served as-is)
+                (directEp.Selectors == null || directEp.Selectors.Length == 0 ||
+                 !directEp.Selectors.Any(s => s.Name == "Content-Encoding"))
+                    .Should().BeTrue($"because direct endpoint {route} should not have a Content-Encoding selector");
+                // Response headers
+                HasHeader(directEp, "Cache-Control", "no-cache").Should().BeTrue($"on {route}");
+                HasHeader(directEp, "Content-Encoding", expectedEncoding).Should().BeTrue($"on {route}");
+                HasHeader(directEp, "Content-Length").Should().BeTrue($"on {route}");
+                HasHeader(directEp, "Content-Type", "text/javascript").Should().BeTrue($"on {route}");
+                HasHeader(directEp, "ETag").Should().BeTrue($"on {route}");
+                HasHeader(directEp, "Last-Modified").Should().BeTrue($"on {route}");
+                HasHeader(directEp, "Vary", "Accept-Encoding").Should().BeTrue($"on {route}");
+                HasProperty(directEp, "integrity").Should().BeTrue($"on {route}");
+                // Direct endpoints should NOT have dictionary-related headers
+                HasHeader(directEp, "Use-As-Dictionary").Should().BeFalse($"on {route}");
+                HasHeader(directEp, "Vary", "Available-Dictionary").Should().BeFalse($"on {route}");
             }
 
-            // The unmodified file (project-transitive-dep.v4.js) should NOT have dcz endpoints
-            // because its content hasn't changed and same-hash candidates are skipped
-            var unchangedDczEndpoints = dczEndpoints
-                .Where(e => e.Route.Contains("project-transitive-dep.v4"))
-                .ToArray();
-            unchangedDczEndpoints.Should().BeEmpty(
-                "because unchanged files should not get dcz endpoints (same integrity means dictionary is pointless)");
-
+            // =====================================================================
             // Verify dcz assets exist on disk
+            // =====================================================================
             var dczAssets = v2Manifest.Assets
                 .Where(a => string.Equals(a.AssetTraitName, "Content-Encoding", StringComparison.Ordinal)
                     && string.Equals(a.AssetTraitValue, "dcz", StringComparison.Ordinal))
                 .ToArray();
-            dczAssets.Should().NotBeEmpty("because dcz compressed files should be generated for modified assets");
-            foreach (var dczAsset in dczAssets)
-            {
-                new FileInfo(dczAsset.Identity).Should().Exist($"because dcz asset '{dczAsset.Identity}' should exist on disk");
-            }
+            dczAssets.Should().ContainSingle("because there should be exactly one dcz asset for the modified file");
+            new FileInfo(dczAssets[0].Identity).Should().Exist("because the dcz compressed file should exist on disk");
 
-            // Verify the original (uncompressed) endpoint for the modified file has Use-As-Dictionary header
-            var originalEndpoints = v2Manifest.Endpoints
-                .Where(e => e.Route.Contains("project-transitive-dep.js")
-                    && !e.Route.Contains(".v4")
-                    && (e.Selectors == null || !e.Selectors.Any(s => s.Name == "Content-Encoding")))
+            // =====================================================================
+            // Verify the UNCHANGED file has NO dcz endpoints
+            // =====================================================================
+            var unchangedDczEndpoints = v2Manifest.Endpoints
+                .Where(e => e.Route.Contains("project-transitive-dep.v4")
+                    && e.Selectors != null
+                    && e.Selectors.Any(s => s.Name == "Content-Encoding" && s.Value == "dcz"))
                 .ToArray();
-            var useDictHeaders = originalEndpoints
-                .SelectMany(e => e.ResponseHeaders ?? Enumerable.Empty<StaticWebAssetEndpointResponseHeader>())
-                .Where(h => h.Name == "Use-As-Dictionary")
-                .ToArray();
-            useDictHeaders.Should().NotBeEmpty(
-                "because the original asset endpoint should have a Use-As-Dictionary response header");
+            unchangedDczEndpoints.Should().BeEmpty(
+                "because unchanged files should not get dcz endpoints (same integrity means dictionary is pointless)");
         }
     }
 }
