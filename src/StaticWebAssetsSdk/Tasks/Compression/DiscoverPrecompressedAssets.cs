@@ -12,10 +12,8 @@ public class DiscoverPrecompressedAssets : Task
 {
     public ITaskItem[] CandidateAssets { get; set; }
 
-    /// <summary>
-    /// The compression formats to recognize. Each item's Identity is the format name (e.g., "gzip", "brotli").
-    /// Required metadata: Extension (e.g., ".gz"), ContentEncoding (e.g., "gzip", "br").
-    /// </summary>
+    // The compression formats to recognize. Each item's Identity is the format name.
+    // Required metadata: FileExtension (e.g., ".gz"), ContentEncoding (e.g., "gzip", "br").
     public ITaskItem[] CompressionFormats { get; set; }
 
     [Output]

@@ -69,16 +69,31 @@ internal static class Program
 
         zstd.SetAction((ParseResult parseResults) =>
         {
-            var c = parseResults.GetValue(zstdCompressionLevelOption);
-            var s = parseResults.GetValue(zstdSourcesOption);
-            var o = parseResults.GetValue(zstdOutputsOption);
-            var d = parseResults.GetValue(zstdDictionariesOption);
+            var compressionLevel = parseResults.GetValue(zstdCompressionLevelOption);
+            var sources = parseResults.GetValue(zstdSourcesOption);
+            var outputs = parseResults.GetValue(zstdOutputsOption);
+            var dictionaries = parseResults.GetValue(zstdDictionariesOption);
 
-            Parallel.For(0, s.Count, i =>
+            if (sources.Count != outputs.Count)
             {
-                var source = s[i];
-                var output = o[i];
-                var dictionaryPath = d != null && i < d.Count ? d[i] : null;
+                Console.Error.WriteLine($"Source count ({sources.Count}) does not match output count ({outputs.Count}).");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            if (dictionaries != null && dictionaries.Count != sources.Count)
+            {
+                Console.Error.WriteLine($"Dictionary count ({dictionaries.Count}) does not match source count ({sources.Count}).");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            var failed = 0;
+            Parallel.For(0, sources.Count, i =>
+            {
+                var source = sources[i];
+                var output = outputs[i];
+                var dictionaryPath = dictionaries != null && i < dictionaries.Count ? dictionaries[i] : null;
                 try
                 {
                     ZstandardCompressionOptions options;
@@ -86,11 +101,11 @@ internal static class Program
                     {
                         var dictBytes = File.ReadAllBytes(dictionaryPath);
                         var dictionary = ZstandardDictionary.Create(dictBytes);
-                        options = new ZstandardCompressionOptions { Quality = c, Dictionary = dictionary };
+                        options = new ZstandardCompressionOptions { Quality = compressionLevel, Dictionary = dictionary };
                     }
                     else
                     {
-                        options = new ZstandardCompressionOptions { Quality = c };
+                        options = new ZstandardCompressionOptions { Quality = compressionLevel };
                     }
 
                     using var sourceStream = File.OpenRead(source);
@@ -103,34 +118,54 @@ internal static class Program
                 {
                     Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
                     Console.Error.WriteLine(ex.ToString());
+                    Interlocked.Increment(ref failed);
                 }
             });
+
+            if (failed > 0)
+            {
+                Environment.ExitCode = 1;
+            }
         });
 
         brotli.SetAction((ParseResult parseResults) =>
         {
-            var c = parseResults.GetValue(compressionLevelOption);
-            var s = parseResults.GetValue(sourcesOption);
-            var o = parseResults.GetValue(outputsOption);
+            var compressionLevel = parseResults.GetValue(compressionLevelOption);
+            var sources = parseResults.GetValue(sourcesOption);
+            var outputs = parseResults.GetValue(outputsOption);
 
-            Parallel.For(0, s.Count, i =>
+            if (sources.Count != outputs.Count)
             {
-                var source = s[i];
-                var output = o[i];
+                Console.Error.WriteLine($"Source count ({sources.Count}) does not match output count ({outputs.Count}).");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            var failed = 0;
+            Parallel.For(0, sources.Count, i =>
+            {
+                var source = sources[i];
+                var output = outputs[i];
                 try
                 {
                     using var sourceStream = File.OpenRead(source);
                     using var fileStream = new FileStream(output, FileMode.Create);
 
-                    using var stream = new BrotliStream(fileStream, c);
+                    using var stream = new BrotliStream(fileStream, compressionLevel);
                     sourceStream.CopyTo(stream);
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
                     Console.Error.WriteLine(ex.ToString());
+                    Interlocked.Increment(ref failed);
                 }
             });
+
+            if (failed > 0)
+            {
+                Environment.ExitCode = 1;
+            }
         });
 
         return rootCommand.Parse(args).Invoke();

@@ -12,22 +12,22 @@ using NuGet.ProjectModel;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 public partial class StaticWebAssetsBaselineFactory
 {
-    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.bundle\.scp\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.bundle\.scp\.css)((?:\.gz)|(?:\.br)|(?:\.zst)|(?:\.dcz))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ScopedProjectBundleRegex();
 
-    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.styles\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.styles\.css)((?:\.gz)|(?:\.br)|(?:\.zst)|(?:\.dcz))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ScopedAppBundleRegex();
 
-    [GeneratedRegex("""fingerprint-site(\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("""fingerprint-site(\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.css)((?:\.gz)|(?:\.br)|(?:\.zst)|(?:\.dcz))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex FingerprintedSiteCssRegex();
 
     [GeneratedRegex("""(?:#\[\.{fingerprint=[0123456789abcdefghijklmnopqrstuvwxyz]{10}\}](\?|\!)?)""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex EmbeddedFingerprintExpression();
 
-    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.lib\.module\.js)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.lib\.module\.js)((?:\.gz)|(?:\.br)|(?:\.zst)|(?:\.dcz))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JSInitializerRegex();
 
-    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.modules\.json)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.modules\.json)((?:\.gz)|(?:\.br)|(?:\.zst)|(?:\.dcz))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JSModuleManifestRegex();
 
     private static readonly IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements =
@@ -47,12 +47,18 @@ public partial class StaticWebAssetsBaselineFactory
         // Keep this list of most specific to less specific
         ".dll.gz",
         ".dll.br",
+        ".dll.zst",
+        ".dll.dcz",
         ".dll",
         ".wasm.gz",
         ".wasm.br",
+        ".wasm.zst",
+        ".wasm.dcz",
         ".wasm",
         ".js.gz",
         ".js.br",
+        ".js.zst",
+        ".js.dcz",
         ".js",
         ".html",
         ".pdb",
@@ -101,7 +107,10 @@ public partial class StaticWebAssetsBaselineFactory
                 asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), basePath, relativePath);
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(Path.DirectorySeparatorChar, '\\');
             }
-            else if ((asset.Identity.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) || asset.Identity.EndsWith(".br", StringComparison.OrdinalIgnoreCase))
+            else if ((asset.Identity.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
+                      asset.Identity.EndsWith(".br", StringComparison.OrdinalIgnoreCase) ||
+                      asset.Identity.EndsWith(".zst", StringComparison.OrdinalIgnoreCase) ||
+                      asset.Identity.EndsWith(".dcz", StringComparison.OrdinalIgnoreCase))
                 && asset.AssetTraitName == "" && asset.RelatedAsset == "")
             {
                 // Old .NET 5.0 implementation

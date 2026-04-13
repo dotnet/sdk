@@ -14,17 +14,10 @@ public class ResolveCompressedAssets : Task
 
     public ITaskItem[] CandidateAssets { get; set; }
 
-    /// <summary>
-    /// All known compression format definitions. Each item's Identity is the format name (e.g., "gzip", "brotli").
-    /// Required metadata: FileExtension (e.g., ".gz"), ContentEncoding (e.g., "gzip", "br").
-    /// Used to recognize existing compressed assets regardless of which formats are active.
-    /// </summary>
     public ITaskItem[] CompressionFormats { get; set; }
 
-    /// <summary>
-    /// Semicolon-separated list of format names to compress assets into (e.g., "gzip" for build, "gzip;brotli" for publish).
-    /// Must be a subset of the names in CompressionFormats.
-    /// </summary>
+    // Semicolon-separated list of format names to compress assets into (e.g., "gzip" for build, "gzip;brotli" for publish).
+    // Must be a subset of the names in CompressionFormats.
     public string Formats { get; set; }
 
     public string IncludePatterns { get; set; }
@@ -33,11 +26,9 @@ public class ResolveCompressedAssets : Task
 
     public ITaskItem[] ExplicitAssets { get; set; }
 
-    /// <summary>
-    /// Dictionary candidates produced by ResolveDictionaryCandidates.
-    /// Each item's Identity is the extracted dictionary bytes path.
-    /// Required metadata: Hash (structured field), TargetAsset (new asset identity), MatchPattern.
-    /// </summary>
+    // Dictionary candidates produced by ResolveDictionaryCandidates.
+    // Each item's Identity is the extracted dictionary bytes path.
+    // Metadata: Hash (structured field), TargetAsset (new asset identity), MatchPattern.
     public ITaskItem[] DictionaryCandidates { get; set; }
 
     [Required]
