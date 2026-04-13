@@ -14,6 +14,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 public class ResolveDictionaryCandidatesTest
 {
+    private static readonly string PrevRoot = Path.Combine(Path.GetTempPath(), "prev", "wwwroot");
+
     private readonly string _testDir;
     private readonly List<string> _errorMessages;
     private readonly List<string> _messages;
@@ -399,7 +401,7 @@ public class ResolveDictionaryCandidatesTest
         var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
 
         // Add an old compressed endpoint — should be ignored
-        var oldCompressedEndpoint = CreateEndpoint("js/site.js", "C:\\prev\\wwwroot\\js\\site.js.gz");
+        var oldCompressedEndpoint = CreateEndpoint("js/site.js", Path.Combine(PrevRoot, "js", "site.js.gz"));
         oldCompressedEndpoint.Selectors = new[]
         {
             new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.9" }
@@ -559,10 +561,10 @@ public class ResolveDictionaryCandidatesTest
     {
         return new StaticWebAsset
         {
-            Identity = Path.Combine("C:\\prev\\wwwroot", relativePath.Replace('/', '\\')),
-            OriginalItemSpec = Path.Combine("wwwroot", relativePath.Replace('/', '\\')),
+            Identity = Path.Combine(PrevRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)),
+            OriginalItemSpec = Path.Combine("wwwroot", relativePath.Replace('/', Path.DirectorySeparatorChar)),
             RelativePath = relativePath,
-            ContentRoot = "C:\\prev\\wwwroot",
+            ContentRoot = PrevRoot,
             SourceType = StaticWebAsset.SourceTypes.Discovered,
             SourceId = "PrevApp",
             BasePath = "_content/PrevApp",
