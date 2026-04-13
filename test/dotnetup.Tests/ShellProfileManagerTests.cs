@@ -176,7 +176,7 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void ReplaceProfileEntries_ReplacesExistingEntry()
+    public void AddProfileEntries_ReplacesExistingEntryInPlace()
     {
         var profilePath = Path.Combine(_tempDir, "replace.sh");
         var provider = new TestShellProvider(_tempDir, "replace.sh");
@@ -185,8 +185,8 @@ public class ShellProfileManagerTests : IDisposable
         ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
         File.ReadAllText(profilePath).Should().NotContain("--dotnetup-only");
 
-        // Replace with admin entry
-        var modified = ShellProfileManager.ReplaceProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+        // Replace with admin entry (AddProfileEntries now replaces in-place)
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
 
         modified.Should().HaveCount(1);
         var content = File.ReadAllText(profilePath);
@@ -196,11 +196,11 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void ReplaceProfileEntries_WorksWithNoExistingEntry()
+    public void AddProfileEntries_WorksWithNoExistingEntry()
     {
         var provider = new TestShellProvider(_tempDir, "fresh.sh");
 
-        var modified = ShellProfileManager.ReplaceProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
 
         modified.Should().HaveCount(1);
         File.ReadAllText(Path.Combine(_tempDir, "fresh.sh")).Should().Contain("--dotnetup-only");

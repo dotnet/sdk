@@ -110,7 +110,7 @@ internal class DefaultInstallCommand : CommandBase
                     $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
             }
 
-            var modifiedFiles = ShellProfileManager.ReplaceProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
+            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
 
             if (modifiedFiles.Count == 0)
             {
