@@ -1833,6 +1833,26 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <target state="translated">Metoda akce {0} musí explicitně určit druh požadavku HTTP.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="new">Add '#!' (shebang)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="new">File-based program entry point should start with '#!'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="new">File-based program entry point should start with '#!'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
         <target state="translated">Inicializátory modulů jsou určeny pro použití kódem aplikace k zajištění, aby byly komponenty aplikace inicializovány před tím, než se začne kód aplikace spouštět. Pokud kód knihovny deklaruje metodu s ModuleInitializerAttribute, může narušovat inicializaci aplikace a také vést k omezením schopností oříznutí dané aplikace. Knihovna by proto neměla používat metody s označením ModuleInitializerAttribute, ale namísto toho by měla zpřístupnit metody, které lze použít k inicializaci všech komponent v rámci knihovny a umožnit aplikaci vyvolat metodu během inicializace aplikace.</target>
