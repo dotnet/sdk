@@ -12,7 +12,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class ResolveDictionaryCandidatesTest
+public class ResolveDictionaryCandidatesTest : IDisposable
 {
     private static readonly string PrevRoot = Path.Combine(Path.GetTempPath(), "prev", "wwwroot");
 
@@ -104,7 +104,7 @@ public class ResolveDictionaryCandidatesTest
         File.Exists(candidate.ItemSpec).Should().BeTrue();
         candidate.GetMetadata("Hash").Should().Be(":hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=:");
         candidate.GetMetadata("TargetAsset").Should().Be(currentAsset.ItemSpec);
-        candidate.GetMetadata("MatchPattern").Should().Be("js/site.js");
+        candidate.GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site.js");
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class ResolveDictionaryCandidatesTest
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(1);
-        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("js/kept.js");
+        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/kept.js");
     }
 
     [Fact]
@@ -219,7 +219,7 @@ public class ResolveDictionaryCandidatesTest
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(3);
         task.DictionaryCandidates.Select(c => c.GetMetadata("MatchPattern"))
-            .Should().BeEquivalentTo("js/site.js", "css/app.css", "lib/jquery.js");
+            .Should().BeEquivalentTo("/_content/PrevApp/js/site.js", "/_content/PrevApp/css/app.css", "/_content/PrevApp/lib/jquery.js");
     }
 
     [Fact]
@@ -487,7 +487,7 @@ public class ResolveDictionaryCandidatesTest
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(1);
         // Fingerprint token should be replaced with wildcard
-        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("js/site*.js");
+        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site*.js");
     }
 
     [Fact]
@@ -632,5 +632,20 @@ public class ResolveDictionaryCandidatesTest
     {
         var endpoint = CreateEndpoint(route, assetFile);
         return endpoint.ToTaskItem();
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (Directory.Exists(_testDir))
+            {
+                Directory.Delete(_testDir, recursive: true);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup — don't fail tests if temp files are locked
+        }
     }
 }

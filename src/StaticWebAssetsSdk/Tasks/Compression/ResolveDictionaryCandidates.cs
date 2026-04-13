@@ -197,12 +197,9 @@ public class ResolveDictionaryCandidates : Task
             foreach (var prevAsset in previousAssetsById.Values)
             {
                 var relativePath = prevAsset.ComputePathWithoutTokens(prevAsset.RelativePath);
-                if (!string.IsNullOrEmpty(relativePath))
-                {
                 if (!string.IsNullOrEmpty(relativePath) && !previousByRelativePath.ContainsKey(relativePath))
                 {
                     previousByRelativePath[relativePath] = prevAsset;
-                }
                 }
             }
 
@@ -293,11 +290,26 @@ public class ResolveDictionaryCandidates : Task
         // Format as structured field for Available-Dictionary header: :<base64>:
         var hash = ":" + integrity + ":";
 
-        // Compute match pattern from old asset's RelativePath (converts fingerprint tokens to wildcards)
+        // Compute match pattern from old asset's BasePath + RelativePath.
+        // The browser sees the full route (BasePath/RelativePath), so the match pattern
+        // must include the BasePath prefix to correctly scope dictionary applicability.
         var matchPattern = oldAsset.ComputeMatchPattern(oldAsset.RelativePath);
         if (string.IsNullOrEmpty(matchPattern))
         {
             matchPattern = relativePath;
+        }
+
+        // Prepend BasePath to the match pattern so it matches the full request URL
+        var basePath = oldAsset.BasePath?.Trim('/');
+        if (!string.IsNullOrEmpty(basePath))
+        {
+            matchPattern = basePath + "/" + matchPattern;
+        }
+
+        // Ensure leading slash for URL pattern matching
+        if (!matchPattern.StartsWith('/'))
+        {
+            matchPattern = "/" + matchPattern;
         }
 
         // Dictionary-centric item: Identity = extracted bytes path
