@@ -113,6 +113,18 @@ public class ZstdCompress : ToolTask
 
             builder.AppendLine("-o");
             builder.AppendLine(Quote(outputFullPath));
+
+            // Pass dictionary path if available (for dcz / dictionary-compressed items)
+            var dictionaryPath = file.GetMetadata("DictionaryPath");
+            builder.AppendLine("-d");
+            if (!string.IsNullOrEmpty(dictionaryPath))
+            {
+                builder.AppendLine(Quote(Path.GetFullPath(dictionaryPath)));
+            }
+            else
+            {
+                builder.AppendLine("\"\"");
+            }
         }
 
         return builder.ToString();

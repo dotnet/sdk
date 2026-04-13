@@ -50,6 +50,8 @@
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
     <PackageReference Include="System.Memory" VersionOverride="$(SystemMemoryToolsetPackageVersion)" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
   </ItemGroup>
 
   <!-- Only include these files in the outer build to avoid double writes. -->

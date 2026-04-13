@@ -1700,19 +1700,24 @@ public class ApplyCompressionNegotiationTest
 
     private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
     {
-        var formats = new Dictionary<string, (string Extension, string ContentEncoding)>(StringComparer.OrdinalIgnoreCase)
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding, bool UsesDictionary)>(StringComparer.OrdinalIgnoreCase)
         {
-            ["gzip"] = (".gz", "gzip"),
-            ["brotli"] = (".br", "br"),
-            ["zstd"] = (".zst", "zstd"),
+            ["gzip"] = (".gz", "gzip", false),
+            ["brotli"] = (".br", "br", false),
+            ["zstd"] = (".zst", "zstd", false),
+            ["dcz"] = (".dcz", "dcz", true),
         };
 
         return formatNames.Select(name =>
         {
-            var (ext, enc) = formats[name];
+            var (ext, enc, usesDict) = formats[name];
             var item = new TaskItem(name);
             item.SetMetadata("FileExtension", ext);
             item.SetMetadata("ContentEncoding", enc);
+            if (usesDict)
+            {
+                item.SetMetadata("UsesDictionary", "true");
+            }
             return (ITaskItem)item;
         }).ToArray();
     }
@@ -2229,5 +2234,264 @@ public class ApplyCompressionNegotiationTest
         {
             ep.ResponseHeaders.Should().Contain(h => h.Name == "Vary" && h.Value == "Accept-Encoding");
         }
+    }
+
+    [Fact]
+    public void DictionaryFormat_AddsDualSelectorsAndVaryHeader()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var originalPath = Path.Combine("wwwroot", "candidate.js");
+        var dczPath = Path.Combine("compressed", "candidate.js.dcz");
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    originalPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    dczPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "dcz-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "dcz",
+                    5
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    originalPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "20")])),
+                CreateCandidateEndpoint(
+                    "candidate.js.dcz",
+                    dczPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "5")]))
+            ],
+            CompressionFormats = CreateCompressionFormats("dcz"),
+            DictionaryCandidates =
+            [
+                CreateDictionaryCandidate(Path.GetFullPath(originalPath), ":dictSha256Hash:")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // Find the synthetic dcz endpoint (the one on the primary route serving dcz asset)
+        var syntheticDcz = endpoints.FirstOrDefault(e =>
+            e.Route == "candidate.js" &&
+            e.AssetFile == Path.GetFullPath(dczPath));
+        syntheticDcz.Should().NotBeNull("a synthetic dcz endpoint should be created at the primary route");
+
+        // Should have both Content-Encoding and Available-Dictionary selectors
+        syntheticDcz.Selectors.Should().Contain(s =>
+            s.Name == "Content-Encoding" && s.Value == "dcz");
+        syntheticDcz.Selectors.Should().Contain(s =>
+            s.Name == "Available-Dictionary" && s.Value == ":dictSha256Hash:");
+
+        // Should have Vary: Available-Dictionary header
+        syntheticDcz.ResponseHeaders.Should().Contain(h =>
+            h.Name == "Vary" && h.Value == "Available-Dictionary");
+    }
+
+    [Fact]
+    public void DictionaryFormat_OriginalEndpointGetsUseDictionaryHeader()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var originalPath = Path.Combine("wwwroot", "candidate.js");
+        var dczPath = Path.Combine("compressed", "candidate.js.dcz");
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    originalPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    dczPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "dcz-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "dcz",
+                    5
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    originalPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "20")])),
+                CreateCandidateEndpoint(
+                    "candidate.js.dcz",
+                    dczPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "5")]))
+            ],
+            CompressionFormats = CreateCompressionFormats("dcz"),
+            DictionaryCandidates =
+            [
+                CreateDictionaryCandidate(Path.GetFullPath(originalPath), ":dictSha256Hash:")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // The original (primary) endpoint should have Use-As-Dictionary header
+        var originalEndpoint = endpoints.FirstOrDefault(e =>
+            e.Route == "candidate.js" &&
+            e.AssetFile == Path.GetFullPath(originalPath));
+        originalEndpoint.Should().NotBeNull("original endpoint should be in updated list");
+        originalEndpoint.ResponseHeaders.Should().Contain(h =>
+            h.Name == "Use-As-Dictionary");
+        originalEndpoint.ResponseHeaders.Should().Contain(h =>
+            h.Name == "Vary" && h.Value == "Available-Dictionary");
+    }
+
+    [Fact]
+    public void DictionaryFormat_NonDictionaryFormatsUnchanged()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var originalPath = Path.Combine("wwwroot", "candidate.js");
+        var gzPath = Path.Combine("compressed", "candidate.js.gz");
+        var dczPath = Path.Combine("compressed", "candidate.js.dcz");
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    originalPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    gzPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "gz-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "gzip",
+                    9
+                ),
+                CreateCandidate(
+                    dczPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "dcz-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "dcz",
+                    5
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    originalPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "20")])),
+                CreateCandidateEndpoint(
+                    "candidate.js.gz",
+                    gzPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "9")])),
+                CreateCandidateEndpoint(
+                    "candidate.js.dcz",
+                    dczPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "5")]))
+            ],
+            CompressionFormats = CreateCompressionFormats("gzip", "dcz"),
+            DictionaryCandidates =
+            [
+                CreateDictionaryCandidate(Path.GetFullPath(originalPath), ":dictHash:")
+            ],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // The gzip synthetic endpoint should NOT have Available-Dictionary selector
+        var syntheticGz = endpoints.FirstOrDefault(e =>
+            e.Route == "candidate.js" &&
+            e.AssetFile == Path.GetFullPath(gzPath));
+        syntheticGz.Should().NotBeNull();
+        syntheticGz.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip");
+        syntheticGz.Selectors.Should().NotContain(s => s.Name == "Available-Dictionary");
+    }
+
+    private static ITaskItem CreateDictionaryCandidate(string assetIdentity, string dictionaryHash)
+    {
+        var item = new TaskItem(assetIdentity);
+        item.SetMetadata("DictionaryHash", dictionaryHash);
+        item.SetMetadata("DictionaryPath", Path.Combine("prev", "assets", "candidate.js"));
+        return item;
     }
 }

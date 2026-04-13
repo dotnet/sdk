@@ -18,6 +18,13 @@ public class ApplyCompressionNegotiation : Task
 
     public ITaskItem[] CompressionFormats { get; set; }
 
+    /// <summary>
+    /// Dictionary candidates from ResolveDictionaryCandidates.
+    /// Each item's Identity matches a current (uncompressed) asset's Identity.
+    /// Required metadata: DictionaryHash (structured field ":base64-sha256:" for Available-Dictionary).
+    /// </summary>
+    public ITaskItem[] DictionaryCandidates { get; set; }
+
     public string AttachWeakETagToCompressedAssets { get; set; }
 
     [Output]
@@ -68,6 +75,24 @@ public class ApplyCompressionNegotiation : Task
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
         var formatPriority = BuildFormatPriority(CompressionFormats);
+
+        // Build lookup: content-encoding → uses dictionary
+        var formatUsesDictionary = BuildFormatUsesDictionary(CompressionFormats);
+
+        // Build lookup: uncompressed asset identity → dictionary hash (for Available-Dictionary selector)
+        var dictionaryHashByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (DictionaryCandidates != null)
+        {
+            foreach (var candidate in DictionaryCandidates)
+            {
+                var hash = candidate.GetMetadata("DictionaryHash");
+                if (!string.IsNullOrEmpty(hash))
+                {
+                    dictionaryHashByAsset[candidate.ItemSpec] = hash;
+                }
+            }
+        }
+
         // Accumulate compressed variants per related asset during backward walk
         var compressedByRelated = new Dictionary<string, List<StaticWebAsset>>(StringComparer.Ordinal);
         // Quality map: compressed asset identity → quality string
@@ -129,6 +154,8 @@ public class ApplyCompressionNegotiation : Task
 
         // === Walk 3: Process compressed assets — update headers, create synthetics, link groups ===
         var compressionHeadersByEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>(2);
+        // Track primary assets that have dictionary-compressed variants (for Use-As-Dictionary header)
+        var primaryAssetsWithDictVariants = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var kvp in compressedByRelated)
         {
@@ -150,6 +177,14 @@ public class ApplyCompressionNegotiation : Task
 
                 Log.LogMessage("Processing compressed asset: {0}", compressed.Identity);
                 var compressionHeaders = GetOrCreateCompressionHeaders(compressionHeadersByEncoding, compressed);
+
+                // Check if this compressed asset's format uses dictionaries
+                var isDictionaryFormat = formatUsesDictionary.TryGetValue(compressed.AssetTraitValue, out var usesDict) && usesDict;
+                string dictionaryHash = null;
+                if (isDictionaryFormat)
+                {
+                    dictionaryHashByAsset.TryGetValue(relatedAssetIdentity, out dictionaryHash);
+                }
 
                 if (!endpointsByAsset.TryGetValue(compressed.Identity, out var compressedEndpoints))
                 {
@@ -202,7 +237,7 @@ public class ApplyCompressionNegotiation : Task
                     }
 
                     var compressedHeaders = GetCompressedHeaders(compatibleCompressed);
-                    var endpointCopy = CreateUpdatedEndpoint(compressed, quality, compatibleCompressed, compressedHeaders, primaryEndpoint);
+                    var endpointCopy = CreateUpdatedEndpoint(compressed, quality, compatibleCompressed, compressedHeaders, primaryEndpoint, isDictionaryFormat, dictionaryHash);
 
                     // Add synthetic to primary's route group
                     if (routeGroups.TryGetValue(primaryEndpoint.Route, out var primaryGroup))
@@ -210,6 +245,16 @@ public class ApplyCompressionNegotiation : Task
                         primaryGroup.State ??= new CompressionGroupState();
                         primaryGroup.State.SyntheticEndpoints.Add(endpointCopy);
                         EnsureVaryHeader(primaryEndpoint);
+
+                        // For dictionary formats, add Vary: Available-Dictionary and
+                        // Use-As-Dictionary on the primary endpoint
+                        if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
+                        {
+                            EnsureVaryAvailableDictionaryHeader(primaryEndpoint);
+                            EnsureUseDictionaryHeader(primaryEndpoint, compressed);
+                            primaryAssetsWithDictVariants.Add(relatedAssetIdentity);
+                        }
+
                         primaryGroup.Modified = true;
                     }
                 }
@@ -316,7 +361,9 @@ public class ApplyCompressionNegotiation : Task
         string quality,
         StaticWebAssetEndpoint compressedEndpoint,
         HashSet<string> compressedHeaders,
-        StaticWebAssetEndpoint relatedEndpointCandidate)
+        StaticWebAssetEndpoint relatedEndpointCandidate,
+        bool isDictionaryFormat = false,
+        string dictionaryHash = null)
     {
         Log.LogMessage(MessageImportance.Low, "Processing related endpoint '{0}'", relatedEndpointCandidate.Route);
         var encodingSelector = new StaticWebAssetEndpointSelector
@@ -347,20 +394,45 @@ public class ApplyCompressionNegotiation : Task
             }
         }
 
+        // Build selectors list
+        var selectorsList = new List<StaticWebAssetEndpointSelector>(relatedEndpointCandidate.Selectors.Length + 2);
+        selectorsList.AddRange(relatedEndpointCandidate.Selectors);
+        selectorsList.Add(encodingSelector);
+
+        // For dictionary formats, add an Available-Dictionary selector so the endpoint
+        // only matches when the browser advertises the correct dictionary
+        if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
+        {
+            selectorsList.Add(new StaticWebAssetEndpointSelector
+            {
+                Name = "Available-Dictionary",
+                Value = dictionaryHash,
+                Quality = "1.0"
+            });
+        }
+
         var endpointCopy = new StaticWebAssetEndpoint
         {
             AssetFile = compressedAsset.Identity,
             Route = relatedEndpointCandidate.Route,
             Order = relatedEndpointCandidate.Order,
-            Selectors = [
-                ..relatedEndpointCandidate.Selectors,
-                encodingSelector
-            ],
+            Selectors = [.. selectorsList],
             EndpointProperties = [.. endpointProperties]
         };
         var headers = new List<StaticWebAssetEndpointResponseHeader>(7);
         ApplyCompressedEndpointHeaders(headers, compressedEndpoint, relatedEndpointCandidate.Route);
         ApplyRelatedEndpointCandidateHeaders(headers, relatedEndpointCandidate, compressedHeaders);
+
+        // For dictionary formats, add Vary: Available-Dictionary
+        if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
+        {
+            headers.Add(new StaticWebAssetEndpointResponseHeader
+            {
+                Name = "Vary",
+                Value = "Available-Dictionary"
+            });
+        }
+
         endpointCopy.ResponseHeaders = [.. headers];
 
         // Update the endpoint
@@ -490,6 +562,78 @@ public class ApplyCompressionNegotiation : Task
         }
 
         return priority;
+    }
+
+    internal static Dictionary<string, bool> BuildFormatUsesDictionary(ITaskItem[] compressionFormats)
+    {
+        var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        if (compressionFormats == null || compressionFormats.Length == 0)
+        {
+            return result;
+        }
+
+        for (var i = 0; i < compressionFormats.Length; i++)
+        {
+            var encoding = compressionFormats[i].GetMetadata("ContentEncoding");
+            var usesDictionary = string.Equals(compressionFormats[i].GetMetadata("UsesDictionary"), "true", StringComparison.OrdinalIgnoreCase);
+            if (!string.IsNullOrEmpty(encoding) && !result.ContainsKey(encoding))
+            {
+                result[encoding] = usesDictionary;
+            }
+        }
+
+        return result;
+    }
+
+    private static void EnsureVaryAvailableDictionaryHeader(StaticWebAssetEndpoint endpoint)
+    {
+        for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
+        {
+            var header = endpoint.ResponseHeaders[i];
+            if (string.Equals(header.Name, "Vary", StringComparison.OrdinalIgnoreCase) &&
+                header.Value.Contains("Available-Dictionary", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        endpoint.ResponseHeaders = [
+            ..endpoint.ResponseHeaders,
+            new StaticWebAssetEndpointResponseHeader
+            {
+                Name = "Vary",
+                Value = "Available-Dictionary"
+            }
+        ];
+    }
+
+    private static void EnsureUseDictionaryHeader(StaticWebAssetEndpoint endpoint, StaticWebAsset compressedAsset)
+    {
+        // Check if header already exists
+        for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
+        {
+            if (string.Equals(endpoint.ResponseHeaders[i].Name, "Use-As-Dictionary", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        // The match pattern uses the endpoint's route to tell the browser:
+        // "Cache this response as a dictionary for future requests to this same path"
+        var relatedPath = compressedAsset.ComputePathWithoutTokens(compressedAsset.RelativePath);
+        if (string.IsNullOrEmpty(relatedPath))
+        {
+            relatedPath = endpoint.Route;
+        }
+
+        endpoint.ResponseHeaders = [
+            ..endpoint.ResponseHeaders,
+            new StaticWebAssetEndpointResponseHeader
+            {
+                Name = "Use-As-Dictionary",
+                Value = $"match=\"/{relatedPath}\""
+            }
+        ];
     }
 
     // Produces a descending quality series: 1.0, 0.9, 0.8, ..., 0.1, 0.09, 0.08, ..., 0.01, 0.009, ...

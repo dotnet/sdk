@@ -399,19 +399,165 @@ public class ResolveCompressedAssetsTest
 
     private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
     {
-        var formats = new Dictionary<string, (string Extension, string ContentEncoding)>(StringComparer.OrdinalIgnoreCase)
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding, bool UsesDictionary)>(StringComparer.OrdinalIgnoreCase)
         {
-            ["gzip"] = (".gz", "gzip"),
-            ["brotli"] = (".br", "br"),
+            ["gzip"] = (".gz", "gzip", false),
+            ["brotli"] = (".br", "br", false),
+            ["zstd"] = (".zst", "zstd", false),
+            ["dcz"] = (".dcz", "dcz", true),
         };
 
         return formatNames.Select(name =>
         {
-            var (ext, enc) = formats[name];
+            var (ext, enc, usesDict) = formats[name];
             var item = new TaskItem(name);
             item.SetMetadata("FileExtension", ext);
             item.SetMetadata("ContentEncoding", enc);
+            if (usesDict)
+            {
+                item.SetMetadata("UsesDictionary", "true");
+            }
             return (ITaskItem)item;
         }).ToArray();
+    }
+
+    private ITaskItem CreateDictionaryCandidate(string assetIdentity, string dictionaryPath, string dictionaryHash)
+    {
+        var item = new TaskItem(assetIdentity);
+        item.SetMetadata("DictionaryPath", dictionaryPath);
+        item.SetMetadata("DictionaryHash", dictionaryHash);
+        item.SetMetadata("RelativePath", "matched/path");
+        return item;
+    }
+
+    [Fact]
+    public void DczFormat_ProducesCandidateWhenDictionaryExists()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var dictPath = Path.Combine(OutputBasePath, "dict", "prev.js");
+        Directory.CreateDirectory(Path.GetDirectoryName(dictPath));
+        File.WriteAllText(dictPath, "previous content");
+
+        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":abc123hash:");
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "dcz"),
+            Formats = "gzip;dcz",
+            DictionaryCandidates = new[] { dictCandidate },
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".dcz");
+        compressed[1].GetMetadata("DictionaryPath").Should().Be(dictPath);
+        compressed[1].GetMetadata("DictionaryHash").Should().Be(":abc123hash:");
+    }
+
+    [Fact]
+    public void DczFormat_SkippedWhenNoDictionaryCandidate()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "dcz"),
+            Formats = "gzip;dcz",
+            // No DictionaryCandidates provided
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(1); // Only gzip, no dcz
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+    }
+
+    [Fact]
+    public void DczFormat_NonDictionaryFormatsUnaffectedByDictionaryCandidates()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
+            DictionaryCandidates = Array.Empty<ITaskItem>(), // Empty — shouldn't affect gzip/brotli
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".br");
+    }
+
+    [Fact]
+    public void DczFormat_AlongsideOtherFormats()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var dictPath = Path.Combine(OutputBasePath, "dict", "prev.js");
+        Directory.CreateDirectory(Path.GetDirectoryName(dictPath));
+        File.WriteAllText(dictPath, "previous content");
+
+        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":hash:");
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli", "zstd", "dcz"),
+            Formats = "gzip;brotli;zstd;dcz",
+            DictionaryCandidates = new[] { dictCandidate },
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(4);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".br");
+        compressed[2].ItemSpec.Should().EndWith(".zst");
+        compressed[3].ItemSpec.Should().EndWith(".dcz");
+
+        // Only dcz should have dictionary metadata
+        compressed[0].GetMetadata("DictionaryPath").Should().BeEmpty();
+        compressed[3].GetMetadata("DictionaryPath").Should().Be(dictPath);
     }
 }

@@ -33,6 +33,13 @@ public class ResolveCompressedAssets : Task
 
     public ITaskItem[] ExplicitAssets { get; set; }
 
+    /// <summary>
+    /// Dictionary candidates produced by ResolveDictionaryCandidates.
+    /// Each item's Identity matches a current asset's Identity.
+    /// Required metadata: DictionaryPath, DictionaryHash.
+    /// </summary>
+    public ITaskItem[] DictionaryCandidates { get; set; }
+
     [Required]
     public string OutputPath { get; set; }
 
@@ -67,13 +74,14 @@ public class ResolveCompressedAssets : Task
         // Build lookup from content-encoding trait value → format name for reverse mapping of existing compressed assets.
         var formatsByContentEncoding = new Dictionary<string, string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         // Build lookup from format name → (extension, contentEncoding) for creating new compressed assets.
-        var formatsByName = new Dictionary<string, (string Extension, string ContentEncoding)>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
+        var formatsByName = new Dictionary<string, (string Extension, string ContentEncoding, bool UsesDictionary)>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         var knownExtensions = new HashSet<string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         foreach (var format in CompressionFormats)
         {
             var formatName = format.ItemSpec;
             var extension = format.GetMetadata("FileExtension");
             var contentEncoding = format.GetMetadata("ContentEncoding");
+            var usesDictionary = string.Equals(format.GetMetadata("UsesDictionary"), "true", StringComparison.OrdinalIgnoreCase);
 
             if (string.IsNullOrEmpty(extension) || string.IsNullOrEmpty(contentEncoding))
             {
@@ -88,7 +96,7 @@ public class ResolveCompressedAssets : Task
                 Log.LogError("Duplicate compression format name '{0}'.", formatName);
                 return false;
             }
-            formatsByName[formatName] = (extension, contentEncoding);
+            formatsByName[formatName] = (extension, contentEncoding, usesDictionary);
 
             if (formatsByContentEncoding.ContainsKey(contentEncoding))
             {
@@ -117,6 +125,16 @@ public class ResolveCompressedAssets : Task
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets).ToArray();
         var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets);
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates, formatsByContentEncoding);
+
+        // Build dictionary candidate lookup: asset Identity → candidate TaskItem
+        var dictionaryCandidatesByIdentity = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+        if (DictionaryCandidates != null)
+        {
+            foreach (var candidate in DictionaryCandidates)
+            {
+                dictionaryCandidatesByIdentity[candidate.ItemSpec] = candidate;
+            }
+        }
 
         var includePatterns = SplitPattern(IncludePatterns);
         var excludePatterns = SplitPattern(ExcludePatterns);
@@ -205,7 +223,24 @@ public class ResolveCompressedAssets : Task
                 pathTemplate ??= CreatePathTemplate(asset, outputPath);
                 relativePath ??= asset.EmbedTokens(asset.RelativePath);
 
-                var (extension, contentEncoding) = formatsByName[formatName];
+                var (extension, contentEncoding, usesDictionary) = formatsByName[formatName];
+
+                // Dictionary-requiring formats (e.g. dcz) can only produce candidates when a
+                // dictionary candidate exists for the asset.
+                ITaskItem dictCandidate = null;
+                if (usesDictionary)
+                {
+                    if (!dictionaryCandidatesByIdentity.TryGetValue(asset.Identity, out dictCandidate))
+                    {
+                        Log.LogMessage(
+                            MessageImportance.Low,
+                            "Skipping dictionary format '{0}' for asset '{1}' because no dictionary candidate is available.",
+                            formatName,
+                            asset.Identity);
+                        continue;
+                    }
+                }
+
                 if (TryCreateCompressedAsset(
                     asset,
                     outputPath,
@@ -218,6 +253,13 @@ public class ResolveCompressedAssets : Task
                 {
                     var result = compressedAsset.ToTaskItem();
                     result.SetMetadata("RelatedAssetOriginalItemSpec", asset.OriginalItemSpec);
+
+                    // Propagate dictionary metadata for dictionary-requiring formats
+                    if (dictCandidate != null)
+                    {
+                        result.SetMetadata("DictionaryPath", dictCandidate.GetMetadata("DictionaryPath"));
+                        result.SetMetadata("DictionaryHash", dictCandidate.GetMetadata("DictionaryHash"));
+                    }
 
                     assetsToCompress[assetCounter++] = result;
                     existingFormats.Add(formatName);

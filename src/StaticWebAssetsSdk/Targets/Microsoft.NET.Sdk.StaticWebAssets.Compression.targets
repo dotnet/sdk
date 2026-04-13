@@ -18,6 +18,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverPrecompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveDictionaryCandidates" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GeneratePublishAssetPack" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
 
@@ -166,6 +168,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == ''">true</EnableDefaultCompressionFormats>
     <BuildCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(BuildCompressionFormats);gzip</BuildCompressionFormats>
     <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli;zstd</PublishCompressionFormats>
+    <PublishCompressionFormats Condition="'$(StaticWebAssetDictionaryCompression)' == 'true'">$(PublishCompressionFormats);dcz</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
     <CompressDiscoveredAssetsDuringBuild Condition="$(CompressDiscoveredAssetsDuringBuild) == ''">true</CompressDiscoveredAssetsDuringBuild>
     <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
@@ -176,6 +179,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Attach weak ETag to compressed assets -->
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == ''">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
+
+    <!-- CDT (Compression Dictionary Transport) support -->
+    <StaticWebAssetDictionaryCompression Condition="'$(StaticWebAssetDictionaryCompression)' == ''">false</StaticWebAssetDictionaryCompression>
+    <!-- Path to a previous asset pack zip for delta compression -->
+    <!-- <StaticWebAssetPreviousAssetPack>path/to/previous/staticwebassets.pack.zip</StaticWebAssetPreviousAssetPack> -->
+    <!-- Output path for the generated asset pack -->
+    <StaticWebAssetPublishAssetPackPath Condition="'$(StaticWebAssetPublishAssetPackPath)' == ''">$(OutputPath)staticwebassets.pack.zip</StaticWebAssetPublishAssetPackPath>
   </PropertyGroup>
 
   <!-- Define the known compression formats with their extensions and content-encoding values.
@@ -192,6 +202,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompressionFormat Include="zstd">
       <FileExtension>.zst</FileExtension>
       <ContentEncoding>zstd</ContentEncoding>
+    </CompressionFormat>
+    <!-- dcz (shared zstd with dictionary) — orthogonal to zstd, separate format with UsesDictionary -->
+    <CompressionFormat Include="dcz" Condition="'$(StaticWebAssetDictionaryCompression)' == 'true'">
+      <FileExtension>.dcz</FileExtension>
+      <ContentEncoding>dcz</ContentEncoding>
+      <UsesDictionary>true</UsesDictionary>
     </CompressionFormat>
   </ItemGroup>
 
@@ -234,6 +250,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolvePublishCompressedStaticWebAssetsConfiguration;
       $(GeneratePublishCompressedStaticWebAssetsDependsOn)
     </GeneratePublishCompressedStaticWebAssetsDependsOn>
+
+    <!-- ResolveDictionaryCandidates runs before compression configuration to provide dictionary candidates -->
+    <ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != ''">
+      ResolveDictionaryCandidates;
+      $(ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn)
+    </ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn>
+
+    <!-- GeneratePublishAssetPack runs after the publish manifest is generated -->
+    <GenerateStaticWebAssetsPublishManifestDependsOn_AssetPack Condition="'$(StaticWebAssetProjectMode)' == 'Root'">
+      GeneratePublishAssetPack
+    </GenerateStaticWebAssetsPublishManifestDependsOn_AssetPack>
 
   </PropertyGroup>
 
@@ -388,6 +415,22 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <!-- Publish -->
 
+  <!-- CDT: Resolve dictionary candidates from a previous asset pack -->
+  <Target Name="ResolveDictionaryCandidates"
+    Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != '' and Exists('$(StaticWebAssetPreviousAssetPack)')">
+
+    <ResolveDictionaryCandidates
+      AssetPackPath="$(StaticWebAssetPreviousAssetPack)"
+      CurrentAssets="@(StaticWebAsset)"
+      OutputPath="$(IntermediateOutputPath)dictionaries">
+      <Output TaskParameter="DictionaryCandidates" ItemName="_DictionaryCandidates" />
+    </ResolveDictionaryCandidates>
+
+    <ItemGroup>
+      <FileWrites Include="@(_DictionaryCandidates->'%(DictionaryPath)')" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="ResolvePublishCompressedStaticWebAssets" DependsOnTargets="$(ResolvePublishCompressedStaticWebAssetsDependsOn)">
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssetsForPublish)"
@@ -414,6 +457,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
       CompressionFormats="@(CompressionFormat)"
+      DictionaryCandidates="@(_DictionaryCandidates)"
       AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
@@ -431,6 +475,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GZipCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
       <_BrotliCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
       <_ZstdCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'zstd'" />
+      <_DczCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'dcz'" />
     </ItemGroup>
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssetsForPublish)' != ''"
@@ -450,14 +495,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
 
+    <!-- DCZ: zstd with dictionary — uses same ZstdCompress task, items carry DictionaryPath metadata -->
+    <ZstdCompress Condition="'@(_DczCompressedStaticWebAssetsForPublish)' != ''"
+      FilesToCompress="@(_DczCompressedStaticWebAssetsForPublish)"
+      CompressionLevel="$(ZstdCompressionLevel)"
+      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
+      ToolExe="$(_DotNetHostFileName)"
+      ToolPath="$(_DotNetHostDirectory)" />
+
     <ItemGroup>
       <FileWrites Include="@(_GZipCompressedStaticWebAssetsForPublish)" />
       <FileWrites Include="@(_BrotliCompressedStaticWebAssetsForPublish)" />
       <FileWrites Include="@(_ZstdCompressedStaticWebAssetsForPublish)" />
+      <FileWrites Include="@(_DczCompressedStaticWebAssetsForPublish)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolvePublishCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolvePublishStaticWebAssets;$(ResolveCompressedFilesForPublishDependsOn)">
+  <Target Name="ResolvePublishCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolvePublishStaticWebAssets;$(ResolveCompressedFilesForPublishDependsOn);$(ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn)">
 
     <PropertyGroup>
       <StaticWebAssetPublishCompressAllAssets Condition="'$(StaticWebAssetPublishCompressAllAssets)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetPublishCompressAllAssets>
@@ -479,6 +533,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForPublish)"
       CompressionFormats="@(CompressionFormat)"
+      DictionaryCandidates="@(_DictionaryCandidates)"
       Formats="$(PublishCompressionFormats)"
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"
@@ -491,6 +546,29 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ResolveCompressedAssets>
 
+  </Target>
+
+  <!-- CDT: Generate the asset pack after the publish manifest is generated.
+       This runs for Root projects, producing a zip with the manifest + uncompressed original assets.
+       The pack can be used as input for dictionary compression in future builds. -->
+  <Target Name="GeneratePublishAssetPack"
+    AfterTargets="GenerateStaticWebAssetsPublishManifest"
+    Condition="'$(StaticWebAssetProjectMode)' == 'Root'">
+
+    <ItemGroup>
+      <_AssetPackPublishAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <GeneratePublishAssetPack
+      ManifestPath="$(StaticWebAssetPublishManifestPath)"
+      Assets="@(_AssetPackPublishAssets)"
+      PackOutputPath="$(StaticWebAssetPublishAssetPackPath)">
+      <Output TaskParameter="GeneratedPackPath" PropertyName="_GeneratedAssetPackPath" />
+    </GeneratePublishAssetPack>
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedAssetPackPath)" />
+    </ItemGroup>
   </Target>
 
 </Project>

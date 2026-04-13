@@ -54,10 +54,16 @@ internal static class Program
             Description = "The filenames to output the compressed file to.",
             AllowMultipleArgumentsPerToken = false
         };
+        Option<List<string>> zstdDictionariesOption = new("-d")
+        {
+            Description = "A list of dictionary files, one per source. Use empty string for sources without a dictionary.",
+            AllowMultipleArgumentsPerToken = false
+        };
 
         zstd.Add(zstdCompressionLevelOption);
         zstd.Add(zstdSourcesOption);
         zstd.Add(zstdOutputsOption);
+        zstd.Add(zstdDictionariesOption);
 
         rootCommand.Add(zstd);
 
@@ -66,15 +72,27 @@ internal static class Program
             var c = parseResults.GetValue(zstdCompressionLevelOption);
             var s = parseResults.GetValue(zstdSourcesOption);
             var o = parseResults.GetValue(zstdOutputsOption);
-
-            var options = new ZstandardCompressionOptions { Quality = c };
+            var d = parseResults.GetValue(zstdDictionariesOption);
 
             Parallel.For(0, s.Count, i =>
             {
                 var source = s[i];
                 var output = o[i];
+                var dictionaryPath = d != null && i < d.Count ? d[i] : null;
                 try
                 {
+                    ZstandardCompressionOptions options;
+                    if (!string.IsNullOrEmpty(dictionaryPath))
+                    {
+                        var dictBytes = File.ReadAllBytes(dictionaryPath);
+                        var dictionary = ZstandardDictionary.Create(dictBytes);
+                        options = new ZstandardCompressionOptions { Quality = c, Dictionary = dictionary };
+                    }
+                    else
+                    {
+                        options = new ZstandardCompressionOptions { Quality = c };
+                    }
+
                     using var sourceStream = File.OpenRead(source);
                     using var fileStream = new FileStream(output, FileMode.Create);
 
