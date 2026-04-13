@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.BrotliCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GZipCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ZstdCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverPrecompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
@@ -123,6 +124,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(CompressionExcludePatterns);
       **/*.gz;
       **/*.br;
+      **/*.zst;
       **/*.jpeg;
       **/*.jpg;
       **/*.png;
@@ -163,11 +165,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <EnableDefaultCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == ''">true</EnableDefaultCompressionFormats>
     <BuildCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(BuildCompressionFormats);gzip</BuildCompressionFormats>
-    <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
+    <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli;zstd</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
     <CompressDiscoveredAssetsDuringBuild Condition="$(CompressDiscoveredAssetsDuringBuild) == ''">true</CompressDiscoveredAssetsDuringBuild>
     <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
     <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
+    <!-- Default zstd to max quality (19) for publish -->
+    <ZstdCompressionLevel Condition="'$(ZstdCompressionLevel)' == ''">19</ZstdCompressionLevel>
 
     <!-- Attach weak ETag to compressed assets -->
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
@@ -184,6 +188,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompressionFormat Include="brotli">
       <FileExtension>.br</FileExtension>
       <ContentEncoding>br</ContentEncoding>
+    </CompressionFormat>
+    <CompressionFormat Include="zstd">
+      <FileExtension>.zst</FileExtension>
+      <ContentEncoding>zstd</ContentEncoding>
     </CompressionFormat>
   </ItemGroup>
 
@@ -286,6 +294,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
       <_BrotliCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
+      <_ZstdCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'zstd'" />
     </ItemGroup>
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssets)' != ''"
@@ -298,9 +307,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
 
+    <ZstdCompress Condition="'@(_ZstdCompressedStaticWebAssets)' != ''"
+      FilesToCompress="@(_ZstdCompressedStaticWebAssets)"
+      CompressionLevel="$(ZstdCompressionLevel)"
+      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
+      ToolExe="$(_DotNetHostFileName)"
+      ToolPath="$(_DotNetHostDirectory)" />
+
     <ItemGroup>
       <FileWrites Include="@(_GZipCompressedStaticWebAssets)" />
       <FileWrites Include="@(_BrotliCompressedStaticWebAssets)" />
+      <FileWrites Include="@(_ZstdCompressedStaticWebAssets)" />
     </ItemGroup>
   </Target>
 
@@ -413,6 +430,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_GZipCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
       <_BrotliCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
+      <_ZstdCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'zstd'" />
     </ItemGroup>
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssetsForPublish)' != ''"
@@ -425,9 +443,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
 
+    <ZstdCompress Condition="'@(_ZstdCompressedStaticWebAssetsForPublish)' != ''"
+      FilesToCompress="@(_ZstdCompressedStaticWebAssetsForPublish)"
+      CompressionLevel="$(ZstdCompressionLevel)"
+      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
+      ToolExe="$(_DotNetHostFileName)"
+      ToolPath="$(_DotNetHostDirectory)" />
+
     <ItemGroup>
       <FileWrites Include="@(_GZipCompressedStaticWebAssetsForPublish)" />
       <FileWrites Include="@(_BrotliCompressedStaticWebAssetsForPublish)" />
+      <FileWrites Include="@(_ZstdCompressedStaticWebAssetsForPublish)" />
     </ItemGroup>
   </Target>
 

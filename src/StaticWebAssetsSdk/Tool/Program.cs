@@ -37,6 +37,58 @@ internal static class Program
 
         rootCommand.Add(brotli);
 
+        Command zstd = new("zstd");
+
+        Option<int> zstdCompressionLevelOption = new("-c")
+        {
+            DefaultValueFactory = (_) => 19,
+            Description = "Compression level for the Zstandard compression algorithm (1-22, default: 19)."
+        };
+        Option<List<string>> zstdSourcesOption = new("-s")
+        {
+            Description = "A list of files to compress.",
+            AllowMultipleArgumentsPerToken = false
+        };
+        Option<List<string>> zstdOutputsOption = new("-o")
+        {
+            Description = "The filenames to output the compressed file to.",
+            AllowMultipleArgumentsPerToken = false
+        };
+
+        zstd.Add(zstdCompressionLevelOption);
+        zstd.Add(zstdSourcesOption);
+        zstd.Add(zstdOutputsOption);
+
+        rootCommand.Add(zstd);
+
+        zstd.SetAction((ParseResult parseResults) =>
+        {
+            var c = parseResults.GetValue(zstdCompressionLevelOption);
+            var s = parseResults.GetValue(zstdSourcesOption);
+            var o = parseResults.GetValue(zstdOutputsOption);
+
+            var options = new ZstandardCompressionOptions { Quality = c };
+
+            Parallel.For(0, s.Count, i =>
+            {
+                var source = s[i];
+                var output = o[i];
+                try
+                {
+                    using var sourceStream = File.OpenRead(source);
+                    using var fileStream = new FileStream(output, FileMode.Create);
+
+                    using var stream = new ZstandardStream(fileStream, options);
+                    sourceStream.CopyTo(stream);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
+                    Console.Error.WriteLine(ex.ToString());
+                }
+            });
+        });
+
         brotli.SetAction((ParseResult parseResults) =>
         {
             var c = parseResults.GetValue(compressionLevelOption);
