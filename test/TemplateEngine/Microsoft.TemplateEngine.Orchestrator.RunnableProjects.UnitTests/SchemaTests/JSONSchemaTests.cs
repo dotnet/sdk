@@ -69,10 +69,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
             //those templates are intentionally wrong
             //string[] exceptions = new[] { "MissingIdentity", "MissingMandatoryConfig" };
 
-            return Directory.EnumerateFiles(SampleTemplatesLocation, "template.json", SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(SampleTemplatesLocation!, "template.json", SearchOption.AllDirectories)
                 .Where(s => s.Contains(".template.config"))
                 //.Where(s => !exceptions.Any(e => s.Contains(e)))
-                .Select(s => s.Remove(s.Length - JsonLocation.Length).Remove(0, SampleTemplatesLocation.Length).Trim(Path.DirectorySeparatorChar))
+                .Select(s => s.Remove(s.Length - JsonLocation.Length).Remove(0, SampleTemplatesLocation!.Length).Trim(Path.DirectorySeparatorChar))
                 .Select(s => new object?[] { s });
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
         [MemberData(nameof(GetAllTemplateSamples))]
         public void TestAllSampleTemplatesHaveValidJson(string testTemplateName)
         {
-            string testFile = Path.Combine(SampleTemplatesLocation, testTemplateName, JsonLocation);
+            string testFile = Path.Combine(SampleTemplatesLocation!, testTemplateName, JsonLocation);
             IsJSONSchemaValid(testFile);
         }
     }
