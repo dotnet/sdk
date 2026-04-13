@@ -337,6 +337,31 @@ public class ResolveDictionaryCandidatesTest
     }
 
     [Fact]
+    public void SkipsAssetWhenIntegrityMatchesCurrent()
+    {
+        var sameIntegrity = "sameHashValue";
+        var packPath = CreateTestPack(new[]
+        {
+            CreateManifestAsset("js/site.js", sameIntegrity),
+        }, new Dictionary<string, string> { ["js/site.js"] = "content" });
+
+        // Current asset has the same integrity — dictionary would be pointless
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { CreateAssetItem("js/site.js", sameIntegrity) },
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.DictionaryCandidates.Should().BeEmpty();
+        _messages.Should().Contain(m => m.Contains("same integrity"));
+    }
+
+    [Fact]
     public void RouteBasedMatching_MatchesByEndpointRoute()
     {
         var oldAsset = CreateManifestAsset("js/site.js", "oldHash123");

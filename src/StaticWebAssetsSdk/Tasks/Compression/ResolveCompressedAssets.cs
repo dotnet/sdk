@@ -252,6 +252,7 @@ public class ResolveCompressedAssets : Task
                     contentEncoding,
                     pathTemplate,
                     relativePath,
+                    dictCandidate?.ItemSpec,
                     ref previousAsset,
                     out var compressedAsset))
                 {
@@ -368,6 +369,7 @@ public class ResolveCompressedAssets : Task
         string assetTraitValue,
         string pathTemplate,
         string relativePath,
+        string dictionaryId,
         ref StaticWebAsset previousAsset,
         out StaticWebAsset result)
     {
@@ -377,7 +379,10 @@ public class ResolveCompressedAssets : Task
         // This combination must be unique across all assets, so this will avoid collisions when two files on
         // the same project have the same contents, when it happens across different projects or between Build/Publish
         // assets.
-        var fileName = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
+        // When a dictionary is involved, include its identity in the path so that
+        // different dictionaries for the same asset produce distinct output files.
+        var dictSuffix = dictionaryId != null ? $"-{FileHasher.HashString(dictionaryId)}" : "";
+        var fileName = $"{pathTemplate}-{asset.Fingerprint}{dictSuffix}{fileExtension}";
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
         if (previousAsset != null)
