@@ -36,6 +36,7 @@ namespace Microsoft.NET.Build.Tasks
         private string _createPDBCommand;
         private bool _createCompositeImage;
         private bool _partialCompile;
+        private string _r2rHeaderSymbolName;
 
         private bool IsPdbCompilation => !string.IsNullOrEmpty(_createPDBCommand);
         private bool ActuallyUseCrossgen2 => UseCrossgen2 && !IsPdbCompilation;
@@ -215,6 +216,8 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogError(Strings.MissingOutputPDBImagePath);
                 }
+
+                _r2rHeaderSymbolName = CompilationEntry.GetMetadata(MetadataKeys.R2RHeaderSymbolName);
             }
 
             return true;
@@ -369,6 +372,11 @@ namespace Microsoft.NET.Build.Tasks
             if (_createCompositeImage || (!string.IsNullOrEmpty(Crossgen2ContainerFormat) && Crossgen2ContainerFormat != "pe"))
             {
                 result.AppendLine("--composite");
+
+                if (!string.IsNullOrEmpty(_r2rHeaderSymbolName))
+                {
+                    result.AppendLine($"--rtr-header-symbol-name:{_r2rHeaderSymbolName}");
+                }
             }
 
             if (_createCompositeImage)
