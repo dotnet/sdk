@@ -20,8 +20,8 @@ public class ApplyCompressionNegotiation : Task
 
     /// <summary>
     /// Dictionary candidates from ResolveDictionaryCandidates.
-    /// Each item's Identity matches a current (uncompressed) asset's Identity.
-    /// Required metadata: DictionaryHash (structured field ":base64-sha256:" for Available-Dictionary).
+    /// Each item's Identity is the extracted dictionary bytes path.
+    /// Required metadata: Hash (structured field ":base64-sha256:"), TargetAsset (new asset identity), MatchPattern (URL pattern for Use-As-Dictionary).
     /// </summary>
     public ITaskItem[] DictionaryCandidates { get; set; }
 
@@ -81,14 +81,22 @@ public class ApplyCompressionNegotiation : Task
 
         // Build lookup: uncompressed asset identity → dictionary hash (for Available-Dictionary selector)
         var dictionaryHashByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
+        // Build lookup: uncompressed asset identity → match pattern (for Use-As-Dictionary header)
+        var dictionaryMatchPatternByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
         if (DictionaryCandidates != null)
         {
             foreach (var candidate in DictionaryCandidates)
             {
-                var hash = candidate.GetMetadata("DictionaryHash");
-                if (!string.IsNullOrEmpty(hash))
+                var targetAsset = candidate.GetMetadata("TargetAsset");
+                var hash = candidate.GetMetadata("Hash");
+                var matchPattern = candidate.GetMetadata("MatchPattern");
+                if (!string.IsNullOrEmpty(targetAsset) && !string.IsNullOrEmpty(hash))
                 {
-                    dictionaryHashByAsset[candidate.ItemSpec] = hash;
+                    dictionaryHashByAsset[targetAsset] = hash;
+                }
+                if (!string.IsNullOrEmpty(targetAsset) && !string.IsNullOrEmpty(matchPattern))
+                {
+                    dictionaryMatchPatternByAsset[targetAsset] = matchPattern;
                 }
             }
         }
@@ -181,9 +189,11 @@ public class ApplyCompressionNegotiation : Task
                 // Check if this compressed asset's format uses dictionaries
                 var isDictionaryFormat = formatUsesDictionary.TryGetValue(compressed.AssetTraitValue, out var usesDict) && usesDict;
                 string dictionaryHash = null;
+                string dictionaryMatchPattern = null;
                 if (isDictionaryFormat)
                 {
                     dictionaryHashByAsset.TryGetValue(relatedAssetIdentity, out dictionaryHash);
+                    dictionaryMatchPatternByAsset.TryGetValue(relatedAssetIdentity, out dictionaryMatchPattern);
                 }
 
                 if (!endpointsByAsset.TryGetValue(compressed.Identity, out var compressedEndpoints))
@@ -251,7 +261,7 @@ public class ApplyCompressionNegotiation : Task
                         if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
                         {
                             EnsureVaryAvailableDictionaryHeader(primaryEndpoint);
-                            EnsureUseDictionaryHeader(primaryEndpoint, compressed);
+                            EnsureUseDictionaryHeader(primaryEndpoint, dictionaryMatchPattern);
                             primaryAssetsWithDictVariants.Add(relatedAssetIdentity);
                         }
 
@@ -607,7 +617,7 @@ public class ApplyCompressionNegotiation : Task
         ];
     }
 
-    private static void EnsureUseDictionaryHeader(StaticWebAssetEndpoint endpoint, StaticWebAsset compressedAsset)
+    private static void EnsureUseDictionaryHeader(StaticWebAssetEndpoint endpoint, string matchPattern)
     {
         // Check if header already exists
         for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
@@ -618,20 +628,17 @@ public class ApplyCompressionNegotiation : Task
             }
         }
 
-        // The match pattern uses the endpoint's route to tell the browser:
-        // "Cache this response as a dictionary for future requests to this same path"
-        var relatedPath = compressedAsset.ComputePathWithoutTokens(compressedAsset.RelativePath);
-        if (string.IsNullOrEmpty(relatedPath))
-        {
-            relatedPath = endpoint.Route;
-        }
+        // Use the match pattern from the dictionary candidate (derived from the old asset's
+        // RelativePath with fingerprint tokens converted to wildcards).
+        // Falls back to the endpoint's route if no match pattern is available.
+        var pattern = !string.IsNullOrEmpty(matchPattern) ? matchPattern : endpoint.Route;
 
         endpoint.ResponseHeaders = [
             ..endpoint.ResponseHeaders,
             new StaticWebAssetEndpointResponseHeader
             {
                 Name = "Use-As-Dictionary",
-                Value = $"match=\"/{relatedPath}\""
+                Value = $"match=\"/{pattern}\""
             }
         ];
     }

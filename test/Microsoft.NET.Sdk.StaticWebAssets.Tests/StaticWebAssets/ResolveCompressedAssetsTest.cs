@@ -421,12 +421,12 @@ public class ResolveCompressedAssetsTest
         }).ToArray();
     }
 
-    private ITaskItem CreateDictionaryCandidate(string assetIdentity, string dictionaryPath, string dictionaryHash)
+    private ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string dictionaryPath, string hash)
     {
-        var item = new TaskItem(assetIdentity);
-        item.SetMetadata("DictionaryPath", dictionaryPath);
-        item.SetMetadata("DictionaryHash", dictionaryHash);
-        item.SetMetadata("RelativePath", "matched/path");
+        var item = new TaskItem(dictionaryPath);
+        item.SetMetadata("Hash", hash);
+        item.SetMetadata("TargetAsset", targetAssetIdentity);
+        item.SetMetadata("MatchPattern", "matched/path");
         return item;
     }
 

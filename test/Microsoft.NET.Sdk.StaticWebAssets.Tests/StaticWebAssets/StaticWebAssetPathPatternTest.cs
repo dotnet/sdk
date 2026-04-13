@@ -721,4 +721,18 @@ public class StaticWebAssetPathPatternTest
     }
 
     private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
+
+    [Theory]
+    [InlineData("site.js", "site.js")]
+    [InlineData("site#[.{fingerprint}]?.js", "site*.js")]
+    [InlineData("site#[.{fingerprint}]!.js", "site*.js")]
+    [InlineData("lib/app#[.{fingerprint}]?.css", "lib/app*.css")]
+    [InlineData("site#[.{fingerprint}]#[.{version}].css", "site**.css")]
+    [InlineData("plain.txt", "plain.txt")]
+    public void ComputeMatchPattern_ReplacesTokensWithWildcards(string rawPattern, string expectedMatch)
+    {
+        var pattern = StaticWebAssetPathPattern.Parse(rawPattern, "test-identity");
+        var result = pattern.ComputeMatchPattern();
+        Assert.Equal(expectedMatch, result);
+    }
 }

@@ -98,11 +98,11 @@ public class ResolveDictionaryCandidatesTest
         task.DictionaryCandidates.Should().HaveCount(1);
 
         var candidate = task.DictionaryCandidates[0];
-        candidate.ItemSpec.Should().Be(currentAsset.ItemSpec);
-        candidate.GetMetadata("DictionaryHash").Should().Be(":hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=:");
-        candidate.GetMetadata("RelativePath").Should().Be("js/site.js");
-        candidate.GetMetadata("DictionaryPath").Should().NotBeEmpty();
-        File.Exists(candidate.GetMetadata("DictionaryPath")).Should().BeTrue();
+        // Identity is the extracted dictionary bytes path
+        File.Exists(candidate.ItemSpec).Should().BeTrue();
+        candidate.GetMetadata("Hash").Should().Be(":hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=:");
+        candidate.GetMetadata("TargetAsset").Should().Be(currentAsset.ItemSpec);
+        candidate.GetMetadata("MatchPattern").Should().Be("js/site.js");
     }
 
     [Fact]
@@ -125,7 +125,8 @@ public class ResolveDictionaryCandidatesTest
 
         task.Execute();
 
-        var extractedPath = task.DictionaryCandidates[0].GetMetadata("DictionaryPath");
+        // ItemSpec IS the extracted dictionary path
+        var extractedPath = task.DictionaryCandidates[0].ItemSpec;
         File.ReadAllText(extractedPath).Should().Be(expectedContent);
     }
 
@@ -180,7 +181,7 @@ public class ResolveDictionaryCandidatesTest
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(1);
-        task.DictionaryCandidates[0].GetMetadata("RelativePath").Should().Be("js/kept.js");
+        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("js/kept.js");
     }
 
     [Fact]
@@ -215,7 +216,7 @@ public class ResolveDictionaryCandidatesTest
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(3);
-        task.DictionaryCandidates.Select(c => c.GetMetadata("RelativePath"))
+        task.DictionaryCandidates.Select(c => c.GetMetadata("MatchPattern"))
             .Should().BeEquivalentTo("js/site.js", "css/app.css", "lib/jquery.js");
     }
 
@@ -250,7 +251,7 @@ public class ResolveDictionaryCandidatesTest
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(1);
-        task.DictionaryCandidates[0].GetMetadata("DictionaryHash").Should().Be(":origHash:");
+        task.DictionaryCandidates[0].GetMetadata("Hash").Should().Be(":origHash:");
     }
 
     [Fact]
@@ -281,7 +282,7 @@ public class ResolveDictionaryCandidatesTest
         result.Should().BeTrue();
         // Only the uncompressed asset should produce a candidate
         task.DictionaryCandidates.Should().HaveCount(1);
-        task.DictionaryCandidates[0].ItemSpec.Should().Be(uncompressedAsset.ItemSpec);
+        task.DictionaryCandidates[0].GetMetadata("TargetAsset").Should().Be(uncompressedAsset.ItemSpec);
     }
 
     [Fact]
@@ -333,6 +334,166 @@ public class ResolveDictionaryCandidatesTest
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RouteBasedMatching_MatchesByEndpointRoute()
+    {
+        var oldAsset = CreateManifestAsset("js/site.js", "oldHash123");
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { oldEndpoint });
+
+        var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
+
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.DictionaryCandidates.Should().HaveCount(1);
+        task.DictionaryCandidates[0].GetMetadata("Hash").Should().Be(":oldHash123:");
+        task.DictionaryCandidates[0].GetMetadata("TargetAsset").Should().Be(currentAsset.ItemSpec);
+    }
+
+    [Fact]
+    public void RouteBasedMatching_SkipsEndpointsWithContentEncodingSelector()
+    {
+        var oldAsset = CreateManifestAsset("js/site.js", "oldHash");
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        // Add an old compressed endpoint — should be ignored
+        var oldCompressedEndpoint = CreateEndpoint("js/site.js", "C:\\prev\\wwwroot\\js\\site.js.gz");
+        oldCompressedEndpoint.Selectors = new[]
+        {
+            new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.9" }
+        };
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { oldEndpoint, oldCompressedEndpoint });
+
+        var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
+
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.DictionaryCandidates.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void RouteBasedMatching_FallsBackToRelativePathWithoutEndpoints()
+    {
+        // When no CurrentEndpoints are provided, falls back to RelativePath matching
+        var packPath = CreateTestPack(new[]
+        {
+            CreateManifestAsset("js/site.js", "fallbackHash"),
+        }, new Dictionary<string, string> { ["js/site.js"] = "old content" });
+
+        var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { currentAsset },
+            // No CurrentEndpoints
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.DictionaryCandidates.Should().HaveCount(1);
+        task.DictionaryCandidates[0].GetMetadata("Hash").Should().Be(":fallbackHash:");
+    }
+
+    [Fact]
+    public void MatchPattern_UsesWildcardForFingerprintTokens()
+    {
+        // Old asset has fingerprint token in RelativePath
+        var oldAsset = CreateManifestAsset("js/site.js", "fpHash");
+        oldAsset.RelativePath = "js/site#[.{fingerprint}]?.js";
+
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { oldEndpoint });
+
+        var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
+
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.DictionaryCandidates.Should().HaveCount(1);
+        // Fingerprint token should be replaced with wildcard
+        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("js/site*.js");
+    }
+
+    [Fact]
+    public void RouteBasedMatching_AvoidsDuplicatesFromMultipleRoutes()
+    {
+        // Same asset accessible via two routes
+        var oldAsset = CreateManifestAsset("js/site.js", "dedupHash");
+        var oldEndpoint1 = CreateEndpoint("js/site.js", oldAsset.Identity);
+        var oldEndpoint2 = CreateEndpoint("_content/TestApp/js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { oldEndpoint1, oldEndpoint2 });
+
+        var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint1 = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
+        var currentEndpoint2 = CreateEndpointItem("_content/TestApp/js/site.js", currentAsset.ItemSpec);
+
+        var task = new ResolveDictionaryCandidates
+        {
+            BuildEngine = _buildEngine.Object,
+            AssetPackPath = packPath,
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint1, currentEndpoint2 },
+            OutputPath = Path.Combine(_testDir, "output"),
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        // Should only produce one candidate even though there are two matching routes
+        task.DictionaryCandidates.Should().HaveCount(1);
     }
 
     // --- Helpers ---
@@ -392,7 +553,7 @@ public class ResolveDictionaryCandidatesTest
         };
     }
 
-    private string CreateTestPack(StaticWebAsset[] assets, Dictionary<string, string> files)
+    private string CreateTestPack(StaticWebAsset[] assets, Dictionary<string, string> files, StaticWebAssetEndpoint[] endpoints = null)
     {
         var packPath = Path.Combine(_testDir, Guid.NewGuid().ToString("N") + ".zip");
 
@@ -404,7 +565,7 @@ public class ResolveDictionaryCandidatesTest
             referencedProjectConfigurations: Array.Empty<StaticWebAssetsManifest.ReferencedProjectConfiguration>(),
             discoveryPatterns: Array.Empty<StaticWebAssetsDiscoveryPattern>(),
             assets: assets,
-            endpoints: Array.Empty<StaticWebAssetEndpoint>());
+            endpoints: endpoints ?? Array.Empty<StaticWebAssetEndpoint>());
 
         using var zipStream = new FileStream(packPath, FileMode.Create, FileAccess.Write);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create);
@@ -426,5 +587,23 @@ public class ResolveDictionaryCandidatesTest
         }
 
         return packPath;
+    }
+
+    private static StaticWebAssetEndpoint CreateEndpoint(string route, string assetFile)
+    {
+        return new StaticWebAssetEndpoint
+        {
+            Route = route,
+            AssetFile = assetFile,
+            Selectors = Array.Empty<StaticWebAssetEndpointSelector>(),
+            ResponseHeaders = Array.Empty<StaticWebAssetEndpointResponseHeader>(),
+            EndpointProperties = Array.Empty<StaticWebAssetEndpointProperty>(),
+        };
+    }
+
+    private static ITaskItem CreateEndpointItem(string route, string assetFile)
+    {
+        var endpoint = CreateEndpoint(route, assetFile);
+        return endpoint.ToTaskItem();
     }
 }

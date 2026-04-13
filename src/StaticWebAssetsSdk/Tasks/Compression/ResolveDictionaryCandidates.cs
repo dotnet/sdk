@@ -11,8 +11,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 /// <summary>
 /// Extracts a previous asset pack (.zip), reads the embedded SWA manifest, and matches
-/// current assets to previous versions by RelativePath. The output is a set of dictionary
+/// current endpoints to previous endpoints by Route. The output is a set of dictionary
 /// candidates that downstream tasks use to produce dictionary-compressed (dcz) assets.
+///
+/// Dictionary items represent bytes + hash + applicability scope, not full assets:
+///   Identity = path to extracted dictionary bytes on disk
+///   Hash = structured field ":base64-sha256:" for Available-Dictionary header
+///   TargetAsset = Identity of the new asset this dictionary applies to
+///   MatchPattern = URL pattern for Use-As-Dictionary: match= header
 /// </summary>
 public class ResolveDictionaryCandidates : Task
 {
@@ -29,14 +35,20 @@ public class ResolveDictionaryCandidates : Task
     public ITaskItem[] CurrentAssets { get; set; }
 
     /// <summary>
+    /// The current publish endpoints, used for route-based matching against previous endpoints.
+    /// </summary>
+    public ITaskItem[] CurrentEndpoints { get; set; }
+
+    /// <summary>
     /// Directory where matched previous assets will be extracted.
     /// </summary>
     [Required]
     public string OutputPath { get; set; }
 
     /// <summary>
-    /// Dictionary candidates: one per current asset that matched a previous version.
-    /// Metadata: DictionaryPath, DictionaryHash, RelativePath.
+    /// Dictionary candidates: one per matched (new asset, old asset) pair.
+    /// Metadata: Hash, TargetAsset, MatchPattern.
+    /// ItemSpec = path to extracted dictionary bytes on disk.
     /// </summary>
     [Output]
     public ITaskItem[] DictionaryCandidates { get; set; }
@@ -99,8 +111,8 @@ public class ResolveDictionaryCandidates : Task
             return true;
         }
 
-        // Build lookup: RelativePath → previous asset (only uncompressed originals)
-        var previousByRelativePath = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
+        // Build lookup: previous asset Identity → previous asset (only uncompressed originals)
+        var previousAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var prevAsset in manifest.Assets)
         {
             // Skip compressed assets — we only want originals as dictionary sources
@@ -110,96 +122,125 @@ public class ResolveDictionaryCandidates : Task
                 continue;
             }
 
-            var relativePath = prevAsset.ComputePathWithoutTokens(prevAsset.RelativePath);
-            if (!string.IsNullOrEmpty(relativePath))
+            if (!previousAssetsById.ContainsKey(prevAsset.Identity))
             {
-                // First match wins (shouldn't have duplicates in a well-formed manifest)
-                if (!previousByRelativePath.ContainsKey(relativePath))
+                previousAssetsById[prevAsset.Identity] = prevAsset;
+            }
+        }
+
+        // Build route → old endpoint → old asset lookup from the pack manifest
+        // old endpoint.Route → (old endpoint, old asset)
+        var oldEndpointsByRoute = new Dictionary<string, (StaticWebAssetEndpoint Endpoint, StaticWebAsset Asset)>(StringComparer.OrdinalIgnoreCase);
+        if (manifest.Endpoints != null)
+        {
+            foreach (var oldEndpoint in manifest.Endpoints)
+            {
+                // Only consider endpoints for uncompressed assets (no Content-Encoding selector)
+                if (HasContentEncodingSelector(oldEndpoint))
                 {
-                    previousByRelativePath[relativePath] = prevAsset;
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(oldEndpoint.AssetFile) &&
+                    previousAssetsById.TryGetValue(oldEndpoint.AssetFile, out var oldAsset))
+                {
+                    // First match per route wins
+                    if (!oldEndpointsByRoute.ContainsKey(oldEndpoint.Route))
+                    {
+                        oldEndpointsByRoute[oldEndpoint.Route] = (oldEndpoint, oldAsset);
+                    }
                 }
             }
         }
 
-        // Match current assets to previous versions
+        // Build current asset Identity → current asset for reverse lookup
+        var currentAssets = StaticWebAsset.FromTaskItemGroup(CurrentAssets);
+        var currentAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
+        foreach (var asset in currentAssets)
+        {
+            if (!string.IsNullOrEmpty(asset.AssetTraitName) &&
+                string.Equals(asset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                continue;
+            }
+            if (!currentAssetsById.ContainsKey(asset.Identity))
+            {
+                currentAssetsById[asset.Identity] = asset;
+            }
+        }
+
+        // Match by route: use current endpoints to find matching old endpoints
         var outputPath = Path.GetFullPath(OutputPath);
         Directory.CreateDirectory(outputPath);
 
         var candidates = new List<ITaskItem>();
-        var currentAssets = StaticWebAsset.FromTaskItemGroup(CurrentAssets);
+        // Track which new assets we've already matched (avoid duplicates from multiple routes)
+        var matchedNewAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var currentAsset in currentAssets)
+        if (CurrentEndpoints != null && CurrentEndpoints.Length > 0 && oldEndpointsByRoute.Count > 0)
         {
-            // Skip compressed assets
-            if (!string.IsNullOrEmpty(currentAsset.AssetTraitName) &&
-                string.Equals(currentAsset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            // Route-based matching via endpoints
+            foreach (var endpointItem in CurrentEndpoints)
             {
-                continue;
+                var newEndpoint = StaticWebAssetEndpoint.FromTaskItem(endpointItem);
+
+                // Only consider non-compressed endpoints
+                if (HasContentEncodingSelector(newEndpoint))
+                {
+                    continue;
+                }
+
+                if (!oldEndpointsByRoute.TryGetValue(newEndpoint.Route, out var oldMatch))
+                {
+                    continue;
+                }
+
+                // Find the current asset for this endpoint
+                if (!currentAssetsById.TryGetValue(newEndpoint.AssetFile, out var newAsset))
+                {
+                    continue;
+                }
+
+                if (!matchedNewAssets.Add(newAsset.Identity))
+                {
+                    continue; // Already matched via another route
+                }
+
+                var oldAsset = oldMatch.Asset;
+                var candidate = TryCreateCandidate(archive, oldAsset, newAsset, outputPath);
+                if (candidate != null)
+                {
+                    candidates.Add(candidate);
+                }
+            }
+        }
+        else
+        {
+            // Fallback: match by RelativePath when endpoints are not available
+            var previousByRelativePath = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
+            foreach (var prevAsset in previousAssetsById.Values)
+            {
+                var relativePath = prevAsset.ComputePathWithoutTokens(prevAsset.RelativePath);
+                if (!string.IsNullOrEmpty(relativePath) && !previousByRelativePath.ContainsKey(relativePath))
+                {
+                    previousByRelativePath[relativePath] = prevAsset;
+                }
             }
 
-            var relativePath = currentAsset.ComputePathWithoutTokens(currentAsset.RelativePath);
-            if (string.IsNullOrEmpty(relativePath) || !previousByRelativePath.TryGetValue(relativePath, out var previousAsset))
+            foreach (var newAsset in currentAssetsById.Values)
             {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "No previous version found for asset '{0}' (RelativePath: '{1}').",
-                    currentAsset.Identity,
-                    relativePath);
-                continue;
+                var relativePath = newAsset.ComputePathWithoutTokens(newAsset.RelativePath);
+                if (string.IsNullOrEmpty(relativePath) || !previousByRelativePath.TryGetValue(relativePath, out var oldAsset))
+                {
+                    continue;
+                }
+
+                var candidate = TryCreateCandidate(archive, oldAsset, newAsset, outputPath);
+                if (candidate != null)
+                {
+                    candidates.Add(candidate);
+                }
             }
-
-            // Extract the previous asset file from the zip
-            var assetEntryPath = "assets/" + relativePath.Replace('\\', '/');
-            var zipEntry = archive.GetEntry(assetEntryPath);
-            if (zipEntry == null)
-            {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "Previous asset file '{0}' not found in pack for asset '{1}'. Skipping.",
-                    assetEntryPath,
-                    currentAsset.Identity);
-                continue;
-            }
-
-            var extractedPath = Path.Combine(outputPath, relativePath.Replace('/', Path.DirectorySeparatorChar));
-            var extractedDir = Path.GetDirectoryName(extractedPath);
-            if (!string.IsNullOrEmpty(extractedDir))
-            {
-                Directory.CreateDirectory(extractedDir);
-            }
-
-            using (var entryStream = zipEntry.Open())
-            using (var fileStream = new FileStream(extractedPath, FileMode.Create, FileAccess.Write))
-            {
-                entryStream.CopyTo(fileStream);
-            }
-
-            // Read Integrity from the manifest (already SHA-256 base64)
-            var integrity = previousAsset.Integrity;
-            if (string.IsNullOrEmpty(integrity))
-            {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "Previous asset '{0}' has no Integrity value in manifest. Skipping.",
-                    relativePath);
-                continue;
-            }
-
-            // Format as structured field for Available-Dictionary header: :<base64>:
-            var dictionaryHash = ":" + integrity + ":";
-
-            var candidate = new TaskItem(currentAsset.Identity);
-            candidate.SetMetadata("DictionaryPath", extractedPath);
-            candidate.SetMetadata("DictionaryHash", dictionaryHash);
-            candidate.SetMetadata("RelativePath", relativePath);
-
-            candidates.Add(candidate);
-
-            Log.LogMessage(
-                "Resolved dictionary candidate for '{0}': previous asset at '{1}', hash '{2}'.",
-                currentAsset.Identity,
-                extractedPath,
-                dictionaryHash);
         }
 
         DictionaryCandidates = candidates.ToArray();
@@ -210,5 +251,91 @@ public class ResolveDictionaryCandidates : Task
             currentAssets.Length);
 
         return !Log.HasLoggedErrors;
+    }
+
+    private ITaskItem TryCreateCandidate(ZipArchive archive, StaticWebAsset oldAsset, StaticWebAsset newAsset, string outputPath)
+    {
+        // Read Integrity from the manifest (already SHA-256 base64)
+        var integrity = oldAsset.Integrity;
+        if (string.IsNullOrEmpty(integrity))
+        {
+            Log.LogMessage(
+                MessageImportance.Low,
+                "Previous asset '{0}' has no Integrity value in manifest. Skipping.",
+                oldAsset.Identity);
+            return null;
+        }
+
+        // Find the file in the pack using RelativePath
+        var relativePath = oldAsset.ComputePathWithoutTokens(oldAsset.RelativePath);
+        if (string.IsNullOrEmpty(relativePath))
+        {
+            return null;
+        }
+
+        var assetEntryPath = "assets/" + relativePath.Replace('\\', '/');
+        var zipEntry = archive.GetEntry(assetEntryPath);
+        if (zipEntry == null)
+        {
+            Log.LogMessage(
+                MessageImportance.Low,
+                "Previous asset file '{0}' not found in pack for asset '{1}'. Skipping.",
+                assetEntryPath,
+                newAsset.Identity);
+            return null;
+        }
+
+        var extractedPath = Path.Combine(outputPath, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var extractedDir = Path.GetDirectoryName(extractedPath);
+        if (!string.IsNullOrEmpty(extractedDir))
+        {
+            Directory.CreateDirectory(extractedDir);
+        }
+
+        using (var entryStream = zipEntry.Open())
+        using (var fileStream = new FileStream(extractedPath, FileMode.Create, FileAccess.Write))
+        {
+            entryStream.CopyTo(fileStream);
+        }
+
+        // Format as structured field for Available-Dictionary header: :<base64>:
+        var hash = ":" + integrity + ":";
+
+        // Compute match pattern from old asset's RelativePath (converts fingerprint tokens to wildcards)
+        var matchPattern = oldAsset.ComputeMatchPattern(oldAsset.RelativePath);
+        if (string.IsNullOrEmpty(matchPattern))
+        {
+            matchPattern = relativePath;
+        }
+
+        // Dictionary-centric item: Identity = extracted bytes path
+        var candidate = new TaskItem(extractedPath);
+        candidate.SetMetadata("Hash", hash);
+        candidate.SetMetadata("TargetAsset", newAsset.Identity);
+        candidate.SetMetadata("MatchPattern", matchPattern);
+
+        Log.LogMessage(
+            "Resolved dictionary candidate: target='{0}', dictionary='{1}', hash='{2}', match='{3}'.",
+            newAsset.Identity,
+            extractedPath,
+            hash,
+            matchPattern);
+
+        return candidate;
+    }
+
+    private static bool HasContentEncodingSelector(StaticWebAssetEndpoint endpoint)
+    {
+        if (endpoint.Selectors != null)
+        {
+            for (var i = 0; i < endpoint.Selectors.Length; i++)
+            {
+                if (string.Equals(endpoint.Selectors[i].Name, "Content-Encoding", StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

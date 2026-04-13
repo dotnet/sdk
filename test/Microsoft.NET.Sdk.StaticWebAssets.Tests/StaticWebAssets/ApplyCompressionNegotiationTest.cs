@@ -2487,11 +2487,13 @@ public class ApplyCompressionNegotiationTest
         syntheticGz.Selectors.Should().NotContain(s => s.Name == "Available-Dictionary");
     }
 
-    private static ITaskItem CreateDictionaryCandidate(string assetIdentity, string dictionaryHash)
+    private static ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string hash, string matchPattern = null)
     {
-        var item = new TaskItem(assetIdentity);
-        item.SetMetadata("DictionaryHash", dictionaryHash);
-        item.SetMetadata("DictionaryPath", Path.Combine("prev", "assets", "candidate.js"));
+        var dictionaryPath = Path.Combine("prev", "assets", "candidate.js");
+        var item = new TaskItem(dictionaryPath);
+        item.SetMetadata("Hash", hash);
+        item.SetMetadata("TargetAsset", targetAssetIdentity);
+        item.SetMetadata("MatchPattern", matchPattern ?? "js/site.js");
         return item;
     }
 }

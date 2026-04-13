@@ -422,12 +422,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveDictionaryCandidates
       AssetPackPath="$(StaticWebAssetPreviousAssetPack)"
       CurrentAssets="@(StaticWebAsset)"
+      CurrentEndpoints="@(StaticWebAssetEndpoint)"
       OutputPath="$(IntermediateOutputPath)dictionaries">
       <Output TaskParameter="DictionaryCandidates" ItemName="_DictionaryCandidates" />
     </ResolveDictionaryCandidates>
 
     <ItemGroup>
-      <FileWrites Include="@(_DictionaryCandidates->'%(DictionaryPath)')" />
+      <FileWrites Include="@(_DictionaryCandidates)" />
     </ItemGroup>
   </Target>
 
