@@ -314,7 +314,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
         }
 
         switch (installType)
@@ -327,7 +327,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
                 break;
             case InstallType.System:
-                ShellProfileManager.ReplaceProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
                 break;
             default:
                 throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
