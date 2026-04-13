@@ -49,6 +49,7 @@ public class ResolveCompressedAssetsTest
             OutputPath = OutputBasePath,
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
         };
@@ -121,6 +122,7 @@ public class ResolveCompressedAssetsTest
         {
             OutputPath = OutputBasePath,
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
+            CompressionFormats = CreateCompressionFormats("gzip"),
             Formats = "gzip",
             BuildEngine = _buildEngine.Object
         };
@@ -143,6 +145,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
         };
 
@@ -169,6 +172,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
         };
 
@@ -207,7 +211,8 @@ public class ResolveCompressedAssetsTest
             IncludePatterns = "**\\*",
             ExcludePatterns = "**\\*.tmp",
             CandidateAssets = new[] { asset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         // Act
@@ -234,7 +239,8 @@ public class ResolveCompressedAssetsTest
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         // Act
@@ -263,6 +269,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats(phase1Format),
             Formats = phase1Format,
         };
 
@@ -285,7 +292,8 @@ public class ResolveCompressedAssetsTest
             CandidateAssets = new[] { asset, task1.AssetsToCompress[0] },
             IncludePatterns = "**\\*.tmp",
             ExplicitAssets = new[] { explicitAsset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         var result2 = task2.Execute();
@@ -349,6 +357,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { v4Asset, v5Asset },
             IncludePatterns = "**/*.css",
+            CompressionFormats = CreateCompressionFormats("gzip"),
             Formats = "gzip",
         };
 
@@ -386,5 +395,23 @@ public class ResolveCompressedAssetsTest
             FileLength = 10,
             LastWriteTime = DateTime.UtcNow
         }.ToTaskItem();
+    }
+
+    private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
+    {
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["gzip"] = (".gz", "gzip"),
+            ["brotli"] = (".br", "br"),
+        };
+
+        return formatNames.Select(name =>
+        {
+            var (ext, enc) = formats[name];
+            var item = new TaskItem(name);
+            item.SetMetadata("FileExtension", ext);
+            item.SetMetadata("ContentEncoding", enc);
+            return (ITaskItem)item;
+        }).ToArray();
     }
 }

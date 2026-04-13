@@ -5,6 +5,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
@@ -85,6 +86,7 @@ public class DiscoverPrecompressedAssetsTest
         var task = new DiscoverPrecompressedAssets
         {
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             BuildEngine = buildEngine.Object
         };
 
@@ -111,5 +113,23 @@ public class DiscoverPrecompressedAssetsTest
         asset.GetMetadata("SourceId").Should().Be("Test");
         asset.GetMetadata("SourceType").Should().Be("Discovered");
         asset.GetMetadata("ContentRoot").Should().Be(Path.Combine(Environment.CurrentDirectory, $"wwwroot{Path.DirectorySeparatorChar}"));
+    }
+
+    private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
+    {
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["gzip"] = (".gz", "gzip"),
+            ["brotli"] = (".br", "br"),
+        };
+
+        return formatNames.Select(name =>
+        {
+            var (ext, enc) = formats[name];
+            var item = new TaskItem(name);
+            item.SetMetadata("FileExtension", ext);
+            item.SetMetadata("ContentEncoding", enc);
+            return (ITaskItem)item;
+        }).ToArray();
     }
 }

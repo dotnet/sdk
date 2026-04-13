@@ -174,6 +174,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == ''">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
   </PropertyGroup>
 
+  <!-- Define the known compression formats with their extensions and content-encoding values.
+       Users can add custom formats by adding additional CompressionFormat items. -->
+  <ItemGroup Condition="'$(EnableDefaultCompressionFormats)' == 'true'">
+    <CompressionFormat Include="gzip">
+      <FileExtension>.gz</FileExtension>
+      <ContentEncoding>gzip</ContentEncoding>
+    </CompressionFormat>
+    <CompressionFormat Include="brotli">
+      <FileExtension>.br</FileExtension>
+      <ContentEncoding>br</ContentEncoding>
+    </CompressionFormat>
+  </ItemGroup>
+
   <PropertyGroup>
 
     <!--
@@ -240,6 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CompressionBuildStaticWebAsset);@(_PrecompressedStaticWebAssets)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      CompressionFormats="@(CompressionFormat)"
     >
       <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
@@ -254,6 +268,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
+      CompressionFormats="@(CompressionFormat)"
       AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
@@ -294,7 +309,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          In this case, we need to detect those assets, remove them and their endpoints, adjust the asset definition
          and recreate the endpoints for those assets as the original ones will not be correct.
      -->
-    <DiscoverPrecompressedAssets CandidateAssets="@(StaticWebAsset)">
+    <DiscoverPrecompressedAssets CandidateAssets="@(StaticWebAsset)" CompressionFormats="@(CompressionFormat)">
       <Output TaskParameter="DiscoveredCompressedAssets" ItemName="_PrecompressedStaticWebAssets" />
     </DiscoverPrecompressedAssets>
 
@@ -335,6 +350,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForBuild)"
+      CompressionFormats="@(CompressionFormat)"
       Formats="$(BuildCompressionFormats)"
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"
@@ -366,6 +382,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_CompressionPublishStaticWebAsset)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      CompressionFormats="@(CompressionFormat)"
     >
       <Output TaskParameter="Endpoints" ItemName="_CompressionPublishStaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
@@ -379,6 +396,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
+      CompressionFormats="@(CompressionFormat)"
       AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
@@ -434,6 +452,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForPublish)"
+      CompressionFormats="@(CompressionFormat)"
       Formats="$(PublishCompressionFormats)"
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"

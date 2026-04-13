@@ -10,10 +10,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class DiscoverPrecompressedAssets : Task
 {
-    private const string GzipAssetTraitValue = "gzip";
-    private const string BrotliAssetTraitValue = "br";
-
     public ITaskItem[] CandidateAssets { get; set; }
+
+    /// <summary>
+    /// The compression formats to recognize. Each item's Identity is the format name (e.g., "gzip", "brotli").
+    /// Required metadata: Extension (e.g., ".gz"), ContentEncoding (e.g., "gzip", "br").
+    /// </summary>
+    public ITaskItem[] CompressionFormats { get; set; }
 
     [Output]
     public ITaskItem[] DiscoveredCompressedAssets { get; set; }
@@ -29,6 +32,14 @@ public class DiscoverPrecompressedAssets : Task
             return true;
         }
 
+        // Build extension → contentEncoding lookup from CompressionFormats items, sorted by descending extension length for longest-match.
+        var formatsByExtension = BuildFormatsByExtension();
+        if (formatsByExtension is null)
+        {
+            // Error already logged
+            return false;
+        }
+
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var assetsToUpdate = new List<ITaskItem>();
 
@@ -36,7 +47,7 @@ public class DiscoverPrecompressedAssets : Task
 
         foreach (var candidate in candidates)
         {
-            if (HasCompressionExtension(candidate.RelativePath) &&
+            if (TryGetCompressionExtension(candidate.RelativePath, formatsByExtension, out var matchedExtension, out var contentEncoding) &&
                 // We only care about assets that are not already considered compressed
                 !IsCompressedAsset(candidate) &&
                 // The candidate doesn't already have a related asset
@@ -46,7 +57,7 @@ public class DiscoverPrecompressedAssets : Task
                     MessageImportance.Low,
                     "The asset '{0}' was detected as compressed but it didn't specify a related asset.",
                     candidate.Identity);
-                var relatedAsset = FindRelatedAsset(candidate, candidatesByIdentity);
+                var relatedAsset = FindRelatedAsset(candidate, candidatesByIdentity, matchedExtension);
                 if (relatedAsset is null)
                 {
                     Log.LogMessage(
@@ -61,7 +72,7 @@ public class DiscoverPrecompressedAssets : Task
                     "The asset '{0}' was detected as compressed and the related asset '{1}' was found.",
                     candidate.Identity,
                     relatedAsset.Identity);
-                UpdateCompressedAsset(candidate, relatedAsset);
+                UpdateCompressedAsset(candidate, relatedAsset, matchedExtension, contentEncoding);
                 assetsToUpdate.Add(candidate.ToTaskItem());
             }
         }
@@ -71,40 +82,73 @@ public class DiscoverPrecompressedAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private static StaticWebAsset FindRelatedAsset(StaticWebAsset candidate, IDictionary<string, StaticWebAsset> candidates)
+    private List<(string Extension, string ContentEncoding)> BuildFormatsByExtension()
+    {
+        if (CompressionFormats is null || CompressionFormats.Length == 0)
+        {
+            return [];
+        }
+
+        var formats = new List<(string Extension, string ContentEncoding)>(CompressionFormats.Length);
+        foreach (var format in CompressionFormats)
+        {
+            var extension = format.GetMetadata("FileExtension");
+            var contentEncoding = format.GetMetadata("ContentEncoding");
+
+            if (string.IsNullOrEmpty(extension) || string.IsNullOrEmpty(contentEncoding))
+            {
+                Log.LogError(
+                    "Compression format '{0}' is missing required metadata. Extension='{1}', ContentEncoding='{2}'.",
+                    format.ItemSpec, extension, contentEncoding);
+                return null;
+            }
+
+            formats.Add((extension, contentEncoding));
+        }
+
+        // Sort by descending extension length for longest-match-first semantics.
+        formats.Sort((a, b) => b.Extension.Length.CompareTo(a.Extension.Length));
+        return formats;
+    }
+
+    private static StaticWebAsset FindRelatedAsset(
+        StaticWebAsset candidate,
+        IDictionary<string, StaticWebAsset> candidates,
+        string matchedExtension)
     {
         // The only pattern that we support is a related asset that lives in the same directory, with the same name,
         // but without the compression extension. In any other case we are not going to consider the assets related
         // and an error will occur.
-        var identityWithoutExtension = candidate.Identity.Substring(0, candidate.Identity.Length - 3); // We take advantage we know the extension is .br or .gz.
+        var identityWithoutExtension = candidate.Identity.Substring(0, candidate.Identity.Length - matchedExtension.Length);
         return candidates.TryGetValue(identityWithoutExtension, out var relatedAsset) ? relatedAsset : null;
     }
 
-    private static bool HasCompressionExtension(string relativePath)
+    private static bool TryGetCompressionExtension(
+        string relativePath,
+        List<(string Extension, string ContentEncoding)> formatsByExtension,
+        out string matchedExtension,
+        out string contentEncoding)
     {
-        return relativePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-               relativePath.EndsWith(".br", StringComparison.OrdinalIgnoreCase);
+        foreach (var (ext, encoding) in formatsByExtension)
+        {
+            if (relativePath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+            {
+                matchedExtension = ext;
+                contentEncoding = encoding;
+                return true;
+            }
+        }
+
+        matchedExtension = null;
+        contentEncoding = null;
+        return false;
     }
 
     private static bool IsCompressedAsset(StaticWebAsset asset)
         => string.Equals("Content-Encoding", asset.AssetTraitName, StringComparison.Ordinal);
 
-    private static void UpdateCompressedAsset(StaticWebAsset asset, StaticWebAsset relatedAsset)
+    private static void UpdateCompressedAsset(StaticWebAsset asset, StaticWebAsset relatedAsset, string fileExtension, string assetTraitValue)
     {
-        string fileExtension;
-        string assetTraitValue;
-
-        if (!asset.RelativePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
-        {
-            fileExtension = ".br";
-            assetTraitValue = BrotliAssetTraitValue;
-        }
-        else
-        {
-            fileExtension = ".gz";
-            assetTraitValue = GzipAssetTraitValue;
-        }
-
         var relativePath = relatedAsset.EmbedTokens(relatedAsset.RelativePath);
 
         asset.RelativePath = $"{relativePath}{fileExtension}";

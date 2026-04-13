@@ -12,14 +12,19 @@ public class ResolveCompressedAssets : Task
 {
     private static readonly char[] PatternSeparator = [';'];
 
-    private const string GzipAssetTraitValue = "gzip";
-    private const string BrotliAssetTraitValue = "br";
-
-    private const string GzipFormatName = "gzip";
-    private const string BrotliFormatName = "brotli";
-
     public ITaskItem[] CandidateAssets { get; set; }
 
+    /// <summary>
+    /// All known compression format definitions. Each item's Identity is the format name (e.g., "gzip", "brotli").
+    /// Required metadata: FileExtension (e.g., ".gz"), ContentEncoding (e.g., "gzip", "br").
+    /// Used to recognize existing compressed assets regardless of which formats are active.
+    /// </summary>
+    public ITaskItem[] CompressionFormats { get; set; }
+
+    /// <summary>
+    /// Semicolon-separated list of format names to compress assets into (e.g., "gzip" for build, "gzip;brotli" for publish).
+    /// Must be a subset of the names in CompressionFormats.
+    /// </summary>
     public string Formats { get; set; }
 
     public string IncludePatterns { get; set; }
@@ -45,7 +50,7 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        if (string.IsNullOrEmpty(Formats))
+        if (CompressionFormats is null || CompressionFormats.Length == 0)
         {
             Log.LogMessage(
                 MessageImportance.Low,
@@ -54,9 +59,64 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
+        // Parse active format names from the Formats string.
+        var activeFormatNames = string.IsNullOrEmpty(Formats)
+            ? Array.Empty<string>()
+            : Formats.Split(PatternSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+        // Build lookup from content-encoding trait value → format name for reverse mapping of existing compressed assets.
+        var formatsByContentEncoding = new Dictionary<string, string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
+        // Build lookup from format name → (extension, contentEncoding) for creating new compressed assets.
+        var formatsByName = new Dictionary<string, (string Extension, string ContentEncoding)>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
+        var knownExtensions = new HashSet<string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
+        foreach (var format in CompressionFormats)
+        {
+            var formatName = format.ItemSpec;
+            var extension = format.GetMetadata("FileExtension");
+            var contentEncoding = format.GetMetadata("ContentEncoding");
+
+            if (string.IsNullOrEmpty(extension) || string.IsNullOrEmpty(contentEncoding))
+            {
+                Log.LogError(
+                    "Compression format '{0}' is missing required metadata. FileExtension='{1}', ContentEncoding='{2}'.",
+                    formatName, extension, contentEncoding);
+                return false;
+            }
+
+            if (formatsByName.ContainsKey(formatName))
+            {
+                Log.LogError("Duplicate compression format name '{0}'.", formatName);
+                return false;
+            }
+            formatsByName[formatName] = (extension, contentEncoding);
+
+            if (formatsByContentEncoding.ContainsKey(contentEncoding))
+            {
+                Log.LogError("Duplicate content-encoding '{0}' in compression format '{1}'.", contentEncoding, formatName);
+                return false;
+            }
+            formatsByContentEncoding[contentEncoding] = formatName;
+
+            if (!knownExtensions.Add(extension))
+            {
+                Log.LogError("Duplicate extension '{0}' in compression format '{1}'.", extension, formatName);
+                return false;
+            }
+        }
+
+        // Validate that all active format names have definitions in CompressionFormats.
+        foreach (var name in activeFormatNames)
+        {
+            if (!formatsByName.ContainsKey(name))
+            {
+                Log.LogError("Active compression format '{0}' is not defined in CompressionFormats.", name);
+                return false;
+            }
+        }
+
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets).ToArray();
         var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets);
-        var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates);
+        var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates, formatsByContentEncoding);
 
         var includePatterns = SplitPattern(IncludePatterns);
         var excludePatterns = SplitPattern(ExcludePatterns);
@@ -114,8 +174,7 @@ public class ResolveCompressedAssets : Task
 
         // Process the final set of candidate assets, deduplicating assets to be compressed in the same format multiple times and
         // generating new a static web asset definition for each compressed item.
-        var formats = SplitPattern(Formats);
-        var assetsToCompress = new ITaskItem[matchingCandidateAssets.Count * formats.Length];
+        var assetsToCompress = new ITaskItem[matchingCandidateAssets.Count * activeFormatNames.Length];
         var outputPath = Path.GetFullPath(OutputPath);
         var assetCounter = 0;
         foreach (var asset in matchingCandidateAssets)
@@ -125,7 +184,7 @@ public class ResolveCompressedAssets : Task
             string pathTemplate = null;
             string relativePath = null;
 
-            foreach (var format in formats)
+            foreach (var formatName in activeFormatNames)
             {
                 var itemSpec = asset.Identity;
                 if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(itemSpec, out var existingFormats))
@@ -134,22 +193,24 @@ public class ResolveCompressedAssets : Task
                     existingCompressionFormatsByAssetItemSpec.Add(itemSpec, existingFormats);
                 }
 
-                if (existingFormats.Contains(format))
+                if (existingFormats.Contains(formatName))
                 {
                     Log.LogMessage(
                         "Ignoring asset '{0}' because it was already resolved with format '{1}'.",
                         itemSpec,
-                        format);
+                        formatName);
                     continue;
                 }
 
                 pathTemplate ??= CreatePathTemplate(asset, outputPath);
                 relativePath ??= asset.EmbedTokens(asset.RelativePath);
 
+                var (extension, contentEncoding) = formatsByName[formatName];
                 if (TryCreateCompressedAsset(
                     asset,
                     outputPath,
-                    format,
+                    extension,
+                    contentEncoding,
                     pathTemplate,
                     relativePath,
                     ref previousAsset,
@@ -159,7 +220,7 @@ public class ResolveCompressedAssets : Task
                     result.SetMetadata("RelatedAssetOriginalItemSpec", asset.OriginalItemSpec);
 
                     assetsToCompress[assetCounter++] = result;
-                    existingFormats.Add(format);
+                    existingFormats.Add(formatName);
 
                     Log.LogMessage(
                         "Accepted compressed asset '{0}' for '{1}'.",
@@ -192,7 +253,9 @@ public class ResolveCompressedAssets : Task
         return Path.Combine(outputPath, $"{pathHash}-{{0}}-{asset.Fingerprint}");
     }
 
-    private Dictionary<string, HashSet<string>> CollectCompressedAssets(StaticWebAsset[] candidates)
+    private Dictionary<string, HashSet<string>> CollectCompressedAssets(
+        StaticWebAsset[] candidates,
+        Dictionary<string, string> formatsByContentEncoding)
     {
         // Scan the provided candidate assets and determine which ones have already been detected for compression and in which formats.
         var existingCompressionFormatsByAssetItemSpec = new Dictionary<string, HashSet<string>>();
@@ -223,20 +286,10 @@ public class ResolveCompressedAssets : Task
                 existingCompressionFormatsByAssetItemSpec.Add(relatedAssetItemSpec, existingFormats);
             }
 
-            string assetFormat;
-
-            if (string.Equals(asset.AssetTraitValue, GzipAssetTraitValue, StringComparison.OrdinalIgnoreCase))
-            {
-                assetFormat = GzipFormatName;
-            }
-            else if (string.Equals(asset.AssetTraitValue, BrotliAssetTraitValue, StringComparison.OrdinalIgnoreCase))
-            {
-                assetFormat = BrotliFormatName;
-            }
-            else
+            if (!formatsByContentEncoding.TryGetValue(asset.AssetTraitValue, out var assetFormat))
             {
                 Log.LogError(
-                    "The asset '{0}' has an unknown compression format '{1}'.",
+                    "The asset '{0}' has content-encoding '{1}' which does not match any configured compression format.",
                     asset.Identity,
                     asset.AssetTraitValue);
                 continue;
@@ -265,35 +318,14 @@ public class ResolveCompressedAssets : Task
     private bool TryCreateCompressedAsset(
         StaticWebAsset asset,
         string outputPath,
-        string format,
+        string fileExtension,
+        string assetTraitValue,
         string pathTemplate,
         string relativePath,
         ref StaticWebAsset previousAsset,
         out StaticWebAsset result)
     {
         result = null;
-
-        string fileExtension;
-        string assetTraitValue;
-
-        if (string.Equals(GzipFormatName, format, StringComparison.OrdinalIgnoreCase))
-        {
-            fileExtension = ".gz";
-            assetTraitValue = GzipAssetTraitValue;
-        }
-        else if (string.Equals(BrotliFormatName, format, StringComparison.OrdinalIgnoreCase))
-        {
-            fileExtension = ".br";
-            assetTraitValue = BrotliAssetTraitValue;
-        }
-        else
-        {
-            Log.LogError(
-                "Unknown compression format '{0}' for '{1}'.",
-                format,
-                asset.Identity);
-            return false;
-        }
 
         // Make the hash name more unique by including source id, base path, asset kind and relative path.
         // This combination must be unique across all assets, so this will avoid collisions when two files on

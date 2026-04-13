@@ -16,148 +16,247 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
+    public ITaskItem[] CompressionFormats { get; set; }
+
     public string AttachWeakETagToCompressedAssets { get; set; }
 
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
+    // Per-group state for compression processing.
+    private class CompressionGroupState
+    {
+        // Compressed assets whose endpoints live in this route group, with pre-computed quality.
+        public List<(StaticWebAsset Asset, string Quality)> CompressedAssets { get; } = new();
+        // Newly created synthetic endpoints to add to this group.
+        public List<StaticWebAssetEndpoint> SyntheticEndpoints { get; } = new();
+    }
+
     public override bool Execute()
     {
-        var assetsById = StaticWebAsset.ToAssetDictionary(CandidateAssets);
+        // === Walk 1: Parse endpoints → route groups + endpointsByAsset (fused) ===
+        var routeGroups = new Dictionary<string, StaticWebAssetEndpointGroup<CompressionGroupState>>(CandidateEndpoints.Length / 2, StringComparer.Ordinal);
+        var endpointsByAsset = new Dictionary<string, List<StaticWebAssetEndpoint>>(CandidateEndpoints.Length / 2, StringComparer.Ordinal);
 
-        var endpointsByAsset = StaticWebAssetEndpoint.ToAssetFileDictionary(CandidateEndpoints);
+        foreach (var item in CandidateEndpoints)
+        {
+            var endpoint = StaticWebAssetEndpoint.FromTaskItem(item);
 
-        var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(CandidateEndpoints.Length, StaticWebAssetEndpoint.RouteAndAssetComparer);
+            // Route grouping
+            if (!routeGroups.TryGetValue(endpoint.Route, out var group))
+            {
+                group = new StaticWebAssetEndpointGroup<CompressionGroupState> { Route = endpoint.Route };
+                routeGroups[endpoint.Route] = group;
+            }
+            group.Items.Add(new StaticWebAssetEndpointGroupItem
+            {
+                AssetFile = endpoint.AssetFile,
+                Endpoint = endpoint
+            });
 
+            // Asset lookup (built simultaneously)
+            if (!endpointsByAsset.TryGetValue(endpoint.AssetFile, out var eps))
+            {
+                eps = new List<StaticWebAssetEndpoint>(5);
+                endpointsByAsset[endpoint.AssetFile] = eps;
+            }
+            eps.Add(endpoint);
+        }
+
+        // === Walk 2: Parse + sort assets, walk backwards to compute quality rankings ===
+        var assets = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
+        StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
+        var formatPriority = BuildFormatPriority(CompressionFormats);
+        // Accumulate compressed variants per related asset during backward walk
+        var compressedByRelated = new Dictionary<string, List<StaticWebAsset>>(StringComparer.Ordinal);
+        // Quality map: compressed asset identity → quality string
+        var qualityMap = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        for (var i = assets.Length - 1; i >= 0; i--)
+        {
+            var asset = assets[i];
+
+            if (string.Equals(asset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                // Compressed asset: accumulate for quality computation
+                if (!compressedByRelated.TryGetValue(asset.RelatedAsset, out var variants))
+                {
+                    variants = new List<StaticWebAsset>();
+                    compressedByRelated[asset.RelatedAsset] = variants;
+                }
+                variants.Add(asset);
+            }
+            else
+            {
+                // Primary asset: if it has compressed variants, sort + assign quality
+                if (compressedByRelated.TryGetValue(asset.Identity, out var variants))
+                {
+                    // Sort: smallest file first, then by format priority for ties
+                    variants.Sort((a, b) =>
+                    {
+                        var cmp = a.FileLength.CompareTo(b.FileLength);
+                        if (cmp != 0)
+                        {
+                            return cmp;
+                        }
+
+                        if (!formatPriority.TryGetValue(a.AssetTraitValue, out var pa))
+                        {
+                            pa = int.MaxValue;
+                        }
+                        if (!formatPriority.TryGetValue(b.AssetTraitValue, out var pb))
+                        {
+                            pb = int.MaxValue;
+                        }
+                        if (pa != pb)
+                        {
+                            return pa.CompareTo(pb);
+                        }
+
+                        return string.Compare(a.AssetTraitValue, b.AssetTraitValue, StringComparison.Ordinal);
+                    });
+
+                    // Assign quality rankings
+                    for (var rank = 0; rank < variants.Count; rank++)
+                    {
+                        qualityMap[variants[rank].Identity] = ComputeQualityValue(rank);
+                    }
+                }
+                // else: primary asset with no compressed variants — skip entirely
+            }
+        }
+
+        // === Walk 3: Process compressed assets — update headers, create synthetics, link groups ===
         var compressionHeadersByEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>(2);
 
-        // Add response headers to compressed endpoints
-        foreach (var compressedAsset in assetsById.Values)
+        foreach (var kvp in compressedByRelated)
         {
-            if (!string.Equals(compressedAsset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            var relatedAssetIdentity = kvp.Key;
+            var variants = kvp.Value;
+
+            // Get all primary endpoints for the related asset
+            if (!endpointsByAsset.TryGetValue(relatedAssetIdentity, out var primaryEndpoints))
             {
                 continue;
             }
 
-            var (compressedEndpoints, relatedAssetEndpoints) = ResolveEndpoints(assetsById, endpointsByAsset, compressedAsset);
-
-            Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
-            var compressionHeaders = GetOrCreateCompressionHeaders(compressionHeadersByEncoding, compressedAsset);
-
-            var quality = ResolveQuality(compressedAsset);
-            foreach (var compressedEndpoint in compressedEndpoints)
+            foreach (var compressed in variants)
             {
-                if (HasContentEncodingSelector(compressedEndpoint))
+                if (!qualityMap.TryGetValue(compressed.Identity, out var quality))
                 {
-                    Log.LogMessage(MessageImportance.Low, "  Skipping endpoint '{0}' since it already has a Content-Encoding selector", compressedEndpoint.Route);
                     continue;
                 }
 
-                if (!HasContentEncodingResponseHeader(compressedEndpoint))
+                Log.LogMessage("Processing compressed asset: {0}", compressed.Identity);
+                var compressionHeaders = GetOrCreateCompressionHeaders(compressionHeadersByEncoding, compressed);
+
+                if (!endpointsByAsset.TryGetValue(compressed.Identity, out var compressedEndpoints))
                 {
-                    // Add the Content-Encoding and Vary headers
-                    compressedEndpoint.ResponseHeaders = [
-                        ..compressedEndpoint.ResponseHeaders,
-                        ..compressionHeaders
-                    ];
+                    Log.LogWarning("Endpoints not found for compressed asset: {0} {1}", compressed.RelativePath, compressed.Identity);
+                    throw new InvalidOperationException($"Endpoints not found for compressed asset: {compressed.Identity}");
                 }
 
-                var compressedHeaders = GetCompressedHeaders(compressedEndpoint);
-
-                Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
-                updatedEndpoints.Add(compressedEndpoint);
-
-                foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
+                // Update all compressed endpoints with Content-Encoding + Vary headers
+                foreach (var compressedEndpoint in compressedEndpoints)
                 {
-                    if (!IsCompatible(compressedEndpoint, relatedEndpointCandidate))
+                    if (HasContentEncodingSelector(compressedEndpoint))
+                    {
+                        Log.LogMessage(MessageImportance.Low, "  Skipping endpoint '{0}' since it already has a Content-Encoding selector", compressedEndpoint.Route);
+                        continue;
+                    }
+
+                    if (!HasContentEncodingResponseHeader(compressedEndpoint))
+                    {
+                        compressedEndpoint.ResponseHeaders = [
+                            ..compressedEndpoint.ResponseHeaders,
+                            ..compressionHeaders
+                        ];
+                    }
+
+                    // Mark the compressed endpoint's route group as modified
+                    if (routeGroups.TryGetValue(compressedEndpoint.Route, out var compGroup))
+                    {
+                        compGroup.Modified = true;
+                    }
+
+                    Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
+                }
+
+                // Create synthetic endpoints at each primary endpoint's route
+                foreach (var primaryEndpoint in primaryEndpoints)
+                {
+                    // Find the compatible compressed endpoint for this primary endpoint
+                    StaticWebAssetEndpoint compatibleCompressed = null;
+                    foreach (var compEp in compressedEndpoints)
+                    {
+                        if (IsCompatible(compEp, primaryEndpoint))
+                        {
+                            compatibleCompressed = compEp;
+                            break;
+                        }
+                    }
+                    if (compatibleCompressed == null)
                     {
                         continue;
                     }
 
-                    var endpointCopy = CreateUpdatedEndpoint(compressedAsset, quality, compressedEndpoint, compressedHeaders, relatedEndpointCandidate);
-                    updatedEndpoints.Add(endpointCopy);
-                    // Since we are going to remove the endpoints from the associated item group and the route is
-                    // the ItemSpec, we want to add the original as well so that it gets re-added.
-                    // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
-                    // will use the default "identity" encoding during content negotiation.
-                    if(!HasVaryResponseHeaderWithAcceptEncoding(relatedEndpointCandidate))
+                    var compressedHeaders = GetCompressedHeaders(compatibleCompressed);
+                    var endpointCopy = CreateUpdatedEndpoint(compressed, quality, compatibleCompressed, compressedHeaders, primaryEndpoint);
+
+                    // Add synthetic to primary's route group
+                    if (routeGroups.TryGetValue(primaryEndpoint.Route, out var primaryGroup))
                     {
-                        Log.LogMessage(MessageImportance.Low, "  Adding Vary response header to related endpoint '{0}'", relatedEndpointCandidate.Route);
-
-                        relatedEndpointCandidate.ResponseHeaders = [
-                            ..relatedEndpointCandidate.ResponseHeaders,
-                            new StaticWebAssetEndpointResponseHeader
-                            {
-                                Name = "Vary",
-                                Value = "Accept-Encoding"
-                            }
-                        ];
+                        primaryGroup.State ??= new CompressionGroupState();
+                        primaryGroup.State.SyntheticEndpoints.Add(endpointCopy);
+                        EnsureVaryHeader(primaryEndpoint);
+                        primaryGroup.Modified = true;
                     }
-                    updatedEndpoints.Add(relatedEndpointCandidate);
                 }
             }
         }
 
-        // Before we return the updated endpoints we need to capture any other endpoint whose asset is not associated
-        // with the compressed asset. This is because we are going to remove the endpoints from the associated item group
-        // and the route is the ItemSpec, so it will cause those endpoints to be removed.
-        // For example, we have css/app.css and Link/css/app.css where Link=css/app.css and the first asset is a build asset
-        // and the second asset is a publish asset.
-        // If we are processing build assets, we'll mistakenly remove the endpoints associated with the publish asset.
-
-        // Iterate over the endpoints and find those endpoints whose route is in the set of updated endpoints but whose asset
-        // is not, and add them to the updated endpoints.
-
-        // Reuse the map we created at the beginning.
-        // Remove all the endpoints that were updated to avoid adding them again.
-        foreach (var endpoint in updatedEndpoints)
+        // === Walk 4: Collect results from modified groups ===
+        var result = new HashSet<StaticWebAssetEndpoint>(CandidateEndpoints.Length, StaticWebAssetEndpoint.RouteAndAssetComparer);
+        foreach (var group in routeGroups.Values)
         {
-            if (endpointsByAsset.TryGetValue(endpoint.AssetFile, out var endpointsToSkip))
+            if (!group.Modified)
             {
-                foreach (var endpointToSkip in endpointsToSkip)
-                {
-                    Log.LogMessage(MessageImportance.Low, "    Skipping endpoint '{0}' since and endpoint for the same asset was updated.", endpointToSkip.Route);
-                }
+                continue;
             }
-            endpointsByAsset.Remove(endpoint.AssetFile);
-        }
 
-        // We now have only endpoints that might have the same route but point to different assets
-        // and we want to include them in the updated endpoints so that we don't incorrectly remove
-        // them from the associated item group when we update the endpoints.
-        var endpointsByRoute = GetEndpointsByRoute(endpointsByAsset);
-        var additionalUpdatedEndpoints = new HashSet<StaticWebAssetEndpoint>(updatedEndpoints.Count, StaticWebAssetEndpoint.RouteAndAssetComparer);
-        foreach (var updatedEndpoint in updatedEndpoints)
-        {
-            var route = updatedEndpoint.Route;
-            Log.LogMessage(MessageImportance.Low, "Processing route '{0}'", route);
-            if (endpointsByRoute.TryGetValue(route, out var endpoints))
+            foreach (var item in group.Items)
             {
-                Log.LogMessage(MessageImportance.Low, "  Found endpoints for route '{0}'", route);
-                foreach (var endpoint in endpoints)
+                EnsureVaryHeader(item.Endpoint);
+                result.Add(item.Endpoint);
+            }
+            if (group.State != null)
+            {
+                foreach (var synthetic in group.State.SyntheticEndpoints)
                 {
-                    Log.LogMessage(MessageImportance.Low, "    Adding endpoint '{0}'", endpoint.AssetFile);
-                    if (!HasVaryResponseHeaderWithAcceptEncoding(endpoint))
-                    {
-                        endpoint.ResponseHeaders = [
-                            .. endpoint.ResponseHeaders,
-                            new StaticWebAssetEndpointResponseHeader
-                            {
-                                Name = "Vary",
-                                Value = "Accept-Encoding"
-                            }
-                        ];
-                    }
-                    additionalUpdatedEndpoints.Add(endpoint);
+                    result.Add(synthetic);
                 }
             }
         }
 
-        additionalUpdatedEndpoints.UnionWith(updatedEndpoints);
-
-        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(additionalUpdatedEndpoints);
+        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(result);
 
         return true;
+    }
+
+    private static void EnsureVaryHeader(StaticWebAssetEndpoint endpoint)
+    {
+        if (!HasVaryResponseHeaderWithAcceptEncoding(endpoint))
+        {
+            endpoint.ResponseHeaders = [
+                ..endpoint.ResponseHeaders,
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Vary",
+                    Value = "Accept-Encoding"
+                }
+            ];
+        }
     }
 
     private static bool HasVaryResponseHeaderWithAcceptEncoding(StaticWebAssetEndpoint endpoint)
@@ -182,27 +281,6 @@ public class ApplyCompressionNegotiation : Task
         {
             var responseHeader = compressedEndpoint.ResponseHeaders[i];
             result.Add(responseHeader.Name);
-        }
-
-        return result;
-    }
-
-    private static Dictionary<string, List<StaticWebAssetEndpoint>> GetEndpointsByRoute(
-        IDictionary<string, List<StaticWebAssetEndpoint>> endpointsByAsset)
-    {
-        var result = new Dictionary<string, List<StaticWebAssetEndpoint>>(endpointsByAsset.Count);
-
-        foreach (var endpointsList in endpointsByAsset.Values)
-        {
-            foreach (var endpoint in endpointsList)
-            {
-                if (!result.TryGetValue(endpoint.Route, out var routeEndpoints))
-                {
-                    routeEndpoints = new List<StaticWebAssetEndpoint>(5);
-                    result[endpoint.Route] = routeEndpoints;
-                }
-                routeEndpoints.Add(endpoint);
-            }
         }
 
         return result;
@@ -318,35 +396,6 @@ public class ApplyCompressionNegotiation : Task
         return false;
     }
 
-    private (List<StaticWebAssetEndpoint> compressedEndpoints, List<StaticWebAssetEndpoint> relatedAssetEndpoints) ResolveEndpoints(
-        IDictionary<string, StaticWebAsset> assetsById,
-        IDictionary<string, List<StaticWebAssetEndpoint>> endpointsByAsset,
-        StaticWebAsset compressedAsset)
-    {
-        if (!assetsById.TryGetValue(compressedAsset.RelatedAsset, out var relatedAsset))
-        {
-            Log.LogWarning("Related asset not found for compressed asset: {0}", compressedAsset.Identity);
-            throw new InvalidOperationException($"Related asset not found for compressed asset: {compressedAsset.Identity}");
-        }
-
-        if (!endpointsByAsset.TryGetValue(compressedAsset.Identity, out var compressedEndpoints))
-        {
-            Log.LogWarning("Endpoints not found for compressed asset: {0} {1}", compressedAsset.RelativePath, compressedAsset.Identity);
-            throw new InvalidOperationException($"Endpoints not found for compressed asset: {compressedAsset.Identity}");
-        }
-
-        if (!endpointsByAsset.TryGetValue(relatedAsset.Identity, out var relatedAssetEndpoints))
-        {
-            Log.LogWarning("Endpoints not found for related asset: {0}", relatedAsset.Identity);
-            throw new InvalidOperationException($"Endpoints not found for related asset: {relatedAsset.Identity}");
-        }
-
-        return (compressedEndpoints, relatedAssetEndpoints);
-    }
-
-    private static string ResolveQuality(StaticWebAsset compressedAsset) =>
-        Math.Round(1.0 / (compressedAsset.FileLength + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
-
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
     {
         var compressedFingerprint = ResolveFingerprint(compressedEndpoint);
@@ -421,5 +470,42 @@ public class ApplyCompressionNegotiation : Task
                 Log.LogMessage(MessageImportance.Low, "  Skipping header '{0}' for related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
             }
         }
+    }
+
+    internal static Dictionary<string, int> BuildFormatPriority(ITaskItem[] compressionFormats)
+    {
+        var priority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (compressionFormats == null || compressionFormats.Length == 0)
+        {
+            return priority;
+        }
+
+        for (var i = 0; i < compressionFormats.Length; i++)
+        {
+            var encoding = compressionFormats[i].GetMetadata("ContentEncoding");
+            if (!string.IsNullOrEmpty(encoding) && !priority.ContainsKey(encoding))
+            {
+                priority[encoding] = i;
+            }
+        }
+
+        return priority;
+    }
+
+    // Produces a descending quality series: 1.0, 0.9, 0.8, ..., 0.1, 0.09, 0.08, ..., 0.01, 0.009, ...
+    // Each "tier" covers 9 values at one decimal place deeper, ensuring unique qualities for any number of variants.
+    internal static string ComputeQualityValue(int rank)
+    {
+        if (rank == 0)
+        {
+            return "1.0";
+        }
+
+        var tier = (rank - 1) / 9;
+        var position = (rank - 1) % 9;
+        var digit = 9 - position;
+        var decimals = tier + 1;
+        var value = digit * Math.Pow(10, -decimals);
+        return value.ToString("F" + decimals.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
     }
 }
