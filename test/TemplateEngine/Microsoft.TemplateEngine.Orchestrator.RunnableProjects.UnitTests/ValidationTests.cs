@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         public async Task ValidateAllSampleTemplates()
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation!);
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation);
             RunnableProjectGenerator generator = new();
             IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default);
             Assert.True(loadedTemplates.All(t => t.IsValid));

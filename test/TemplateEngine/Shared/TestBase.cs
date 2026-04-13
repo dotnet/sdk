@@ -13,9 +13,12 @@ namespace Microsoft.TemplateEngine.Tests
     /// </summary>
     public abstract class TestBase
     {
-        private static readonly Lazy<string?> s_codeBaseRoot = new(SdkTestContext.GetRepoRoot);
+        private static readonly Lazy<string> s_codeBaseRoot = new(() =>
+            SdkTestContext.GetRepoRoot()
+            ?? throw new InvalidOperationException(
+                "Could not determine the repo root. Ensure .git exists in the directory tree or set the required DOTNET_SDK_TEST_* environment variables."));
 
-        internal static string? CodeBaseRoot => s_codeBaseRoot.Value;
+        internal static string CodeBaseRoot => s_codeBaseRoot.Value;
 
         internal static string ShippingPackagesLocation
         {
@@ -37,16 +40,17 @@ namespace Microsoft.TemplateEngine.Tests
         internal static string TestTemplatesLocation { get; } =
             Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "TemplateEngine", "test_templates");
 
-        internal static string? SampleTemplatesLocation
+        internal static string SampleTemplatesLocation
         {
             get
             {
-                string? repoRoot = CodeBaseRoot;
-                if (repoRoot == null)
+                string? envSamplesDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR");
+                if (!string.IsNullOrEmpty(envSamplesDir) && Directory.Exists(envSamplesDir))
                 {
-                    return null;
+                    return envSamplesDir;
                 }
-                return Path.Combine(repoRoot, "dotnet-template-samples");
+
+                return Path.Combine(CodeBaseRoot, "documentation", "TemplateEngine", "Samples");
             }
         }
 

@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             await engine.Execute(options);
         }
 
-        private string GetSamplesTemplateLocation() => Path.Combine(CodeBaseRoot!, "dotnet-template-samples", "content");
+        private string GetSamplesTemplateLocation() => Path.Combine(SampleTemplatesLocation, "content");
 
         private (Dictionary<string, string?> Args, string ArgsScenarioName) GetTemplateArgs(string[]? args)
         {
