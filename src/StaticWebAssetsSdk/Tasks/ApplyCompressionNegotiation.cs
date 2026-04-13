@@ -22,11 +22,9 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
 
     public ITaskItem[] CompressionFormats { get; set; }
 
-    /// <summary>
-    /// Dictionary candidates from ResolveDictionaryCandidates.
-    /// Each item's Identity is the extracted dictionary bytes path.
-    /// Required metadata: Hash (structured field ":base64-sha256:"), TargetAsset (new asset identity), MatchPattern (URL pattern for Use-As-Dictionary).
-    /// </summary>
+    // Dictionary candidates from ResolveDictionaryCandidates.
+    // Each item's Identity is the extracted dictionary bytes path.
+    // Metadata: Hash (structured field ":base64-sha256:"), TargetAsset (new asset identity), MatchPattern (URL pattern for Use-As-Dictionary).
     public ITaskItem[] DictionaryCandidates { get; set; }
 
     public string AttachWeakETagToCompressedAssets { get; set; }
@@ -37,6 +35,8 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
     // Per-group state for compression processing.
     private class CompressionGroupState
     {
+        // Whether any endpoint in this route group was modified during processing.
+        public bool Modified { get; set; }
         // Compressed assets whose endpoints live in this route group, with pre-computed quality.
         public List<(StaticWebAsset Asset, string Quality)> CompressedAssets { get; } = new();
         // Newly created synthetic endpoints to add to this group.
@@ -48,27 +48,13 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
 
     public override bool Execute()
     {
-        // === Walk 1: Parse endpoints → route groups + endpointsByAsset (fused) ===
-        var routeGroups = new Dictionary<string, StaticWebAssetEndpointGroup<CompressionGroupState>>(CandidateEndpoints.Length / 2, StringComparer.Ordinal);
+        // === Walk 1: Parse endpoints → route groups + endpointsByAsset ===
+        var allEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
+        var routeGroups = StaticWebAssetEndpointGroup<CompressionGroupState>.CreateEndpointGroups(allEndpoints);
+
         var endpointsByAsset = new Dictionary<string, List<StaticWebAssetEndpoint>>(CandidateEndpoints.Length / 2, StringComparer.Ordinal);
-
-        foreach (var item in CandidateEndpoints)
+        foreach (var endpoint in allEndpoints)
         {
-            var endpoint = StaticWebAssetEndpoint.FromTaskItem(item);
-
-            // Route grouping
-            if (!routeGroups.TryGetValue(endpoint.Route, out var group))
-            {
-                group = new StaticWebAssetEndpointGroup<CompressionGroupState> { Route = endpoint.Route };
-                routeGroups[endpoint.Route] = group;
-            }
-            group.Items.Add(new StaticWebAssetEndpointGroupItem
-            {
-                AssetFile = endpoint.AssetFile,
-                Endpoint = endpoint
-            });
-
-            // Asset lookup (built simultaneously)
             if (!endpointsByAsset.TryGetValue(endpoint.AssetFile, out var eps))
             {
                 eps = new List<StaticWebAssetEndpoint>(5);
@@ -82,13 +68,9 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
         var formatPriority = BuildFormatPriority(CompressionFormats);
-
-        // Build lookup: content-encoding → uses dictionary
         var formatUsesDictionary = BuildFormatUsesDictionary(CompressionFormats);
 
-        // Build lookup: uncompressed asset identity → dictionary hash (for Available-Dictionary selector)
         var dictionaryHashByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
-        // Build lookup: uncompressed asset identity → match pattern (for Use-As-Dictionary header)
         var dictionaryMatchPatternByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
         if (DictionaryCandidates != null)
         {
@@ -169,8 +151,6 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
 
         // === Walk 3: Process compressed assets — update headers, create synthetics, link groups ===
         var compressionHeadersByEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>(2);
-        // Track primary assets that have dictionary-compressed variants (for Use-As-Dictionary header)
-        var primaryAssetsWithDictVariants = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var kvp in compressedByRelated)
         {
@@ -229,7 +209,8 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
                     // Mark the compressed endpoint's route group as modified
                     if (routeGroups.TryGetValue(compressedEndpoint.Route, out var compGroup))
                     {
-                        compGroup.Modified = true;
+                        compGroup.State ??= new CompressionGroupState();
+                        compGroup.State.Modified = true;
                     }
 
                     Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
@@ -268,10 +249,9 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
                         if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
                         {
                             primaryGroup.State.DictionaryMatchPattern = dictionaryMatchPattern;
-                            primaryAssetsWithDictVariants.Add(relatedAssetIdentity);
                         }
 
-                        primaryGroup.Modified = true;
+                        primaryGroup.State.Modified = true;
                     }
                 }
             }
@@ -281,7 +261,7 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
         var result = new HashSet<StaticWebAssetEndpoint>(CandidateEndpoints.Length, StaticWebAssetEndpoint.RouteAndAssetComparer);
         foreach (var group in routeGroups.Values)
         {
-            if (!group.Modified)
+            if (group.State is not { Modified: true })
             {
                 continue;
             }
@@ -600,9 +580,12 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
         for (var i = 0; i < compressionFormats.Length; i++)
         {
             var encoding = compressionFormats[i].GetMetadata("ContentEncoding");
+            if (!string.IsNullOrEmpty(encoding))
+            {
             if (!string.IsNullOrEmpty(encoding) && !priority.ContainsKey(encoding))
             {
                 priority[encoding] = i;
+            }
             }
         }
 
@@ -621,9 +604,12 @@ public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
         {
             var encoding = compressionFormats[i].GetMetadata("ContentEncoding");
             var usesDictionary = string.Equals(compressionFormats[i].GetMetadata("UsesDictionary"), "true", StringComparison.OrdinalIgnoreCase);
+            if (!string.IsNullOrEmpty(encoding))
+            {
             if (!string.IsNullOrEmpty(encoding) && !result.ContainsKey(encoding))
             {
                 result[encoding] = usesDictionary;
+            }
             }
         }
 

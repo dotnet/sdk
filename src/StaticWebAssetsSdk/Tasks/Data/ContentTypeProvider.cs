@@ -414,7 +414,7 @@ internal sealed class ContentTypeProvider
             _customMappings[mapping.Pattern] = mapping;
         }
 
-        _compressedExtensions = compressedExtensions ?? [".gz", ".br"];
+        _compressedExtensions = compressedExtensions is { Length: > 0 } ? compressedExtensions : [".gz", ".br"];
 
         _matcher = new StaticWebAssetGlobMatcherBuilder()
             .AddIncludePatternsList(_builtInMappings.Keys)
@@ -422,9 +422,8 @@ internal sealed class ContentTypeProvider
             .Build();
     }
 
-    // First we strip any compressed extension (e.g. .gz, .br) from the file name
-    // and then we try to match the file name with the existing mappings.
-    // If we don't find a match, we fallback to trying the entire file name.
+    // Strip any known compressed extension (e.g. .gz, .br, .zst, .dcz) from the file name
+    // and then try to match with existing mappings. Fall back to the full file name.
     internal ContentTypeMapping ResolveContentTypeMapping(StaticWebAssetGlobMatcher.MatchContext context, TaskLoggingHelper log)
     {
 #if NET9_0_OR_GREATER

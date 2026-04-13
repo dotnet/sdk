@@ -99,9 +99,19 @@ public class ZstdCompress : ToolTask
             }
             else if (File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputRelativePath))
             {
-                // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
-                Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", inputFullPath, outputRelativePath, inputFullPath);
-                continue;
+                // Also check if a dictionary is specified and has been updated
+                var dictionaryPath = file.GetMetadata("DictionaryPath");
+                if (!string.IsNullOrEmpty(dictionaryPath) && File.Exists(dictionaryPath) &&
+                    File.GetLastWriteTimeUtc(dictionaryPath) >= File.GetLastWriteTimeUtc(outputRelativePath))
+                {
+                    Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because dictionary '{1}' is newer than '{2}'.", inputFullPath, dictionaryPath, outputRelativePath);
+                }
+                else
+                {
+                    // Incrementalism: input and dictionary are not newer than the output — skip.
+                    Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", inputFullPath, outputRelativePath, inputFullPath);
+                    continue;
+                }
             }
             else
             {
@@ -115,11 +125,11 @@ public class ZstdCompress : ToolTask
             builder.AppendLine(Quote(outputFullPath));
 
             // Pass dictionary path if available (for dcz / dictionary-compressed items)
-            var dictionaryPath = file.GetMetadata("DictionaryPath");
+            var dictPath = file.GetMetadata("DictionaryPath");
             builder.AppendLine("-d");
-            if (!string.IsNullOrEmpty(dictionaryPath))
+            if (!string.IsNullOrEmpty(dictPath))
             {
-                builder.AppendLine(Quote(Path.GetFullPath(dictionaryPath)));
+                builder.AppendLine(Quote(Path.GetFullPath(dictPath)));
             }
             else
             {

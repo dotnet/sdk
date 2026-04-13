@@ -2,7 +2,9 @@
   "${OutputPath}\\wwwroot\\test.js",
   "${OutputPath}\\wwwroot\\test.js.br",
   "${OutputPath}\\wwwroot\\test.js.gz",
+  "${OutputPath}\\wwwroot\\test.js.zst",
   "${OutputPath}\\wwwroot\\test.js",
   "${OutputPath}\\wwwroot\\test.js.br",
-  "${OutputPath}\\wwwroot\\test.js.gz"
+  "${OutputPath}\\wwwroot\\test.js.gz",
+  "${OutputPath}\\wwwroot\\test.js.zst"
 ]

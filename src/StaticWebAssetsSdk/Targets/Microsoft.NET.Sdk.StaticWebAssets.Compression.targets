@@ -252,7 +252,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GeneratePublishCompressedStaticWebAssetsDependsOn>
 
     <!-- ResolveDictionaryCandidates runs before compression configuration to provide dictionary candidates -->
-    <ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != ''">
+    <ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != '' and '$(StaticWebAssetProjectMode)' == 'Root'">
       ResolveDictionaryCandidates;
       $(ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn)
     </ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn>

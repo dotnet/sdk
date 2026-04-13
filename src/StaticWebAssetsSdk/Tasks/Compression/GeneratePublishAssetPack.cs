@@ -8,28 +8,17 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-/// <summary>
-/// Creates a zip archive containing the publish manifest and uncompressed original assets.
-/// This pack is used as the "previous version" input for Compression Dictionary Transport
-/// in subsequent builds.
-/// </summary>
+// Creates a zip archive containing the publish manifest and uncompressed original assets.
+// This pack is used as the "previous version" input for Compression Dictionary Transport
+// in subsequent builds.
 public class GeneratePublishAssetPack : Task
 {
-    /// <summary>
-    /// Path to the publish manifest JSON file.
-    /// </summary>
     [Required]
     public string ManifestPath { get; set; }
 
-    /// <summary>
-    /// The publish assets to include in the pack.
-    /// </summary>
     [Required]
     public ITaskItem[] Assets { get; set; }
 
-    /// <summary>
-    /// Output path for the generated zip archive.
-    /// </summary>
     [Required]
     public string PackOutputPath { get; set; }
 
@@ -112,7 +101,18 @@ public class GeneratePublishAssetPack : Task
             // Normalize path for zip entry
             var entryPath = "assets/" + relativePath.Replace('\\', '/');
 
-            // Avoid duplicate entries
+            // Resolve the actual file path (handles OriginalItemSpec fallback)
+            var fileInfo = asset.ResolveFile();
+            if (!fileInfo.Exists)
+            {
+                Log.LogMessage(
+                    MessageImportance.Low,
+                    "Asset file '{0}' does not exist on disk. Skipping.",
+                    fileInfo.FullName);
+                continue;
+            }
+
+            // Avoid duplicate entries — check after file existence validation
             if (!addedPaths.Add(entryPath))
             {
                 Log.LogMessage(
@@ -123,19 +123,8 @@ public class GeneratePublishAssetPack : Task
                 continue;
             }
 
-            // Resolve the actual file path
-            var filePath = asset.Identity;
-            if (!File.Exists(filePath))
-            {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "Asset file '{0}' does not exist on disk. Skipping.",
-                    filePath);
-                continue;
-            }
-
             var assetEntry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
-            using (var sourceStream = File.OpenRead(filePath))
+            using (var sourceStream = fileInfo.OpenRead())
             using (var targetStream = assetEntry.Open())
             {
                 sourceStream.CopyTo(targetStream);

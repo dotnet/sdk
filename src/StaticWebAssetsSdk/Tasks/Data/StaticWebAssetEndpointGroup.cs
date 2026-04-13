@@ -17,11 +17,7 @@ internal class StaticWebAssetEndpointGroup<TState> where TState : class
 
     public TState State { get; set; }
 
-    public bool Modified { get; set; }
-
     public List<StaticWebAssetEndpointGroupItem> Items { get; } = new();
-
-    public List<StaticWebAssetEndpointGroup<TState>> LinkedGroups { get; } = new();
 
     // Creates a dictionary grouping endpoints by Route.
     internal static Dictionary<string, StaticWebAssetEndpointGroup<TState>> CreateEndpointGroups(

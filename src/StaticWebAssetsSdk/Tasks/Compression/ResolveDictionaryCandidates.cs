@@ -9,47 +9,29 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-/// <summary>
-/// Extracts a previous asset pack (.zip), reads the embedded SWA manifest, and matches
-/// current endpoints to previous endpoints by Route. The output is a set of dictionary
-/// candidates that downstream tasks use to produce dictionary-compressed (dcz) assets.
-///
-/// Dictionary items represent bytes + hash + applicability scope, not full assets:
-///   Identity = path to extracted dictionary bytes on disk
-///   Hash = structured field ":base64-sha256:" for Available-Dictionary header
-///   TargetAsset = Identity of the new asset this dictionary applies to
-///   MatchPattern = URL pattern for Use-As-Dictionary: match= header
-/// </summary>
+// Extracts a previous asset pack (.zip), reads the embedded SWA manifest, and matches
+// current endpoints to previous endpoints by Route. The output is a set of dictionary
+// candidates that downstream tasks use to produce dictionary-compressed (dcz) assets.
+//
+// Dictionary items represent bytes + hash + applicability scope, not full assets:
+//   Identity = path to extracted dictionary bytes on disk
+//   Hash = structured field ":base64-sha256:" for Available-Dictionary header
+//   TargetAsset = Identity of the new asset this dictionary applies to
+//   MatchPattern = URL pattern for Use-As-Dictionary: match= header
 public class ResolveDictionaryCandidates : Task
 {
-    /// <summary>
-    /// Path to the previous asset pack zip file. Contains a manifest.json and assets/{RelativePath} entries.
-    /// </summary>
     [Required]
     public string AssetPackPath { get; set; }
 
-    /// <summary>
-    /// The current publish assets to find dictionary candidates for.
-    /// </summary>
     [Required]
     public ITaskItem[] CurrentAssets { get; set; }
 
-    /// <summary>
-    /// The current publish endpoints, used for route-based matching against previous endpoints.
-    /// </summary>
+    // Current publish endpoints, used for route-based matching against previous endpoints.
     public ITaskItem[] CurrentEndpoints { get; set; }
 
-    /// <summary>
-    /// Directory where matched previous assets will be extracted.
-    /// </summary>
     [Required]
     public string OutputPath { get; set; }
 
-    /// <summary>
-    /// Dictionary candidates: one per matched (new asset, old asset) pair.
-    /// Metadata: Hash, TargetAsset, MatchPattern.
-    /// ItemSpec = path to extracted dictionary bytes on disk.
-    /// </summary>
     [Output]
     public ITaskItem[] DictionaryCandidates { get; set; }
 
@@ -111,11 +93,9 @@ public class ResolveDictionaryCandidates : Task
             return true;
         }
 
-        // Build lookup: previous asset Identity → previous asset (only uncompressed originals)
         var previousAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var prevAsset in manifest.Assets)
         {
-            // Skip compressed assets — we only want originals as dictionary sources
             if (!string.IsNullOrEmpty(prevAsset.AssetTraitName) &&
                 string.Equals(prevAsset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
             {
@@ -128,8 +108,7 @@ public class ResolveDictionaryCandidates : Task
             }
         }
 
-        // Build route → old endpoint → old asset lookup from the pack manifest
-        // old endpoint.Route → (old endpoint, old asset)
+        // Route → (old endpoint, old asset) lookup from the pack manifest
         var oldEndpointsByRoute = new Dictionary<string, (StaticWebAssetEndpoint Endpoint, StaticWebAsset Asset)>(StringComparer.OrdinalIgnoreCase);
         if (manifest.Endpoints != null)
         {
@@ -144,7 +123,6 @@ public class ResolveDictionaryCandidates : Task
                 if (!string.IsNullOrEmpty(oldEndpoint.AssetFile) &&
                     previousAssetsById.TryGetValue(oldEndpoint.AssetFile, out var oldAsset))
                 {
-                    // First match per route wins
                     if (!oldEndpointsByRoute.ContainsKey(oldEndpoint.Route))
                     {
                         oldEndpointsByRoute[oldEndpoint.Route] = (oldEndpoint, oldAsset);
@@ -153,7 +131,6 @@ public class ResolveDictionaryCandidates : Task
             }
         }
 
-        // Build current asset Identity → current asset for reverse lookup
         var currentAssets = StaticWebAsset.FromTaskItemGroup(CurrentAssets);
         var currentAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var asset in currentAssets)
@@ -169,12 +146,11 @@ public class ResolveDictionaryCandidates : Task
             }
         }
 
-        // Match by route: use current endpoints to find matching old endpoints
+        // Match by route: current endpoints → old endpoints
         var outputPath = Path.GetFullPath(OutputPath);
         Directory.CreateDirectory(outputPath);
 
         var candidates = new List<ITaskItem>();
-        // Track which new assets we've already matched (avoid duplicates from multiple routes)
         var matchedNewAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         if (CurrentEndpoints != null && CurrentEndpoints.Length > 0 && oldEndpointsByRoute.Count > 0)
@@ -221,9 +197,12 @@ public class ResolveDictionaryCandidates : Task
             foreach (var prevAsset in previousAssetsById.Values)
             {
                 var relativePath = prevAsset.ComputePathWithoutTokens(prevAsset.RelativePath);
+                if (!string.IsNullOrEmpty(relativePath))
+                {
                 if (!string.IsNullOrEmpty(relativePath) && !previousByRelativePath.ContainsKey(relativePath))
                 {
                     previousByRelativePath[relativePath] = prevAsset;
+                }
                 }
             }
 
