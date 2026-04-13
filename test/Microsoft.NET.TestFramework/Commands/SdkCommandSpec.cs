@@ -3,6 +3,9 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+#if NET
+using System.Runtime.InteropServices;
+#endif
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -15,6 +18,8 @@ namespace Microsoft.NET.TestFramework.Commands
         public string? WorkingDirectory { get; set; }
         public bool RedirectStandardInput { get; set; }
         public bool DisableOutputAndErrorRedirection { get; set; }
+
+        public bool CreateNewProcessGroup { get; set; }
 
         private string EscapeArgs()
         {
@@ -55,6 +60,13 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 ret.WorkingDirectory = WorkingDirectory;
             }
+
+#if NET
+            if (CreateNewProcessGroup && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ret.CreateNewProcessGroup = true;
+            }
+#endif
 
             return ret;
         }

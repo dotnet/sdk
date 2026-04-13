@@ -7,6 +7,18 @@ namespace Microsoft.NET.TestFramework
     {
         StringBuilder _stringBuilder = new();
 
+        public string Output => _stringBuilder.ToString();
+
+        public void Write(string message)
+        {
+            _stringBuilder.Append(message);
+        }
+
+        public void Write(string format, params object[] args)
+        {
+            _stringBuilder.Append(string.Format(format, args));
+        }
+
         public void WriteLine(string message)
         {
             _stringBuilder.AppendLine(message);
