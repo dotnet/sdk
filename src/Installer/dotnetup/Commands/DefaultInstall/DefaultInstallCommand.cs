@@ -42,7 +42,7 @@ internal class DefaultInstallCommand : CommandBase
                 var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.PlatformNotSupported,
-                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
             }
 
             var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
@@ -107,7 +107,7 @@ internal class DefaultInstallCommand : CommandBase
                 var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.PlatformNotSupported,
-                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
             }
 
             var modifiedFiles = ShellProfileManager.ReplaceProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
