@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using NuGet.Common;
-using Xunit.Sdk;
-using DiagnosticMessage = Xunit.v3.DiagnosticMessage;
+using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {

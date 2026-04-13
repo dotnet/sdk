@@ -19,10 +19,10 @@ public abstract partial class DotNetWatchTestBase : IAsyncLifetime
         TestAssets = new TestAssetsManager(App.Logger);
     }
 
-    public ValueTask InitializeAsync()
-        => default;
+    public Task InitializeAsync()
+        => Task.CompletedTask;
 
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
         Log("Disposing test");
         await App.DisposeAsync();
