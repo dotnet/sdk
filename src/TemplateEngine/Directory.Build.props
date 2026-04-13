@@ -13,6 +13,14 @@
     <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649;RS0016;RS0041</NoWarn>
 
     <!--
+      TemplateEngine projects target netstandard2.0 and pin NuGet packages to an older
+      netstandard-compatible version via VersionOverride. Disable transitive pinning so
+      transitive NuGet deps also resolve to the older version instead of being pulled up
+      to the repo-wide 7.x by CentralPackageTransitivePinningEnabled.
+    -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+
+    <!--
       TODO: Replace NetFrameworkMinimum override with $(NetFrameworkToolCurrent) in TE csproj TargetFrameworks
       https://github.com/dotnet/templating/issues/10085
     -->

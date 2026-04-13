@@ -30,9 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="NuGet.Configuration" />
-    <PackageReference Include="NuGet.Credentials" />
-    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="NuGet.Configuration" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
+    <PackageReference Include="NuGet.Credentials" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
+    <PackageReference Include="NuGet.Protocol" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
     <PackageReference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 
