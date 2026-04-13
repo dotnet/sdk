@@ -37,6 +37,9 @@ public class ApplyCompressionNegotiation : Task
         public List<(StaticWebAsset Asset, string Quality)> CompressedAssets { get; } = new();
         // Newly created synthetic endpoints to add to this group.
         public List<StaticWebAssetEndpoint> SyntheticEndpoints { get; } = new();
+        // When non-null, indicates that this group has dictionary-compressed variants
+        // and all non-dcz endpoints should include Use-As-Dictionary with this match pattern.
+        public string DictionaryMatchPattern { get; set; }
     }
 
     public override bool Execute()
@@ -256,12 +259,11 @@ public class ApplyCompressionNegotiation : Task
                         primaryGroup.State.SyntheticEndpoints.Add(endpointCopy);
                         EnsureVaryHeader(primaryEndpoint);
 
-                        // For dictionary formats, add Vary: Available-Dictionary and
-                        // Use-As-Dictionary on the primary endpoint
+                        // For dictionary formats, record the match pattern on the group
+                        // so Walk 4 can add Use-As-Dictionary to ALL endpoints (not just identity)
                         if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
                         {
-                            EnsureVaryAvailableDictionaryHeader(primaryEndpoint);
-                            EnsureUseDictionaryHeader(primaryEndpoint, dictionaryMatchPattern);
+                            primaryGroup.State.DictionaryMatchPattern = dictionaryMatchPattern;
                             primaryAssetsWithDictVariants.Add(relatedAssetIdentity);
                         }
 
@@ -280,15 +282,31 @@ public class ApplyCompressionNegotiation : Task
                 continue;
             }
 
+            // Per RFC 9842, Use-As-Dictionary must be on ALL content-negotiated responses
+            // for the resource (identity, gzip, br, zstd) — not just the identity endpoint.
+            // The client decompresses first, then stores the raw body as a dictionary.
+            // Only dcz endpoints (which consume the dictionary) should NOT get it.
+            var matchPattern = group.State?.DictionaryMatchPattern;
+
             foreach (var item in group.Items)
             {
                 EnsureVaryHeader(item.Endpoint);
+                if (matchPattern != null)
+                {
+                    EnsureVaryAvailableDictionaryHeader(item.Endpoint);
+                    EnsureUseDictionaryHeader(item.Endpoint, matchPattern);
+                }
                 result.Add(item.Endpoint);
             }
             if (group.State != null)
             {
                 foreach (var synthetic in group.State.SyntheticEndpoints)
                 {
+                    if (matchPattern != null && !HasAvailableDictionarySelector(synthetic))
+                    {
+                        EnsureVaryAvailableDictionaryHeader(synthetic);
+                        EnsureUseDictionaryHeader(synthetic, matchPattern);
+                    }
                     result.Add(synthetic);
                 }
             }
@@ -470,6 +488,19 @@ public class ApplyCompressionNegotiation : Task
         {
             var selector = compressedEndpoint.Selectors[i];
             if (string.Equals(selector.Name, "Content-Encoding", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasAvailableDictionarySelector(StaticWebAssetEndpoint endpoint)
+    {
+        for (var i = 0; i < endpoint.Selectors.Length; i++)
+        {
+            if (string.Equals(endpoint.Selectors[i].Name, "Available-Dictionary", StringComparison.Ordinal))
             {
                 return true;
             }

@@ -2479,12 +2479,21 @@ public class ApplyCompressionNegotiationTest
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
 
         // The gzip synthetic endpoint should NOT have Available-Dictionary selector
+        // (only dcz endpoints use that selector for content negotiation)
         var syntheticGz = endpoints.FirstOrDefault(e =>
             e.Route == "candidate.js" &&
             e.AssetFile == Path.GetFullPath(gzPath));
         syntheticGz.Should().NotBeNull();
         syntheticGz.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip");
         syntheticGz.Selectors.Should().NotContain(s => s.Name == "Available-Dictionary");
+
+        // But gzip SHOULD have Use-As-Dictionary header and Vary: Available-Dictionary
+        // Per RFC 9842, all content-negotiated responses for a resource should include
+        // Use-As-Dictionary so the client can store the decompressed body as a dictionary.
+        syntheticGz.ResponseHeaders.Should().Contain(h =>
+            h.Name == "Use-As-Dictionary");
+        syntheticGz.ResponseHeaders.Should().Contain(h =>
+            h.Name == "Vary" && h.Value == "Available-Dictionary");
     }
 
     private static ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string hash, string matchPattern = null)

@@ -373,9 +373,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             HasHeader(gzipEp, "Vary", "Accept-Encoding").Should().BeTrue();
             HasProperty(gzipEp, "integrity").Should().BeTrue();
             HasProperty(gzipEp, "original-resource").Should().BeTrue();
-            // gzip should NOT have dictionary-related headers
-            HasHeader(gzipEp, "Use-As-Dictionary").Should().BeFalse();
-            HasHeader(gzipEp, "Vary", "Available-Dictionary").Should().BeFalse();
+            // Per RFC 9842, all content-negotiated responses should include Use-As-Dictionary
+            // so the client stores the decompressed body as a dictionary regardless of encoding
+            HasHeader(gzipEp, "Use-As-Dictionary").Should().BeTrue(
+                "because the gzip response, once decompressed, can be stored as a dictionary");
+            GetHeaderValue(gzipEp, "Use-As-Dictionary").Should().Contain("match=");
+            HasHeader(gzipEp, "Vary", "Available-Dictionary").Should().BeTrue(
+                "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 
             // --- brotli content-negotiated endpoint ---
             var brEp = cnByEncoding["br"];
@@ -389,8 +393,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             HasHeader(brEp, "Vary", "Accept-Encoding").Should().BeTrue();
             HasProperty(brEp, "integrity").Should().BeTrue();
             HasProperty(brEp, "original-resource").Should().BeTrue();
-            HasHeader(brEp, "Use-As-Dictionary").Should().BeFalse();
-            HasHeader(brEp, "Vary", "Available-Dictionary").Should().BeFalse();
+            HasHeader(brEp, "Use-As-Dictionary").Should().BeTrue(
+                "because the brotli response, once decompressed, can be stored as a dictionary");
+            GetHeaderValue(brEp, "Use-As-Dictionary").Should().Contain("match=");
+            HasHeader(brEp, "Vary", "Available-Dictionary").Should().BeTrue(
+                "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 
             // --- zstd content-negotiated endpoint ---
             var zstdEp = cnByEncoding["zstd"];
@@ -404,8 +411,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             HasHeader(zstdEp, "Vary", "Accept-Encoding").Should().BeTrue();
             HasProperty(zstdEp, "integrity").Should().BeTrue();
             HasProperty(zstdEp, "original-resource").Should().BeTrue();
-            HasHeader(zstdEp, "Use-As-Dictionary").Should().BeFalse();
-            HasHeader(zstdEp, "Vary", "Available-Dictionary").Should().BeFalse();
+            HasHeader(zstdEp, "Use-As-Dictionary").Should().BeTrue(
+                "because the zstd response, once decompressed, can be stored as a dictionary");
+            GetHeaderValue(zstdEp, "Use-As-Dictionary").Should().Contain("match=");
+            HasHeader(zstdEp, "Vary", "Available-Dictionary").Should().BeTrue(
+                "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 
             // --- dcz content-negotiated endpoint (CDT-specific) ---
             var dczEp = cnByEncoding["dcz"];
@@ -427,7 +437,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "because dcz endpoints must vary on Available-Dictionary");
             HasProperty(dczEp, "integrity").Should().BeTrue();
             HasProperty(dczEp, "original-resource").Should().BeTrue();
-            // dcz should NOT have Use-As-Dictionary (that goes on identity)
+            // dcz should NOT have Use-As-Dictionary — it serves delta-compressed content,
+            // not the full resource body that can be stored as a dictionary
             HasHeader(dczEp, "Use-As-Dictionary").Should().BeFalse();
 
             // =====================================================================
