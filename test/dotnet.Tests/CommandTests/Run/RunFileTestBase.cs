@@ -134,6 +134,20 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         return outOfTreeBaseDirectory;
     }
 
+    /// <summary>
+    /// Copies NuGet.config to the runfile base directory so virtual projects created by
+    /// <c>dotnet run -</c> (stdin) can resolve packages from test feeds. The virtual project
+    /// is created under this directory, and NuGet walks up from the project location to
+    /// find config files.
+    /// </summary>
+    protected static void CopyNuGetConfigToRunfileDirectory()
+    {
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var runfileDir = VirtualProjectBuilder.GetTempSubdirectory();
+        Directory.CreateDirectory(runfileDir);
+        File.Copy(sourceNuGetConfig, Path.Join(runfileDir, "NuGet.config"), overwrite: true);
+    }
+
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
     {
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
