@@ -20,6 +20,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 /// <remarks>
 /// Each sub-repo of the VMR is scanned separately because of the amount of time it takes.
+/// Large repos may be further split into sub-scans of their subdirectories; each sub-scan is an independent matrix job
+/// in the pipeline. When a repo is split, the root directory is also scanned with --ignore patterns to skip subdirectories
+/// covered by sub-scans.
 /// When scanning is run, the test provides a list of files for the scanner to ignore. These include binary file types. It also includes
 /// .il/.ildump file types which are massive, causing the scanner to choke and don't include license references anyway.
 /// Once the scanner returns the results, a filtering process occurs. First, any detected license that is in the allowed list of licenses
@@ -29,7 +32,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// tool has detected something in the file that makes it think it's a license reference when that's not actually the intent. Other cases
 /// that are excluded are when the license is meant as configuration or test data and not actually applying to the code. These exclusions
 /// further filter down the set of the detected licenses for each file. Everything that's left at this point is reported. It gets compared
-/// to a baseline file (which is defined for each sub-repo). If the filtered results differ from what's defined in the baseline, the test fails.
+/// to a baseline file (which is defined for each scan target). If the filtered results differ from what's defined in the baseline, the test fails.
 /// 
 /// Rules for determining how to resolve a detected license:
 ///   1. If it's an allowed open-source license, add it to the list of allowed licenses in LicenseScanTests.cs.
@@ -116,18 +119,31 @@ public class LicenseScanTests : TestBase
         "*.ildump",
     };
 
-    private readonly string _targetRepo;
-    private readonly string _relativeRepoPath;
+    private readonly string _targetName;
+    private readonly string _relativeScanPath;
     public static bool IncludeLicenseScanTests => !string.IsNullOrWhiteSpace(Config.LicenseScanPath);
 
     public LicenseScanTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         Assert.NotNull(Config.LicenseScanPath);
-        _targetRepo = new DirectoryInfo(Config.LicenseScanPath).Name;
-        
-        Match relativeRepoPathMatch = Regex.Match(Config.LicenseScanPath, @"(src/)[^/]+");
-        Assert.True(relativeRepoPathMatch.Success);
-        _relativeRepoPath = relativeRepoPathMatch.Value;
+
+        // Normalize the path to remove any double slashes that may result from path concatenation in the pipeline.
+        string normalizedPath = Regex.Replace(Config.LicenseScanPath, @"//+", "/").TrimEnd('/');
+
+        // Extract the full relative path from VMR src/ to the scan target.
+        // LicenseScanPath is an absolute path like: /path/to/vmr/src/<repo>[/<subpath>]
+        Match relativePathMatch = Regex.Match(normalizedPath, @"src/[^/]+(/.*)?$");
+        Assert.True(relativePathMatch.Success);
+        _relativeScanPath = relativePathMatch.Value;
+
+        // Derive target name for baseline file naming.
+        // For "src/runtime" -> "runtime"
+        // For "src/source-build-reference-packages/src/externalPackages" -> "source-build-reference-packages.externalPackages"
+        Match repoMatch = Regex.Match(normalizedPath, @"src/([^/]+)");
+        Assert.True(repoMatch.Success);
+        string repoName = repoMatch.Groups[1].Value;
+        string dirName = new DirectoryInfo(normalizedPath).Name;
+        _targetName = dirName == repoName ? repoName : $"{repoName}.{dirName}";
     }
 
     [ConditionalFact(typeof(LicenseScanTests), nameof(IncludeLicenseScanTests))]
@@ -140,8 +156,17 @@ public class LicenseScanTests : TestBase
 
         string scancodeResultsPath = Path.Combine(Config.LogsDirectory, "scancode-results.json");
 
+        // Combine default and additional ignore patterns
+        IEnumerable<string> allIgnorePatterns = s_ignoredFilePatterns;
+        string[]? additionalIgnorePatterns = Config.LicenseScanIgnorePatterns?
+            .Split(';', StringSplitOptions.RemoveEmptyEntries);
+        if (additionalIgnorePatterns?.Length > 0)
+        {
+            allIgnorePatterns = allIgnorePatterns.Concat(additionalIgnorePatterns);
+        }
+
         // Scancode Doc: https://scancode-toolkit.readthedocs.io/en/latest/index.html
-        string ignoreOptions = string.Join(" ", s_ignoredFilePatterns.Select(pattern => $"--ignore {pattern}"));
+        string ignoreOptions = string.Join(" ", allIgnorePatterns.Select(pattern => $"--ignore {pattern}"));
         ExecuteHelper.ExecuteProcessValidateExitCode(
             "scancode",
             $"--license --processes 4 --timeout {FileScanTimeoutSeconds} --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
@@ -151,7 +176,7 @@ public class LicenseScanTests : TestBase
         ScancodeResults? scancodeResults = doc.Deserialize<ScancodeResults>();
         Assert.NotNull(scancodeResults);
 
-        FilterFiles(scancodeResults);
+        FilterFiles(scancodeResults, additionalIgnorePatterns);
 
         JsonSerializerOptions options = new()
         {
@@ -159,7 +184,7 @@ public class LicenseScanTests : TestBase
         };
         string json = JsonSerializer.Serialize(scancodeResults, options);
 
-        string baselineName = $"Licenses.{_targetRepo}.json";
+        string baselineName = $"Licenses.{_targetName}.json";
 
         string baselinePath = BaselineHelper.GetBaselineFilePath(baselineName, BaselineSubDir);
         string expectedFilePath = Path.Combine(Config.LogsDirectory, baselineName);
@@ -181,7 +206,7 @@ public class LicenseScanTests : TestBase
         BaselineHelper.CompareFiles(expectedFilePath, actualFilePath, OutputHelper, Config.WarnOnLicenseScanDiffs);
     }
 
-    private void FilterFiles(ScancodeResults scancodeResults)
+    private void FilterFiles(ScancodeResults scancodeResults, string[]? additionalIgnorePatterns)
     {
         // This will filter out files that we don't want to include in the baseline.
         // Filtering can happen in two ways:
@@ -192,8 +217,23 @@ public class LicenseScanTests : TestBase
         // In that case, the baseline will list all of the licenses for that file, even if some were originally excluded during this processing.
         // In other words, the baseline will be fully representative of the licenses that apply to the files that are listed there.
 
-        // We only care about the license expressions that are in the target repo.
-        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, "^" + Regex.Escape(_relativeRepoPath) + "/");
+        // Build the exclusion regex to scope which exclusions from LicenseExclusions.txt are loaded.
+        // We use the relative scan path so that sub-scans of a repo only load exclusions for their specific subdirectory.
+        // When ignore patterns are specified (e.g., for root scans that skip subdirectories handled by sub-scans),
+        // add negative lookaheads to avoid loading exclusions for the ignored paths. This prevents the updated
+        // exclusion file from incorrectly marking those exclusions as unused.
+        string exclusionRegex = "^" + Regex.Escape(_relativeScanPath) + "/";
+        if (additionalIgnorePatterns?.Length > 0)
+        {
+            string lookaheads = string.Join("", additionalIgnorePatterns.Select(p =>
+            {
+                string prefix = p.TrimEnd('*').TrimEnd('/');
+                return $"(?!{Regex.Escape(prefix)}/)";
+            }));
+            exclusionRegex += lookaheads;
+        }
+
+        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, exclusionRegex);
 
         for (int i = scancodeResults.Files.Count - 1; i >= 0; i--)
         {
@@ -225,8 +265,8 @@ public class LicenseScanTests : TestBase
                 // There are some licenses that are not allowed. Now check whether the file is excluded.
 
                 // The path in the exclusion file is rooted from the VMR. But the path in the scancode results is rooted from the
-                // target repo within the VMR. So we need to add back the beginning part of the path.
-                string fullRelativePath = Path.Combine(_relativeRepoPath, file.Path);
+                // scan target directory. So we need to add back the beginning part of the path.
+                string fullRelativePath = Path.Combine(_relativeScanPath, file.Path);
 
                 var remainingLicenses = disallowedLicenses.Where(license => !exclusionsHelper.IsFileExcluded(fullRelativePath, license));
 
@@ -236,7 +276,7 @@ public class LicenseScanTests : TestBase
                 }
             }
         }
-        exclusionsHelper.GenerateNewBaselineFile(_targetRepo);
+        exclusionsHelper.GenerateNewBaselineFile(_targetName);
     }
 
     private class ScancodeResults
