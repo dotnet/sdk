@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;

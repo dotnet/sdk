@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
