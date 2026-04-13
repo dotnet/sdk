@@ -358,7 +358,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                         return connectionTask;
                     }
 
-                    readySource.SetResult(true);
+                    readySource.TrySetResult(true);
                     return new TaskCompletionSource<Connection>().Task;
                 });
 
@@ -382,11 +382,18 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 }
             };
             var keepAlive = TimeSpan.FromSeconds(1);
-            var dispatcherTask = Task.Run(() =>
+
+            // Use Task.Factory.StartNew with LongRunning to run the dispatcher on a dedicated
+            // OS thread instead of a thread pool thread. The dispatcher's Run() method uses
+            // blocking Task.WaitAny() which permanently blocks its thread. On Helix CI agents
+            // running many tests in parallel, blocking a thread pool thread contributes to pool
+            // starvation, which prevents Task.Delay timer callbacks from firing, causing the
+            // keep-alive timeout to never complete and the test to hang indefinitely.
+            var dispatcherTask = Task.Factory.StartNew(() =>
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);
                 dispatcher.Run();
-            });
+            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
             // Wait for all connections to be created.
             await readySource.Task;
@@ -402,7 +409,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             // Act
             // Now dispatcher should be in an idle state with no active connections.
-            await dispatcherTask;
+            // Use a dedicated thread to enforce the timeout, since under extreme thread pool
+            // starvation on Helix CI, even WaitAsync's timer continuations can't be scheduled.
+            // A dedicated OS thread with Thread.Join(timeout) uses a kernel wait that works
+            // regardless of thread pool state.
+            var completed = false;
+            var timeoutThread = new Thread(() =>
+            {
+                completed = dispatcherTask.Wait(TimeSpan.FromSeconds(60));
+            }) { IsBackground = true };
+            timeoutThread.Start();
+            timeoutThread.Join(TimeSpan.FromSeconds(65));
+            Assert.True(completed,
+                "Dispatcher did not shut down within 60 seconds. This likely indicates " +
+                "thread pool starvation preventing Task.Delay timer callbacks from firing.");
 
             // Assert
             Assert.False(eventBus.HasDetectedBadConnection);

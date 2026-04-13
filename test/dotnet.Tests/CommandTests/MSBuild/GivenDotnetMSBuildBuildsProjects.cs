@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-
-// There are tests which modify static Telemetry.CurrentSessionId and they cannot run in parallel
+// There are tests which modify static TelemetryClient.CurrentSessionId. They cannot run in parallel.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -106,11 +104,5 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.ExitCode.Should().Be(0);
             result.StdOut.Should().Contain(AppArgumentsText);
         }
-
-
-
-
     }
-
-
 }

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.Shared.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      GenerateSource="true" />
+  </ItemGroup>
+
+</Project>
