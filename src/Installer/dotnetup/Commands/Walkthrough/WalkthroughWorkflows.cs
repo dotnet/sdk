@@ -203,7 +203,20 @@ internal class WalkthroughWorkflows
         }
         else if (!interactive)
         {
+            if (!OperatingSystem.IsWindows() && ShellDetection.GetCurrentShellProvider() is null)
+            {
+                return PathPreference.DotnetupDotnet;
+            }
+
             return PathPreference.ShellProfile;
+        }
+
+        if (!OperatingSystem.IsWindows() && ShellDetection.GetCurrentShellProvider() is null)
+        {
+            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{shellEnv.EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile."));
+            return PathPreference.DotnetupDotnet;
         }
 
         var preference = PromptPathPreference();
