@@ -29,4 +29,23 @@ public interface IEnvShellProvider
     /// <param name="dotnetInstallPath">The path to the .NET installation directory</param>
     /// <returns>A shell script that can be sourced to configure the environment</returns>
     string GenerateEnvScript(string dotnetInstallPath);
+
+    /// <summary>
+    /// Returns the profile file paths that should be modified for this shell.
+    /// For bash, this may return multiple files (e.g., ~/.bashrc and a login profile).
+    /// </summary>
+    IReadOnlyList<string> GetProfilePaths();
+
+    /// <summary>
+    /// Generates the line(s) to append to a shell profile that will eval dotnetup's env script.
+    /// Includes a marker comment for identification and removal.
+    /// </summary>
+    /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
+    string GenerateProfileEntry(string dotnetupPath);
+
+    /// <summary>
+    /// Generates a command that the user can paste into the current terminal to activate .NET.
+    /// </summary>
+    /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
+    string GenerateActivationCommand(string dotnetupPath);
 }

@@ -5,6 +5,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 public class ZshEnvShellProvider : IEnvShellProvider
 {
+    private const string MarkerComment = "# dotnetup";
+
     public string ArgumentName => "zsh";
 
     public string Extension => "zsh";
@@ -31,5 +33,23 @@ public class ZshEnvShellProvider : IEnvShellProvider
             export DOTNET_ROOT='{escapedPath}'
             export PATH='{escapedPath}':$PATH
             """;
+    }
+
+    public IReadOnlyList<string> GetProfilePaths()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return [Path.Combine(home, ".zshrc")];
+    }
+
+    public string GenerateProfileEntry(string dotnetupPath)
+    {
+        var escapedPath = dotnetupPath.Replace("'", "'\\''");
+        return $"{MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell zsh)\"";
+    }
+
+    public string GenerateActivationCommand(string dotnetupPath)
+    {
+        var escapedPath = dotnetupPath.Replace("'", "'\\''");
+        return $"eval \"$('{escapedPath}' print-env-script --shell zsh)\"";
     }
 }

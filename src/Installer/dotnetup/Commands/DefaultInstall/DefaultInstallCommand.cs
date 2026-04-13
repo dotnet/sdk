@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 
@@ -32,7 +33,38 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the user install root is not yet supported on non-Windows platforms.");
+            var dotnetupPath = Environment.ProcessPath
+                ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
+
+            IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
+            if (shellProvider is null)
+            {
+                var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PlatformNotSupported,
+                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+            }
+
+            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
+
+            if (modifiedFiles.Count == 0)
+            {
+                Console.WriteLine("Shell profile is already configured for dotnetup.");
+            }
+            else
+            {
+                Console.WriteLine("Updated shell profile files:");
+                foreach (var file in modifiedFiles)
+                {
+                    Console.WriteLine($"  {file}");
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("To start using .NET in this terminal, run:");
+            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath)}");
+
+            return 0;
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
