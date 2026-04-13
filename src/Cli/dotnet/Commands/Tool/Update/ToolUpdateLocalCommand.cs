@@ -13,7 +13,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
-internal class ToolUpdateLocalCommand : CommandBase
+internal sealed class ToolUpdateLocalCommand : CommandBase<ToolUpdateCommandDefinition>
 {
     private readonly IToolManifestFinder _toolManifestFinder;
     private readonly IToolManifestEditor _toolManifestEditor;
@@ -33,34 +33,14 @@ internal class ToolUpdateLocalCommand : CommandBase
     {
         _reporter = reporter ?? Reporter.Output;
 
-        if (toolPackageDownloader == null)
-        {
-            (IToolPackageStore,
-                IToolPackageStoreQuery,
-                IToolPackageDownloader downloader) toolPackageStoresAndDownloader
-                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader();
-            _toolPackageDownloader = toolPackageStoresAndDownloader.downloader;
-        }
-        else
-        {
-            _toolPackageDownloader = toolPackageDownloader;
-        }
-
-        _toolManifestFinder = toolManifestFinder ??
-                              new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
+        _toolPackageDownloader = toolPackageDownloader ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
+        _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
         _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-
-        PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Id is string s)
-        {
-            packageId = new PackageId(s);
-        }
 
         _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
             () => new ToolInstallLocalCommand(
                 parseResult,
-                packageId,
                 _toolPackageDownloader,
                 _toolManifestFinder,
                 _toolManifestEditor,
