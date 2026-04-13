@@ -960,6 +960,22 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="RunCommandExceptionNoProjects" xml:space="preserve">
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
+  <data name="RunCommandWarningFileArgumentPassedToProject" xml:space="preserve">
+    <value>Warning: '{0}' appears to be a file-based program but was passed as an argument to the project '{1}'. To run it as a file-based program, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</value>
+    <comment>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</comment>
+  </data>
+  <data name="WarningFileArgumentPassedToMSBuild" xml:space="preserve">
+    <value>Warning: '{0}' appears to be a file-based program but was treated as an MSBuild argument. To treat it as a file-based program, use 'dotnet {1} {0}'.</value>
+    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</comment>
+  </data>
+  <data name="WarningCsFileArgumentPassedToMSBuild" xml:space="preserve">
+    <value>Warning: '{0}' looks like a file-based program but the file was not found, and it was treated as an MSBuild argument.</value>
+    <comment>{0} is the .cs file path argument. {1} is the command name (e.g. build, clean, publish).</comment>
+  </data>
+  <data name="RunCommandWarningCsFileArgumentPassedToProject" xml:space="preserve">
+    <value>Warning: '{0}' looks like a file-based program but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</value>
+    <comment>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</comment>
+  </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
     <value>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
