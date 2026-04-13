@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -303,13 +304,17 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot)
     {
-        // Non-Windows platforms: use the simpler PATH-based approach
-        // Get current PATH
-        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-        string exeName = "dotnet";
-        // Remove only actual dotnet installation folders from PATH
-        pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+        var dotnetupPath = Environment.ProcessPath
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
+
+        IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
+        if (shellProvider is null)
+        {
+            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
+                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.s_supportedShells.Select(s => s.ArgumentName))}");
+        }
 
         switch (installType)
         {
@@ -318,27 +323,14 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 {
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 }
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Set DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
                 break;
             case InstallType.System:
-                if (string.IsNullOrEmpty(dotnetRoot))
-                {
-                    throw new ArgumentNullException(nameof(dotnetRoot));
-                }
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Unset DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                ShellProfileManager.ReplaceProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
                 break;
             default:
                 throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
         }
-        // Update PATH
-        var newPath = string.Join(Path.PathSeparator, pathEntries);
-        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
 
     /// <inheritdoc />
