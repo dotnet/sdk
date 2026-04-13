@@ -167,7 +167,7 @@ removes current user's `dotnet run` build outputs that haven't been used in 30 d
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
 The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
 but other parameters of the automatic cleanup are currently not configurable.
-The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
+The same cleanup can be performed manually via command `dotnet clean file-based-apps`.
 
 ## Directives for project metadata
 
