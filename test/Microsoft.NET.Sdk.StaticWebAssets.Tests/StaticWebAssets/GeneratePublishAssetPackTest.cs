@@ -12,7 +12,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class GeneratePublishAssetPackTest
+public class GeneratePublishAssetPackTest : IDisposable
 {
     private readonly string _testDir;
     private readonly List<string> _errorMessages;
@@ -322,5 +322,20 @@ public class GeneratePublishAssetPackTest
         var manifestPath = Path.Combine(_testDir, "manifest.json");
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest));
         return manifestPath;
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (Directory.Exists(_testDir))
+            {
+                Directory.Delete(_testDir, recursive: true);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup — don't fail tests if temp files are locked
+        }
     }
 }

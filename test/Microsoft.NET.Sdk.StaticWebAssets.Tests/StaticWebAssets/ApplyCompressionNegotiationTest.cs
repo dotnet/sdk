@@ -2062,7 +2062,7 @@ public class ApplyCompressionNegotiationTest
     }
 
     [Fact]
-    public void HandlesRouteCollisions_IncludesCollateralEndpoints()
+    public void RouteCollisions_IncludeCollateralEndpoints()
     {
         // Two different assets (build and publish) that share a route, only the build one has gzip.
         // The publish endpoint should appear in the output with a Vary header as a collateral member.
@@ -2120,7 +2120,7 @@ public class ApplyCompressionNegotiationTest
     }
 
     [Fact]
-    public void HandlesMultipleCompressedAssets_NoDuplicateSynthetics()
+    public void MultipleCompressedAssets_ProduceNoDuplicateSynthetics()
     {
         // One original with both gzip and brotli — verify no duplicate synthetic endpoints at the same route.
         var errorMessages = new List<string>();
@@ -2395,7 +2395,7 @@ public class ApplyCompressionNegotiationTest
             e.AssetFile == Path.GetFullPath(originalPath));
         originalEndpoint.Should().NotBeNull("original endpoint should be in updated list");
         originalEndpoint.ResponseHeaders.Should().Contain(h =>
-            h.Name == "Use-As-Dictionary");
+            h.Name == "Use-As-Dictionary" && h.Value == "match=\"/js/site.js\"");
         originalEndpoint.ResponseHeaders.Should().Contain(h =>
             h.Name == "Vary" && h.Value == "Available-Dictionary");
     }
@@ -2497,7 +2497,7 @@ public class ApplyCompressionNegotiationTest
         // Per RFC 9842, all content-negotiated responses for a resource should include
         // Use-As-Dictionary so the client can store the decompressed body as a dictionary.
         syntheticGz.ResponseHeaders.Should().Contain(h =>
-            h.Name == "Use-As-Dictionary");
+            h.Name == "Use-As-Dictionary" && h.Value == "match=\"/js/site.js\"");
         syntheticGz.ResponseHeaders.Should().Contain(h =>
             h.Name == "Vary" && h.Value == "Available-Dictionary");
     }
