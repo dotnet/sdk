@@ -39,8 +39,8 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
 
     /// <summary>
     /// Dictionary candidates produced by ResolveDictionaryCandidates.
-    /// Each item's Identity matches a current asset's Identity.
-    /// Required metadata: DictionaryPath, DictionaryHash.
+    /// Each item's Identity is the extracted dictionary bytes path.
+    /// Required metadata: Hash (structured field), TargetAsset (new asset identity), MatchPattern.
     /// </summary>
     public ITaskItem[] DictionaryCandidates { get; set; }
 
@@ -130,13 +130,17 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets, TaskEnvironment);
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates, formatsByContentEncoding);
 
-        // Build dictionary candidate lookup: asset Identity → candidate TaskItem
+        // Build dictionary candidate lookup: TargetAsset → candidate TaskItem
         var dictionaryCandidatesByIdentity = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
         if (DictionaryCandidates != null)
         {
             foreach (var candidate in DictionaryCandidates)
             {
-                dictionaryCandidatesByIdentity[candidate.ItemSpec] = candidate;
+                var targetAsset = candidate.GetMetadata("TargetAsset");
+                if (!string.IsNullOrEmpty(targetAsset))
+                {
+                    dictionaryCandidatesByIdentity[targetAsset] = candidate;
+                }
             }
         }
 
@@ -261,8 +265,8 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
                     // Propagate dictionary metadata for dictionary-requiring formats
                     if (dictCandidate != null)
                     {
-                        result.SetMetadata("DictionaryPath", dictCandidate.GetMetadata("DictionaryPath"));
-                        result.SetMetadata("DictionaryHash", dictCandidate.GetMetadata("DictionaryHash"));
+                        result.SetMetadata("DictionaryPath", dictCandidate.ItemSpec);
+                        result.SetMetadata("DictionaryHash", dictCandidate.GetMetadata("Hash"));
                     }
 
                     assetsToCompress[assetCounter++] = result;
