@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
@@ -1012,7 +1012,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance,
@@ -1061,7 +1061,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance,
@@ -3523,7 +3523,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs", string? workDir = null)
+    private void Build(
+        TestDirectory testInstance,
+        BuildLevel expectedLevel,
+        ReadOnlySpan<string> args = default,
+        string expectedOutput = "Hello from Program",
+        string programFileName = "Program.cs",
+        string? workDir = null,
+        Func<TestCommand, TestCommand>? customizeCommand = null)
     {
         string prefix = expectedLevel switch
         {
@@ -3533,13 +3540,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             _ => throw new ArgumentOutOfRangeException(paramName: nameof(expectedLevel)),
         };
 
-        new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path)
-            .Execute()
+        var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
+            .WithWorkingDirectory(workDir ?? testInstance.Path);
+
+        if (customizeCommand != null)
+        {
+            command = customizeCommand(command);
+        }
+
+        command.Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
-        var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
         var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
 
