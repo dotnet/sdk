@@ -10,23 +10,30 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // MSBuild Remove operations match by ItemSpec, so removing an endpoint for one
 // asset can accidentally remove endpoints for other assets with the same Route.
 // This grouping enables correct filtering by tracking which endpoints share a route.
-internal class StaticWebAssetEndpointGroup
+// TState allows tasks to attach per-group state (e.g., compression metadata, linked groups).
+internal class StaticWebAssetEndpointGroup<TState> where TState : class
 {
     public string Route { get; set; }
 
+    public TState State { get; set; }
+
+    public bool Modified { get; set; }
+
     public List<StaticWebAssetEndpointGroupItem> Items { get; } = new();
 
+    public List<StaticWebAssetEndpointGroup<TState>> LinkedGroups { get; } = new();
+
     // Creates a dictionary grouping endpoints by Route.
-    internal static Dictionary<string, StaticWebAssetEndpointGroup> CreateEndpointGroups(
+    internal static Dictionary<string, StaticWebAssetEndpointGroup<TState>> CreateEndpointGroups(
         StaticWebAssetEndpoint[] endpoints)
     {
-        var groups = new Dictionary<string, StaticWebAssetEndpointGroup>(StringComparer.Ordinal);
+        var groups = new Dictionary<string, StaticWebAssetEndpointGroup<TState>>(StringComparer.Ordinal);
 
         foreach (var endpoint in endpoints)
         {
             if (!groups.TryGetValue(endpoint.Route, out var group))
             {
-                group = new StaticWebAssetEndpointGroup { Route = endpoint.Route };
+                group = new StaticWebAssetEndpointGroup<TState> { Route = endpoint.Route };
                 groups[endpoint.Route] = group;
             }
 
@@ -46,7 +53,7 @@ internal class StaticWebAssetEndpointGroup
     //               endpoints from affected groups whose asset was not excluded)
     internal static (List<StaticWebAssetEndpoint> removed, List<StaticWebAssetEndpoint> surviving)
         ComputeFilteredEndpoints(
-            Dictionary<string, StaticWebAssetEndpointGroup> groups,
+            Dictionary<string, StaticWebAssetEndpointGroup<TState>> groups,
             HashSet<string> excludedAssetFiles)
     {
         var removed = new List<StaticWebAssetEndpoint>();
@@ -69,6 +76,11 @@ internal class StaticWebAssetEndpointGroup
 
         return (removed, surviving);
     }
+}
+
+// Non-generic version for callers that don't need per-group state.
+internal class StaticWebAssetEndpointGroup : StaticWebAssetEndpointGroup<object>
+{
 }
 
 internal class StaticWebAssetEndpointGroupItem
