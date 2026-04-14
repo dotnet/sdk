@@ -16,9 +16,11 @@
 
     <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
          EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.
-         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors. -->
+         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors.
+         WarningsNotAsErrors demotes Meziantou MA0051 (method too long) so it stays a warning under TreatWarningsAsErrors. -->
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
 
     <!-- dotnetup versioning -->
     <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
@@ -47,9 +49,12 @@
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Extensions\CollectionsExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\IEnvironmentProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\AutomaticEncodingRestorer.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\UILanguageOverride.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Spectre.Console" />

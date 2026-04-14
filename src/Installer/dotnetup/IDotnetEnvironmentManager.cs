@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Spectre.Console;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -11,22 +11,25 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 // - Orchestrate installation so that only one install happens at a time
 // - Call into installer implementation
 
-public interface IDotnetInstallManager
+internal interface IDotnetEnvironmentManager
 {
-    GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory);
-
     string GetDefaultDotnetInstallPath();
 
-    DotnetInstallRootConfiguration? GetConfiguredInstallType();
+    DotnetInstallRootConfiguration? GetCurrentPathConfiguration();
 
-    string? GetLatestInstalledAdminVersion();
+    string? GetLatestInstalledSystemVersion();
 
-    void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
+    List<string> GetInstalledSystemSdkVersions();
 
-    void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null);
+    List<DotnetInstall> GetExistingSystemInstalls();
 
-    void ConfigureInstallType(InstallType installType, string? dotnetRoot = null);
+    void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
 
+    /// <summary>
+    /// Updates the global.json file to reflect the installed SDK version,
+    /// if a global.json exists and the install was global.json-sourced.
+    /// </summary>
+    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests);
 }
 
 public class GlobalJsonInfo

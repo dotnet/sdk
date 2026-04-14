@@ -11,11 +11,31 @@ internal static class DotnetupPaths
 {
     private const string DotnetupFolderName = "dotnetup";
     private const string ManifestFileName = "dotnetup_manifest.json";
+    private const string ConfigFileName = "dotnetup.config.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
 
 #pragma warning disable IDE0032 // Lazy-init cache; not convertible to auto-property
     private static string? s_dataDirectory;
 #pragma warning restore IDE0032
+
+    /// <summary>
+    /// Thread-local override for the data directory, used by tests to avoid
+    /// mutating process-wide environment variables. Takes precedence over
+    /// the DOTNET_DOTNETUP_DATA_DIR environment variable.
+    /// </summary>
+    [ThreadStatic]
+    private static string? s_testDataDirectoryOverride;
+
+    /// <summary>
+    /// Sets a thread-local data directory override for testing.
+    /// Call <see cref="ClearTestDataDirectoryOverride"/> when done.
+    /// </summary>
+    public static void SetTestDataDirectoryOverride(string path) => s_testDataDirectoryOverride = path;
+
+    /// <summary>
+    /// Clears the thread-local data directory override.
+    /// </summary>
+    public static void ClearTestDataDirectoryOverride() => s_testDataDirectoryOverride = null;
 
     /// <summary>
     /// Gets the base data directory for dotnetup.
@@ -24,13 +44,20 @@ internal static class DotnetupPaths
     /// On Linux: $XDG_DATA_HOME/dotnetup or ~/.local/share/dotnetup
     /// </summary>
     /// <remarks>
-    /// Can be overridden via DOTNET_DOTNETUP_DATA_DIR environment variable.
+    /// Can be overridden via <see cref="SetTestDataDirectoryOverride"/> (thread-local, preferred for tests)
+    /// or via DOTNET_DOTNETUP_DATA_DIR environment variable.
     /// Throws if the base directory cannot be determined.
     /// </remarks>
     public static string DataDirectory
     {
         get
         {
+            // Thread-local test override takes highest precedence — parallel-safe.
+            if (s_testDataDirectoryOverride is not null)
+            {
+                return s_testDataDirectoryOverride;
+            }
+
             // Allow override for testing — avoids touching the real user profile.
             var overrideDir = Environment.GetEnvironmentVariable("DOTNET_DOTNETUP_DATA_DIR");
             if (!string.IsNullOrEmpty(overrideDir))
@@ -76,9 +103,37 @@ internal static class DotnetupPaths
     }
 
     /// <summary>
+    /// Gets the path to the dotnetup configuration file.
+    /// </summary>
+    public static string ConfigPath => Path.Combine(DataDirectory, ConfigFileName);
+
+    /// <summary>
+    /// Gets the path to the download cache directory.
+    /// </summary>
+    public static string DownloadCacheDirectory => Path.Combine(DataDirectory, "downloadcache");
+
+    /// <summary>
     /// Gets the path to the telemetry first-run sentinel file.
     /// </summary>
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
+
+    /// <summary>
+    /// Gets the default dotnet install path managed by dotnetup.
+    /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
+    /// </summary>
+    public static string DefaultDotnetInstallPath
+    {
+        get
+        {
+            var baseDir = GetBaseDirectory();
+            if (string.IsNullOrEmpty(baseDir))
+            {
+                throw new InvalidOperationException("Could not determine the local application data directory.");
+            }
+
+            return Path.Combine(baseDir, "dotnet");
+        }
+    }
 
     /// <summary>
     /// Ensures the data directory exists, creating it if necessary.

@@ -19,4 +19,16 @@ internal static class Constants
         /// </summary>
         public const string ModifyInstallationStates = "Global\\DotnetupManifest";
     }
+
+    /// <summary>
+    /// Unicode symbols used in console output.
+    /// </summary>
+    public static class Symbols
+    {
+        public const string RightArrow = "\u2192"; // →
+        public const string UpArrow = "\u2191"; // ↑
+        public const string DownArrow = "\u2193"; // ↓
+        public const string UpTriangle = "\u25B2"; // ▲
+        public const string DownTriangle = "\u25BC"; // ▼
+    }
 }

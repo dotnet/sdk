@@ -15,110 +15,124 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class InstallerOrchestratorTests
 {
-    private static readonly string TestRoot = OperatingSystem.IsWindows() ? @"C:\dotnet" : "/dotnet";
-    private static readonly string TestAltRoot = OperatingSystem.IsWindows() ? @"C:\other-dotnet" : "/other-dotnet";
-
     #region InstallAlreadyExists
 
     [Fact]
     public void InstallAlreadyExists_ReturnsTrueForDuplicateInstall()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
 
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeTrue();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeTrue();
     }
 
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentVersion()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall(TestRoot, "10.0.101", InstallComponent.SDK);
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.101", InstallComponent.SDK);
 
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentComponent()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.Runtime);
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.Runtime);
 
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForDifferentRoot()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var install = MakeInstall(TestAltRoot, "10.0.100", InstallComponent.SDK);
+        using var testEnv = new TestEnvironment();
+        var altRoot = Path.Combine(testEnv.TempRoot, "other-dotnet");
+        Directory.CreateDirectory(altRoot);
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(altRoot, "10.0.100", InstallComponent.SDK);
 
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
     [Fact]
     public void InstallAlreadyExists_ReturnsFalseForEmptyManifest()
     {
-        var manifestData = new DotnetupManifestData();
-        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
 
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
     [Fact]
     public void InstallAlreadyExists_DetectsDuplicateAmongMultipleInstallations()
     {
-        var manifestData = new DotnetupManifestData
-        {
-            DotnetRoots =
-            [
-                new DotnetRootEntry
-                {
-                    Path = TestRoot,
-                    Architecture = InstallArchitecture.x64,
-                    Installations =
-                    [
-                        new Installation { Component = InstallComponent.SDK, Version = "9.0.100" },
-                        new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" },
-                        new Installation { Component = InstallComponent.SDK, Version = "10.0.100" }
-                    ]
-                }
-            ]
-        };
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
-        var install = MakeInstall(TestRoot, "10.0.100", InstallComponent.SDK);
-        InstallerOrchestratorSingleton.InstallAlreadyExists(manifestData, install).Should().BeTrue();
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.SDK, "9.0.100"),
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.SDK, "10.0.100"));
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
+        manifest.InstallAlreadyExists(install).Should().BeTrue();
     }
 
     #endregion
 
-    #region IsRootInManifest
+    #region IsRootTracked
 
     [Fact]
-    public void IsRootInManifest_ReturnsTrueWhenRootExists()
+    public void IsRootTracked_ReturnsTrueWhenRootExists()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
-        InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeTrue();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeTrue();
     }
 
     [Fact]
-    public void IsRootInManifest_ReturnsFalseWhenRootDoesNotExist()
+    public void IsRootTracked_ReturnsFalseWhenRootDoesNotExist()
     {
-        var manifestData = ManifestWithInstallation(TestRoot, InstallComponent.SDK, "10.0.100");
-        var root = new DotnetInstallRoot(TestAltRoot, InstallArchitecture.x64);
+        using var testEnv = new TestEnvironment();
+        var altRoot = Path.Combine(testEnv.TempRoot, "other-dotnet");
+        Directory.CreateDirectory(altRoot);
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(altRoot, InstallArchitecture.x64);
 
-        InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeFalse();
     }
 
     [Fact]
-    public void IsRootInManifest_ReturnsFalseForEmptyManifest()
+    public void IsRootTracked_ReturnsFalseForEmptyManifest()
     {
-        var manifestData = new DotnetupManifestData();
-        var root = new DotnetInstallRoot(TestRoot, InstallArchitecture.x64);
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
-        InstallerOrchestratorSingleton.IsRootInManifest(manifestData, root).Should().BeFalse();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeFalse();
     }
 
     #endregion
@@ -128,13 +142,13 @@ public class InstallerOrchestratorTests
     [Fact]
     public void HasDotnetArtifacts_ReturnsFalseForNullPath()
     {
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(null).Should().BeFalse();
+        DotnetupSharedManifest.HasDotnetArtifacts(null).Should().BeFalse();
     }
 
     [Fact]
     public void HasDotnetArtifacts_ReturnsFalseForNonexistentPath()
     {
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(Path.Combine(Path.GetTempPath(), "nonexistent-" + Guid.NewGuid().ToString("N")))
+        DotnetupSharedManifest.HasDotnetArtifacts(Path.Combine(Path.GetTempPath(), "nonexistent-" + Guid.NewGuid().ToString("N")))
             .Should().BeFalse();
     }
 
@@ -144,7 +158,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk"));
 
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
     [Fact]
@@ -153,7 +167,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "shared"));
 
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
     [Fact]
@@ -163,7 +177,7 @@ public class InstallerOrchestratorTests
         var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
         File.WriteAllText(Path.Combine(testEnv.InstallPath, exeName), "fake");
 
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
     [Fact]
@@ -171,7 +185,7 @@ public class InstallerOrchestratorTests
     {
         using var testEnv = new TestEnvironment();
 
-        InstallerOrchestratorSingleton.HasDotnetArtifacts(testEnv.InstallPath).Should().BeFalse();
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeFalse();
     }
 
     #endregion
@@ -186,23 +200,15 @@ public class InstallerOrchestratorTests
             component);
     }
 
-    private static DotnetupManifestData ManifestWithInstallation(string rootPath, InstallComponent component, string version)
+    private static DotnetupSharedManifest CreateManifestWithInstallation(TestEnvironment testEnv, string rootPath, InstallComponent component, string version)
     {
-        return new DotnetupManifestData
-        {
-            DotnetRoots =
-            [
-                new DotnetRootEntry
-                {
-                    Path = rootPath,
-                    Architecture = InstallArchitecture.x64,
-                    Installations =
-                    [
-                        new Installation { Component = component, Version = version }
-                    ]
-                }
-            ]
-        };
+        testEnv.StubComponentDirectories(rootPath, (component, version));
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(rootPath, InstallArchitecture.x64);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.AddInstallation(root, new Installation { Component = component, Version = version });
+        return manifest;
     }
 
     #endregion

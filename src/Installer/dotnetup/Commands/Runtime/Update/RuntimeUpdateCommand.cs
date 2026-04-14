@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Update;
 internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
 {
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
@@ -28,10 +29,10 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
         int exitCode = 0;
         foreach (var component in components)
         {
-            int result = workflow.Execute(_manifestPath, _installPath, component, _noProgress);
-            if (result != 0)
+            int componentExitCode = workflow.Execute(_manifestPath, _installPath, component, _noProgress, verbosity: _verbosity);
+            if (componentExitCode != 0)
             {
-                exitCode = result;
+                exitCode = componentExitCode;
             }
         }
 

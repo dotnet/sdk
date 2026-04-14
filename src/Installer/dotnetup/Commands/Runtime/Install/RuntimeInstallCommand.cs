@@ -7,19 +7,9 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
-internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
+internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result)
 {
-    private readonly string? _componentSpec = result.GetValue(RuntimeInstallCommandParser.ComponentSpecArgument);
-    private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-    private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
-    private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
-    private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
-    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
-    private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
-    private readonly bool _untracked = result.GetValue(CommonOptions.UntrackedOption);
-
-    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly ChannelVersionResolver _channelVersionResolver = new();
+    private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
 
     /// <summary>
     /// Maps user-friendly runtime type names to InstallComponent enum values.
@@ -29,25 +19,41 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     {
         ["runtime"] = InstallComponent.Runtime,
         ["aspnetcore"] = InstallComponent.ASPNETCore,
+        ["aspnet"] = InstallComponent.ASPNETCore,
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
+        ["desktop"] = InstallComponent.WindowsDesktop,
     };
+
+    /// <summary>Primary (non-alias) names shown in help text and error messages.</summary>
+    private static readonly string[] s_primaryRuntimeTypes = ["runtime", "aspnetcore", "windowsdesktop"];
 
     protected override string GetCommandName() => "runtime/install";
 
     protected override int ExecuteCore()
     {
-        // Parse the component spec to determine runtime type and version
-        var (component, versionOrChannel) = ParseComponentSpec(_componentSpec);
+        // Parse and validate all specs upfront before any downloads begin.
+        // If none provided, default to a single core runtime with no channel.
+        var specs = _componentSpecs.Length > 0
+            ? _componentSpecs.Select(s => ParseAndValidateComponentSpec(s)).ToArray()
+            : [ParseAndValidateComponentSpec(null)];
 
-        // Windows Desktop Runtime is only available on Windows
+        var workflow = new InstallWorkflow(this);
+        workflow.Execute(specs);
+        return 0;
+    }
+
+    private static void ValidateComponentForPlatform(InstallComponent component)
+    {
         if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
                 $"Windows Desktop Runtime is only available on Windows. Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
         }
+    }
 
-        // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
+    private static void ValidateNotSdkVersion(string? versionOrChannel)
+    {
         if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
         {
             throw new DotnetInstallException(
@@ -55,26 +61,17 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
                 $"'{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations. "
                 + "Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
         }
+    }
 
-        // Use GetDisplayName() from InstallComponentExtensions for consistent descriptions
-        string componentDescription = component.GetDisplayName();
-
-        InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
-
-        InstallWorkflow.InstallWorkflowOptions options = new(
-            versionOrChannel,
-            _installPath,
-            _setDefaultInstall,
-            _manifestPath,
-            _interactive,
-            _noProgress,
-            component,
-            componentDescription,
-            RequireMuxerUpdate: _requireMuxerUpdate,
-            Untracked: _untracked);
-
-        workflow.Execute(options);
-        return 0;
+    /// <summary>
+    /// Parses and validates a component specification, checking platform support and SDK version conflicts.
+    /// </summary>
+    private static MinimalInstallSpec ParseAndValidateComponentSpec(string? spec)
+    {
+        var (component, versionOrChannel) = ParseComponentSpec(spec);
+        ValidateComponentForPlatform(component);
+        ValidateNotSdkVersion(versionOrChannel);
+        return new MinimalInstallSpec(component, versionOrChannel);
     }
 
     /// <summary>
@@ -132,14 +129,15 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     /// </summary>
     internal static IEnumerable<string> GetValidRuntimeTypes()
     {
-        foreach (var kvp in s_runtimeTypeMap)
+        foreach (var name in s_primaryRuntimeTypes)
         {
-            // Windows Desktop is only valid on Windows
-            if (kvp.Value == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            if (s_runtimeTypeMap.TryGetValue(name, out var component) &&
+                component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
             {
                 continue;
             }
-            yield return kvp.Key;
+
+            yield return name;
         }
     }
 }

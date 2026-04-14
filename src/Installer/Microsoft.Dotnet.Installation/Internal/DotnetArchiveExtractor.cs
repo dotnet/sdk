@@ -11,9 +11,10 @@ internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
-    private readonly IProgressTarget _progressTarget;
+    private readonly IProgressTarget? _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
+    private readonly bool _ownsProgressReporter = true;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -29,11 +30,39 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
-        IArchiveDownloader? archiveDownloader = null)
+        IArchiveDownloader? archiveDownloader = null,
+        string? cacheDirectory = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+    {
+        _progressTarget = progressTarget;
+    }
+
+    /// <summary>
+    /// Constructor that accepts a shared IProgressReporter, allowing multiple extractors
+    /// to display progress tasks within the same progress widget.
+    /// </summary>
+    public DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IProgressReporter sharedReporter,
+        IArchiveDownloader? archiveDownloader = null,
+        string? cacheDirectory = null)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+    {
+        _progressReporter = sharedReporter;
+        _ownsProgressReporter = false;
+    }
+
+    private DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IArchiveDownloader? archiveDownloader,
+        string? cacheDirectory = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
-        _progressTarget = progressTarget;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -43,7 +72,7 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         else
         {
-            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
+            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: cacheDirectory);
             _shouldDisposeDownloader = true;
         }
     }
@@ -56,20 +85,18 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
     /// This avoids multiple newlines from Spectre.Console Progress between phases.
+    /// When a shared reporter was provided via the constructor, that instance is returned directly.
     /// </summary>
-    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
+    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
+
+    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString()); }
 
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
-        activity?.SetTag("download.version", _resolvedVersion.ToString());
-
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string componentDescription = _request.Component.GetDisplayName();
-        var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
-        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
+        var (reporter, downloadTask) = ProgressTracker.BeginDownload();
 
         try
         {
@@ -98,7 +125,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 component: _request.Component.ToString());
         }
 
-        downloadTask.Value = 100;
+        ProgressTracker.CompleteDownload(downloadTask, _archivePath);
     }
 
     public void Commit()
@@ -108,18 +135,23 @@ internal class DotnetArchiveExtractor : IDisposable
 
         _extractedSubcomponents.Clear();
 
-        string componentDescription = _request.Component.GetDisplayName();
-        var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
+        var installTask = ProgressTracker.BeginExtraction();
 
+        if (_archivePath is null)
+        {
+            throw new InvalidOperationException("Prepare() must be called before Commit().");
+        }
+
+        ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
+
+        ProgressTracker.CompleteExtraction(installTask);
+    }
+
+    private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)
+    {
         try
         {
-            if (_archivePath is null)
-            {
-                throw new InvalidOperationException("Prepare() must be called before Commit().");
-            }
-
-            // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, installTask);
+            ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask);
             installTask.Value = installTask.MaxValue;
         }
         catch (DotnetInstallException)
@@ -128,7 +160,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (InvalidDataException ex)
         {
-            // Archive is corrupted (invalid zip/tar format)
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ArchiveCorrupted,
                 $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
@@ -138,7 +169,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (UnauthorizedAccessException ex)
         {
-            // User environment issue — insufficient permissions to write to install directory
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PermissionDenied,
                 $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -148,9 +178,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (IOException ex)
         {
-            // IO errors during extraction (disk full, permission denied, path too long, etc.)
-            // Wrap as ExtractionFailed and preserve the original IOException.
-            // The telemetry layer classifies the inner IOException by HResult via ErrorCategoryClassifier.
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -160,7 +187,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (Exception ex)
         {
-            // Genuine extraction issue we should investigate — product error
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -188,7 +214,7 @@ internal class DotnetArchiveExtractor : IDisposable
         // Build a predicate that skips entries whose subcomponent already exists on disk.
         // The archive is still downloaded and all subcomponents are tracked for the manifest,
         // but extraction is skipped to avoid overwriting files from an earlier installation.
-        var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir);
+        var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -211,11 +237,11 @@ internal class DotnetArchiveExtractor : IDisposable
     /// with an already-installed SDK). The entry is still reported to the
     /// <c>onEntryExtracted</c> callback so the subcomponent is recorded in the manifest.
     /// </summary>
-    private static Func<string, bool> CreateExistingSubcomponentSkipPredicate(string targetDir)
+    private static Func<string, bool> CreateExistingSubcomponentSkipPredicate(string targetDir, Verbosity verbosity)
     {
         var cache = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-        return (string entryName) =>
+        return entryName =>
         {
             var subcomponentId = SubcomponentResolver.Resolve(entryName);
             if (subcomponentId is null)
@@ -229,9 +255,9 @@ internal class DotnetArchiveExtractor : IDisposable
                 exists = Directory.Exists(subcomponentPath);
                 cache[subcomponentId] = exists;
 
-                if (exists)
+                if (exists && verbosity >= Verbosity.Detailed)
                 {
-                    Console.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
+                    Console.Error.WriteLine($"Subcomponent '{subcomponentId}' already exists on disk, skipping extraction.");
                 }
             }
 
@@ -272,14 +298,6 @@ internal class DotnetArchiveExtractor : IDisposable
     }
 
     /// <summary>
-    /// Initializes progress tracking for extraction by setting the max value.
-    /// </summary>
-    private static void InitializeExtractionProgress(IProgressTask? installTask, long totalEntries)
-    {
-        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
-    }
-
-    /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
     private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
@@ -288,7 +306,9 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            InitializeExtractionProgress(installTask, CountTarEntries(decompressedPath));
+            long totalEntries = CountTarEntries(decompressedPath);
+            installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
+
             ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
         }
         finally
@@ -354,53 +374,63 @@ internal class DotnetArchiveExtractor : IDisposable
         while ((entry = tarReader.GetNextEntry()) is not null)
         {
             bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
-
             if (!skip)
             {
-                if (entry.EntryType == TarEntryType.RegularFile)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    // ExtractToFile handles Unix permissions automatically via entry.Mode
-                    entry.ExtractToFile(destPath, overwrite: true);
-                }
-                else if (entry.EntryType == TarEntryType.Directory)
-                {
-                    string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(dirPath);
-
-                    if (entry.Mode != default && !OperatingSystem.IsWindows())
-                    {
-                        File.SetUnixFileMode(dirPath, entry.Mode);
-                    }
-                }
-                else if (entry.EntryType == TarEntryType.SymbolicLink)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-
-                    // Remove existing file/link before creating symlink
-                    if (File.Exists(destPath) || Directory.Exists(destPath))
-                    {
-                        File.Delete(destPath);
-                    }
-
-                    File.CreateSymbolicLink(destPath, entry.LinkName!);
-                }
-                else if (entry.EntryType == TarEntryType.HardLink)
-                {
-                    string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-                    string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                    deferredHardLinks.Add((destPath, linkTargetPath));
-                }
+                ProcessTarEntry(entry, targetDir, muxerHandler, deferredHardLinks);
             }
 
             onEntryExtracted?.Invoke(entry.Name);
             installTask?.Value += 1;
         }
 
-        // Create hard links after all regular files have been extracted
+        CreateDeferredHardLinks(deferredHardLinks);
+    }
+
+    private static void ProcessTarEntry(TarEntry entry, string targetDir, MuxerHandler? muxerHandler, List<(string DestPath, string TargetPath)> deferredHardLinks)
+    {
+        if (entry.EntryType == TarEntryType.RegularFile)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            entry.ExtractToFile(destPath, overwrite: true);
+        }
+        else if (entry.EntryType == TarEntryType.Directory)
+        {
+            string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(dirPath);
+
+            if (entry.Mode != default && !OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(dirPath, entry.Mode);
+            }
+        }
+        else if (entry.EntryType == TarEntryType.SymbolicLink)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+
+            if (File.Exists(destPath) || Directory.Exists(destPath))
+            {
+                File.Delete(destPath);
+            }
+
+            File.CreateSymbolicLink(destPath, entry.LinkName!);
+        }
+        else if (entry.EntryType == TarEntryType.HardLink)
+        {
+            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
+            string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            deferredHardLinks.Add((destPath, linkTargetPath));
+        }
+        else
+        {
+            Console.Error.WriteLine($"Warning: Skipping unsupported tar entry type '{entry.EntryType}' for '{entry.Name}'.");
+        }
+    }
+
+    private static void CreateDeferredHardLinks(List<(string DestPath, string TargetPath)> deferredHardLinks)
+    {
         foreach (var (destPath, targetPath) in deferredHardLinks)
         {
             if (File.Exists(destPath))
@@ -418,7 +448,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
-        InitializeExtractionProgress(installTask, zip.Entries.Count);
+        installTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
 
         foreach (var entry in zip.Entries)
         {
@@ -468,8 +498,11 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         try
         {
-            // Dispose the progress reporter to finalize progress display
-            _progressReporter?.Dispose();
+            // Dispose the progress reporter only if we own it (not shared)
+            if (_ownsProgressReporter)
+            {
+                _progressReporter?.Dispose();
+            }
         }
         catch
         {

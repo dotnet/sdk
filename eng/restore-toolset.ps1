@@ -26,11 +26,8 @@ function InitializeCustomSDKToolset {
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
         # Build dotnetup if not already present (needs SDK to be installed first)
         EnsureDotnetupBuilt
-        InstallDotNetSharedFramework "6.0.0"
-        InstallDotNetSharedFramework "7.0.0"
-        InstallDotNetSharedFramework "8.0.0"
-        InstallDotNetSharedFramework "9.0.0"
-        InstallDotNetSharedFramework "10.0.0"
+
+        InstallDotNetSharedFrameworks "6.0", "7.0", "8.0", "9.0", "10.0"
     }
 
     CreateBuildEnvScripts
@@ -151,18 +148,15 @@ function CreateVSShortcut() {
     $shortcut.Save()
 }
 
-function InstallDotNetSharedFramework([string]$version) {
+function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
-    $fxDir = Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$version"
+    $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
 
-    if (!(Test-Path $fxDir)) {
-        $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+    # Let dotnetup handle checking if versions are already installed
+    & $dotnetupExe runtime install @versions --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
 
-        & $dotnetupExe runtime install "$version" --install-path $dotnetRoot --no-progress --set-default-install false --untracked
-
-        if ($lastExitCode -ne 0) {
-            throw "Failed to install shared Framework $version to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
-        }
+    if ($lastExitCode -ne 0) {
+        throw "Failed to install shared frameworks ($($versions -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
     }
 }
 

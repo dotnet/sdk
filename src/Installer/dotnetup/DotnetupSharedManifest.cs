@@ -8,6 +8,24 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
+/// <summary>
+/// The single owner of the dotnetup manifest file — no other class should read, write,
+/// or have knowledge of the manifest's on-disk format or location.
+///
+/// Responsibilities:
+///   - Parsing and serializing manifest data (JSON ↔ <see cref="DotnetupManifestData"/>).
+///   - Validating manifest integrity (checksum verification, field validation on external edits).
+///   - Reconciling manifest entries with the filesystem (pruning stale installations).
+///   - Querying whether an installation or install root is already tracked.
+///   - CRUD operations on <see cref="InstallSpec"/> and <see cref="Installation"/> records.
+///
+/// Non-responsibilities:
+///   - This class does NOT acquire the installation-state mutex. Callers must hold it
+///     before invoking any method; the class asserts the mutex is held but never takes it.
+///   - This class does NOT write any files to disk besides the manifest and its companion
+///     checksum. Extracting archives, creating SDK/runtime directories, etc. are handled
+///     by other components.
+/// </summary>
 internal class DotnetupSharedManifest : IDotnetupManifest
 {
     private string ManifestPath => GetManifestPath();
@@ -60,7 +78,27 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
     }
 
+    /// <summary>
+    /// Reads the manifest and prunes stale installations whose on-disk
+    /// directories no longer exist. This is the standard entry point for
+    /// callers that need an accurate view of what is actually installed.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
     internal DotnetupManifestData ReadManifest()
+    {
+        var manifest = ReadManifestCore();
+        PruneStaleInstallations(manifest);
+        return manifest;
+    }
+
+    /// <summary>
+    /// Reads the manifest without pruning. Exposed only for tests that need
+    /// to inspect raw manifest data without filesystem side-effects.
+    /// Production code should always use <see cref="ReadManifest()"/>.
+    /// </summary>
+    internal DotnetupManifestData ReadManifestWithoutPruning() => ReadManifestCore();
+
+    private DotnetupManifestData ReadManifestCore()
     {
         AssertHasFinalizationMutex();
         EnsureManifestExists();
@@ -83,6 +121,12 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 ex);
         }
 
+        var manifest = ParseManifestJson(json);
+        return manifest;
+    }
+
+    private DotnetupManifestData ParseManifestJson(string json)
+    {
         try
         {
             // Try new format first
@@ -103,7 +147,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         catch (JsonException ex)
         {
             // Check if it's a legacy format (JSON array of DotnetInstall objects)
-            if (json.TrimStart().StartsWith('['))
+            if (json.TrimStart().StartsWith('[', StringComparison.Ordinal))
             {
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.LocalManifestCorrupted,
@@ -280,6 +324,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     // --- Install Spec operations ---
+    // An InstallSpec records the user's *intent*: "I want SDK channel 9.0" or
+    // "global.json pins SDK 9.0.100". The update command iterates specs to
+    // know which channels to resolve. A spec can exist without a corresponding
+    // Installation (e.g., after uninstall + re-add), and an Installation can
+    // exist without a spec (e.g., --untracked installs).
 
     public IEnumerable<InstallSpec> GetInstallSpecs(DotnetInstallRoot installRoot)
     {
@@ -314,7 +363,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void RemoveInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
-        var manifest = ReadManifest();
+        var manifest = ReadManifestCore();
         var root = manifest.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
 
@@ -333,6 +382,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     // --- Installation operations ---
+    // An Installation records a *fact*: "SDK 9.0.103 is on disk at this root".
+    // Installations are what GC and list inspect. They are always paired with
+    // a spec in normal flows (see RecordInstallSpec + AddInstallation in the
+    // orchestrator), but the manifest layer keeps them independent so that
+    // lower-level tests and edge cases (untracked installs) work correctly.
 
     public IEnumerable<Installation> GetInstallations(DotnetInstallRoot installRoot)
     {
@@ -344,7 +398,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void AddInstallation(DotnetInstallRoot installRoot, Installation installation)
     {
-        var manifest = ReadManifest();
+        var manifest = ReadManifestCore();
         var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         // Don't add duplicate installations
@@ -358,7 +412,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void RemoveInstallation(DotnetInstallRoot installRoot, Installation installation)
     {
-        var manifest = ReadManifest();
+        var manifest = ReadManifestCore();
         var root = manifest.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
 
@@ -370,6 +424,154 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         root.Installations.RemoveAll(i => i.Component == installation.Component && i.Version == installation.Version);
 
         WriteManifest(manifest);
+    }
+
+    /// <summary>
+    /// Returns true if the manifest already records an installation matching the given install.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal bool InstallAlreadyExists(DotnetInstall install)
+    {
+        var manifestData = ReadManifest();
+        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        return root?.Installations.Any(existing =>
+            existing.Version == install.Version.ToString() &&
+            existing.Component == install.Component) ?? false;
+    }
+
+    /// <summary>
+    /// Returns true if the manifest tracks the given install root.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal bool IsRootTracked(DotnetInstallRoot installRoot)
+    {
+        var manifestData = ReadManifestCore();
+        return manifestData.DotnetRoots.Any(root =>
+            DotnetupUtilities.PathsEqual(root.Path, installRoot.Path));
+    }
+
+    /// <summary>
+    /// Checks whether a directory contains common .NET installation markers
+    /// (dotnet executable, sdk/ or shared/ subdirectories).
+    /// </summary>
+    internal static bool HasDotnetArtifacts(string? path)
+    {
+        if (path is null || !Directory.Exists(path))
+        {
+            return false;
+        }
+
+        return File.Exists(Path.Combine(path, DotnetupUtilities.GetDotnetExeName()))
+            || Directory.Exists(Path.Combine(path, "sdk"))
+            || Directory.Exists(Path.Combine(path, "shared"));
+    }
+
+    /// <summary>
+    /// Records the install spec in the manifest, respecting Untracked and SkipInstallSpecRecording flags.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal void RecordInstallSpec(DotnetInstallRequest installRequest)
+    {
+        if (installRequest.Options.Untracked || installRequest.Options.SkipInstallSpecRecording)
+        {
+            return;
+        }
+
+        AddInstallSpec(installRequest.InstallRoot, new InstallSpec
+        {
+            Component = installRequest.Component,
+            VersionOrChannel = installRequest.Channel.Name,
+            InstallSource = installRequest.Options.InstallSource switch
+            {
+                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
+                _ => InstallSource.Explicit,
+            },
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+        });
+    }
+
+    /// <summary>
+    /// Removes a stale manifest entry for an install whose on-disk files no longer exist.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal void RemoveStaleInstallation(DotnetInstall install)
+    {
+        RemoveInstallation(install.InstallRoot, new Installation
+        {
+            Component = install.Component,
+            Version = install.Version.ToString()
+        });
+    }
+
+    /// <summary>
+    /// Checks each installation across all roots and removes entries whose
+    /// on-disk component directory no longer exists. Roots whose directory
+    /// no longer exists are removed entirely. Writes the manifest if any
+    /// entries were pruned.
+    /// </summary>
+    internal DotnetupManifestData PruneStaleInstallations(DotnetupManifestData manifest)
+    {
+        bool anyPruned = false;
+
+        // Remove entire roots whose directory no longer exists.
+        int removedRoots = manifest.DotnetRoots.RemoveAll(root =>
+            !string.IsNullOrEmpty(root.Path) && !Directory.Exists(root.Path));
+        if (removedRoots > 0)
+        {
+            anyPruned = true;
+        }
+
+        // For surviving roots, prune individual installations that are missing on disk.
+        foreach (var root in manifest.DotnetRoots)
+        {
+            if (string.IsNullOrEmpty(root.Path))
+            {
+                continue;
+            }
+
+            int removed = root.Installations.RemoveAll(installation =>
+                !InstallationExistsOnDisk(root.Path, installation));
+
+            if (removed > 0)
+            {
+                anyPruned = true;
+            }
+        }
+
+        if (anyPruned)
+        {
+            WriteManifest(manifest);
+        }
+
+        return manifest;
+    }
+
+    /// <summary>
+    /// Returns true if the primary on-disk directory for the given installation
+    /// still exists under <paramref name="rootPath"/>.
+    /// </summary>
+    private static bool InstallationExistsOnDisk(string rootPath, Installation installation)
+    {
+        string? componentDir = GetComponentDirectory(rootPath, installation);
+        return componentDir is not null && Directory.Exists(componentDir);
+    }
+
+    private static string? GetComponentDirectory(string rootPath, Installation installation)
+    {
+        if (string.IsNullOrEmpty(installation.Version))
+        {
+            return null;
+        }
+
+        return installation.Component switch
+        {
+            InstallComponent.SDK => Path.Combine(rootPath, "sdk", installation.Version),
+            InstallComponent.Runtime => Path.Combine(rootPath, "shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
+            InstallComponent.ASPNETCore => Path.Combine(rootPath, "shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
+            InstallComponent.WindowsDesktop => Path.Combine(rootPath, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
+            _ => null,
+        };
     }
 
 }

@@ -44,14 +44,14 @@ public abstract class CommandBase
         {
             // Known installation errors - print a clean user-friendly message
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
             return 1;
         }
         catch (Exception ex)
         {
             // Unexpected errors - still record telemetry so error_type is populated
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);
 #endif

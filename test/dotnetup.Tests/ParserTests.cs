@@ -336,4 +336,70 @@ public class ParserTests
     }
 
     #endregion
+
+    #region Help Differentiation Tests
+
+    [Fact]
+    public void Help_RootCommand_ShowsGroupedLayout()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Install Commands:");
+        output.Should().Contain("Query Commands:");
+        output.Should().Contain("Configuration Commands:");
+        output.Should().Contain("Utility Commands:");
+    }
+
+    [Theory]
+    [InlineData("sdk")]
+    [InlineData("runtime")]
+    [InlineData("list")]
+    public void Help_Subcommand_DoesNotShowGroupedLayout(string subcommand)
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { subcommand, "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().NotContain("Install Commands:");
+        output.Should().NotContain("Query Commands:");
+        output.Should().NotContain("Configuration Commands:");
+        output.Should().NotContain("Utility Commands:");
+    }
+
+    [Fact]
+    public void Help_SdkSubcommand_ShowsOwnContent()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "sdk", "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("sdk");
+        output.Should().Contain("install");
+        output.Should().Contain("update");
+        output.Should().Contain("uninstall");
+    }
+
+    [Fact]
+    public void Help_NestedSubcommand_DoesNotShowGroupedLayout()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "sdk", "install", "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().NotContain("Install Commands:");
+        output.Should().NotContain("Query Commands:");
+        output.Should().Contain("install");
+    }
+
+    #endregion
 }

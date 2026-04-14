@@ -123,52 +123,27 @@ public static class GlobalJsonModifier
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartObject:
-                    if (nextValueIsSdk)
-                    {
-                        inSdkObject = true;
-                        nextValueIsSdk = false;
-                    }
+                    if (nextValueIsSdk) { inSdkObject = true; nextValueIsSdk = false; }
                     foundVersionProperty = false;
                     depth++;
                     break;
 
                 case JsonTokenType.EndObject:
-                    if (inSdkObject && depth == 2)
-                    {
-                        inSdkObject = false;
-                    }
+                    if (inSdkObject && depth == 2) { inSdkObject = false; }
                     foundVersionProperty = false;
                     depth--;
                     break;
 
                 case JsonTokenType.PropertyName:
-                    if (depth == 1 && reader.ValueTextEquals("sdk"u8))
-                    {
-                        nextValueIsSdk = true;
-                    }
-                    else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8))
-                    {
-                        foundVersionProperty = true;
-                    }
+                    if (depth == 1 && reader.ValueTextEquals("sdk"u8)) { nextValueIsSdk = true; }
+                    else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8)) { foundVersionProperty = true; }
                     break;
 
                 case JsonTokenType.String:
                     nextValueIsSdk = false;
                     if (foundVersionProperty)
                     {
-                        // Found the version value token — splice in the new version at its byte position.
-                        // TokenStartIndex is a UTF-8 byte offset, so splice on the byte array
-                        // rather than on the C# string to handle non-ASCII characters correctly.
-                        int tokenStart = (int)reader.TokenStartIndex;
-                        int tokenLength = (int)reader.BytesConsumed - tokenStart;
-                        byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes($"\"{newVersion}\"");
-
-                        byte[] result = new byte[bytes.Length - tokenLength + replacementBytes.Length];
-                        bytes.AsSpan(0, tokenStart).CopyTo(result);
-                        replacementBytes.CopyTo(result.AsSpan(tokenStart));
-                        bytes.AsSpan(tokenStart + tokenLength).CopyTo(result.AsSpan(tokenStart + replacementBytes.Length));
-
-                        return System.Text.Encoding.UTF8.GetString(result);
+                        return SpliceUtf8Token(bytes, (int)reader.TokenStartIndex, (int)reader.BytesConsumed, newVersion);
                     }
                     break;
 
@@ -180,5 +155,20 @@ public static class GlobalJsonModifier
         }
 
         return null;
+    }
+
+    private static string SpliceUtf8Token(byte[] bytes, int tokenStart, int bytesConsumed, string newVersion)
+    {
+        // TokenStartIndex is a UTF-8 byte offset, so splice on the byte array
+        // rather than on the C# string to handle non-ASCII characters correctly.
+        int tokenLength = bytesConsumed - tokenStart;
+        byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes($"\"{newVersion}\"");
+
+        byte[] result = new byte[bytes.Length - tokenLength + replacementBytes.Length];
+        bytes.AsSpan(0, tokenStart).CopyTo(result);
+        replacementBytes.CopyTo(result.AsSpan(tokenStart));
+        bytes.AsSpan(tokenStart + tokenLength).CopyTo(result.AsSpan(tokenStart + replacementBytes.Length));
+
+        return System.Text.Encoding.UTF8.GetString(result);
     }
 }

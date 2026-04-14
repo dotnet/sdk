@@ -535,3 +535,15 @@ indent_style = unset
 insert_final_newline = false
 tab_width = unset
 trim_trailing_whitespace = false
+
+# Meziantou.Analyzer suppressions for shared src/Cli code linked into dotnetup.
+# These rules do not apply to code owned by other teams.
+[{src/Cli/**/*.cs,src/Resolvers/**/*.cs}]
+dotnet_diagnostic.MA0006.severity = none
+dotnet_diagnostic.MA0008.severity = none
+dotnet_diagnostic.MA0011.severity = none
+dotnet_diagnostic.MA0016.severity = none
+dotnet_diagnostic.MA0048.severity = none
+dotnet_diagnostic.MA0084.severity = none
+dotnet_diagnostic.MA0099.severity = none
+dotnet_diagnostic.MA0144.severity = none

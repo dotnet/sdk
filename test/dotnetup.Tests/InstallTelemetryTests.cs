@@ -22,7 +22,7 @@ public class ClassifyInstallPathTests
 
         var path = Path.Combine(localAppData, "dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         if (OperatingSystem.IsWindows())
         {
@@ -47,7 +47,7 @@ public class ClassifyInstallPathTests
         // A path under user profile but NOT under LocalApplicationData
         var path = Path.Combine(userProfile, "my-dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         Assert.Equal("user_profile", result);
     }
@@ -72,14 +72,14 @@ public class ClassifyInstallPathTests
         Assert.StartsWith(userProfile, localAppData, StringComparison.OrdinalIgnoreCase);
 
         var path = Path.Combine(localAppData, "dotnet");
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         // Should be local_appdata, not user_profile
         Assert.Equal("local_appdata", result);
     }
 
     [Fact]
-    public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsAdmin()
+    public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsSystem()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -94,9 +94,9 @@ public class ClassifyInstallPathTests
 
         var path = Path.Combine(programFiles, "dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("admin", result);
+        Assert.Equal("system", result);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class ClassifyInstallPathTests
         // A path under Program Files that is NOT dotnet — still system_programfiles
         var path = Path.Combine(programFiles, "SomeOtherTool");
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         Assert.Equal("system_programfiles", result);
     }
@@ -129,7 +129,7 @@ public class ClassifyInstallPathTests
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         Assert.Equal("other", result);
     }
@@ -143,7 +143,7 @@ public class ClassifyInstallPathTests
             ? @"D:\repo\.dotnet"
             : "/tmp/repo/.dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
+        var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
 
         Assert.Equal("global_json", result);
     }
@@ -161,7 +161,7 @@ public class ClassifyInstallPathTests
 
         var path = Path.Combine(localAppData, "dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
+        var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
 
         if (OperatingSystem.IsWindows())
         {
@@ -182,7 +182,7 @@ public class ClassifyInstallPathTests
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: PathSource.Explicit);
+        var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: PathSource.Explicit);
 
         Assert.Equal("other", result);
     }
@@ -194,19 +194,19 @@ public class ClassifyInstallPathTests
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        var result = InstallExecutor.ClassifyInstallPath(path, pathSource: null);
+        var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: null);
 
         Assert.Equal("other", result);
     }
 
     [Fact]
-    public void ClassifyInstallPath_UsrShareDotnet_ReturnsAdmin()
+    public void ClassifyInstallPath_UsrShareDotnet_ReturnsSystem()
     {
         if (OperatingSystem.IsWindows()) return;
 
-        var result = InstallExecutor.ClassifyInstallPath("/usr/share/dotnet");
+        var result = InstallPathClassifier.ClassifyInstallPath("/usr/share/dotnet");
 
-        Assert.Equal("admin", result);
+        Assert.Equal("system", result);
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public class ClassifyInstallPathTests
         if (OperatingSystem.IsWindows()) return;
 
         // /usr/local/bin is a system path but NOT an admin dotnet location
-        var result = InstallExecutor.ClassifyInstallPath("/usr/local/bin/something");
+        var result = InstallPathClassifier.ClassifyInstallPath("/usr/local/bin/something");
 
         Assert.Equal("system_path", result);
     }
@@ -225,7 +225,7 @@ public class ClassifyInstallPathTests
     {
         if (OperatingSystem.IsWindows()) return;
 
-        var result = InstallExecutor.ClassifyInstallPath("/opt/dotnet");
+        var result = InstallPathClassifier.ClassifyInstallPath("/opt/dotnet");
 
         Assert.Equal("system_path", result);
     }
@@ -243,7 +243,7 @@ public class ClassifyInstallPathTests
 
         var path = Path.Combine(home, ".dotnet");
 
-        var result = InstallExecutor.ClassifyInstallPath(path);
+        var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         Assert.Equal("user_home", result);
     }
@@ -409,7 +409,7 @@ public class IsAdminInstallPathTests
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles)) return;
 
-        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "dotnet")));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet")));
     }
 
     [Fact]
@@ -420,7 +420,7 @@ public class IsAdminInstallPathTests
         var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
         if (string.IsNullOrEmpty(programFilesX86)) return;
 
-        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFilesX86, "dotnet")));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFilesX86, "dotnet")));
     }
 
     [Fact]
@@ -432,7 +432,7 @@ public class IsAdminInstallPathTests
         if (string.IsNullOrEmpty(programFiles)) return;
 
         // Subfolders of Program Files\dotnet should also be blocked
-        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "dotnet", "sdk")));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet", "sdk")));
     }
 
     [Fact]
@@ -441,7 +441,7 @@ public class IsAdminInstallPathTests
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrEmpty(localAppData)) return;
 
-        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(localAppData, "dotnet")));
+        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(localAppData, "dotnet")));
     }
 
     [Fact]
@@ -451,7 +451,7 @@ public class IsAdminInstallPathTests
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        Assert.False(InstallExecutor.IsAdminInstallPath(path));
+        Assert.False(InstallPathClassifier.IsAdminInstallPath(path));
     }
 
     [Fact]
@@ -459,7 +459,7 @@ public class IsAdminInstallPathTests
     {
         if (OperatingSystem.IsWindows()) return;
 
-        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/share/dotnet"));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/share/dotnet"));
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class IsAdminInstallPathTests
     {
         if (OperatingSystem.IsWindows()) return;
 
-        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/lib/dotnet"));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/lib/dotnet"));
     }
 
     [Fact]
@@ -475,7 +475,7 @@ public class IsAdminInstallPathTests
     {
         if (OperatingSystem.IsWindows()) return;
 
-        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/local/share/dotnet"));
+        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/local/share/dotnet"));
     }
 
     [Fact]
@@ -484,7 +484,7 @@ public class IsAdminInstallPathTests
         if (OperatingSystem.IsWindows()) return;
 
         // /opt/dotnet is a system path but not an admin dotnet location
-        Assert.False(InstallExecutor.IsAdminInstallPath("/opt/dotnet"));
+        Assert.False(InstallPathClassifier.IsAdminInstallPath("/opt/dotnet"));
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public class IsAdminInstallPathTests
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(home)) return;
 
-        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(home, ".dotnet")));
+        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(home, ".dotnet")));
     }
 
     [Fact]
@@ -507,7 +507,7 @@ public class IsAdminInstallPathTests
         if (string.IsNullOrEmpty(programFiles)) return;
 
         // Program Files\SomeOtherTool is NOT an admin dotnet path
-        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "SomeOtherTool")));
+        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "SomeOtherTool")));
     }
 }
 
