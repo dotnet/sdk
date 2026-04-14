@@ -70,7 +70,6 @@ public class ResolveDictionaryCandidates : Task
         using var zipStream = File.OpenRead(AssetPackPath);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
 
-        // Read the manifest from the pack
         var manifestEntry = archive.GetEntry("manifest.json");
         if (manifestEntry == null)
         {
@@ -135,13 +134,12 @@ public class ResolveDictionaryCandidates : Task
         var currentAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var asset in currentAssets)
         {
-            // Skip compressed assets
             if (!string.IsNullOrEmpty(asset.AssetTraitName) &&
                 string.Equals(asset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
             {
                 continue;
             }
-            // Skip Build-only assets — they are not in the pack and not served at runtime
+            // Build-only assets are not in the pack and not served at runtime
             if (string.Equals(asset.AssetKind, "Build", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
@@ -161,12 +159,10 @@ public class ResolveDictionaryCandidates : Task
 
         if (CurrentEndpoints != null && CurrentEndpoints.Length > 0 && oldEndpointsByRoute.Count > 0)
         {
-            // Route-based matching via endpoints
             foreach (var endpointItem in CurrentEndpoints)
             {
                 var newEndpoint = StaticWebAssetEndpoint.FromTaskItem(endpointItem);
 
-                // Only consider non-compressed endpoints
                 if (HasContentEncodingSelector(newEndpoint))
                 {
                     continue;
@@ -177,7 +173,6 @@ public class ResolveDictionaryCandidates : Task
                     continue;
                 }
 
-                // Find the current asset for this endpoint
                 if (!currentAssetsById.TryGetValue(newEndpoint.AssetFile, out var newAsset))
                 {
                     continue;
@@ -237,7 +232,6 @@ public class ResolveDictionaryCandidates : Task
 
     private ITaskItem TryCreateCandidate(ZipArchive archive, StaticWebAsset oldAsset, StaticWebAsset newAsset, string outputPath)
     {
-        // Read Integrity from the manifest (already SHA-256 base64)
         var integrity = oldAsset.Integrity;
         if (string.IsNullOrEmpty(integrity))
         {
@@ -248,8 +242,7 @@ public class ResolveDictionaryCandidates : Task
             return null;
         }
 
-        // Skip when old and new asset have the same content — using the old version as a
-        // dictionary for an identical file is pointless.
+        // Using the old version as a dictionary for an identical file is pointless.
         if (!string.IsNullOrEmpty(newAsset.Integrity) &&
             string.Equals(integrity, newAsset.Integrity, StringComparison.Ordinal))
         {
@@ -261,7 +254,7 @@ public class ResolveDictionaryCandidates : Task
             return null;
         }
 
-        // Find the file in the pack using BasePath + RelativePath (matching GeneratePublishAssetPack key)
+        // Pack key uses BasePath + RelativePath (matching GeneratePublishAssetPack layout)
         var relativePath = oldAsset.ComputePathWithoutTokens(oldAsset.RelativePath);
         if (string.IsNullOrEmpty(relativePath))
         {
@@ -304,31 +297,26 @@ public class ResolveDictionaryCandidates : Task
             entryStream.CopyTo(fileStream);
         }
 
-        // Format as structured field for Available-Dictionary header: :<base64>:
         var hash = ":" + integrity + ":";
 
-        // Compute match pattern from old asset's BasePath + RelativePath.
-        // The browser sees the full route (BasePath/RelativePath), so the match pattern
-        // must include the BasePath prefix to correctly scope dictionary applicability.
+        // The browser sees full routes (BasePath/RelativePath), so the match pattern
+        // must include BasePath to correctly scope dictionary applicability.
         var matchPattern = oldAsset.ComputeMatchPattern(oldAsset.RelativePath);
         if (string.IsNullOrEmpty(matchPattern))
         {
             matchPattern = relativePath;
         }
 
-        // Prepend BasePath to the match pattern so it matches the full request URL
         if (!string.IsNullOrEmpty(basePath))
         {
             matchPattern = basePath + "/" + matchPattern;
         }
 
-        // Ensure leading slash for URL pattern matching
         if (!matchPattern.StartsWith("/", StringComparison.Ordinal))
         {
             matchPattern = "/" + matchPattern;
         }
 
-        // Dictionary-centric item: Identity = extracted bytes path
         var candidate = new TaskItem(extractedPath);
         candidate.SetMetadata("Hash", hash);
         candidate.SetMetadata("TargetAsset", newAsset.Identity);

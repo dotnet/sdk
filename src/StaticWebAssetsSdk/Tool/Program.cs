@@ -39,7 +39,7 @@ internal static class Program
 
         Command zstd = new("zstd");
 
-        Option<int> zstdCompressionLevelOption = new("-c")
+        Option<int> zstdLevelOption = new("-c")
         {
             DefaultValueFactory = (_) => 19,
             Description = "Compression level for the Zstandard compression algorithm (1-22, default: 19)."
@@ -60,7 +60,7 @@ internal static class Program
             AllowMultipleArgumentsPerToken = false
         };
 
-        zstd.Add(zstdCompressionLevelOption);
+        zstd.Add(zstdLevelOption);
         zstd.Add(zstdSourcesOption);
         zstd.Add(zstdOutputsOption);
         zstd.Add(zstdDictionariesOption);
@@ -69,14 +69,14 @@ internal static class Program
 
         zstd.SetAction((ParseResult parseResults) =>
         {
-            var compressionLevel = parseResults.GetValue(zstdCompressionLevelOption);
+            var level = parseResults.GetValue(zstdLevelOption);
             var sources = parseResults.GetValue(zstdSourcesOption);
             var outputs = parseResults.GetValue(zstdOutputsOption);
             var dictionaries = parseResults.GetValue(zstdDictionariesOption);
 
-            if (compressionLevel < 1 || compressionLevel > 22)
+            if (level < 1 || level > 22)
             {
-                Console.Error.WriteLine($"Compression level {compressionLevel} is out of range. Must be between 1 and 22.");
+                Console.Error.WriteLine($"Compression level {level} is out of range. Must be between 1 and 22.");
                 return 1;
             }
 
@@ -106,11 +106,11 @@ internal static class Program
                     {
                         var dictBytes = File.ReadAllBytes(dictionaryPath);
                         var dictionary = ZstandardDictionary.Create(dictBytes);
-                        options = new ZstandardCompressionOptions { Quality = compressionLevel, Dictionary = dictionary };
+                        options = new ZstandardCompressionOptions { Quality = level, Dictionary = dictionary };
                     }
                     else
                     {
-                        options = new ZstandardCompressionOptions { Quality = compressionLevel };
+                        options = new ZstandardCompressionOptions { Quality = level };
                     }
 
                     using (var sourceStream = File.OpenRead(source))

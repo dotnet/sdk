@@ -196,13 +196,11 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         matchingCandidateAssets.AddRange(explicitAssets);
 
         // Process the final set of candidate assets, deduplicating assets to be compressed in the same format multiple times and
-        // generating new a static web asset definition for each compressed item.
         var assetsToCompress = new ITaskItem[matchingCandidateAssets.Count * activeFormatNames.Length];
         var outputPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(OutputPath));
         var assetCounter = 0;
         foreach (var asset in matchingCandidateAssets)
         {
-            // Reset common properties
             StaticWebAsset previousAsset = null;
             string pathTemplate = null;
             string relativePath = null;
