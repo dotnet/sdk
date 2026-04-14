@@ -394,10 +394,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_FixGeneratedXbfFilesLink"
           AfterTargets="MarkupCompilePass2"
           Condition="'$(UseUwp)' == 'true'">
+    <PropertyGroup>
+      <!-- Normalize IntermediateOutputPath to an absolute path with a trailing slash for use in MakeRelative. -->
+      <_NormalizedIntermediateOutputPath>$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)'))))</_NormalizedIntermediateOutputPath>
+    </PropertyGroup>
     <ItemGroup>
       <_GeneratedXbfFiles Update="@(_GeneratedXbfFiles)"
         Condition="'%(Link)' == '' and !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">
-        <Link>$([MSBuild]::MakeRelative($([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)')))), %(FullPath)))</Link>
+        <Link>$([MSBuild]::MakeRelative($(_NormalizedIntermediateOutputPath), %(FullPath)))</Link>
       </_GeneratedXbfFiles>
     </ItemGroup>
   </Target>
