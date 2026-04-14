@@ -58,6 +58,25 @@
                 }
             },
             {
+                "name": "Run style check",
+                "type": "coreclr",
+                "request": "launch",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "cwd": "${workspaceFolder:sdk}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                }
+            },
+            {
                 "name": "Debug dotnetup test",
                 "type": "coreclr",
                 "request": "launch",
@@ -177,7 +196,10 @@
             },
             {
                 "label": "build-and-link",
-                "dependsOn": ["build", "link-current-tfm"],
+                "dependsOn": [
+                    "build",
+                    "link-current-tfm"
+                ],
                 "dependsOrder": "sequence",
                 "problemMatcher": []
             },
@@ -194,6 +216,28 @@
                 ],
                 "options": {
                     "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile"
+            },
+            {
+                "label": "dotnetup-style-check",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:sdk}"
                 },
                 "presentation": {
                     "reveal": "always",
