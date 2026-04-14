@@ -206,7 +206,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void It_does_not_warn_for_ckb_locale(string tfm)
         {
             // 'ckb' (Central Kurdish) is a valid ISO 639-3 code. CultureInfo may remap it to 'ku'
-            // (Kurdish, ISO 639-1) which is a different locale. BCP 47 normalization should keep it as 'ckb'.
+            // (Kurdish, ISO 639-1) which is a different locale. Since the normalized name differs
+            // beyond casing, normalization should be skipped entirely — no NETSDK1187 warning.
             string projectAssetsJsonPath = Path.GetTempFileName();
             var assetsContent = AssetsFileWithInvalidLocale(tfm, "ckb");
             File.WriteAllText(projectAssetsJsonPath, assetsContent);
@@ -219,75 +220,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
             engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
-        }
-
-        [Theory]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
-        public void It_does_not_warn_for_correctly_cased_qps_Ploc_locale(string tfm)
-        {
-            // 'qps-Ploc' is the BCP 47 normalized form (script subtag 'ploc' → 'Ploc').
-            // Package authors who use 'qps-Ploc' should not see any warning.
-            string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithInvalidLocale(tfm, "qps-Ploc");
-            File.WriteAllText(projectAssetsJsonPath, assetsContent);
-            var task = InitializeTask(out _);
-            task.ProjectAssetsFile = projectAssetsJsonPath;
-            task.TargetFramework = tfm;
-            var writer = new CacheWriter(task, new MockPackageResolver());
-            writer.WriteToMemoryStream();
-            var engine = task.BuildEngine as MockBuildEngine;
-
-            engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
-            engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
-        }
-
-        [Theory]
-        [InlineData("net7.0", true)]
-        [InlineData("net6.0", false)]
-        public void It_warns_for_incorrectly_cased_qps_ploc_locale(string tfm, bool shouldHaveWarnings)
-        {
-            // 'qps-ploc' has incorrect casing; BCP 47 normalizes it to 'qps-Ploc' consistently
-            // across all OS/runtime versions (unlike CultureInfo.Name which is OS-dependent).
-            string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithInvalidLocale(tfm, "qps-ploc");
-            File.WriteAllText(projectAssetsJsonPath, assetsContent);
-            var task = InitializeTask(out _);
-            task.ProjectAssetsFile = projectAssetsJsonPath;
-            task.TargetFramework = tfm;
-            var writer = new CacheWriter(task, new MockPackageResolver());
-            writer.WriteToMemoryStream();
-            var engine = task.BuildEngine as MockBuildEngine;
-
-            var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1187");
-            invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
-
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
-            invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
-        }
-
-        [Theory]
-        [InlineData("en", "en")]
-        [InlineData("EN", "en")]
-        [InlineData("en-US", "en-US")]
-        [InlineData("en-us", "en-US")]
-        [InlineData("EN-US", "en-US")]
-        [InlineData("zh-Hans", "zh-Hans")]
-        [InlineData("zh-hans", "zh-Hans")]
-        [InlineData("zh-HANS", "zh-Hans")]
-        [InlineData("zh-Hans-CN", "zh-Hans-CN")]
-        [InlineData("zh-hans-cn", "zh-Hans-CN")]
-        [InlineData("ru-RU", "ru-RU")]
-        [InlineData("ru-ru", "ru-RU")]
-        [InlineData("qps-Ploc", "qps-Ploc")]
-        [InlineData("qps-ploc", "qps-Ploc")]
-        [InlineData("qps-PLOC", "qps-Ploc")]
-        [InlineData("ckb", "ckb")]
-        [InlineData("CKB", "ckb")]
-        [InlineData("", "")]
-        public void NormalizeBcp47LocaleCasing_normalizes_correctly(string input, string expected)
-        {
-            CacheWriter.NormalizeBcp47LocaleCasing(input).Should().Be(expected);
         }
 
         private ResolvePackageAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)
