@@ -203,8 +203,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileExtension>.zst</FileExtension>
       <ContentEncoding>zstd</ContentEncoding>
     </CompressionFormat>
-    <!-- dcz (shared zstd with dictionary) — orthogonal to zstd, separate format with UsesDictionary -->
-    <CompressionFormat Include="dcz" Condition="'$(StaticWebAssetDictionaryCompression)' == 'true'">
+  </ItemGroup>
+
+  <!-- dcz (shared zstd with dictionary) is defined outside the default formats group so that
+       dictionary compression works even when EnableDefaultCompressionFormats is false. -->
+  <ItemGroup Condition="'$(StaticWebAssetDictionaryCompression)' == 'true'">
+    <CompressionFormat Include="dcz">
       <FileExtension>.dcz</FileExtension>
       <ContentEncoding>dcz</ContentEncoding>
       <UsesDictionary>true</UsesDictionary>
