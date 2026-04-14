@@ -113,6 +113,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
+    public bool NoConsoleLogger { get; init; }
+
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
@@ -162,7 +164,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
-        var consoleLogger = minimizeStdOut
+        var consoleLogger = NoConsoleLogger
+            ? null
+            : minimizeStdOut
             ? new SimpleErrorLogger()
             : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
@@ -274,7 +278,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
-            IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
+            ReadOnlySpan<ILogger> consoleLoggers = consoleLogger is null ? [] : [consoleLogger];
+            IEnumerable<ILogger> loggers = [.. binaryLoggers, .. consoleLoggers];
             var projectCollection = new ProjectCollection(
                 MSBuildArgs.GlobalProperties,
                 loggers,
@@ -1171,6 +1176,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             projectCollection,
             ThrowingReporter,
             out var project,
+            projectRootElement: out _,
             out var evaluatedDirectives,
             Directives,
             addGlobalProperties);

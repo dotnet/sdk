@@ -378,12 +378,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">Crea y administra certificados de desarrollo.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">Se eliminaron las directivas '{0}' ({1}) para '{2}' de: {3}</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">El directorio de destino ya existe: "{0}"</target>
@@ -1344,7 +1338,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">Hay disponible una versión más reciente de la herramienta ''{0}'' (versión ''{1}''). Considere la posibilidad de actualizar el archivo de manifiesto.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

@@ -282,6 +282,7 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> BuildStartedNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
     public static readonly MessageDescriptor<(IEnumerable<ProjectRepresentation> projects, bool success)> BuildCompletedNotification = CreateNotification<(IEnumerable<ProjectRepresentation> projects, bool success)>();
     public static readonly MessageDescriptor<string> ManifestFileNotFound = Create(LogEvents.ManifestFileNotFound, Emoji.Default);
+    public static readonly MessageDescriptor<None> NoDevicesAvailable = Create("No devices are available for this project.", Emoji.Error, LogLevel.Error);
 }
 
 internal sealed class MessageDescriptor<TArgs>(string? format, Emoji emoji, LogLevel level, EventId id)

@@ -11,6 +11,7 @@ using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -933,6 +934,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // This can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:property EnableDefaultCompileItems=true
             {s_programDependingOnUtil}
             """);
@@ -952,7 +954,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
+            {s_programDependingOnUtil}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -977,6 +982,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "A.cs"), """
+            #!/usr/bin/env dotnet
             Console.WriteLine(B.M());
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -1731,6 +1737,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -1886,6 +1893,125 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             // error CS1002: ; expected
             .And.HaveStdOutContaining("error CS1002")
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
+    }
+
+    [Fact]
+    public void MissingShebangWarning()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        // Single-file program without shebang should NOT produce CA2266
+        // (the warning only fires when there are multiple files via #:include).
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.NotHaveStdOutContaining("CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        // Included file without shebang should not produce CA2266.
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string Greet() => "hello"; }
+            """);
+
+        // Entry point with shebang and #:include — no warning.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.NotHaveStdOutContaining("CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        // Entry point without shebang and #:include — CA2266 warning expected.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        // CA2266 can be suppressed via NoWarn.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property NoWarn=CA2266
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.NotHaveStdOutContaining("CA2266")
+            .And.HaveStdOutContaining("hello");
+    }
+
+    [Fact]
+    public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Directory.Build.props adds a Compile item, effectively making
+        // the compilation multi-file (same as #:include).
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string Greet() => "hello"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <ItemGroup>
+                <Compile Include="Util.cs" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        // Entry point without shebang — CA2266 warning expected
+        // because Directory.Build.props added another Compile item.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        // Adding shebang resolves the warning.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
     }
 
     /// <summary>
@@ -3889,6 +4015,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include {includePattern}
             {additionalDirectives}
             #:property MyProp1=cs
@@ -3925,6 +4052,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """;
 
         File.WriteAllText(Path.Join(srcDir, "A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include B.cs
             {a}
             """);
@@ -4009,6 +4137,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """;
 
         File.WriteAllText(Path.Join(testInstance.Path, "dir1/A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include dir2/B.cs
             {a}
             """);
@@ -4155,6 +4284,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include {glob}.cs
             #:property _Star=*
             {s_programDependingOnUtil}
@@ -4221,6 +4351,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include Util.cs
             {s_programDependingOnUtil}
             """);
@@ -4320,6 +4451,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(appDir, "Program.cs");
         var programCode = """
+            #!/usr/bin/env dotnet
             #:include Util.cs
             Console.WriteLine("Program(v1) " + UtilClass.GetMessage());
             """;
@@ -4349,6 +4481,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -4364,7 +4497,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
+                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -4418,6 +4551,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.json=Content
             #:include *.cs
             {s_programDependingOnUtil}
@@ -4431,12 +4565,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 2, FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", ".json")}
+                {DirectiveError(programPath, 3, FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", ".json")}
 
                 {CliCommandStrings.RunCommandException}
                 """);
 
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.cs=Content
             #:include *.cs
             {s_programDependingOnUtil}
@@ -4450,6 +4585,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("error CS0103");
 
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.cs=Compile
             #:include *.cs
             {s_programDependingOnUtil}
@@ -6581,6 +6717,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -6673,6 +6810,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -6748,6 +6886,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -6822,6 +6961,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -6909,6 +7049,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining($$"""
                 {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(executablePath)}},"CommandLineArguments":"","WorkingDirectory":"","EnvironmentVariables":{"DOTNET_ROOT
                 """);
+    }
+
+    [Fact]
+    public void Api_VirtualProjectBuilder_CreateProjectRootElement()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var projectRootElement = NuGetVirtualProjectBuilder.Instance.CreateProjectRootElement(appPath, projectCollection);
+
+        var xml = projectRootElement.RawXml;
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // correct target framework is used
+            .And.Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
+
+        projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
     }
 
     [Theory, CombinatorialData]
@@ -7139,5 +7330,53 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
             return result;
         }
+    }
+
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/52714.
+    /// The virtual project's <see cref="ProjectRootElement"/> must survive GC
+    /// even after being evicted from MSBuild's strong cache (LRU of size N).
+    /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
+    /// and trigger GC via an inline task during NuGet restore.
+    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// this fails with MSB4025 "The project file could not be loaded".
+    /// </summary>
+    [Fact]
+    public void VirtualProject_SurvivesGCDuringRestore()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hello from virtual project");
+            """);
+
+        // Directory.Build.targets that forces GC during restore,
+        // after SDK imports have already evicted the virtual PRE from the strong cache.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <UsingTask TaskName="_ForceGCTask"
+                         TaskFactory="RoslynCodeTaskFactory"
+                         AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                <Task>
+                  <Code Type="Fragment" Language="cs"><![CDATA[
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                    System.GC.WaitForPendingFinalizers();
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                  ]]></Code>
+                </Task>
+              </UsingTask>
+              <Target Name="_ForceGC" BeforeTargets="_FilterRestoreGraphProjectInputItems">
+                <_ForceGCTask />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs")
+            // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
+            // as soon as any SDK .targets/.props file is loaded during evaluation.
+            .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from virtual project");
     }
 }

@@ -651,11 +651,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="PackageRemoveSpecifyExactlyOnePackageReference" xml:space="preserve">
     <value>Specify only one package reference to remove.</value>
   </data>
-  <data name="DirectivesRemoved" xml:space="preserve">
-    <value>Removed '{0}' directives ({1}) for '{2}' from: {3}</value>
-    <comment>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
-  </data>
   <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
     <value>Command names conflict. Command names are case insensitive.
 {0}</value>

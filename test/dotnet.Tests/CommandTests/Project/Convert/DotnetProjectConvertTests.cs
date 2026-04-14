@@ -1052,6 +1052,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(srcDir);
 
         File.WriteAllText(Path.Join(srcDir, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:sdk Microsoft.NET.Sdk.Web
             Console.WriteLine(Util.GetText());
             """);
@@ -1116,6 +1117,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var subdir = Path.Join(srcDir, "subdir");
         Directory.CreateDirectory(subdir);
         File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            #!/usr/bin/env dotnet
             Console.WriteLine(Util.GetText());
             """);
         File.WriteAllText(Path.Join(subdir, "Util.cs"), """
@@ -1169,6 +1171,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var subdir = Path.Join(srcDir, "subdir");
         Directory.CreateDirectory(subdir);
         File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            #!/usr/bin/env dotnet
             Console.WriteLine(Util.GetText());
             """);
         File.WriteAllText(Path.Join(srcDir, "Util.cs"), """
@@ -2399,7 +2402,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             builder.CreateProjectInstance(
                 new ProjectCollection(),
                 errorReporter,
-                out _,
+                project: out _,
+                projectRootElement: out _,
                 out directives);
         }
         else

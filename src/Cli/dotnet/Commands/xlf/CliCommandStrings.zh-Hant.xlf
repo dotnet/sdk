@@ -378,12 +378,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">建立及管理開發憑證。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">已從 {3} 移除 '{2}' 的 '{0}' 指令 ({1})</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">目標目錄已存在: '{0}'</target>
@@ -1344,7 +1338,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">有較新版本的工具 '{0}' 可用 (版本 '{1}')。請考慮更新您的資訊清單檔。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
