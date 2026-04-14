@@ -5,7 +5,7 @@
   - Recommend doing in the VMR and fixing tests on backflow
   - We had to disable a bunch of tests to merge the branding flow
 - [KnownFrameworkReference](https://github.com/dotnet/sdk/blob/main/src/Layout/redist/targets/BundledTemplates.targets) update
-  - Should be rote but tricky to get right
+  - Should be straight-forward but tricky to get right
   - Can be done at any time
 - Retarget to net11
   - Can be done before runtime work as you typically pin the new TFM to the N-1 versions before you have a runtime
@@ -19,7 +19,7 @@
 
 **Miscellaneous**
 - Fix versions after the N-1 GA as there should be RC placeholders
-- Likely will need to pin to N-1 templates
+- Likely will need to pin to N-1 templates for any templates outside of the repo (like windows desktop)
 - Will need to update restore-toolset for the N-1 runtime
 - Will need to update global.json for a new SDK
 
@@ -30,9 +30,11 @@
 - [Branding](https://github.com/dotnet/sdk/pull/50468)
 - [BundledVersions](https://github.com/dotnet/sdk/pull/50329)
 
+---
+
 ### Net7 TFM update list
 
-The below is to track the list of changes we had to make to enable 7.0 when we branched in 2021. This will hopefully help us when we do this again in the future.
+The below is to track the list of changes we had to make to enable 7.0 when we branched in 2021. Many of these are not needed anymore or have changed but keeping it in the document for historical purposes as some of the more niche changes could be relevant.
 
 **Key Maestro PRs**
 
