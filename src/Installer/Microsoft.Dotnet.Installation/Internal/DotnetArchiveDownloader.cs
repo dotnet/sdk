@@ -286,7 +286,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // Eventually the manifest should indicate which algorithm to use.
         using var sha512 = SHA512.Create();
         byte[] hashBytes = sha512.ComputeHash(fileStream);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        return BitConverter.ToString(hashBytes).Replace("-", "", StringComparison.Ordinal).ToLowerInvariant();
     }
 
     // Known alternate acceptable hashes keyed by the manifest's expected hash.

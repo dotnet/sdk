@@ -91,7 +91,7 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
         }
 
         // Check for component@version syntax
-        int atIndex = spec.IndexOf('@');
+        int atIndex = spec.IndexOf('@', StringComparison.Ordinal);
         if (atIndex == 0)
         {
             throw new DotnetInstallException(

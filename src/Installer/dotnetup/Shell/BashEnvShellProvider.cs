@@ -15,8 +15,8 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true)
     {
-        var escapedPath = dotnetInstallPath.Replace("'", "'\\''");
-        var escapedDotnetupDir = dotnetupDir?.Replace("'", "'\\''");
+        var escapedPath = dotnetInstallPath.Replace("'", "'\\''", StringComparison.Ordinal);
+        var escapedDotnetupDir = dotnetupDir?.Replace("'", "'\\''", StringComparison.Ordinal);
 
         string pathExport;
         if (includeDotnet && escapedDotnetupDir is not null)
@@ -85,14 +85,14 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
     {
-        var escapedPath = dotnetupPath.Replace("'", "'\\''");
+        var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
         return $"{ShellProfileManager.MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
     {
-        var escapedPath = dotnetupPath.Replace("'", "'\\''");
+        var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
         return $"eval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
     }

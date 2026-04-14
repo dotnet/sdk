@@ -36,7 +36,7 @@ public static class BuildInfo
     internal static (string Version, string CommitSha) ParseInformationalVersion(string informationalVersion)
     {
         // Format: "1.0.0+abc123d" or just "1.0.0"
-        var plusIndex = informationalVersion.IndexOf('+');
+        var plusIndex = informationalVersion.IndexOf('+', StringComparison.Ordinal);
         if (plusIndex > 0)
         {
             var version = informationalVersion.Substring(0, plusIndex);
