@@ -14,7 +14,7 @@
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="aspnetcore" />
-    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="source-build-assets" />
   </ItemGroup>
 
 </Project>
