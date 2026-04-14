@@ -79,17 +79,9 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 #endif
 
-#if NETFRAMEWORK
-        // lpFileName passed to LoadLibraryEx must be a full path.
-        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
-#endif
-
 #if NET
         [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
         private static partial nint LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
-#else
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
         /// <summary>

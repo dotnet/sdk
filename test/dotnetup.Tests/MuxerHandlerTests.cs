@@ -397,13 +397,17 @@ public class MuxerHandlerTests : IDisposable
     public void GetDotnetProcessPidInfo_DoesNotKillProcess()
     {
         // Start a dotnet process we can look up by name.
+        // Use Environment.ProcessPath to get the full path to the current dotnet host,
+        // avoiding PATH resolution issues on CI where the working directory may not exist.
+        var dotnetPath = Environment.ProcessPath!;
         var proc = new Process();
-        proc.StartInfo.FileName = "dotnet";
+        proc.StartInfo.FileName = dotnetPath;
         proc.StartInfo.Arguments = "help";
         proc.StartInfo.UseShellExecute = false;
         proc.StartInfo.CreateNoWindow = true;
         proc.StartInfo.RedirectStandardOutput = true;
         proc.StartInfo.RedirectStandardError = true;
+        proc.StartInfo.WorkingDirectory = Path.GetTempPath();
         // Suppress .NET welcome message / first-run experience in test output
         proc.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
         proc.Start();
