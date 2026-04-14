@@ -35,17 +35,10 @@ internal class DefaultInstallCommand : CommandBase
         {
             var dotnetupPath = Environment.ProcessPath
                 ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
+            var userDotnetPath = _installRootManager.GetUserInstallRootChanges().UserDotnetPath;
+            var shellProvider = GetCurrentShellProviderOrThrow();
 
-            IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
-            if (shellProvider is null)
-            {
-                var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.PlatformNotSupported,
-                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-            }
-
-            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
+            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: userDotnetPath);
 
             if (modifiedFiles.Count == 0)
             {
@@ -62,7 +55,7 @@ internal class DefaultInstallCommand : CommandBase
 
             Console.WriteLine();
             Console.WriteLine("To start using .NET in this terminal, run:");
-            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath)}");
+            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: userDotnetPath)}");
 
             return 0;
         }
@@ -100,15 +93,7 @@ internal class DefaultInstallCommand : CommandBase
             // Replace profile entries with dotnetup-only (keeps dotnetup on PATH but removes DOTNET_ROOT and dotnet PATH).
             var dotnetupPath = Environment.ProcessPath
                 ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
-
-            IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
-            if (shellProvider is null)
-            {
-                var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.PlatformNotSupported,
-                    $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-            }
+            var shellProvider = GetCurrentShellProviderOrThrow();
 
             var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
 
@@ -149,5 +134,19 @@ internal class DefaultInstallCommand : CommandBase
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
         return 0;
+    }
+
+    private static IEnvShellProvider GetCurrentShellProviderOrThrow()
+    {
+        var shellProvider = ShellDetection.GetCurrentShellProvider();
+        if (shellProvider is null)
+        {
+            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
+                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+        }
+
+        return shellProvider;
     }
 }

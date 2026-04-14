@@ -26,7 +26,7 @@ If the user confirms (or passes `--set-default-install` explicitly):
 
   ```
   To start using .NET in this terminal, run:
-    eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
+    eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash --dotnet-install-path '/home/user/.local/share/dotnet')"
   ```
 
 If the default install is already fully configured and matches the install path, the prompt is skipped entirely.
@@ -205,9 +205,10 @@ public interface IEnvShellProvider
 ### ShellProfileManager
 
 `ShellProfileManager` coordinates profile file modifications:
-- `AddProfileEntries(provider, dotnetupPath)` — appends entries, creates backups, skips if already present
+- `AddProfileEntries(provider, dotnetupPath, dotnetupOnly, dotnetInstallPath)` — creates or updates the managed entry in place, creates backups, and can thread through a custom install path
 - `RemoveProfileEntries(provider)` — finds and removes marker + eval lines
-- `ReplaceProfileEntries(provider, dotnetupPath, dotnetupOnly)` — removes then adds (used by `defaultinstall admin`)
+
+`defaultinstall admin` uses `AddProfileEntries(..., dotnetupOnly: true)` to switch the managed entry into dotnetup-only mode.
 
 ## Future Work
 

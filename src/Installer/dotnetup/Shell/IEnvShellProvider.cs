@@ -44,12 +44,14 @@ public interface IEnvShellProvider
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
     /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
-    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false);
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
+    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
 
     /// <summary>
     /// Generates a command that the user can paste into the current terminal to activate .NET.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
     /// <param name="dotnetupOnly">When true, the command only adds dotnetup to PATH.</param>
-    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false);
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
+    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
 }

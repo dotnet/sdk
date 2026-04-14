@@ -60,17 +60,29 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         return [Path.Combine(home, ".config", "powershell", "Microsoft.PowerShell_profile.ps1")];
     }
 
-    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
+    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
         var escapedPath = dotnetupPath.Replace("'", "''", StringComparison.Ordinal);
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
         return $"{ShellProfileManager.MarkerComment}\n& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
+    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
         var escapedPath = dotnetupPath.Replace("'", "''", StringComparison.Ordinal);
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
         return $"& '{escapedPath}' print-env-script --shell pwsh{flags} | Invoke-Expression";
+    }
+
+    private static string GetFlags(bool dotnetupOnly, string? dotnetInstallPath)
+    {
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+        {
+            var escapedInstallPath = dotnetInstallPath.Replace("'", "''", StringComparison.Ordinal);
+            flags += $" --dotnet-install-path '{escapedInstallPath}'";
+        }
+
+        return flags;
     }
 }

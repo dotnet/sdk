@@ -64,17 +64,29 @@ public class ZshEnvShellProvider : IEnvShellProvider
         return [Path.Combine(home, ".zshrc")];
     }
 
-    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
+    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
         return $"{ShellProfileManager.MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell zsh{flags})\"";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
+    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
         var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
         return $"eval \"$('{escapedPath}' print-env-script --shell zsh{flags})\"";
+    }
+
+    private static string GetFlags(bool dotnetupOnly, string? dotnetInstallPath)
+    {
+        var flags = dotnetupOnly ? " --dotnetup-only" : "";
+        if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+        {
+            var escapedInstallPath = dotnetInstallPath.Replace("'", "'\\''", StringComparison.Ordinal);
+            flags += $" --dotnet-install-path '{escapedInstallPath}'";
+        }
+
+        return flags;
     }
 }

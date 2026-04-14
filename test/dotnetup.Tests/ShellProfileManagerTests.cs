@@ -10,6 +10,7 @@ public class ShellProfileManagerTests : IDisposable
 {
     private readonly string _tempDir;
     private const string FakeDotnetupPath = "/usr/local/bin/dotnetup";
+    private const string FakeDotnetInstallPath = "/custom/dotnet path";
 
     public ShellProfileManagerTests()
     {
@@ -176,6 +177,17 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_CustomDotnetInstallPath_IncludesFlag()
+    {
+        var provider = new TestShellProvider(_tempDir, "custom.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
+
+        var content = File.ReadAllText(Path.Combine(_tempDir, "custom.sh"));
+        content.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
+    }
+
+    [Fact]
     public void AddProfileEntries_ReplacesExistingEntryInPlace()
     {
         var profilePath = Path.Combine(_tempDir, "replace.sh");
@@ -225,6 +237,16 @@ public class ShellProfileManagerTests : IDisposable
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetupOnly: true);
 
         entry.Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateActivationCommand_WithCustomInstallPath_IncludesFlag()
+    {
+        var provider = new BashEnvShellProvider();
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
+
+        command.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
+        command.Should().NotContain("--dotnetup-only");
     }
 
     [Fact]
@@ -335,15 +357,25 @@ public class ShellProfileManagerTests : IDisposable
 
         public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
-        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false)
+        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
         {
             var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            {
+                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            }
+
             return $"# dotnetup\neval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
         }
 
-        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false)
+        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
         {
             var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            {
+                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            }
+
             return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
         }
     }

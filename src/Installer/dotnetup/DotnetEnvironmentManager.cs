@@ -323,7 +323,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 {
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 }
-                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath);
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: dotnetRoot);
                 break;
             case InstallType.System:
                 ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
