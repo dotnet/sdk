@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Dotnet.Installation.Internal;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 public class ZshEnvShellProvider : IEnvShellProvider
@@ -81,9 +83,11 @@ public class ZshEnvShellProvider : IEnvShellProvider
     private static string GetFlags(bool dotnetupOnly, string? dotnetInstallPath)
     {
         var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+        if (!dotnetupOnly &&
+            dotnetInstallPath is { Length: > 0 } installPath &&
+            !DotnetupUtilities.PathsEqual(installPath, DotnetupPaths.DefaultDotnetInstallPath))
         {
-            var escapedInstallPath = dotnetInstallPath.Replace("'", "'\\''", StringComparison.Ordinal);
+            var escapedInstallPath = installPath.Replace("'", "'\\''", StringComparison.Ordinal);
             flags += $" --dotnet-install-path '{escapedInstallPath}'";
         }
 

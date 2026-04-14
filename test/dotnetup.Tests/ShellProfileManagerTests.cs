@@ -250,6 +250,18 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void BashProvider_DefaultInstallPath_KeepsCommandSimple()
+    {
+        var provider = new BashEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
+
+        entry.Should().NotContain("--dotnet-install-path");
+        command.Should().NotContain("--dotnet-install-path");
+        command.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
     public void ZshProvider_GenerateProfileEntry_ContainsEval()
     {
         var provider = new ZshEnvShellProvider();

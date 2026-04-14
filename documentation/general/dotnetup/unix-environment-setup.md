@@ -26,7 +26,7 @@ If the user confirms (or passes `--set-default-install` explicitly):
 
   ```
   To start using .NET in this terminal, run:
-    eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash --dotnet-install-path '/home/user/.local/share/dotnet')"
+    eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
   ```
 
 If the default install is already fully configured and matches the install path, the prompt is skipped entirely.
@@ -77,7 +77,7 @@ eval "$('/path/to/dotnetup' print-env-script --shell bash)"
 & '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
 ```
 
-The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`).
+The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
 
 ### Backups
 
