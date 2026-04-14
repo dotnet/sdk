@@ -157,7 +157,7 @@ public class LicenseScanTests : TestBase
         // Combine default and additional ignore patterns
         IEnumerable<string> allIgnorePatterns = s_ignoredFilePatterns;
         string[]? additionalIgnorePatterns = Config.LicenseScanIgnorePatterns?
-            .Split(';', StringSplitOptions.RemoveEmptyEntries);
+            .Split(',', StringSplitOptions.RemoveEmptyEntries);
         if (additionalIgnorePatterns?.Length > 0)
         {
             allIgnorePatterns = allIgnorePatterns.Concat(additionalIgnorePatterns);
