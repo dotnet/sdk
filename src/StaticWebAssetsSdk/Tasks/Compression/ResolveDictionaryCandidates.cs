@@ -307,7 +307,7 @@ public class ResolveDictionaryCandidates : Task
         }
 
         // Ensure leading slash for URL pattern matching
-        if (!matchPattern.StartsWith('/'))
+        if (!matchPattern.StartsWith("/", StringComparison.Ordinal))
         {
             matchPattern = "/" + matchPattern;
         }
