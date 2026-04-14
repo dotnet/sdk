@@ -1652,18 +1652,36 @@ namespace Microsoft.NET.Build.Tasks
                         // Locales from packages can be free-form, so we normalize them to the standard
                         // forms here. If the locale is mixed-case, that can cause issues on case-sensitive
                         // file systems when the locale-specific assets are copied.
-                        bool localeIsKnown = true;
                         try
                         {
-                            // Validate that the locale is at least recognized. We do not use the return
-                            // value of GetCultureInfo for normalization because it can remap locale codes
-                            // to different ones (e.g. 'ckb' -> 'ku') and the result may differ across
-                            // OS/runtime versions (e.g. 'qps-ploc' vs 'qps-Ploc').
-                            System.Globalization.CultureInfo.GetCultureInfo(locale);
+                            var normalizedLocale = System.Globalization.CultureInfo.GetCultureInfo(locale).Name;
+
+                            // Only apply CultureInfo's normalization when it is a pure casing change.
+                            // CultureInfo can remap locale codes to entirely different locales
+                            // (e.g. 'ckb' -> 'ku') depending on the OS/ICU version, so we skip
+                            // normalization when the result differs beyond casing.
+                            if (string.Equals(normalizedLocale, locale, StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (normalizedLocale != locale)
+                                {
+                                    var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
+                                    if (tfm.Version.Major >= 7)
+                                    {
+                                        _task.Log.LogWarning(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    }
+                                    else
+                                    {
+                                        // We emit low-priority messages here because some clients may interpret normal or higher messages
+                                        // as warnings when they have codes, locations, etc.
+                                        // Roslyn does similar for IDE-only analysis messages.
+                                        _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    }
+                                    locale = normalizedLocale;
+                                }
+                            }
                         }
                         catch (System.Globalization.CultureNotFoundException cnf)
                         {
-                            localeIsKnown = false;
                             var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
                             if (tfm.Version.Major >= 7)
                             {
@@ -1681,30 +1699,6 @@ namespace Microsoft.NET.Build.Tasks
                             // Locale data can change over time (it's typically an OS database that's kept updated),
                             // and the data on the system running the build may not be the same data as
                             // the system executing the built code. So we should be permissive for this case.
-                        }
-
-                        if (localeIsKnown)
-                        {
-                            // Use platform-independent BCP 47 casing normalization. Unlike CultureInfo.Name,
-                            // this produces consistent results across all OS/runtime versions and does not
-                            // remap locale codes to different ones (e.g. 'ckb' stays 'ckb', not 'ku').
-                            var normalizedLocale = NormalizeBcp47LocaleCasing(locale);
-                            if (normalizedLocale != locale)
-                            {
-                                var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
-                                if (tfm.Version.Major >= 7)
-                                {
-                                    _task.Log.LogWarning(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
-                                }
-                                else
-                                {
-                                    // We emit low-priority messages here because some clients may interpret normal or higher messages
-                                    // as warnings when they have codes, locations, etc.
-                                    // Roslyn does similar for IDE-only analysis messages.
-                                    _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
-                                }
-                                locale = normalizedLocale;
-                            }
                         }
                         bool wroteCopyLocalMetadata = WriteCopyLocalMetadataIfNeeded(
                                 package,
@@ -2056,62 +2050,6 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
-            }
-
-            /// <summary>
-            /// Normalizes the casing of a BCP 47 locale tag using standard rules from RFC 5646:
-            /// - Language subtag (position 0): all lowercase (e.g. "en", "zh")
-            /// - Script subtag (exactly 4 alpha chars at position 1): Titlecase (e.g. "Hans", "Latn")
-            /// - Region subtag (exactly 2 alpha chars): all UPPERCASE (e.g. "US", "CN")
-            /// - All other subtags: all lowercase
-            /// This method is platform-independent, unlike <see cref="System.Globalization.CultureInfo.Name"/>
-            /// which can produce different results on different OS/runtime versions.
-            /// </summary>
-            internal static string NormalizeBcp47LocaleCasing(string locale)
-            {
-                if (string.IsNullOrEmpty(locale))
-                {
-                    return locale;
-                }
-
-                string[] subtags = locale.Split('-');
-                for (int i = 0; i < subtags.Length; i++)
-                {
-                    string subtag = subtags[i];
-                    if (i == 0)
-                    {
-                        // Language subtag: all lowercase
-                        subtags[i] = subtag.ToLowerInvariant();
-                    }
-                    else if (i == 1 && subtag.Length == 4 && IsAllAsciiLetters(subtag))
-                    {
-                        // Script subtag: Titlecase (exactly 4 alpha chars in position 1)
-                        subtags[i] = char.ToUpperInvariant(subtag[0]) + subtag.Substring(1).ToLowerInvariant();
-                    }
-                    else if (subtag.Length == 2 && IsAllAsciiLetters(subtag))
-                    {
-                        // Region subtag: all UPPERCASE (exactly 2 alpha chars)
-                        subtags[i] = subtag.ToUpperInvariant();
-                    }
-                    else
-                    {
-                        // All other subtags (3-digit region, variant, extension, private-use): lowercase
-                        subtags[i] = subtag.ToLowerInvariant();
-                    }
-                }
-                return string.Join("-", subtags);
-            }
-
-            private static bool IsAllAsciiLetters(string s)
-            {
-                foreach (char c in s)
-                {
-                    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
-                    {
-                        return false;
-                    }
-                }
-                return true;
             }
         }
     }
