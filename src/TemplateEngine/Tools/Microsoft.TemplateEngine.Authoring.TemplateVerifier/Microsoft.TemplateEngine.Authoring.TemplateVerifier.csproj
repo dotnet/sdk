@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.Shared.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      GenerateSource="true" />
+  </ItemGroup>
+
+</Project>

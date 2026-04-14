@@ -40,6 +40,9 @@ namespace Microsoft.DotNet.NativeWrapper
         // already be loaded in the process. Unfortunately there are no issues or pull requests tracking the original
         // implementation of this as it was committed directly from a dev branch into main.
 
+        // lpFileName passed to LoadLibraryEx must be a full path.
+        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
+
         private static void PreloadWindowsLibrary(string dllFileName)
         {
             string? basePath = AppContext.BaseDirectory;
@@ -49,6 +52,9 @@ namespace Microsoft.DotNet.NativeWrapper
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
 #if NET

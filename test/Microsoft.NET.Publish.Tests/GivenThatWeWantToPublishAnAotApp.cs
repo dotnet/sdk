@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
                 .And.NotHaveStdErrContaining("warning")
-                .And.NotHaveStdOutContaining("warning");
+                .And.NotHaveStdOutContaining("warning", new[] { "ld: warning: -ld_classic is deprecated and will be removed in a future release" });
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
@@ -870,7 +870,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var staticLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".lib" : ".a";
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{staticLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{staticLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
@@ -923,7 +924,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = GetSharedLibSuffix();
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{sharedLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
@@ -1031,13 +1033,13 @@ namespace Microsoft.NET.Publish.Tests
             if (target == null)
             {
                 target = new XElement(ns + "Target",
-                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("AfterTargets", "ComputeResolvedFilesToPublishList"),
                     new XAttribute("Name", targetName));
                 project.Root.Add(target);
             }
 
             target.Add(new XElement(ns + "ItemGroup",
-                new XElement("ManagedAssemblyToLink",
+                new XElement("ResolvedFileToPublish",
                     new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
                     new XAttribute(key, value))));
         }

@@ -329,7 +329,8 @@ namespace EndToEnd.Tests
         [InlineData("xunit", "C#")]
         [InlineData("xunit", "VB")]
         [InlineData("xunit", "F#")]
-        [InlineData("blazorwasm")]
+        // Skip = "https://github.com/dotnet/sdk/issues/53791"
+        //[InlineData("blazorwasm")]
         [InlineData("web")]
         [InlineData("web", "C#")]
         [InlineData("web", "F#")]

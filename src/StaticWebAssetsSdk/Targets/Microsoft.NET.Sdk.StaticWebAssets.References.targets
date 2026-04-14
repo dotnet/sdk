@@ -132,6 +132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Assets="@(_ResolvedReferencedProjectBuildStaticWebAssetCandidates)"
         Endpoints="@(_ReferencedProjectBuildStaticWebAssetEndpointsUpdateCandidates)"
         FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
+        StaticWebAssetGroups="@(StaticWebAssetGroup)"
       >
         <Output TaskParameter="UpdatedAssets" ItemName="_ResolvedReferencedProjectBuildStaticWebAssets" />
         <Output TaskParameter="UpdatedEndpoints" ItemName="_ResolvedReferencedProjectBuildStaticWebAssetEndpoints" />
