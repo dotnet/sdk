@@ -98,13 +98,36 @@ public partial class StaticWebAssetsBaselineFactory
                 var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar);
                 var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar);
 
-                asset.Identity = Path.Combine(Path.GetDirectoryName(identity), basePath, relativePath);
+                var identityDir = Path.GetDirectoryName(identity);
+                var originalDir = Path.GetDirectoryName(originalItemSpec);
+
+                // Avoid duplicating basePath when the directory already ends with it
+                // (e.g., Identity dir = ".../obj/_framework", basePath = "_framework").
+                if (!string.IsNullOrEmpty(basePath) &&
+                    identityDir.EndsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    asset.Identity = Path.Combine(identityDir, relativePath);
+                }
+                else
+                {
+                    asset.Identity = Path.Combine(identityDir, basePath, relativePath);
+                }
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
+
                 foreach (var endpoint in relatedEndpoints ?? [])
                 {
                     endpoint.AssetFile = asset.Identity;
                 }
-                asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), basePath, relativePath);
+
+                if (!string.IsNullOrEmpty(basePath) &&
+                    originalDir.EndsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    asset.OriginalItemSpec = Path.Combine(originalDir, relativePath);
+                }
+                else
+                {
+                    asset.OriginalItemSpec = Path.Combine(originalDir, basePath, relativePath);
+                }
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(Path.DirectorySeparatorChar, '\\');
             }
             else if ((asset.Identity.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||

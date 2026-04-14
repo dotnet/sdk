@@ -88,6 +88,7 @@ public class DiscoverPrecompressedAssets : Task
         }
 
         var formats = new List<(string Extension, string ContentEncoding)>(CompressionFormats.Length);
+        var seenExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var format in CompressionFormats)
         {
             var extension = format.GetMetadata("FileExtension");
@@ -98,6 +99,14 @@ public class DiscoverPrecompressedAssets : Task
                 Log.LogError(
                     "Compression format '{0}' is missing required metadata. Extension='{1}', ContentEncoding='{2}'.",
                     format.ItemSpec, extension, contentEncoding);
+                return null;
+            }
+
+            if (!seenExtensions.Add(extension))
+            {
+                Log.LogError(
+                    "Duplicate file extension '{0}' found in CompressionFormats (format '{1}'). Each extension must be unique.",
+                    extension, format.ItemSpec);
                 return null;
             }
 

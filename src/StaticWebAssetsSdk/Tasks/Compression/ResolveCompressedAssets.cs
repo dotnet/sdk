@@ -57,10 +57,24 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        // Parse active format names from the Formats string.
         var activeFormatNames = string.IsNullOrEmpty(Formats)
             ? Array.Empty<string>()
             : Formats.Split(PatternSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+        // Trim whitespace from each format name so "gzip; brotli" works.
+        for (var i = 0; i < activeFormatNames.Length; i++)
+        {
+            activeFormatNames[i] = activeFormatNames[i].Trim();
+        }
+
+        if (activeFormatNames.Length == 0)
+        {
+            Log.LogMessage(
+                MessageImportance.Low,
+                "Skipping task '{0}' because no active format names were specified in Formats.",
+                nameof(ResolveCompressedAssets));
+            return true;
+        }
 
         // Build lookup from content-encoding trait value → format name for reverse mapping of existing compressed assets.
         var formatsByContentEncoding = new Dictionary<string, string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);

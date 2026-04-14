@@ -33,8 +33,6 @@ public class ApplyCompressionNegotiation : Task
     {
         // Whether any endpoint in this route group was modified during processing.
         public bool Modified { get; set; }
-        // Compressed assets whose endpoints live in this route group, with pre-computed quality.
-        public List<(StaticWebAsset Asset, string Quality)> CompressedAssets { get; } = new();
         // Newly created synthetic endpoints to add to this group.
         public List<StaticWebAssetEndpoint> SyntheticEndpoints { get; } = new();
         // When non-null, indicates that this group has dictionary-compressed variants
@@ -647,7 +645,7 @@ public class ApplyCompressionNegotiation : Task
         return true;
     }
 
-    internal static Dictionary<string, int> BuildFormatPriority(ITaskItem[] compressionFormats)
+    private static Dictionary<string, int> BuildFormatPriority(ITaskItem[] compressionFormats)
     {
         var priority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         if (compressionFormats == null || compressionFormats.Length == 0)
@@ -667,7 +665,7 @@ public class ApplyCompressionNegotiation : Task
         return priority;
     }
 
-    internal static Dictionary<string, bool> BuildFormatUsesDictionary(ITaskItem[] compressionFormats)
+    private static Dictionary<string, bool> BuildFormatUsesDictionary(ITaskItem[] compressionFormats)
     {
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         if (compressionFormats == null || compressionFormats.Length == 0)
