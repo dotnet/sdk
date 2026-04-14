@@ -64,8 +64,8 @@ public class GeneratePublishAssetPackTest : IDisposable
         // Verify zip contents
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
         archive.GetEntry("manifest.json").Should().NotBeNull();
-        archive.GetEntry("assets/js/site.js").Should().NotBeNull();
-        archive.GetEntry("assets/css/app.css").Should().NotBeNull();
+        archive.GetEntry("assets/_content/TestApp/js/site.js").Should().NotBeNull();
+        archive.GetEntry("assets/_content/TestApp/css/app.css").Should().NotBeNull();
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         task.Execute();
 
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
-        var entry = archive.GetEntry("assets/js/site.js");
+        var entry = archive.GetEntry("assets/_content/TestApp/js/site.js");
         using var reader = new StreamReader(entry.Open());
         reader.ReadToEnd().Should().Be(content);
     }
@@ -146,8 +146,8 @@ public class GeneratePublishAssetPackTest : IDisposable
         task.Execute();
 
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
-        archive.GetEntry("assets/js/site.js").Should().NotBeNull();
-        archive.GetEntry("assets/js/site.js.gz").Should().BeNull();
+        archive.GetEntry("assets/_content/TestApp/js/site.js").Should().NotBeNull();
+        archive.GetEntry("assets/_content/TestApp/js/site.js.gz").Should().BeNull();
         // manifest + 1 asset = 2 entries total
         archive.Entries.Count.Should().Be(2);
     }
@@ -246,8 +246,8 @@ public class GeneratePublishAssetPackTest : IDisposable
         task.Execute();
 
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
-        archive.GetEntry("assets/lib/deep/nested/file.js").Should().NotBeNull();
-        archive.GetEntry("assets/css/themes/dark/style.css").Should().NotBeNull();
+        archive.GetEntry("assets/_content/TestApp/lib/deep/nested/file.js").Should().NotBeNull();
+        archive.GetEntry("assets/_content/TestApp/css/themes/dark/style.css").Should().NotBeNull();
     }
 
     // --- Helpers ---

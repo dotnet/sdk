@@ -74,18 +74,22 @@ internal static class Program
             var outputs = parseResults.GetValue(zstdOutputsOption);
             var dictionaries = parseResults.GetValue(zstdDictionariesOption);
 
+            if (compressionLevel < 1 || compressionLevel > 22)
+            {
+                Console.Error.WriteLine($"Compression level {compressionLevel} is out of range. Must be between 1 and 22.");
+                return 1;
+            }
+
             if (sources.Count != outputs.Count)
             {
                 Console.Error.WriteLine($"Source count ({sources.Count}) does not match output count ({outputs.Count}).");
-                Environment.ExitCode = 1;
-                return;
+                return 1;
             }
 
             if (dictionaries != null && dictionaries.Count != sources.Count)
             {
                 Console.Error.WriteLine($"Dictionary count ({dictionaries.Count}) does not match source count ({sources.Count}).");
-                Environment.ExitCode = 1;
-                return;
+                return 1;
             }
 
             var failed = 0;
@@ -122,10 +126,7 @@ internal static class Program
                 }
             });
 
-            if (failed > 0)
-            {
-                Environment.ExitCode = 1;
-            }
+            return failed > 0 ? 1 : 0;
         });
 
         brotli.SetAction((ParseResult parseResults) =>
@@ -137,8 +138,7 @@ internal static class Program
             if (sources.Count != outputs.Count)
             {
                 Console.Error.WriteLine($"Source count ({sources.Count}) does not match output count ({outputs.Count}).");
-                Environment.ExitCode = 1;
-                return;
+                return 1;
             }
 
             var failed = 0;
@@ -162,10 +162,7 @@ internal static class Program
                 }
             });
 
-            if (failed > 0)
-            {
-                Environment.ExitCode = 1;
-            }
+            return failed > 0 ? 1 : 0;
         });
 
         return rootCommand.Parse(args).Invoke();

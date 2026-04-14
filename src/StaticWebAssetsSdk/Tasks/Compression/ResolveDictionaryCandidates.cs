@@ -135,8 +135,14 @@ public class ResolveDictionaryCandidates : Task
         var currentAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var asset in currentAssets)
         {
+            // Skip compressed assets
             if (!string.IsNullOrEmpty(asset.AssetTraitName) &&
                 string.Equals(asset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                continue;
+            }
+            // Skip Build-only assets — they are not in the pack and not served at runtime
+            if (string.Equals(asset.AssetKind, "Build", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -255,14 +261,22 @@ public class ResolveDictionaryCandidates : Task
             return null;
         }
 
-        // Find the file in the pack using RelativePath
+        // Find the file in the pack using BasePath + RelativePath (matching GeneratePublishAssetPack key)
         var relativePath = oldAsset.ComputePathWithoutTokens(oldAsset.RelativePath);
         if (string.IsNullOrEmpty(relativePath))
         {
             return null;
         }
 
-        var assetEntryPath = "assets/" + relativePath.Replace('\\', '/');
+        var basePath = oldAsset.BasePath ?? "";
+        if (basePath.StartsWith("/", StringComparison.Ordinal))
+        {
+            basePath = basePath.Substring(1);
+        }
+
+        var assetEntryPath = string.IsNullOrEmpty(basePath)
+            ? "assets/" + relativePath.Replace('\\', '/')
+            : "assets/" + basePath.Replace('\\', '/') + "/" + relativePath.Replace('\\', '/');
         var zipEntry = archive.GetEntry(assetEntryPath);
         if (zipEntry == null)
         {
@@ -274,7 +288,10 @@ public class ResolveDictionaryCandidates : Task
             return null;
         }
 
-        var extractedPath = Path.Combine(outputPath, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var extractedRelativePath = string.IsNullOrEmpty(basePath)
+            ? relativePath
+            : basePath + "/" + relativePath;
+        var extractedPath = Path.Combine(outputPath, extractedRelativePath.Replace('/', Path.DirectorySeparatorChar));
         var extractedDir = Path.GetDirectoryName(extractedPath);
         if (!string.IsNullOrEmpty(extractedDir))
         {
@@ -300,7 +317,6 @@ public class ResolveDictionaryCandidates : Task
         }
 
         // Prepend BasePath to the match pattern so it matches the full request URL
-        var basePath = oldAsset.BasePath?.Trim('/');
         if (!string.IsNullOrEmpty(basePath))
         {
             matchPattern = basePath + "/" + matchPattern;

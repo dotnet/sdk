@@ -21,7 +21,7 @@ public class ZstdCompress : ToolTask
     [Required]
     public string ToolAssembly { get; set; }
 
-    protected override string ToolName => Path.GetDirectoryName(DotNetPath);
+    protected override string ToolName => Path.GetFileName(DotNetPath);
 
     private string DotNetPath
     {
@@ -29,6 +29,13 @@ public class ZstdCompress : ToolTask
         {
             if (!string.IsNullOrEmpty(_dotnetPath))
             {
+                return _dotnetPath;
+            }
+
+            // Prefer ToolPath/ToolExe set by the targets; fall back to DOTNET_HOST_PATH.
+            if (!string.IsNullOrEmpty(ToolPath) && !string.IsNullOrEmpty(ToolExe))
+            {
+                _dotnetPath = Path.Combine(ToolPath, ToolExe);
                 return _dotnetPath;
             }
 

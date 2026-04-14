@@ -406,7 +406,7 @@ internal sealed class ContentTypeProvider
 
     private readonly string[] _compressedExtensions;
 
-    public ContentTypeProvider(ContentTypeMapping[] customMappings, string[] compressedExtensions = null)
+    internal ContentTypeProvider(ContentTypeMapping[] customMappings, string[] compressedExtensions = null)
     {
         _customMappings ??= [];
         foreach (var mapping in customMappings)

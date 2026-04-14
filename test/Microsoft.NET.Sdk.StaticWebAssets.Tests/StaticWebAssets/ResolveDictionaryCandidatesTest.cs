@@ -487,7 +487,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().HaveCount(1);
         // Fingerprint token should be replaced with wildcard
-        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site*.js");
+        task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site.*.js");
     }
 
     [Fact]
@@ -604,10 +604,21 @@ public class ResolveDictionaryCandidatesTest : IDisposable
             JsonSerializer.Serialize(entryStream, manifest);
         }
 
-        // Add asset files
+        // Add asset files — keyed by BasePath/RelativePath to match GeneratePublishAssetPack format
         foreach (var kvp in files)
         {
-            var entryPath = "assets/" + kvp.Key.Replace('\\', '/');
+            // Find the asset to get its BasePath
+            var matchingAsset = assets.FirstOrDefault(a =>
+                string.Equals(a.ComputePathWithoutTokens(a.RelativePath), kvp.Key.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase));
+            var assetBasePath = matchingAsset?.BasePath ?? "";
+            if (assetBasePath.StartsWith("/", StringComparison.Ordinal))
+            {
+                assetBasePath = assetBasePath.Substring(1);
+            }
+
+            var entryPath = string.IsNullOrEmpty(assetBasePath)
+                ? "assets/" + kvp.Key.Replace('\\', '/')
+                : "assets/" + assetBasePath.Replace('\\', '/') + "/" + kvp.Key.Replace('\\', '/');
             var entry = archive.CreateEntry(entryPath);
             using var writer = new StreamWriter(entry.Open());
             writer.Write(kvp.Value);

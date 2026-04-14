@@ -447,8 +447,20 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             }
             else
             {
-                // Replace token expression with wildcard
-                result.Append('*');
+                // Preserve literal parts within the segment, replace token parts with '*'.
+                // For example, a segment with parts ['.', '{fingerprint}'] becomes '.*'
+                // rather than just '*', preserving embedded literals like '.min.'.
+                foreach (var part in segment.Parts)
+                {
+                    if (part.IsLiteral)
+                    {
+                        result.Append(part.Name);
+                    }
+                    else
+                    {
+                        result.Append('*');
+                    }
+                }
             }
         }
 

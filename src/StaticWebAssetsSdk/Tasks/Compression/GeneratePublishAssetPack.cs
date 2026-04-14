@@ -98,8 +98,17 @@ public class GeneratePublishAssetPack : Task
                 continue;
             }
 
+            // Incorporate BasePath to avoid collisions in multi-library apps.
+            var basePath = asset.BasePath ?? "";
+            if (basePath.StartsWith("/", StringComparison.Ordinal))
+            {
+                basePath = basePath.Substring(1);
+            }
+
             // Normalize path for zip entry
-            var entryPath = "assets/" + relativePath.Replace('\\', '/');
+            var entryPath = string.IsNullOrEmpty(basePath)
+                ? "assets/" + relativePath.Replace('\\', '/')
+                : "assets/" + basePath.Replace('\\', '/') + "/" + relativePath.Replace('\\', '/');
 
             // Resolve the actual file path (handles OriginalItemSpec fallback)
             var fileInfo = asset.ResolveFile();
