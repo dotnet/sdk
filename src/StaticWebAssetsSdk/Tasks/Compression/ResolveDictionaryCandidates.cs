@@ -109,7 +109,7 @@ public class ResolveDictionaryCandidates : Task
         }
 
         // Route → (old endpoint, old asset) lookup from the pack manifest
-        var oldEndpointsByRoute = new Dictionary<string, (StaticWebAssetEndpoint Endpoint, StaticWebAsset Asset)>(StringComparer.OrdinalIgnoreCase);
+        var oldEndpointsByRoute = new Dictionary<string, PreviousRouteMatch>(StringComparer.OrdinalIgnoreCase);
         if (manifest.Endpoints != null)
         {
             foreach (var oldEndpoint in manifest.Endpoints)
@@ -125,7 +125,7 @@ public class ResolveDictionaryCandidates : Task
                 {
                     if (!oldEndpointsByRoute.ContainsKey(oldEndpoint.Route))
                     {
-                        oldEndpointsByRoute[oldEndpoint.Route] = (oldEndpoint, oldAsset);
+                        oldEndpointsByRoute[oldEndpoint.Route] = new PreviousRouteMatch(oldEndpoint, oldAsset);
                     }
                 }
             }
@@ -333,13 +333,15 @@ public class ResolveDictionaryCandidates : Task
         candidate.SetMetadata("Hash", hash);
         candidate.SetMetadata("TargetAsset", newAsset.Identity);
         candidate.SetMetadata("MatchPattern", matchPattern);
+        candidate.SetMetadata("OldFileFingerprint", oldAsset.Fingerprint ?? "");
 
         Log.LogMessage(
-            "Resolved dictionary candidate: target='{0}', dictionary='{1}', hash='{2}', match='{3}'.",
+            "Resolved dictionary candidate: target='{0}', dictionary='{1}', hash='{2}', match='{3}', fingerprint='{4}'.",
             newAsset.Identity,
             extractedPath,
             hash,
-            matchPattern);
+            matchPattern,
+            oldAsset.Fingerprint);
 
         return candidate;
     }
@@ -357,5 +359,17 @@ public class ResolveDictionaryCandidates : Task
             }
         }
         return false;
+    }
+
+    internal readonly struct PreviousRouteMatch
+    {
+        public PreviousRouteMatch(StaticWebAssetEndpoint endpoint, StaticWebAsset asset)
+        {
+            Endpoint = endpoint;
+            Asset = asset;
+        }
+
+        public StaticWebAssetEndpoint Endpoint { get; }
+        public StaticWebAsset Asset { get; }
     }
 }
