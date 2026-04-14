@@ -52,6 +52,8 @@ Additionally, the implicit project file has the following customizations:
     string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
     ```
 
+  - `EntryPointFilePath` property is set to the entry-point file path and is made visible to analyzers via `CompilerVisibleProperty`.
+
   - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
 
   - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
@@ -165,7 +167,7 @@ removes current user's `dotnet run` build outputs that haven't been used in 30 d
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
 The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
 but other parameters of the automatic cleanup are currently not configurable.
-The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
+The same cleanup can be performed manually via command `dotnet clean file-based-apps`.
 
 ## Directives for project metadata
 
@@ -269,6 +271,11 @@ Along with `#:`, the language also ignores `#!` which could be then used for [sh
 #!/usr/bin/dotnet run
 Console.WriteLine("Hello");
 ```
+
+When a file-based program uses [`#:include`](#multiple-files) directives to include additional files,
+the entry point file should start with `#!` to clearly distinguish it from included files.
+This helps IDEs to properly handle multi-file scenarios and discover entry points.
+The analyzer **CA2266** reports a warning if the entry point file is missing the shebang line in this scenario.
 
 ## Implementation
 

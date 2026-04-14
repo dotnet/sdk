@@ -74,15 +74,10 @@ internal sealed class SpectreBuildParametersSelectionPrompt(IAnsiConsole console
 
     private static IAnsiConsole CreateConsole(IConsole watchConsole)
     {
-        if (!Console.IsInputRedirected)
-        {
-            return AnsiConsole.Console;
-        }
-
-        // When stdin is redirected (e.g. in integration tests), Spectre.Console detects
-        // non-interactive mode and refuses to prompt. Create a console with forced
-        // interactivity that reads keys from IConsole.KeyPressed (fed by
-        // PhysicalConsole.ListenToStandardInputAsync).
+        // Always read keys from IConsole.KeyPressed (fed by PhysicalConsole) instead of
+        // letting Spectre.Console call Console.ReadKey() directly. PhysicalConsole already
+        // owns the Console.ReadKey() loop, so a second reader would race with it and never
+        // receive any key presses, making the selection prompt appear stuck.
         var ansiConsole = AnsiConsole.Create(new AnsiConsoleSettings
         {
             Ansi = AnsiSupport.Yes,
