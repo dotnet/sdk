@@ -29,8 +29,13 @@ internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionActi
 {
     public override bool Terminating => false;
 
+    // S.CL will always invoke this option action because:
+    // 1. A boolean option has a default value of `false`.
+    // 2. The option has Terminating set to `false`.
+    // When a default value exists (non-null) and the option is not terminating, the option action is always invoked.
     public override int Invoke(ParseResult parseResult)
     {
+        // This check is necessary as per comment above.
         if (!parseResult.HasOption(Option) || !parseResult.GetValue(option)
             // Only set verbose output on built-in commands.
             || !parseResult.IsDotnetBuiltInCommand())
