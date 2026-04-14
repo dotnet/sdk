@@ -7379,4 +7379,59 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello from virtual project");
     }
+
+    /// <summary>
+    /// Same as <see cref="VirtualProject_SurvivesGCDuringRestore"/> but for <c>#:ref</c> referenced projects.
+    /// The referenced project's <see cref="ProjectRootElement"/> must also survive GC.
+    /// </summary>
+    [Fact]
+    public void VirtualProject_SurvivesGCDuringRestore_RefDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello from ref";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:ref Lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        // Directory.Build.targets that forces GC during restore,
+        // after SDK imports have already evicted the virtual PRE from the strong cache.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <UsingTask TaskName="_ForceGCTask"
+                         TaskFactory="RoslynCodeTaskFactory"
+                         AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                <Task>
+                  <Code Type="Fragment" Language="cs"><![CDATA[
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                    System.GC.WaitForPendingFinalizers();
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                  ]]></Code>
+                </Task>
+              </UsingTask>
+              <Target Name="_ForceGC" BeforeTargets="_FilterRestoreGraphProjectInputItems">
+                <_ForceGCTask />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs")
+            // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
+            // as soon as any SDK .targets/.props file is loaded during evaluation.
+            .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from ref");
+    }
 }

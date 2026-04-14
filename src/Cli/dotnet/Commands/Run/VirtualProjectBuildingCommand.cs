@@ -118,6 +118,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
+    /// <summary>
+    /// Keeps strong references to <see cref="VirtualProjectBuilder"/>s created for <c>#:ref</c> directives,
+    /// preventing their <see cref="ProjectRootElement"/>s from being garbage collected
+    /// (same reason as <c>VirtualProjectBuilder._projectRootElement</c>).
+    /// </summary>
+    private readonly List<VirtualProjectBuilder> _referencedBuilders = [];
+
     public ImmutableArray<CSharpDirective> Directives
     {
         get
@@ -1200,12 +1207,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ImmutableArray<CSharpDirective> directives)
     {
         var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
-        CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles);
+        CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles, _referencedBuilders);
 
         static void CreateReferencedVirtualProjectsCore(
             ProjectCollection projectCollection,
             ImmutableArray<CSharpDirective> directives,
-            HashSet<string> processedFiles)
+            HashSet<string> processedFiles,
+            List<VirtualProjectBuilder> referencedBuilders)
         {
             foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
             {
@@ -1234,8 +1242,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     projectRootElement: out _,
                     out var refEvaluatedDirectives);
 
+                // Keep a strong reference to prevent GC from collecting the ProjectRootElement
+                // after MSBuild's ProjectRootElementCache demotes it to a weak reference.
+                referencedBuilders.Add(refBuilder);
+
                 // Recursively create virtual projects for any #:ref in the referenced file.
-                CreateReferencedVirtualProjectsCore(projectCollection, refEvaluatedDirectives, processedFiles);
+                CreateReferencedVirtualProjectsCore(projectCollection, refEvaluatedDirectives, processedFiles, referencedBuilders);
             }
         }
     }
