@@ -2077,7 +2077,7 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' looks like a file-based program but the file was not found, and it was treated as an MSBuild argument.</source>
         <target state="new">Warning: '{0}' looks like a file-based program but the file was not found, and it was treated as an MSBuild argument.</target>
-        <note>{0} is the .cs file path argument. {1} is the command name (e.g. build, clean, publish).</note>
+        <note>{0} is the .cs file path argument.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' appears to be a file-based program but was treated as an MSBuild argument. To treat it as a file-based program, use 'dotnet {1} {0}'.</source>

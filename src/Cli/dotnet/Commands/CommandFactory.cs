@@ -55,7 +55,7 @@ public static class CommandFactory
                 if (candidate.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 {
                     Reporter.Error.WriteLine(
-                        string.Format(CliCommandStrings.WarningCsFileArgumentPassedToMSBuild, candidate, commandDefinition.Name).Yellow());
+                        string.Format(CliCommandStrings.WarningCsFileArgumentPassedToMSBuild, candidate).Yellow());
                     break;
                 }
             }
