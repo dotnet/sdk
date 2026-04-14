@@ -3673,6 +3673,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:include LibHelper.cs
             #:include LibFormatter.cs
@@ -3707,6 +3708,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:include Util.cs
             Console.WriteLine(MyLib.Greeter.Greet(Util.GetName()));
@@ -3877,6 +3879,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:include helper1.cs
             #:include helper2.cs
             Console.WriteLine(Helper1.Get() + " " + Helper2.Get());
@@ -3942,6 +3945,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:include sub1/helper1.cs
             #:include sub2/nested/helper2.cs
             Console.WriteLine(Helper1.Get() + " " + Helper2.Get());
