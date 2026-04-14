@@ -864,5 +864,82 @@ namespace Microsoft.NET.Build.Tests
 
             return getValueCommand.GetValues().Single();
         }
+
+        // Regression test for https://github.com/dotnet/sdk/issues/53556
+        // When UseArtifactsOutput=true, IntermediateOutputPath is moved outside the project directory.
+        // The _FixGeneratedXbfFilesLink target should set Link metadata on _GeneratedXbfFiles items
+        // to preserve subdirectory paths in resources.pri (e.g., "Resources\Styles.xbf" not "Styles.xbf").
+        [WindowsOnlyFact]
+        public void ItSetsCorrectLinkMetadataOnGeneratedXbfFilesWhenUsingArtifactsOutput()
+        {
+            const string targetFramework = "net10.0-windows10.0.26100.0";
+
+            var testProject = new TestProject()
+            {
+                Name = "UwpXbfLinkTest",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = targetFramework
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    // Inject a target that populates _GeneratedXbfFiles with simulated XBF files
+                    // in subdirectories of IntermediateOutputPath, as would happen with UseArtifactsOutput.
+                    // This simulates what the XAML compiler (MarkupCompilePass2) normally produces.
+                    var injectTarget = XElement.Parse("""
+                        <Target Name="_InjectFakeGeneratedXbfFiles"
+                                BeforeTargets="_FixGeneratedXbfFilesLink">
+                          <ItemGroup>
+                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)Resources\Styles.xbf" />
+                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)Views\Home.xbf" />
+                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)App.xbf" />
+                          </ItemGroup>
+                        </Target>
+                        """);
+                    project.Root.Add(injectTarget);
+                });
+
+            // Write a Directory.Build.props that enables artifacts output, which moves
+            // IntermediateOutputPath outside the project directory.
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var getValuesCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.Path, testProject.Name),
+                targetFramework,
+                "_GeneratedXbfFiles",
+                GetValuesCommand.ValueType.Item)
+            {
+                ShouldRestore = false,
+                DependsOnTargets = "_FixGeneratedXbfFilesLink"
+            };
+            getValuesCommand.MetadataNames.Add("Link");
+
+            getValuesCommand.Execute().Should().Pass();
+
+            var items = getValuesCommand.GetValuesWithMetadata();
+
+            // Items in subdirectories should have Link metadata that preserves the subdirectory path.
+            // Without the fix, these would be empty or just the filename (e.g., "Styles.xbf").
+            var stylesItem = items.Single(i => Path.GetFileName(i.value).Equals("Styles.xbf", StringComparison.OrdinalIgnoreCase));
+            stylesItem.metadata["Link"].Should().Be(@"Resources\Styles.xbf");
+
+            var homeItem = items.Single(i => Path.GetFileName(i.value).Equals("Home.xbf", StringComparison.OrdinalIgnoreCase));
+            homeItem.metadata["Link"].Should().Be(@"Views\Home.xbf");
+
+            // Root-level XBF item should have Link metadata with just the filename.
+            var appItem = items.Single(i => Path.GetFileName(i.value).Equals("App.xbf", StringComparison.OrdinalIgnoreCase));
+            appItem.metadata["Link"].Should().Be("App.xbf");
+        }
     }
 }
