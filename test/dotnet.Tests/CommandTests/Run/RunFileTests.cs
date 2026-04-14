@@ -958,11 +958,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// <c>dotnet build --no-restore Program.cs</c> is handled as file-based (known option + single positional arg) and does not warn.
+    /// <c>dotnet build --no-incremental Program.cs</c> is handled as file-based (known option + single positional arg) and does not warn.
     /// </summary>
     [Theory]
     [InlineData("Program.cs")]
-    [InlineData("--no-restore", "Program.cs")]
+    [InlineData("--no-incremental", "Program.cs")]
     public void SingleFileEntryPoint_NoWarning(params string[] extraArgs)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
