@@ -67,6 +67,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 case ".br":
                 case ".gz":
                 case ".zst":
+                case ".dcz":
                     return true;
                 default:
                     return false;
