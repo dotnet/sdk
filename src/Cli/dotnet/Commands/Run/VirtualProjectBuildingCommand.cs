@@ -1230,7 +1230,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 refBuilder.CreateProjectInstance(
                     projectCollection,
                     ThrowingReporter,
-                    out _,
+                    project: out _,
+                    projectRootElement: out _,
                     out var refEvaluatedDirectives);
 
                 // Recursively create virtual projects for any #:ref in the referenced file.

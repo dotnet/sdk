@@ -134,6 +134,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
                     out fileProjectInstance,
+                    projectRootElement: out _,
                     out fileDirectives,
                     validateAllDirectives: !_force);
             }
@@ -315,7 +316,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 refBuilder.CreateProjectInstance(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
-                    out _,
+                    project: out _,
+                    projectRootElement: out _,
                     out var refDirectives,
                     validateAllDirectives: !_force);
                 ValidateRefTargetDirectories(refDirectives, refDir, visited, usedFolderNames);
