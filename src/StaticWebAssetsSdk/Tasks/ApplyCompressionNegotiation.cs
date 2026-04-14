@@ -341,7 +341,7 @@ public class ApplyCompressionNegotiation : Task
             {
                 foreach (var synthetic in group.State.SyntheticEndpoints)
                 {
-                    if (matchPattern != null && !HasAvailableDictionarySelector(synthetic))
+                    if (matchPattern != null && !HasDictionaryHashProperty(synthetic))
                     {
                         EnsureVaryAvailableDictionaryHeader(synthetic);
                         EnsureUseDictionaryHeader(synthetic, matchPattern);
@@ -463,15 +463,14 @@ public class ApplyCompressionNegotiation : Task
         selectorsList.AddRange(relatedEndpointCandidate.Selectors);
         selectorsList.Add(encodingSelector);
 
-        // For dictionary formats, add an Available-Dictionary selector so the endpoint
-        // only matches when the browser advertises the correct dictionary
+        // For dictionary formats, add a Dictionary-Hash endpoint property so routing
+        // can match the Available-Dictionary request header against the expected hash
         if (isDictionaryFormat && !string.IsNullOrEmpty(dictionaryHash))
         {
-            selectorsList.Add(new StaticWebAssetEndpointSelector
+            endpointProperties.Add(new StaticWebAssetEndpointProperty
             {
-                Name = "Available-Dictionary",
-                Value = dictionaryHash,
-                Quality = "1.0"
+                Name = "Dictionary-Hash",
+                Value = dictionaryHash
             });
         }
 
@@ -532,11 +531,11 @@ public class ApplyCompressionNegotiation : Task
         return false;
     }
 
-    private static bool HasAvailableDictionarySelector(StaticWebAssetEndpoint endpoint)
+    private static bool HasDictionaryHashProperty(StaticWebAssetEndpoint endpoint)
     {
-        for (var i = 0; i < endpoint.Selectors.Length; i++)
+        for (var i = 0; i < endpoint.EndpointProperties.Length; i++)
         {
-            if (string.Equals(endpoint.Selectors[i].Name, "Available-Dictionary", StringComparison.Ordinal))
+            if (string.Equals(endpoint.EndpointProperties[i].Name, "Dictionary-Hash", StringComparison.Ordinal))
             {
                 return true;
             }

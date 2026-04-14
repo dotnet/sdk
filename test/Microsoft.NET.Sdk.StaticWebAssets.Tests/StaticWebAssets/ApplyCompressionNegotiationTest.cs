@@ -2307,11 +2307,13 @@ public class ApplyCompressionNegotiationTest
             e.AssetFile == Path.GetFullPath(dczPath));
         syntheticDcz.Should().NotBeNull("a synthetic dcz endpoint should be created at the primary route");
 
-        // Should have both Content-Encoding and Available-Dictionary selectors
+        // Should have Content-Encoding selector only (no Available-Dictionary selector)
         syntheticDcz.Selectors.Should().Contain(s =>
             s.Name == "Content-Encoding" && s.Value == "dcz");
-        syntheticDcz.Selectors.Should().Contain(s =>
-            s.Name == "Available-Dictionary" && s.Value == ":dictSha256Hash:");
+
+        // Should have Dictionary-Hash endpoint property
+        syntheticDcz.EndpointProperties.Should().Contain(p =>
+            p.Name == "Dictionary-Hash" && p.Value == ":dictSha256Hash:");
 
         // Should have Vary: Available-Dictionary header
         syntheticDcz.ResponseHeaders.Should().Contain(h =>
@@ -2478,14 +2480,14 @@ public class ApplyCompressionNegotiationTest
         result.Should().BeTrue();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
 
-        // The gzip synthetic endpoint should NOT have Available-Dictionary selector
-        // (only dcz endpoints use that selector for content negotiation)
+        // The gzip synthetic endpoint should NOT have Dictionary-Hash property
+        // (only dcz endpoints use that property for content negotiation)
         var syntheticGz = endpoints.FirstOrDefault(e =>
             e.Route == "candidate.js" &&
             e.AssetFile == Path.GetFullPath(gzPath));
         syntheticGz.Should().NotBeNull();
         syntheticGz.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip");
-        syntheticGz.Selectors.Should().NotContain(s => s.Name == "Available-Dictionary");
+        syntheticGz.EndpointProperties.Should().NotContain(p => p.Name == "Dictionary-Hash");
 
         // But gzip SHOULD have Use-As-Dictionary header and Vary: Available-Dictionary
         // Per RFC 9842, all content-negotiated responses for a resource should include
