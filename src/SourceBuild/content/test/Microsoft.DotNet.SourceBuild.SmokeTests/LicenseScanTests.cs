@@ -136,12 +136,10 @@ public class LicenseScanTests : TestBase
         Assert.True(relativePathMatch.Success);
         _relativeScanPath = relativePathMatch.Value;
 
-        // Derive target name for baseline file naming.
+        // Derive target name for baseline file naming from the relative scan path.
         // For "src/runtime" -> "runtime"
         // For "src/source-build-reference-packages/src/externalPackages" -> "source-build-reference-packages.externalPackages"
-        Match repoMatch = Regex.Match(normalizedPath, @"src/([^/]+)");
-        Assert.True(repoMatch.Success);
-        string repoName = repoMatch.Groups[1].Value;
+        string repoName = _relativeScanPath.Split('/')[1];
         string dirName = new DirectoryInfo(normalizedPath).Name;
         _targetName = dirName == repoName ? repoName : $"{repoName}.{dirName}";
     }
