@@ -1835,22 +1835,22 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
         <source>Add '#!' (shebang)</source>
-        <target state="new">Add '#!' (shebang)</target>
+        <target state="translated">"#!" hinzufügen (Shebang)</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
-        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <target state="translated">Wenn ein dateibasiertes Programm aus mehreren Dateien besteht, sollte die Einstiegsdatei mit einer Shebang-Zeile ("#!") beginnen, um sie klar von anderen eingebundenen Dateien zu unterscheiden.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramMessage">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">Der Einstiegspunkt eines dateibasierten Programms sollte mit "#!" beginnen.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramTitle">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">Der Einstiegspunkt eines dateibasierten Programms sollte mit "#!" beginnen.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
