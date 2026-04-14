@@ -18,7 +18,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
 
     private readonly string _testDir;
     private readonly List<string> _errorMessages;
-    private readonly List<string> _messages;
+    private readonly List<string> _logMessages;
     private readonly Mock<IBuildEngine> _buildEngine;
 
     public ResolveDictionaryCandidatesTest()
@@ -30,12 +30,12 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         Directory.CreateDirectory(_testDir);
 
         _errorMessages = new List<string>();
-        _messages = new List<string>();
+        _logMessages = new List<string>();
         _buildEngine = new Mock<IBuildEngine>();
         _buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
         _buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
-            .Callback<BuildMessageEventArgs>(args => _messages.Add(args.Message));
+            .Callback<BuildMessageEventArgs>(args => _logMessages.Add(args.Message));
     }
 
     [Fact]
@@ -361,7 +361,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
 
         result.Should().BeTrue();
         task.DictionaryCandidates.Should().BeEmpty();
-        _messages.Should().Contain(m => m.Contains("same integrity"));
+        _logMessages.Should().Contain(m => m.Contains("same integrity"));
     }
 
     [Fact]

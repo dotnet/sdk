@@ -318,10 +318,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Direct-access endpoints (route ends with the compression extension)
             var directEndpoints = v2EndpointsForFile.Where(e => e.Route != modifiedRoute).ToArray();
             directEndpoints.Should().HaveCount(4, "because there should be 4 direct endpoints: .br, .dcz, .gz, .zst");
-            var directRoutes = directEndpoints.Select(e => e.Route).Order().ToArray();
-            directRoutes.Should().BeEquivalentTo([
+
+            // The dcz direct route includes the old file fingerprint: name.{fingerprint}.dcz
+            var dczDirectEndpoint = directEndpoints.Single(e => e.Route.EndsWith(".dcz", StringComparison.Ordinal));
+            dczDirectEndpoint.Route.Should().StartWith(modifiedRoute + ".", "dcz route should be derived from the modified route");
+            dczDirectEndpoint.Route.Should().EndWith(".dcz");
+
+            var nonDczDirectRoutes = directEndpoints
+                .Where(e => !e.Route.EndsWith(".dcz", StringComparison.Ordinal))
+                .Select(e => e.Route).Order().ToArray();
+            nonDczDirectRoutes.Should().BeEquivalentTo([
                 $"{modifiedRoute}.br",
-                $"{modifiedRoute}.dcz",
                 $"{modifiedRoute}.gz",
                 $"{modifiedRoute}.zst"
             ]);
@@ -419,12 +426,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             // --- dcz content-negotiated endpoint (CDT-specific) ---
             var dczEp = cnByEncoding["dcz"];
-            // Selectors: Content-Encoding=dcz AND Available-Dictionary=<v1-hash>
-            dczEp.Selectors.Should().HaveCount(2);
+            // Selector: Content-Encoding=dcz; Dictionary-Hash is an endpoint property (not a selector)
+            dczEp.Selectors.Should().HaveCount(1);
             dczEp.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "dcz");
-            var availDictSelector = dczEp.Selectors.First(s => s.Name == "Available-Dictionary");
-            availDictSelector.Value.Should().Be(expectedDictValue,
-                $"because Available-Dictionary should reference the v1 asset hash ({v1HashBase64})");
+            HasProperty(dczEp, "Dictionary-Hash").Should().BeTrue(
+                "because dcz endpoints carry the dictionary hash as a property for routing");
+            var dictHashProp = dczEp.EndpointProperties.First(p => p.Name == "Dictionary-Hash");
+            dictHashProp.Value.Should().Be(expectedDictValue,
+                $"because Dictionary-Hash should reference the v1 asset hash ({v1HashBase64})");
             // Headers
             HasHeader(dczEp, "Cache-Control", "no-cache").Should().BeTrue();
             HasHeader(dczEp, "Content-Encoding", "dcz").Should().BeTrue();
@@ -445,31 +454,36 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Verify each direct-access endpoint
             // =====================================================================
 
-            // All direct-access endpoints share a common pattern: no Content-Encoding selector,
+            // All direct-access endpoints share common properties: no Content-Encoding selector,
             // but they DO have a Content-Encoding response header matching their format.
             foreach (var (route, expectedEncoding) in new[]
             {
                 ($"{modifiedRoute}.gz", "gzip"),
                 ($"{modifiedRoute}.br", "br"),
                 ($"{modifiedRoute}.zst", "zstd"),
-                ($"{modifiedRoute}.dcz", "dcz"),
+                (dczDirectEndpoint.Route, "dcz"),
             })
             {
                 var directEp = directByRoute[route];
-                // No Content-Encoding selector (these are served as-is)
                 (directEp.Selectors == null || directEp.Selectors.Length == 0 ||
                  !directEp.Selectors.Any(s => s.Name == "Content-Encoding"))
                     .Should().BeTrue($"because direct endpoint {route} should not have a Content-Encoding selector");
-                // Response headers
                 HasHeader(directEp, "Cache-Control", "no-cache").Should().BeTrue($"on {route}");
                 HasHeader(directEp, "Content-Encoding", expectedEncoding).Should().BeTrue($"on {route}");
                 HasHeader(directEp, "Content-Length").Should().BeTrue($"on {route}");
-                HasHeader(directEp, "Content-Type", "text/javascript").Should().BeTrue($"on {route}");
+                // dcz direct route includes old fingerprint so Content-Type is derived from .dcz, not .js
+                if (expectedEncoding != "dcz")
+                {
+                    HasHeader(directEp, "Content-Type", "text/javascript").Should().BeTrue($"on {route}");
+                }
+                else
+                {
+                    HasHeader(directEp, "Content-Type").Should().BeTrue($"on {route}");
+                }
                 HasHeader(directEp, "ETag").Should().BeTrue($"on {route}");
                 HasHeader(directEp, "Last-Modified").Should().BeTrue($"on {route}");
                 HasHeader(directEp, "Vary", "Accept-Encoding").Should().BeTrue($"on {route}");
                 HasProperty(directEp, "integrity").Should().BeTrue($"on {route}");
-                // Direct endpoints should NOT have dictionary-related headers
                 HasHeader(directEp, "Use-As-Dictionary").Should().BeFalse($"on {route}");
                 HasHeader(directEp, "Vary", "Available-Dictionary").Should().BeFalse($"on {route}");
             }
