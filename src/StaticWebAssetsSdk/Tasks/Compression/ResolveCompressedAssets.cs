@@ -57,15 +57,7 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        var activeFormatNames = string.IsNullOrEmpty(Formats)
-            ? Array.Empty<string>()
-            : Formats.Split(PatternSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-        // Trim whitespace from each format name so "gzip; brotli" works.
-        for (var i = 0; i < activeFormatNames.Length; i++)
-        {
-            activeFormatNames[i] = activeFormatNames[i].Trim();
-        }
+        var activeFormatNames = SplitPattern(Formats);
 
         if (activeFormatNames.Length == 0)
         {
@@ -216,7 +208,7 @@ public class ResolveCompressedAssets : Task
                 var itemSpec = asset.Identity;
                 if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(itemSpec, out var existingFormats))
                 {
-                    existingFormats = new HashSet<string>(2);
+                    existingFormats = new HashSet<string>(2, StringComparer.OrdinalIgnoreCase);
                     existingCompressionFormatsByAssetItemSpec.Add(itemSpec, existingFormats);
                 }
 
@@ -334,7 +326,7 @@ public class ResolveCompressedAssets : Task
 
             if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(relatedAssetItemSpec, out var existingFormats))
             {
-                existingFormats = [];
+                existingFormats = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 existingCompressionFormatsByAssetItemSpec.Add(relatedAssetItemSpec, existingFormats);
             }
 

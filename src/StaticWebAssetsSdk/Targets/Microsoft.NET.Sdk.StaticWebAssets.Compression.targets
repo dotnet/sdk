@@ -127,6 +127,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       **/*.gz;
       **/*.br;
       **/*.zst;
+      **/*.dcz;
       **/*.jpeg;
       **/*.jpg;
       **/*.png;
@@ -260,11 +261,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveDictionaryCandidates;
       $(ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn)
     </ResolvePublishCompressedStaticWebAssetsConfigurationDependsOn>
-
-    <!-- GeneratePublishAssetPack runs after the publish manifest is generated -->
-    <GenerateStaticWebAssetsPublishManifestDependsOn_AssetPack Condition="'$(StaticWebAssetProjectMode)' == 'Root'">
-      GeneratePublishAssetPack
-    </GenerateStaticWebAssetsPublishManifestDependsOn_AssetPack>
 
   </PropertyGroup>
 

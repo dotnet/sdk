@@ -724,12 +724,20 @@ public class ApplyCompressionNegotiation : Task
         // Falls back to the endpoint's route if no match pattern is available.
         var pattern = !string.IsNullOrEmpty(matchPattern) ? matchPattern : endpoint.Route;
 
+        // Ensure pattern starts with exactly one leading slash.
+        // ResolveDictionaryCandidates already normalizes MatchPattern with a leading slash,
+        // so we only prepend one when the pattern is not already rooted.
+        if (!pattern.StartsWith("/", StringComparison.Ordinal))
+        {
+            pattern = "/" + pattern;
+        }
+
         endpoint.ResponseHeaders = [
             ..endpoint.ResponseHeaders,
             new StaticWebAssetEndpointResponseHeader
             {
                 Name = "Use-As-Dictionary",
-                Value = $"match=\"/{pattern}\""
+                Value = $"match=\"{pattern}\""
             }
         ];
     }
