@@ -98,6 +98,7 @@ internal static class Program
                 var source = sources[i];
                 var output = outputs[i];
                 var dictionaryPath = dictionaries != null && i < dictionaries.Count ? dictionaries[i] : null;
+                var tempOutput = output + ".tmp";
                 try
                 {
                     ZstandardCompressionOptions options;
@@ -112,16 +113,20 @@ internal static class Program
                         options = new ZstandardCompressionOptions { Quality = compressionLevel };
                     }
 
-                    using var sourceStream = File.OpenRead(source);
-                    using var fileStream = new FileStream(output, FileMode.Create);
+                    using (var sourceStream = File.OpenRead(source))
+                    using (var fileStream = new FileStream(tempOutput, FileMode.Create))
+                    using (var stream = new ZstandardStream(fileStream, options))
+                    {
+                        sourceStream.CopyTo(stream);
+                    }
 
-                    using var stream = new ZstandardStream(fileStream, options);
-                    sourceStream.CopyTo(stream);
+                    File.Move(tempOutput, output, overwrite: true);
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
                     Console.Error.WriteLine(ex.ToString());
+                    try { File.Delete(tempOutput); } catch { }
                     Interlocked.Increment(ref failed);
                 }
             });
@@ -146,18 +151,23 @@ internal static class Program
             {
                 var source = sources[i];
                 var output = outputs[i];
+                var tempOutput = output + ".tmp";
                 try
                 {
-                    using var sourceStream = File.OpenRead(source);
-                    using var fileStream = new FileStream(output, FileMode.Create);
+                    using (var sourceStream = File.OpenRead(source))
+                    using (var fileStream = new FileStream(tempOutput, FileMode.Create))
+                    using (var stream = new BrotliStream(fileStream, compressionLevel))
+                    {
+                        sourceStream.CopyTo(stream);
+                    }
 
-                    using var stream = new BrotliStream(fileStream, compressionLevel);
-                    sourceStream.CopyTo(stream);
+                    File.Move(tempOutput, output, overwrite: true);
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
                     Console.Error.WriteLine(ex.ToString());
+                    try { File.Delete(tempOutput); } catch { }
                     Interlocked.Increment(ref failed);
                 }
             });
