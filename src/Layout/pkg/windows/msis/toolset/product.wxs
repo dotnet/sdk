@@ -1,0 +1,60 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package  UpgradeCode="$(UpgradeCode)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)" InstallerVersion="$(InstallerVersion)" Compressed="yes"
+            Scope="perMachine" Language="$(ProductLanguage)" Name="$(ProductName)" >
+
+    <Launch Condition="Installed OR ALLOWMSIINSTALL"
+            Message="$(var.ProductName) must be installed as part of a coordinated SDK installation." />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
+
+    <Feature Id="MainFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="InstallFiles" />
+      <ComponentGroupRef Id="AuthoredRegistryKeys_x86node"/>
+      <ComponentGroupRef Id="DotnetToolSetup"/>
+      <ComponentRef Id="WorkloadInstallerTypeComp" />
+    </Feature>
+    <FeatureRef Id="F_DependencyProvider" />
+
+    <Icon Id="icon.ico" SourceFile="..\..\dotnet.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="RTM_ProductVersion" Value="$(ProductVersion)" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+    <WixVariable Id="WixUILicenseRtf" Value="..\..\dummyeula.rtf" />
+
+    <util:BroadcastEnvironmentChange />
+
+    <CustomAction Id="PropertyAssignPrimeCacheAndTelemetry"
+                 Property="QtExecPrimeCacheAndTelemetryTarget"
+                 Value="&quot;[DOTNETHOME]\dotnet.exe&quot; exec &quot;[DOTNETHOME]\sdk\[NUGETVERSION]\dotnet.dll&quot; internal-reportinstallsuccess &quot;[EXEFULLPATH]&quot;"
+                 Execute="immediate" />
+    <CustomAction Id="QtExecPrimeCacheAndTelemetryTarget"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="no"/>
+
+    <InstallExecuteSequence>
+      <Custom Action="PropertyAssignPrimeCacheAndTelemetry" Before="QtExecPrimeCacheAndTelemetryTarget" Condition="NOT Installed" />
+      <Custom Action="QtExecPrimeCacheAndTelemetryTarget" Before="InstallFinalize" Condition="NOT Installed" />
+    </InstallExecuteSequence>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="DotnetToolSetup">
+      <Component Id="AppendDotnetToolShimPath" Directory="TARGETDIR" Guid="{241B7B8D-7817-41C1-807F-5F4010BF583A}">
+        <Environment Id="E_PATH" Name="PATH" Value="%USERPROFILE%\.dotnet\tools" Part="last" Action="set" System="no" />
+      </Component>
+    </ComponentGroup>
+    <Component Id="WorkloadInstallerTypeComp" Directory="InstallerTypeDir">
+      <File KeyPath="yes" Name="msi" Source="msi"/>
+    </Component>
+  </Fragment>
+</Wix>

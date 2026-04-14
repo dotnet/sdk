@@ -4,8 +4,9 @@
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
+using Microsoft.DotNet.Cli.Commands;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
@@ -14,8 +15,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     {
         public const string WorkloadSetsFolderName = "workloadsets";
 
-        private readonly string _sdkRootPath;
-        private readonly string _sdkOrUserLocalPath;
+        private readonly string? _sdkRootPath;
+        private readonly string? _sdkOrUserLocalPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
         private static HashSet<string> _outdatedManifestIds = new(StringComparer.OrdinalIgnoreCase) { "microsoft.net.workload.android", "microsoft.net.workload.blazorwebassembly", "microsoft.net.workload.ios",
@@ -29,6 +30,25 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
         private bool _useManifestsFromInstallState = true;
+        private bool? _globalJsonSpecifiedWorkloadSets = null;
+
+        /// <summary>
+        /// Optional hook that allows the CLI to ensure workload manifests are available (and repaired if necessary)
+        /// before this provider attempts to enumerate them.
+        /// </summary>
+        public IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
+
+        /// <summary>
+        /// Specifies how this provider should handle corrupt or missing workload manifests.
+        /// Default is <see cref="ManifestCorruptionFailureMode.Repair"/>.
+        /// </summary>
+        public ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
+
+        /// <summary>
+        /// Gets the resolved workload set, if any. This is populated during construction/refresh
+        /// and does not trigger corruption checking.
+        /// </summary>
+        public WorkloadSet? ResolvedWorkloadSet => _workloadSet;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -36,7 +56,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Exception? _exceptionToThrow = null;
         string? _globalJsonWorkloadSetVersion;
 
-        public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
+        public SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, string? userProfileDir, string? globalJsonPath)
             : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
         {
         }
@@ -46,7 +66,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
         }
 
-        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
+        internal SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
             {
@@ -170,7 +190,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (workloadSet is null)
             {
-                _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
+                _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor, out _globalJsonSpecifiedWorkloadSets);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
                     _useManifestsFromInstallState = false;
@@ -199,7 +219,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
             }
 
-            if (workloadSet == null && installState.UseWorkloadSets == true && availableWorkloadSets.Any())
+            if (workloadSet == null && (_globalJsonSpecifiedWorkloadSets ?? installState.ShouldUseWorkloadSets()) && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
@@ -246,19 +266,37 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadVersionInfo GetWorkloadVersion()
         {
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (HasMissingManifests(_workloadSet))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
+
             if (_globalJsonWorkloadSetVersion != null)
             {
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
                 // If this came from --info or workload --version, the error won't be thrown, but we should still
                 // suggest running `dotnet workload restore` to the user.
-                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, _globalJsonPathFromConstructor);
+                return new WorkloadVersionInfo(
+                    _globalJsonWorkloadSetVersion,
+                    IsInstalled: _exceptionToThrow == null,
+                    WorkloadSetsEnabledWithoutWorkloadSet: false,
+                    _globalJsonPathFromConstructor,
+                    GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false);
+                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
@@ -278,12 +316,24 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.UseWorkloadSets == true);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.ShouldUseWorkloadSets(), GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
         }
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (HasMissingManifests(_workloadSet))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
             ThrowExceptionIfManifestsNotAvailable();
 
             //  Scan manifest directories
@@ -357,6 +407,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                     if (manifestDirectory == null)
                     {
+                        if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                        {
+                            continue;
+                        }
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
@@ -374,6 +428,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                         if (manifestDirectory == null)
                         {
+                            if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                            {
+                                continue;
+                            }
                             throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
                         }
                         AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
@@ -505,6 +563,23 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         /// <summary>
+        /// Checks if the workload set has any manifests that are missing from disk.
+        /// This checks all manifest roots (including user-local installs).
+        /// </summary>
+        public bool HasMissingManifests(WorkloadSet workloadSet)
+        {
+            foreach (var manifestEntry in workloadSet.ManifestVersions)
+            {
+                var manifestSpecifier = new ManifestSpecifier(manifestEntry.Key, manifestEntry.Value.Version, manifestEntry.Value.FeatureBand);
+                if (GetManifestDirectoryFromSpecifier(manifestSpecifier) == null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
         /// </summary>
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
@@ -532,7 +607,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
                 else
                 {
-                    //  Get workload sets for all feature bands 
+                    //  Get workload sets for all feature bands
                     foreach (var featureBandDirectory in Directory.GetDirectories(manifestRoot))
                     {
                         AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);

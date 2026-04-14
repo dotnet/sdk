@@ -1,0 +1,5 @@
+﻿{
+  "author": "Microsoft",
+  "name": "dotnet gitattributes ファイル",
+  "description": "dotnet プロジェクトの gitattributes ファイルを作成します。"
+}

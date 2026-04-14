@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     /// <summary>
@@ -27,25 +25,17 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK version to check.</param>
         /// <returns>The <see cref="InstallType"/> associated with the SDK.</returns>
-        public static InstallType GetWorkloadInstallType(SdkFeatureBand sdkFeatureBand, string dotnetDir)
-        {
-            string installerTypePath = Path.Combine(dotnetDir, "metadata",
-                "workloads", $"{sdkFeatureBand.ToStringWithoutPrerelease()}", "installertype");
+        public static InstallType GetWorkloadInstallType(SdkFeatureBand sdkFeatureBand, string? dotnetDir) =>
+            dotnetDir is not null && File.Exists(Path.Combine(
+                dotnetDir, "metadata", "workloads", $"{sdkFeatureBand.ToStringWithoutPrerelease()}", "installertype", "msi"))
+            ? InstallType.Msi : InstallType.FileBased;
 
-            if (File.Exists(Path.Combine(installerTypePath, "msi")))
-            {
-                return InstallType.Msi;
-            }
-
-            return InstallType.FileBased;
-        }
-
-        public static string GetInstallStateFolder(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        public static string GetInstallStateFolder(SdkFeatureBand sdkFeatureBand, string? dotnetDir)
         {
             var installType = GetWorkloadInstallType(sdkFeatureBand, dotnetDir);
             var architecture = RuntimeInformation.ProcessArchitecture.ToString();
 
-            if (installType == InstallType.FileBased)
+            if (dotnetDir is not null && installType == InstallType.FileBased)
             {
                 return Path.Combine(dotnetDir, "metadata", "workloads", architecture, sdkFeatureBand.ToString(), "InstallState");
             }

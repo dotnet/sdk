@@ -29,7 +29,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             _logMessages = logMessages;
         }
 
-        public async System.Threading.Tasks.Task<DeploymentResponse> PollDeploymentStatusAsync(string deploymentUrl, string userName, string password)
+        public async Task<DeploymentResponse?> PollDeploymentStatusAsync(string deploymentUrl, string? userName, string? password)
         {
             var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(MaxMinutesToWait));
 
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
                 _log.LogMessage(Resources.ZIPDEPLOY_DeploymentStatusPolling);
             }
 
-            DeploymentResponse deploymentResponse = null;
+            DeploymentResponse? deploymentResponse = null;
             DeployStatus? deployStatus = DeployStatus.Pending;
 
             while (!tokenSource.IsCancellationRequested
@@ -71,26 +71,26 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             return deploymentResponse ?? new() { Status = DeployStatus.Unknown };
         }
 
-        private async System.Threading.Tasks.Task<T> InvokeGetRequestWithRetryAsync<T>(string url, string userName, string password, int retryCount, TimeSpan retryDelay, CancellationTokenSource cts)
+        private async Task<T?> InvokeGetRequestWithRetryAsync<T>(string url, string? userName, string? password, int retryCount, TimeSpan retryDelay, CancellationTokenSource cts)
         {
-            IHttpResponse response = null;
+            IHttpResponse? response = null;
             await RetryAsync(async () =>
             {
                 response = await _client.GetRequestAsync(new Uri(url, UriKind.RelativeOrAbsolute), userName, password, _userAgent, cts.Token);
             }, retryCount, retryDelay);
 
-            if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Accepted)
+            if (response?.StatusCode != HttpStatusCode.OK && response?.StatusCode != HttpStatusCode.Accepted)
             {
-                return default(T);
+                return default;
             }
-            else
+
+            using var stream = await response.GetResponseBodyAsync();
+            if (stream is null)
             {
-                using (var stream = await response.GetResponseBodyAsync())
-                {
-                    var reader = new StreamReader(stream, Encoding.UTF8);
-                    return FromJson<T>(reader.ReadToEnd());
-                }
+                return default;
             }
+            var reader = new StreamReader(stream, Encoding.UTF8);
+            return FromJson<T>(reader.ReadToEnd());
         }
 
         private async System.Threading.Tasks.Task RetryAsync(Func<System.Threading.Tasks.Task> func, int retryCount, TimeSpan retryDelay)
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             }
         }
 
-        private static T FromJson<T>(string jsonString)
+        private static T? FromJson<T>(string jsonString)
         {
             return JsonSerializer.Deserialize<T>(jsonString,
                 new JsonSerializerOptions

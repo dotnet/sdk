@@ -1,0 +1,27 @@
+﻿Warning: use of 'dotnet new --list' is deprecated. Use 'dotnet new list' instead.
+For more information, run: 
+   dotnet new list -h
+These templates matched your input: 
+Template
+API
+ASP.NET
+Blazor
+Class
+Console
+dotnet
+Dotnet
+EditorConfig
+global.json
+MSBuild
+MSTest
+MVC
+NuGet
+NUnit
+Protocol
+Razor
+Solution
+Web
+Windows
+Worker
+WPF
+xUnit

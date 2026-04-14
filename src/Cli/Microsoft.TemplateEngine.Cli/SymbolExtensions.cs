@@ -8,13 +8,13 @@ namespace Microsoft.TemplateEngine.Cli
 {
     public static class SymbolExtensions
     {
-        public static void EnsureHelpName(this CliOption cliOption)
+        public static void EnsureHelpName(this Option cliOption)
         {
             // System.CommandLine used to include the option's name without the prefix in the help output:
             // --name, --alias, -a <name> description
             // To keep that behavior, we need to set HelpName in explicit way.
             if (cliOption.HelpName is null
-                && cliOption is not CliOption<bool> // that was never a thing for boolean options
+                && cliOption is not Option<bool> // that was never a thing for boolean options
                 && cliOption.CompletionSources.Count == 0) // and options that have completions
             {
                 cliOption.HelpName = cliOption.Name.RemovePrefix();

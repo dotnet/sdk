@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         public NewCommandArgs(NewCommand command, ParseResult parseResult) : base(command, parseResult)
         {
-            List<CliToken> tokensToEvaluate = new();
+            List<Token> tokensToEvaluate = new();
             foreach (var childrenResult in parseResult.CommandResult.Children)
             {
                 if (childrenResult is OptionResult o)

@@ -9,18 +9,18 @@ namespace Microsoft.NET.Build.Tasks
     public class AddFacadesToReferences : TaskBase
     {
         [Required]
-        public ITaskItem[] References { get; set; }
+        public ITaskItem[]? References { get; set; }
 
         [Required]
-        public ITaskItem[] Facades { get; set; }
+        public ITaskItem[]? Facades { get; set; }
 
         [Output]
-        public ITaskItem[] UpdatedReferences { get; set; }
+        public ITaskItem[]? UpdatedReferences { get; set; }
 
         protected override void ExecuteCore()
         {
             Dictionary<string, ITaskItem> facadeDict = new(StringComparer.OrdinalIgnoreCase);
-            foreach (var facade in Facades)
+            foreach (var facade in Facades ?? Array.Empty<ITaskItem>())
             {
                 string filename = facade.GetMetadata("FileName");
                 TaskItem facadeWithMetadata = new(filename);
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tasks
 
             List<ITaskItem> updatedReferences = new();
 
-            foreach (var reference in References)
+            foreach (var reference in References ?? Array.Empty<ITaskItem>())
             {
                 string filename = reference.ItemSpec;
                 if (!facadeDict.ContainsKey(filename))
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            foreach (var facade in Facades)
+            foreach (var facade in Facades ?? Array.Empty<ITaskItem>())
             {
                 string filename = facade.GetMetadata("FileName");
                 updatedReferences.Add(facadeDict[filename]);

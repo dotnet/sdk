@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 )
             );
 
-        public static XDocument AddTelemetry(XDocument webConfig, string projectGuid, bool ignoreProjectGuid, string solutionFileFullPath, string projectFileFullPath)
+        public static XDocument? AddTelemetry(XDocument? webConfig, string? projectGuid, bool ignoreProjectGuid, string? solutionFileFullPath, string? projectFileFullPath)
         {
             try
             {
@@ -41,13 +41,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
             catch
             {
-                // Telemtry
+                // Telemetry
             }
 
             return webConfig;
         }
 
-        public static string GetProjectGuidFromSolutionFile(string solutionFileFullPath, string projectFileFullPath)
+        public static string? GetProjectGuidFromSolutionFile(string? solutionFileFullPath, string? projectFileFullPath)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 }
 
                 int parentLevelsToSearch = 5;
-                string solutionDirectory = Path.GetDirectoryName(projectFileFullPath);
+                string? solutionDirectory = Path.GetDirectoryName(projectFileFullPath);
 
                 while (parentLevelsToSearch-- > 0)
                 {
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     ];
                     foreach (string solutionFile in solutionFiles)
                     {
-                        string projectGuid = GetProjectGuid(solutionFile, projectFileFullPath);
+                        string? projectGuid = GetProjectGuid(solutionFile, projectFileFullPath);
                         if (!string.IsNullOrEmpty(projectGuid))
                         {
                             return projectGuid;
@@ -90,7 +90,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             return null;
         }
 
-        private static string GetProjectGuid(string solutionFileFullPath, string projectFileFullPath)
+        private static string? GetProjectGuid(string? solutionFileFullPath, string? projectFileFullPath)
         {
             if (!string.IsNullOrEmpty(solutionFileFullPath) && File.Exists(solutionFileFullPath))
             {
@@ -101,12 +101,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     if (match.Success)
                     {
                         string projectRelativePath = match.Groups["RELATIVEPATH"].Value.Trim();
-                        string projectFullPathConstructed = Path.Combine(Path.GetDirectoryName(solutionFileFullPath), projectRelativePath);
-                        projectFullPathConstructed = Path.GetFullPath((new Uri(projectFullPathConstructed)).LocalPath);
-                        if (string.Equals(projectFileFullPath, projectFullPathConstructed, StringComparison.OrdinalIgnoreCase))
+                        string? solutionFileDirectory = Path.GetDirectoryName(solutionFileFullPath);
+                        if (solutionFileDirectory is not null)
                         {
-                            string projectGuid = match.Groups["PROJECTGUID"].Value.Trim();
-                            return projectGuid;
+                            string projectFullPathConstructed = Path.Combine(solutionFileDirectory, projectRelativePath);
+                            projectFullPathConstructed = Path.GetFullPath((new Uri(projectFullPathConstructed)).LocalPath);
+                            if (string.Equals(projectFileFullPath, projectFullPathConstructed, StringComparison.OrdinalIgnoreCase))
+                            {
+                                string projectGuid = match.Groups["PROJECTGUID"].Value.Trim();
+                                return projectGuid;
+                            }
                         }
                     }
                 }

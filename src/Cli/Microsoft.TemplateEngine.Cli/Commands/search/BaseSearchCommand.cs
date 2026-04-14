@@ -33,13 +33,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             SetupTabularOutputOptions(this);
         }
 
-        public virtual CliOption<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
+        public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
 
-        public virtual CliOption<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
+        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
 
-        public IReadOnlyDictionary<FilterOptionDefinition, CliOption> Filters { get; protected set; }
+        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
 
-        internal static CliArgument<string> NameArgument { get; } = new("template-name")
+        internal static Argument<string> NameArgument { get; } = new("template-name")
         {
             Description = SymbolStrings.Command_Search_Argument_Name,
             Arity = new ArgumentArity(0, 1)
