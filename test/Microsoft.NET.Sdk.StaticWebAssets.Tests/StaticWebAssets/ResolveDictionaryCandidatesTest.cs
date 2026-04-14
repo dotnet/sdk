@@ -105,6 +105,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         candidate.GetMetadata("Hash").Should().Be(":hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=:");
         candidate.GetMetadata("TargetAsset").Should().Be(currentAsset.ItemSpec);
         candidate.GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site.js");
+        candidate.GetMetadata("OldFileFingerprint").Should().Be("prevfp");
     }
 
     [Fact]

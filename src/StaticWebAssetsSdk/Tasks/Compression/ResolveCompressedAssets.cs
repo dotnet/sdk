@@ -71,7 +71,7 @@ public class ResolveCompressedAssets : Task
         // Build lookup from content-encoding trait value → format name for reverse mapping of existing compressed assets.
         var formatsByContentEncoding = new Dictionary<string, string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         // Build lookup from format name → (extension, contentEncoding) for creating new compressed assets.
-        var formatsByName = new Dictionary<string, (string Extension, string ContentEncoding, bool UsesDictionary)>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
+        var formatsByName = new Dictionary<string, CompressionFormatInfo>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         var knownExtensions = new HashSet<string>(CompressionFormats.Length, StringComparer.OrdinalIgnoreCase);
         foreach (var format in CompressionFormats)
         {
@@ -93,7 +93,7 @@ public class ResolveCompressedAssets : Task
                 Log.LogError("Duplicate compression format name '{0}'.", formatName);
                 return false;
             }
-            formatsByName[formatName] = (extension, contentEncoding, usesDictionary);
+            formatsByName[formatName] = new CompressionFormatInfo(extension, contentEncoding, usesDictionary);
 
             if (formatsByContentEncoding.ContainsKey(contentEncoding))
             {
@@ -224,12 +224,12 @@ public class ResolveCompressedAssets : Task
                 pathTemplate ??= CreatePathTemplate(asset, outputPath);
                 relativePath ??= asset.EmbedTokens(asset.RelativePath);
 
-                var (extension, contentEncoding, usesDictionary) = formatsByName[formatName];
+                var format = formatsByName[formatName];
 
                 // Dictionary-requiring formats (e.g. dcz) can only produce candidates when a
                 // dictionary candidate exists for the asset.
                 ITaskItem dictCandidate = null;
-                if (usesDictionary)
+                if (format.UsesDictionary)
                 {
                     if (!dictionaryCandidatesByIdentity.TryGetValue(asset.Identity, out dictCandidate))
                     {
@@ -242,14 +242,17 @@ public class ResolveCompressedAssets : Task
                     }
                 }
 
+                var oldFileFingerprint = dictCandidate?.GetMetadata("OldFileFingerprint");
+
                 if (TryCreateCompressedAsset(
                     asset,
                     outputPath,
-                    extension,
-                    contentEncoding,
+                    format.Extension,
+                    format.ContentEncoding,
                     pathTemplate,
                     relativePath,
                     dictCandidate?.ItemSpec,
+                    oldFileFingerprint,
                     ref previousAsset,
                     out var compressedAsset))
                 {
@@ -367,6 +370,7 @@ public class ResolveCompressedAssets : Task
         string pathTemplate,
         string relativePath,
         string dictionaryId,
+        string oldFileFingerprint,
         ref StaticWebAsset previousAsset,
         out StaticWebAsset result)
     {
@@ -382,12 +386,19 @@ public class ResolveCompressedAssets : Task
         var fileName = $"{pathTemplate}-{asset.Fingerprint}{dictSuffix}{fileExtension}";
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
+        // For dictionary-compressed formats, embed the old file's fingerprint in the RelativePath
+        // so that multiple dictionaries for the same asset produce distinct served URLs.
+        // Format: name.{oldFingerprint}.dcz (e.g., site.prevfp.dcz)
+        var compressedRelativePath = !string.IsNullOrEmpty(oldFileFingerprint)
+            ? $"{relativePath}.{oldFileFingerprint}{fileExtension}"
+            : $"{relativePath}{fileExtension}";
+
         if (previousAsset != null)
         {
             result = new StaticWebAsset(previousAsset)
             {
                 Identity = itemSpec,
-                RelativePath = $"{relativePath}{fileExtension}",
+                RelativePath = compressedRelativePath,
                 AssetTraitValue = assetTraitValue,
             };
         }
@@ -396,7 +407,7 @@ public class ResolveCompressedAssets : Task
             result = new StaticWebAsset(asset)
             {
                 Identity = itemSpec,
-                RelativePath = $"{relativePath}{fileExtension}",
+                RelativePath = compressedRelativePath,
                 OriginalItemSpec = asset.Identity,
                 RelatedAsset = asset.Identity,
                 AssetRole = "Alternative",
@@ -412,5 +423,19 @@ public class ResolveCompressedAssets : Task
         }
 
         return true;
+    }
+
+    internal readonly struct CompressionFormatInfo
+    {
+        public CompressionFormatInfo(string extension, string contentEncoding, bool usesDictionary)
+        {
+            Extension = extension;
+            ContentEncoding = contentEncoding;
+            UsesDictionary = usesDictionary;
+        }
+
+        public string Extension { get; }
+        public string ContentEncoding { get; }
+        public bool UsesDictionary { get; }
     }
 }

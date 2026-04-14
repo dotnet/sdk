@@ -421,12 +421,13 @@ public class ResolveCompressedAssetsTest
         }).ToArray();
     }
 
-    private ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string dictionaryPath, string hash)
+    private ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string dictionaryPath, string hash, string oldFileFingerprint = "prevfp")
     {
         var item = new TaskItem(dictionaryPath);
         item.SetMetadata("Hash", hash);
         item.SetMetadata("TargetAsset", targetAssetIdentity);
         item.SetMetadata("MatchPattern", "matched/path");
+        item.SetMetadata("OldFileFingerprint", oldFileFingerprint);
         return item;
     }
 
@@ -440,7 +441,7 @@ public class ResolveCompressedAssetsTest
         Directory.CreateDirectory(Path.GetDirectoryName(dictPath));
         File.WriteAllText(dictPath, "previous content");
 
-        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":abc123hash:");
+        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":abc123hash:", "oldfp123");
 
         var task = new ResolveCompressedAssets()
         {
@@ -464,6 +465,10 @@ public class ResolveCompressedAssetsTest
         compressed[1].ItemSpec.Should().EndWith(".dcz");
         compressed[1].GetMetadata("DictionaryPath").Should().Be(dictPath);
         compressed[1].GetMetadata("DictionaryHash").Should().Be(":abc123hash:");
+
+        // The dcz RelativePath should include the old file fingerprint
+        var dczAsset = StaticWebAsset.FromTaskItem(compressed[1]);
+        dczAsset.RelativePath.Should().Contain(".oldfp123.dcz");
     }
 
     [Fact]

@@ -417,7 +417,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- CDT: Resolve dictionary candidates from a previous asset pack -->
   <Target Name="ResolveDictionaryCandidates"
-    Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != '' and Exists('$(StaticWebAssetPreviousAssetPack)')">
+    Condition="'$(StaticWebAssetDictionaryCompression)' == 'true' and '$(StaticWebAssetPreviousAssetPack)' != ''">
+
+    <Error
+      Condition="!Exists('$(StaticWebAssetPreviousAssetPack)')"
+      Text="The previous asset pack specified in StaticWebAssetPreviousAssetPack was not found: '$(StaticWebAssetPreviousAssetPack)'. Ensure the path is correct or remove the property to skip dictionary compression." />
 
     <ResolveDictionaryCandidates
       AssetPackPath="$(StaticWebAssetPreviousAssetPack)"
