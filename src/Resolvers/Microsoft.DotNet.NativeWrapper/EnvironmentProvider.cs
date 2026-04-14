@@ -64,8 +64,8 @@ namespace Microsoft.DotNet.NativeWrapper
             // the current process path on .NET Framework. We are expected to find dotnet on PATH.
             dotnetExe = _getCurrentProcessPath();
 
-            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileNameWithoutExtension(dotnetExe)
-                    .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
+            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileName(dotnetExe)
+                    .Equals(Constants.DotNetFileName, StringComparison.InvariantCultureIgnoreCase))
 #endif
             {
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
