@@ -11,8 +11,7 @@
 
   <ItemGroup>
     <Compile Remove="Snapshots\**\*" />
-    <Content Include="Snapshots\**\*" />
-    <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -29,8 +29,7 @@
 
   <ItemGroup>
     <Compile Remove="Approvals\**\*" />
-    <Content Include="Approvals\**\*" />
-    <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
+    <None Include="Approvals\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -187,17 +187,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string thisDir = Path.GetDirectoryName(typeof(StringExtractorTests).Assembly.Location)
-                ?? throw new Exception("Failed to get assembly location, which is required to access test templates.");
             string templateJsonPath = Path.GetFullPath(Path.Combine(
-                thisDir,
-                "..",
-                "..",
-                "..",
-                "..",
-                "..",
-                "test",
-                "Microsoft.TemplateEngine.TestTemplates",
+                AppContext.BaseDirectory,
                 "test_templates",
                 "TemplateWithLocalization",
                 ".template.config",

@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             s_called = true;
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Snapshots",
+                    directory: Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                     typeName: type.Name,
                     methodName: method.Name));
 

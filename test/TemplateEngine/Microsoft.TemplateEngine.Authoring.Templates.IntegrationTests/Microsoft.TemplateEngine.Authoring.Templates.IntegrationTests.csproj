@@ -16,12 +16,7 @@
 
   <ItemGroup>
     <Compile Remove="Snapshots\**\*" />
-    <Content Include="Snapshots\**\*" />
-    <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Snapshots\templatepack.CLI.verified\templatepack\templatepack.csproj" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

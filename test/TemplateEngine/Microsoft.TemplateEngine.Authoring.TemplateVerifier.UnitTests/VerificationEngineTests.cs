@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async Task ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
+            string snapshotsDir = Path.Combine(AppContext.BaseDirectory, "Snapshots");
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async Task ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
+            string snapshotsDir = Path.Combine(AppContext.BaseDirectory, "Snapshots");
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))

@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Approvals",
+                    directory: Path.Combine(AppContext.BaseDirectory, "Approvals"),
                     typeName: type.Name,
                     methodName: method.Name));
 

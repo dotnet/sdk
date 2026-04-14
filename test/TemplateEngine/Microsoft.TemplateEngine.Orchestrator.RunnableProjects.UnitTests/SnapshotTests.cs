@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
@@ -140,7 +140,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -237,7 +237,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -266,7 +266,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
                     IsCommandExpectedToFail = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
@@ -295,7 +295,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals")
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 

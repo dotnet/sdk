@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             s_called = true;
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Approvals",
+                    directory: Path.Combine(AppContext.BaseDirectory, "Approvals"),
                     typeName: type.Name,
                     methodName: method.Name));
 

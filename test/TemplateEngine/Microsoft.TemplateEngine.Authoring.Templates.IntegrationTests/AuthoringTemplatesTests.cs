@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "Basic",
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "WithParams",
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "NoConfigFolder",
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "Basic",
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "WithName",
@@ -166,7 +166,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "NoMSBuildTasks",
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 VerifyCommandOutput = true,
@@ -211,7 +211,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 VerifyCommandOutput = true,
