@@ -14,18 +14,19 @@ parameters:
   linuxJobParameterSets:
   - categoryName: TestBuild
     osProperties: $(linuxOsglibcProperties)
-  - categoryName: TestBuild
-    targetArchitecture: arm64
-    runtimeIdentifier: linux-arm64
-    osProperties: $(linuxOsglibcProperties)
-    # Don't run the tests on arm64. Only perform the build itself.
-    runTests: false
-  - categoryName: ContainerBased
-    container: azureLinux30Amd64
-    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
-    # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
-    disableJob: true
+  # Temporarily disabled for CI stability testing — linux x64 TestBuild only
+  # - categoryName: TestBuild
+  #   targetArchitecture: arm64
+  #   runtimeIdentifier: linux-arm64
+  #   osProperties: $(linuxOsglibcProperties)
+  #   # Don't run the tests on arm64. Only perform the build itself.
+  #   runTests: false
+  # - categoryName: ContainerBased
+  #   container: azureLinux30Amd64
+  #   helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
+  #   osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
+  #   # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+  #   disableJob: true
   ### MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild

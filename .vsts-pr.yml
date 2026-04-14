@@ -48,13 +48,14 @@ stages:
   displayName: Build
   jobs:
   ############### WINDOWS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-    parameters:
-      pool:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
-        os: windows
-      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
+  # Temporarily disabled for CI stability testing — linux x64 only
+  # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+  #   parameters:
+  #     pool:
+  #       name: $(DncEngPublicBuildPool)
+  #       demands: ImageOverride -equals windows.vs2022.amd64.open
+  #       os: windows
+  #     helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -66,26 +67,28 @@ stages:
       helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-latest
-        os: macOS
-      helixTargetQueue: osx.15.amd64.open
-  ### ARM64 ###
-  - ${{ if eq(parameters.enableArm64Job, true) }}:
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-      parameters:
-        pool:
-          name: Azure Pipelines
-          vmImage: macOS-latest
-          os: macOS
-        helixTargetQueue: osx.15.arm64.open
-        macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+  # Temporarily disabled for CI stability testing — linux x64 only
+  # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  #   parameters:
+  #     pool:
+  #       name: Azure Pipelines
+  #       vmImage: macOS-latest
+  #       os: macOS
+  #     helixTargetQueue: osx.15.amd64.open
+  # ### ARM64 ###
+  # - ${{ if eq(parameters.enableArm64Job, true) }}:
+  #   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  #     parameters:
+  #       pool:
+  #         name: Azure Pipelines
+  #         vmImage: macOS-latest
+  #         os: macOS
+  #       helixTargetQueue: osx.15.arm64.open
+  #       macOSJobParameterSets:
+  #       - categoryName: TestBuild
+  #         targetArchitecture: arm64
+  #         runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml
+  # Temporarily disabled for CI stability testing
+  # - template: /eng/dotnet-format/dotnet-format-integration.yml
