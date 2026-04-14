@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -396,19 +398,28 @@ public class MuxerHandlerTests : IDisposable
     [Fact]
     public void GetDotnetProcessPidInfo_DoesNotKillProcess()
     {
-        // Start a dotnet process we can look up by name.
-        // Use Environment.ProcessPath to get the full path to the current dotnet host,
-        // avoiding PATH resolution issues on CI where the working directory may not exist.
-        var dotnetPath = Environment.ProcessPath!;
+        // We need a long-lived "dotnet" process whose lifetime we control.
+        // Using `dotnet run` on the WaitOnStdin test asset (blocks on stdin) gives us a
+        // dotnet.exe process that stays alive until we signal it via stdin.
+        var dotnetDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
+        var dotnetRoot = Path.GetFullPath(Path.Combine(dotnetDir!, "..", "..", ".."));
+        var dotnetExe = Path.Combine(dotnetRoot, DotnetupUtilities.GetDotnetExeName());
+
+        // Locate the WaitOnStdin test asset via build-time embedded metadata.
+        var testAssetsDir = typeof(MuxerHandlerTests).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First(a => a.Key == "TestAssetsDir").Value!;
+        var testAssetDir = Path.Combine(testAssetsDir, "WaitOnStdin");
+
         var proc = new Process();
-        proc.StartInfo.FileName = dotnetPath;
-        proc.StartInfo.Arguments = "help";
+        proc.StartInfo.FileName = dotnetExe;
+        proc.StartInfo.Arguments = $"run --project \"{testAssetDir}\" --no-launch-profile";
         proc.StartInfo.UseShellExecute = false;
         proc.StartInfo.CreateNoWindow = true;
+        proc.StartInfo.RedirectStandardInput = true;
         proc.StartInfo.RedirectStandardOutput = true;
         proc.StartInfo.RedirectStandardError = true;
         proc.StartInfo.WorkingDirectory = Path.GetTempPath();
-        // Suppress .NET welcome message / first-run experience in test output
         proc.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
         proc.Start();
 
@@ -416,11 +427,12 @@ public class MuxerHandlerTests : IDisposable
         {
             int pid = proc.Id;
 
-            // Call the utility — this enumerates processes without disposing them
+            // The dotnet process is alive (building or running the blocking app).
             string pidInfo = DotnetupUtilities.GetDotnetProcessPidInfo();
-            pidInfo.Should().Contain(pid.ToString(), "our started process should appear in the PID list");
+            pidInfo.Should().Contain(pid.ToString(),
+                "our started process should appear in the PID list");
 
-            // The actual process should still be running
+            // The process must still be alive after enumeration.
             proc.HasExited.Should().BeFalse(
                 "GetDotnetProcessPidInfo must not kill running dotnet processes");
         }
@@ -428,10 +440,12 @@ public class MuxerHandlerTests : IDisposable
         {
             try
             {
-                if (!proc.HasExited)
+                // Signal the blocking app to exit by closing its stdin pipe.
+                proc.StandardInput.Close();
+                if (!proc.WaitForExit(10_000))
                 {
                     proc.Kill();
-                    proc.WaitForExit(5000);
+                    proc.WaitForExit(5_000);
                 }
             }
             catch { }
