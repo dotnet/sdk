@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
@@ -22,7 +23,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingName", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
@@ -46,7 +47,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingOptionalData", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
