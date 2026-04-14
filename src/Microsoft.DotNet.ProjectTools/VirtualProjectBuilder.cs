@@ -22,6 +22,16 @@ public sealed class VirtualProjectBuilder
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
 
+    /// <summary>
+    /// Prevents the virtual project's <see cref="ProjectRootElement"/> from being garbage collected
+    /// when MSBuild's <see cref="ProjectRootElementCache"/> demotes it to a weak reference
+    /// (which can happen when many SDK import files fill the cache during NuGet restore).
+    /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate the project with different properties
+    /// would fail to find the <see cref="ProjectRootElement"/> in the cache and try to load it from disk,
+    /// resulting in MSB4025 because the virtual project file does not exist on disk.
+    /// </summary>
+    private ProjectRootElement? _projectRootElement;
+
     internal string EntryPointFileFullPath { get; }
 
     internal SourceFile EntryPointSourceFile
@@ -396,6 +406,7 @@ public sealed class VirtualProjectBuilder
                 using var xmlReader = XmlReader.Create(reader);
                 var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
                 projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
+                _projectRootElement = projectRoot;
                 return projectRoot;
             }
         }
