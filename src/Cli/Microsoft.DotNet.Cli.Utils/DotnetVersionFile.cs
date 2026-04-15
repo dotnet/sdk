@@ -5,22 +5,26 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     internal class DotnetVersionFile
     {
-        public bool Exists { get; set; }
+        public bool Exists { get; init; }
 
-        public string CommitSha { get; set; }
+        public string CommitSha { get; init; }
 
-        public string BuildNumber { get; set; }
+        public string BuildNumber { get; init; }
+
+        public string FullNugetVersion { get; init; }
+
+        public string SdkFeatureBand { get; init; }
 
         /// <summary>
         /// The runtime identifier (rid) that this CLI was built for.
         /// </summary>
         /// <remarks>
-        /// This is different than RuntimeInformation.RuntimeIdentifier because the 
+        /// This is different than RuntimeInformation.RuntimeIdentifier because the
         /// BuildRid is a RID that is guaranteed to exist and works on the current machine. The
-        /// RuntimeInformation.RuntimeIdentifier may be for a new version of the OS that 
+        /// RuntimeInformation.RuntimeIdentifier may be for a new version of the OS that
         /// doesn't have full support yet.
         /// </remarks>
-        public string BuildRid { get; set; }
+        public string BuildRid { get; init; }
 
         public DotnetVersionFile(string versionFilePath)
         {
@@ -44,6 +48,14 @@ namespace Microsoft.DotNet.Cli.Utils
                     else if (index == 2)
                     {
                         BuildRid = line;
+                    }
+                    else if (index == 3)
+                    {
+                        FullNugetVersion = line;
+                    }
+                    else if (index == 4)
+                    {
+                        SdkFeatureBand = line;
                     }
                     else
                     {

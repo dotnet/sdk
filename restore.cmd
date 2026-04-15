@@ -1,3 +1,3 @@
 @echo off
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "& """%~dp0eng\common\build.ps1""" -restore %*"
+powershell -NoLogo -ExecutionPolicy ByPass -NoProfile -command "& """%~dp0eng\common\build.ps1""" -restore -nativeToolsOnMachine -msbuildEngine dotnet %*"
 exit /b %ErrorLevel%

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-update" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-tool-update" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet tool update
 .PP
@@ -27,21 +27,24 @@ dotnet-tool-update - Updates the specified .NET tool on your machine.
 .nf
 \f[C]
 dotnet tool update <PACKAGE_ID> -g|--global
-    [--add-source <SOURCE>] [--configfile <FILE>]
+    [--add-source <SOURCE>] [--allow-downgrade]
+    [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --tool-path <PATH>
-    [--add-source <SOURCE>] [--configfile <FILE>]
+    [--add-source <SOURCE>] [--allow-downgrade]
+    [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive] 
     [--no-cache] [--prerelease]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --local
-    [--add-source <SOURCE>] [--configfile <FILE>]
+    [--add-source <SOURCE>] [--allow-downgrade]
+    [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
@@ -79,6 +82,13 @@ Adds an additional NuGet package source to use during installation.
 Feeds are accessed in parallel, not sequentially in some order of precedence.
 If the same package and version is in multiple feeds, the fastest feed wins.
 For more information, see What happens when a NuGet package is installed?.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--allow-downgrade\f[B]\f[R]
+.RS 2
+.PP
+Allow package downgrade when installing or updating a .NET tool package.
+Suppresses the warning, \[lq]The requested version x.x.x is lower than existing version x.x.x.\[rq]
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
@@ -176,6 +186,9 @@ For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .PP
 The version range of the tool package to update to.
 This cannot be used to downgrade versions, you must \f[V]uninstall\f[R] newer versions first.
+.PP
+Starting in .NET 8.0, \f[V]--version Major.Minor.Patch\f[R] refers to a specific major.minor.patch version, including unlisted versions.
+To get the latest version of a certain major.minor version instead, use \f[V]--version Major.Minor.*\f[R].
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

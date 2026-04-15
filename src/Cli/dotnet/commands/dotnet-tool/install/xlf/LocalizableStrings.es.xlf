@@ -93,6 +93,16 @@ Si desea crear un manifiesto, use la marca "--create-manifest-if-needed" con el 
         <target state="translated">Permitir que una herramienta .NET se ponga al día a versiones más recientes del runtime de .NET si el runtime al que se dirige no está instalado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Reemplazar todos los orígenes de paquetes NuGet que se usarán durante la instalación por estos.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">FUENTE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">La versión del paquete de herramientas para instalar.</target>
@@ -183,8 +193,8 @@ Para ver más razones, como el cumplimiento de la nomenclatura de los paquetes, 
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

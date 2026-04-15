@@ -74,6 +74,11 @@
         <target state="translated">Das Verzeichnis, das die aufzulistenden Tools enthält.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolListFormatOptionDescription">
+        <source>The output format for the list of tools.</source>
+        <target state="translated">Das Ausgabeformat für die Liste der Tools.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

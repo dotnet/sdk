@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -15,9 +13,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private readonly DirectoryInfo _watchedDirectory;
 
-        private Dictionary<string, FileMeta> _knownEntities = new Dictionary<string, FileMeta>();
-        private Dictionary<string, FileMeta> _tempDictionary = new Dictionary<string, FileMeta>();
-        private HashSet<string> _changes = new HashSet<string>();
+        private Dictionary<string, FileMeta> _knownEntities = new();
+        private Dictionary<string, FileMeta> _tempDictionary = new();
+        private Dictionary<string, ChangeKind> _changes = new();
 
         private Thread _pollingThread;
         private bool _raiseEvents;
@@ -31,19 +29,21 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
             BasePath = _watchedDirectory.FullName;
 
-            _pollingThread = new Thread(new ThreadStart(PollingLoop));
-            _pollingThread.IsBackground = true;
-            _pollingThread.Name = nameof(PollingFileWatcher);
+            _pollingThread = new Thread(new ThreadStart(PollingLoop))
+            {
+                IsBackground = true,
+                Name = nameof(PollingFileWatcher)
+            };
 
             CreateKnownFilesSnapshot();
 
             _pollingThread.Start();
         }
 
-        public event EventHandler<(string, bool)> OnFileChange;
+        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
 
 #pragma warning disable CS0067 // not used
-        public event EventHandler<Exception> OnError;
+        public event EventHandler<Exception>? OnError;
 #pragma warning restore
 
         public string BasePath { get; }
@@ -106,8 +106,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (!_knownEntities.ContainsKey(fullFilePath))
                 {
-                    // New file
-                    RecordChange(f);
+                    // New file or directory
+                    RecordChange(f, ChangeKind.Add);
                 }
                 else
                 {
@@ -115,17 +115,18 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     try
                     {
-                        if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                        if (!fileMeta.FileInfo.Attributes.HasFlag(FileAttributes.Directory) &&
+                            fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
                         {
                             // File changed
-                            RecordChange(f);
+                            RecordChange(f, ChangeKind.Update);
                         }
 
-                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, true);
+                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: true);
                     }
                     catch (FileNotFoundException)
                     {
-                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, false);
+                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: false);
                     }
                 }
 
@@ -136,50 +137,39 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 if (!file.Value.FoundAgain)
                 {
-                    // File deleted
-                    RecordChange(file.Value.FileInfo);
+                    // File or directory deleted
+                    RecordChange(file.Value.FileInfo, ChangeKind.Delete);
                 }
             }
 
             NotifyChanges();
 
             // Swap the two dictionaries
-            var swap = _knownEntities;
-            _knownEntities = _tempDictionary;
-            _tempDictionary = swap;
-
+            (_tempDictionary, _knownEntities) = (_knownEntities, _tempDictionary);
             _tempDictionary.Clear();
         }
 
-        private void RecordChange(FileSystemInfo fileInfo)
+        private void RecordChange(FileSystemInfo fileInfo, ChangeKind kind)
         {
-            if (fileInfo == null ||
-                _changes.Contains(fileInfo.FullName) ||
+            if (_changes.ContainsKey(fileInfo.FullName) ||
                 fileInfo.FullName.Equals(_watchedDirectory.FullName, StringComparison.Ordinal))
             {
                 return;
             }
 
-            _changes.Add(fileInfo.FullName);
-            if (fileInfo.FullName != _watchedDirectory.FullName)
+            _changes.Add(fileInfo.FullName, kind);
+
+            if (fileInfo is FileInfo { Directory: { } directory })
             {
-                var file = fileInfo as FileInfo;
-                if (file != null)
-                {
-                    RecordChange(file.Directory);
-                }
-                else
-                {
-                    var dir = fileInfo as DirectoryInfo;
-                    if (dir != null)
-                    {
-                        RecordChange(dir.Parent);
-                    }
-                }
+                RecordChange(directory, ChangeKind.Update);
+            }
+            else if (fileInfo is DirectoryInfo { Parent: { } parent })
+            {
+                RecordChange(parent, ChangeKind.Update);
             }
         }
 
-        private void ForeachEntityInDirectory(DirectoryInfo dirInfo, Action<FileSystemInfo> fileAction)
+        private static void ForeachEntityInDirectory(DirectoryInfo dirInfo, Action<FileSystemInfo> fileAction)
         {
             if (!dirInfo.Exists)
             {
@@ -201,8 +191,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 fileAction(entity);
 
-                var subdirInfo = entity as DirectoryInfo;
-                if (subdirInfo != null)
+                if (entity is DirectoryInfo subdirInfo)
                 {
                     ForeachEntityInDirectory(subdirInfo, fileAction);
                 }
@@ -211,17 +200,14 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void NotifyChanges()
         {
-            foreach (var path in _changes)
+            foreach (var (path, kind) in _changes)
             {
                 if (_disposed || !_raiseEvents)
                 {
                     break;
                 }
 
-                if (OnFileChange != null)
-                {
-                    OnFileChange(this, (path, false));
-                }
+                OnFileChange?.Invoke(this, (path, kind));
             }
         }
 

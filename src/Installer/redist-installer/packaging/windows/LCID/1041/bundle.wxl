@@ -1,0 +1,84 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">[WixBundleName] インストーラー</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">取り消しますか?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
+  <String Id="HelpHeader">セットアップのヘルプ</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - インストール、修復、アンインストール
+   または、バンドルの完全なローカル コピーをディレクトリに作成します。'/install' が既定値です。
+
+/passive | /quiet - 最小限の UI をプロンプトなしで表示するか、UI と
+   プロンプトを表示しません。既定では、UI とすべてのプロンプトが表示されます。
+
+/norestart - 再起動の試行をすべて抑止します。既定では、再起動の前に UI が表示されます。
+/log [\[]"log.txt"[\]] - 特定のファイルにログを出力します。既定では、ログ ファイルは %TEMP% 内に作成されます。</String>
+  <String Id="HelpCloseButton">閉じる(&amp;C)</String>
+  <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
+  <String Id="InstallOptionsButton">オプション(&amp;O)</String>
+  <String Id="InstallInstallButton">インストール(&amp;I)</String>
+  <String Id="InstallCloseButton">閉じる(&amp;C)</String>
+  <String Id="ProgressHeader">セットアップの進行状況</String>
+  <String Id="ProgressLabel">処理中:</String>
+  <String Id="OverallProgressPackageText">初期化しています...</String>
+  <String Id="ProgressCancelButton">キャンセル(&amp;C)</String>
+  <String Id="ModifyHeader">セットアップの変更</String>
+  <String Id="ModifyRepairButton">修復(&amp;R)</String>
+  <String Id="ModifyUninstallButton">アンインストール(&amp;U)</String>
+  <String Id="ModifyCloseButton">閉じる(&amp;C)</String>
+  <String Id="SuccessRepairHeader">修復が正常に完了しました</String>
+  <String Id="SuccessUninstallHeader">アンインストールが正常に完了しました</String>
+  <String Id="SuccessHeader">セットアップ完了</String>
+  <String Id="SuccessLaunchButton">起動(&amp;L)</String>
+  <String Id="SuccessRestartText">ソフトウェアのインストールを完了するには、コンピューターを再起動する必要があります。</String>
+  <String Id="SuccessRestartButton">再起動(&amp;R)</String>
+  <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
+  <String Id="FailureHeader">セットアップに失敗しました</String>
+  <String Id="FailureInstallHeader">セットアップに失敗しました</String>
+  <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
+  <String Id="FailureRepairHeader">修復に失敗しました</String>
+  <String Id="FailureHyperlinkLogText">1 つまたは複数の問題により、セットアップが失敗しました。問題を解決してからセットアップを再試行してください。詳細については、&lt;a href="#"&gt;ログ ファイル&lt;/a&gt;を参照してください。</String>
+  <String Id="FailureRestartText">ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。</String>
+  <String Id="FailureRestartButton">再起動(&amp;R)</String>
+  <String Id="FailureCloseButton">閉じる(&amp;C)</String>
+  <String Id="FilesInUseHeader">ファイルが使用中</String>
+  <String Id="FilesInUseLabel">次のアプリケーションは、更新の必要があるファイルを使用しています:</String>
+  <String Id="FilesInUseCloseRadioButton">アプリケーションを閉じて再起動を試みる。(&amp;A)</String>
+  <String Id="FilesInUseDontCloseRadioButton">アプリケーションを終了させない (コンピューターの再起動が必要になります)(&amp;D)</String>
+  <String Id="FilesInUseOkButton">OK(&amp;O)</String>
+  <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
+  <String Id="FirstTimeWelcomeMessage">正常にインストールされました。
+
+次の製品がインストールされました:
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET ランタイム [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core ランタイム [ASPNETCOREVERSION]
+    • .NET Windows デスクトップ ランタイム [WINFORMSANDWPFVERSION]
+
+この製品は利用状況データを収集します
+    • 詳細情報とオプトアウト https://aka.ms/dotnet-cli-telemetry
+
+リソース
+    • .NET Documentation https://aka.ms/dotnet-docs
+    • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
+    • リリース ノート https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • チュートリアル https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK</String>
+  <String Id="WelcomeDescription">
+    .Net SDK は、.NET アプリケーションをビルド、実行、テストするために使用されます。複数の言語、エディター、開発者ツールから選択し、ライブラリの大規模なエコシステムを利用して、Web、モバイル、デスクトップ、ゲーム、IoT 用のアプリを作成できます。ぜひご利用ください。</String>
+  <String Id="LearnMoreTitle">.Net の詳細情報</String>
+  <String Id="ResourcesHeader">リソース</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET ドキュメント&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK ドキュメント&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;プライバシーに関する声明&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET のライセンス情報&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;テレメトリ コレクションおよびオプトアウト&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">インストール メモ</String>
+  <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
+  </String>
+  <String Id="VisualStudioWarning">.NET [VERSIONMAJOR].[VERSIONMINOR] を Visual Studio と使用する場合は、Visual Studio 2022 [MINIMUMVSVERSION] 以降が必要です。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;詳細情報&lt;/A&gt;
+  </String>
+  <String Id="LicenseAssent">インストール をクリックすると、次の条項に同意したものと見なされます:</String>
+  <String Id="InstallPathx64x86">x64 SDK インストールのインストール パス: "[DOTNETHOME_X64]" を x86 SDK インストールの場合と同じにすることはできません: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x86">ARM64 SDK インストールのインストール パス: "[DOTNETHOME_ARM64]" を x86 SDK インストールの場合と同じにすることはできません: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x64">ARM64 SDK インストールのインストール パス: "[DOTNETHOME_ARM64]" を x64 SDK インストールの場合と同じにすることはできません: "[DOTNETHOME_X64]"</String>
+</WixLocalization>
