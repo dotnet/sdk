@@ -34,6 +34,9 @@
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }
 
+# Specifies semi-colon delimited list of warning codes that should not be treated as errors.
+[string]$warnNotAsError = if (Test-Path variable:warnNotAsError) { $warnNotAsError } else { '' }
+
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
@@ -299,6 +302,8 @@ function InstallDotNet([string] $dotnetRoot,
 
   $dotnetVersionLabel = "'sdk v$version'"
 
+  # For performance this check is duplicated in src/Microsoft.DotNet.Arcade.Sdk/src/InstallDotNetCore.cs
+  # if you are making changes here, consider if you need to make changes there as well.
   if ($runtime -ne '' -and $runtime -ne 'sdk') {
     $runtimePath = $dotnetRoot
     $runtimePath = $runtimePath + "\shared"
@@ -822,6 +827,10 @@ function MSBuild-Core() {
   }
   else {
     $cmdArgs += ' /p:TreatWarningsAsErrors=false'
+  }
+
+  if ($warnAsError -and $warnNotAsError) {
+    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
   }
 
   foreach ($arg in $args) {

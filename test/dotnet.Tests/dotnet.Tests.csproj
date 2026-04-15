@@ -32,6 +32,14 @@
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
+    <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MSTestVersion</_Parameter1>
@@ -81,9 +89,9 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks.XunitV3" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper.XunitV3" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />

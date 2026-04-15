@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Snapshots\**\*" />
+    <Content Include="Snapshots\**\*" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+</Project>

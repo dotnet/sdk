@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.DotNet.Cli.Utils;
@@ -16,6 +17,22 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class DotnetCommandTests
 {
+    /// <summary>
+    /// Subclass that overrides process execution so tests verify path resolution
+    /// without actually launching a process. On Windows, copying cmd.exe as a
+    /// fake dotnet.exe causes cmd.exe to open an interactive shell that hangs forever.
+    /// </summary>
+    private sealed class TestableDotnetCommand : DotnetForwardCommand
+    {
+        public TestableDotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? env = null)
+            : base(parseResult, env) { }
+
+        protected override int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
+        {
+            return 0;
+        }
+    }
+
     // ── Parser tests ─────────────────────────────────────────────────────
 
     [Fact]
@@ -119,7 +136,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet", "--version"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // The fake dotnet should exit with 0
@@ -150,7 +167,7 @@ public class DotnetCommandTests
                     IsFullyConfigured: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // Should succeed because it used the configured user path, not the default
@@ -177,7 +194,7 @@ public class DotnetCommandTests
                 configuredRoot: null);
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -207,7 +224,7 @@ public class DotnetCommandTests
                     IsFullyConfigured: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // Should succeed because it fell back to default (has dotnet), not admin (no dotnet)
@@ -232,7 +249,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["do", "--version"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -255,7 +272,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -340,27 +357,16 @@ public class DotnetCommandTests
     // ── Helpers ───────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Creates a simple fake dotnet executable that exits with code 0.
-    /// On Windows, creates a .cmd batch file. On Unix, creates a shell script.
+    /// Creates a dummy dotnet executable file so that <see cref="DotnetForwardCommand"/>'s
+    /// <c>File.Exists</c> check passes. The file does not need to be a real executable
+    /// because the tests use <see cref="TestableDotnetCommand"/> which overrides process
+    /// execution. Previously, copying cmd.exe as a fake dotnet.exe on Windows caused
+    /// cmd.exe to open an interactive shell that hung indefinitely.
     /// </summary>
     private static void CreateFakeDotnetExecutable(string directory)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            var batPath = Path.Combine(directory, "dotnet.exe");
-            // Copy cmd.exe as a stand-in for dotnet.exe so the process can be launched.
-            File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), batPath, overwrite: true);
-        }
-        else
-        {
-            var scriptPath = Path.Combine(directory, "dotnet");
-            File.WriteAllText(scriptPath, "#!/bin/sh\nexit 0\n");
-            // Make executable
-            File.SetUnixFileMode(scriptPath,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-        }
+        var path = Path.Combine(directory, DotnetupUtilities.GetDotnetExeName());
+        File.WriteAllText(path, "fake");
     }
 
     /// <summary>

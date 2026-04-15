@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.Shared.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);XUNIT_V3</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"
+             Exclude="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests\Snapshots\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3\Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper.XunitV3\Microsoft.TemplateEngine.TestHelper.XunitV3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Snapshots\**\*" />
+    <Content Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests\Snapshots\**\*" Link="Snapshots\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests\Snapshots\**\*" Link="Snapshots\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+</Project>

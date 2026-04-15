@@ -104,7 +104,7 @@ extends:
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: release/10.0.2xx
+          locBranch: release/10.0.3xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
@@ -209,8 +209,8 @@ extends:
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
+              # Use HostOS when running on alpine.
+              osProperties: /p:HostOS=linux-musl
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false

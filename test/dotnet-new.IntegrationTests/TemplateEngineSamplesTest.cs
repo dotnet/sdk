@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using EmptyFiles;
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string caseDescription)
         {
             _log.LogInformation($"Template with {caseDescription}");
-            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            Dictionary<string, string?> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
             FileExtensions.AddTextExtension(".cshtml");
 
@@ -53,17 +53,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 TemplateSpecificArgs = arguments ?? Enumerable.Empty<string>(),
                 VerifyCommandOutput = true,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 SettingsDirectory = _sharedHome.HomeDirectory,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = $"{folderName.Substring(folderName.IndexOf("-") + 1)}{GetScenarioName(arguments)}"
             }
-            .WithCustomEnvironment(environmentUnderTest)
+            .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
-               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
+               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****"))
+               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt"));
 
             VerificationEngine engine = new(_log);
             await engine.Execute(options);

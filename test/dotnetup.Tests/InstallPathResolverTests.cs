@@ -8,7 +8,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
