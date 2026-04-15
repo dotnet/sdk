@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -32,10 +33,12 @@ internal static class ContentStore
         }
     }
 
+    private static readonly Regex s_sha256DigestRegex = new(@"^sha256:[0-9A-Fa-f]{64}$", RegexOptions.Compiled);
+
     public static string PathForDescriptor(Descriptor descriptor)
     {
         string digestString = descriptor.Digest;
-        if (!ReferenceParser.DigestRegexp.IsMatch(digestString))
+        if (!s_sha256DigestRegex.IsMatch(digestString))
         {
             throw new ArgumentException($"Invalid digest: {digestString}", nameof(descriptor.Digest));
         }
