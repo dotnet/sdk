@@ -202,6 +202,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     Assert.IsTrue(File.Exists($"{file}.gz"), $"Expected file {$"{file}.gz"} to exist, but it did not.");
                     Assert.IsTrue(File.Exists($"{file}.br"), $"Expected file {$"{file}.br"} to exist, but it did not.");
+                    Assert.IsTrue(File.Exists($"{file}.zst"), $"Expected file {$"{file}.zst"} to exist, but it did not.");
                 }
             }
         }

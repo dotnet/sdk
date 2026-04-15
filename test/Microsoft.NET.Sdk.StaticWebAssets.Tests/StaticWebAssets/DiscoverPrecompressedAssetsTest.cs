@@ -21,10 +21,7 @@ public class DiscoverPrecompressedAssetsTest
     [TestMethod]
     public void DiscoversPrecompressedAssetsCorrectly()
     {
-        var errorMessages = new List<string>();
         var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
         var uncompressedCandidate = new StaticWebAsset
         {
