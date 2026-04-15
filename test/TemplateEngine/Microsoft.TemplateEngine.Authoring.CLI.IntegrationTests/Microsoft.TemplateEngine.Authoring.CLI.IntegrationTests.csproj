@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj" />
-    <ProjectReference Include="$(TemplateEngTestAssetsDir)Microsoft.TemplateEngine.TestTemplates.csproj" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
 

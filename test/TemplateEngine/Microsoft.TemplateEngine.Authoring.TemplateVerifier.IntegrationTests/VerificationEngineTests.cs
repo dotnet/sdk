@@ -4,6 +4,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
@@ -150,7 +151,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
-                SnapshotsDirectory = SnapshotsDirectory,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = true,
             };
 
@@ -166,7 +167,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
-                SnapshotsDirectory = SnapshotsDirectory,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = false,
                 SettingsDirectory = settingsPath
             };

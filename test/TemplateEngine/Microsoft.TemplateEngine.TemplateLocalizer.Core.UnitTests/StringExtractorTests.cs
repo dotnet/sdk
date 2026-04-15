@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
+using Microsoft.TemplateEngine.Tests;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
@@ -187,12 +188,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string templateJsonPath = Path.GetFullPath(Path.Combine(
-                AppContext.BaseDirectory,
-                "test_templates",
+            string templateJsonPath = Path.Combine(
+                TestBase.TestTemplatesLocation,
                 "TemplateWithLocalization",
                 ".template.config",
-                "template.json"));
+                "template.json");
 
             return File.ReadAllText(templateJsonPath);
         }

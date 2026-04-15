@@ -79,5 +79,16 @@ namespace Microsoft.TemplateEngine.Tests
             }
             return Path.GetFullPath(templateLocation);
         }
+
+        /// <summary>
+        /// Creates a NuGet.config in the specified directory with sources for both
+        /// shipping packages and locally-built test packages.
+        /// </summary>
+        internal static void SetupNuGetConfigForPackagesLocation(string projectDirectory)
+        {
+            TestUtils.SetupNuGetConfigForPackagesLocation(
+                projectDirectory,
+                new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
+        }
     }
 }

@@ -3,13 +3,11 @@
   <Import Project="..\Directory.Build.targets" />
 
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <Using Remove="FluentAssertions" />
+    <!-- TODO: Investigate consolidating TemplateEngine's duplicate types (XunitLoggerProvider,
+         DotnetCommand, TestCommand, etc.) with the SDK TestFramework versions.
+         https://github.com/dotnet/templating/issues/10085 -->
     <Using Remove="Microsoft.NET.TestFramework" />
-    <Using Remove="Microsoft.NET.TestFramework.Assertions" />
     <Using Remove="Microsoft.NET.TestFramework.Commands" />
-    <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Remove="Microsoft.NET.TestFramework.Utilities" />
-    <Compile Remove="$(MSBuildThisFileDirectory)..\Common\Program.cs" />
   </ItemGroup>
 
 </Project>
