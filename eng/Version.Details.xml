@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.420">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.421">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c6b91e60697e1efc775166691b20211d54fb856a</Sha>
+      <Sha>3c61a6c073e7a5523b69742eebad0f1714dc1716</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.420-servicing.26153.10">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.421-servicing.26207.8">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c6b91e60697e1efc775166691b20211d54fb856a</Sha>
+      <Sha>3c61a6c073e7a5523b69742eebad0f1714dc1716</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.420-servicing.26153.10">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.421-servicing.26207.8">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c6b91e60697e1efc775166691b20211d54fb856a</Sha>
+      <Sha>3c61a6c073e7a5523b69742eebad0f1714dc1716</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.26">
@@ -293,18 +293,18 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>829dd6d36442c2bcf83ebfc9d4159b7ecc15c2ff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.26159.4">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.26179.13">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>1d53677a3721a882496b4049d92cade6715e70ae</Sha>
+      <Sha>d6e3bf05259be7fdea89a5f2c090c24c454dd917</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.26159.4">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.26179.13">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>1d53677a3721a882496b4049d92cade6715e70ae</Sha>
+      <Sha>d6e3bf05259be7fdea89a5f2c090c24c454dd917</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.26159.4">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.26179.13">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>1d53677a3721a882496b4049d92cade6715e70ae</Sha>
+      <Sha>d6e3bf05259be7fdea89a5f2c090c24c454dd917</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.26">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -349,14 +349,14 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.26152.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.26207.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>563783c7169399c27faa8864a307490e9606358d</Sha>
+      <Sha>3737cca8041745ff45b17d019c430293308838d5</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.26152.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.26203.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>ac35a502714f4867b0386a5bd392868024e7495c</Sha>
+      <Sha>9d83c59ff890ff2020aa38ebcf3bb514e38e9ffe</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25064.1">
@@ -491,22 +491,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.26152.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.26168.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff8437c93170b57151c4dbf43671adeb9395d2c9</Sha>
+      <Sha>8dabb7110e0c0e8ca9866f389493bfb5047b8c24</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.26152.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.26168.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff8437c93170b57151c4dbf43671adeb9395d2c9</Sha>
+      <Sha>8dabb7110e0c0e8ca9866f389493bfb5047b8c24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.26152.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.26168.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff8437c93170b57151c4dbf43671adeb9395d2c9</Sha>
+      <Sha>8dabb7110e0c0e8ca9866f389493bfb5047b8c24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.26152.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.26168.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff8437c93170b57151c4dbf43671adeb9395d2c9</Sha>
+      <Sha>8dabb7110e0c0e8ca9866f389493bfb5047b8c24</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
