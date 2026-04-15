@@ -431,7 +431,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -451,7 +450,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
