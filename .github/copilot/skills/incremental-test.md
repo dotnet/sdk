@@ -6,6 +6,7 @@ Use it after making source code changes to quickly build only the modified proje
 ## Prerequisites
 
 - A full build must have been completed at least once (via `build.cmd` or `build.sh`) so that the redist SDK layout exists at `artifacts\bin\redist\Debug\dotnet\sdk\<version>\`.
+- The repo-local `.dotnet` SDK must match the version expected by the test projects. If the runtime or SDK version is out of date (e.g., test build fails with a missing framework error), run `.\restore.cmd` (or `./restore.sh` on macOS/Linux) to download the correct SDK into `.dotnet`.
 - This workflow uses Windows/PowerShell commands and paths. On macOS/Linux, substitute forward slashes and use `cp` instead of `Copy-Item`.
 
 ## When to use
