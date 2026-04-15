@@ -60,11 +60,13 @@ internal sealed class WebAssemblyHotReloadClient(
         var capabilitiesStr = string.Join(", ", capabilities);
         if (projectHotReloadCapabilities.IsEmpty)
         {
-            logger.LogDebug("Project specifies capabilities: {Capabilities}.", capabilitiesStr);
+            // Note that this is not possible with SDK 10+ since the WASM SDK always defines the capabilities in the project,
+            // but the code is shared with VS and CDK which might not use the latest SDK.
+            logger.Log(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, projectTargetFrameworkVersion, capabilitiesStr);
         }
         else
         {
-            logger.LogDebug("Using capabilities based on project target framework version: '{Version}': {Capabilities}.", projectTargetFrameworkVersion, capabilitiesStr);
+            logger.Log(LogEvents.ProjectSpecifiesCapabilities, capabilitiesStr);
         }
 
         return capabilities;

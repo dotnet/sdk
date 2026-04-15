@@ -13,6 +13,7 @@ public class BuildProjects(ITestOutputHelper output)
         public readonly HotReloadDotNetWatcher Watcher;
         public readonly FileWatcher FileWatcher;
         public readonly TestConsole Console;
+        public readonly TestLogger BuildLogger;
 
         public readonly List<string> BuildInvocations = [];
         public string? SolutionFile;
@@ -31,12 +32,14 @@ public class BuildProjects(ITestOutputHelper output)
                 }
             };
 
+            BuildLogger = new TestLogger(output);
+
             var context = new DotNetWatchContext()
             {
                 ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = NullLoggerFactory.Instance,
                 Logger = NullLogger.Instance,
-                BuildLogger = NullLogger.Instance,
+                BuildLogger = BuildLogger,
                 ProcessRunner = processRunner,
                 Options = new(),
                 MainProjectOptions = null,
@@ -73,8 +76,8 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task SingleProject_NotMain()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         using var context = CreateContext();
 
@@ -98,8 +101,8 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task SingleProject_Main()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         File.WriteAllText(project1, $"""
         <Project Sdk="Microsoft.NET.Sdk">
@@ -136,9 +139,9 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task MultipleProjects()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var project2 = Path.Combine(dir, "Project2.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var project2 = Path.Combine(dir.Path, "Project2.csproj");
 
         using var context = CreateContext();
 
@@ -161,10 +164,13 @@ public class BuildProjects(ITestOutputHelper output)
 
     [Theory]
     [CombinatorialData]
-    public async Task SingleFile(bool isMain)
+    public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
-        var dir = Path.GetTempPath();
-        var file1 = Path.Combine(dir, "File1.cs");
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [isMain]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            Console.WriteLine(1);
+            """);
 
         using var context = CreateContext([file1]);
 
@@ -185,12 +191,112 @@ public class BuildProjects(ITestOutputHelper output)
         AssertEx.SequenceEqual([$"build {file1} -p A=1"], context.BuildInvocations);
     }
 
+    [Theory]
+    [CombinatorialData]
+    public async Task FileBasedApp_TargetFrameworkProperty(bool nonInteractive)
+    {
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFramework=   net9.0    
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: nonInteractive ? null : (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public async Task FileBasedApp_TargetFrameworksProperty(bool nonInteractive)
+    {
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: nonInteractive ? null : (_, _) =>
+            {
+                return ValueTask.FromResult("net9.0");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        if (nonInteractive)
+        {
+            AssertEx.SequenceEqual(
+            [
+                "[Error] " + MessageDescriptor.FileSpecifiesMultipleTargetFrameworks.GetMessage((file1, "net9.0', 'net10.0"))
+            ], context.BuildLogger.GetAndClearMessages());
+
+            Assert.False(result.Success);
+            Assert.Empty(context.BuildInvocations);
+        }
+        else
+        {
+            Assert.True(result.Success);
+            AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+        }
+    }
+
+    [Fact]
+    public async Task FileBasedApp_TargetFrameworkOption()
+    {
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1, "-f", "net8.0"]),
+            frameworkSelector: (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net8.0"], context.BuildInvocations);
+    }
+
     [Fact]
     public async Task MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 
@@ -218,10 +324,10 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task SingleProject_MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 
@@ -251,11 +357,11 @@ public class BuildProjects(ITestOutputHelper output)
     [Fact]
     public async Task MultipleProjects_MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var project2 = Path.Combine(dir, "Project2.csproj");
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var project2 = Path.Combine(dir.Path, "Project2.csproj");
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 

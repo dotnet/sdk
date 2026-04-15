@@ -1835,22 +1835,22 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
         <source>Add '#!' (shebang)</source>
-        <target state="new">Add '#!' (shebang)</target>
+        <target state="translated">添加 "#!"(shebang)</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
-        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <target state="translated">当基于文件的程序由多个文件组成时，入口点文件应以 shebang ("#!")行开头，以便清楚地区分它与其他包含的文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramMessage">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">基于文件的程序入口点应以 "#!" 开头</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramTitle">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">基于文件的程序入口点应以 "#!" 开头</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
